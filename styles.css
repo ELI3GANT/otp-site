@@ -1840,7 +1840,7 @@ input:focus, select:focus, textarea:focus {
 
 .archive-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 32px;
   padding-bottom: 120px;
 }
@@ -2301,4 +2301,58 @@ input:focus, select:focus, textarea:focus {
   .insight-card {
     padding: 30px;
   }
+}
+
+/* SUBSCRIBE SECTION */
+.subscribe-section {
+  margin: 100px 0 60px;
+  padding: 60px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.subscribe-section h3 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.subscribe-form {
+  margin-top: 30px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.subscribe-form input {
+  padding: 16px 20px;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  width: 300px;
+  max-width: 100%;
+}
+
+.subscribe-form button {
+  padding: 16px 32px;
+  border-radius: 50px;
+  background: #fff;
+  color: #000;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+.insights-footer-nav {
+  margin: 40px 0 80px;
+  font-size: 0.9rem;
+  opacity: 0.6;
+}
+
+.insights-footer-nav a {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 10px;
 }
