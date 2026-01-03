@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Insights | Only True Perspective</title>
+  <meta name="description" content="Thoughts on creative direction, visual storytelling, and brand architecture by Only True Perspective." />
+  <link rel="stylesheet" href="./styles.css?v=2.5" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="archive-page">
+  <div class="bg-fixed"></div>
+
+  <header class="nav">
+    <div class="nav-left">
+      <a href="index.html" class="back-link k-hover">← Home</a>
+      <a href="archive.html" class="back-link k-hover" style="margin-left: 20px;">Archive</a>
+    </div>
+    <a href="index.html" class="nav-logo-center k-hover" aria-label="Go Home">
+      <img src="assets/otp.gif" alt="OTP" class="archive-nav-gif" />
+    </a>
+  </header>
+
+  <main class="archive-main">
+    <div class="wrap">
+      <header class="archive-header center-text">
+        <h1 class="syne-bold">INSIGHTS</h1>
+        <p class="muted">Deep dives into creative strategy, visual architecture, and the future of storytelling.</p>
+      </header>
+
+      <div class="insights-grid">
+        <!-- Post 1 -->
+        <article class="insight-card k-hover">
+          <div class="insight-date">Oct 24, 2025 • 5 min read</div>
+          <h2>The Architecture of a Visual Drop</h2>
+          <p>Why pacing and cinematic color are the most underrated tools in your rollout strategy. We deconstruct the "The Takeover" approach.</p>
+          <a href="#" class="read-more">Read Insight</a>
+        </article>
+
+        <!-- Post 2 -->
+        <article class="insight-card k-hover">
+          <div class="insight-date">Oct 12, 2025 • 3 min read</div>
+          <h2>Beyond the Edit: Brand Identity</h2>
+          <p>How we build consistency across 9:16 and 16:9 formats without losing the soul of the project.</p>
+          <a href="#" class="read-more">Read Insight</a>
+        </article>
+
+        <!-- Post 3 -->
+        <article class="insight-card k-hover">
+          <div class="insight-date">Sep 28, 2025 • 4 min read</div>
+          <h2>Turning Vision into Strategy</h2>
+          <p>A look into the "Phase 01" process of OTP. How alignment in the pre-production phase saves 10 hours of editing.</p>
+          <a href="#" class="read-more">Read Insight</a>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap center-text">
+      <p class="muted">© <span id="year"></span> Only True Perspective.</p>
+    </div>
+  </footer>
+
+  <canvas id="cursor-canvas"></canvas>
+
+  <script src="https://unpkg.com/kursor"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    
+    try {
+        if (typeof kursor !== 'undefined') {
+            new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
+        }
+
+        gsap.from('.insight-card', {
+          opacity: 0,
+          y: 30,
+          stagger: 0.15,
+          duration: 0.8,
+          ease: 'power2.out',
+          delay: 0.2
+        });
+
+        // Simple Particle Cursor logic for consistency
+        const canvas = document.getElementById('cursor-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function resize() {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', e => {
+          particles.push({
+            x: e.clientX,
+            y: e.clientY,
+            life: 1.0,
+            size: 15
+          });
+        });
+
+        function animate() {
+          ctx.clearRect(0, 0, width, height);
+          for (let i = 0; i < particles.length; i++) {
+            let p = particles[i];
+            p.life -= 0.03;
+            p.size *= 0.95;
+            ctx.beginPath();
+            ctx.fillStyle = `rgba(112, 0, 255, ${p.life})`;
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            if (p.life <= 0) { particles.splice(i, 1); i--; }
+          }
+          requestAnimationFrame(animate);
+        }
+        animate();
+
+    } catch (err) { console.error('Insights Error:', err); }
+  </script>
+</body>
+</html>

@@ -1845,6 +1845,44 @@ input:focus, select:focus, textarea:focus {
   padding-bottom: 120px;
 }
 
+.project-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.project-img-static {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
+  z-index: 1;
+}
+
+.project-video-loop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  opacity: 0.8; /* Slight dim for that premium look */
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.project-card:hover .project-video-loop {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.project-card:hover .project-img-static {
+  opacity: 0;
+}
 .project-card {
   position: relative;
   aspect-ratio: 16/10;
@@ -2186,4 +2224,81 @@ input:focus, select:focus, textarea:focus {
   .hero h1 { font-size: 2rem !important; }
   .eyebrow { font-size: 0.8rem; }
   .wrap { width: 90vw; }
+}
+
+/* INSIGHTS GRID */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 30px;
+  margin-top: 50px;
+}
+
+.insight-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  text-decoration: none;
+  color: inherit;
+}
+
+.insight-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--accent);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 195, 255, 0.1);
+}
+
+.insight-date {
+  font-size: 0.8rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.insight-card h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.8rem;
+  line-height: 1.2;
+  margin-bottom: 15px;
+}
+
+.insight-card p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 25px;
+}
+
+.read-more {
+  margin-top: auto;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.read-more::after {
+  content: '→';
+  transition: transform 0.3s ease;
+}
+
+.insight-card:hover .read-more::after {
+  transform: translateX(5px);
+}
+
+@media (max-width: 480px) {
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+  .insight-card {
+    padding: 30px;
+  }
 }
