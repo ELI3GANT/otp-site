@@ -97,14 +97,8 @@
             new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
         }
 
-        gsap.from('.insight-card', {
-          opacity: 0,
-          y: 30,
-          stagger: 0.15,
-          duration: 0.8,
-          ease: 'power2.out',
-          delay: 0.2
-        });
+        // Animation removed to ensure immediate visibility on all devices
+        gsap.set('.insight-card', { opacity: 1, y: 0 });
 
         // Spotlight Effect for Insight Cards
         document.querySelectorAll('.insight-card').forEach(card => {
