@@ -240,8 +240,9 @@ html {
 
 @media (max-width: 768px) {
   .nav {
-    padding: 16px 20px;
+    padding: 12px 20px;
     justify-content: space-between;
+    height: 70px;
   }
   .nav-links {
     display: none;
@@ -250,9 +251,17 @@ html {
     display: block;
     position: absolute;
     right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 13px; /* Pinned to top right */
+    background: rgba(255, 255, 255, 0.08); /* More noticeable */
+    border-color: rgba(255, 255, 255, 0.2);
+    animation: menu-pulse 2s infinite ease-in-out;
   }
+}
+
+@keyframes menu-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
 }
 
 .nav-links a::after {
