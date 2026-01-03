@@ -256,22 +256,6 @@
         }
         animate();
 
-        // Video Autoplay Observer
-        const videos = document.querySelectorAll('video');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.play().catch(e => console.log('Autoplay prevent:', e));
-                } else {
-                    entry.target.pause();
-                }
-            });
-        }, { threshold: 0.1 });
-        
-        videos.forEach(v => {
-            v.muted = true;
-            observer.observe(v);
-        });
 
     } catch (err) { console.error('Archive Error:', err); }
   </script>
