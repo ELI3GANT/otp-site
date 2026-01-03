@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Architecture of a Visual Drop | Only True Perspective</title>
+  <meta name="description" content="Why pacing and cinematic color are the most underrated tools in your rollout strategy." />
+  <link rel="stylesheet" href="./styles.css?v=2.5" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    .post-content { max-width: 800px; margin: 0 auto; line-height: 1.8; font-size: 1.1rem; color: #ccc; }
+    .post-content h2 { margin-top: 60px; font-family: 'Syne', sans-serif; color: #fff; }
+    .post-content p { margin-bottom: 24px; }
+    .post-header { margin-bottom: 60px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 40px; }
+    .post-meta { color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 20px; display: block;}
+    blockquote { border-left: 2px solid var(--accent); padding-left: 30px; margin: 40px 0; font-style: italic; color: #fff; font-size: 1.4rem; font-family: 'Syne', sans-serif; }
+  </style>
+</head>
+<body class="archive-page">
+  <div class="bg-fixed"></div>
+
+  <header class="nav">
+    <div class="nav-left">
+      <a href="insights.html" class="back-link k-hover">← Back to Insights</a>
+    </div>
+    <a href="index.html" class="nav-logo-center k-hover" aria-label="Go Home">
+      <img src="assets/otp.gif" alt="OTP" class="archive-nav-gif" />
+    </a>
+  </header>
+
+  <main class="archive-main">
+    <div class="wrap">
+      <article class="post-content">
+        <header class="post-header center-text">
+          <span class="post-meta">Creative Strategy • Oct 24, 2025</span>
+          <h1 class="syne-bold" style="font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1.1;">The Architecture of a Visual Drop</h1>
+        </header>
+
+        <p>In the age of infinite scroll, "good" visuals aren't enough. You need visuals that stop time. When we design a rollout for an artist or a brand, we don't just think about the content; we think about the architecture of the release.</p>
+
+        <h2>1. The 3-Second Rule is Dead</h2>
+        <p>It's not about 3 seconds anymore. It's about the first frame. If the very first pixel doesn't communicate the vibe, you've lost them. We use high-contrast cinematic color grading to ensure that even a thumbnail feels like a movie poster.</p>
+
+        <blockquote>"Silence is the loudest sound in the room if you frame it right."</blockquote>
+
+        <h2>2. Pacing as a Weapon</h2>
+        <p>Most editors cut too fast. They think speed equals energy. But <em>tension</em> equals energy. Holding a shot for an uncomfortable amount of time can build more anticipation than a hundred rapid cuts. We call this "The Takeover" approach—forcing the viewer to sync with your rhythm, not theirs.</p>
+
+        <h2>3. Conclusion</h2>
+        <p>Your visual identity is your currency. Spend it wisely. Build a world, not just a post.</p>
+
+        <div style="margin-top: 80px; text-align: center;">
+            <a href="insights.html" class="k-hover" style="border-bottom: 1px solid var(--accent); padding-bottom: 5px;">Read Next Insight →</a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap center-text">
+      <p class="muted">© <span id="year"></span> Only True Perspective.</p>
+    </div>
+  </footer>
+
+  <canvas id="cursor-canvas"></canvas>
+  <script src="https://unpkg.com/kursor"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    if (typeof kursor !== 'undefined') new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
+    
+    // Simple Cursor Logic
+    const canvas = document.getElementById('cursor-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, particles = [];
+    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    window.addEventListener('mousemove', e => { particles.push({x: e.clientX, y: e.clientY, life: 1.0, size: 10}); });
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i=0; i<particles.length; i++) {
+        let p = particles[i]; p.life -= 0.05; p.size *= 0.9;
+        ctx.fillStyle = `rgba(112, 0, 255, ${p.life})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+        if(p.life<=0){particles.splice(i,1); i--;}
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>

@@ -2237,8 +2237,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 .insight-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #0f0f12; /* Solid dark background for visibility */
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 40px;
   display: flex;
@@ -2246,14 +2246,17 @@ input:focus, select:focus, textarea:focus {
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   text-decoration: none;
   color: inherit;
+  position: relative;
+  overflow: hidden;
 }
 
 .insight-card:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: #15151a;
   border-color: var(--accent);
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 195, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 195, 255, 0.15);
 }
+
 
 .insight-date {
   font-size: 0.8rem;
