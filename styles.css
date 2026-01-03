@@ -2232,6 +2232,8 @@ input:focus, select:focus, textarea:focus {
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 30px;
   margin-top: 50px;
+  min-height: 60vh; /* Ensure it takes up space even with few items */
+  padding-bottom: 50px;
 }
 
 .insight-card {
