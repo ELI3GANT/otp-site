@@ -104,6 +104,22 @@ html {
   height: 100%;
 }
 
+/* CUSTOM THEMED SCROLLBAR */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #050508;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  border: 2px solid #050508;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent2), var(--accent));
+}
+
 ::selection {
   background: rgba(214,178,94,0.28);
   color: rgba(255,255,255,0.98);
@@ -1482,6 +1498,7 @@ input:focus, select:focus, textarea:focus {
   font-family: 'Inter', sans-serif; /* Keep details clean */
   background: none;
   -webkit-background-clip: initial;
+  background-clip: initial;
   color: var(--muted);
   text-transform: none;
   font-weight: 400;
@@ -1842,7 +1859,7 @@ input:focus, select:focus, textarea:focus {
 .project-card:hover {
   transform: translateY(-8px) scale(1.02);
   border-color: var(--accent2);
-  box-shadow: 0 20px 50px rgba(0, 195, 255, 0.15);
+  box-shadow: 0 20px 50px rgba(0, 195, 255, 0.25), 0 0 20px rgba(112, 0, 255, 0.2);
 }
 
 .placeholder-glow {
@@ -2050,6 +2067,7 @@ input:focus, select:focus, textarea:focus {
   color: var(--muted);
   background: none;
   -webkit-background-clip: initial;
+  background-clip: initial;
   color: var(--muted);
 }
 

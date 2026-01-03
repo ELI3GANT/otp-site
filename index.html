@@ -507,7 +507,7 @@
             else if (target.classList.contains('project-card')) prefix = 'PROJECT: ';
             
             const labelText = heading ? heading.innerText : (target.getAttribute('aria-label') || target.innerText || 'VIEW');
-            cursorLabel.innerText = (prefix + labelText).split('\n')[0].substring(0, 30).trim();
+            cursorLabel.innerText = (prefix + labelText).split('\n')[0].substring(0, 30).trim().toUpperCase();
           } else {
             cursorLabel.classList.remove('visible');
           }

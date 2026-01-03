@@ -19,9 +19,9 @@
 
   <header class="nav">
     <a href="index.html" class="back-link k-hover">← Back to Perspective</a>
-    <div class="nav-logo-center">
+    <a href="index.html" class="nav-logo-center k-hover" aria-label="Go Home">
       <img src="assets/otp.gif" alt="OTP" class="archive-nav-gif" />
-    </div>
+    </a>
   </header>
 
   <main class="archive-main">
@@ -33,7 +33,7 @@
 
       <div class="archive-grid">
         <!-- Project 1: Vlog -->
-        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=oFM_roer79A', '_blank')">
+        <a href="https://www.youtube.com/watch?v=oFM_roer79A" target="_blank" class="project-card k-hover">
           <div class="project-media">
              <img src="https://i.ytimg.com/vi/oFM_roer79A/hqdefault.jpg" alt="2 The Froze Tour Vlog" style="width:100%; height:100%; object-fit:cover;">
              <div class="project-overlay">
@@ -41,10 +41,10 @@
                <span>Tour Documentary / Creative Direction</span>
              </div>
           </div>
-        </article>
+        </a>
 
         <!-- Project 2: Music Video -->
-        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=vNxUzSmr7x0', '_blank')">
+        <a href="https://www.youtube.com/watch?v=vNxUzSmr7x0" target="_blank" class="project-card k-hover">
           <div class="project-media">
              <img src="https://i.ytimg.com/vi/vNxUzSmr7x0/hqdefault.jpg" alt="Fame and Fortune Music Video" style="width:100%; height:100%; object-fit:cover;">
              <div class="project-overlay">
@@ -52,10 +52,10 @@
                <span>Official Music Video / Post-Production</span>
              </div>
           </div>
-        </article>
+        </a>
 
         <!-- Project 3: Visuals -->
-        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=5uPeZWd5jVo', '_blank')">
+        <a href="https://www.youtube.com/watch?v=5uPeZWd5jVo" target="_blank" class="project-card k-hover">
           <div class="project-media">
              <img src="https://i.ytimg.com/vi/5uPeZWd5jVo/hqdefault.jpg" alt="Neon Nights Visuals" style="width:100%; height:100%; object-fit:cover;">
              <div class="project-overlay">
@@ -63,10 +63,10 @@
                <span>VFX / Cinematic Color</span>
              </div>
           </div>
-        </article>
+        </a>
 
         <!-- Project 4: Motion -->
-        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=L-5bRU7Ai0U', '_blank')">
+        <a href="https://www.youtube.com/watch?v=L-5bRU7Ai0U" target="_blank" class="project-card k-hover">
           <div class="project-media">
              <img src="https://i.ytimg.com/vi/L-5bRU7Ai0U/hqdefault.jpg" alt="Perspective Sweep Motion" style="width:100%; height:100%; object-fit:cover;">
              <div class="project-overlay">
@@ -74,10 +74,10 @@
                <span>Motion Graphics / Brand Identity</span>
              </div>
           </div>
-        </article>
+        </a>
 
         <!-- Project 5: Show -->
-        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=gq5dkcnOkok', '_blank')">
+        <a href="https://www.youtube.com/watch?v=gq5dkcnOkok" target="_blank" class="project-card k-hover">
           <div class="project-media">
              <img src="https://i.ytimg.com/vi/gq5dkcnOkok/hqdefault.jpg" alt="No Aversion Show" style="width:100%; height:100%; object-fit:cover;">
              <div class="project-overlay">
@@ -85,10 +85,10 @@
                <span>Live Event Visuals / Recap</span>
              </div>
           </div>
-        </article>
+        </a>
 
         <!-- Project 6: Concept -->
-        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=KYVTqzsovU8', '_blank')">
+        <a href="https://www.youtube.com/watch?v=KYVTqzsovU8" target="_blank" class="project-card k-hover">
           <div class="project-media">
              <img src="https://i.ytimg.com/vi/KYVTqzsovU8/hqdefault.jpg" alt="State of Mind Concept" style="width:100%; height:100%; object-fit:cover;">
              <div class="project-overlay">
@@ -96,10 +96,10 @@
                <span>Visual Concept / Art Direction</span>
              </div>
           </div>
-        </article>
+        </a>
 
         <!-- Project 7: Series -->
-        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=MGvCpDN-Tss', '_blank')">
+        <a href="https://www.youtube.com/watch?v=MGvCpDN-Tss" target="_blank" class="project-card k-hover">
           <div class="project-media">
              <img src="https://i.ytimg.com/vi/MGvCpDN-Tss/hqdefault.jpg" alt="Another Night Series" style="width:100%; height:100%; object-fit:cover;">
              <div class="project-overlay">
@@ -107,7 +107,7 @@
                <span>Episodic Content / Narrative Edit</span>
              </div>
           </div>
-        </article>
+        </a>
       </div>
     </div>
   </main>
@@ -122,6 +122,7 @@
 
   <script src="https://unpkg.com/kursor"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
     
@@ -167,15 +168,19 @@
           
           cursorLabel.style.transform = `translate(${e.clientX + 20}px, ${e.clientY + 20}px)`;
           
-          const target = e.target.closest('.k-hover, a, button, .project-card');
+          const target = e.target.closest('.k-hover, a, button, .project-card, .nav-logo-center');
           if (target) {
             cursorLabel.classList.add('visible');
             const heading = target.querySelector('h1, h2, h3, h4');
             let prefix = '';
+            
+            // Link specific overrides
             if (target.classList.contains('project-card')) prefix = 'PROJECT: ';
+            else if (target.classList.contains('back-link')) prefix = 'GOTO: ';
+            else if (target.classList.contains('nav-logo-center')) prefix = 'HOME: ';
             
             const labelText = heading ? heading.innerText : (target.getAttribute('aria-label') || target.innerText || 'VIEW');
-            cursorLabel.innerText = (prefix + labelText).split('\n')[0].substring(0, 30).trim();
+            cursorLabel.innerText = (prefix + labelText).split('\n')[0].substring(0, 30).trim().toUpperCase();
           } else {
             cursorLabel.classList.remove('visible');
           }
