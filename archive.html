@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Archive | Only True Perspective</title>
+  <meta name="description" content="Visual archive and project showcase for Only True Perspective (OTP)." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=2.5" />
+</head>
+<body class="archive-page">
+  <div class="bg-fixed"></div>
+
+  <header class="nav">
+    <a href="index.html" class="back-link k-hover">← Back to Perspective</a>
+    <div class="nav-logo-center">
+      <img src="assets/otp.gif" alt="OTP" class="archive-nav-gif" />
+    </div>
+  </header>
+
+  <main class="archive-main">
+    <div class="wrap">
+      <header class="archive-header center-text">
+        <h1 class="syne-bold">THE ARCHIVE</h1>
+        <p class="muted">A curated collection of visual storytelling, creative strategy, and digital builds.</p>
+      </header>
+
+      <div class="archive-grid">
+        <!-- Project 1: Vlog -->
+        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=oFM_roer79A', '_blank')">
+          <div class="project-media">
+             <img src="https://i.ytimg.com/vi/oFM_roer79A/hqdefault.jpg" alt="2 The Froze Tour Vlog" style="width:100%; height:100%; object-fit:cover;">
+             <div class="project-overlay">
+               <h3>'2 The Froze Tour' | Vlog</h3>
+               <span>Tour Documentary / Creative Direction</span>
+             </div>
+          </div>
+        </article>
+
+        <!-- Project 2: Music Video -->
+        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=vNxUzSmr7x0', '_blank')">
+          <div class="project-media">
+             <img src="https://i.ytimg.com/vi/vNxUzSmr7x0/hqdefault.jpg" alt="Fame and Fortune Music Video" style="width:100%; height:100%; object-fit:cover;">
+             <div class="project-overlay">
+               <h3>ELI & Tengu: 'Fame and Fortune'</h3>
+               <span>Official Music Video / Post-Production</span>
+             </div>
+          </div>
+        </article>
+
+        <!-- Project 3: Visuals -->
+        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=5uPeZWd5jVo', '_blank')">
+          <div class="project-media">
+             <img src="https://i.ytimg.com/vi/5uPeZWd5jVo/hqdefault.jpg" alt="Neon Nights Visuals" style="width:100%; height:100%; object-fit:cover;">
+             <div class="project-overlay">
+               <h3>Neon Nights | Workout Visuals</h3>
+               <span>VFX / Cinematic Color</span>
+             </div>
+          </div>
+        </article>
+
+        <!-- Project 4: Motion -->
+        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=L-5bRU7Ai0U', '_blank')">
+          <div class="project-media">
+             <img src="https://i.ytimg.com/vi/L-5bRU7Ai0U/hqdefault.jpg" alt="Perspective Sweep Motion" style="width:100%; height:100%; object-fit:cover;">
+             <div class="project-overlay">
+               <h3>Perspective Sweep: ELI</h3>
+               <span>Motion Graphics / Brand Identity</span>
+             </div>
+          </div>
+        </article>
+
+        <!-- Project 5: Show -->
+        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=gq5dkcnOkok', '_blank')">
+          <div class="project-media">
+             <img src="https://i.ytimg.com/vi/gq5dkcnOkok/hqdefault.jpg" alt="No Aversion Show" style="width:100%; height:100%; object-fit:cover;">
+             <div class="project-overlay">
+               <h3>OTP: NO AVERSION SHOW</h3>
+               <span>Live Event Visuals / Recap</span>
+             </div>
+          </div>
+        </article>
+
+        <!-- Project 6: Concept -->
+        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=KYVTqzsovU8', '_blank')">
+          <div class="project-media">
+             <img src="https://i.ytimg.com/vi/KYVTqzsovU8/hqdefault.jpg" alt="State of Mind Concept" style="width:100%; height:100%; object-fit:cover;">
+             <div class="project-overlay">
+               <h3>OTP Presents: State of Mind</h3>
+               <span>Visual Concept / Art Direction</span>
+             </div>
+          </div>
+        </article>
+
+        <!-- Project 7: Series -->
+        <article class="project-card k-hover" onclick="window.open('https://www.youtube.com/watch?v=MGvCpDN-Tss', '_blank')">
+          <div class="project-media">
+             <img src="https://i.ytimg.com/vi/MGvCpDN-Tss/hqdefault.jpg" alt="Another Night Series" style="width:100%; height:100%; object-fit:cover;">
+             <div class="project-overlay">
+               <h3>Series #001: 'Another Night'</h3>
+               <span>Episodic Content / Narrative Edit</span>
+             </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap center-text">
+      <p class="muted">© <span id="year"></span> Only True Perspective.</p>
+    </div>
+  </footer>
+
+  <canvas id="cursor-canvas"></canvas>
+
+  <script src="https://unpkg.com/kursor"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    
+    try {
+        // Initialize Kursor
+        if (typeof kursor !== 'undefined') {
+            new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
+        }
+
+        // Project Reveal animation
+        gsap.from('.project-card', {
+          opacity: 0,
+          y: 30,
+          stagger: 0.15,
+          duration: 0.8,
+          ease: 'power2.out',
+          delay: 0.2
+        });
+
+        // Cursor Canvas Logic
+        const canvas = document.getElementById('cursor-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        let debrisArray = [];
+
+        function resize() {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const mouse = { x: width / 2, y: height / 2, moved: false };
+        const cursorLabel = document.createElement('div');
+        cursorLabel.className = 'cursor-label';
+        document.body.appendChild(cursorLabel);
+
+        let lastX = 0, lastY = 0;
+        window.addEventListener('mousemove', e => {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+          
+          cursorLabel.style.transform = `translate(${e.clientX + 20}px, ${e.clientY + 20}px)`;
+          
+          const target = e.target.closest('.k-hover, a, button, .project-card');
+          if (target) {
+            cursorLabel.classList.add('visible');
+            const heading = target.querySelector('h1, h2, h3, h4');
+            let prefix = '';
+            if (target.classList.contains('project-card')) prefix = 'PROJECT: ';
+            
+            const labelText = heading ? heading.innerText : (target.getAttribute('aria-label') || target.innerText || 'VIEW');
+            cursorLabel.innerText = (prefix + labelText).split('\n')[0].substring(0, 30).trim();
+          } else {
+            cursorLabel.classList.remove('visible');
+          }
+
+          const dist = Math.hypot(e.clientX - lastX, e.clientY - lastY);
+          if (dist > 6) {
+            particles.push(new Particle(e.clientX, e.clientY));
+            lastX = e.clientX;
+            lastY = e.clientY;
+          }
+        });
+
+        class Particle {
+          constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.life = 1.0;
+            this.decay = 0.03;
+            this.size = 15;
+          }
+          update() {
+            this.life -= this.decay;
+            this.size *= 0.94;
+          }
+          draw(ctx) {
+            ctx.save();
+            ctx.beginPath();
+            const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
+            g.addColorStop(0, `rgba(112, 0, 255, ${this.life * 0.5})`);
+            g.addColorStop(1, `rgba(0, 195, 255, 0)`);
+            ctx.fillStyle = g;
+            ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        class Debris {
+          constructor() { this.reset(true); }
+          reset(randomY = false) {
+            this.x = Math.random() * width;
+            this.y = randomY ? Math.random() * height : -10;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = Math.random() * 0.5 + 0.2;
+            this.size = Math.random() * 2 + 0.5;
+            this.alpha = Math.random() * 0.3 + 0.1;
+            const colors = ['255, 255, 255', '0, 195, 255', '112, 0, 255'];
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          update() {
+            this.x += this.vx; this.y += this.vy;
+            if (this.y > height) this.reset();
+          }
+          draw(ctx) {
+            ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+
+        for (let i = 0; i < 50; i++) debrisArray.push(new Debris());
+
+        function animate() {
+          ctx.clearRect(0, 0, width, height);
+          debrisArray.forEach(d => { d.update(); d.draw(ctx); });
+
+          for (let i = 0; i < particles.length; i++) {
+            let p = particles[i];
+            p.update(); p.draw(ctx);
+            if (p.life <= 0) { particles.splice(i, 1); i--; }
+          }
+          requestAnimationFrame(animate);
+        }
+        animate();
+
+    } catch (err) { console.error('Archive Error:', err); }
+  </script>
+</body>
+</html>

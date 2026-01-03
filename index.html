@@ -1,32 +1,685 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="./styles.css">
   <meta charset="UTF-8" />
-  <title>Only True Perspective</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Only True Perspective | OTP</title>
+  <meta name="description" content="Only True Perspective (OTP) — Music. Visuals. Architecture. Creative direction, cinematic editing, and web builds." />
 
+  <meta name="theme-color" content="#0b0b10" />
+  <meta name="color-scheme" content="dark light" />
+
+  <!-- Open Graph / Twitter (share previews) -->
+  <meta property="og:title" content="Only True Perspective | OTP" />
+  <meta property="og:description" content="Only True Perspective (OTP) — Music. Visuals. Architecture. Creative direction, cinematic editing, and web builds." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://onlytrueperspective.tech/" />
+  <meta property="og:image" content="/og.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Only True Perspective | OTP" />
+  <meta name="twitter:description" content="Only True Perspective (OTP) — Music. Visuals. Architecture. Creative direction, cinematic editing, and web builds." />
+  <meta name="twitter:image" content="/og.jpg" />
+
+  <!-- Favicons (add these files later if you want) -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <!-- Font (optional but makes it instantly cleaner) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  
   <!-- Styles -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=2.5" />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Only True Perspective",
+      "alternateName": "OTP",
+      "url": "https://onlytrueperspective.tech/",
+      "email": "onlytrueperspective@gmail.com",
+      "sameAs": [
+        "https://instagram.com/onlytrueperspective",
+        "https://youtube.com/@onlytrueperspective"
+      ]
+    }
+  </script>
 </head>
 <body>
+  <div class="bg-fixed"></div>
+  <a class="skip" href="#work">Skip to content</a>
 
-  <header class="nav">
-    <div class="nav-logo">OTP</div>
-    <nav class="nav-links">
+  <!-- NAV -->
+  <header class="nav" id="top">
+
+    <nav class="nav-links centered" aria-label="Primary">
       <a href="#work">Work</a>
       <a href="#services">Services</a>
       <a href="#contact">Contact</a>
     </nav>
+
+    <!-- Mobile toggle (CSS + tiny JS) -->
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav-drawer" aria-label="Mobile">
+      <a href="#services">Services</a>
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
+    </nav>
   </header>
 
+  <!-- HERO -->
   <main class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+
     <div class="hero-content">
-      <h1>ONLY TRUE PERSPECTIVE</h1>
-      <p>Music. Visuals. Architecture.</p>
+        <img src="assets/otp.gif" alt="" class="hero-gif" />
+      <div class="eyebrow">Creative Studio</div>
+      <h1 class="hero-title-adjust">
+        <span class="title">ONLY TRUE</span>
+        <span class="title">PERSPECTIVE</span>
+      </h1>
+      
+      <div class="hero-micro">
+        <span>24–72h turnaround options</span>
+        <span class="dot">•</span>
+        <span>Clean exports for every platform</span>
+        <span class="dot">•</span>
+        <span>Sound + visuals aligned</span>
+        <span class="dot">•</span>
+        <span>Web-ready brand HQ builds</span>
+      </div>
     </div>
-    <div class="hero-bg"></div>
   </main>
 
+  <!-- SERVICES -->
+  <section id="services" class="section section-alt">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <h2>Services</h2>
+        <p>Comprehensive creative solutions. We handle the heavy lifting so you can focus on the art.</p>
+      </header>
+
+      <div class="grid grid-2">
+        <article class="service">
+          <h3>Video Editing</h3>
+          <p class="service-desc">High-retention edits designed for the modern feed.</p>
+          <ul>
+            <li>Short-form (Reels/TikTok) with viral pacing</li>
+            <li>Music Video post-production (VFX + Color + Sky replacements)</li>
+            <li>Dynamic storytelling, SFX mapping & sound design</li>
+            <li>Multi-format export packs (4K, 1080p, Vertical)</li>
+            <li>Revisions included to hit the vibe perfectly</li>
+          </ul>
+        </article>
+
+        <article class="service">
+          <h3>Creative Direction</h3>
+          <p class="service-desc">Complete visual strategy for rollouts and brands.</p>
+          <ul>
+            <li>Campaign conceptualization, script doctors & moodboards</li>
+            <li>On-set direction & shot listing (Virtual or IRL)</li>
+            <li>Styling & aesthetic curation (Wardrobe/Set)</li>
+            <li>Content rollout calendars & platform strategy</li>
+            <li>Visual coherence across all media channels</li>
+          </ul>
+        </article>
+
+        <article class="service">
+          <h3>Visual Identity</h3>
+          <p class="service-desc">The face of your brand, built to last.</p>
+          <ul>
+            <li>Logo design & typography systems (Custom type)</li>
+            <li>Motion graphics, kinetic type & intro/outros</li>
+            <li>Social media asset kits (Templates vs One-offs)</li>
+            <li>Merch & cover art design (3D or 2D)</li>
+            <li>Brand guidelines book (PDF)</li>
+          </ul>
+        </article>
+
+        <article class="service">
+          <h3>Web Starter</h3>
+          <p class="service-desc">Your digital HQ. Fast, clean, and professional.</p>
+          <ul>
+            <li>One-page high-conversion landing sites (SPA)</li>
+            <li>Integrated booking & contact forms with auto-reply</li>
+            <li>Mobile-first responsive design (iOS/Android polished)</li>
+            <li>SEO optimization basics + Meta tags</li>
+            <li>Analytics & Pixel setup (GA4 / Meta)</li>
+            <li>Custom domain connection & SSL</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="section-split">
+        <!-- PROCESS -->
+        <div class="split-left">
+          <h3 class="minihead center-text">Process</h3>
+          <div class="process-stack">
+            <div class="process-card">
+              <span class="step-num">01</span>
+              <div class="step-content">
+                <h4>Vision & Strategy</h4>
+                <p>We start by deconstructing your goal. Whether it's a single asset or a full campaign, we align on references, mood, and deadlines to ensure the target is clear. We'll hop on a quick call or chat to lock in the vibe.</p>
+              </div>
+            </div>
+            <div class="process-card">
+              <span class="step-num">02</span>
+              <div class="step-content">
+                <h4>Production & Polish</h4>
+                <p>The lab phase. We edit, design, and refine with precision. Updates are shared at key milestones so you're never in the dark, just waiting for the fire. We iterate fast to keep the momentum.</p>
+              </div>
+            </div>
+            <div class="process-card">
+              <span class="step-num">03</span>
+              <div class="step-content">
+                <h4>Delivery & Handover</h4>
+                <p>Final assets delivered in highest quality. Organized folders, multiple formats (9:16, 16:9), and project files if negotiated. Ready to upload.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PACKAGES (No Carousel, No Prices, Side-by-Side) -->
+        <div class="split-right">
+          <h3 class="minihead center-text">Packages</h3>
+          <div class="package-grid-static">
+            
+            <article class="package-static">
+              <div class="package-top">
+                <h4>The Drop</h4>
+              </div>
+              <ul class="check-list">
+                <li>1 High-Impact Short-form Video</li>
+                <li>Viral-ready pacing & captions</li>
+                <li>Basic Color & Sound Polish</li>
+                <li>1 Round of Revisions</li>
+              </ul>
+              <div class="pkg-note">Perfect for single releases.</div>
+            </article>
+
+            <article class="package-static featured">
+              <div class="package-top">
+                <h4>The Campaign</h4>
+              </div>
+              <ul class="check-list">
+                <li>3–5 Connected Assets</li>
+                <li>Cinematic Storytelling Arc</li>
+                <li>Advanced VFX & Sound Design</li>
+                <li>Thumbnail & Cover Art Variations</li>
+              </ul>
+              <div class="pkg-note">For EP rollouts or brand launches.</div>
+            </article>
+
+            <article class="package-static">
+              <div class="package-top">
+                <h4>The Takeover</h4>
+              </div>
+              <ul class="check-list">
+                <li>Full Creative Direction</li>
+                <li>Complete Identity System</li>
+                <li>Website Landing Page</li>
+                <li>Priority 24h Support</li>
+              </ul>
+              <div class="pkg-note">Total brand overhaul.</div>
+            </article>
+
+          </div>
+          </div>
+         <!-- Price text moved to Work section -->
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section id="faq" class="section section-tight">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <h2>FAQ</h2>
+        <p>Quick answers to common questions.</p>
+      </header>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>What is the turnaround time?</h4>
+          <p>Standard delivery is 3-5 days. Priority 24-72h options are available for most video and visual assets.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Do you handle revisions?</h4>
+          <p>Yes, all packages include at least one round of revisions to ensure the final product hits the vibe perfectly.</p>
+        </div>
+        <div class="faq-item">
+          <h4>How do payments work?</h4>
+          <p>We typically require a 50% deposit to lock in the slot, with the balance due upon delivery of the final watermarked assets.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Can we do a custom package?</h4>
+          <p>Absolutely. If the listed packages don't fit your rollout, reach out and we'll build a custom quote.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORK SECTION -->
+  <section id="work" class="section section-alt">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <h2>Work</h2>
+        <p>Selected projects from the archive.</p>
+      </header>
+
+      <!-- Replaced Grid with Cool Link -->
+      <div class="work-link-container">
+        <a href="archive.html" class="cool-work-link k-hover" aria-label="View Full Archive">
+          <span class="link-text">ENTER ARCHIVE</span>
+          <span class="link-sub">View Full Portfolio</span>
+        </a>
+      </div>
+      
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <h2>Contact</h2>
+        <p>Send the details. We’ll lock the vision and the turnaround.</p>
+      </header>
+
+      <div class="contact-container">
+        <form action="https://formspree.io/f/mwvprvll" method="POST" class="contact-form" id="contactForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" placeholder="Your Name" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="email@example.com" required />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="service">Interested In</label>
+            <select id="service" name="service" required>
+              <option value="" disabled selected>Select a service</option>
+              <option value="video">Video Editing</option>
+              <option value="direction">Creative Direction</option>
+              <option value="identity">Visual Identity</option>
+              <option value="web">Web Starter</option>
+              <option value="custom">Custom / Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Project Details</label>
+            <textarea id="message" name="message" rows="5" placeholder="Tell us about the project, mood, and deadline..." required></textarea>
+          </div>
+
+          <!-- Anti-spam -->
+          <input type="text" name="_gotcha" style="display:none" />
+
+          <div class="form-actions">
+            <button type="submit" class="k-hover k-hover-primary book-btn">Send Details</button>
+          </div>
+          
+          <div id="formStatus" class="form-status"></div>
+        </form>
+
+        <div class="contact-sidebar">
+          <div class="contact-icons">
+            <a href="https://instagram.com/onlytrueperspective" target="_blank" rel="noreferrer" aria-label="Instagram" class="icon-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+            
+            <a href="mailto:onlytrueperspective@gmail.com" aria-label="Email" class="icon-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </a>
+
+            <a href="https://youtube.com/@onlytrueperspective" target="_blank" rel="noreferrer" aria-label="YouTube" class="icon-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                 <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                 <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+              </svg>
+            </a>
+          </div>
+          
+          <div class="contact-details-side">
+            <p>Based in RI. Remote Worldwide.</p>
+            <p class="muted">Clean exports. Fast replies.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECT MODAL -->
+  <div class="modal" id="projectModal" aria-hidden="true">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" type="button" aria-label="Close" data-close>✕</button>
+
+    <div class="modal-head">
+      <div class="badge" id="modalBadge">Work</div>
+      <h3 id="modalTitle">Project</h3>
+      <p id="modalSub" class="muted">Details</p>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-tags" id="modalTags"></div>
+      <ul class="modal-list" id="modalList"></ul>
+
+      <div class="modal-actions">
+        <a class="k-hover k-hover-ghost" href="#" id="modalLink" target="_blank" rel="noopener" style="display:none">Open link</a>
+        <button class="k-hover k-hover-ghost" type="button" data-close>Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-left">
+        <div class="nav-logo" aria-label="OTP">
+          <img src="assets/otp.gif" alt="OTP logo" class="nav-gif" />
+        </div>
+        <div class="fineprint">© <span id="year"></span> Only True Perspective. All rights reserved.</div>
+      </div>
+
+      <div class="footer-right">
+        <a href="#top">Back to top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Canvas for Cursor & Debris -->
+  <canvas id="cursor-canvas"></canvas>
+
+  <!-- SCRIPTS (Moved to bottom for reliable loading) -->
+  <script src="https://unpkg.com/kursor"></script>
+  <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://unpkg.com/split-type"></script>
+
+  <script>
+    try {
+        // Initialize Kursor
+        if (typeof kursor !== 'undefined') {
+            new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
+        }
+        
+        // Lenis Removed per user request
+
+        // GSAP
+        const heroTitle = new SplitType('.hero .title', { types: 'lines, chars' });
+        const heroSubtitle = new SplitType('.hero .subtitle', { types: 'lines, words' });
+        
+        gsap.from(heroTitle.chars, {
+          opacity: 0,
+          y: 100,
+          rotateX: -90,
+          stagger: 0.02,
+          duration: 1,
+          ease: 'back.out(1.7)',
+          delay: 0.5
+        });
+
+        gsap.from(heroSubtitle.words, {
+          opacity: 0,
+          y: 20,
+          duration: 0.8,
+          stagger: 0.05,
+          ease: 'power2.out',
+          delay: 1.2
+        });
+
+        gsap.from('.hero-cta, .hero-micro', {
+          opacity: 0,
+          y: 20,
+          duration: 0.8,
+          ease: 'power2.out',
+          delay: 1.5
+        });
+
+        // Footer year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Cursor Wave Effect
+        const canvas = document.getElementById('cursor-canvas');
+        if (!canvas) throw new Error("Canvas not found in DOM");
+        
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        let debrisArray = []; // Moved to outer scope
+
+        function resize() {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Track mouse
+        const mouse = { x: width / 2, y: height / 2 };
+        const cursorLabel = document.createElement('div');
+        cursorLabel.className = 'cursor-label';
+        document.body.appendChild(cursorLabel);
+
+        let lastX = 0, lastY = 0;
+        window.addEventListener('mousemove', e => {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+          
+          cursorLabel.style.transform = `translate(${e.clientX + 20}px, ${e.clientY + 20}px)`;
+          
+          const target = e.target.closest('.k-hover, a, button, .service, .package-static, .faq-item, .cool-work-link, .project-card');
+          if (target) {
+            cursorLabel.classList.add('visible');
+            const heading = target.querySelector('h1, h2, h3, h4');
+            let prefix = '';
+            if (target.classList.contains('service')) prefix = 'SERVICE: ';
+            else if (target.classList.contains('package-static')) prefix = 'PACKAGE: ';
+            else if (target.classList.contains('faq-item')) prefix = 'FAQ: ';
+            else if (target.classList.contains('project-card')) prefix = 'PROJECT: ';
+            
+            const labelText = heading ? heading.innerText : (target.getAttribute('aria-label') || target.innerText || 'VIEW');
+            cursorLabel.innerText = (prefix + labelText).split('\n')[0].substring(0, 30).trim();
+          } else {
+            cursorLabel.classList.remove('visible');
+          }
+
+          const dist = Math.hypot(e.clientX - lastX, e.clientY - lastY);
+          if (dist > 8) {
+            particles.push(new Particle(e.clientX, e.clientY));
+            lastX = e.clientX;
+            lastY = e.clientY;
+          }
+
+          const xNorm = (e.clientX / window.innerWidth - 0.5) * 2;
+          const yNorm = (e.clientY / window.innerHeight - 0.5) * 2;
+          document.body.style.setProperty('--mouse-x', xNorm);
+          document.body.style.setProperty('--mouse-y', yNorm);
+        });
+
+        // Particle class
+        class Particle {
+          constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.life = 1.0;
+            this.decay = 0.025;
+            this.size = 20; 
+          }
+          update() {
+            this.life -= this.decay;
+            this.size *= 0.95;
+          }
+          draw(ctx) {
+            ctx.save();
+            ctx.beginPath();
+            const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
+            g.addColorStop(0, `rgba(112, 0, 255, ${this.life * 0.6})`);
+            g.addColorStop(1, `rgba(0, 195, 255, 0)`);
+            ctx.fillStyle = g;
+            ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        // Debris class
+        class Debris {
+          constructor() {
+            this.reset(true);
+          }
+          reset(randomY = false) {
+            this.x = Math.random() * width;
+            this.y = randomY ? Math.random() * height : -10;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = Math.random() * 0.5 + 0.2;
+            this.size = Math.random() * 2 + 0.5;
+            this.alpha = Math.random() * 0.3 + 0.1;
+            const colors = ['255, 255, 255', '0, 195, 255', '112, 0, 255'];
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+          }
+          update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.y > height) this.reset();
+            if (this.x > width) this.x = 0;
+            if (this.x < 0) this.x = width;
+          }
+          draw(ctx) {
+            ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Init Debris
+        const debrisCount = 60;
+        for (let i = 0; i < debrisCount; i++) {
+            debrisArray.push(new Debris());
+        }
+
+        function animate() {
+          ctx.clearRect(0, 0, width, height);
+
+          // Draw Debris
+          debrisArray.forEach(d => {
+            d.update();
+            d.draw(ctx);
+          });
+
+          for (let i = 0; i < particles.length; i++) {
+            let p = particles[i];
+            p.update();
+            p.draw(ctx);
+            if (p.life <= 0) {
+              particles.splice(i, 1);
+              i--;
+            }
+          }
+          requestAnimationFrame(animate);
+        }
+        animate();
+
+
+
+    } catch (err) {
+        console.error('Script Error:', err);
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script>
+    // FORM HANDLING
+    const contactForm = document.getElementById('contactForm');
+    const formStatus = document.getElementById('formStatus');
+    
+    if (contactForm) {
+      contactForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = new FormData(contactForm);
+        formStatus.textContent = 'Sending...';
+        formStatus.style.color = 'var(--accent2)';
+        
+        try {
+          const response = await fetch(contactForm.action, {
+            method: 'POST',
+            body: data,
+            headers: { 'Accept': 'application/json' }
+          });
+          
+          if (response.ok) {
+            formStatus.textContent = 'Success! Locking the vision...';
+            formStatus.style.color = '#00ffaa';
+            contactForm.reset();
+          } else {
+            const result = await response.json();
+            formStatus.textContent = result.errors ? result.errors.map(error => error.message).join(", ") : 'Oops! Something went wrong.';
+            formStatus.style.color = '#ff4444';
+          }
+        } catch (error) {
+          formStatus.textContent = 'Connection error. Please try again.';
+          formStatus.style.color = '#ff4444';
+        }
+      });
+    }
+
+    // SCROLL REVEALS
+    if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+      gsap.registerPlugin(ScrollTrigger);
+      
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(sec => {
+        const head = sec.querySelector('.section-head');
+        const content = sec.querySelectorAll('.grid, .grid-2, .process-stack, .faq-grid, .work-link-container, .contact-container');
+        
+        if (head) {
+          gsap.from(head, {
+            scrollTrigger: {
+              trigger: head,
+              start: "top 85%",
+            },
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            ease: "power3.out"
+          });
+        }
+        
+        if (content.length) {
+          gsap.from(content, {
+            scrollTrigger: {
+              trigger: content[0],
+              start: "top 80%",
+            },
+            y: 60,
+            opacity: 0,
+            duration: 1.2,
+            stagger: 0.2,
+            ease: "power2.out"
+          });
+        }
+      });
+    }
+  </script>
 </body>
 </html>
