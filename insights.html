@@ -106,6 +106,17 @@
           delay: 0.2
         });
 
+        // Spotlight Effect for Insight Cards
+        document.querySelectorAll('.insight-card').forEach(card => {
+          card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+          });
+        });
+
         // Simple Particle Cursor logic for consistency
         const canvas = document.getElementById('cursor-canvas');
         const ctx = canvas.getContext('2d');

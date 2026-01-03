@@ -1828,7 +1828,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .archive-header {
-  margin: 120px 0 60px;
+  margin: 90px 0 40px; /* Reduced top/bottom margins */
 }
 
 .archive-header h1 {
@@ -1840,17 +1840,27 @@ input:focus, select:focus, textarea:focus {
 
 .archive-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 32px;
-  padding-bottom: 120px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding-bottom: 80px;
+  width: 100%;
+}
+
+@media (max-width: 1000px) {
+  .archive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .archive-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .project-media {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  background: #000; /* Fallback for transparency */
+  /* Deprecated wrapper, styles moved to .project-card or unused */
+  display: contents;
 }
 
 .project-img-static {
@@ -1907,7 +1917,7 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 30px;
+  padding: 20px; /* Reduced padding */
   opacity: 0.9;
   transition: opacity 0.3s ease;
   z-index: 5;
@@ -1919,18 +1929,19 @@ input:focus, select:focus, textarea:focus {
 }
 
 .project-overlay h3 {
-  font-size: 1.5rem;
-  margin-bottom: 5px;
+  font-size: 1.15rem; /* Smaller title */
+  margin-bottom: 4px;
+  line-height: 1.2;
 }
 
 .project-overlay span {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   color: var(--muted2);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .archive-grid {
     grid-template-columns: 1fr;
   }
@@ -1949,11 +1960,15 @@ input:focus, select:focus, textarea:focus {
   z-index: 2;
 }
 
-.project-media img {
+.project-card img {
   transition: transform 0.6s cubic-bezier(0.2, 0, 0, 1);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-.project-card:hover .project-media img {
+.project-card:hover img {
   transform: scale(1.1);
 }
 
@@ -2216,40 +2231,51 @@ input:focus, select:focus, textarea:focus {
 /* INSIGHTS GRID */
 .insights-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 30px;
-  margin-top: 50px;
-  min-height: 60vh; /* Ensure it takes up space even with few items */
-  padding-bottom: 50px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+  margin-bottom: 60px;
+}
+
+@media (max-width: 900px) {
+  .insights-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
 }
 
 .insight-card {
-  background: linear-gradient(145deg, #121216 0%, #08080a 100%);
+  background: rgba(10, 10, 18, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 40px;
+  border-radius: 20px;
+  padding: 30px;
   display: flex;
   flex-direction: column;
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   text-decoration: none;
   color: inherit;
   position: relative;
   overflow: hidden;
+  height: 100%; /* Ensure equal height */
 }
 
 .insight-card::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: radial-gradient(circle at top right, rgba(0, 195, 255, 0.08), transparent 40%);
-  opacity: 0.5;
+  inset: 0;
+  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.03), transparent 40%);
+  opacity: 0;
   transition: opacity 0.4s ease;
+  pointer-events: none;
 }
 
 .insight-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-8px);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 195, 255, 0.1);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-6px);
+  background: rgba(15, 15, 25, 0.75);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05);
 }
 
 .insight-card:hover::before {
@@ -2268,9 +2294,9 @@ input:focus, select:focus, textarea:focus {
 
 .insight-card h2 {
   font-family: 'Syne', sans-serif;
-  font-size: 1.8rem;
+  font-size: 1.4rem; /* Smaller title */
   line-height: 1.2;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .insight-card p {
@@ -2282,14 +2308,20 @@ input:focus, select:focus, textarea:focus {
 .read-more {
   margin-top: auto;
   font-weight: 700;
-  color: var(--accent);
+  color: rgba(255,255,255,0.9);
   text-decoration: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-transform: uppercase;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   letter-spacing: 1px;
+  padding: 10px 16px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.3s ease;
+  width: fit-content;
 }
 
 .read-more::after {
@@ -2297,8 +2329,15 @@ input:focus, select:focus, textarea:focus {
   transition: transform 0.3s ease;
 }
 
+.insight-card:hover .read-more {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(112, 0, 255, 0.4);
+}
+
 .insight-card:hover .read-more::after {
-  transform: translateX(5px);
+  transform: translateX(4px);
 }
 
 @media (max-width: 480px) {
@@ -2362,4 +2401,82 @@ input:focus, select:focus, textarea:focus {
   color: #fff;
   text-decoration: none;
   margin: 0 10px;
+}
+
+/* BLOG POST STYLES */
+.post-content {
+  max-width: 800px;
+  margin: 0 auto 120px;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.8);
+}
+
+.post-header {
+  margin-bottom: 60px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 40px;
+  margin-top: 80px;
+}
+
+.post-meta {
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.post-content h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.post-content h2 {
+  margin-top: 60px;
+  font-family: 'Syne', sans-serif;
+  color: #fff;
+  font-size: 2rem;
+  margin-bottom: 24px;
+}
+
+.post-content p {
+  margin-bottom: 24px;
+}
+
+.post-content blockquote {
+  border-left: 3px solid var(--accent);
+  margin: 50px 0;
+  font-style: italic;
+  color: #fff;
+  font-size: 1.4rem;
+  font-family: 'Syne', sans-serif;
+  background: linear-gradient(90deg, rgba(112,0,255,0.06), transparent);
+  padding: 30px 40px;
+  border-radius: 0 16px 16px 0;
+}
+
+.post-nav {
+  margin-top: 80px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 40px;
+}
+
+.next-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: #fff;
+  transition: color 0.3s ease;
+}
+
+.next-link:hover {
+  color: var(--accent2);
 }
