@@ -14,6 +14,7 @@
 
 .hero-gif {
   width: 420px; /* Made bigger as requested */
+  max-width: 90vw; /* Ensure it fits on mobile */
   height: auto;
   margin: 0 auto 1rem;
   display: block;
@@ -232,10 +233,26 @@ html {
   color: var(--text);
   opacity: 0.78;
   transition: opacity 0.2s ease, transform 0.2s ease;
-
   font-weight: 650;
   letter-spacing: 0.5px;
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .nav {
+    padding: 16px 20px;
+    justify-content: space-between;
+  }
+  .nav-links {
+    display: none;
+  }
+  .nav-toggle {
+    display: block;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 .nav-links a::after {
@@ -307,17 +324,27 @@ html {
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: 18px;
   backdrop-filter: blur(12px);
-  z-index: 9;
+  z-index: 999; /* Boosted z-index */
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(-20px);
+  opacity: 0;
 }
+
 .nav-drawer a {
   padding: 14px 14px;
   border-radius: 14px;
   text-decoration: none;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   opacity: 0.9;
+  font-weight: 600;
+  text-align: center;
 }
-.nav-drawer.open { display: flex; }
+.nav-drawer.open { 
+  display: flex; 
+  transform: translateY(0);
+  opacity: 1;
+}
 
 /* HERO */
 .hero {
@@ -1463,6 +1490,13 @@ input:focus, select:focus, textarea:focus {
   margin-top: 24px;
 }
 
+@media (max-width: 800px) {
+  .package-grid-static {
+    flex-direction: column;
+    gap: 24px;
+  }
+}
+
 .package-static {
   flex: 1;
   background: rgba(10, 10, 16, 0.4);
@@ -2068,4 +2102,61 @@ input:focus, select:focus, textarea:focus {
 /* Ensure canvas is always invisible to clicks */
 #cursor-canvas {
   pointer-events: none !important;
+}
+
+/* GLOBAL MOBILE POLISH */
+@media (max-width: 768px) {
+  .section { padding: 60px 0; }
+  
+  .hero-title-adjust .title {
+    font-size: clamp(2.4rem, 12vw, 4rem);
+    line-height: 1.0;
+  }
+  
+  .hero-micro {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+  
+  .hero-micro .dot { display: none; }
+  
+  .grid, .grid-2 {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+
+  .nav-drawer a {
+    font-size: 1.1rem;
+    padding: 18px;
+  }
+
+  /* Fix for overlapping text in packages or other cards */
+  .package-static, .service, .faq-item {
+    padding: 20px !important;
+  }
+
+  /* Make footer items center */
+  .footer-inner {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  .footer-right { margin-top: 10px; }
+}
+
+/* TOUCH OPTIMIZATION */
+@media (hover: none) {
+  .cursor-label { display: none !important; }
+  #cursor-canvas { opacity: 0.4 !important; } /* Dim the trail so it's less distracting on touch */
+}
+
+/* Final fit check for small screens */
+@media (max-width: 480px) {
+  .hero h1 { font-size: 2rem !important; }
+  .eyebrow { font-size: 0.8rem; }
+  .wrap { width: 90vw; }
 }
