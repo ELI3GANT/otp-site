@@ -8,26 +8,21 @@
 
   <meta name="theme-color" content="#0b0b10" />
   <meta name="color-scheme" content="dark light" />
-  
-  <!-- FAVICON -->
-  <link rel="icon" type="image/png" href="favicon.png" />
-  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <!-- Open Graph / Twitter (share previews) -->
+  <!-- SEO / Social -->
   <meta property="og:title" content="Only True Perspective | OTP" />
-  <meta property="og:description" content="Only True Perspective (OTP) — Music. Visuals. Architecture. Creative direction, cinematic editing, and web builds." />
+  <meta property="og:description" content="Music. Visuals. Architecture. Premium creative direction and cinematic editing." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://onlytrueperspective.tech/" />
-  <meta property="og:image" content="/og.jpg" />
+  <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Only True Perspective | OTP" />
-  <meta name="twitter:description" content="Only True Perspective (OTP) — Music. Visuals. Architecture. Creative direction, cinematic editing, and web builds." />
-  <meta name="twitter:image" content="/og.jpg" />
-
-  <!-- Favicons (add these files later if you want) -->
+  <meta name="twitter:site" content="@otp_tech" />
+  
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
   <!-- Font (optional but makes it instantly cleaner) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -277,6 +272,8 @@
     </div>
   </section>
 
+
+
   <!-- WORK SECTION -->
   <section id="work" class="section section-alt">
     <div class="wrap">
@@ -410,6 +407,11 @@
           <img src="assets/otp.gif" alt="OTP logo" class="nav-gif" />
         </div>
         <div class="fineprint">© <span id="year"></span> Only True Perspective. All rights reserved.</div>
+        <div class="footer-legal">
+          <a href="terms.html">Terms</a>
+          <span class="dot">•</span>
+          <a href="privacy.html">Privacy</a>
+        </div>
       </div>
 
       <div class="footer-right">
@@ -488,32 +490,51 @@
 
         // Track mouse
         const mouse = { x: width / 2, y: height / 2 };
+        let currentX = 0;
+        let currentY = 0;
+
         const cursorLabel = document.createElement('div');
         cursorLabel.className = 'cursor-label';
         document.body.appendChild(cursorLabel);
 
-        let lastX = 0, lastY = 0;
-        window.addEventListener('mousemove', e => {
-          mouse.x = e.clientX;
-          mouse.y = e.clientY;
+        // Unified update function
+        function updateCursorState() {
+          cursorLabel.style.transform = `translate(${currentX + 35}px, ${currentY + 35}px)`;
           
-          cursorLabel.style.transform = `translate(${e.clientX + 20}px, ${e.clientY + 20}px)`;
-          
-          const target = e.target.closest('.k-hover, a, button, .service, .package-static, .faq-item, .cool-work-link, .project-card');
+          // Use elementFromPoint to get the element strictly under cursor (ignoring pointer-events: none)
+          const element = document.elementFromPoint(currentX, currentY);
+          const target = element ? element.closest('.k-hover, a, button, .service, .package-static, .faq-item, .cool-work-link, .project-card') : null;
+
           if (target) {
             cursorLabel.classList.add('visible');
             const heading = target.querySelector('h1, h2, h3, h4');
             let prefix = '';
+            
+            // Determine prefix based on class
             if (target.classList.contains('service')) prefix = 'SERVICE: ';
             else if (target.classList.contains('package-static')) prefix = 'PACKAGE: ';
             else if (target.classList.contains('faq-item')) prefix = 'FAQ: ';
             else if (target.classList.contains('project-card')) prefix = 'PROJECT: ';
             
+            // Get text content
             const labelText = heading ? heading.innerText : (target.getAttribute('aria-label') || target.innerText || 'VIEW');
+            // Clean up text
             cursorLabel.innerText = (prefix + labelText).split('\n')[0].substring(0, 30).trim().toUpperCase();
           } else {
             cursorLabel.classList.remove('visible');
           }
+        }
+
+        let lastX = 0, lastY = 0;
+
+        window.addEventListener('mousemove', e => {
+          currentX = e.clientX;
+          currentY = e.clientY;
+          
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+
+          updateCursorState();
 
           const dist = Math.hypot(e.clientX - lastX, e.clientY - lastY);
           if (dist > 8) {
@@ -527,6 +548,13 @@
           document.body.style.setProperty('--mouse-x', xNorm);
           document.body.style.setProperty('--mouse-y', yNorm);
         });
+
+        // Update on scroll too
+        window.addEventListener('scroll', () => {
+          if (currentX !== 0 && currentY !== 0) {
+             updateCursorState();
+          }
+        }, { passive: true });
 
         // Particle class
         class Particle {

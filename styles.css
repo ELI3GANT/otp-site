@@ -607,6 +607,7 @@ textarea:focus-visible {
 
 .grid {
   margin-top: 28px;
+  margin-bottom: 64px; /* Added spacing to prevent collision with next section */
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
@@ -828,6 +829,7 @@ textarea:focus-visible {
   grid-template-columns: 1fr; /* Stack vertically (full width) */
   gap: 80px; /* Big gap between Process and Packages */
   align-items: start;
+  margin-top: 160px; /* Increased to prevent cramp */
 }
 /* Deprecated media query since it's always 1fr now, but keeping for safety/future */
 @media (max-width: 900px) {
@@ -937,8 +939,38 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   gap: 16px;
 }
-.footer a { text-decoration: none; opacity: 0.8; }
-.footer a:hover { opacity: 1; }
+.footer a { text-decoration: none; opacity: 0.8; transition: opacity 0.2s ease, color 0.2s ease; }
+.footer a:hover { opacity: 1; color: var(--accent2); }
+
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-legal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.footer-legal a {
+  opacity: 1;
+}
+
+.footer-legal .dot {
+  font-size: 0.6rem;
+  opacity: 0.4;
+}
+
+.footer-right a {
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
 
 /* MOBILE */
 @media (max-width: 900px) {
@@ -1582,6 +1614,7 @@ input:focus, select:focus, textarea:focus {
   gap: 16px;
   width: 100%;
   margin-top: 24px;
+  margin-bottom: 40px; /* Space before potential footer or next items */
 }
 
 @media (max-width: 800px) {
@@ -1884,6 +1917,15 @@ input:focus, select:focus, textarea:focus {
   font-weight: 600;
   color: var(--muted);
   transition: color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 480px) {
+  .back-link {
+    font-size: 0.9rem;
+    padding: 8px; /* Bigger tap target */
+  }
 }
 
 .back-link:hover {
@@ -1900,10 +1942,16 @@ input:focus, select:focus, textarea:focus {
 }
 
 .archive-header h1 {
-  font-size: clamp(3rem, 10vw, 8rem);
+  font-size: clamp(2.8rem, 12vw, 8rem);
   line-height: 0.9;
   letter-spacing: -2px;
   margin-bottom: 20px;
+}
+@media (max-width: 480px) {
+  .archive-header h1 {
+    font-size: clamp(2.4rem, 15vw, 4rem);
+    letter-spacing: -1px;
+  }
 }
 
 .archive-grid {
@@ -2214,7 +2262,7 @@ input:focus, select:focus, textarea:focus {
   left: 0;
   pointer-events: none;
   z-index: 10000;
-  background: rgba(112, 0, 255, 0.9);
+  background: rgba(112, 0, 255, 0.75); /* Reduced opacity for better visibility around it */
   color: #fff;
   padding: 6px 14px;
   border-radius: 8px;
@@ -2226,8 +2274,8 @@ input:focus, select:focus, textarea:focus {
   white-space: nowrap;
   opacity: 0;
   transform: translate(0, 0);
-  transition: opacity 0.3s ease, transform 0.1s linear;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 0 15px rgba(112, 0, 255, 0.5);
+  transition: opacity 0.15s ease, transform 0s; /* Snappier fade and instant follow */
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 15px rgba(112, 0, 255, 0.3);
 }
 
 .cursor-label.visible {
