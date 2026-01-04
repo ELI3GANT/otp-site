@@ -2484,7 +2484,8 @@ input:focus, select:focus, textarea:focus {
   margin-bottom: 60px;
   border-bottom: 1px solid rgba(255,255,255,0.1);
   padding-bottom: 40px;
-  margin-top: 80px;
+  padding-top: 140px; /* Clear fixed nav */
+  margin-top: 0;
 }
 
 .post-meta {
