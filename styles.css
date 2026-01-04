@@ -329,29 +329,62 @@ html {
   transform: translateY(0px);
 }
 
+/* PREMIUM HAMBURGER MENU */
 .nav-toggle {
-  display: none;
-  width: 44px;
-  height: 44px;
-  border: 1px solid rgba(255,255,255,0.14);
-  border-radius: 12px;
+  display: none; /* Visible on mobile via media query */
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   cursor: pointer;
-  padding: 10px;
-  transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+  padding: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
+
 .nav-toggle span {
   display: block;
   height: 2px;
-  width: 100%;
-  background: rgba(255,255,255,0.86);
-  margin: 6px 0;
-  border-radius: 10px;
+  width: 20px;
+  background: #fff;
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform-origin: center;
 }
+
 .nav-toggle:hover {
-  transform: translateY(-1px);
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.1);
+  box-shadow: 0 0 25px rgba(112, 0, 255, 0.25); /* Violet glow */
+  border-color: rgba(112, 0, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ANIMATION STATE (Open) */
+.nav-toggle[aria-expanded="true"] {
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3); /* Cyan glow active */
+  border-color: rgba(0, 195, 255, 0.5);
+  transform: rotate(90deg); /* Full button rotation for flair */
+}
+
+.nav-toggle[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+  width: 24px; /* Slightly wider X */
+}
+.nav-toggle[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+.nav-toggle[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+  width: 24px;
 }
 
 .nav-drawer {
