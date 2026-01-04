@@ -62,6 +62,23 @@
 
 /* BASE */
 /* BACKGROUND FIXED CONTAINER */
+
+
+/* SCROLL PROGRESS BAR */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: var(--scroll, 0%);
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  z-index: 9999;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 10px var(--accent);
+}
+
+/* BACKGROUND FIXED CONTAINER */
 .bg-fixed {
   position: fixed;
   inset: 0;

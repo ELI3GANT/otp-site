@@ -641,7 +641,14 @@
       });
 
       // Close on scroll
+      // Close on scroll
       window.addEventListener('scroll', () => {
+        // Update Scroll Progress
+        const scrolled = window.scrollY;
+        const max = document.body.scrollHeight - window.innerHeight;
+        const scrollPercent = (scrolled / max) * 100;
+        document.body.style.setProperty('--scroll', `${scrollPercent}%`);
+
         if (navDrawer.classList.contains('open')) {
           navDrawer.classList.remove('open');
           navToggle.setAttribute('aria-expanded', 'false');
