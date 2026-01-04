@@ -97,6 +97,10 @@
         document.body.style.setProperty('--scroll', `${scrollPercent}%`);
     });
     animate();
+    
+    // Force Scroll Top
+    if (history.scrollRestoration) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
   </script>
 </body>
 </html>
