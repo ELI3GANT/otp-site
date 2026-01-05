@@ -452,7 +452,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://unpkg.com/split-type"></script>
 
-  <script>
+    /* 
+    // OLD SCRIPT COMMENTED OUT FOR STARS V2 EXPERIMENT
     try {
         // Initialize Kursor
         if (typeof kursor !== 'undefined') {
@@ -462,7 +463,13 @@
         // Lenis Removed per user request
 
         // GSAP
-        const heroTitle = new SplitType('.hero .title', { types: 'lines, chars' });
+        // ... (GSAP Code remains relevant for animations, keeping separate or ensuring it runs)
+    } */
+  </script>
+  
+  <!-- GSAP & SPLIT TYPE (Keep these active) -->
+  <script>
+       const heroTitle = new SplitType('.hero .title', { types: 'lines, chars' });
         const heroSubtitle = new SplitType('.hero .subtitle', { types: 'lines, words' });
         
         gsap.from(heroTitle.chars, {
@@ -494,180 +501,22 @@
 
         // Footer year
         document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 
-        // Cursor Wave Effect
-        const canvas = document.getElementById('cursor-canvas');
-        if (!canvas) throw new Error("Canvas not found in DOM");
-        
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        let particles = [];
-        let debrisArray = []; // Moved to outer scope
+  <!-- NEW STARS V2 SCRIPT -->
+  <script src="stars-v2.js"></script>
 
-        function resize() {
-          width = canvas.width = window.innerWidth;
-          height = canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        // Track mouse
-        const mouse = { x: width / 2, y: height / 2 };
-        let currentX = 0;
-        let currentY = 0;
-
-        const cursorLabel = document.createElement('div');
-        cursorLabel.className = 'cursor-label';
-        document.body.appendChild(cursorLabel);
-
-        // Unified update function
-        function updateCursorState() {
-          cursorLabel.style.transform = `translate(${currentX + 35}px, ${currentY + 35}px)`;
-          
-          // Use elementFromPoint to get the element strictly under cursor (ignoring pointer-events: none)
-          const element = document.elementFromPoint(currentX, currentY);
-          const target = element ? element.closest('.k-hover, a, button, .service, .package-static, .faq-item, .cool-work-link, .project-card') : null;
-
-          if (target) {
-            cursorLabel.classList.add('visible');
-            const heading = target.querySelector('h1, h2, h3, h4');
-            let prefix = '';
-            
-            // Determine prefix based on class
-            if (target.classList.contains('service')) prefix = 'SERVICE: ';
-            else if (target.classList.contains('package-static')) prefix = 'PACKAGE: ';
-            else if (target.classList.contains('faq-item')) prefix = 'FAQ: ';
-            else if (target.classList.contains('project-card')) prefix = 'PROJECT: ';
-            
-            // Get text content
-            const labelText = heading ? heading.innerText : (target.getAttribute('aria-label') || target.innerText || 'VIEW');
-            // Clean up text
-            cursorLabel.innerText = (prefix + labelText).split('\n')[0].substring(0, 30).trim().toUpperCase();
-          } else {
-            cursorLabel.classList.remove('visible');
-          }
-        }
-
-        let lastX = 0, lastY = 0;
-
-        window.addEventListener('mousemove', e => {
-          currentX = e.clientX;
-          currentY = e.clientY;
-          
-          mouse.x = e.clientX;
-          mouse.y = e.clientY;
-
-          updateCursorState();
-
-          const dist = Math.hypot(e.clientX - lastX, e.clientY - lastY);
-          if (dist > 8) {
-            particles.push(new Particle(e.clientX, e.clientY));
-            lastX = e.clientX;
-            lastY = e.clientY;
-          }
-
-          const xNorm = (e.clientX / window.innerWidth - 0.5) * 2;
-          const yNorm = (e.clientY / window.innerHeight - 0.5) * 2;
-          document.body.style.setProperty('--mouse-x', xNorm);
-          document.body.style.setProperty('--mouse-y', yNorm);
-        });
-
-        // Update on scroll too
-        window.addEventListener('scroll', () => {
-          if (currentX !== 0 && currentY !== 0) {
-             updateCursorState();
-          }
-        }, { passive: true });
-
-        // Particle class
-        class Particle {
-          constructor(x, y) {
-            this.x = x;
-            this.y = y;
-            this.life = 1.0;
-            this.decay = 0.025;
-            this.size = 20; 
-          }
-          update() {
-            this.life -= this.decay;
-            this.size *= 0.95;
-          }
-          draw(ctx) {
-            ctx.save();
-            ctx.beginPath();
-            const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
-            g.addColorStop(0, `rgba(112, 0, 255, ${this.life * 0.6})`);
-            g.addColorStop(1, `rgba(0, 195, 255, 0)`);
-            ctx.fillStyle = g;
-            ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-          }
-        }
-
-        // Debris class
-        class Debris {
-          constructor() {
-            this.reset(true);
-          }
-          reset(randomY = false) {
-            this.x = Math.random() * width;
-            this.y = randomY ? Math.random() * height : -10;
-            this.vx = (Math.random() - 0.5) * 0.5;
-            this.vy = Math.random() * 0.5 + 0.2;
-            this.size = Math.random() * 2 + 0.5;
-            this.alpha = Math.random() * 0.3 + 0.1;
-            const colors = ['255, 255, 255', '0, 195, 255', '112, 0, 255'];
-            this.color = colors[Math.floor(Math.random() * colors.length)];
-          }
-          update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            if (this.y > height) this.reset();
-            if (this.x > width) this.x = 0;
-            if (this.x < 0) this.x = width;
-          }
-          draw(ctx) {
-            ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-
-        // Init Debris
-        const debrisCount = 60;
-        for (let i = 0; i < debrisCount; i++) {
-            debrisArray.push(new Debris());
-        }
-
-        function animate() {
-          ctx.clearRect(0, 0, width, height);
-
-          // Draw Debris
-          debrisArray.forEach(d => {
-            d.update();
-            d.draw(ctx);
-          });
-
-          for (let i = 0; i < particles.length; i++) {
-            let p = particles[i];
-            p.update();
-            p.draw(ctx);
-            if (p.life <= 0) {
-              particles.splice(i, 1);
-              i--;
-            }
-          }
-          requestAnimationFrame(animate);
-        }
-        animate();
-
-
-
-    } catch (err) {
-        console.error('Script Error:', err);
+  <!-- RE-ENABLE CURSOR TRACKING SEPARATELY IF NEEDED or integrate into stars-v2 if strictly canvas -->
+  <script>
+    // Re-init Custom Cursor Logic (non-canvas part)
+     if (typeof kursor !== 'undefined') {
+        new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
     }
+  </script>
+  
+  <script>
+    /* Old Canvas Debris Code was here */
+
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
