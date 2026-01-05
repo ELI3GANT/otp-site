@@ -72,3 +72,41 @@
         });
     }
 })();
+
+// Rare Holo Card Physics
+document.addEventListener('DOMContentLoaded', () => {
+  const card = document.querySelector('.glass-manifesto');
+  if (!card) return;
+
+  const handleMove = (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left; // x position within the element.
+    const y = e.clientY - rect.top;  // y position within the element.
+    
+    // Calculate rotation (max 10deg)
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    
+    const rotateX = ((y - centerY) / centerY) * -8; // Invert axis for natural tilt
+    const rotateY = ((x - centerX) / centerX) * 8;
+    
+    // Calculate sheen position (inverted movement)
+    const bgX = ((x / rect.width) * 100);
+    const bgY = ((y / rect.height) * 100);
+
+    card.style.setProperty('--rotateX', rotateX + 'deg');
+    card.style.setProperty('--rotateY', rotateY + 'deg');
+    card.style.setProperty('--bgX', bgX + '%');
+    card.style.setProperty('--bgY', bgY + '%');
+  };
+
+  const handleLeave = () => {
+    // Reset to center but keep a slight 'alive' drift if desired, 
+    // or just snap back smoothly.
+    card.style.setProperty('--rotateX', '0deg');
+    card.style.setProperty('--rotateY', '0deg');
+  };
+
+  card.addEventListener('mousemove', handleMove);
+  card.addEventListener('mouseleave', handleLeave);
+});

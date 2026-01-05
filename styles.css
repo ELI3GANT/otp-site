@@ -2725,17 +2725,19 @@ input:focus, select:focus, textarea:focus {
   gap: 50px;
   
   /* Holo Card Background & Sheen */
-  background: linear-gradient(
-    115deg, 
-    rgba(255, 255, 255, 0.03) 0%, 
-    rgba(255, 255, 255, 0.01) 30%, 
-    rgba(255, 255, 255, 0.12) 45%, /* The Shine Line */
-    rgba(255, 255, 255, 0.01) 60%, 
-    rgba(255, 255, 255, 0.03) 100%
-  );
-  background-size: 200% 100%;
-  animation: holoShine 6s ease-in-out infinite;
-
+  background: 
+    linear-gradient(
+      115deg, 
+      transparent 0%, 
+      rgba(255, 255, 255, 0.05) 30%, 
+      rgba(0, 255, 255, 0.1) 45%, 
+      rgba(112, 0, 255, 0.1) 50%, 
+      rgba(255, 255, 255, 0.05) 70%, 
+      transparent 100%
+    );
+  background-position: var(--bgX, 50%) var(--bgY, 50%);
+  background-size: 200% 200%;
+  
   /* Glass Filter */
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -2755,6 +2757,19 @@ input:focus, select:focus, textarea:focus {
   padding: 50px 60px;
   position: relative;
   z-index: 2;
+  
+  /* 3D Physics */
+  transform-style: preserve-3d;
+  transform: perspective(1000px) rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg));
+  transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+}
+
+/* Shine Hover State */
+.glass-manifesto:hover {
+ box-shadow: 
+    0 40px 80px rgba(0,0,0,0.7), 
+    0 0 80px rgba(112, 0, 255, 0.4), 
+    0 0 150px rgba(0, 195, 255, 0.3);
 }
 
 @keyframes holoShine {
