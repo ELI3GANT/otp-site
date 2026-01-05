@@ -3034,6 +3034,16 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.65rem;
     padding: 4px 8px;
   }
+  
+  /* Insights Page: Subscribe Section Fix */
+  .subscribe-section {
+    padding: 40px 16px;
+    margin: 60px 0 40px;
+  }
+  .subscribe-section h3 {
+    font-size: clamp(1.3rem, 6vw, 1.8rem);
+    line-height: 1.2;
+  }
 }
 
 /* Ensure Stars are visible on mobile */
