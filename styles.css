@@ -1933,6 +1933,58 @@ input:focus, select:focus, textarea:focus {
 .modal-actions { justify-content: center; }
 
 
+/* 3. RARE CARD "NUCLEAR" SAFETY FIT */
+  .glass-manifesto {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important; 
+  }
+  /* Ensure the text wraps at all costs */
+  .studio-title {
+     word-wrap: break-word;
+     overflow-wrap: break-word;
+     hyphens: auto;
+  }
+  
+  /* 4. HEADER SAFETY FIT (Archive/Insights) */
+  .archive-header h1, 
+  .hero h1,
+  .syne-bold {
+      font-size: clamp(1.8rem, 6vw, 2.8rem) !important;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
+  }
+
+/* AUTO-TILT ANIMATION (Default mobile state) */
+@keyframes shimmerBreath {
+  0% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+    --bgX: 50%; --bgY: 50%;
+  }
+  25% {
+    transform: perspective(1000px) rotateX(2deg) rotateY(3deg);
+    --bgX: 60%; --bgY: 40%;
+  }
+  50% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+    --bgX: 50%; --bgY: 50%;
+  }
+  75% {
+    transform: perspective(1000px) rotateX(-2deg) rotateY(-3deg);
+    --bgX: 40%; --bgY: 60%;
+  }
+  100% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+    --bgX: 50%; --bgY: 50%;
+  }
+}
+
+.glass-manifesto.auto-tilt {
+  animation: shimmerBreath 6s ease-in-out infinite;
+}
+
 /* MODAL FIX - Ensure hidden */
 .modal {
   display: none !important;

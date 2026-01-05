@@ -19,14 +19,28 @@ const SHOOTING_STAR_CHANCE = 0.005; // 0.5% chance per frame
 
 // Mouse tracking
 let mouse = { x: null, y: null };
-window.addEventListener('mousemove', e => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-});
-window.addEventListener('mouseleave', () => {
-    mouse.x = null;
-    mouse.y = null;
-});
+const updateMouse = (x, y) => {
+    mouse.x = x;
+    mouse.y = y;
+};
+
+window.addEventListener('mousemove', e => updateMouse(e.clientX, e.clientY));
+window.addEventListener('mouseleave', () => updateMouse(null, null));
+
+// Touch support for mobile interaction
+window.addEventListener('touchstart', e => {
+    if(e.touches.length > 0) {
+        updateMouse(e.touches[0].clientX, e.touches[0].clientY);
+    }
+}, {passive: true});
+
+window.addEventListener('touchmove', e => {
+    if(e.touches.length > 0) {
+        updateMouse(e.touches[0].clientX, e.touches[0].clientY);
+    }
+}, {passive: true});
+
+window.addEventListener('touchend', () => updateMouse(null, null));
 
 // Resize handling
 function resize() {

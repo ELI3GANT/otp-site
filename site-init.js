@@ -114,8 +114,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Mobile: Gyroscope Tilt
+    // Default: Enable "Auto-Tilt" animation if on mobile until interaction
+    if (window.matchMedia("(hover: none)").matches) {
+        card.classList.add('auto-tilt');
+    }
+
     // We bind a one-time click listener to request permission (iOS 13+)
     const enableGyro = async () => {
+        // Remove the auto animation once user tries to interact
+        card.classList.remove('auto-tilt');
+        
         if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
             try {
                 const permission = await DeviceOrientationEvent.requestPermission();
