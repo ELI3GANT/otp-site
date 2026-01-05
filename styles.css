@@ -1933,30 +1933,40 @@ input:focus, select:focus, textarea:focus {
 .modal-actions { justify-content: center; }
 
 
-/* 3. RARE CARD "NUCLEAR" SAFETY FIT */
+  /* 3. RARE CARD "NUCLEAR" SAFETY FIT */
   .glass-manifesto {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     overflow: hidden !important; 
-  }
-  /* Ensure the text wraps at all costs */
-  .studio-title {
-     word-wrap: break-word;
-     overflow-wrap: break-word;
-     hyphens: auto;
+    padding: 20px 15px !important; /* Tighter padding */
   }
   
-  /* 4. HEADER SAFETY FIT (Archive/Insights) */
+  /* 4. HEADER SAFETY FIT (Archive/Insights) & STUDIO TITLE */
+  /* Using VW units to mathematically guarantee fit */
   .archive-header h1, 
   .hero h1,
   .syne-bold {
-      font-size: clamp(1.8rem, 6vw, 2.8rem) !important;
+      font-size: 13vw !important; /* Scales with screen width */
+      max-font-size: 3rem;
+      line-height: 1.1;
       overflow-wrap: break-word;
       word-break: break-word;
       hyphens: auto;
   }
-
+  
+  .studio-title {
+      font-size: 13vw !important; /* Matches header scaling */
+      line-height: 1.1;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+  }
+  
+  /* Ensure tags wrap/shrink */
+  .cap-tag {
+      font-size: 0.6rem !important;
+      padding: 4px 8px !important;
+  }
 /* AUTO-TILT ANIMATION (Default mobile state) */
 @keyframes shimmerBreath {
   0% {

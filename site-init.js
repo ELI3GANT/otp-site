@@ -15,18 +15,22 @@
     // Check if we are on desktop. Kursor typically hinders mobile touch.
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
     
+    // STRICT CHECK: Only init Kursor if NOT mobile.
     if (typeof kursor !== 'undefined' && !isMobile) {
         new kursor({
             type: 1, // Ring
             color: '#00c3ff', // Cyan
             removeDefaultCursor: true
         });
-    } else if (isMobile) {
+    } 
+    
+    // Mobile Starfield Visiblity Logic
+    if (isMobile) {
         // Ensure kursor elements are hidden if they were somehow injected
-        // CRITICAL FIX: Do NOT hide #cursor-canvas, and FORCE it to be visible/opaque
         const kursorNodes = document.querySelectorAll('.kursor, .kursor-child');
-        kursorNodes.forEach(n => n.style.display = 'none');
+        kursorNodes.forEach(n => n.remove()); // NUCLEAR OPTION: Remove them entirely
         
+        // Force Starfield Canvas to be visible
         const canvas = document.getElementById('cursor-canvas');
         if (canvas) {
             canvas.style.display = 'block';
