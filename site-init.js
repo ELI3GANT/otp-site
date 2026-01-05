@@ -23,9 +23,15 @@
         });
     } else if (isMobile) {
         // Ensure kursor elements are hidden if they were somehow injected
-        // CRITICAL FIX: Do NOT hide #cursor-canvas, as that holds the stars!
+        // CRITICAL FIX: Do NOT hide #cursor-canvas, and FORCE it to be visible/opaque
         const kursorNodes = document.querySelectorAll('.kursor, .kursor-child');
         kursorNodes.forEach(n => n.style.display = 'none');
+        
+        const canvas = document.getElementById('cursor-canvas');
+        if (canvas) {
+            canvas.style.display = 'block';
+            canvas.style.opacity = '1';
+        }
     }
 
     // 3. Scroll Progress Logic (Moved from inline)

@@ -2878,6 +2878,38 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+/* Aggressive Fit for Small Phones (iPhone SE / Mini) */
+@media (max-width: 380px) {
+  .section-studio {
+    padding: 40px 0;
+  }
+  .glass-manifesto {
+    padding: 20px 16px; /* Very tight padding */
+    gap: 16px;
+    border-radius: 16px;
+  }
+  .studio-title {
+    font-size: clamp(1.2rem, 6vw, 1.8rem); /* Aggressive shrink */
+    margin-bottom: 12px;
+  }
+  .studio-body {
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+  .cap-tag {
+    font-size: 0.6rem;
+    padding: 4px 10px;
+  }
+}
+
+/* Ensure Stars are visible on mobile */
+@media (max-width: 768px) {
+  #cursor-canvas {
+    opacity: 1 !important; /* Force full visibility */
+    display: block !important;
+  }
+}
+
 .studio-title {
   /* Tamed typography size */
   font-size: clamp(2rem, 4vw, 3.5rem);
