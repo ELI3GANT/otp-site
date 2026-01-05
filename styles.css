@@ -2410,7 +2410,7 @@ input:focus, select:focus, textarea:focus {
 /* TOUCH OPTIMIZATION */
 @media (hover: none) {
   .cursor-label { display: none !important; }
-  #cursor-canvas { opacity: 0.4 !important; } /* Dim the trail so it's less distracting on touch */
+  /* Stars should be fully visible now */
 }
 
 /* Final fit check for small screens */
@@ -2878,8 +2878,8 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-/* Aggressive Fit for Small Phones (iPhone SE / Mini) */
-@media (max-width: 380px) {
+/* Aggressive Fit for ALL Mobile Phones (iPhone SE -> 15 Pro Max) */
+@media (max-width: 500px) {
   .section-studio {
     padding: 40px 0;
   }
