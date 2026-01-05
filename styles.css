@@ -2918,24 +2918,27 @@ input:focus, select:focus, textarea:focus {
     border-radius: 16px;
   }
   .studio-title {
-    font-size: clamp(1.5rem, 8vw, 2.2rem);
+    font-size: clamp(1.4rem, 7vw, 2.0rem); /* Slightly reduced max */
     line-height: 1.1;
     margin-bottom: 12px;
+    word-break: break-word; /* Ensure long words wrap */
+    hyphens: auto;
   }
   .studio-body {
     font-size: 0.95rem;
     line-height: 1.5;
   }
   .otp-eye-svg {
-    max-width: 60px;
+    max-width: 50px; /* Reduced further */
+    margin-bottom: 10px;
   }
   .capabilities-list {
     justify-content: center; /* Center tags on mobile */
-    gap: 8px;
+    gap: 6px; /* Tighter gap */
   }
   .cap-tag {
-    font-size: 0.7rem;
-    padding: 6px 12px;
+    font-size: 0.65rem;
+    padding: 5px 10px;
   }
 }
 

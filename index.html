@@ -549,37 +549,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
-    // MOBILE MENU TOGGLE
-    const navToggle = document.querySelector('.nav-toggle');
-    const navDrawer = document.querySelector('.nav-drawer');
-    const drawerLinks = document.querySelectorAll('.nav-drawer a');
-
-    if (navToggle && navDrawer) {
-      navToggle.addEventListener('click', () => {
-        const isOpen = navDrawer.classList.contains('open');
-        navDrawer.classList.toggle('open');
-        navToggle.setAttribute('aria-expanded', !isOpen);
-      });
-
-      // Close drawer when link is clicked
-      drawerLinks.forEach(link => {
-        link.addEventListener('click', () => {
-          navDrawer.classList.remove('open');
-          navToggle.setAttribute('aria-expanded', 'false');
-        });
-      });
-
-      // Close on scroll
-      // Close on scroll
-      window.addEventListener('scroll', () => {
-        // Mobile menu auto-close on scroll
-        if (navDrawer.classList.contains('open')) {
-          navDrawer.classList.remove('open');
-          navToggle.setAttribute('aria-expanded', 'false');
-        }
-      }, { passive: true });
-    }
-
     // FORM HANDLING
     const contactForm = document.getElementById('contactForm');
     const formStatus = document.getElementById('formStatus');
