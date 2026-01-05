@@ -2884,77 +2884,7 @@ input:focus, select:focus, textarea:focus {
   transition: transform 0.1s ease-out;
 }
 
-@media (max-width: 900px) {
-  .manifesto-left {
-    border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-right: 0;
-    padding-bottom: 24px;
-    margin-bottom: 24px;
-    justify-content: center;
-    width: 100%;
-  }
-  .otp-eye-svg {
-    max-width: 80px;
-  }
-  
-  .glass-manifesto {
-    display: flex; /* Switch to flex column */
-    flex-direction: column;
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    padding: clamp(24px, 5vw, 40px);
-    gap: 0; /* Spacing via margins now */
-  }
-}
-
-@media (max-width: 500px) {
-  .section-studio {
-    padding: 30px 0;
-  }
-  .glass-manifesto {
-    padding: 24px 14px; /* Maximize width for content */
-    border-radius: 14px;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: hidden; /* safety */
-  }
-  .studio-title {
-    font-size: clamp(1.1rem, 6vw, 1.6rem); /* Very safe sizing */
-    line-height: 1.1;
-    margin-bottom: 10px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-  }
-  .studio-body {
-    font-size: 0.9rem;
-    line-height: 1.4;
-  }
-  .otp-eye-svg {
-    max-width: 45px; 
-    margin-bottom: 8px;
-  }
-  .capabilities-list {
-    justify-content: center;
-    gap: 6px;
-    margin-top: 20px;
-    padding-top: 20px;
-  }
-  .cap-tag {
-    font-size: 0.65rem;
-    padding: 4px 8px;
-  }
-}
-
-/* Ensure Stars are visible on mobile */
-@media (max-width: 768px) {
-  #cursor-canvas {
-    opacity: 1 !important; /* Force full visibility */
-    display: block !important;
-  }
-}
+/* Mobile styles moved to bottom */
 
 .studio-title {
   /* Tamed typography size for desktop */
@@ -3035,4 +2965,80 @@ input:focus, select:focus, textarea:focus {
 @keyframes spinSlow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* ========================================= */
+/* MOBILE OPTIMIZATIONS (MOVED TO END)       */
+/* ========================================= */
+
+@media (max-width: 900px) {
+  .manifesto-left {
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-right: 0;
+    padding-bottom: 24px;
+    margin-bottom: 24px;
+    justify-content: center;
+    width: 100%;
+  }
+  .otp-eye-svg {
+    max-width: 80px;
+  }
+  
+  .glass-manifesto {
+    display: flex;
+    flex-direction: column;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: clamp(24px, 5vw, 40px);
+    gap: 0; 
+  }
+}
+
+@media (max-width: 500px) {
+  .section-studio {
+    padding: 30px 0;
+  }
+  .glass-manifesto {
+    padding: 24px 14px; 
+    border-radius: 14px;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden; 
+  }
+  .studio-title {
+    font-size: clamp(1.1rem, 6vw, 1.6rem) !important; /* Force override */
+    line-height: 1.1;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+  }
+  .studio-body {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .otp-eye-svg {
+    max-width: 45px; 
+    margin-bottom: 8px;
+  }
+  .capabilities-list {
+    justify-content: center;
+    gap: 6px;
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+  .cap-tag {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+  }
+}
+
+/* Ensure Stars are visible on mobile */
+@media (max-width: 768px) {
+  #cursor-canvas {
+    opacity: 1 !important; 
+    display: block !important;
+  }
 }
