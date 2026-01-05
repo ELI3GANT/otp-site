@@ -2834,12 +2834,32 @@ input:focus, select:focus, textarea:focus {
   .otp-eye-svg {
     max-width: 80px;
   }
+  
+  .glass-manifesto {
+    grid-template-columns: 1fr;
+    padding: 30px;
+    gap: 30px;
+  }
 }
 
-.manifesto-right {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+@media (max-width: 480px) {
+  .section-studio {
+    padding: 80px 0;
+  }
+  .glass-manifesto {
+    padding: 24px;
+    gap: 24px;
+    border-radius: 20px;
+  }
+  .studio-title {
+    font-size: clamp(1.6rem, 8vw, 2.5rem); /* Tamed for mobile */
+  }
+  .otp-eye-svg {
+    max-width: 60px; /* Smaller eye on mobile */
+  }
+  .studio-body {
+    font-size: 1rem;
+  }
 }
 
 .studio-title {
