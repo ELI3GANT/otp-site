@@ -599,6 +599,49 @@ textarea:focus-visible {
   to { transform: translateY(-40px); }
 }
 
+.subtitle-lead {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 20px 0 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.5;
+}
+
+/* Reviews / Social Proof */
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 40px;
+  text-align: left;
+}
+.review-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 24px;
+  border-radius: 16px;
+}
+.review-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 16px;
+  font-style: italic;
+}
+.review-author {
+  font-weight: 700;
+  color: var(--accent2);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+  .reviews-grid { grid-template-columns: 1fr; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .hero-bg { animation: none; }
@@ -2305,6 +2348,22 @@ input:focus, select:focus, textarea:focus {
   }
   
   .hero-micro .dot { display: none; }
+  
+  .subtitle-lead {
+    font-size: 1.1rem;
+    padding: 0 10px;
+    margin-bottom: 25px;
+  }
+  
+  .service-desc {
+    font-size: 0.95rem; /* Better readability on mobile */
+    line-height: 1.5;
+  }
+  
+  .book-btn {
+    padding: 14px 28px; /* Slightly smaller on mobile */
+    font-size: 1rem;
+  }
   
   .grid, .grid-2 {
     grid-template-columns: 1fr !important;
