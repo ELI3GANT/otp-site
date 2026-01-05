@@ -311,13 +311,16 @@ html {
     display: none;
   }
   .nav-toggle {
-    display: block;
-    position: absolute;
-    right: 20px;
-    top: 13px; /* Pinned to top right */
-    background: rgba(255, 255, 255, 0.08); /* More noticeable */
-    border-color: rgba(255, 255, 255, 0.2);
-    animation: menu-pulse 2s infinite ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 44px;
+    height: 44px;
+    right: auto;
+    top: auto;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 }
 
@@ -2886,74 +2889,53 @@ input:focus, select:focus, textarea:focus {
     border-right: none;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     padding-right: 0;
-    padding-bottom: 20px;
+    padding-bottom: 24px;
+    margin-bottom: 24px;
     justify-content: center;
+    width: 100%;
   }
   .otp-eye-svg {
     max-width: 80px;
   }
   
   .glass-manifesto {
-    grid-template-columns: 1fr;
-    padding: 30px;
-    gap: 30px;
+    display: flex; /* Switch to flex column */
+    flex-direction: column;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: clamp(24px, 5vw, 40px);
+    gap: 0; /* Spacing via margins now */
   }
 }
 
-@media (max-width: 480px) {
-  .section-studio {
-    padding: 60px 0;
-  }
-  .glass-manifesto {
-    padding: 24px 20px; /* Tighter padding */
-    gap: 20px;
-    border-radius: 20px;
-  }
-  .studio-title {
-    /* Aggressive clamp to ensure PERSPECTIVE fits on iPhone SE */
-    font-size: clamp(1.4rem, 7vw, 2.2rem); 
-    margin-bottom: 16px;
-    letter-spacing: -0.02em; /* Tighter tracking */
-  }
-  .otp-eye-svg {
-    max-width: 50px; /* Reduced to balance */
-  }
-  .studio-body {
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
-  
-  /* Compact tags for small screens */
-  .capabilities-list {
-    gap: 8px;
-  }
-  .cap-tag {
-    font-size: 0.65rem;
-    padding: 6px 12px;
-  }
-}
-
-/* Aggressive Fit for ALL Mobile Phones (iPhone SE -> 15 Pro Max) */
 @media (max-width: 500px) {
   .section-studio {
     padding: 40px 0;
   }
   .glass-manifesto {
-    padding: 20px 16px; /* Very tight padding */
-    gap: 16px;
+    padding: 20px 16px; /* Optimized for narrow screens */
     border-radius: 16px;
   }
   .studio-title {
-    font-size: clamp(1.2rem, 6vw, 1.8rem); /* Aggressive shrink */
+    font-size: clamp(1.5rem, 8vw, 2.2rem);
+    line-height: 1.1;
     margin-bottom: 12px;
   }
   .studio-body {
-    font-size: 0.85rem;
-    line-height: 1.45;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .otp-eye-svg {
+    max-width: 60px;
+  }
+  .capabilities-list {
+    justify-content: center; /* Center tags on mobile */
+    gap: 8px;
   }
   .cap-tag {
-    font-size: 0.6rem;
-    padding: 4px 10px;
+    font-size: 0.7rem;
+    padding: 6px 12px;
   }
 }
 
@@ -3039,76 +3021,6 @@ input:focus, select:focus, textarea:focus {
   filter: blur(120px);
   z-index: 1;
   pointer-events: none;
-}
-
-/* Merged 900px media query above? No, keeping them separate to ensure no regressions. */
-
-/* Mobile (Small Phones) */
-@media (max-width: 480px) {
-  .section-studio {
-    padding: 60px 0;
-  }
-  .glass-manifesto {
-    padding: 24px 20px;
-    gap: 20px;
-    border-radius: 20px;
-  }
-  .studio-title {
-    font-size: clamp(1.6rem, 8vw, 2.4rem);
-    margin-bottom: 16px;
-    letter-spacing: -0.01em; 
-  }
-  
-  .manifesto-right .eyebrow {
-    margin-bottom: 10px;
-    font-size: 0.8rem;
-  }
-
-  .studio-body {
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
-  
-  .capabilities-list {
-    gap: 8px;
-    margin-top: 24px;
-    padding-top: 24px;
-  }
-  .cap-tag {
-    font-size: 0.75rem;
-    padding: 6px 12px;
-  }
-
-  .otp-eye-svg {
-    max-width: 60px; 
-    margin-bottom: 0;
-  }
-}    
-
-/* Tablet / Smaller Desktop */
-@media (max-width: 900px) {
-  .glass-manifesto {
-    grid-template-columns: 1fr;
-    padding: 30px;
-    gap: 30px;
-  }
-  .manifesto-left {
-    flex-direction: row;
-    border-right: none;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    padding-right: 0;
-    padding-bottom: 20px;
-    width: 100%;
-    justify-content: space-between;
-  }
-  /* Restore the identity marker fix for tablet */
-  .identity-marker {
-    writing-mode: horizontal-tb;
-    letter-spacing: 0.1em;
-  }
-  .studio-title {
-    font-size: 2.2rem;
-  }
 }
 
 @keyframes spinSlow {
