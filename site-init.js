@@ -20,7 +20,7 @@
         new kursor({
             type: 1, // Ring
             color: '#00c3ff', // Cyan
-            removeDefaultCursor: true
+            removeDefaultCursor: false
         });
     } 
     
@@ -200,4 +200,35 @@ document.addEventListener('DOMContentLoaded', () => {
          card.style.setProperty('--eyeX', '0px');
          card.style.setProperty('--eyeY', '0px');
     });
+});
+
+// Mobile Menu Toggle Logic (Centralized)
+document.addEventListener('DOMContentLoaded', () => {
+    const navToggle = document.querySelector('.nav-toggle');
+    const navDrawer = document.querySelector('.nav-drawer');
+    const drawerLinks = document.querySelectorAll('.nav-drawer a');
+
+    if (navToggle && navDrawer) {
+      navToggle.addEventListener('click', () => {
+        const isOpen = navDrawer.classList.contains('open');
+        navDrawer.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', !isOpen);
+      });
+
+      // Close drawer when link is clicked
+      drawerLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          navDrawer.classList.remove('open');
+          navToggle.setAttribute('aria-expanded', 'false');
+        });
+      });
+
+      // Close on scroll
+      window.addEventListener('scroll', () => {
+        if (navDrawer.classList.contains('open')) {
+          navDrawer.classList.remove('open');
+          navToggle.setAttribute('aria-expanded', 'false');
+        }
+      }, { passive: true });
+    }
 });

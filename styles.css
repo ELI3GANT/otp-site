@@ -93,6 +93,7 @@ body::before {
 }
 
 html, body {
+  cursor: auto; /* Ensure default cursor */
   margin: 0 !important;
   padding: 0 !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -101,6 +102,10 @@ html, body {
   overflow-x: hidden !important; /* Prevent horizontal scroll site-wide */
   width: 100% !important;
   -webkit-font-smoothing: antialiased;
+}
+
+a, button, input, select, textarea, .k-hover {
+  cursor: pointer;
 }
 
 h1, h2, h3, h4, .nav-logo, .btn {
@@ -215,6 +220,11 @@ html {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
+
+.nav.nav-split {
+  justify-content: space-between;
+}
+
 .nav-logo .otp-mark {
   /* ...existing styles... */
   border-color: var(--stroke);
@@ -233,7 +243,9 @@ html {
   font-weight: 600;
 }
   .nav-logo {
-    display: none; /* Removed as per user request to remove rotating logo */
+    display: flex;
+    align-items: center;
+    text-decoration: none;
   }
 
   /* Centered Nav Icon (The GIF but bigger) */
@@ -1482,7 +1494,7 @@ input:focus, select:focus, textarea:focus {
 
 /* KURSOR MAPPING (Adapter for existing styles) */
 .k-hover {
-  cursor: none !important; /* Ensure default cursor is hidden */
+  /* cursor: none !important; - Removed to ensure default cursor is visible */
 }
 /* .k-hover handled above */
 .k-hover-primary {
@@ -1933,40 +1945,7 @@ input:focus, select:focus, textarea:focus {
 .modal-actions { justify-content: center; }
 
 
-  /* 3. RARE CARD "NUCLEAR" SAFETY FIT */
-  .glass-manifesto {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    overflow: hidden !important; 
-    padding: 20px 15px !important; /* Tighter padding */
-  }
-  
-  /* 4. HEADER SAFETY FIT (Archive/Insights) & STUDIO TITLE */
-  /* Using VW units to mathematically guarantee fit */
-  .archive-header h1, 
-  .hero h1,
-  .syne-bold {
-      font-size: 13vw !important; /* Scales with screen width */
-      max-font-size: 3rem;
-      line-height: 1.1;
-      overflow-wrap: break-word;
-      word-break: break-word;
-      hyphens: auto;
-  }
-  
-  .studio-title {
-      font-size: 13vw !important; /* Matches header scaling */
-      line-height: 1.1;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-  }
-  
-  /* Ensure tags wrap/shrink */
-  .cap-tag {
-      font-size: 0.6rem !important;
-      padding: 4px 8px !important;
-  }
+
 /* AUTO-TILT ANIMATION (Default mobile state) */
 @keyframes shimmerBreath {
   0% {
@@ -2052,19 +2031,22 @@ input:focus, select:focus, textarea:focus {
 }
 
 .archive-header {
-  margin: 90px 0 40px; /* Reduced top/bottom margins */
+  margin: 140px 0 60px; /* Increased top spacing per request */
 }
 
 .archive-header h1 {
-  font-size: clamp(2.8rem, 12vw, 8rem);
+  /* Reduced from 8rem max to 5rem per user request */
+  font-size: clamp(2.5rem, 6vw, 5rem);
   line-height: 0.9;
   letter-spacing: -2px;
   margin-bottom: 20px;
 }
 @media (max-width: 480px) {
   .archive-header h1 {
-    font-size: clamp(2.4rem, 15vw, 4rem);
+    font-size: clamp(2.0rem, 11vw, 3.2rem);
     letter-spacing: -1px;
+    word-break: break-word; /* Ensure it wraps if needed */
+    hyphens: auto;
   }
 }
 
@@ -2238,11 +2220,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 .contact-container {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
   margin-top: 40px;
-  align-items: start;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
 }
 
 .contact-form {
@@ -2315,9 +2301,10 @@ input:focus, select:focus, textarea:focus {
 .contact-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  position: sticky;
-  top: 120px;
+  gap: 32px;
+  align-items: center;
+  text-align: center;
+  width: 100%;
 }
 
 .contact-details-side p {
@@ -2342,20 +2329,7 @@ input:focus, select:focus, textarea:focus {
   color: var(--muted);
 }
 
-@media (max-width: 1000px) {
-  .contact-container {
-    grid-template-columns: 1fr;
-  }
-  .contact-sidebar {
-    position: static;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 30px;
-    border-radius: 24px;
-  }
-}
+/* Mobile overrides removed as main styles are now responsive */
 
 @media (max-width: 600px) {
   .faq-grid {
@@ -2817,7 +2791,12 @@ input:focus, select:focus, textarea:focus {
     0 0 50px rgba(112, 0, 255, 0.25), /* Violet Aura */
     0 0 100px rgba(0, 195, 255, 0.15); /* Cyan Aura */
     
-  padding: 50px 60px;
+  /* Desktop Fix: Constrain width to 1000px (Longer Landscape) */
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto; 
+    
+  padding: 40px 50px; 
   position: relative;
   z-index: 2;
   
@@ -2828,14 +2807,27 @@ input:focus, select:focus, textarea:focus {
   
   /* Ensure mobile scrolling works smoothly over the card */
   touch-action: pan-y; 
+  overflow: hidden; /* For the sheen */
 }
+
+/* Removed Pokemon holographic overlay */
+/* Hide cursor canvas on archive and insights pages */
+/* Hide cursor canvas rule removed to show stars on all pages */
+
 
 /* Shine Hover State */
 .glass-manifesto:hover {
  box-shadow: 
-    0 40px 80px rgba(0,0,0,0.7), 
-    0 0 80px rgba(112, 0, 255, 0.4), 
-    0 0 150px rgba(0, 195, 255, 0.3);
+    0 40px 100px rgba(0,0,0,0.8), 
+    0 0 80px rgba(112, 0, 255, 0.3), 
+    0 0 120px rgba(0, 195, 255, 0.2);
+}
+
+/* START A PROJECT LINK POLISH */
+.book-btn {
+  text-decoration: none !important; /* Remove underline per request */
+  display: inline-block;
+  cursor: pointer;
 }
 
 @keyframes holoShine {
@@ -2974,8 +2966,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 .studio-title {
-  /* Tamed typography size */
-  font-size: clamp(2rem, 4vw, 3.5rem);
+  /* Tamed typography size for desktop */
+  font-size: clamp(2rem, 3vw, 3rem);
   line-height: 1.1;
   margin-bottom: 24px;
   background: linear-gradient(180deg, #fff, rgba(255,255,255,0.6));
@@ -3049,6 +3041,51 @@ input:focus, select:focus, textarea:focus {
   pointer-events: none;
 }
 
+/* Merged 900px media query above? No, keeping them separate to ensure no regressions. */
+
+/* Mobile (Small Phones) */
+@media (max-width: 480px) {
+  .section-studio {
+    padding: 60px 0;
+  }
+  .glass-manifesto {
+    padding: 24px 20px;
+    gap: 20px;
+    border-radius: 20px;
+  }
+  .studio-title {
+    font-size: clamp(1.6rem, 8vw, 2.4rem);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em; 
+  }
+  
+  .manifesto-right .eyebrow {
+    margin-bottom: 10px;
+    font-size: 0.8rem;
+  }
+
+  .studio-body {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  
+  .capabilities-list {
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 24px;
+  }
+  .cap-tag {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+
+  .otp-eye-svg {
+    max-width: 60px; 
+    margin-bottom: 0;
+  }
+}    
+
+/* Tablet / Smaller Desktop */
 @media (max-width: 900px) {
   .glass-manifesto {
     grid-template-columns: 1fr;
@@ -3064,6 +3101,7 @@ input:focus, select:focus, textarea:focus {
     width: 100%;
     justify-content: space-between;
   }
+  /* Restore the identity marker fix for tablet */
   .identity-marker {
     writing-mode: horizontal-tb;
     letter-spacing: 0.1em;
