@@ -2867,6 +2867,15 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.95rem;
     line-height: 1.5;
   }
+  
+  /* Compact tags for small screens */
+  .capabilities-list {
+    gap: 8px;
+  }
+  .cap-tag {
+    font-size: 0.65rem;
+    padding: 6px 12px;
+  }
 }
 
 .studio-title {

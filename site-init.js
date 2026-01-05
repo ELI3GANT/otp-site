@@ -23,7 +23,8 @@
         });
     } else if (isMobile) {
         // Ensure kursor elements are hidden if they were somehow injected
-        const kursorNodes = document.querySelectorAll('.kursor, .kursor-child, #cursor-canvas');
+        // CRITICAL FIX: Do NOT hide #cursor-canvas, as that holds the stars!
+        const kursorNodes = document.querySelectorAll('.kursor, .kursor-child');
         kursorNodes.forEach(n => n.style.display = 'none');
     }
 
@@ -114,8 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const permission = await DeviceOrientationEvent.requestPermission();
                 if (permission === 'granted') {
                     window.addEventListener('deviceorientation', handleOrientation);
-                    document.body.removeEventListener('click', enableGyro); // Cleanup
-                    document.body.removeEventListener('touchstart', enableGyro);
+                    card.removeEventListener('click', enableGyro); // Cleanup
+                    card.removeEventListener('touchstart', enableGyro);
                 }
             } catch (e) {
                 console.log('Gyro permission failed', e);
@@ -123,14 +124,15 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // Android / Older iOS (No permission needed usually)
             window.addEventListener('deviceorientation', handleOrientation);
-            document.body.removeEventListener('click', enableGyro);
-            document.body.removeEventListener('touchstart', enableGyro);
+            card.removeEventListener('click', enableGyro);
+            card.removeEventListener('touchstart', enableGyro);
         }
     };
 
     // Attach permission requester to interaction
-    document.body.addEventListener('click', enableGyro, { once: true });
-    document.body.addEventListener('touchstart', enableGyro, { once: true });
+    // Only ask if they tap the CARD itself, not anywhere on the body.
+    card.addEventListener('click', enableGyro, { once: true });
+    card.addEventListener('touchstart', enableGyro, { once: true });
 
     const handleOrientation = (e) => {
         // Gamma: Left/Right tilt (-90 to 90)
