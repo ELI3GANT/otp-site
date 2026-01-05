@@ -2911,34 +2911,40 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 500px) {
   .section-studio {
-    padding: 40px 0;
+    padding: 30px 0;
   }
   .glass-manifesto {
-    padding: 20px 16px; /* Optimized for narrow screens */
-    border-radius: 16px;
+    padding: 24px 14px; /* Maximize width for content */
+    border-radius: 14px;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden; /* safety */
   }
   .studio-title {
-    font-size: clamp(1.4rem, 7vw, 2.0rem); /* Slightly reduced max */
+    font-size: clamp(1.1rem, 6vw, 1.6rem); /* Very safe sizing */
     line-height: 1.1;
-    margin-bottom: 12px;
-    word-break: break-word; /* Ensure long words wrap */
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     hyphens: auto;
   }
   .studio-body {
-    font-size: 0.95rem;
-    line-height: 1.5;
+    font-size: 0.9rem;
+    line-height: 1.4;
   }
   .otp-eye-svg {
-    max-width: 50px; /* Reduced further */
-    margin-bottom: 10px;
+    max-width: 45px; 
+    margin-bottom: 8px;
   }
   .capabilities-list {
-    justify-content: center; /* Center tags on mobile */
-    gap: 6px; /* Tighter gap */
+    justify-content: center;
+    gap: 6px;
+    margin-top: 20px;
+    padding-top: 20px;
   }
   .cap-tag {
     font-size: 0.65rem;
-    padding: 5px 10px;
+    padding: 4px 8px;
   }
 }
 
