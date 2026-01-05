@@ -21,6 +21,10 @@
             color: '#00c3ff', // Cyan
             removeDefaultCursor: true
         });
+    } else if (isMobile) {
+        // Ensure kursor elements are hidden if they were somehow injected
+        const kursorNodes = document.querySelectorAll('.kursor, .kursor-child, #cursor-canvas');
+        kursorNodes.forEach(n => n.style.display = 'none');
     }
 
     // 3. Scroll Progress Logic (Moved from inline)

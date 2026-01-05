@@ -92,15 +92,15 @@ body::before {
   transform: translateZ(0);
 }
 
-body {
-  background: transparent !important;
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
-  font-family: 'Inter', sans-serif;
-  overflow-x: hidden;
-  line-height: 1.5;
-  text-rendering: optimizeLegibility;
+  background-color: var(--bg);
+  overflow-x: hidden !important; /* Prevent horizontal scroll site-wide */
+  width: 100% !important;
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
 }
 
 h1, h2, h3, h4, .nav-logo, .btn {
@@ -160,7 +160,7 @@ html {
   color: rgba(255,255,255,0.98);
 }
 
-.wrap { width: min(1100px, 92vw); margin: 0 auto; }
+.wrap { width: min(1100px, 92vw); margin: 0 auto; max-width: 100%; }
 .section { padding: 96px 0; }
 .section-tight { padding: 72px 0; }
 
@@ -2037,6 +2037,7 @@ input:focus, select:focus, textarea:focus {
   left: 0;
   width: 100%;
   height: 100%;
+  max-width: 100%; /* Ensure it never overflows its container */
   object-fit: cover;
   transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease;
   z-index: 1;
@@ -2301,6 +2302,9 @@ input:focus, select:focus, textarea:focus {
   .form-row {
     grid-template-columns: 1fr;
   }
+  .contact-form {
+    padding: 24px 16px;
+  }
   .contact-sidebar {
     flex-direction: column;
     text-align: center;
@@ -2334,9 +2338,13 @@ input:focus, select:focus, textarea:focus {
   opacity: 1;
 }
 
-/* Ensure canvas is always invisible to clicks */
+/* Ensure canvas is always invisible to clicks and doesn't affect width */
 #cursor-canvas {
   pointer-events: none !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  z-index: 10000;
 }
 
 /* GLOBAL MOBILE POLISH */
@@ -2407,9 +2415,12 @@ input:focus, select:focus, textarea:focus {
 
 /* Final fit check for small screens */
 @media (max-width: 480px) {
-  .hero h1 { font-size: 2rem !important; }
+  .hero h1 { font-size: 2.2rem !important; }
   .eyebrow { font-size: 0.8rem; }
-  .wrap { width: 90vw; }
+  .wrap { width: 92vw; }
+  .nav { padding: 15px 20px; }
+  .archive-page .nav { padding: 15px 20px; }
+  .back-link { font-size: 0.8rem; }
 }
 
 /* INSIGHTS GRID */
