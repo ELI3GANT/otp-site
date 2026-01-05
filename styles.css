@@ -2711,3 +2711,62 @@ input:focus, select:focus, textarea:focus {
     padding-bottom: 30px;
   }
 }
+
+/* STUDIO / PHILOSOPHY SECTION */
+.section-studio {
+  position: relative;
+  padding: 120px 0;
+  overflow: hidden;
+}
+
+.studio-content {
+  position: relative;
+  z-index: 2;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.studio-title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 0.95;
+  margin: 20px 0 40px;
+  background: linear-gradient(180deg, #fff, rgba(255,255,255,0.7));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.studio-body {
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 700px;
+  margin: 0 auto;
+  font-weight: 400;
+}
+
+.studio-body p {
+  margin-bottom: 20px;
+}
+
+/* Glass/Glow Effect for Studio Section */
+.section-studio::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(112, 0, 255, 0.08) 0%, rgba(0,0,0,0) 70%);
+  filter: blur(80px);
+  z-index: 1;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .section-studio {
+    padding: 80px 0;
+  }
+}
