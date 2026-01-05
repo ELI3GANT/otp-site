@@ -79,27 +79,7 @@
 
   <canvas id="cursor-canvas"></canvas>
   <script src="https://unpkg.com/kursor"></script>
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-    if (typeof kursor !== 'undefined') new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
-    
-    // Simple Cursor
-    const canvas = document.getElementById('cursor-canvas');
-    const ctx = canvas.getContext('2d');
-    let width, height, particles = [];
-    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize); resize();
-    window.addEventListener('mousemove', e => { particles.push({x: e.clientX, y: e.clientY, life: 1.0, size: 10}); });
-    function animate() {
-      ctx.clearRect(0, 0, width, height);
-      for (let i=0; i<particles.length; i++) {
-        let p = particles[i]; p.life -= 0.05; p.size *= 0.9;
-        ctx.fillStyle = `rgba(112, 0, 255, ${p.life})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
-        if(p.life<=0){particles.splice(i,1); i--;}
-      }
-      requestAnimationFrame(animate);
-    }
-    animate();
-  </script>
+  <script src="stars-v2.js"></script>
+  <script src="site-init.js"></script>
 </body>
 </html>

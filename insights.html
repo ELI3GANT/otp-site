@@ -119,75 +119,32 @@
 
   <script src="https://unpkg.com/kursor"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  
   <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-    
-    try {
-        if (typeof kursor !== 'undefined') {
-            new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
+    // Page-specific: Insight Card Spotlight Effect
+    document.addEventListener("DOMContentLoaded", () => {
+        // Spotlight Effect
+        const cards = document.querySelectorAll('.insight-card');
+        if (cards.length > 0) {
+            cards.forEach(card => {
+              card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+              });
+            });
         }
-
-        // Animation removed to ensure immediate visibility on all devices
-        gsap.set('.insight-card', { opacity: 1, y: 0 });
-
-        // Spotlight Effect for Insight Cards
-        document.querySelectorAll('.insight-card').forEach(card => {
-          card.addEventListener('mousemove', e => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            card.style.setProperty('--mouse-x', `${x}px`);
-            card.style.setProperty('--mouse-y', `${y}px`);
-          });
-        });
-
-        // Simple Particle Cursor logic for consistency
-        const canvas = document.getElementById('cursor-canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        let particles = [];
-
-        function resize() {
-          width = canvas.width = window.innerWidth;
-          height = canvas.height = window.innerHeight;
+        
+        // Immediate visibility ensure
+        if (typeof gsap !== 'undefined') {
+            gsap.set('.insight-card', { opacity: 1, y: 0 });
         }
-        window.addEventListener('resize', resize);
-        resize();
-
-        window.addEventListener('mousemove', e => {
-          particles.push({
-            x: e.clientX,
-            y: e.clientY,
-            life: 1.0,
-            size: 15
-          });
-        });
-
-        function animate() {
-          ctx.clearRect(0, 0, width, height);
-          for (let i = 0; i < particles.length; i++) {
-            let p = particles[i];
-            p.life -= 0.03;
-            p.size *= 0.95;
-            ctx.beginPath();
-            ctx.fillStyle = `rgba(112, 0, 255, ${p.life})`;
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fill();
-            if (p.life <= 0) { particles.splice(i, 1); i--; }
-          }
-          requestAnimationFrame(animate);
-        }
-        // Scroll Progress Overlay
-        window.addEventListener('scroll', () => {
-          const scrolled = window.scrollY;
-          const max = document.body.scrollHeight - window.innerHeight;
-          const scrollPercent = max > 0 ? (scrolled / max) * 100 : 0;
-          document.body.style.setProperty('--scroll', `${scrollPercent}%`);
-        });
-
-        animate();
-
-    } catch (err) { console.error('Insights Error:', err); }
+    });
   </script>
+
+  <script src="stars-v2.js"></script>
+  <script src="site-init.js"></script>
 </body>
 </html>

@@ -1796,10 +1796,19 @@ input:focus, select:focus, textarea:focus {
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.cool-work-link.is-black-hole,
 .cool-work-link:hover {
-  transform: scale(1.02);
-  border-color: rgba(255,255,255,0.3);
-  box-shadow: 0 0 50px rgba(112,0,255,0.15);
+  transform: scale(0.94); /* High Gravity Compression */
+  border-color: rgba(255, 80, 0, 0.8); /* Accretion Disk Edge */
+  background: #000; /* The Singularity */
+  box-shadow: 
+    0 0 60px rgba(255, 60, 0, 0.6), /* Red/Orange Glow */
+    inset 0 0 60px rgba(0, 0, 0, 1); /* Infinite Depth */
+}
+
+.cool-work-link:hover .link-text,
+.cool-work-link:active .link-text {
+  text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
 }
 
 .link-text {

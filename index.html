@@ -22,7 +22,7 @@
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="icon" href="/favicon.ico" sizes="any" />
-  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+
 
   <!-- Font (optional but makes it instantly cleaner) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -91,7 +91,7 @@
         <span class="title">PERSPECTIVE</span>
       </h1>
       
-      <p class="subtitle-lead">Content that grows your audience and drives results.</p>
+      <p class="subtitle-lead">See the world through our eyes. Content that grows your audience and drives results.</p>
       
       <div class="hero-cta">
         <a href="#contact" class="book-btn">Start a Project</a>
@@ -452,20 +452,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://unpkg.com/split-type"></script>
 
-    /* 
-    // OLD SCRIPT COMMENTED OUT FOR STARS V2 EXPERIMENT
-    try {
-        // Initialize Kursor
-        if (typeof kursor !== 'undefined') {
-            new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
-        }
-        
-        // Lenis Removed per user request
 
-        // GSAP
-        // ... (GSAP Code remains relevant for animations, keeping separate or ensuring it runs)
-    } */
-  </script>
+
   
   <!-- GSAP & SPLIT TYPE (Keep these active) -->
   <script>
@@ -499,25 +487,10 @@
           delay: 1.5
         });
 
-        // Footer year
-        document.getElementById('year').textContent = new Date().getFullYear();
   </script>
-
-  <!-- NEW STARS V2 SCRIPT -->
   <script src="stars-v2.js"></script>
+  <script src="site-init.js"></script>
 
-  <!-- RE-ENABLE CURSOR TRACKING SEPARATELY IF NEEDED or integrate into stars-v2 if strictly canvas -->
-  <script>
-    // Re-init Custom Cursor Logic (non-canvas part)
-     if (typeof kursor !== 'undefined') {
-        new kursor({ type: 1, color: '#00c3ff', removeDefaultCursor: true });
-    }
-  </script>
-  
-  <script>
-    /* Old Canvas Debris Code was here */
-
-  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
     // MOBILE MENU TOGGLE
@@ -543,12 +516,7 @@
       // Close on scroll
       // Close on scroll
       window.addEventListener('scroll', () => {
-        // Update Scroll Progress
-        const scrolled = window.scrollY;
-        const max = document.body.scrollHeight - window.innerHeight;
-        const scrollPercent = (scrolled / max) * 100;
-        document.body.style.setProperty('--scroll', `${scrollPercent}%`);
-
+        // Mobile menu auto-close on scroll
         if (navDrawer.classList.contains('open')) {
           navDrawer.classList.remove('open');
           navToggle.setAttribute('aria-expanded', 'false');

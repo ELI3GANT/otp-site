@@ -36,10 +36,26 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// Attractor Logic (The "Suck" Effect)
+let attractor = { x: null, y: null, active: false, repel: false };
+
+window.setAttractor = (x, y) => {
+    attractor.x = x;
+    attractor.y = y;
+    attractor.active = true;
+    attractor.repel = false;
+};
+
+window.clearAttractor = () => {
+    attractor.active = false;
+    attractor.repel = true;
+    setTimeout(() => { attractor.repel = false; }, 800); // 0.8s dispersal phase
+};
+
 class Star {
     constructor() {
         this.reset();
-        // Randomize initial position to avoid "pop-in" clump
+        // Randomize initial position
         this.x = Math.random() * width;
         this.y = Math.random() * height;
     }
@@ -47,63 +63,172 @@ class Star {
     reset() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.z = Math.random() * 2 + 0.5; // Depth factor (0.5 to 2.5)
+        this.z = Math.random() * 2 + 0.5; 
         this.size = Math.random() * 1.5;
-        this.vx = (Math.random() - 0.5) * (this.z * 0.15); 
-        this.vy = (Math.random() - 0.5) * (this.z * 0.15);
+        // Base velocity
+        this.origVx = (Math.random() - 0.5) * (this.z * 0.15);
+        this.origVy = (Math.random() - 0.5) * (this.z * 0.15);
+        this.vx = this.origVx;
+        this.vy = this.origVy;
+        
         this.alpha = Math.random() * 0.8 + 0.2;
         this.alphaChange = (Math.random() * 0.02) - 0.01;
-        // Brand colors: White, Cyan (0, 195, 255), Violet (112, 0, 255)
-        // Weighted random: Mostly white, some color
+        
         const rand = Math.random();
-        if (rand > 0.9) this.color = '112, 0, 255'; // Violet
-        else if (rand > 0.8) this.color = '0, 195, 255'; // Cyan
-        else this.color = '255, 255, 255'; // White
+        if (rand > 0.9) this.baseColor = '112, 0, 255'; 
+        else if (rand > 0.8) this.baseColor = '0, 195, 255'; 
+        else this.baseColor = '255, 255, 255'; 
+        
+        this.color = this.baseColor;
     }
 
     update() {
+        // Global Attractor State Management (managed per star but synced via frame count effectively)
+        // Ideally checking this once per frame in animate is better, but doing here for simplicity of access to 'this'
+        
+        if (attractor.active && attractor.x !== null) {
+            // cycle management
+            attractor.age = (attractor.age || 0) + 1;
+            const cycleLength = 200; // ~3.3 seconds at 60fps
+            const burstPhase = 160;  // Burst starts after this many frames
+            const isBurst = (attractor.age % cycleLength) > burstPhase;
+
+            const dx = attractor.x - this.x;
+            const dy = attractor.y - this.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (isBurst) {
+                // *** QUASAR BURST MODE *** (Explosion)
+                // Violent outward force
+                let angle = Math.atan2(dy, dx);
+                let force = -2.5; // Negative for repulsion
+                
+                // Add some chaotic spin during explosion
+                this.vx += Math.cos(angle) * force * this.z;
+                this.vy += Math.sin(angle) * force * this.z;
+                
+                // Flash colors
+                this.hue = (attractor.age * 10) % 360; // Rapid cycling rainbow
+                
+                // Friction (less damping for explosion)
+                this.vx *= 0.95;
+                this.vy *= 0.95;
+
+            } else {
+                // *** ACCRETION MODE *** (Suck)
+                // Warp Speed Inward
+                
+                // No fading out! (User request: dont eat dots)
+                // Instead, slingshot logic happens naturally if we don't clamp position
+                
+                // Gravity
+                this.vx += dx * 0.025 * this.z; // Stronger gravity
+                this.vy += dy * 0.025 * this.z;
+
+                // Event Horizon Swirl: If very close, add tangential velocity to orbit instead of crash
+                if (dist < 50) {
+                     this.vx += -dy * 0.1; 
+                     this.vy += dx * 0.1;
+                }
+
+                // Warp Colors
+                if (!this.hue) this.hue = Math.random() * 360;
+                
+                // Friction
+                this.vx *= 0.92; // More drag to control the chaos
+                this.vy *= 0.92;
+            }
+
+        } else if (attractor.repel) {
+            // Reset Age
+             attractor.age = 0;
+            // REPEL MODE (Mouse release / Explosion aftermath)
+            this.hue = null; 
+
+            let dx = this.x - attractor.x;
+            let dy = this.y - attractor.y;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < 1) dist = 1;
+
+            if (dist < 400) {
+                 const force = (400 - dist) / 400; 
+                 const push = force * 0.8 * this.z; 
+                 
+                 this.vx += (dx / dist) * push;
+                 this.vy += (dy / dist) * push;
+            }
+             this.vx = this.vx * 0.94 + this.origVx * 0.06;
+             this.vy = this.vy * 0.94 + this.origVy * 0.06;
+        } else {
+             // NORMAL MODE
+             attractor.age = 0;
+             this.hue = null;
+             this.alpha = Math.min(this.alpha + 0.01, 1); // Restore alpha if it was low
+             this.vx = this.vx * 0.98 + this.origVx * 0.02;
+             this.vy = this.vy * 0.98 + this.origVy * 0.02;
+        }
+
         this.x += this.vx;
         this.y += this.vy;
 
-        // Wrap around screen
-        if (this.x < 0) this.x = width;
-        if (this.x > width) this.x = 0;
-        if (this.y < 0) this.y = height;
-        if (this.y > height) this.y = 0;
+        // Wrap around screen (Disable wrap during Active to prevent popping)
+        if (!attractor.active) {
+            if (this.x < 0) this.x = width;
+            if (this.x > width) this.x = 0;
+            if (this.y < 0) this.y = height;
+            if (this.y > height) this.y = 0;
+        }
 
         // Twinkle
-        this.alpha += this.alphaChange;
-        if (this.alpha <= 0.2 || this.alpha >= 1) this.alphaChange *= -1;
+        if (!attractor.active) {
+             this.alpha += this.alphaChange;
+             if (this.alpha <= 0.2 || this.alpha >= 1) this.alphaChange *= -1;
+        } else {
+             this.alpha = 1; // Max visibility during action
+        }
     }
 
     draw() {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size * this.z * 0.8, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
-        ctx.fill();
+        if (attractor.active && this.hue != null) {
+            // WARP STREAKS (Vibrant HSL)
+            // Use Hue for color, Alpha for fade
+            ctx.strokeStyle = `hsla(${this.hue}, 100%, 70%, ${this.alpha})`;
+            ctx.lineWidth = Math.max(1, this.size * this.z); 
+            ctx.moveTo(this.x, this.y);
+            // Longer tails for faster speed
+            ctx.lineTo(this.x - this.vx * 3, this.y - this.vy * 3);
+            ctx.stroke();
+        } else {
+            // STANDARD STAR (RGB)
+            ctx.arc(this.x, this.y, this.size * this.z * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${this.baseColor}, ${this.alpha})`;
+            ctx.fill(); // Explicitly use baseColor here since 'this.color' isn't used
+        }
     }
 }
 
 class ShootingStar {
     constructor() {
         this.x = Math.random() * width;
-        this.y = Math.random() * height / 2; // Start in top half mostly
+        this.y = Math.random() * height / 2; 
         this.length = Math.random() * 80 + 10;
         this.speed = Math.random() * 10 + 6;
-        this.angle = Math.PI / 4; // 45 degrees usually looks good descending
+        this.angle = Math.PI / 4; 
         this.life = 1;
         this.color = Math.random() > 0.5 ? '0, 195, 255' : '255, 255, 255';
     }
 
     update() {
-        this.x -= this.speed * Math.cos(this.angle); // Move left-ish
-        this.y += this.speed * Math.sin(this.angle); // Move down-ish
+        this.x -= this.speed * Math.cos(this.angle); 
+        this.y += this.speed * Math.sin(this.angle); 
         this.life -= 0.02;
     }
 
     draw() {
         ctx.beginPath();
-        const endX = this.x + this.length * Math.cos(this.angle); // Trail tail (opposite dir)
+        const endX = this.x + this.length * Math.cos(this.angle); 
         const endY = this.y - this.length * Math.sin(this.angle);
         
         const g = ctx.createLinearGradient(this.x, this.y, endX, endY);
@@ -131,8 +256,8 @@ function animate() {
         star.update();
         star.draw();
 
-        // Connect to mouse if close (Optimization: Distance check squared avoids sqrt)
-        if (mouse.x != null) {
+        // Connect to mouse if close (Only if NOT in Suck Mode)
+        if (!attractor.active && mouse.x != null) {
             const dx = mouse.x - star.x;
             const dy = mouse.y - star.y;
             // distSq < radiusSq
@@ -145,8 +270,7 @@ function animate() {
                 ctx.lineTo(mouse.x, mouse.y);
                 ctx.stroke();
                 
-                // Gentle drift away from cursor (interactions)
-                // NO: Actually drift TOWARDS slightly feels better, magnetic.
+                 // Gentle mouse attraction
                  star.x += dx * 0.005; 
                  star.y += dy * 0.005;
             }
