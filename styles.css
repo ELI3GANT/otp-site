@@ -2712,26 +2712,28 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-/* STUDIO / PHILOSOPHY SECTION (Verified Glass Manifesto) */
+/* STUDIO / PHILOSOPHY SECTION (Refined) */
 .section-studio {
   position: relative;
-  padding: 140px 0;
+  padding: 120px 0;
   overflow: hidden;
 }
 
 .glass-manifesto {
   display: grid;
-  grid-template-columns: 80px 1fr;
-  gap: 60px;
+  grid-template-columns: 60px 1fr;
+  gap: 50px;
   background: rgba(255, 255, 255, 0.02);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 24px;
-  padding: 60px;
+  padding: 50px 60px;
   position: relative;
   z-index: 2;
-  box-shadow: 0 20px 80px rgba(0,0,0,0.4);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
 }
 
 .manifesto-left {
@@ -2739,77 +2741,95 @@ input:focus, select:focus, textarea:focus {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  border-right: 1px solid rgba(255,255,255,0.1);
-  padding-right: 40px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  padding-right: 30px;
 }
 
 .identity-marker {
   font-family: 'Syne', sans-serif;
   font-weight: 800;
-  font-size: 1.2rem;
-  line-height: 1.2;
-  color: rgba(255,255,255,0.4);
+  font-size: 1rem;
+  line-height: 1.4;
+  color: rgba(255,255,255,0.3);
   text-align: center;
   writing-mode: vertical-rl;
   text-orientation: upright;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
 }
 
 .rotating-star {
-  font-size: 2rem;
+  font-size: 1.4rem;
   color: var(--accent2);
-  animation: spinSlow 10s linear infinite;
+  animation: spinSlow 12s linear infinite;
+  opacity: 0.8;
+}
+
+.manifesto-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .studio-title {
-  font-size: clamp(3rem, 6vw, 5rem);
-  line-height: 0.95;
-  margin-bottom: 30px;
-  background: linear-gradient(180deg, #fff, rgba(255,255,255,0.5));
+  /* Tamed typography size */
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.1;
+  margin-bottom: 24px;
+  background: linear-gradient(180deg, #fff, rgba(255,255,255,0.6));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
 }
 
 .studio-body {
-  font-size: clamp(1.1rem, 1.5vw, 1.3rem);
-  line-height: 1.6;
-  color: var(--muted);
+  font-size: clamp(1rem, 1.2vw, 1.15rem);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 400;
-  max-width: 800px;
+  max-width: 650px;
 }
 
 .studio-body p {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+/* New Capabilities Tags */
+.capabilities-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.cap-tag {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.8);
+  padding: 8px 16px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.3s ease;
+}
+
+.cap-tag:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--accent2);
+  color: #fff;
+  transform: translateY(-2px);
 }
 
 .manifesto-stats {
-  display: flex;
-  gap: 40px;
-  margin-top: 40px;
-  padding-top: 30px;
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-label {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.4);
-  margin-bottom: 4px;
-}
-
-.stat-value {
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: #fff;
+  /* Hidden on this version to reduce clutter, replaced by capabilities */
+  display: none; 
 }
 
 /* Background Glow */
@@ -2819,10 +2839,10 @@ input:focus, select:focus, textarea:focus {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 80%;
-  height: 80%;
-  background: radial-gradient(circle, rgba(112, 0, 255, 0.06) 0%, rgba(0,0,0,0) 70%);
-  filter: blur(100px);
+  width: 70%;
+  height: 70%;
+  background: radial-gradient(circle, rgba(112, 0, 255, 0.05) 0%, rgba(0,0,0,0) 70%);
+  filter: blur(120px);
   z-index: 1;
   pointer-events: none;
 }
@@ -2846,9 +2866,8 @@ input:focus, select:focus, textarea:focus {
     writing-mode: horizontal-tb;
     letter-spacing: 0.1em;
   }
-  .manifesto-stats {
-    flex-wrap: wrap;
-    gap: 20px;
+  .studio-title {
+    font-size: 2.2rem;
   }
 }
 
