@@ -75,47 +75,90 @@
 
 // Rare Holo Card Physics
 document.addEventListener('DOMContentLoaded', () => {
-  // Only enable physics on devices that support hover (desktop)
-  // This prevents erratic behavior on touch scrolling.
-  if (window.matchMedia("(hover: none)").matches) return;
+    const card = document.querySelector('.glass-manifesto');
+    if (!card) return;
 
-  const card = document.querySelector('.glass-manifesto');
-  if (!card) return;
+    // Desktop: Mouse Tilt
+    if (window.matchMedia("(hover: hover)").matches) {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; 
+            const y = e.clientY - rect.top;  
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateX = ((y - centerY) / centerY) * -8; 
+            const rotateY = ((x - centerX) / centerX) * 8;
+            
+            const bgX = ((x / rect.width) * 100);
+            const bgY = ((y / rect.height) * 100);
 
-  const handleMove = (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left; 
-    const y = e.clientY - rect.top;  
-    
-    // Calculate rotation (max 10deg)
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const rotateX = ((y - centerY) / centerY) * -8; 
-    const rotateY = ((x - centerX) / centerX) * 8;
-    
-    // Calculate sheen position 
-    const bgX = ((x / rect.width) * 100);
-    const bgY = ((y / rect.height) * 100);
+            card.style.setProperty('--rotateX', rotateX + 'deg');
+            card.style.setProperty('--rotateY', rotateY + 'deg');
+            card.style.setProperty('--bgX', bgX + '%');
+            card.style.setProperty('--bgY', bgY + '%');
+        });
 
-    card.style.setProperty('--rotateX', rotateX + 'deg');
-    card.style.setProperty('--rotateY', rotateY + 'deg');
-    card.style.setProperty('--bgX', bgX + '%');
-    card.style.setProperty('--bgY', bgY + '%');
-  };
+        card.addEventListener('mouseleave', () => {
+            card.style.setProperty('--rotateX', '0deg');
+            card.style.setProperty('--rotateY', '0deg');
+        });
+    }
 
-  const handleLeave = () => {
-    card.style.setProperty('--rotateX', '0deg');
-    card.style.setProperty('--rotateY', '0deg');
-  };
+    // Mobile: Gyroscope Tilt
+    // We bind a one-time click listener to request permission (iOS 13+)
+    const enableGyro = async () => {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            try {
+                const permission = await DeviceOrientationEvent.requestPermission();
+                if (permission === 'granted') {
+                    window.addEventListener('deviceorientation', handleOrientation);
+                    document.body.removeEventListener('click', enableGyro); // Cleanup
+                    document.body.removeEventListener('touchstart', enableGyro);
+                }
+            } catch (e) {
+                console.log('Gyro permission failed', e);
+            }
+        } else {
+            // Android / Older iOS (No permission needed usually)
+            window.addEventListener('deviceorientation', handleOrientation);
+            document.body.removeEventListener('click', enableGyro);
+            document.body.removeEventListener('touchstart', enableGyro);
+        }
+    };
 
-  card.addEventListener('mousemove', handleMove);
-  card.addEventListener('mouseleave', handleLeave);
+    // Attach permission requester to interaction
+    document.body.addEventListener('click', enableGyro, { once: true });
+    document.body.addEventListener('touchstart', enableGyro, { once: true });
+
+    const handleOrientation = (e) => {
+        // Gamma: Left/Right tilt (-90 to 90)
+        // Beta: Front/Back tilt (-180 to 180)
+        const gamma = e.gamma || 0; 
+        const beta = e.beta || 0;
+
+        // Clamp values to avoid flipping
+        const tiltX = Math.min(Math.max(beta / 4, -15), 15); // Inverted axis usually depending on holding
+        const tiltY = Math.min(Math.max(gamma / 3, -15), 15);
+
+        // Normalize for background position (0% - 100%)
+        // Center (0 tilt) = 50%
+        const bgX = 50 + (gamma / 90 * 50);
+        const bgY = 50 + (beta / 90 * 50);
+
+        requestAnimationFrame(() => {
+             card.style.setProperty('--rotateX', (-tiltX) + 'deg'); // Invert beta for natural feel
+             card.style.setProperty('--rotateY', tiltY + 'deg');
+             card.style.setProperty('--bgX', bgX + '%');
+             card.style.setProperty('--bgY', bgY + '%');
+        });
+    };
 });
 
 // Animated Eye Pupil Tracking
 document.addEventListener('DOMContentLoaded', () => {
-    // Also disable eye tracking on mobile for performance/battery
+    // Disable eye tracking on mobile to save battery/perf
     if (window.matchMedia("(hover: none)").matches) return;
 
     const card = document.querySelector('.glass-manifesto');
@@ -123,11 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
-        // Mouse relative to card center
         const x = e.clientX - rect.left - (rect.width / 2);
         const y = e.clientY - rect.top - (rect.height / 2);
         
-        // Limit movement range for the pupil (e.g., +/- 10px)
         const moveX = (x / rect.width) * 20; 
         const moveY = (y / rect.height) * 15;
 

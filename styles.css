@@ -2847,21 +2847,25 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 480px) {
   .section-studio {
-    padding: 80px 0;
+    padding: 60px 0;
   }
   .glass-manifesto {
-    padding: 24px;
-    gap: 24px;
+    padding: 24px 20px; /* Tighter padding */
+    gap: 20px;
     border-radius: 20px;
   }
   .studio-title {
-    font-size: clamp(1.6rem, 8vw, 2.5rem); /* Tamed for mobile */
+    /* Aggressive clamp to ensure PERSPECTIVE fits on iPhone SE */
+    font-size: clamp(1.4rem, 7vw, 2.2rem); 
+    margin-bottom: 16px;
+    letter-spacing: -0.02em; /* Tighter tracking */
   }
   .otp-eye-svg {
-    max-width: 60px; /* Smaller eye on mobile */
+    max-width: 50px; /* Reduced to balance */
   }
   .studio-body {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
 }
 
