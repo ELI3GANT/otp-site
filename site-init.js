@@ -75,22 +75,26 @@
 
 // Rare Holo Card Physics
 document.addEventListener('DOMContentLoaded', () => {
+  // Only enable physics on devices that support hover (desktop)
+  // This prevents erratic behavior on touch scrolling.
+  if (window.matchMedia("(hover: none)").matches) return;
+
   const card = document.querySelector('.glass-manifesto');
   if (!card) return;
 
   const handleMove = (e) => {
     const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left; // x position within the element.
-    const y = e.clientY - rect.top;  // y position within the element.
+    const x = e.clientX - rect.left; 
+    const y = e.clientY - rect.top;  
     
     // Calculate rotation (max 10deg)
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     
-    const rotateX = ((y - centerY) / centerY) * -8; // Invert axis for natural tilt
+    const rotateX = ((y - centerY) / centerY) * -8; 
     const rotateY = ((x - centerX) / centerX) * 8;
     
-    // Calculate sheen position (inverted movement)
+    // Calculate sheen position 
     const bgX = ((x / rect.width) * 100);
     const bgY = ((y / rect.height) * 100);
 
@@ -101,8 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const handleLeave = () => {
-    // Reset to center but keep a slight 'alive' drift if desired, 
-    // or just snap back smoothly.
     card.style.setProperty('--rotateX', '0deg');
     card.style.setProperty('--rotateY', '0deg');
   };
@@ -113,15 +115,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Animated Eye Pupil Tracking
 document.addEventListener('DOMContentLoaded', () => {
+    // Also disable eye tracking on mobile for performance/battery
+    if (window.matchMedia("(hover: none)").matches) return;
+
     const card = document.querySelector('.glass-manifesto');
     if (!card) return;
     
-    // We already have a mousemove listener on the card from the Tilt logic.
-    // However, the previous implementation was an inline overwrite in run_command.
-    // Ideally, we should integrate it or add a new listener.
-    // The previous listener sets --rotateX/Y. We can add another listener for the eye
-    // or assume the CSS will handle it if we set global vars, but scoping to the card is better.
-
     card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
         // Mouse relative to card center

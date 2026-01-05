@@ -2762,6 +2762,9 @@ input:focus, select:focus, textarea:focus {
   transform-style: preserve-3d;
   transform: perspective(1000px) rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg));
   transition: transform 0.1s ease-out, box-shadow 0.3s ease;
+  
+  /* Ensure mobile scrolling works smoothly over the card */
+  touch-action: pan-y; 
 }
 
 /* Shine Hover State */
