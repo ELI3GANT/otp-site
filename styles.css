@@ -2712,25 +2712,60 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
-/* STUDIO / PHILOSOPHY SECTION */
+/* STUDIO / PHILOSOPHY SECTION (Verified Glass Manifesto) */
 .section-studio {
   position: relative;
-  padding: 120px 0;
+  padding: 140px 0;
   overflow: hidden;
 }
 
-.studio-content {
+.glass-manifesto {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 60px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 60px;
   position: relative;
   z-index: 2;
-  max-width: 900px;
-  margin: 0 auto;
+  box-shadow: 0 20px 80px rgba(0,0,0,0.4);
+}
+
+.manifesto-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  padding-right: 40px;
+}
+
+.identity-marker {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  line-height: 1.2;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 0.2em;
+}
+
+.rotating-star {
+  font-size: 2rem;
+  color: var(--accent2);
+  animation: spinSlow 10s linear infinite;
 }
 
 .studio-title {
-  font-size: clamp(3rem, 8vw, 6rem);
+  font-size: clamp(3rem, 6vw, 5rem);
   line-height: 0.95;
-  margin: 20px 0 40px;
-  background: linear-gradient(180deg, #fff, rgba(255,255,255,0.7));
+  margin-bottom: 30px;
+  background: linear-gradient(180deg, #fff, rgba(255,255,255,0.5));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -2738,35 +2773,86 @@ input:focus, select:focus, textarea:focus {
 }
 
 .studio-body {
-  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-size: clamp(1.1rem, 1.5vw, 1.3rem);
   line-height: 1.6;
   color: var(--muted);
-  max-width: 700px;
-  margin: 0 auto;
   font-weight: 400;
+  max-width: 800px;
 }
 
 .studio-body p {
   margin-bottom: 20px;
 }
 
-/* Glass/Glow Effect for Studio Section */
+.manifesto-stats {
+  display: flex;
+  gap: 40px;
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+/* Background Glow */
 .section-studio::before {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 60%;
-  height: 60%;
-  background: radial-gradient(circle, rgba(112, 0, 255, 0.08) 0%, rgba(0,0,0,0) 70%);
-  filter: blur(80px);
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(112, 0, 255, 0.06) 0%, rgba(0,0,0,0) 70%);
+  filter: blur(100px);
   z-index: 1;
   pointer-events: none;
 }
 
-@media (max-width: 768px) {
-  .section-studio {
-    padding: 80px 0;
+@media (max-width: 900px) {
+  .glass-manifesto {
+    grid-template-columns: 1fr;
+    padding: 30px;
+    gap: 30px;
   }
+  .manifesto-left {
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-right: 0;
+    padding-bottom: 20px;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .identity-marker {
+    writing-mode: horizontal-tb;
+    letter-spacing: 0.1em;
+  }
+  .manifesto-stats {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
