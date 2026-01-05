@@ -2723,17 +2723,43 @@ input:focus, select:focus, textarea:focus {
   display: grid;
   grid-template-columns: 60px 1fr;
   gap: 50px;
-  background: rgba(255, 255, 255, 0.02);
+  
+  /* Holo Card Background & Sheen */
+  background: linear-gradient(
+    115deg, 
+    rgba(255, 255, 255, 0.03) 0%, 
+    rgba(255, 255, 255, 0.01) 30%, 
+    rgba(255, 255, 255, 0.12) 45%, /* The Shine Line */
+    rgba(255, 255, 255, 0.01) 60%, 
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  background-size: 200% 100%;
+  animation: holoShine 6s ease-in-out infinite;
+
+  /* Glass Filter */
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-right: 1px solid rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  
+  /* Premium Border & Ray Tracing */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 24px;
+  
+  /* The "Rare" Aura */
+  box-shadow: 
+    0 30px 60px rgba(0,0,0,0.6), 
+    0 0 50px rgba(112, 0, 255, 0.25), /* Violet Aura */
+    0 0 100px rgba(0, 195, 255, 0.15); /* Cyan Aura */
+    
   padding: 50px 60px;
   position: relative;
   z-index: 2;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+}
+
+@keyframes holoShine {
+  0% { background-position: 150% 0; }
+  100% { background-position: -50% 0; }
 }
 
 .manifesto-left {
