@@ -2986,6 +2986,7 @@ input:focus, select:focus, textarea:focus {
   }
   
   .glass-manifesto {
+    transform: none !important; /* Disable 3D tilt on mobile */
     display: flex;
     flex-direction: column;
     width: 100% !important;
