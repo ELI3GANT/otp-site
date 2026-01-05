@@ -117,12 +117,29 @@
     <div class="wrap">
       <div class="glass-manifesto">
         <div class="manifesto-left">
-          <div class="identity-marker">
-            <span>WHO</span>
-            <span>WE</span>
-            <span>ARE</span>
-          </div>
-          <div class="rotating-star">✦</div>
+          <!-- Animated SVG Eye -->
+          <svg class="otp-eye-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Lashes Group -->
+            <g class="eye-lashes">
+              <line x1="15" y1="25" x2="22" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="35" y1="15" x2="38" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="50" y1="12" x2="50" y2="25" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="65" y1="15" x2="62" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="85" y1="25" x2="78" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            </g>
+            
+            <!-- Eye Shape (Blinking Mask) -->
+            <g class="eye-shape-group">
+               <!-- Main outline -->
+               <path d="M10 50 C10 50 30 25 50 25 C70 25 90 50 90 50 C90 50 70 75 50 75 C30 75 10 50 10 50 Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+               
+               <!-- Pupil Group (Moves with Mouse) -->
+               <g class="eye-pupil-group">
+                 <circle cx="50" cy="50" r="14" fill="currentColor"/>
+                 <circle cx="55" cy="45" r="4" fill="white"/> <!-- Glint -->
+               </g>
+            </g>
+          </svg>
         </div>
         <div class="manifesto-right">
           <span class="eyebrow" style="color: var(--accent2); margin-bottom: 20px; display: block;">The Philosophy</span>

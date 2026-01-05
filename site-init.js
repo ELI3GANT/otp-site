@@ -110,3 +110,34 @@ document.addEventListener('DOMContentLoaded', () => {
   card.addEventListener('mousemove', handleMove);
   card.addEventListener('mouseleave', handleLeave);
 });
+
+// Animated Eye Pupil Tracking
+document.addEventListener('DOMContentLoaded', () => {
+    const card = document.querySelector('.glass-manifesto');
+    if (!card) return;
+    
+    // We already have a mousemove listener on the card from the Tilt logic.
+    // However, the previous implementation was an inline overwrite in run_command.
+    // Ideally, we should integrate it or add a new listener.
+    // The previous listener sets --rotateX/Y. We can add another listener for the eye
+    // or assume the CSS will handle it if we set global vars, but scoping to the card is better.
+
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        // Mouse relative to card center
+        const x = e.clientX - rect.left - (rect.width / 2);
+        const y = e.clientY - rect.top - (rect.height / 2);
+        
+        // Limit movement range for the pupil (e.g., +/- 10px)
+        const moveX = (x / rect.width) * 20; 
+        const moveY = (y / rect.height) * 15;
+
+        card.style.setProperty('--eyeX', `${moveX}px`);
+        card.style.setProperty('--eyeY', `${moveY}px`);
+    });
+    
+    card.addEventListener('mouseleave', () => {
+         card.style.setProperty('--eyeX', '0px');
+         card.style.setProperty('--eyeY', '0px');
+    });
+});

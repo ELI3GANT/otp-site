@@ -2777,33 +2777,63 @@ input:focus, select:focus, textarea:focus {
   100% { background-position: -50% 0; }
 }
 
+/* Eye Animation Styles */
 .manifesto-left {
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
   border-right: 1px solid rgba(255,255,255,0.06);
   padding-right: 30px;
+  position: relative;
 }
 
-.identity-marker {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 1rem;
-  line-height: 1.4;
-  color: rgba(255,255,255,0.3);
-  text-align: center;
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
+.otp-eye-svg {
+  width: 100%;
+  max-width: 120px;
+  height: auto;
+  color: #fff;
+  transition: color 0.3s ease;
+  filter: drop-shadow(0 0 10px rgba(0, 195, 255, 0.5));
 }
 
-.rotating-star {
-  font-size: 1.4rem;
+.glass-manifesto:hover .otp-eye-svg {
   color: var(--accent2);
-  animation: spinSlow 12s linear infinite;
-  opacity: 0.8;
+  filter: drop-shadow(0 0 20px rgba(112, 0, 255, 0.8));
+}
+
+.eye-lashes line {
+  transition: transform 0.3s ease;
+  transform-origin: 50% 50%;
+}
+
+/* Blink Animation */
+.eye-shape-group {
+  animation: blinkGap 6s infinite;
+  transform-origin: center;
+}
+
+@keyframes blinkGap {
+  0%, 48%, 52%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.1); }
+}
+
+/* Pupil tracking is handled via JS CSS vars */
+.eye-pupil-group {
+  transform: translate(var(--eyeX, 0px), var(--eyeY, 0px));
+  transition: transform 0.1s ease-out;
+}
+
+@media (max-width: 900px) {
+  .manifesto-left {
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-right: 0;
+    padding-bottom: 20px;
+    justify-content: center;
+  }
+  .otp-eye-svg {
+    max-width: 80px;
+  }
 }
 
 .manifesto-right {
