@@ -746,7 +746,14 @@ html {
   opacity: 0;
 }
 
-.nav-drawer a {
+/* Mobile Portal Section */
+.mobile-portal {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.nav-drawer a, .mobile-portal-link {
   padding: 14px 14px;
   border-radius: 14px;
   text-decoration: none;
@@ -755,6 +762,15 @@ html {
   opacity: 0.9;
   font-weight: 600;
   text-align: center;
+  color: var(--text);
+  flex: 1; /* Equal width for portal buttons */
+}
+
+/* Highlight "Sign Up" */
+.mobile-portal-link.highlight {
+  background: rgba(112, 0, 255, 0.15);
+  border-color: rgba(112, 0, 255, 0.3);
+  color: #fff;
 }
 .nav-drawer.open { 
   display: flex; 
@@ -764,7 +780,7 @@ html {
 
 /* HERO */
 .hero {
-  min-height: 100vh;
+  min-height: 100dvh; /* Better mobile address bar support */
   height: auto;
   display: flex;
   align-items: center;

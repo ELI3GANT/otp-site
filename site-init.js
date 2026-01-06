@@ -225,6 +225,35 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(updateSlider, 100);
     }
 
+    // --- PORTAL DROPDOWN ---
+    const portalBtn = document.getElementById('portalBtn');
+    const portalDropdown = document.getElementById('portalDropdown');
+    
+    if (portalBtn && portalDropdown) {
+        // Toggle on click
+        portalBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isActive = portalDropdown.classList.contains('active');
+            
+            // Close all others if any (not needed here but good practice)
+            document.querySelectorAll('.portal-dropdown').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.portal-btn').forEach(b => b.classList.remove('active'));
+
+            if (!isActive) {
+                portalDropdown.classList.add('active');
+                portalBtn.classList.add('active');
+            }
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!portalDropdown.contains(e.target)) {
+                portalDropdown.classList.remove('active');
+                portalBtn.classList.remove('active');
+            }
+        });
+    }
+
     // --- ARCHIVE HOVER VIDEOS ---
     const projectCards = document.querySelectorAll('.project-card');
     projectCards.forEach(pCard => {
