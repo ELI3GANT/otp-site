@@ -208,8 +208,18 @@ document.addEventListener('DOMContentLoaded', () => {
             afterWrap.style.width = `${val}%`;
             handle.style.left = `${val}%`;
             const afterImg = afterWrap.querySelector('img');
-            if (afterImg) { afterImg.style.width = `${container.offsetWidth}px`; }
+            if (afterImg) { 
+                afterImg.style.width = `${container.offsetWidth}px`; 
+            }
         };
+
+        // Ensure update runs after images load
+        const allImages = container.querySelectorAll('img');
+        allImages.forEach(img => {
+            if (img.complete) updateSlider();
+            else img.onload = updateSlider;
+        });
+
         slider.addEventListener('input', updateSlider);
         window.addEventListener('resize', updateSlider);
         setTimeout(updateSlider, 100);

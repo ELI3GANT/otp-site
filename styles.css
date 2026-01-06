@@ -93,9 +93,11 @@ body::before {
 }
 
 html, body {
+  scroll-padding-top: 100px; /* Prevent fixed nav from covering anchors */
   cursor: auto; /* Ensure default cursor */
   margin: 0 !important;
   padding: 0 !important;
+
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
   background-color: var(--bg);
@@ -2365,7 +2367,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .archive-header {
-  margin: 140px 0 60px; /* Increased top spacing per request */
+  margin: 100px 0 60px; /* Reduced to fit large neon icon above */
 }
 
 .archive-header h1 {
@@ -2384,7 +2386,63 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+/* HEADER VISUALS (NEON ICONS) */
+.header-visual {
+  width: 15vw;
+  min-width: 120px;
+  max-width: 200px;
+  margin: 0 auto 30px;
+  position: relative;
+  filter: drop-shadow(0 0 15px var(--accent-glow));
+}
+
+.neon-icon {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.folder-outline, .brain-outline {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: drawStroke 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.file-line, .pulse-line {
+  opacity: 0;
+  animation: flickerGlow 3s infinite alternate;
+}
+
+.line-1 { animation-delay: 0.2s; }
+.line-2 { animation-delay: 0.5s; }
+.line-3 { animation-delay: 0.8s; }
+
+.status-dot, .core-glow {
+  animation: corePulse 2s infinite ease-in-out;
+}
+
+@keyframes drawStroke {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes flickerGlow {
+  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 10px var(--accent2));
+  }
+  20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+    opacity: 0.1;
+    filter: none;
+  }
+}
+
+@keyframes corePulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; filter: blur(5px); }
+}
+
 .archive-grid {
+
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
