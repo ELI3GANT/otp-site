@@ -347,14 +347,65 @@ html {
 }
 
 .hero-eye-3d {
-  width: 320px;
-  max-width: 80vw;
+  width: 400px; /* Commands more attention */
+  max-width: 90vw;
   height: auto;
-  /* Brightness and contrast ensure the black is 100% keyed out */
-  filter: contrast(1.3) brightness(1.2) drop-shadow(0 0 35px var(--accent-glow));
+  filter: contrast(1.3) brightness(1.2) drop-shadow(0 0 45px rgba(112,0,255,0.25));
   animation: visionSpin 15s ease-in-out infinite;
   transform-style: preserve-3d;
   display: block;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.2s ease-out; /* For magnetic interaction */
+}
+
+/* Holographic Scanner Overlay */
+.hero-logo-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, 
+    transparent 0%, 
+    rgba(0, 255, 255, 0) 45%, 
+    rgba(0, 255, 255, 0.4) 50%, 
+    rgba(0, 255, 255, 0) 55%, 
+    transparent 100%);
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: scannerSweep 8s ease-in-out infinite;
+  mask-image: radial-gradient(circle, black 40%, transparent 80%);
+}
+
+@keyframes scannerSweep {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 0.6; }
+  50% { transform: translateY(100%); opacity: 0.6; }
+  60% { opacity: 0; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
+/* Dynamic Energy Aura */
+.hero-logo-wrap::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(112, 0, 255, 0.15) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  animation: auraBreath 5s ease-in-out infinite;
+}
+
+@keyframes auraBreath {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.4; }
+  50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.8; }
 }
 
 @keyframes visionSpin {

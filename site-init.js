@@ -250,4 +250,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- MAGNETIC HERO VISION ---
+    const heroEye = document.querySelector('.hero-eye-3d');
+    if (heroEye && !isMobile) {
+        window.addEventListener('mousemove', (e) => {
+            const rect = heroEye.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
+            
+            // Calculate distance and angle
+            const deltaX = (mouseX - centerX) / window.innerWidth;
+            const deltaY = (mouseY - centerY) / window.innerHeight;
+            
+            // Apply subtle tilt and rotation
+            const rotateX = deltaY * 30; // Max 15 deg tilt
+            const rotateY = deltaX * 30; // Max 15 deg tilt
+            
+            // Note: Keep the 15s animation spinning but inject additional rotation
+            // We'll use a wrapper or just set custom property for smoother blend
+            heroEye.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        
+        window.addEventListener('mouseleave', () => {
+            heroEye.style.transform = `rotateX(0deg) rotateY(0deg)`;
+        });
+    }
+
 });
