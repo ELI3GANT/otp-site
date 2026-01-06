@@ -337,17 +337,15 @@ html {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto 10px; /* Reduced from 30px to pull text closer */
+  margin: 0 auto 10px;
   isolation: isolate;
   width: fit-content;
-  /* Mask feathers the edges of the box so it never clips shadows or background */
-  mask-image: radial-gradient(circle, black 50%, transparent 90%);
-  -webkit-mask-image: radial-gradient(circle, black 50%, transparent 90%);
   perspective: 1200px;
+  /* Mask removed to allow outer aura */
 }
 
 .hero-eye-3d {
-  width: 440px; /* Lil bigger size boost */
+  width: 440px;
   max-width: 90vw;
   height: auto;
   filter: contrast(1.3) brightness(1.2) drop-shadow(0 0 45px rgba(112,0,255,0.25));
@@ -356,7 +354,10 @@ html {
   display: block;
   position: relative;
   z-index: 1;
-  transition: transform 0.2s ease-out; /* For magnetic interaction */
+  transition: transform 0.2s ease-out;
+  /* Apply mask here to keep image edges clean */
+  mask-image: radial-gradient(circle, black 50%, transparent 95%);
+  -webkit-mask-image: radial-gradient(circle, black 50%, transparent 95%);
 }
 
 /* Glitch Halo (Replacing Sonar Pulse) */
@@ -369,7 +370,7 @@ html {
   height: 100%;
   border-radius: 50%;
   border: 1px solid rgba(0, 255, 255, 0);
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) scale(1.1); /* Start slightly outside */
   opacity: 0;
   z-index: 0;
   pointer-events: none;
@@ -378,27 +379,27 @@ html {
 }
 
 @keyframes glitchHalo {
-  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; border-color: rgba(0, 255, 255, 0); }
+  0% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; border-color: rgba(0, 255, 255, 0); }
   
   /* Initial Snap */
-  2% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.8; border-color: rgba(0, 255, 255, 0.9); border-width: 2px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
-  4% { transform: translate(-50%, -50%) scale(1.02); opacity: 0; border-width: 0; }
+  2% { transform: translate(-50%, -50%) scale(1.35); opacity: 0.8; border-color: rgba(0, 255, 255, 0.9); border-width: 2px; box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+  4% { transform: translate(-50%, -50%) scale(1.25); opacity: 0; border-width: 0; }
 
   /* Magenta Twitch */
-  25% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-  26% { transform: translate(-50%, -50%) scale(1.12); opacity: 0.6; border-color: rgba(255, 0, 255, 0.8); border-width: 4px; box-shadow: 0 0 30px rgba(255, 0, 255, 0.4); }
-  28% { transform: translate(-50%, -50%) scale(1.0); opacity: 0; }
+  25% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+  26% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.6; border-color: rgba(255, 0, 255, 0.8); border-width: 4px; box-shadow: 0 0 30px rgba(255, 0, 255, 0.4); }
+  28% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
 
   /* Whiteout Ghost */
-  55% { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
-  56% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.4; border-color: rgba(255, 255, 255, 0.7); border-width: 1px; }
+  55% { transform: translate(-50%, -50%) scale(1.15); opacity: 0; }
+  56% { transform: translate(-50%, -50%) scale(1.45); opacity: 0.4; border-color: rgba(255, 255, 255, 0.7); border-width: 1px; }
   58% { opacity: 0; }
 
   /* Double Pulse */
-  80% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.3; border-color: cyan; }
-  81% { transform: translate(-50%, -50%) scale(1.15); opacity: 0; }
+  80% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.3; border-color: cyan; }
+  81% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
   
-  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0; }
 }
 
 /* Dynamic Energy Aura */
