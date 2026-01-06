@@ -26,8 +26,9 @@
   width: 36px;
   height: 36px;
   object-fit: contain;
-  filter: drop-shadow(0 0 12px rgba(214,178,94,0.35));
+  filter: contrast(1.2) brightness(1.1) drop-shadow(0 0 12px rgba(214,178,94,0.35));
   opacity: 0.95;
+  mix-blend-mode: screen;
 }
 
 .hero-gif {
@@ -320,7 +321,7 @@ html {
   border-color: var(--stroke);
   box-shadow: 0 0 20px rgba(112,0,255,0.15);
   mix-blend-mode: screen;
-  filter: contrast(1.1) brightness(1.1);
+  filter: contrast(1.3) brightness(1.2);
 }
 
 .hero-content {
@@ -331,31 +332,37 @@ html {
   isolation: isolate; /* Create new stacking context for blending */
 }
 
-@keyframes eye3DSpin {
-  0% { transform: rotateY(-12deg) translateY(0); }
-  50% { transform: rotateY(12deg) translateY(-15px); }
-  100% { transform: rotateY(-12deg) translateY(0); }
-}
-
 .hero-logo-wrap {
-  mix-blend-mode: screen;
+  mix-blend-mode: screen; 
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  margin: 0 auto 30px;
   isolation: isolate;
-  position: relative;
-  z-index: 5;
+  width: fit-content;
+  /* Mask feathers the edges of the box so it never clips shadows or background */
+  mask-image: radial-gradient(circle, black 50%, transparent 90%);
+  -webkit-mask-image: radial-gradient(circle, black 50%, transparent 90%);
+  perspective: 1200px;
 }
 
 .hero-eye-3d {
   width: 320px;
   max-width: 80vw;
   height: auto;
-  filter: contrast(1.1) brightness(1.1) drop-shadow(0 0 30px var(--accent-glow));
-  animation: eye3DSpin 12s ease-in-out infinite;
+  /* Brightness and contrast ensure the black is 100% keyed out */
+  filter: contrast(1.3) brightness(1.2) drop-shadow(0 0 35px var(--accent-glow));
+  animation: visionSpin 15s ease-in-out infinite;
+  transform-style: preserve-3d;
   display: block;
 }
+
+@keyframes visionSpin {
+  0% { transform: rotateY(-20deg) rotateX(10deg); }
+  50% { transform: rotateY(20deg) rotateX(-10deg); }
+  100% { transform: rotateY(-20deg) rotateX(10deg); }
+}
+
 
 .logo-pulse {
 
