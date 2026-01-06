@@ -319,23 +319,25 @@ html {
   /* ...existing styles... */
   border-color: var(--stroke);
   box-shadow: 0 0 20px rgba(112,0,255,0.15);
+  mix-blend-mode: screen;
+}
+
+@keyframes eye3DSpin {
+  0% { transform: perspective(1000px) rotateY(-12deg) rotateX(2deg) translateY(0); }
+  50% { transform: perspective(1000px) rotateY(12deg) rotateX(-2deg) translateY(-20px); }
+  100% { transform: perspective(1000px) rotateY(-12deg) rotateX(2deg) translateY(0); }
 }
 
 .hero-eye-3d {
+  mix-blend-mode: screen; /* This will perfectly hide any black background and make it truly transparent on the dark site */
   width: 320px;
   max-width: 80vw;
   height: auto;
   margin-bottom: 20px;
-  filter: drop-shadow(0 0 20px var(--accent-glow));
+  filter: drop-shadow(0 0 25px var(--accent-glow));
   animation: eye3DSpin 12s ease-in-out infinite;
   transform-style: preserve-3d;
-  perspective: 1000px;
-}
-
-@keyframes eye3DSpin {
-  0% { transform: perspective(1000px) rotateY(-10deg) translateY(0); }
-  50% { transform: perspective(1000px) rotateY(10deg) translateY(-15px); }
-  100% { transform: perspective(1000px) rotateY(-10deg) translateY(0); }
+  will-change: transform;
 }
 
 .logo-pulse {
