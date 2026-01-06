@@ -337,7 +337,7 @@ html {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 auto 30px;
+  margin: 0 auto 10px; /* Reduced from 30px to pull text closer */
   isolation: isolate;
   width: fit-content;
   /* Mask feathers the edges of the box so it never clips shadows or background */
@@ -347,7 +347,7 @@ html {
 }
 
 .hero-eye-3d {
-  width: 400px; /* Commands more attention */
+  width: 440px; /* Lil bigger size boost */
   max-width: 90vw;
   height: auto;
   filter: contrast(1.3) brightness(1.2) drop-shadow(0 0 45px rgba(112,0,255,0.25));
