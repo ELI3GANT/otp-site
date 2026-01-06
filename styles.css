@@ -161,9 +161,97 @@ html {
 }
 
 ::selection {
-  background: rgba(214,178,94,0.28);
-  color: rgba(255,255,255,0.98);
+  background: rgba(112, 0, 255, 0.3);
+  color: #fff;
 }
+
+/* SCARCITY BADGE */
+.scarcity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.2);
+  color: #ff4444;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  background: #ff4444;
+  border-radius: 50%;
+  position: relative;
+  animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-top: 50px;
+}
+
+.result-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 40px 20px;
+  border-radius: 24px;
+  text-align: center;
+  transition: all 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.result-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent2);
+  transform: translateY(-10px);
+  box-shadow: 0 20px 60px rgba(0, 195, 255, 0.1);
+}
+
+.result-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.result-label {
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .results-grid { grid-template-columns: 1fr; }
+  .result-value { font-size: 2.5rem; }
+}
+
+
+.eyebrow-mini {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
 
 .wrap { width: min(1100px, 92vw); margin: 0 auto; max-width: 100%; }
 .section { padding: 96px 0; }
@@ -758,13 +846,16 @@ textarea:focus-visible {
 
 /* Reviews / Social Proof */
 .reviews-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  justify-content: center;
   gap: 24px;
   margin-top: 40px;
-  text-align: left;
+  text-align: center;
 }
 .review-card {
+  max-width: 500px;
+  width: 100%;
+
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 32px;
@@ -2332,7 +2423,37 @@ input:focus, select:focus, textarea:focus {
 
 .project-card:hover .project-img-static {
   transform: scale(1.05); /* Subtle zoom on hover */
+  opacity: 0; /* Hide image on hover when video is present */
 }
+
+/* VIDEO PREVIEW STYLES */
+.video-preview-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.project-card:hover .video-preview-container {
+  opacity: 1;
+}
+
+.video-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.1);
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.project-card:hover .video-preview {
+  transform: scale(1);
+}
+
 
 .project-card {
   position: relative;
@@ -2427,6 +2548,7 @@ input:focus, select:focus, textarea:focus {
   padding: 32px;
   overflow: hidden;
   transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.4s ease;
+  cursor: pointer;
 }
 
 .insight-card:hover {
@@ -3293,10 +3415,129 @@ input:focus, select:focus, textarea:focus {
   pointer-events: none;
 }
 
-@keyframes spinSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+/* BEFORE / AFTER SLIDER Styles */
+.section-transformation {
+  background: rgba(5, 5, 10, 0.3);
+  border-top: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
 }
+
+.transformation-container {
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.ba-slider {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 30px 100px rgba(0,0,0,0.8);
+  user-select: none;
+}
+
+.ba-before, .ba-after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ba-after-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%; /* Initial state */
+  height: 100%;
+  overflow: hidden;
+  z-index: 2;
+  border-right: 2px solid #fff;
+}
+
+.ba-after {
+  width: auto;
+  height: 100%;
+  max-width: none;
+  /* Crucial: image width must match container width to stay aligned */
+  aspect-ratio: 16/9; 
+}
+
+/* Since the wrap changes width, we need a trick to keep the image full size */
+.ba-slider img {
+  pointer-events: none;
+}
+
+.ba-range {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: ew-resize;
+  z-index: 10;
+}
+
+.ba-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  background: #fff;
+  z-index: 5;
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 0 20px rgba(255,255,255,0.5);
+}
+
+.ba-arrows {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  background: #fff;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-weight: 900;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.ba-label {
+  position: absolute;
+  bottom: 20px;
+  padding: 8px 16px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  z-index: 6;
+  border: 1px solid rgba(255,255,255,0.1);
+  pointer-events: none;
+}
+
+.ba-label.before { right: 20px; color: var(--muted); }
+.ba-label.after { left: 20px; color: var(--accent2); }
+
+@media (max-width: 768px) {
+  .ba-slider { border-radius: 12px; }
+  .ba-label { font-size: 0.6rem; bottom: 10px; }
+  .ba-arrows { width: 40px; height: 40px; }
+}
+
 
 /* ========================================= */
 /* MOBILE OPTIMIZATIONS (MOVED TO END)       */
@@ -3317,7 +3558,7 @@ input:focus, select:focus, textarea:focus {
   }
   
   .glass-manifesto {
-    transform: translateY(var(--floatY, 0px)) !important; /* Allow floating but disable 3D tilt */
+    transform: perspective(1200px) rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg)) translateY(var(--floatY, 0px)) !important;
     display: flex;
     flex-direction: column;
     width: 100% !important;
