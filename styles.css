@@ -771,7 +771,7 @@ html {
   justify-content: center;
   position: relative;
   text-align: center;
-  padding: 60px 24px 40px; /* Tighter padding to fit viewport */
+  padding: 40px 24px 30px; /* Reduced top padding significantly */
 }
 
 .hero h1 {
@@ -795,13 +795,13 @@ html {
 }
 
 .hero .subtitle {
-  margin-top: 14px;
+  margin-top: 10px; /* Reduced from 14px */
   color: var(--muted);
   font-size: clamp(1.0rem, 1.3vw, 1.1rem);
 }
 
 .hero p {
-  margin-top: 14px;
+  margin-top: 10px; /* Reduced from 14px */
   color: var(--muted);
   font-size: clamp(1.0rem, 1.3vw, 1.1rem);
 }
@@ -839,7 +839,7 @@ html {
 
 .eyebrow {
   display: inline-block;
-  margin-bottom: 14px;
+  margin-bottom: 10px; /* Reduced from 14px */
   padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.12);
@@ -850,7 +850,7 @@ html {
 }
 
 .hero-cta {
-  margin-top: 28px;
+  margin-top: 20px; /* Reduced from 28px */
   display: flex;
   gap: 12px;
   justify-content: center;
@@ -895,7 +895,7 @@ textarea:focus-visible {
 }
 
 .hero-micro {
-  margin-top: 22px;
+  margin-top: 15px; /* Reduced from 22px */
   color: rgba(255,255,255,0.72);
   font-size: 0.95rem;
   letter-spacing: 0.6px;
