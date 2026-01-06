@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 | Perspective Lost</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .error-page {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            background: #030305;
+        }
+        .error-code {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(5rem, 15vw, 10rem);
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.1) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            font-size: 1.25rem;
+            color: var(--muted);
+            margin-bottom: 40px;
+            max-width: 40ch;
+        }
+    </style>
+</head>
+<body class="error-page">
+    <div class="bg-fixed"></div>
+    <div class="error-code">404</div>
+    <div class="error-message">You've reached a blind spot in the vision. This perspective doesn't exist yet.</div>
+    <a href="index.html" class="book-btn">Back to Reality</a>
+    
+    <script src="stars-v2.js"></script>
+    <script src="site-init.js"></script>
+</body>
+</html>
