@@ -52,6 +52,170 @@
       ]
     }
   </script>
+<style>
+/* V2 CARD STYLES */
+.identity-card-v2 {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  background: rgba(10, 10, 16, 0.6);
+  border: 1px solid rgba(0, 195, 255, 0.2);
+  border-radius: 4px; /* Sharper */
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  backdrop-filter: blur(20px);
+}
+
+.id-v2-content {
+  display: flex;
+  width: 100%;
+  padding: 60px;
+  gap: 60px;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.id-v2-glow {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at 30% 50%, rgba(0, 195, 255, 0.1), transparent 50%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* VISUAL (EYE) */
+.id-v2-visual {
+  flex: 0 0 200px;
+  height: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  background: rgba(0,0,0,0.3);
+}
+
+.cyber-eye-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  animation: pulseGlow 4s infinite alternate;
+}
+
+.cyber-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px dashed rgba(0, 195, 255, 0.5);
+}
+
+.ring-1 { width: 140px; height: 140px; animation: spinRight 10s linear infinite; }
+.ring-2 { width: 100px; height: 100px; border-style: solid; border-width: 1px; border-color: rgba(112, 0, 255, 0.5); animation: spinLeft 6s linear infinite; }
+
+.cyber-pupil {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px; height: 40px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.8);
+}
+
+.scan-line {
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: rgba(0, 195, 255, 0.8);
+  box-shadow: 0 0 10px rgba(0, 195, 255, 1);
+  animation: scanDown 3s linear infinite;
+}
+
+/* INFO */
+.id-v2-info {
+  flex: 1;
+  text-align: left;
+}
+
+.id-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-family: 'Space Grotesk', monospace;
+  font-size: 0.8rem;
+  color: var(--accent2);
+  letter-spacing: 2px;
+}
+
+.id-status {
+  color: #0f0;
+  text-shadow: 0 0 5px #0f0;
+}
+
+.id-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 4rem;
+  line-height: 0.9;
+  margin-bottom: 20px;
+  background: linear-gradient(90deg, #fff, #aaa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.id-body p {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.6;
+  max-width: 500px;
+}
+
+.id-stats {
+  display: flex;
+  gap: 40px;
+  margin-top: 30px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+@keyframes spinRight { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes spinLeft { from { transform: translate(-50%, -50%) rotate(360deg); } to { transform: translate(-50%, -50%) rotate(0deg); } }
+@keyframes scanDown { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+@keyframes pulseGlow { 0% { filter: drop-shadow(0 0 5px rgba(0,195,255,0.5)); } 100% { filter: drop-shadow(0 0 15px rgba(0,195,255,0.9)); } }
+
+/* Mobile Adaptations */
+@media (max-width: 800px) {
+  .id-v2-content { flex-direction: column; text-align: center; padding: 30px; gap: 30px; }
+  .id-v2-info { text-align: center; width: 100%; }
+  .id-header { justify-content: center; gap: 20px; }
+  .id-stats { justify-content: center; }
+  .id-title { font-size: 2.5rem; }
+  .identity-card-v2 { clip-path: none; border-radius: 12px; }
+  .id-body p { margin: 0 auto; }
+}
+</style>
 </head>
 <body>
   <div class="bg-fixed"></div>
@@ -60,18 +224,16 @@
   <!-- NAV -->
   <header class="nav nav-split" id="top">
     <!-- Logo Left -->
-    <a href="#top" class="nav-logo" aria-label="OTP">
+    <a href="#work" class="nav-logo" aria-label="OTP">
       <img src="assets/otp.gif" alt="OTP" class="otp-mark" />
     </a>
 
     <nav class="nav-links" aria-label="Primary">
-      <a href="#work" class="active k-hover">Work</a>
+      <a href="#work" class="k-hover">Work</a>
       <a href="archive.html" class="k-hover">Archive</a>
       <a href="insights.html" class="k-hover">Insights</a>
       <a href="#services" class="k-hover">Services</a>
       <a href="#contact" class="k-hover">Contact</a>
-      <!-- Client Portal removed for now -->
-
     </nav>
 
     <!-- Mobile toggle -->
@@ -84,8 +246,6 @@
       <a href="archive.html">Archive</a>
       <a href="insights.html">Insights</a>
       <a href="#contact">Contact</a>
-      <!-- Client Portal links removed -->
-
     </nav>
   </header>
 
@@ -101,21 +261,21 @@
         <span class="title">PERSPECTIVE</span>
       </h1>
       
-      <p class="subtitle-lead">High-retention visual identities for artists, brands, and creators.</p>
-      <p class="hero-value">We build cinematic worlds that drive results and command attention.</p>
+      <p class="subtitle-lead">See the world through our eyes. Content that grows your audience and drives results.</p>
       
       <div class="hero-cta">
         <a href="#contact" class="book-btn">Start a Project</a>
       </div>
 
       <div class="hero-micro">
-        <span>24–72h turnaround</span>
+        <span>24–72h turnaround options</span>
         <span class="dot">•</span>
-        <span>Cinematic Storytelling</span>
+        <span>Clean exports for every platform</span>
         <span class="dot">•</span>
-        <span>Strategic Brand Growth</span>
+        <span>Sound + visuals aligned</span>
+        <span class="dot">•</span>
+        <span>Web-ready brand HQ builds</span>
       </div>
-
     </div>
   </main>
 
@@ -123,46 +283,46 @@
   <!-- STUDIO / PHILOSOPHY -->
   <section id="studio" class="section-studio">
     <div class="wrap">
-      <div class="glass-manifesto">
-        <div class="manifesto-left">
-          <!-- Animated SVG Eye -->
-          <svg class="otp-eye-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Lashes Group -->
-            <g class="eye-lashes">
-              <line x1="15" y1="25" x2="22" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="35" y1="15" x2="38" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="50" y1="12" x2="50" y2="25" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="65" y1="15" x2="62" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="85" y1="25" x2="78" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-            </g>
-            
-            <!-- Eye Shape (Blinking Mask) -->
-            <g class="eye-shape-group">
-               <!-- Main outline -->
-               <path d="M10 50 C10 50 30 25 50 25 C70 25 90 50 90 50 C90 50 70 75 50 75 C30 75 10 50 10 50 Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-               
-               <!-- Pupil Group (Moves with Mouse) -->
-               <g class="eye-pupil-group">
-                 <circle cx="50" cy="50" r="14" fill="currentColor"/>
-                 <circle cx="55" cy="45" r="4" fill="white"/> <!-- Glint -->
-               </g>
-            </g>
-          </svg>
-        </div>
-        <div class="manifesto-right">
-          <span class="eyebrow" style="color: var(--accent2); margin-bottom: 20px; display: block;">IDENTITY</span>
-          <h2 class="syne-bold studio-title">A PERSPECTIVE<br>THAT'S TRUE.</h2>
-          <div class="studio-body">
-            <p>OTP is a perspective that's true to you, to anyone that resonates. We don't just cut footage; we build worlds.</p>
-            <p>This is a journey. Everyone has a story to tell, see, hear, and feel.</p>
-            
-            <div class="capabilities-list">
-              <span class="cap-tag">Vision</span>
-              <span class="cap-tag">Innovation</span>
-              <span class="cap-tag">Strategy</span>
-              <span class="cap-tag">Execution</span>
-              <span class="cap-tag">Impact</span>
-            </div>
+      <!-- EXPERIMENTAL V2 CARD -->
+      <div class="identity-card-v2">
+        <div class="id-v2-glow"></div>
+        
+        <div class="id-v2-content">
+          <div class="id-v2-visual">
+             <div class="cyber-eye-container">
+               <div class="cyber-ring ring-1"></div>
+               <div class="cyber-ring ring-2"></div>
+               <div class="cyber-pupil"></div>
+             </div>
+             <div class="scan-line"></div>
+          </div>
+          
+          <div class="id-v2-info">
+             <div class="id-header">
+               <span class="id-label">SYSTEM_ID: OTP_PRISM</span>
+               <span class="id-status">ONLINE</span>
+             </div>
+             
+             <h2 class="id-title">TRUE<br>PERSPECTIVE</h2>
+             
+             <div class="id-body">
+               <p>We don't just observe reality. We engineer it. Through precision editing and architectural sound design, we build worlds that resonate.</p>
+             </div>
+
+             <div class="id-stats">
+               <div class="stat-item">
+                 <span class="stat-val">4K</span>
+                 <span class="stat-label">RES</span>
+               </div>
+               <div class="stat-item">
+                 <span class="stat-val">60</span>
+                 <span class="stat-label">FPS</span>
+               </div>
+               <div class="stat-item">
+                 <span class="stat-val">100%</span>
+                 <span class="stat-label">SYNC</span>
+               </div>
+             </div>
           </div>
         </div>
       </div>
@@ -265,68 +425,41 @@
             <article class="package-static">
               <div class="package-top">
                 <h4>The Drop</h4>
-                <div class="pkg-tag">Best for: Singles & Teasers</div>
               </div>
               <ul class="check-list">
-                <li><strong>Scope:</strong> 1 High-Impact Short-form Video</li>
+                <li>1 High-Impact Short-form Video</li>
                 <li>Viral-ready pacing & captions</li>
                 <li>Basic Color & Sound Polish</li>
+                <li>1 Round of Revisions</li>
               </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 24–72h</span>
-                <span><strong>Outcome:</strong> Viral-ready hype</span>
-              </div>
+              <div class="pkg-note">Perfect for single releases.</div>
             </article>
 
             <article class="package-static featured">
               <div class="package-top">
                 <h4>The Campaign</h4>
-                <div class="pkg-tag">Best for: EP / Product Launches</div>
               </div>
               <ul class="check-list">
-                <li><strong>Scope:</strong> 3–5 Connected Visual Assets</li>
+                <li>3–5 Connected Assets</li>
                 <li>Cinematic Storytelling Arc</li>
                 <li>Advanced VFX & Sound Design</li>
+                <li>Thumbnail & Cover Art Variations</li>
               </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 5–7 Days</span>
-                <span><strong>Outcome:</strong> Unified brand presence</span>
-              </div>
+              <div class="pkg-note">For EP rollouts or brand launches.</div>
             </article>
 
             <article class="package-static">
               <div class="package-top">
                 <h4>The Takeover</h4>
-                <div class="pkg-tag">Best for: Total Brand Overhaul</div>
               </div>
               <ul class="check-list">
-                <li><strong>Scope:</strong> Full Identity & Digital HQ</li>
-                <li>Complete Visual Guidelines</li>
-                <li>Custom Web Experience</li>
+                <li>Full Creative Direction</li>
+                <li>Complete Identity System</li>
+                <li>Website Landing Page</li>
+                <li>Priority 24h Support</li>
               </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 2–3 Weeks</span>
-                <span><strong>Outcome:</strong> Market authority</span>
-              </div>
+              <div class="pkg-note">Total brand overhaul.</div>
             </article>
-
-            <article class="package-static network-pkg">
-              <div class="package-top">
-                <h4>OTP Network</h4>
-                <div class="pkg-tag">Best for: Long-term Partners</div>
-              </div>
-              <p class="pkg-desc">The "Network" is a strategic alignment. It means we scale with you, providing ongoing direction and assets as your career evolves.</p>
-              <ul class="check-list">
-                <li>Priority Lab Access</li>
-                <li>Quarterly Creative Audits</li>
-                <li>Collaboration-first workflow</li>
-              </ul>
-              <div class="pkg-meta">
-                <span><strong>Term:</strong> Monthly / Recurring</span>
-                <span><strong>Outcome:</strong> Sustained Momentum</span>
-              </div>
-            </article>
-
 
           </div>
           </div>
@@ -337,34 +470,7 @@
     </div>
   </section>
 
-  <!-- REVIEWS (Social Proof) -->
-  <section id="reviews" class="section section-tight">
-    <div class="wrap">
-      <header class="section-head center-text">
-        <h2>Trusted by Creators</h2>
-        <p>Results that speak louder than words.</p>
-      </header>
-      <div class="reviews-grid">
-        <div class="review-card">
-          <p class="review-text">"Tactical, branding & services."</p>
-          <div class="review-author">Mr. Thought</div>
-        </div>
-        <div class="review-card">
-          <p class="review-text">"OTP turned our vision into a cinematic reality. The retention on our latest rollout tripled."</p>
-          <div class="review-author">Visual Artist</div>
-        </div>
-        <div class="review-card">
-          <p class="review-text">"Fast, professional, and a unique perspective that you just can't find elsewhere."</p>
-          <div class="review-author">Brand Founder</div>
-        </div>
-
-        <div class="review-card">
-          <p class="review-text">"The workflow is seamless. They handle everything from direction to final delivery."</p>
-          <div class="review-author">Creative Director</div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- REVIEWS (Text Only) -->
 
 
   <!-- FAQ SECTION -->
@@ -459,24 +565,11 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="budget">Approx. Budget</label>
-              <select id="budget" name="budget">
-                <option value="" disabled selected>Select range</option>
-                <option value="<500">< $500</option>
-                <option value="500-1500">$500 - $1,500</option>
-                <option value="1500-3000">$1,500 - $3,000</option>
-                <option value="3000+">$3,000+</option>
-              </select>
+              <label for="budget">Budget / Timeline</label>
+              <input type="text" id="budget" name="budget" placeholder="Approx. budget or deadline..." />
             </div>
             <div class="form-group">
-              <label for="timeline">Desired Timeline</label>
-              <select id="timeline" name="timeline">
-                <option value="" disabled selected>Select timeline</option>
-                <option value="asap">ASAP / Urgent</option>
-                <option value="2-weeks">1-2 Weeks</option>
-                <option value="month">1 Month</option>
-                <option value="flexible">Flexible</option>
-              </select>
+               <!-- Spacer or empty div to balance grid if needed, or make Budget full width -->
             </div>
           </div>
           
@@ -597,21 +690,21 @@
           delay: 0.5
         });
 
-        gsap.from('.subtitle-lead, .hero-value', {
+        gsap.from(heroSubtitle.words, {
           opacity: 0,
           y: 20,
-          duration: 1.2,
-          stagger: 0.3,
-          ease: 'power3.out',
+          duration: 0.8,
+          stagger: 0.05,
+          ease: 'power2.out',
           delay: 1.2
         });
 
         gsap.from('.hero-cta, .hero-micro', {
           opacity: 0,
-          y: 30,
-          duration: 1,
+          y: 20,
+          duration: 0.8,
           ease: 'power2.out',
-          delay: 1.8
+          delay: 1.5
         });
 
   </script>
@@ -680,13 +773,13 @@
           gsap.from(content, {
             scrollTrigger: {
               trigger: content[0],
-              start: "top 85%",
+              start: "top 80%",
             },
-            y: 40,
+            y: 60,
             opacity: 0,
-            duration: 1.5,
-            stagger: 0.15,
-            ease: "power3.out"
+            duration: 1.2,
+            stagger: 0.2,
+            ease: "power2.out"
           });
         }
       });

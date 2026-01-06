@@ -52,6 +52,224 @@
       ]
     }
   </script>
+<style>
+/* V4: FULL-WIDTH IMMERSIVE IDENTITY */
+.identity-v3-container {
+  width: 100%;
+  max-width: 100%; /* Full width */
+  margin: 0;
+  padding: 0;
+  perspective: none; /* Removed card perspective for section feel */
+}
+
+.v3-card {
+  position: relative;
+  width: 100%;
+  min-height: 80vh; /* Takes up substantial vertical space */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Section Background */
+  background: radial-gradient(circle at 50% 50%, rgba(20, 20, 25, 1) 0%, rgba(5, 5, 10, 1) 100%);
+  overflow: hidden; /* Contains the shine/noise */
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Layer 1: The Atmosphere */
+.v3-glass-bg {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* subtle noise texture */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  z-index: 1;
+  opacity: 0.6;
+}
+
+/* Layer 2: The Content Container */
+.v3-content {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  max-width: 1200px; /* Inner content constraint */
+  padding: 100px 40px; /* Spacious padding */
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Split layout */
+  align-items: center;
+  gap: 80px;
+}
+
+/* VISUAL: The Eye (Left Side) */
+.v3-visual {
+  height: 400px; /* Larger on desktop */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Cinematic Glow behind Eye */
+.v3-visual::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(112,0,255,0.15) 0%, transparent 70%);
+  z-index: -1;
+  filter: blur(60px);
+  animation: pulseBreathing 6s infinite alternate;
+}
+
+.v3-eye-svg {
+  width: 100%;
+  max-width: 280px; /* Much larger eye */
+  height: auto;
+  color: #fff;
+  filter: drop-shadow(0 0 25px rgba(255,255,255,0.2));
+  overflow: visible;
+}
+
+.v3-pupil-group {
+  transition: transform 0.1s cubic-bezier(0.1, 0.7, 1.0, 0.1); 
+}
+
+/* TEXT (Right Side) */
+.v3-text {
+  text-align: left;
+  color: #fff;
+  position: relative;
+}
+
+.v3-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.2em;
+  color: var(--accent2);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.v3-line {
+  height: 1px;
+  width: 60px;
+  background: linear-gradient(90deg, var(--accent2), transparent);
+}
+
+.v3-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(3rem, 5vw, 5rem); /* Massive responsive type */
+  line-height: 0.95;
+  margin-bottom: 32px;
+  background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.v3-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem; /* Larger body text */
+  line-height: 1.6;
+  color: rgba(255,255,255,0.7);
+  font-weight: 300;
+  margin-bottom: 48px;
+  max-width: 540px;
+}
+
+.v3-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.v3-badge {
+  padding: 10px 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px; /* Pill shape */
+  background: rgba(255,255,255,0.03);
+  transition: all 0.3s ease;
+}
+
+.v3-badge:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: #fff;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* Dynamic Spotlight (Subtle) */
+.v3-shine {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(1200px circle at var(--shine-x, 50%) var(--shine-y, 50%), rgba(255,255,255,0.03) 0%, transparent 50%);
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  transition: opacity 0.5s ease;
+}
+
+@keyframes pulseBreathing {
+  0% { opacity: 0.5; transform: scale(0.95); }
+  100% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .v3-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 80px 24px;
+    gap: 40px;
+  }
+  .v3-visual {
+    height: auto;
+    justify-content: center;
+  }
+  .v3-eye-svg {
+    max-width: 180px; /* Smaller eye on mobile */
+  }
+  .v3-meta {
+    justify-content: center;
+  }
+  .v3-desc {
+    margin: 0 auto 32px;
+    font-size: 1.1rem;
+  }
+  .v3-badges {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 500px) {
+  .v3-content {
+    padding: 60px 20px;
+    gap: 30px;
+  }
+  .v3-title {
+    font-size: 2.5rem; /* Ensure it fits */
+  }
+  .v3-eye-svg {
+    max-width: 140px;
+  }
+  .v3-badge {
+    padding: 8px 16px;
+    font-size: 0.75rem;
+  }
+}
+</style>
 </head>
 <body>
   <div class="bg-fixed"></div>
@@ -60,18 +278,16 @@
   <!-- NAV -->
   <header class="nav nav-split" id="top">
     <!-- Logo Left -->
-    <a href="#top" class="nav-logo" aria-label="OTP">
+    <a href="#work" class="nav-logo" aria-label="OTP">
       <img src="assets/otp.gif" alt="OTP" class="otp-mark" />
     </a>
 
     <nav class="nav-links" aria-label="Primary">
-      <a href="#work" class="active k-hover">Work</a>
+      <a href="#work" class="k-hover">Work</a>
       <a href="archive.html" class="k-hover">Archive</a>
       <a href="insights.html" class="k-hover">Insights</a>
       <a href="#services" class="k-hover">Services</a>
       <a href="#contact" class="k-hover">Contact</a>
-      <!-- Client Portal removed for now -->
-
     </nav>
 
     <!-- Mobile toggle -->
@@ -84,8 +300,6 @@
       <a href="archive.html">Archive</a>
       <a href="insights.html">Insights</a>
       <a href="#contact">Contact</a>
-      <!-- Client Portal links removed -->
-
     </nav>
   </header>
 
@@ -101,21 +315,21 @@
         <span class="title">PERSPECTIVE</span>
       </h1>
       
-      <p class="subtitle-lead">High-retention visual identities for artists, brands, and creators.</p>
-      <p class="hero-value">We build cinematic worlds that drive results and command attention.</p>
+      <p class="subtitle-lead">See the world through our eyes. Content that grows your audience and drives results.</p>
       
       <div class="hero-cta">
         <a href="#contact" class="book-btn">Start a Project</a>
       </div>
 
       <div class="hero-micro">
-        <span>24–72h turnaround</span>
+        <span>24–72h turnaround options</span>
         <span class="dot">•</span>
-        <span>Cinematic Storytelling</span>
+        <span>Clean exports for every platform</span>
         <span class="dot">•</span>
-        <span>Strategic Brand Growth</span>
+        <span>Sound + visuals aligned</span>
+        <span class="dot">•</span>
+        <span>Web-ready brand HQ builds</span>
       </div>
-
     </div>
   </main>
 
@@ -123,47 +337,51 @@
   <!-- STUDIO / PHILOSOPHY -->
   <section id="studio" class="section-studio">
     <div class="wrap">
-      <div class="glass-manifesto">
-        <div class="manifesto-left">
-          <!-- Animated SVG Eye -->
-          <svg class="otp-eye-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Lashes Group -->
-            <g class="eye-lashes">
-              <line x1="15" y1="25" x2="22" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="35" y1="15" x2="38" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="50" y1="12" x2="50" y2="25" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="65" y1="15" x2="62" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="85" y1="25" x2="78" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-            </g>
-            
-            <!-- Eye Shape (Blinking Mask) -->
-            <g class="eye-shape-group">
-               <!-- Main outline -->
-               <path d="M10 50 C10 50 30 25 50 25 C70 25 90 50 90 50 C90 50 70 75 50 75 C30 75 10 50 10 50 Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-               
-               <!-- Pupil Group (Moves with Mouse) -->
-               <g class="eye-pupil-group">
-                 <circle cx="50" cy="50" r="14" fill="currentColor"/>
-                 <circle cx="55" cy="45" r="4" fill="white"/> <!-- Glint -->
-               </g>
-            </g>
-          </svg>
-        </div>
-        <div class="manifesto-right">
-          <span class="eyebrow" style="color: var(--accent2); margin-bottom: 20px; display: block;">IDENTITY</span>
-          <h2 class="syne-bold studio-title">A PERSPECTIVE<br>THAT'S TRUE.</h2>
-          <div class="studio-body">
-            <p>OTP is a perspective that's true to you, to anyone that resonates. We don't just cut footage; we build worlds.</p>
-            <p>This is a journey. Everyone has a story to tell, see, hear, and feel.</p>
-            
-            <div class="capabilities-list">
-              <span class="cap-tag">Vision</span>
-              <span class="cap-tag">Innovation</span>
-              <span class="cap-tag">Strategy</span>
-              <span class="cap-tag">Execution</span>
-              <span class="cap-tag">Impact</span>
-            </div>
+      <!-- V3 CARD: CINEMATIC DEPTH -->
+      <div class="identity-v3-container">
+        <div class="v3-card" id="v3Card">
+          <div class="v3-glass-bg"></div>
+          
+          <div class="v3-content">
+             <div class="v3-visual">
+                <svg class="v3-eye-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <g class="v3-lashes">
+                     <line x1="15" y1="25" x2="22" y2="35" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                     <line x1="35" y1="15" x2="38" y2="28" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                     <line x1="50" y1="12" x2="50" y2="25" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                     <line x1="65" y1="15" x2="62" y2="28" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                     <line x1="85" y1="25" x2="78" y2="35" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                   </g>
+                   <path d="M10 50 C10 50 30 20 50 20 C70 20 90 50 90 50 C90 50 70 80 50 80 C30 80 10 50 10 50 Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                   <g class="v3-pupil-group">
+                     <circle cx="50" cy="50" r="13" fill="currentColor"/>
+                     <circle cx="56" cy="45" r="3.5" fill="white"/>
+                   </g>
+                </svg>
+             </div>
+             
+             <div class="v3-text">
+                <div class="v3-meta">
+                  <span class="v3-tag">IDENTITY</span>
+                  <span class="v3-line"></span>
+                  <span class="v3-tag">EST. 2024</span>
+                </div>
+                <h2 class="v3-title">TRUE<br>PERSPECTIVE</h2>
+                <p class="v3-desc">OTP is a perspective that's true to you. We don't just cut footage; we build worlds. Everyone has a story to tell, see, hear, and feel.</p>
+                <div class="v3-badges">
+                   <span>Vision</span>
+                   <span class="v3-dot">•</span>
+                   <span>Innovation</span>
+                   <span class="v3-dot">•</span>
+                   <span>Strategy</span>
+                   <span class="v3-dot">•</span>
+                   <span>Execution</span>
+                </div>
+             </div>
           </div>
+          
+          <div class="v3-shine"></div>
+          <div class="v3-border"></div>
         </div>
       </div>
     </div>
@@ -265,68 +483,41 @@
             <article class="package-static">
               <div class="package-top">
                 <h4>The Drop</h4>
-                <div class="pkg-tag">Best for: Singles & Teasers</div>
               </div>
               <ul class="check-list">
-                <li><strong>Scope:</strong> 1 High-Impact Short-form Video</li>
+                <li>1 High-Impact Short-form Video</li>
                 <li>Viral-ready pacing & captions</li>
                 <li>Basic Color & Sound Polish</li>
+                <li>1 Round of Revisions</li>
               </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 24–72h</span>
-                <span><strong>Outcome:</strong> Viral-ready hype</span>
-              </div>
+              <div class="pkg-note">Perfect for single releases.</div>
             </article>
 
             <article class="package-static featured">
               <div class="package-top">
                 <h4>The Campaign</h4>
-                <div class="pkg-tag">Best for: EP / Product Launches</div>
               </div>
               <ul class="check-list">
-                <li><strong>Scope:</strong> 3–5 Connected Visual Assets</li>
+                <li>3–5 Connected Assets</li>
                 <li>Cinematic Storytelling Arc</li>
                 <li>Advanced VFX & Sound Design</li>
+                <li>Thumbnail & Cover Art Variations</li>
               </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 5–7 Days</span>
-                <span><strong>Outcome:</strong> Unified brand presence</span>
-              </div>
+              <div class="pkg-note">For EP rollouts or brand launches.</div>
             </article>
 
             <article class="package-static">
               <div class="package-top">
                 <h4>The Takeover</h4>
-                <div class="pkg-tag">Best for: Total Brand Overhaul</div>
               </div>
               <ul class="check-list">
-                <li><strong>Scope:</strong> Full Identity & Digital HQ</li>
-                <li>Complete Visual Guidelines</li>
-                <li>Custom Web Experience</li>
+                <li>Full Creative Direction</li>
+                <li>Complete Identity System</li>
+                <li>Website Landing Page</li>
+                <li>Priority 24h Support</li>
               </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 2–3 Weeks</span>
-                <span><strong>Outcome:</strong> Market authority</span>
-              </div>
+              <div class="pkg-note">Total brand overhaul.</div>
             </article>
-
-            <article class="package-static network-pkg">
-              <div class="package-top">
-                <h4>OTP Network</h4>
-                <div class="pkg-tag">Best for: Long-term Partners</div>
-              </div>
-              <p class="pkg-desc">The "Network" is a strategic alignment. It means we scale with you, providing ongoing direction and assets as your career evolves.</p>
-              <ul class="check-list">
-                <li>Priority Lab Access</li>
-                <li>Quarterly Creative Audits</li>
-                <li>Collaboration-first workflow</li>
-              </ul>
-              <div class="pkg-meta">
-                <span><strong>Term:</strong> Monthly / Recurring</span>
-                <span><strong>Outcome:</strong> Sustained Momentum</span>
-              </div>
-            </article>
-
 
           </div>
           </div>
@@ -337,34 +528,7 @@
     </div>
   </section>
 
-  <!-- REVIEWS (Social Proof) -->
-  <section id="reviews" class="section section-tight">
-    <div class="wrap">
-      <header class="section-head center-text">
-        <h2>Trusted by Creators</h2>
-        <p>Results that speak louder than words.</p>
-      </header>
-      <div class="reviews-grid">
-        <div class="review-card">
-          <p class="review-text">"Tactical, branding & services."</p>
-          <div class="review-author">Mr. Thought</div>
-        </div>
-        <div class="review-card">
-          <p class="review-text">"OTP turned our vision into a cinematic reality. The retention on our latest rollout tripled."</p>
-          <div class="review-author">Visual Artist</div>
-        </div>
-        <div class="review-card">
-          <p class="review-text">"Fast, professional, and a unique perspective that you just can't find elsewhere."</p>
-          <div class="review-author">Brand Founder</div>
-        </div>
-
-        <div class="review-card">
-          <p class="review-text">"The workflow is seamless. They handle everything from direction to final delivery."</p>
-          <div class="review-author">Creative Director</div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- REVIEWS (Text Only) -->
 
 
   <!-- FAQ SECTION -->
@@ -459,24 +623,11 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="budget">Approx. Budget</label>
-              <select id="budget" name="budget">
-                <option value="" disabled selected>Select range</option>
-                <option value="<500">< $500</option>
-                <option value="500-1500">$500 - $1,500</option>
-                <option value="1500-3000">$1,500 - $3,000</option>
-                <option value="3000+">$3,000+</option>
-              </select>
+              <label for="budget">Budget / Timeline</label>
+              <input type="text" id="budget" name="budget" placeholder="Approx. budget or deadline..." />
             </div>
             <div class="form-group">
-              <label for="timeline">Desired Timeline</label>
-              <select id="timeline" name="timeline">
-                <option value="" disabled selected>Select timeline</option>
-                <option value="asap">ASAP / Urgent</option>
-                <option value="2-weeks">1-2 Weeks</option>
-                <option value="month">1 Month</option>
-                <option value="flexible">Flexible</option>
-              </select>
+               <!-- Spacer or empty div to balance grid if needed, or make Budget full width -->
             </div>
           </div>
           
@@ -597,21 +748,21 @@
           delay: 0.5
         });
 
-        gsap.from('.subtitle-lead, .hero-value', {
+        gsap.from(heroSubtitle.words, {
           opacity: 0,
           y: 20,
-          duration: 1.2,
-          stagger: 0.3,
-          ease: 'power3.out',
+          duration: 0.8,
+          stagger: 0.05,
+          ease: 'power2.out',
           delay: 1.2
         });
 
         gsap.from('.hero-cta, .hero-micro', {
           opacity: 0,
-          y: 30,
-          duration: 1,
+          y: 20,
+          duration: 0.8,
           ease: 'power2.out',
-          delay: 1.8
+          delay: 1.5
         });
 
   </script>
@@ -680,17 +831,69 @@
           gsap.from(content, {
             scrollTrigger: {
               trigger: content[0],
-              start: "top 85%",
+              start: "top 80%",
             },
-            y: 40,
+            y: 60,
             opacity: 0,
-            duration: 1.5,
-            stagger: 0.15,
-            ease: "power3.out"
+            duration: 1.2,
+            stagger: 0.2,
+            ease: "power2.out"
           });
         }
       });
     }
   </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const card = document.querySelector('.v3-card');
+    const shine = document.querySelector('.v3-shine');
+    const pupil = document.querySelector('.v3-pupil-group');
+    
+    if (!card) return;
+
+    // Desktop Only Logic
+    if (window.matchMedia("(hover: hover)").matches) {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // 1. Card Tilt (Subtle)
+            const rotateX = ((y - centerY) / centerY) * -5; // Max 5deg
+            const rotateY = ((x - centerX) / centerX) * 5;
+            
+            card.style.transform = `perspective(2000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            
+            // 2. Shine Position
+            const shineX = (x / rect.width) * 100;
+            const shineY = (y / rect.height) * 100;
+            shine.style.background = `radial-gradient(circle at ${shineX}% ${shineY}%, rgba(255,255,255,0.15) 0%, transparent 60%)`;
+            
+            // 3. Pupil Tracking
+            const eye = document.querySelector('.v3-visual');
+            const eyeRect = eye.getBoundingClientRect();
+            const eyeCenterX = eyeRect.left + eyeRect.width / 2;
+            const eyeCenterY = eyeRect.top + eyeRect.height / 2;
+            
+            const pupilX = (e.clientX - eyeCenterX) / 15; 
+            const pupilY = (e.clientY - eyeCenterY) / 15;
+            
+            const maxMove = 12;
+            const clampedX = Math.max(Math.min(pupilX, maxMove), -maxMove);
+            const clampedY = Math.max(Math.min(pupilY, maxMove), -maxMove);
+            
+            pupil.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = `perspective(2000px) rotateX(0deg) rotateY(0deg)`;
+            pupil.style.transform = `translate(0px, 0px)`;
+        });
+    }
+});
+</script>
 </body>
 </html>

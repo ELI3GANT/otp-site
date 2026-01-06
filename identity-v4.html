@@ -70,8 +70,17 @@
       <a href="insights.html" class="k-hover">Insights</a>
       <a href="#services" class="k-hover">Services</a>
       <a href="#contact" class="k-hover">Contact</a>
-      <!-- Client Portal removed for now -->
-
+      <div class="portal-dropdown" id="portalDropdown">
+        <button class="k-hover portal-btn" id="portalBtn" type="button">
+          <svg class="portal-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          Portal
+        </button>
+        <div class="portal-menu">
+          <a href="portal.html?mode=signin" class="k-hover">Sign In</a>
+          <div class="portal-menu-divider"></div>
+          <a href="portal.html?mode=signup" class="k-hover">Sign Up</a>
+        </div>
+      </div>
     </nav>
 
     <!-- Mobile toggle -->
@@ -84,8 +93,9 @@
       <a href="archive.html">Archive</a>
       <a href="insights.html">Insights</a>
       <a href="#contact">Contact</a>
-      <!-- Client Portal links removed -->
-
+      <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 10px 40px;"></div>
+      <a href="portal.html?mode=signin" style="color: var(--accent2);">Client Log In</a>
+      <a href="portal.html?mode=signup" style="color: var(--accent2);">Client Sign Up</a>
     </nav>
   </header>
 
@@ -101,72 +111,213 @@
         <span class="title">PERSPECTIVE</span>
       </h1>
       
-      <p class="subtitle-lead">High-retention visual identities for artists, brands, and creators.</p>
-      <p class="hero-value">We build cinematic worlds that drive results and command attention.</p>
+      <p class="subtitle-lead">High-retention visual identities for artists, brands, and creators. We build cinematic worlds that drive results.</p>
       
       <div class="hero-cta">
         <a href="#contact" class="book-btn">Start a Project</a>
       </div>
 
       <div class="hero-micro">
-        <span>24–72h turnaround</span>
+        <span>24–72h turnaround options</span>
         <span class="dot">•</span>
-        <span>Cinematic Storytelling</span>
+        <span>Clean exports for every platform</span>
         <span class="dot">•</span>
-        <span>Strategic Brand Growth</span>
+        <span>Sound + visuals aligned</span>
+        <span class="dot">•</span>
+        <span>Web-ready brand HQ builds</span>
       </div>
-
     </div>
   </main>
 
   <!-- STUDIO / PHILOSOPHY -->
   <!-- STUDIO / PHILOSOPHY -->
-  <section id="studio" class="section-studio">
+  <!-- STUDIO / PHILOSOPHY V4: THE NEURAL HUB -->
+  <style>
+    .identity-v4 {
+      padding: 120px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .v4-container {
+      background: rgba(10, 10, 18, 0.6);
+      backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 40px;
+      padding: 80px;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 60px;
+      align-items: center;
+      position: relative;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+      transform-style: preserve-3d;
+      transition: transform 0.1s ease-out;
+    }
+    .v4-visual {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transform: translateZ(50px);
+    }
+    .v4-eye-box {
+      width: 300px;
+      height: 300px;
+      position: relative;
+      background: radial-gradient(circle at 50% 50%, rgba(112, 0, 255, 0.15), transparent 70%);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .v4-eye-svg {
+      width: 220px;
+      height: auto;
+      color: #fff;
+      filter: drop-shadow(0 0 30px rgba(112, 0, 255, 0.4));
+    }
+    .v4-content {
+      transform: translateZ(30px);
+    }
+    .v4-title {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 24px;
+      background: linear-gradient(to right, #fff, var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .v4-body {
+      font-size: 1.2rem;
+      line-height: 1.6;
+      color: var(--muted);
+      margin-bottom: 40px;
+    }
+    .v4-nodes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .v4-node {
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 100px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .v4-node:hover {
+      background: var(--accent);
+      border-color: var(--accent2);
+      transform: scale(1.05) translateY(-5px);
+      box-shadow: 0 10px 20px rgba(112, 0, 255, 0.4);
+    }
+    .v4-node::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.5s ease;
+    }
+    .v4-node:hover::after {
+      transform: translateX(100%);
+    }
+
+    /* Ambient Particles */
+    .v4-particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    @media (max-width: 992px) {
+      .v4-container {
+        grid-template-columns: 1fr;
+        padding: 40px;
+        text-align: center;
+      }
+      .v4-nodes {
+        justify-content: center;
+      }
+    }
+  </style>
+
+  <section id="studio" class="identity-v4">
     <div class="wrap">
-      <div class="glass-manifesto">
-        <div class="manifesto-left">
-          <!-- Animated SVG Eye -->
-          <svg class="otp-eye-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Lashes Group -->
-            <g class="eye-lashes">
-              <line x1="15" y1="25" x2="22" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="35" y1="15" x2="38" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="50" y1="12" x2="50" y2="25" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="65" y1="15" x2="62" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="85" y1="25" x2="78" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-            </g>
-            
-            <!-- Eye Shape (Blinking Mask) -->
-            <g class="eye-shape-group">
-               <!-- Main outline -->
-               <path d="M10 50 C10 50 30 25 50 25 C70 25 90 50 90 50 C90 50 70 75 50 75 C30 75 10 50 10 50 Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-               
-               <!-- Pupil Group (Moves with Mouse) -->
-               <g class="eye-pupil-group">
-                 <circle cx="50" cy="50" r="14" fill="currentColor"/>
-                 <circle cx="55" cy="45" r="4" fill="white"/> <!-- Glint -->
-               </g>
-            </g>
-          </svg>
+      <div class="v4-container" id="v4Card">
+        <div class="v4-visual">
+          <div class="v4-eye-box">
+            <svg class="v4-eye-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path class="v4-eye-path" d="M10 50 C10 50 30 20 50 20 C70 20 90 50 90 50 C90 50 70 80 50 80 C30 80 10 50 10 50 Z" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <g class="v4-pupil-group">
+                <circle class="v4-pupil" cx="50" cy="50" r="15" fill="currentColor"/>
+                <circle cx="56" cy="44" r="4" fill="white"/>
+              </g>
+            </svg>
+          </div>
         </div>
-        <div class="manifesto-right">
-          <span class="eyebrow" style="color: var(--accent2); margin-bottom: 20px; display: block;">IDENTITY</span>
-          <h2 class="syne-bold studio-title">A PERSPECTIVE<br>THAT'S TRUE.</h2>
-          <div class="studio-body">
-            <p>OTP is a perspective that's true to you, to anyone that resonates. We don't just cut footage; we build worlds.</p>
-            <p>This is a journey. Everyone has a story to tell, see, hear, and feel.</p>
-            
-            <div class="capabilities-list">
-              <span class="cap-tag">Vision</span>
-              <span class="cap-tag">Innovation</span>
-              <span class="cap-tag">Strategy</span>
-              <span class="cap-tag">Execution</span>
-              <span class="cap-tag">Impact</span>
-            </div>
+        <div class="v4-content">
+          <span class="eyebrow" style="color: var(--accent2); margin-bottom: 20px; display: block;">THE NEURAL AXIS</span>
+          <h2 class="syne-bold v4-title">A VISIONARY<br>ENGINE.</h2>
+          <div class="v4-body">
+            <p>OTP is more than a studio—it's a perspective engine. We synchronize sound, light, and narrative into immersive ecosystems that breathe with your brand.</p>
+          </div>
+          <div class="v4-nodes">
+            <div class="v4-node">Vision</div>
+            <div class="v4-node">Innovation</div>
+            <div class="v4-node">Strategy</div>
+            <div class="v4-node">Execution</div>
+            <div class="v4-node">Impact</div>
           </div>
         </div>
       </div>
     </div>
+
+    <script>
+      // 3D Tilt Effect
+      const card = document.getElementById('v4Card');
+      const eye = document.querySelector('.v4-eye-svg');
+      const pupil = document.querySelector('.v4-pupil-group');
+
+      document.addEventListener('mousemove', (e) => {
+        const { clientX, clientY } = e;
+        const { innerWidth, innerHeight } = window;
+        
+        // Card Tilt
+        const xRotation = (clientY / innerHeight - 0.5) * 20;
+        const yRotation = (clientX / innerWidth - 0.5) * -20;
+        card.style.transform = `rotateX(${xRotation}deg) rotateY(${yRotation}deg)`;
+
+        // Pupil Movement
+        const rect = eye.getBoundingClientRect();
+        const eyeX = rect.left + rect.width / 2;
+        const eyeY = rect.top + rect.height / 2;
+        
+        const angle = Math.atan2(clientY - eyeY, clientX - eyeX);
+        const distance = Math.min(10, Math.hypot(clientX - eyeX, clientY - eyeY) / 20);
+        
+        const px = Math.cos(angle) * distance;
+        const py = Math.sin(angle) * distance;
+        
+        pupil.style.transform = `translate(${px}px, ${py}px)`;
+      });
+
+      // Reset on mouse leave
+      document.addEventListener('mouseleave', () => {
+        card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+        pupil.style.transform = `translate(0px, 0px)`;
+      });
+    </script>
   </section>
 
   <!-- SERVICES -->
@@ -265,68 +416,41 @@
             <article class="package-static">
               <div class="package-top">
                 <h4>The Drop</h4>
-                <div class="pkg-tag">Best for: Singles & Teasers</div>
               </div>
               <ul class="check-list">
-                <li><strong>Scope:</strong> 1 High-Impact Short-form Video</li>
+                <li>1 High-Impact Short-form Video</li>
                 <li>Viral-ready pacing & captions</li>
                 <li>Basic Color & Sound Polish</li>
+                <li>1 Round of Revisions</li>
               </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 24–72h</span>
-                <span><strong>Outcome:</strong> Viral-ready hype</span>
-              </div>
+              <div class="pkg-note">Perfect for single releases.</div>
             </article>
 
             <article class="package-static featured">
               <div class="package-top">
                 <h4>The Campaign</h4>
-                <div class="pkg-tag">Best for: EP / Product Launches</div>
               </div>
               <ul class="check-list">
-                <li><strong>Scope:</strong> 3–5 Connected Visual Assets</li>
+                <li>3–5 Connected Assets</li>
                 <li>Cinematic Storytelling Arc</li>
                 <li>Advanced VFX & Sound Design</li>
+                <li>Thumbnail & Cover Art Variations</li>
               </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 5–7 Days</span>
-                <span><strong>Outcome:</strong> Unified brand presence</span>
-              </div>
+              <div class="pkg-note">For EP rollouts or brand launches.</div>
             </article>
 
             <article class="package-static">
               <div class="package-top">
                 <h4>The Takeover</h4>
-                <div class="pkg-tag">Best for: Total Brand Overhaul</div>
               </div>
               <ul class="check-list">
-                <li><strong>Scope:</strong> Full Identity & Digital HQ</li>
-                <li>Complete Visual Guidelines</li>
-                <li>Custom Web Experience</li>
+                <li>Full Creative Direction</li>
+                <li>Complete Identity System</li>
+                <li>Website Landing Page</li>
+                <li>Priority 24h Support</li>
               </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 2–3 Weeks</span>
-                <span><strong>Outcome:</strong> Market authority</span>
-              </div>
+              <div class="pkg-note">Total brand overhaul.</div>
             </article>
-
-            <article class="package-static network-pkg">
-              <div class="package-top">
-                <h4>OTP Network</h4>
-                <div class="pkg-tag">Best for: Long-term Partners</div>
-              </div>
-              <p class="pkg-desc">The "Network" is a strategic alignment. It means we scale with you, providing ongoing direction and assets as your career evolves.</p>
-              <ul class="check-list">
-                <li>Priority Lab Access</li>
-                <li>Quarterly Creative Audits</li>
-                <li>Collaboration-first workflow</li>
-              </ul>
-              <div class="pkg-meta">
-                <span><strong>Term:</strong> Monthly / Recurring</span>
-                <span><strong>Outcome:</strong> Sustained Momentum</span>
-              </div>
-            </article>
-
 
           </div>
           </div>
@@ -346,10 +470,6 @@
       </header>
       <div class="reviews-grid">
         <div class="review-card">
-          <p class="review-text">"Tactical, branding & services."</p>
-          <div class="review-author">Mr. Thought</div>
-        </div>
-        <div class="review-card">
           <p class="review-text">"OTP turned our vision into a cinematic reality. The retention on our latest rollout tripled."</p>
           <div class="review-author">Visual Artist</div>
         </div>
@@ -357,7 +477,6 @@
           <p class="review-text">"Fast, professional, and a unique perspective that you just can't find elsewhere."</p>
           <div class="review-author">Brand Founder</div>
         </div>
-
         <div class="review-card">
           <p class="review-text">"The workflow is seamless. They handle everything from direction to final delivery."</p>
           <div class="review-author">Creative Director</div>
@@ -597,21 +716,21 @@
           delay: 0.5
         });
 
-        gsap.from('.subtitle-lead, .hero-value', {
+        gsap.from(heroSubtitle.words, {
           opacity: 0,
           y: 20,
-          duration: 1.2,
-          stagger: 0.3,
-          ease: 'power3.out',
+          duration: 0.8,
+          stagger: 0.05,
+          ease: 'power2.out',
           delay: 1.2
         });
 
         gsap.from('.hero-cta, .hero-micro', {
           opacity: 0,
-          y: 30,
-          duration: 1,
+          y: 20,
+          duration: 0.8,
           ease: 'power2.out',
-          delay: 1.8
+          delay: 1.5
         });
 
   </script>
@@ -680,13 +799,13 @@
           gsap.from(content, {
             scrollTrigger: {
               trigger: content[0],
-              start: "top 85%",
+              start: "top 80%",
             },
-            y: 40,
+            y: 60,
             opacity: 0,
-            duration: 1.5,
-            stagger: 0.15,
-            ease: "power3.out"
+            duration: 1.2,
+            stagger: 0.2,
+            ease: "power2.out"
           });
         }
       });
