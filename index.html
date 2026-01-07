@@ -62,7 +62,7 @@
   <header class="nav nav-split" id="top">
     <!-- Logo Left -->
     <a href="#top" class="nav-logo" aria-label="OTP">
-      <img src="assets/otp_v2.png" alt="OTP" class="otp-mark logo-pulse" />
+      <img src="assets/otp_v2.png" alt="OTP" class="otp-mark" />
     </a>
 
     <nav class="nav-links" aria-label="Primary">
@@ -72,6 +72,14 @@
       <a href="#services" class="k-hover">Services</a>
       <a href="#contact" class="k-hover">Contact</a>
 
+      <!-- Portal Dropdown -->
+      <div class="nav-item-portal">
+        <button id="portalBtn" class="k-hover">Client Portal ▾</button>
+        <div id="portalDropdown" class="portal-dropdown">
+          <a href="portal.html?mode=signin">Log In</a>
+          <a href="portal.html?mode=signup">Create Account</a>
+        </div>
+      </div>
     </nav>
 
     <!-- Mobile toggle -->
@@ -83,6 +91,7 @@
       <a href="#services">Services</a>
       <a href="archive.html">Archive</a>
       <a href="insights.html">Insights</a>
+      <a href="portal.html">Client Portal</a>
       <a href="#contact">Contact</a>
     </nav>
   </header>
@@ -93,7 +102,7 @@
 
     <div class="hero-content">
       <div class="hero-logo-wrap">
-        <img src="assets/hero_eye_3d.png" alt="OTP 3D Eye" class="hero-eye-3d" />
+        <img src="assets/hero_eye_3d.png" alt="OTP 3D Eye" class="hero-eye-3d" fetchpriority="high" />
       </div>
       <div class="eyebrow">Creative Studio</div>
       <h1 class="hero-title-adjust">
@@ -215,165 +224,377 @@
       <div class="grid grid-2">
 
         <article class="service">
-          <h3>Video Editing</h3>
-          <p class="service-desc">High-retention edits that grow your channel and drive engagement.</p>
+          <h3>Video & Motion</h3>
+          <p class="service-desc">High-retention edits for Music, Content, and Commercials.</p>
           <ul>
-            <li>Short-form (Reels/TikTok) with viral pacing</li>
-            <li>Music Video post-production (VFX + Color + Sky replacements)</li>
-            <li>Dynamic storytelling, SFX mapping & sound design</li>
-            <li>Multi-format export packs (4K, 1080p, Vertical)</li>
+            <li><strong>Music Videos:</strong> Full post-production (VFX, Sky Swaps, Color)</li>
+            <li><strong>Short-Form:</strong> Viral pacing for Reels/TikTok (The Drop)</li>
+            <li><strong>Commercial:</strong> Ad creatives that convert</li>
+            <li>Dynamic storytelling & SFX mapping</li>
             <li>Revisions included to hit the vibe perfectly</li>
           </ul>
         </article>
 
         <article class="service">
-          <h3>Creative Direction</h3>
-          <p class="service-desc">Complete visual strategy that defines your brand's unique lane.</p>
+          <h3>Creative Direction & Photo</h3>
+          <p class="service-desc">Complete visual strategy that defines your unique lane.</p>
           <ul>
-            <li>Campaign conceptualization, script doctors & moodboards</li>
-            <li>On-set direction & shot listing (Virtual or IRL)</li>
-            <li>Styling & aesthetic curation (Wardrobe/Set)</li>
-            <li>Content rollout calendars & platform strategy</li>
+            <li><strong>Photography:</strong> Editorial direction & retouching</li>
+            <li><strong>Campaigns:</strong> Script doctors, moodboards, & rollout strategy</li>
+            <li><strong>Styling:</strong> Aesthetic curation (Wardrobe/Set)</li>
+            <li>Album Art & Cover Design (3D/Mixed Media)</li>
             <li>Visual coherence across all media channels</li>
           </ul>
         </article>
 
         <article class="service">
-          <h3>Visual Identity & Branding</h3>
+          <h3>Brand Identity</h3>
           <p class="service-desc">A premium look that builds trust and authority instantly.</p>
           <ul>
-            <li>Logo design & typography systems (Custom type)</li>
-            <li>Motion graphics, kinetic type & intro/outros</li>
-            <li>Social media asset kits (Templates vs One-offs)</li>
-            <li>Merch & cover art design (3D or 2D)</li>
-            <li>Brand guidelines book (PDF)</li>
+            <li><strong>Logo Systems:</strong> Custom typography & marks</li>
+            <li><strong>Motion Branding:</strong> Kinetic type & intro/outros</li>
+            <li><strong>Social Kits:</strong> Templates for IG/X/LinkedIn</li>
+            <li>Deck Design & PDF Guidelines</li>
+            <li>Merch Design (Streetwear/Corporate)</li>
           </ul>
         </article>
 
         <article class="service">
-          <h3>Web Design & Dev</h3>
-          <p class="service-desc">Your digital HQ. Fast, clean, and professional.</p>
+          <h3>Web & Digital</h3>
+          <p class="service-desc">Your digital HQ. Fast, clean, and profitable.</p>
           <ul>
-            <li>One-page high-conversion landing sites (SPA)</li>
-            <li>Integrated booking & contact forms with auto-reply</li>
+            <li><strong>Web Design:</strong> High-conversion landing sites (SPA)</li>
+            <li><strong>Business Solutions:</strong> Booking forms & auto-replies</li>
             <li>Mobile-first responsive design (iOS/Android polished)</li>
-            <li>SEO optimization basics + Meta tags</li>
+            <li>SEO optimization & Meta tags</li>
             <li>Analytics & Pixel setup (GA4 / Meta)</li>
             <li>Custom domain connection & SSL</li>
           </ul>
         </article>
       </div>
 
-      <div class="section-split">
-        <!-- PROCESS -->
-        <div class="split-left">
-          <h3 class="minihead center-text">How We Work</h3>
-          <div class="process-stack">
-            <div class="process-card">
-              <span class="step-num">01</span>
-              <div class="step-content">
-                <h4>Vision & Strategy</h4>
-                <p>We start by deconstructing your goal. Whether it's a single asset or a full campaign, we align on references, mood, and deadlines to ensure the target is clear. We'll hop on a quick call or chat to lock in the vibe.</p>
-              </div>
-            </div>
-            <div class="process-card">
-              <span class="step-num">02</span>
-              <div class="step-content">
-                <h4>Production & Polish</h4>
-                <p>The lab phase. We edit, design, and refine with precision. Updates are shared at key milestones so you're never in the dark, just waiting for the fire. We iterate fast to keep the momentum.</p>
-              </div>
-            </div>
-            <div class="process-card">
-              <span class="step-num">03</span>
-              <div class="step-content">
-                <h4>Delivery & Handover</h4>
-                <p>Final assets delivered in highest quality. Organized folders, multiple formats (9:16, 16:9), and project files if negotiated. Ready to upload.</p>
-              </div>
-            </div>
+      <!-- SPACER -->
+      <div style="height: 80px;"></div>
+
+      <!-- HOW WE WORK (Full Width now) -->
+      <h3 class="minihead center-text">How We Work</h3>
+      <div class="process-stack" style="flex-direction: row; flex-wrap: wrap; gap: 20px; justify-content: center; text-align: left;">
+        <div class="process-card" style="flex: 1; min-width: 280px;">
+          <span class="step-num">01</span>
+          <div class="step-content">
+            <h4>Vision & Strategy</h4>
+            <p>We start by deconstructing your goal. Whether it's a music video or a business site, we align on references and deadlines. A quick chat locks the vibe.</p>
           </div>
         </div>
-
-        <!-- PACKAGES (No Carousel, No Prices, Side-by-Side) -->
-        <div class="split-right">
-          <h3 class="minihead center-text">Selected Packages</h3>
-          <div class="package-grid-static">
-            
-            <article class="package-static">
-              <div class="package-top">
-                <h4>The Drop</h4>
-                <div class="pkg-tag">Best for: Singles & Teasers</div>
-              </div>
-              <ul class="check-list">
-                <li><strong>Scope:</strong> 1 High-Impact Short-form Video</li>
-                <li>Viral-ready pacing & captions</li>
-                <li>Basic Color & Sound Polish</li>
-              </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 24–72h</span>
-                <span><strong>Outcome:</strong> Viral-ready hype</span>
-              </div>
-            </article>
-
-            <article class="package-static featured">
-              <div class="package-top">
-                <h4>The Campaign</h4>
-                <div class="pkg-tag">Best for: EP / Product Launches</div>
-              </div>
-              <ul class="check-list">
-                <li><strong>Scope:</strong> 3–5 Connected Visual Assets</li>
-                <li>Cinematic Storytelling Arc</li>
-                <li>Advanced VFX & Sound Design</li>
-              </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 5–7 Days</span>
-                <span><strong>Outcome:</strong> Unified brand presence</span>
-              </div>
-            </article>
-
-            <article class="package-static">
-              <div class="package-top">
-                <h4>The Takeover</h4>
-                <div class="pkg-tag">Best for: Total Brand Overhaul</div>
-              </div>
-              <ul class="check-list">
-                <li><strong>Scope:</strong> Full Identity & Digital HQ</li>
-                <li>Complete Visual Guidelines</li>
-                <li>Custom Web Experience</li>
-              </ul>
-              <div class="pkg-meta">
-                <span><strong>Turnaround:</strong> 2–3 Weeks</span>
-                <span><strong>Outcome:</strong> Market authority</span>
-              </div>
-            </article>
-
-            <article class="package-static network-pkg featured">
-              <div class="package-top">
-                <h4>Partnership</h4>
-                <div class="pkg-tag">Best for: The 1% / High-Growth Brands</div>
-              </div>
-              <p class="pkg-desc">Strategic alignment for world-class creators. We become your dedicated creative department, scaling your vision in real-time.</p>
-              <ul class="check-list">
-                <li>Direct Slack & 24/7 Access</li>
-                <li>Monthly Strategy & Audits</li>
-                <li>Priority Lab Production</li>
-                <li>Unlimited Creative Direction</li>
-              </ul>
-              <div class="pkg-meta">
-                <span><strong>Term:</strong> Monthly Retainer</span>
-                <span><strong>Outcome:</strong> Visual Authority</span>
-              </div>
-            </article>
-
-
-
+        <div class="process-card" style="flex: 1; min-width: 280px;">
+          <span class="step-num">02</span>
+          <div class="step-content">
+            <h4>Production & Polish</h4>
+            <p>The lab phase. We edit, design, and refine with precision. You get updates at key milestones so you're never in the dark. We move fast.</p>
           </div>
+        </div>
+        <div class="process-card" style="flex: 1; min-width: 280px;">
+          <span class="step-num">03</span>
+          <div class="step-content">
+            <h4>Delivery & Launch</h4>
+            <p>Final assets delivered in highest quality. Organized folders, multiple formats (9:16, 16:9). You get the keys to your new digital world.</p>
           </div>
-         <!-- Price text moved to Work section -->
         </div>
-        </div>
+      </div>
+
+      <!-- SPACER -->
+      <div style="height: 100px;"></div>
+
+      <!-- PACKAGES MENU -->
+      <header class="section-head center-text">
+        <span class="eyebrow-mini">THE MENU</span>
+        <h2>Select Your Package</h2>
+        <p>Curated solutions for every stage of your journey.</p>
+      </header>
+
+      <!-- TABS -->
+      <div class="pkg-tabs">
+        <button class="pkg-tab-btn active" data-tab="all">All</button>
+        <button class="pkg-tab-btn" data-tab="music">Music & Video</button>
+        <button class="pkg-tab-btn" data-tab="business">Brand & Business</button>
+        <button class="pkg-tab-btn" data-tab="content">Content & Growth</button>
+      </div>
+
+      <!-- DYNAMIC GRID -->
+      <div class="pkg-grid-dynamic" id="pkgGrid">
+        
+        <!-- MUSIC & VIDEO -->
+        <article class="package-static" data-category="music">
+          <div class="package-top">
+            <h4>The Visualizer</h4>
+            <div class="pkg-tag">Music</div>
+          </div>
+          <ul class="check-list">
+            <li><strong>For:</strong> Artists & Labels</li>
+            <li>Perfect loop for YouTube/Spotify Canvas</li>
+            <li>Lyric integration</li>
+            <li>Dynamic motion background</li>
+          </ul>
+          <div class="pkg-meta">
+            <span><strong>Turnaround:</strong> 48h</span>
+            <span><strong>Outcome:</strong> Stream-ready asset</span>
+          </div>
+          <button class="pkg-select-btn" data-package="The Visualizer">Select Package</button>
+        </article>
+
+        <article class="package-static featured" data-category="music">
+          <div class="package-top">
+            <h4>The Official Video</h4>
+            <div class="pkg-tag">Music</div>
+          </div>
+          <ul class="check-list">
+            <li><strong>For:</strong> Serious Artists</li>
+            <li>Full Music Video Post-Production</li>
+            <li>Advanced VFX & Sky replacements</li>
+            <li>Color Grading & Sound Design</li>
+          </ul>
+          <div class="pkg-meta">
+            <span><strong>Turnaround:</strong> 5-7 Days</span>
+            <span><strong>Outcome:</strong> Cinematic Masterpiece</span>
+          </div>
+          <button class="pkg-select-btn" data-package="The Official Video">Select Package</button>
+        </article>
+
+        <article class="package-static" data-category="music">
+          <div class="package-top">
+            <h4>The Rollout</h4>
+            <div class="pkg-tag">Music</div>
+          </div>
+          <ul class="check-list">
+            <li><strong>For:</strong> Album/EP Launches</li>
+            <li>Cover Art (3D or 2D)</li>
+            <li>3x Teasers / Countdowns</li>
+            <li>Social Banner Kit</li>
+          </ul>
+          <div class="pkg-meta">
+            <span><strong>Turnaround:</strong> 1 Week</span>
+            <span><strong>Outcome:</strong> Hype Campaign</span>
+          </div>
+          <button class="pkg-select-btn" data-package="The Rollout">Select Package</button>
+        </article>
+
+        <!-- BRAND & BUSINESS -->
+        <article class="package-static" data-category="business">
+          <div class="package-top">
+            <h4>The Identity</h4>
+            <div class="pkg-tag">Business</div>
+          </div>
+          <ul class="check-list">
+            <li><strong>For:</strong> Startups & SMBs</li>
+            <li>Logo Design (Primary + Marks)</li>
+            <li>Typography & Color System</li>
+            <li>Brand Guidelines PDF</li>
+          </ul>
+          <div class="pkg-meta">
+            <span><strong>Turnaround:</strong> 5-7 Days</span>
+            <span><strong>Outcome:</strong> Professional Trust</span>
+          </div>
+          <button class="pkg-select-btn" data-package="The Identity">Select Package</button>
+        </article>
+
+        <article class="package-static featured" data-category="business">
+          <div class="package-top">
+            <h4>The Digital HQ</h4>
+            <div class="pkg-tag">Business</div>
+          </div>
+          <ul class="check-list">
+            <li><strong>For:</strong> Service Providers</li>
+            <li>High-Conversion Website</li>
+            <li>Booking/Contact Integration</li>
+            <li>Mobile Optimized & SEO Ready</li>
+          </ul>
+          <div class="pkg-meta">
+            <span><strong>Turnaround:</strong> 1-2 Weeks</span>
+            <span><strong>Outcome:</strong> 24/7 Sales Machine</span>
+          </div>
+          <button class="pkg-select-btn" data-package="The Digital HQ">Select Package</button>
+        </article>
+
+        <article class="package-static" data-category="business">
+          <div class="package-top">
+            <h4>The Rebrand</h4>
+            <div class="pkg-tag">Business</div>
+          </div>
+          <ul class="check-list">
+            <li><strong>For:</strong> Scaling Brands</li>
+            <li>Full Logo + Web Overhaul</li>
+            <li>Social Media Template Suite</li>
+            <li>Business Card / Digital Assets</li>
+          </ul>
+          <div class="pkg-meta">
+            <span><strong>Turnaround:</strong> 2-3 Weeks</span>
+            <span><strong>Outcome:</strong> Market Authority</span>
+          </div>
+          <button class="pkg-select-btn" data-package="The Rebrand">Select Package</button>
+        </article>
+
+        <!-- CONTENT & GROWTH -->
+        <article class="package-static" data-category="content">
+          <div class="package-top">
+            <h4>The Drop</h4>
+            <div class="pkg-tag">Content</div>
+          </div>
+          <ul class="check-list">
+            <li><strong>For:</strong> Creators</li>
+            <li>1 High-Impact Short (Reel/TikTok)</li>
+            <li>Viral Pacing & Captions</li>
+            <li>Sound Design & Mixing</li>
+          </ul>
+          <div class="pkg-meta">
+            <span><strong>Turnaround:</strong> 24h</span>
+            <span><strong>Outcome:</strong> Quick Viral Potential</span>
+          </div>
+          <button class="pkg-select-btn" data-package="The Drop">Select Package</button>
+        </article>
+
+        <article class="package-static" data-category="content">
+          <div class="package-top">
+            <h4>The Stack</h4>
+            <div class="pkg-tag">Content</div>
+          </div>
+          <ul class="check-list">
+            <li><strong>For:</strong> Consistency</li>
+            <li>Pack of 5 or 10 Short-Form Edits</li>
+            <li>Content Strategy Session</li>
+            <li>Batch Efficiency</li>
+          </ul>
+          <div class="pkg-meta">
+            <span><strong>Turnaround:</strong> Weekly</span>
+            <span><strong>Outcome:</strong> Dominate Feed</span>
+          </div>
+          <button class="pkg-select-btn" data-package="The Stack">Select Package</button>
+        </article>
+
+        <article class="package-static network-pkg featured" data-category="content" data-category-2="business" data-category-3="music">
+          <div class="package-top">
+            <h4>The Partner</h4>
+            <div class="pkg-tag">All Access</div>
+          </div>
+          <p class="pkg-desc">We become your dedicated creative department.</p>
+          <ul class="check-list">
+            <li>Direct Slack & 24/7 Access</li>
+            <li>Priority Lab Production</li>
+            <li>Unlimited Requests (Retainer)</li>
+            <li>Monthly Strategy Audits</li>
+          </ul>
+          <div class="pkg-meta">
+            <span><strong>Term:</strong> Monthly</span>
+            <span><strong>Outcome:</strong> Total Scale</span>
+          </div>
+          <button class="pkg-select-btn" data-package="The Partner">Select Package</button>
+        </article>
+
       </div>
     </div>
   </section>
+
+  <!-- Script for Tabs -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabs = document.querySelectorAll('.pkg-tab-btn');
+      const items = document.querySelectorAll('.package-static');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          // Remove active class from all
+          tabs.forEach(t => t.classList.remove('active'));
+          // Add to clicked
+          tab.classList.add('active');
+
+          const category = tab.getAttribute('data-tab');
+
+          items.forEach(item => {
+            // Reset
+            item.classList.remove('hidden');
+            
+            if (category === 'all') return;
+
+        // Check if item has matching category (or secondary categories)
+            const cat1 = item.getAttribute('data-category');
+            const cat2 = item.getAttribute('data-category-2');
+            const cat3 = item.getAttribute('data-category-3');
+
+            if (cat1 !== category && cat2 !== category && cat3 !== category) {
+              item.classList.add('hidden');
+            }
+          });
+
+
+        });
+      });
+
+      // PACKAGE SELECTION LOGIC
+      const pkgButtons = document.querySelectorAll('.pkg-select-btn');
+      const contactForm = document.getElementById('contact');
+      const serviceSelect = document.getElementById('service');
+      const messageInput = document.getElementById('message');
+
+      pkgButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const pkgName = btn.getAttribute('data-package');
+          
+          // Map package to service category
+          let category = 'Custom';
+          if (pkgName.includes('Visualizer') || pkgName.includes('Video') || pkgName.includes('Rollout')) category = 'Music Video';
+          if (pkgName.includes('Identity') || pkgName.includes('Rebrand')) category = 'Brand Identity';
+          if (pkgName.includes('Digital HQ')) category = 'Web & Digital';
+          if (pkgName.includes('Drop') || pkgName.includes('Stack')) category = 'Content & Growth';
+          if (pkgName.includes('Partner')) category = 'Full Retainer';
+
+          // Set Dropdown safely
+          const optionExists = Array.from(serviceSelect.options).some(o => o.value === category);
+          serviceSelect.value = optionExists ? category : 'Custom';
+
+          // Pre-fill Message
+          messageInput.value = `I'm interested in the "${pkgName}" package. \n\nHere are some details about my project:`;
+
+          // Scroll to Contact using GSAP ScrollToPlugin
+          // autoKill: false ensures the scroll completes even if the user or other scripts try to interrupt it.
+          const target = contactForm.querySelector('.section-head') || contactForm;
+          
+          if (typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined') {
+              gsap.registerPlugin(ScrollToPlugin);
+              // Calculate target with offset
+              const targetY = target.getBoundingClientRect().top + window.scrollY - 100;
+
+              gsap.to(window, {
+                  duration: 1.5,
+                  scrollTo: {
+                      y: targetY,
+                      autoKill: false
+                  },
+                  ease: "power2.inOut"
+              });
+          } else {
+             // Fallback if plugin fails to load for any reason
+             const targetTop = target.getBoundingClientRect().top + window.scrollY - 100;
+             window.scrollTo({ top: targetTop, behavior: 'smooth' });
+          }
+          
+          // Force layout refresh for contact section visibility
+          setTimeout(() => {
+             const head = contactForm.querySelector('.section-head');
+             const content = contactForm.querySelector('.contact-container');
+             
+             if (typeof gsap !== 'undefined') {
+                 if (head) gsap.to(head, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", overwrite: true });
+                 if (content) gsap.to(content, { opacity: 1, y: 0, duration: 0.5, delay: 0.1, ease: "power2.out", overwrite: true });
+                 
+                 if (typeof ScrollTrigger !== 'undefined') {
+                    ScrollTrigger.refresh();
+                 }
+             }
+          }, 800); // Check a bit later for smoother sync with 1.5s scroll
+        });
+      });
+    });
+  </script>
 
   <!-- REVIEWS (Social Proof) -->
   <section id="reviews" class="section section-tight">
@@ -494,11 +715,12 @@
             <label for="service">Interested In</label>
             <select id="service" name="service" required>
               <option value="" disabled selected>Select a service</option>
-              <option value="video">Video Editing</option>
-              <option value="direction">Creative Direction</option>
-              <option value="identity">Visual Identity</option>
-              <option value="web">Web Starter</option>
-              <option value="custom">Custom / Other</option>
+              <option value="Music Video">Music Video</option>
+              <option value="Brand Identity">Brand Identity</option>
+              <option value="Content & Growth">Content & Growth</option>
+              <option value="Web & Digital">Web & Digital</option>
+              <option value="Full Retainer">Full Retainer / Partner</option>
+              <option value="Custom">Custom / Other</option>
             </select>
           </div>
 
@@ -607,7 +829,7 @@
     <div class="wrap footer-inner">
       <div class="footer-left">
         <div class="nav-logo" aria-label="OTP">
-          <img src="assets/otp_v2.png" alt="OTP logo" class="nav-gif logo-pulse" />
+          <img src="assets/otp_v2.png" alt="OTP logo" class="nav-gif" />
         </div>
         <div class="fineprint">© <span id="year"></span> Only True Perspective. All rights reserved.</div>
         <div class="footer-legal">
@@ -628,8 +850,9 @@
 
   <!-- SCRIPTS (Moved to bottom for reliable loading) -->
   <script src="https://unpkg.com/kursor"></script>
-  <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script> 
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
   <script src="https://unpkg.com/split-type"></script>
 
 

@@ -11,6 +11,9 @@
         yearEl.textContent = new Date().getFullYear();
     }
 
+    // 1.5 Lenis Smooth Scroll REMOVED for native feel.
+
+
     // 2. Kursor.js Initialization
     // Check if we are on desktop. Kursor typically hinders mobile touch.
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
@@ -83,7 +86,31 @@
         });
     }
 
-    // 6. Portal Dropdown Logic removed
+    // 6. Portal Dropdown Logic
+    const portalDropdown = document.getElementById('portalDropdown');
+    const portalBtn = document.getElementById('portalBtn');
+
+    if (portalDropdown && portalBtn) {
+        // Toggle on click
+        portalBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            portalDropdown.classList.toggle('active');
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!portalDropdown.contains(e.target)) {
+                portalDropdown.classList.remove('active');
+            }
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                portalDropdown.classList.remove('active');
+            }
+        });
+    }
 })();
 
 // 7. Site-Wide Initialization

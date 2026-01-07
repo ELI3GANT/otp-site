@@ -362,6 +362,7 @@ html {
   position: relative;
   z-index: 1;
   transition: transform 0.2s ease-out;
+  will-change: transform;
 }
 
 /* Removed broad aura ::after */
@@ -991,6 +992,7 @@ textarea:focus-visible {
     radial-gradient(circle at 20% 30%, rgba(112,0,255,0.15), transparent 40%),
     radial-gradient(circle at 80% 70%, rgba(0,195,255,0.10), transparent 40%);
   animation: float 12s ease-in-out infinite alternate;
+  will-change: transform;
   z-index: 1;
 }
 
@@ -3943,4 +3945,202 @@ input:focus, select:focus, textarea:focus {
     opacity: 1 !important; 
     display: block !important;
   }
+}
+
+/* ========================================= */
+/* PACKAGE MENU SYSTEM (TABS + GRID)         */
+/* ========================================= */
+
+.pkg-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 0 auto 40px;
+  flex-wrap: wrap;
+}
+
+.pkg-tab-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 24px;
+  border-radius: 99px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+
+.pkg-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.pkg-tab-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);
+}
+
+/* Package Grid Dynamic */
+.pkg-grid-dynamic {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Default 3 columns */
+  gap: 24px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .pkg-grid-dynamic {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .pkg-grid-dynamic {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hide items when filtered */
+.package-static {
+  display: flex; /* Ensure they are flex by default as per existing style (implied) */
+  flex-direction: column;
+  height: 100%;
+  /* Assuming existing .package-static styles exist in file, if not I rely on previous view. 
+     Based on view_file earlier, .package-static is class used. 
+  */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.package-static.hidden {
+  display: none !important;
+}
+
+/* Animation for entering */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.package-static:not(.hidden) {
+  animation: fadeInScale 0.3s ease-out forwards;
+  will-change: transform, opacity;
+}
+
+.pkg-select-btn {
+  display: block;
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px 0;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1.5px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  cursor: pointer;
+  text-align: center;
+}
+
+.pkg-select-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 25px rgba(112,0,255,0.3);
+  transform: translateY(-3px);
+  color: #fff;
+}
+
+.featured .pkg-select-btn {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.3);
+}
+
+.featured .pkg-select-btn:hover {
+  background: #fff;
+  border-color: #fff;
+  color: #000;
+  box-shadow: 0 0 30px rgba(255,255,255,0.4);
+}
+
+/* Scroll robustness */
+#contact {
+  scroll-margin-top: 100px;
+}
+
+/* PORTAL DROPDOWN */
+.nav-item-portal {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 14px;
+}
+
+#portalBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  padding: 10px 18px;
+  border-radius: 99px; /* Pill shape */
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+#portalBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.portal-dropdown {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  width: 180px;
+  background: #0a0a0f; /* Solid dark/black */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.portal-dropdown.active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.portal-dropdown a {
+  display: block;
+  padding: 10px 16px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.portal-dropdown a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
