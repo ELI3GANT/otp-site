@@ -360,43 +360,71 @@ html {
   -webkit-mask-image: radial-gradient(circle, black 50%, transparent 95%);
 }
 
-/* Zen Glow (Minimal Dope Effect) */
+/* Diamond Star Aura (Prismatic Invincibility) */
 .hero-logo-wrap::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100%;
-  height: 100%;
+  width: 120%; /* Large spread */
+  height: 120%;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  transform: translate(-50%, -50%) scale(1);
-  opacity: 0;
-  z-index: 0;
+  transform: translate(-50%, -50%);
+  z-index: -1; /* Behind the eye */
   pointer-events: none;
-  animation: zenGlow 6s ease-in-out infinite;
-  will-change: transform, opacity;
-  box-shadow: 0 0 60px rgba(255, 255, 255, 0.05);
+  
+  /* Prismatic Conic Gradient */
+  background: conic-gradient(
+    from 0deg, 
+    transparent 0%, 
+    rgba(255, 215, 0, 0.6) 10%, /* Gold */
+    rgba(0, 255, 255, 0.6) 25%, /* Cyan */
+    rgba(255, 0, 255, 0.6) 40%, /* Magenta */
+    rgba(255, 255, 255, 0.8) 50%, /* White Peak */
+    rgba(255, 215, 0, 0.6) 60%, /* Gold */
+    transparent 80%
+  );
+  filter: blur(25px);
+  animation: prismRotate 4s linear infinite;
+  mix-blend-mode: screen;
+  will-change: transform;
 }
 
-@keyframes zenGlow {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; box-shadow: 0 0 40px rgba(255, 255, 255, 0); }
-  50% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.35; box-shadow: 0 0 70px rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.6); }
-  100% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; box-shadow: 0 0 40px rgba(255, 255, 255, 0); }
-}
-
-/* Dynamic Energy Aura */
+/* Diamond Shine Overlay (Glass Sheen) */
 .hero-logo-wrap::before {
   content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 80%;
-  height: 80%;
-  background: radial-gradient(circle, rgba(112, 0, 255, 0.15) 0%, transparent 70%);
-  transform: translate(-50%, -50%);
-  z-index: -1;
-  animation: auraBreath 5s ease-in-out infinite;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2; /* On top */
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 60%
+  );
+  background-size: 200% 200%;
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+  animation: shineWipe 3s ease-in-out infinite;
+  mask-image: radial-gradient(circle, black 60%, transparent 70%); /* Mask to circle */
+  -webkit-mask-image: radial-gradient(circle, black 60%, transparent 70%);
+}
+
+@keyframes prismRotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+  50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); }
+  100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+}
+
+@keyframes shineWipe {
+  0% { background-position: 200% 200%; opacity: 0; }
+  20% { opacity: 0.8; }
+  40% { opacity: 0; }
+  100% { background-position: -100% -100%; opacity: 0; }
 }
 
 @keyframes auraBreath {
