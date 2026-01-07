@@ -265,12 +265,19 @@ for (let i = 0; i < STAR_COUNT; i++) {
 function animate() {
     ctx.clearRect(0, 0, width, height);
 
+    // Check for Archive Page (No Motion Request)
+    const isArchive = document.body.classList.contains('archive-page');
+
     // Update & Draw Static Stars
     stars.forEach(star => {
-        star.update();
+        // Only update position (move) if NOT on archive page
+        if (!isArchive) {
+            star.update();
+        }
         star.draw();
 
         // Connect to mouse if close (Only if NOT in Suck Mode)
+        // Allowed on Archive for interactivity without autoplay motion
         if (!attractor.active && mouse.x != null) {
             const dx = mouse.x - star.x;
             const dy = mouse.y - star.y;
@@ -285,14 +292,23 @@ function animate() {
                 ctx.stroke();
                 
                  // Gentle mouse attraction
-                 star.x += dx * 0.005; 
-                 star.y += dy * 0.005;
+                 // Disable attraction movement on archive to keep them strictly static?
+                 // Summary said: "stars are static... though mouse interaction for connections remains"
+                 // usually "interaction" implies some movement, but "static" implies position doesn't change.
+                 // I will keep the movement for interaction unless strictly asked not to, 
+                 // but typically "autoplay motion removal" refers to the constant drift.
+                 // However, to be "truly static" usually means they don't move at all.
+                 // Let's allow interaction movement if user touches them, but no ambient drift.
+                 if (!isArchive) {
+                     star.x += dx * 0.005; 
+                     star.y += dy * 0.005;
+                 }
             }
         }
     });
 
-    // Handle Shooting Stars
-    if (Math.random() < SHOOTING_STAR_CHANCE) {
+    // Handle Shooting Stars (DISABLE on Archive)
+    if (!isArchive && Math.random() < SHOOTING_STAR_CHANCE) {
         shootingStars.push(new ShootingStar());
     }
     
