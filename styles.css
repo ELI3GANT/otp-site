@@ -2691,9 +2691,14 @@ input:focus, select:focus, textarea:focus {
   z-index: 1;
 }
 
-.project-card:hover .project-img-static {
+.project-card.has-video:hover .project-img-static {
   transform: scale(1.05); /* Subtle zoom on hover */
-  opacity: 0; /* Hide image on hover when video is present */
+  opacity: 0; /* Hide image ONLY if video exists */
+}
+
+/* Ensure no-video cards usually keep image visible */
+.project-card:hover .project-img-static {
+  transform: scale(1.05); 
 }
 
 /* VIDEO PREVIEW STYLES */

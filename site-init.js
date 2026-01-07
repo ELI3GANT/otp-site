@@ -230,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     projectCards.forEach(pCard => {
         const video = pCard.querySelector('.video-preview');
         if (video) {
+            pCard.classList.add('has-video'); // Mark card as having video
             pCard.addEventListener('mouseenter', () => {
                 const source = video.querySelector('source');
                 if (source && source.src && source.src.length > 5) {
