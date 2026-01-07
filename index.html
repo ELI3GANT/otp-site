@@ -205,6 +205,7 @@
 
   <!-- SERVICES -->
   <section id="services" class="section section-alt">
+    <!-- Services Grid -->
     <div class="wrap">
       <header class="section-head center-text">
         <h2>Services</h2>
@@ -212,7 +213,6 @@
       </header>
 
       <div class="grid grid-2">
-
         <article class="service">
           <h3>Video & Motion</h3>
           <p class="service-desc">High-retention edits for Music, Content, and Commercials.</p>
@@ -262,11 +262,12 @@
           </ul>
         </article>
       </div>
+    </div>
+  </section>
 
-      <!-- SPACER -->
-      <div style="height: 80px;"></div>
-
-      <!-- HOW WE WORK (Full Width now) -->
+  <!-- HOW WE WORK (Process) -->
+  <section id="process" class="section section-alt" style="padding-top: 0;">
+    <div class="wrap">
       <h3 class="minihead center-text">How We Work</h3>
       <div class="process-stack" style="flex-direction: row; flex-wrap: wrap; gap: 20px; justify-content: center; text-align: left;">
         <div class="process-card" style="flex: 1; min-width: 280px;">
@@ -291,11 +292,12 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
 
-      <!-- SPACER -->
-      <div style="height: 100px;"></div>
-
-      <!-- PACKAGES MENU -->
+  <!-- PACKAGES MENU -->
+  <section id="packages" class="section section-alt">
+    <div class="wrap">
       <header class="section-head center-text">
         <span class="eyebrow-mini">THE MENU</span>
         <h2>Select Your Package</h2>
@@ -473,7 +475,7 @@
             <li>Monthly Strategy Audits</li>
           </ul>
           <div class="pkg-meta">
-            <span><strong>Term:</strong> Monthly</span>
+            <span><strong>Turnaround:</strong> Monthly</span>
             <span><strong>Outcome:</strong> Total Scale</span>
           </div>
           <button class="pkg-select-btn" data-package="The Partner">Select Package</button>
@@ -546,41 +548,32 @@
 
           // Scroll to Contact using GSAP ScrollToPlugin
           // autoKill: false ensures the scroll completes even if the user or other scripts try to interrupt it.
-          const target = contactForm.querySelector('.section-head') || contactForm;
+          // Passing the element directly allows GSAP to recalibrate if layout shifts occur during scroll.
           
           if (typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined') {
               gsap.registerPlugin(ScrollToPlugin);
-              // Calculate target with offset
-              const targetY = target.getBoundingClientRect().top + window.scrollY - 100;
-
+              
               gsap.to(window, {
-                  duration: 1.5,
+                  duration: 1,
                   scrollTo: {
-                      y: targetY,
+                      y: contactForm,
+                      offsetY: 80,
                       autoKill: false
                   },
-                  ease: "power2.inOut"
+                  ease: "power2.inOut",
+                  onComplete: () => {
+                      // Ensure visibility of contact section on arrival
+                      const head = contactForm.querySelector('.section-head');
+                      const content = contactForm.querySelector('.contact-container');
+                      
+                      if (head) gsap.to(head, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", overwrite: true });
+                      if (content) gsap.to(content, { opacity: 1, y: 0, duration: 0.5, delay: 0.1, ease: "power2.out", overwrite: true });
+                  }
               });
           } else {
-             // Fallback if plugin fails to load for any reason
-             const targetTop = target.getBoundingClientRect().top + window.scrollY - 100;
-             window.scrollTo({ top: targetTop, behavior: 'smooth' });
+             // Fallback
+             contactForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
-          
-          // Force layout refresh for contact section visibility
-          setTimeout(() => {
-             const head = contactForm.querySelector('.section-head');
-             const content = contactForm.querySelector('.contact-container');
-             
-             if (typeof gsap !== 'undefined') {
-                 if (head) gsap.to(head, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", overwrite: true });
-                 if (content) gsap.to(content, { opacity: 1, y: 0, duration: 0.5, delay: 0.1, ease: "power2.out", overwrite: true });
-                 
-                 if (typeof ScrollTrigger !== 'undefined') {
-                    ScrollTrigger.refresh();
-                 }
-             }
-          }, 800); // Check a bit later for smoother sync with 1.5s scroll
         });
       });
     });

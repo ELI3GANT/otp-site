@@ -90,7 +90,9 @@ body::before {
     #030305;
   background-size: cover;
   pointer-events: none;
-  transform: translateZ(0);
+  transform: translate3d(0,0,0); /* Force hardware accel */
+  backface-visibility: hidden;
+  height: 100vh; /* Force height to viewport, ignore address bar shifts */
 }
 
 html, body {
@@ -102,8 +104,8 @@ html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: var(--text);
   background-color: var(--bg);
-  overflow-x: hidden !important; /* Prevent horizontal scroll site-wide */
-  width: 100% !important;
+  overflow-x: hidden;
+  width: 100%;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -169,19 +171,32 @@ html {
 }
 
 /* SCARCITY BADGE */
+/* SCARCITY BADGE - Premium Red Glass */
 .scarcity-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(255, 68, 68, 0.1);
-  border: 1px solid rgba(255, 68, 68, 0.2);
-  color: #ff4444;
-  padding: 4px 10px;
+  gap: 10px;
+  /* Deep, rich red glass instead of washed out error red */
+  background: rgba(255, 30, 30, 0.08);
+  border: 1px solid rgba(255, 60, 60, 0.2);
+  color: #ff5555;
+  padding: 6px 14px;
   border-radius: 99px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1.2px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 0 15px rgba(255, 30, 30, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition: all 0.3s ease;
+}
+
+.scarcity-badge:hover {
+  background: rgba(255, 30, 30, 0.12);
+  border-color: rgba(255, 80, 80, 0.4);
+  box-shadow: 0 0 20px rgba(255, 30, 30, 0.2);
+  transform: translateY(-1px);
 }
 
 .pulse-dot {
@@ -190,13 +205,14 @@ html {
   background: #ff4444;
   border-radius: 50%;
   position: relative;
-  animation: badgePulse 2s infinite;
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.6);
+  animation: badgePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes badgePulse {
-  0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.6); opacity: 1; }
+  70% { box-shadow: 0 0 0 6px rgba(255, 68, 68, 0); opacity: 0.8; }
+  100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); opacity: 1; }
 }
 
 .results-grid {
@@ -301,7 +317,6 @@ html {
   top: 0;
   width: 100%;
   padding: 24px 48px;
-  padding: 24px 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -309,7 +324,9 @@ html {
 
   background: rgba(10,10,18,0.30);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: padding 0.3s ease, background 0.3s ease; /* Smooth out any dynamic changes */
 }
 
 .nav.nav-split {
@@ -346,9 +363,11 @@ html {
 
 
 .hero-eye-3d {
-  width: 400px;
+  width: 460px; /* Slightly smaller to give text room */
   max-width: 90vw;
+  max-height: 45vh; /* Reduced from 48vh */
   height: auto;
+  object-fit: contain;
   /* Diamond Star Outline: HARD, TIGHT prismatic shadows */
   filter: 
     drop-shadow(0 0 1px rgba(255, 255, 255, 1))      /* White Highlight */
@@ -840,149 +859,132 @@ html {
   opacity: 1;
 }
 
+
 /* HERO */
 .hero {
-  min-height: 100dvh; /* Better mobile address bar support */
-  height: auto;
+  min-height: 100dvh;
+  height: 100%; 
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   text-align: center;
-  padding: 40px 24px 30px; /* Reduced top padding significantly */
+  /* Relaxed padding */
+  padding: 85px 20px 30px; 
+  overflow: hidden; 
 }
 
+/* Tighten the rhythm */
 .hero h1 {
-  font-size: clamp(2.2rem, 6vw, 4.5rem);
-  letter-spacing: clamp(1px, 1.2vw, 6px);
-  line-height: 0.98;
+  font-size: clamp(2rem, 5vw, 3.4rem); 
+  letter-spacing: clamp(1px, 1.2vw, 5px);
+  line-height: 1.1; /* More breathing room for text lines */
   text-transform: uppercase;
   text-shadow: 0 10px 40px rgba(0,0,0,0.55);
+  margin-bottom: 12px; /* Opened up */
+  margin-top: 10px;
 }
-/* Optional title split support (if you wrap lines in spans) */
+
 .hero .title {
   display: block;
-  font-size: clamp(2.2rem, 6vw, 4.5rem); /* Made smaller to balance bigger GIF */
-  letter-spacing: clamp(1px, 1.2vw, 6px);
-  line-height: 0.98;
-  text-transform: uppercase;
-  text-shadow: 0 10px 40px rgba(0,0,0,0.55);
-}
-.hero .title span {
-  display: block;
+  font-size: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
 }
 
 .hero .subtitle {
-  margin-top: 10px; /* Reduced from 14px */
+  margin-top: 8px; 
   color: var(--muted);
-  font-size: clamp(1.0rem, 1.3vw, 1.1rem);
+  font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  line-height: 1.5; /* Better readability */
 }
 
 .hero p {
-  margin-top: 10px; /* Reduced from 14px */
+  margin-top: 6px;
   color: var(--muted);
-  font-size: clamp(1.0rem, 1.3vw, 1.1rem);
+  font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+  margin-bottom: 0;
+  line-height: 1.5;
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 1100px;
+  max-width: 1000px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-.hero-mark {
-  display: grid;
-  place-items: center;
-  margin-bottom: 18px;
-}
-
-.hero-mark img {
-  width: 108px;
-  height: 108px;
-  border-radius: 26px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(0,0,0,0.18);
-  box-shadow: 0 18px 60px rgba(0,0,0,0.45);
-  filter: saturate(1.05) contrast(1.05);
-}
-
-@media (max-width: 768px) {
-  .hero-mark img {
-    width: 92px;
-    height: 92px;
-    border-radius: 22px;
-  }
+.hero-logo-wrap {
+  margin-bottom: 0px; 
 }
 
 .eyebrow {
-  display: inline-block;
-  margin-bottom: 10px; /* Reduced from 14px */
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.05);
-  font-size: 0.9rem;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.85);
+  margin-bottom: 6px; /* Less cramped */
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+  
+  /* Seamless Glass Style */
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 100px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  /* Subtle Glow Integration */
+  box-shadow: 0 0 20px rgba(0,0,0,0.2), inset 0 0 0 1px rgba(255,255,255,0.05);
+  transition: all 0.3s ease;
+}
+
+.eyebrow:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent2);
+  box-shadow: 0 0 15px rgba(0, 195, 255, 0.15);
+  transform: translateY(-1px);
 }
 
 .hero-cta {
-  margin-top: 20px; /* Reduced from 28px */
+  margin-top: 24px; /* Significant breathing room before button */
   display: flex;
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 16px;
-  border-radius: 14px;
-  text-decoration: none;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  border: 1px solid rgba(255,255,255,0.14);
-  transition: transform 0.15s ease, opacity 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  box-shadow: var(--shadowSoft);
-}
-.btn:hover { transform: translateY(-1px); opacity: 0.95; }
-
-.btn:focus-visible,
-.card:focus-visible,
-.nav-links a:focus-visible,
-.nav-drawer a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: none;
-  box-shadow: var(--ring);
-  border-color: rgba(214,178,94,0.55);
-}
-
-.btn-primary {
-  background: linear-gradient(90deg, rgba(214,178,94,0.95), rgba(244,223,154,0.78));
-  border: 1px solid rgba(214,178,94,0.22);
-  box-shadow: 0 14px 50px rgba(214,178,94,0.16);
-  color: rgba(10,10,18,0.92);
-}
-.btn-ghost {
-  background: rgba(255,255,255,0.06);
-}
-
 .hero-micro {
-  margin-top: 15px; /* Reduced from 22px */
-  color: rgba(255,255,255,0.72);
-  font-size: 0.95rem;
+  margin-top: 24px; /* More space for the footer elements */
+  color: #fff; 
+  font-size: 0.85rem; 
   letter-spacing: 0.6px;
+  font-weight: 600; 
   display: inline-flex;
-  gap: 10px;
+  gap: 16px; /* Widen the gap between badge and text */
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
 }
-.hero-micro .dot { opacity: 0.55; }
+
+/* Custom separator dot for hero micro */
+.hero-micro .dot {
+  width: 5px;
+  height: 5px;
+  background: var(--accent2); /* Cyan glow */
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent2), 0 0 4px var(--accent2); /* Double glow */
+  opacity: 1;
+  display: inline-block;
+  color: transparent; /* Hide text bullet */
+  font-size: 0; /* Ensures no text height issues */
+  vertical-align: middle;
+}
 
 /* BACKGROUND GRADIENT MOTION */
 .hero-bg {
@@ -2746,7 +2748,7 @@ input:focus, select:focus, textarea:focus {
   transition: opacity 0.5s ease;
 }
 
-.project-card:hover .video-preview-container {
+.project-card.has-video:hover .video-preview-container {
   opacity: 1;
 }
 

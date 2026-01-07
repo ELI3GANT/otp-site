@@ -42,10 +42,17 @@
     }
 
     // 3. Scroll Progress Logic (Moved from inline)
+    // 3. Scroll Progress Logic (Moved from inline)
     window.addEventListener('scroll', () => {
-        const scrolled = window.scrollY;
-        const max = document.body.scrollHeight - window.innerHeight;
-        const scrollPercent = max > 0 ? (scrolled / max) * 100 : 0;
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const docHeight = Math.max(
+            document.body.scrollHeight, document.documentElement.scrollHeight,
+            document.body.offsetHeight, document.documentElement.offsetHeight,
+            document.body.clientHeight, document.documentElement.clientHeight
+        );
+        const winHeight = window.innerHeight || document.documentElement.clientHeight;
+        const max = docHeight - winHeight;
+        const scrollPercent = max > 0 ? (scrollTop / max) * 100 : 0;
         document.body.style.setProperty('--scroll', `${scrollPercent}%`);
     }, { passive: true });
 
@@ -234,11 +241,15 @@ document.addEventListener('DOMContentLoaded', () => {
     projectCards.forEach(pCard => {
         const video = pCard.querySelector('.video-preview');
         if (video) {
-            pCard.classList.add('has-video'); // Mark card as having video
+            const source = video.querySelector('source');
+            // Only enable video behavior if we actually have a source
+            if (source && source.src && source.src.trim() !== '' && !source.src.endsWith(window.location.href)) {
+                 pCard.classList.add('has-video'); 
+            }
+
             pCard.addEventListener('mouseenter', () => {
-                const source = video.querySelector('source');
-                if (source && source.src && source.src.length > 5) {
-                    video.play().catch(() => {});
+                if (pCard.classList.contains('has-video')) {
+                     video.play().catch(() => {});
                 }
             });
             pCard.addEventListener('mouseleave', () => video.pause());
@@ -257,7 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MAGNETIC HERO VISION ---
     const heroEye = document.querySelector('.hero-eye-3d');
-    if (heroEye && !isMobile) {
+    const isMobileHero = window.matchMedia("(max-width: 768px)").matches;
+    
+    if (heroEye && !isMobileHero) {
         window.addEventListener('mousemove', (e) => {
             const rect = heroEye.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
@@ -271,16 +284,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const deltaY = (mouseY - centerY) / window.innerHeight;
             
             // Apply subtle tilt and rotation
-            const rotateX = deltaY * 30; // Max 15 deg tilt
-            const rotateY = deltaX * 30; // Max 15 deg tilt
+            const rotateX = deltaY * 30; 
+            const rotateY = deltaX * 30; 
             
-            // Note: Keep the 15s animation spinning but inject additional rotation
-            // We'll use a wrapper or just set custom property for smoother blend
             heroEye.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`;
         });
         
         window.addEventListener('mouseleave', () => {
             heroEye.style.transform = `rotateX(0deg) rotateY(0deg)`;
+        });
+    }
+
+
+    // --- LOGO SCROLL TO TOP ---
+    const navLogo = document.querySelector('.nav-logo');
+    if (navLogo) {
+        navLogo.addEventListener('click', (e) => {
+            // Only intercept if we are on the homepage (index.html or root)
+            const path = window.location.pathname;
+            if (path === '/' || path.endsWith('index.html')) {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+                
+                // Backup for GSAP if loaded
+                if (typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined') {
+                    gsap.to(window, { scrollTo: 0, duration: 1, ease: "power2.inOut" });
+                }
+            }
         });
     }
 
