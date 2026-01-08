@@ -29,7 +29,7 @@
   <!-- Font (optional but makes it instantly cleaner) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
   
   <!-- Styles -->
   <link rel="stylesheet" href="./styles.css?v=2.6" />
@@ -804,6 +804,7 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS (Moved to bottom for reliable loading) -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/kursor"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -851,6 +852,12 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
+  <script>
+    // SUPABASE INIT
+    const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     // FORM HANDLING
     const contactForm = document.getElementById('contactForm');
     const formStatus = document.getElementById('formStatus');
@@ -858,27 +865,27 @@
     if (contactForm) {
       contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const data = new FormData(contactForm);
-        formStatus.textContent = 'Sending...';
+        const formData = new FormData(contactForm);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Remove anti-spam field logic if present, or just ignore it
+        if (data._gotcha) delete data._gotcha; 
+
+        formStatus.textContent = 'Locking the vision...';
         formStatus.style.color = 'var(--accent2)';
         
         try {
-          const response = await fetch(contactForm.action, {
-            method: 'POST',
-            body: data,
-            headers: { 'Accept': 'application/json' }
-          });
-          
-          if (response.ok) {
-            formStatus.textContent = 'Success! Locking the vision...';
-            formStatus.style.color = '#00ffaa';
-            contactForm.reset();
-          } else {
-            const result = await response.json();
-            formStatus.textContent = result.errors ? result.errors.map(error => error.message).join(", ") : 'Oops! Something went wrong.';
-            formStatus.style.color = '#ff4444';
-          }
+          const { error } = await supabase
+            .from('contacts')
+            .insert([ data ]);
+
+          if (error) throw error;
+
+          formStatus.textContent = 'Success! We represent the only true perspective.';
+          formStatus.style.color = '#00ffaa';
+          contactForm.reset();
         } catch (error) {
+          console.error(error);
           formStatus.textContent = 'Connection error. Please try again.';
           formStatus.style.color = '#ff4444';
         }
