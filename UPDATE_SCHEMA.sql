@@ -1,0 +1,7 @@
+
+-- FIX MISSING AUTHOR COLUMN
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS author text default 'OTP Admin';
+
+-- ENSURE OTHER COLUMNS EXIST (Just in case)
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_title text;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_desc text;
