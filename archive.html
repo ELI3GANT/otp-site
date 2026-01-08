@@ -282,26 +282,27 @@
                 // Activate Filter
                 img.style.filter = 'url(#liquid-distortion)';
                 
-                // Animate Scale (Distort)
+                // Animate Scale (Distort) - Smoother, Larger impact
                 gsap.to(displacement, {
-                    attr: { scale: 100 }, // Intensity
-                    duration: 0.5,
-                    ease: 'power2.out'
+                    attr: { scale: 150 }, // More intensity
+                    duration: 1.2,        // Slower movement
+                    ease: 'power3.out'
                 });
                 
-                // Animate Base Frequency (Turbulence flow)
+                // Animate Base Frequency (Turbulence flow) - Liquid "Pour" feel
                 gsap.to(turbulence, {
-                    attr: { baseFrequency: '0.04 0.04' },
-                    duration: 0.5
+                    attr: { baseFrequency: '0.02 0.05' }, 
+                    duration: 1.2,
+                    ease: 'power2.out'
                 });
             });
 
             card.addEventListener('mouseleave', () => {
-                // Animate Back
+                // Animate Back - Slow fade
                 gsap.to(displacement, {
                     attr: { scale: 0 },
-                    duration: 0.5,
-                    ease: 'power2.out',
+                    duration: 0.8,
+                    ease: 'power2.inOut',
                     onComplete: () => {
                         img.style.filter = 'none'; // Cleanup
                     }
@@ -309,7 +310,7 @@
                 
                 gsap.to(turbulence, {
                     attr: { baseFrequency: '0.01 0.01' },
-                    duration: 0.5
+                    duration: 0.8
                 });
             });
         });
