@@ -1,3 +1,4 @@
+
 /* ADMIN COMMAND CENTER STYLES */
 
 :root {
@@ -8,17 +9,32 @@
     --admin-cyan: #00c3ff;
     --admin-success: #00ffaa;
     --admin-danger: #ff4444;
+    --admin-text: #ffffff;
+    --admin-muted: #888;
+}
+
+[data-theme="light"] {
+    --admin-bg: #f5f5f7;
+    --admin-panel: #ffffff;
+    --admin-border: #d2d2d7;
+    --admin-accent: #6200e0;
+    --admin-cyan: #0071e3;
+    --admin-success: #28cd41;
+    --admin-danger: #ff3b30;
+    --admin-text: #1d1d1f;
+    --admin-muted: #666;
 }
 
 body {
     background: var(--admin-bg);
-    color: #fff;
+    color: var(--admin-text);
     font-family: 'Inter', sans-serif;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* HEADER */
 .admin-header {
-    background: rgba(5, 5, 8, 0.95);
+    background: var(--admin-panel); /* Use panel variable for adaptiveness */
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--admin-border);
     position: sticky;
@@ -34,7 +50,7 @@ body {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 1.2rem;
     letter-spacing: 2px;
-    color: #fff;
+    color: var(--admin-text);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -64,11 +80,12 @@ body {
     border-radius: 12px;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
 .stat-card h3 {
     font-size: 0.75rem;
-    color: #888;
+    color: var(--admin-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
     margin: 0 0 10px 0;
@@ -78,7 +95,7 @@ body {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 2rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--admin-text);
 }
 
 .stat-card::after {
@@ -88,7 +105,8 @@ body {
     right: 0;
     width: 60px;
     height: 60px;
-    background: radial-gradient(circle at top right, rgba(112,0,255,0.1), transparent 70%);
+    background: radial-gradient(circle at top right, var(--admin-accent), transparent 70%);
+    opacity: 0.1;
 }
 
 /* MAIN FORM AREA */
@@ -125,7 +143,7 @@ label {
     display: block;
     margin-bottom: 8px;
     font-size: 0.75rem;
-    color: #666;
+    color: var(--admin-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-weight: 600;
@@ -133,11 +151,11 @@ label {
 
 input, textarea, select {
     width: 100%;
-    background: rgba(255,255,255,0.03);
+    background: var(--admin-panel); /* Matches panel for clean look in light mode too */
     border: 1px solid var(--admin-border);
     padding: 16px;
     border-radius: 8px;
-    color: #fff;
+    color: var(--admin-text);
     font-family: 'Inter', monospace;
     font-size: 0.95rem;
     transition: all 0.2s ease;
@@ -146,14 +164,14 @@ input, textarea, select {
 input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: var(--admin-accent);
-    background: rgba(255,255,255,0.05);
-    box-shadow: 0 0 0 2px rgba(112,0,255,0.1);
+    background: var(--admin-panel);
+    box-shadow: 0 0 0 3px rgba(112,0,255,0.1);
 }
 
 /* AI TERMINAL */
 .ai-tips {
     background: linear-gradient(180deg, rgba(112,0,255,0.05), rgba(0,0,0,0));
-    border: 1px solid rgba(112,0,255,0.2);
+    border: 1px solid var(--admin-border);
     border-radius: 16px;
     padding: 25px;
     margin: 30px 0;
@@ -182,7 +200,7 @@ button {
     width: 100%;
     padding: 20px;
     background: var(--admin-success);
-    color: #000;
+    color: #000; /* Always black text on success green */
     border: none;
     border-radius: 12px;
     font-size: 1.1rem;
@@ -228,17 +246,17 @@ button {
 }
 
 .post-row:hover {
-    background: rgba(255,255,255,0.02);
+    background: rgba(120, 120, 120, 0.05); /* Works for light and dark */
 }
 
 .post-title {
     font-weight: 600;
-    color: #fff;
+    color: var(--admin-text);
 }
 
 .post-meta {
     font-size: 0.75rem;
-    color: #666;
+    color: var(--admin-muted);
     margin-top: 4px;
 }
 
@@ -266,7 +284,7 @@ button {
     padding: 8px 12px;
     background: transparent;
     border: 1px solid var(--admin-border);
-    color: #666;
+    color: var(--admin-muted);
     border-radius: 6px;
     font-size: 0.7rem;
 }

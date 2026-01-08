@@ -607,8 +607,16 @@
                 <div class="value" id="statViews">--</div>
             </div>
             <div class="stat-card">
-                <h3>System Status</h3>
-                <div class="value" style="font-size: 1rem; color: var(--admin-success); margin-top: 8px;">OPERATIONAL</div>
+                <h3>Live Viewers</h3>
+                <div class="value" id="statLive" style="color: var(--admin-success);">--</div>
+            </div>
+            <div class="stat-card">
+                <h3>Peak Viewers</h3>
+                <div class="value" id="statPeak">--</div>
+            </div>
+            <div class="stat-card">
+                <h3>Avg. Duration</h3>
+                <div class="value" id="statDuration">--</div>
             </div>
         </div>
         
@@ -634,8 +642,8 @@
                     <span id="fileNameDisplay"></span> <span id="fileSizeDisplay" style="color: var(--accent);"></span>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button type="button" class="btn-secondary" onclick="document.getElementById('fileInput').click()">Upload File</button>
-                    <input type="file" id="fileInput" accept="image/*" style="display: none">
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Media</button>
+                    <input type="file" id="fileInput" accept="image/*,video/*" style="display: none">
                     <input type="text" id="urlInput" placeholder="Or Paste URL..." style="border: 1px solid var(--stroke); background: transparent;">
                 </div>
                 <input type="hidden" name="image_url" id="imageUrl">
