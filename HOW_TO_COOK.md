@@ -5,7 +5,7 @@ Here is your roadmap to taking it from "Great" to "World Class".
 
 ## 1. Visuals: The "WebGL" Upgrade
 You are a video production studio. Your site should *feel* like a video.
-*   **The Idea:** Implement a "Distortion Hover Effect" on your `archive.html` images. When the mouse moves over a thumbnail, it shouldn't just scale; it should "liquid warp" using WebGL.
+*   **The Idea:** Implement a "Distortion Hover Effect" on your `archive.html` images. When the mouse moves over a thumbnail, it shouldn't just scale; it should "liquid warp" using WebGL.2
 *   **The Tool:** Use [Curtains.js](https://www.curtainsjs.com/) or [Ogl](https://github.com/oframe/ogl).
 *   **Why:** It signals "High Budget" immediately.
 

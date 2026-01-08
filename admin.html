@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OTP Pocket Command</title>
   <link rel="stylesheet" href="./styles.css?v=2.6" />
-  <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; background: #050505; color: white; }</style>
+  <link rel="stylesheet" href="./admin-styles.css" />
+  <script src="./admin-init.js" defer></script>
+  <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); }</style>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   
     <style>
@@ -36,13 +38,67 @@
   
             background: var(--bg); 
   
-            color: white; 
+            color: var(--text); 
   
             -webkit-font-smoothing: antialiased;
   
             padding-bottom: 50px;
   
         }
+
+        [data-theme="light"] {
+            --bg: #f5f5f7;
+            --text: #1d1d1f;
+            --card: #ffffff;
+            --stroke: #d2d2d7;
+            --accent: #6200e0;
+            --accent2: #0071e3;
+            --success: #28cd41;
+        }
+
+        [data-theme="light"] input, 
+        [data-theme="light"] textarea, 
+        [data-theme="light"] select {
+            background: #fff;
+            color: #1d1d1f;
+            border-color: #d2d2d7;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        [data-theme="light"] .admin-header {
+            background: rgba(255,255,255,0.8);
+            border-bottom: 1px solid #d2d2d7;
+        }
+
+        [data-theme="light"] .toggle-wrap {
+            background: #fff;
+            border-color: #d2d2d7;
+        }
+
+        [data-theme="light"] .ai-tips {
+            background: #fdfdff;
+            border: 1px solid #d2d2d7; /* Soft border */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        }
+
+        [data-theme="light"] .preset-btn {
+            background: #fff;
+            color: #555;
+            border: 1px solid #d2d2d7;
+        }
+
+        [data-theme="light"] .preset-btn:hover {
+            border-color: #6200e0;
+            color: #6200e0;
+            background: #f8f5ff;
+        }
+
+        [data-theme="light"] .ai-tips h4 { color: #1d1d1f; }
+        [data-theme="light"] .section-label { color: #6200e0; }
+        [data-theme="light"] .btn-secondary { color: #555; border-color: #d2d2d7; }
+        [data-theme="light"] .btn-secondary:hover { background: #f5f5f7; color: #000; }
+        [data-theme="light"] .toggle-label { color: #1d1d1f; }
+        [data-theme="light"] .input-group label { color: #444; }
   
   
   
@@ -321,55 +377,72 @@
             position: fixed;
   
             top: 20px;
-  
-            left: 50%;
-  
-            transform: translateX(-50%) translateY(-100px);
-  
-            background: rgba(0, 255, 170, 0.15);
-  
-            backdrop-filter: blur(15px);
-  
-            border: 1px solid var(--success);
-  
-            padding: 16px 24px;
-  
-            border-radius: 12px;
-  
+        /* GATEKEEPER STYLES */
+        .gatekeeper {
+            position: fixed;
+            inset: 0;
+            background: #030305;
+            z-index: 10000;
             display: flex;
-  
             align-items: center;
-  
-            gap: 12px;
-  
-            color: var(--success);
-  
+            justify-content: center;
+            flex-direction: column;
+            gap: 24px;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        .gate-blur {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, var(--accent) 0%, transparent 60%);
+            opacity: 0.15;
+            filter: blur(80px);
+        }
+        .gate-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 100%;
+            max-width: 320px;
+            padding: 20px;
+        }
+        .gate-input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--stroke);
+            padding: 16px;
+            border-radius: 12px;
+            color: #fff;
+            text-align: center;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .gate-input:focus {
+            border-color: var(--accent2);
+            box-shadow: 0 0 20px rgba(0, 195, 255, 0.2);
+        }
+        .gate-btn {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
             font-weight: 700;
-  
-            font-size: 0.9rem;
-  
+            cursor: pointer;
             letter-spacing: 1px;
-  
-            box-shadow: 0 10px 40px rgba(0, 255, 170, 0.2);
-  
-            z-index: 9999;
-  
+            transition: transform 0.2s ease;
+        }
+        .gate-btn:active { transform: scale(0.98); }
+        .gatekeeper.unlocked {
             opacity: 0;
-  
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  
+            visibility: hidden;
             pointer-events: none;
-  
         }
-  
-        .toast.show {
-  
-            transform: translateX(-50%) translateY(0);
-  
-            opacity: 1;
-  
-        }
-  
+        body.locked { overflow: hidden; }
+
         .checkmark-circle {
   
             width: 24px; height: 24px;
@@ -420,7 +493,17 @@
   
   </head>
   
-  <body>
+  <body class="locked">
+    <!-- GATEKEEPER OVERLAY -->
+    <div id="gate" class="gatekeeper">
+        <div class="gate-blur"></div>
+        <div class="gate-content">
+            <h1 style="color: var(--accent2); font-size: 1rem; margin-bottom: 25px; letter-spacing: 2px;">ENCRYPTED CHANNEL</h1>
+            <input type="password" id="gatePass" class="gate-input" placeholder="••••" maxlength="8">
+            <button onclick="unlockChannel()" class="gate-btn">ESTABLISH CONNECTION</button>
+            <p id="gateError" style="color: #ff4444; font-size: 0.8rem; margin-top: 15px; display: none;">ACCESS DENIED: INVALID SIGNAL</p>
+        </div>
+    </div>
   
   
   
@@ -456,15 +539,7 @@
   
             <!-- ACCESS -->
   
-            <div class="input-group">
-  
-                <label>Security Clearance</label>
-  
-                <input type="password" id="passcode" placeholder="Enter Access Code" required autocomplete="current-password">
-  
-            </div>
-  
-  
+            
   
             <!-- SECTION: MEDIA -->
   
@@ -500,7 +575,7 @@
   
                 <label>Headline</label>
   
-                <input type="text" name="title" id="titleInput" placeholder="The Death of 1080p" required oninput="generateSlug(this.value)">
+                <input type="text" name="title" id="titleInput" placeholder="The Death of 1080p" required>
   
             </div>
   
@@ -539,32 +614,41 @@
   
   
             <div class="row">
-  
                 <div class="input-group">
-  
                     <label>Author</label>
-  
                     <input type="text" name="author" value="OTP Admin">
-  
                 </div>
-  
-                <div class="input-group">
-  
-                    <label>Publish Date</label>
-  
-                    <input type="datetime-local" name="published_at">
-  
-                </div>
-  
             </div>
+            <div class="section-label">03 // Ghostwriter AI</div>
+            
+            <div class="ai-tips">
+                <h4 style="margin-top: 0; color: var(--accent2); font-size: 0.9rem; text-transform: uppercase;">Style Presets</h4>
+                <div class="preset-grid">
+                    <button type="button" class="preset-btn active" data-style="cinematic">Cinematic</button>
+                    <button type="button" class="preset-btn" data-style="guerilla">Guerilla</button>
+                    <button type="button" class="preset-btn" data-style="technical">Technical</button>
+                </div>
+                <button type="button" class="btn-theme-toggle k-hover" id="themeToggle" style="background: none; border: none; cursor: pointer; color: var(--text);">
+                    <svg id="moonIcon" style="display:none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    <svg id="sunIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                </button>
+                <p style="font-size: 0.75rem; margin-top: 15px; color: #888; border-top: 1px solid var(--stroke); padding-top: 10px;">
+                    Select a style and click <strong>Generate</strong> in the prompt area below.
+                </p>
+            </div>
+        </div>
+
+        <div class="wrap" style="padding: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+           <div class="status-pill"><div class="status-dot active"></div> DB Linked</div>
+           <div class="status-pill"><div class="status-dot" id="uploadStatusDot"></div> Media</div>
+           <div class="status-pill"><div class="status-dot" id="aiStatusDot"></div> AI Ghost</div>
+        </div>
   
-  
-  
-            <!-- SECTION: AI BRAIN -->
+            <!-- AI BRAIN -->
   
             <div class="ai-tips">
   
-                <h4>🤖 AUTO-GENERATOR</h4>
+                <h4>🤖 NEURAL GENERATOR V3</h4>
   
                 <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 15px;">Fills Content, SEO, and Metadata automatically.</p>
   
@@ -578,17 +662,27 @@
   
                 
   
+                <div class="input-group">
+                     <label>Post Archetype (Presets)</label>
+                     <select id="archetype" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
+                         <option value="technical">Technical Breakdown (Edgy, Deep)</option>
+                         <option value="launch">Visual Launch (Hype, Fast)</option>
+                         <option value="strategy">Business Strategy (Professional, ROI focused)</option>
+                         <option value="case-study">Case Study (Data driven, Results)</option>
+                     </select>
+                </div>
+
                 <div class="row">
   
                     <div class="input-group">
   
-                         <label>Prompt Context (Optional)</label>
+                         <label>Core Concept / Prompt</label>
   
-                         <textarea id="aiPrompt" placeholder="e.g. Focus on color grading workflows..." style="height: 60px;"></textarea>
+                         <textarea id="aiPrompt" placeholder="What is this about? (e.g. Testing the Sony A7SIII in low light Rhode Island rain)" style="height: 60px;"></textarea>
   
                     </div>
   
-                    <button type="button" id="magicBtn" style="height: 100%; margin-top: 23px;">⚡ FULL AUTO GENERATE</button>
+                    <button type="button" id="magicBtn" style="height: 100%; margin-top: 23px; background: linear-gradient(135deg, #7000ff, #ff00ff); color: white;">⚡ TRANSMIT TO AI (FULL AUTO)</button>
   
                 </div>
   
@@ -608,7 +702,7 @@
   
                 <label>Excerpt (Card Summary)</label>
   
-                <textarea name="excerpt" id="excerptInput" style="height: 80px;" required></textarea>
+                <textarea name="excerpt" id="excerptInput" style="height: 80px;" required placeholder="The short sequence that appears on the feed grid..."></textarea>
   
             </div>
   
@@ -618,7 +712,7 @@
   
                 <label>Full Content (Markdown/HTML)</label>
   
-                <textarea name="content" id="contentArea" style="height: 400px; font-family: monospace; font-size: 0.9rem;" required></textarea>
+                <textarea name="content" id="contentArea" style="height: 400px; font-family: monospace; font-size: 0.9rem;" required placeholder="Paste your article here or use the generator above..."></textarea>
   
             </div>
   
@@ -626,7 +720,7 @@
   
             <!-- SECTION: SEO & ANALYTICS -->
   
-            <div class="section-label">04 // SEO & Analytics</div>
+            <div class="section-label">04 // Visibility Controls</div>
   
             
   
@@ -634,7 +728,7 @@
   
                 <label>SEO Meta Title</label>
   
-                <input type="text" name="seo_title" id="seoTitle">
+                <input type="text" name="seo_title" id="seoTitle" placeholder="Google optimized title">
   
             </div>
   
@@ -644,7 +738,7 @@
   
                 <label>SEO Meta Description</label>
   
-                <textarea name="seo_desc" id="seoDesc" style="height: 80px;"></textarea>
+                <textarea name="seo_desc" id="seoDesc" style="height: 80px;" placeholder="Snippet for search results..."></textarea>
   
             </div>
   
@@ -656,17 +750,17 @@
   
                    <label>Initial Views</label>
   
-                   <input type="number" name="views" value="124" placeholder="Fake it till you make it">
+                   <input type="number" name="views" value="441" placeholder="Initial traffic seed">
   
                </div>
   
                <div class="toggle-wrap">
   
-                   <span class="toggle-label">Enable Comments</span>
+                   <span class="toggle-label">Live Status</span>
   
                    <label class="switch">
   
-                     <input type="checkbox" checked>
+                     <input type="checkbox" name="published" id="pubToggle" checked>
   
                      <span class="slider"></span>
   
@@ -682,7 +776,7 @@
   
             
   
-            <button type="submit" style="height: 70px; font-size: 1.2rem; margin-bottom: 20px;">PUBLISH TO NETWORK</button>
+            <button type="submit" id="submitBtn" style="height: 70px; font-size: 1.2rem; margin-bottom: 20px; background: var(--success); color: #000;">COMMENCE BROADCAST</button>
   
             
   
@@ -701,431 +795,242 @@
     
   
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  
-    
-  
     <script>
-  
+      // 1. SUPABASE INITIALIZATION
       const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
-  
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
-  
+      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImexCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  
-  
-  
-      // Load Key
-  
-      const savedKey = localStorage.getItem('openai_key');
-  
-      if(savedKey) document.getElementById('apiKey').value = savedKey;
-  
-  
-  
-      // Elements
-  
-      const preview = document.getElementById('imagePreview');
-  
+
+      // 2. UI ELEMENTS & STATE
+      const postForm = document.getElementById('postForm');
+      const titleInput = document.getElementById('titleInput');
+      const slugInput = document.getElementById('slugInput');
       const urlInput = document.getElementById('urlInput');
-  
-      const toast = document.getElementById('toast');
-  
+      const imagePreview = document.getElementById('imagePreview');
+      const imageUrlHidden = document.getElementById('imageUrl');
       const aiStatus = document.getElementById('aiStatus');
-  
-  
-  
-      // Show/Hide Toast
-  
-      function showToast() {
-  
+      const toast = document.getElementById('toast');
+      const magicBtn = document.getElementById('magicBtn');
+      const submitBtn = document.getElementById('submitBtn');
+
+      // Load saved OpenAI Key
+      const savedKey = localStorage.getItem('openai_key');
+      if(savedKey) document.getElementById('apiKey').value = savedKey;
+
+      // 3. UTILITIES
+      function showToast(text) {
+          if(text) toast.querySelector('span').textContent = text;
           toast.classList.add('show');
-  
           setTimeout(() => toast.classList.remove('show'), 3000);
-  
       }
-  
-  
-  
-      // URL Preview
-  
+
+      function generateSlug(title) {
+          const slug = title.toLowerCase()
+              .replace(/[^\w\s-]/g, '') // Remove non-word chars
+              .trim()
+              .replace(/\s+/g, '-')    // Replace spaces with -
+              .replace(/-+/g, '-');    // Remove double -
+          slugInput.value = slug;
+      }
+
+      function unlockChannel() {
+          const val = document.getElementById('gatePass').value;
+          if(val === 'otp2026') {
+              document.getElementById('gate').classList.add('unlocked');
+              document.body.classList.remove('locked');
+              showToast("CONNECTION ESTABLISHED");
+          } else {
+              const err = document.getElementById('gateError');
+              err.style.display = 'block';
+              document.getElementById('gatePass').value = '';
+          }
+      }
+
+      // Allow Enter Key for Gatekeeper
+      document.getElementById('gatePass').addEventListener('keypress', (e) => {
+          if(e.key === 'Enter') unlockChannel();
+      });
+
+      // 4. PREVIEW LOGIC
       urlInput.addEventListener('input', (e) => {
-  
           const url = e.target.value;
-  
-          if(url && (url.startsWith('http'))) {
-  
-              preview.style.backgroundImage = `url(${url})`;
-  
-              preview.style.display = 'block';
-  
-              document.getElementById('imageUrl').value = url;
-  
+          if(url && url.startsWith('http')) {
+              imagePreview.style.backgroundImage = `url(${url})`;
+              imagePreview.style.display = 'block';
+              imageUrlHidden.value = url;
           }
-  
       });
-  
-  
-  
-      // AI AUTO-GENERATOR
-  
-      document.getElementById('magicBtn').addEventListener('click', async () => {
-  
+
+      // Hook up title input to slug generation
+      titleInput.addEventListener('input', (e) => {
+          generateSlug(e.target.value);
+      });
+
+      // 5. STYLE PRESETS LOGIC
+      let currentStyle = 'cinematic';
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+              document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              currentStyle = btn.dataset.style;
+          });
+      });
+
+      // 6. AI GHOSTWRITER LOGIC
+      async function triggerAIGenerator() {
+          const promptContext = document.getElementById('aiPrompt').value;
+          const title = titleInput.value;
           const key = document.getElementById('apiKey').value;
-  
-          const title = document.getElementById('titleInput').value;
-  
-          const context = document.getElementById('aiPrompt').value;
-  
-  
-  
-          if(!key || !title) { 
-  
-              aiStatus.textContent = "ERROR: API Key and Title required.";
-  
-              aiStatus.style.color = "red";
-  
+          const archetype = document.getElementById('archetype').value;
+
+          if(!key || !title || !promptContext) { 
+              aiStatus.textContent = "ERROR: Key, Title, and Prompt required.";
+              aiStatus.style.color = "#ff4444";
               return; 
-  
           }
-  
-  
-  
-          aiStatus.textContent = "NEURAL LINK ESTABLISHED... PROCESSING...";
-  
+
+          magicBtn.textContent = "SYNTHESIZING...";
+          magicBtn.disabled = true;
+          document.getElementById('aiStatusDot').classList.add('active');
+          aiStatus.textContent = "TRANSMITTING TO NEURAL CORE...";
           aiStatus.style.color = "var(--accent2)";
-  
+
+          const styleContext = {
+              cinematic: "High-end production, color grading, and polished sequences.",
+              guerilla: "Fast-paced, raw, authentic, and high-energy.",
+              technical: "Equipment details, camera settings, and precision.",
+              strategy: "ROI, business growth, and brand positioning."
+          };
+
+          const systemPrompt = `You are the Lead Creative Director for OTP. Style: ${styleContext[currentStyle]}. Archetype: ${archetype}. 
+          Return ONLY a JSON object: { "content": "HTML string", "excerpt": "One punchy sentence", "seo_title": "Slug", "seo_desc": "Desc", "category": "Tech/Strategy/Production" }`;
           
-  
-          const systemPrompt = `You are the backend for a high-end video production blog. 
-  
-          Return ONLY a raw JSON object (no markdown formatting) with these keys:
-  
-          {
-  
-              "content": "HTML string with <h2>, <p class='lead'>, <p>, <ul>, <strong>. Professional, edgy, technical tone.",
-  
-              "excerpt": "One punchy sentence summary.",
-  
-              "seo_title": "SEO optimized title (under 60 chars)",
-  
-              "seo_desc": "SEO meta description (under 160 chars)",
-  
-              "category": "One of: Strategy, Tech, Production",
-  
-              "tags": "comma, separated, list"
-  
-          }`;
-  
-  
-  
-          const userPrompt = `Write a blog post titled "${title}". Context: ${context}. Keep it technical and sharp.`;
-  
-  
-  
+          const userPrompt = `Write a viral blog post about: ${title}. Extra context: ${promptContext}. Use professional but edgy industry jargon.`;
+
           try {
-  
               const res = await fetch('https://api.openai.com/v1/chat/completions', {
-  
                   method: 'POST',
-  
                   headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-  
                   body: JSON.stringify({
-  
                       model: "gpt-4-turbo",
-  
                       messages: [
-  
                           { role: "system", content: systemPrompt },
-  
                           { role: "user", content: userPrompt }
-  
                       ],
-  
-                      temperature: 0.7,
-  
+                      temperature: 0.8,
                       response_format: { type: "json_object" }
-  
                   })
-  
               });
-  
-  
-  
+
               const data = await res.json();
-  
               if(data.error) throw new Error(data.error.message);
-  
               
-  
               const result = JSON.parse(data.choices[0].message.content);
-  
               
-  
-              // Populate Fields
-  
               document.getElementById('contentArea').value = result.content;
-  
               document.getElementById('excerptInput').value = result.excerpt;
-  
               document.getElementById('seoTitle').value = result.seo_title;
-  
               document.getElementById('seoDesc').value = result.seo_desc;
-  
               document.getElementById('catInput').value = result.category || 'Tech';
-  
               
-  
-              aiStatus.textContent = "GENERATION COMPLETE.";
-  
+              aiStatus.textContent = "INTEL RECEIVED. SYNC COMPLETE.";
               aiStatus.style.color = "var(--success)";
-  
-  
-  
-          } catch (err) {
-  
-              console.error(err);
-  
-              aiStatus.textContent = "AI FAIL: " + err.message;
-  
-              aiStatus.style.color = "red";
-  
+          } catch(e) {
+              console.error(e);
+              aiStatus.textContent = "SIGNAL LOST: " + e.message;
+              aiStatus.style.color = "#ff4444";
+          } finally {
+              magicBtn.textContent = "⚡ TRANSMIT TO AI (FULL AUTO)";
+              magicBtn.disabled = false;
+              document.getElementById('aiStatusDot').classList.remove('active');
           }
-  
-      });
-  
-  
-  
-      // Auto-Slug
-  
-      function generateSlug(val) {
-  
-          const slug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-  
-          document.getElementById('slugInput').value = slug;
-  
       }
-  
-  
-  
-      // File Upload
-  
-      const fileInput = document.getElementById('fileInput');
-  
-      fileInput.addEventListener('change', async (e) => {
-  
+
+      magicBtn.addEventListener('click', triggerAIGenerator);
+
+      // 7. FILE UPLOAD LOGIC
+      document.getElementById('fileInput').addEventListener('change', async (e) => {
           const file = e.target.files[0];
-  
-          if (!file) return;
-  
-  
-  
-          const pass = document.getElementById('passcode').value;
-  
-          if(pass !== 'otp2026') { alert("Enter Security Code First"); return; }
-  
-  
-  
-          // Local Preview
-  
-          const reader = new FileReader();
-  
-          reader.onload = (e) => {
-  
-              preview.style.backgroundImage = `url(${e.target.result})`;
-  
-              preview.style.display = 'block';
-  
-          };
-  
-          reader.readAsDataURL(file);
-  
-  
-  
+          if(!file) return;
+
+          document.getElementById('uploadStatusDot').classList.add('active');
+          aiStatus.textContent = "INITIALIZING UPLOAD...";
+
           try {
-  
-              const fileExt = file.name.split('.').pop();
-  
-              const fileName = `${Date.now()}.${fileExt}`;
-  
+              const fileName = `blog/${Date.now()}_${file.name}`;
               const { data, error } = await supabase.storage.from('uploads').upload(fileName, file);
-  
               if (error) throw error;
-  
-              
-  
+
               const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
-  
-              document.getElementById('imageUrl').value = publicUrl;
-  
               
-  
-          } catch (error) {
-  
-              alert("Upload Failed: " + error.message);
-  
-          }
-  
-      });
-  
-  
-  
-      // Main Submit
-  
-      document.getElementById('postForm').addEventListener('submit', async (e) => {
-  
-          e.preventDefault();
-  
-          
-  
-          const pass = document.getElementById('passcode').value;
-  
-          if(pass !== 'otp2026') { alert("ACCESS DENIED"); return; }
-  
-          
-  
-          const formData = new FormData(e.target);
-  
-          
-  
-          // Build Object
-  
-          const newPost = {
-  
-              title: formData.get('title'),
-  
-              slug: formData.get('slug'),
-  
-              image_url: formData.get('image_url') || document.getElementById('urlInput').value,
-  
-              excerpt: formData.get('excerpt'),
-  
-              content: formData.get('content'),
-  
-              published: true,
-  
-              // New Fields - Note: These require DB columns. If missing, Supabase might ignore or error.
-  
-              category: formData.get('category'),
-  
-              author: formData.get('author'),
-  
-              seo_title: formData.get('seo_title'),
-  
-              seo_desc: formData.get('seo_desc'),
-  
-              views: parseInt(formData.get('views') || 0)
-  
-          };
-  
-          
-  
-          // Handle Date
-  
-          const pubDate = formData.get('published_at');
-  
-          if(pubDate) newPost.created_at = new Date(pubDate).toISOString();
-  
-  
-  
-          try {
-  
-              const { error } = await supabase.from('posts').insert([newPost]);
-  
-              
-  
-              if(error) {
-  
-                  // Fallback for schema mismatch
-  
-                  console.warn("Full insert failed, trying basic insert...", error);
-  
-                  const basicPost = {
-  
-                      title: newPost.title,
-  
-                      slug: newPost.slug,
-  
-                      image_url: newPost.image_url,
-  
-                      excerpt: newPost.excerpt,
-  
-                      content: newPost.content,
-  
-                      published: true
-  
-                  };
-  
-                  const { error: error2 } = await supabase.from('posts').insert([basicPost]);
-  
-                  if(error2) throw error2;
-  
-                  alert("Warning: Post published but some advanced fields were not saved because the database is outdated. Use the 'Copy DB Upgrade' button.");
-  
-              }
-  
-  
-  
-              // SUCCESS
-  
-              showToast();
-  
-              
-  
-              setTimeout(() => {
-  
-                  // e.target.reset(); // Optional: keep data for multiple variants?
-  
-                  // document.getElementById('imagePreview').style.display = 'none';
-  
-              }, 1000);
-  
-              
-  
+              imageUrlHidden.value = publicUrl;
+              imagePreview.style.backgroundImage = `url(${publicUrl})`;
+              imagePreview.style.display = 'block';
+              aiStatus.textContent = "MEDIA LOCKED.";
+              aiStatus.style.color = "var(--success)";
           } catch (err) {
-  
-              console.error(err);
-  
-              alert("DB ERROR: " + err.message);
-  
+              alert("UPLOAD FAILED: " + err.message);
+          } finally {
+              document.getElementById('uploadStatusDot').classList.remove('active');
           }
-  
       });
-  
-  
-  
-      // Helper for User
-  
+
+      // 8. FORM SUBMISSION
+      postForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const originalText = submitBtn.textContent;
+          submitBtn.textContent = "BROADCASTING...";
+          submitBtn.disabled = true;
+
+          const formData = new FormData(postForm);
+          const newPost = {
+              title: formData.get('title'),
+              slug: formData.get('slug'),
+              image_url: imageUrlHidden.value || formData.get('image_url'),
+              excerpt: formData.get('excerpt'),
+              content: formData.get('content'),
+              published: document.getElementById('pubToggle').checked,
+              category: formData.get('category'),
+              author: formData.get('author'),
+              seo_title: formData.get('seo_title'),
+              seo_desc: formData.get('seo_desc'),
+              views: parseInt(formData.get('views') || 0),
+              created_at: new Date().toISOString()
+          };
+
+          try {
+              const { error } = await supabase.from('posts').insert([newPost]);
+              if(error) throw error;
+
+              showToast("POST BROADCAST SUCCESSFULLY");
+              setTimeout(() => {
+                  if(confirm("Post is Live. View Transmission?")) {
+                      window.location.href = `insight.html?slug=${newPost.slug}`;
+                  }
+                  submitBtn.textContent = originalText;
+                  submitBtn.disabled = false;
+              }, 1000);
+          } catch (err) {
+              console.error(err);
+              alert("CRITICAL ERROR: " + err.message);
+              submitBtn.textContent = originalText;
+              submitBtn.disabled = false;
+          }
+      });
+
       function copySchema() {
-  
           const sql = `
-  
           alter table posts 
-  
           add column if not exists category text,
-  
           add column if not exists author text default 'OTP Admin',
-  
           add column if not exists seo_title text,
-  
           add column if not exists seo_desc text,
-  
           add column if not exists views int8 default 0;
-  
           `;
-  
           navigator.clipboard.writeText(sql);
-  
-          alert("SQL Copied to Clipboard! Run this in Supabase SQL Editor to enable all features.");
-  
+          alert("Neural Schema Copied! Run in Supabase SQL Editor.");
       }
-  
     </script>
-  
-  
-  
+    <script src="site-init.js"></script>
   </body>
-  
-  </html>
-  
-  
+</html>

@@ -37,20 +37,18 @@
           font-family: 'Syne', sans-serif;
           font-size: 3rem;
           line-height: 1.1;
-          background: linear-gradient(to right, #fff, #aaa);
-          -webkit-background-clip: text;
-          color: transparent;
+          color: var(--text);
           margin-bottom: 30px;
       }
       .blog-content {
           font-family: 'Inter', sans-serif;
           font-size: 1.1rem;
           line-height: 1.8;
-          color: #ddd;
+          color: var(--muted);
       }
       .blog-content p { margin-bottom: 24px; }
       .blog-content h2 { 
-          color: #fff; 
+          color: var(--text); 
           margin-top: 50px; 
           margin-bottom: 20px; 
           font-family: 'Syne', sans-serif;
@@ -91,6 +89,7 @@
       <a href="index.html" class="k-hover">Work</a>
       <a href="archive.html" class="k-hover">Archive</a>
       <a href="insights.html" class="active k-hover">Insights</a>
+      <a href="index.html#services" class="k-hover">Services</a>
       <a href="index.html#contact" class="k-hover">Contact</a>
     </nav>
     <button class="nav-toggle"><span></span><span></span><span></span></button>
@@ -152,9 +151,10 @@
                 .single();
 
             if (error || !data) {
-                document.getElementById('loader').textContent = "TRANSMISSION NOT FOUND.";
-                document.getElementById('loader').style.color = "red";
-                // Optional: Redirect after delay
+                document.getElementById('loader').innerHTML = `
+                    <div style="color: #ff4444;">TRANSMISSION NOT FOUND.</div>
+                    <a href="insights.html" style="color: var(--accent2); text-decoration: none; font-size: 0.9rem; margin-top: 20px; display: inline-block;">← Return to Insights</a>
+                `;
                 return;
             }
 
@@ -204,6 +204,7 @@
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 
+  <script src="site-init.js"></script>
   <script src="stars-v2.js"></script>
   <!-- Basic Nav Toggle Logic (Inline for simplicity) -->
   <script>

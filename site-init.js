@@ -98,64 +98,78 @@
 })();
 
 // 7. Site-Wide Initialization
+
+// Global OTP Namespace for Theme Logic & Tests
+window.OTP = window.OTP || {};
+
+window.OTP.getThemeIcon = function(theme) {
+    if (theme === 'light') {
+        // Moon Icon
+        return `<svg class="theme-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+    } else {
+        // Sun Icon
+        return `<svg class="theme-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+    }
+};
+
+window.OTP.setTheme = function(theme) {
+    const html = document.documentElement;
+    if (theme === 'light') {
+        html.setAttribute('data-theme', 'light');
+    } else {
+        html.removeAttribute('data-theme');
+    }
+    localStorage.setItem('theme', theme);
+};
+
+window.OTP.initTheme = function() {
+    const savedTheme = localStorage.getItem('theme');
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const currentTheme = savedTheme || (systemDark ? 'dark' : 'light');
+    
+    // Apply immediately
+    window.OTP.setTheme(currentTheme);
+    return currentTheme;
+};
+
+// Run init immediately (safe to access documentElement)
+window.OTP.initTheme();
+
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- THEME TOGGLE LOGIC ---
-    (function initTheme() {
-        const html = document.documentElement;
-        const savedTheme = localStorage.getItem('theme');
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // --- THEME TOGGLE UI ---
+    (function injectThemeToggle() {
+        const currentTheme = localStorage.getItem('theme') || 'dark';
         
-        // 1. Set Initial State
-        let currentTheme = savedTheme || (systemDark ? 'dark' : 'light');
-        if (currentTheme === 'light') html.setAttribute('data-theme', 'light');
-
-        // 2. Create Toggle Button
+        // Create Toggle Button
         const toggleBtn = document.createElement('button');
         toggleBtn.className = 'theme-toggle-btn';
         toggleBtn.ariaLabel = 'Toggle Theme';
-        toggleBtn.innerHTML = getThemeIcon(currentTheme);
+        toggleBtn.innerHTML = window.OTP.getThemeIcon(currentTheme);
 
-        // 3. Inject Button
-        // Try desktop links first
+        // Inject Button
         const navLinks = document.querySelector('.nav-links');
         if (navLinks) {
             navLinks.appendChild(toggleBtn);
         } else {
-            // Fallback for pages without standard nav structure (like admin)
             const nav = document.querySelector('nav') || document.querySelector('header');
             if (nav) nav.appendChild(toggleBtn);
         }
 
-        // 4. Handle Click
+        // Handle Click
         toggleBtn.addEventListener('click', () => {
-            const isLight = html.getAttribute('data-theme') === 'light';
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
             const newTheme = isLight ? 'dark' : 'light';
             
-            // Apply
-            if (newTheme === 'light') html.setAttribute('data-theme', 'light');
-            else html.removeAttribute('data-theme');
-            
-            // Save
-            localStorage.setItem('theme', newTheme);
+            window.OTP.setTheme(newTheme);
             
             // Animate Icon Swap
             toggleBtn.style.transform = 'scale(0.8) rotate(90deg)';
             setTimeout(() => {
-                toggleBtn.innerHTML = getThemeIcon(newTheme);
+                toggleBtn.innerHTML = window.OTP.getThemeIcon(newTheme);
                 toggleBtn.style.transform = 'scale(1) rotate(0deg)';
             }, 150);
         });
-
-        function getThemeIcon(theme) {
-            if (theme === 'light') {
-                // Moon Icon (for switching TO dark)
-                return `<svg class="theme-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
-            } else {
-                // Sun Icon (for switching TO light)
-                return `<svg class="theme-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
-            }
-        }
     })();
     
     // --- ACTIVE LINK LOGIC ---
