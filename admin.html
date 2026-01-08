@@ -141,16 +141,18 @@
           
           <!-- AI ASSISTANT -->
           <div class="ai-tips">
-              <h4>🤖 AI Workflow</h4>
-              <p>For the "Main Content" below, open ChatGPT/Claude app.</p>
-              <p>Prompt: "Write a short, punchy blog post about [Topic] for a high-end video production studio. Tone: Professional, Edgy, Technical."</p>
-              <p>Then copy/paste the result below.</p>
+              <h4>🤖 AI Generator</h4>
+              <div class="input-group" style="margin-bottom: 10px;">
+                  <label>OpenAI API Key (Stored Locally)</label>
+                  <input type="password" id="apiKey" placeholder="sk-..." onchange="localStorage.setItem('openai_key', this.value)">
+              </div>
+              <button type="button" id="magicBtn" style="background: #ff00ff; color: white; margin-top: 5px;">✨ GENERATE CONTENT</button>
           </div>
 
           <div class="input-group">
               <label>5. Main Content</label>
-              <span class="desc">The full article. Use double return for new paragraphs.</span>
-              <textarea name="content" placeholder="Paste your article here..." style="height: 300px;" required></textarea>
+              <span class="desc">The full article. Auto-generated or custom.</span>
+              <textarea name="content" id="contentArea" placeholder="Paste your article here..." style="height: 300px;" required></textarea>
           </div>
           
           <button type="submit">PUBLISH LIVE</button>
@@ -166,6 +168,65 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const status = document.getElementById('status');
+
+    // Load Saved Key
+    const savedKey = localStorage.getItem('openai_key');
+    if(savedKey) document.getElementById('apiKey').value = savedKey;
+
+    // AI Generator Logic
+    document.getElementById('magicBtn').addEventListener('click', async () => {
+        const key = document.getElementById('apiKey').value;
+        const title = document.getElementById('titleInput').value;
+        const excerpt = document.querySelector('textarea[name="excerpt"]').value;
+
+        if(!key) { alert("Enter OpenAI API Key First"); return; }
+        if(!title) { alert("Enter a Title to base the article on"); return; }
+
+        status.textContent = "CONTACTING AI...";
+        status.style.color = "#ff00ff";
+        
+        const prompt = `Write a high-end, professional, and slightly edgy blog post for a Video Production Studio about: "${title}". Use the context: "${excerpt}". meaningful, technical, short paragraphs. No intro fluff.`;
+
+        try {
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${key}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4-turbo", // or gpt-3.5-turbo
+                    messages: [{ role: "user", content: prompt }],
+                    temperature: 0.7
+                })
+            });
+
+            const data = await res.json();
+            
+            if(data.error) throw new Error(data.error.message);
+            
+            const aiText = data.choices[0].message.content;
+            
+            // Typewriter effect
+            const textArea = document.getElementById('contentArea');
+            textArea.value = "";
+            let i = 0;
+            const typeVar = setInterval(() => {
+                textArea.value += aiText.charAt(i);
+                i++;
+                if(i > aiText.length) clearInterval(typeVar);
+            }, 5); // Fast typing
+
+            status.textContent = "AI GENERATION COMPLETE.";
+            status.style.color = "#00ffaa";
+
+        } catch (err) {
+            console.error(err);
+            status.textContent = "AI ERROR: " + err.message;
+            status.style.color = "red";
+        }
+    });
+
 
     // Auto-Slug Generator
     function generateSlug(val) {
