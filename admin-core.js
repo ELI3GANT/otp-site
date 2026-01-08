@@ -402,7 +402,7 @@
                 const newPost = {
                     title: formData.get('title'),
                     slug: formData.get('slug'),
-                    image_url: document.getElementById('imageUrl').value || formData.get('image_url'),
+                    image_url: document.getElementById('imageUrl').value || document.getElementById('urlInput').value || formData.get('image_url'),
                     excerpt: formData.get('excerpt'),
                     content: formData.get('content'),
                     published: document.getElementById('pubToggle').checked,
