@@ -148,6 +148,43 @@ window.OTP.initTheme = function() {
 // Run init immediately
 window.OTP.initTheme();
 
+// --- VIEW TRACKING LOGIC ---
+window.OTP.trackView = async function(slug) {
+    if (!slug) return;
+    
+    // 1. Check LocalStorage (Session Deduping)
+    const storageKey = `otp_view_${slug}`;
+    const lastView = localStorage.getItem(storageKey);
+    const now = Date.now();
+    
+    // Only count if never viewed or viewed > 24 hours ago
+    if (lastView && (now - parseInt(lastView)) < 24 * 60 * 60 * 1000) {
+        console.log(`[OTP] View deduped for: ${slug}`);
+        return;
+    }
+
+    // 2. Call Supabase RPC
+    if (window.supabase) {
+        const CONFIG = window.OTP_CONFIG || {}; // Ensure config is available
+        const client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+        
+        try {
+            console.log(`[OTP] Incrementing view for: ${slug}`);
+            const { error } = await client.rpc('increment_view_count', { post_slug: slug });
+            
+            if (error) throw error;
+            
+            // 3. Mark as viewed
+            localStorage.setItem(storageKey, now.toString());
+            
+        } catch(e) {
+            console.warn("[OTP] Analytics Error:", e);
+        }
+    } else {
+        console.warn("[OTP] Analytics Skipped: Supabase not loaded.");
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- THEME TOGGLE UI ---

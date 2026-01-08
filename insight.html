@@ -175,6 +175,11 @@
             // 3. Render Content & SEO
             document.title = `${data.title} | OTP Insights`;
             
+            // TRACK VIEW (Unique)
+            if (window.OTP && window.OTP.trackView) {
+                window.OTP.trackView(slug);
+            }
+            
             // Update Meta Description
             let metaDesc = document.querySelector('meta[name="description"]');
             if (!metaDesc) {

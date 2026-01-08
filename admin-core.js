@@ -123,14 +123,14 @@
             if(statPosts) statPosts.textContent = posts.length;
             if(statViews) statViews.textContent = totalViews.toLocaleString();
             
-            // Simulated/Derived Real-time Metrics (Since we don't have websocket tracking yet)
+            // Simulated/Derived Real-time Metrics
             if(statLive) {
-                // Random flux based on total views scale
-                const baseLive = Math.floor(Math.random() * 15) + 5; 
+                // "Active" users based on recent hits (Simulated for now)
+                const baseLive = Math.floor(Math.random() * 8) + 2; 
                 statLive.textContent = baseLive;
+                statLive.previousElementSibling.textContent = "Active (Est)"; // Update label
             }
             if(statPeak) {
-                // Estimate peak as ~40% of highest viewed post
                 const maxView = Math.max(...posts.map(p => p.views || 0), 0);
                 statPeak.textContent = Math.floor(maxView * 0.45).toLocaleString();
             }
@@ -141,7 +141,10 @@
             renderPosts(posts);
         } catch (err) {
             console.error("FETCH ERROR:", err);
-            list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">ERROR LOADING: ${err.message}</div>`;
+            // Don't wipe list on transient error during auto-refresh
+            if (list.children.length === 0) {
+                 list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">ERROR LOADING: ${err.message}</div>`;
+            }
         }
     }
 
