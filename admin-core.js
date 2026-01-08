@@ -353,12 +353,18 @@
         - Style: Short paragraphs. Active voice. Punchy sentences.
         - Goal: Make the reader feel like an insider.
 
-        **FORMATTING:**
-        - Return ONLY a JSON object.
-        - "content": Use HTML (<h2>, <p>, <ul>, <li>, <strong>). 
-        - Start with a strong hook in the first <p>.
-        - Use <h2> for section breaks (keep them edgy).
-        
+        **VISUAL LAYOUT INSTRUCTIONS (USE THESE HTML CLASSES):**
+        1. **Hero/Lead:** Start with <p class="lead">Your strong opening hook here.</p>
+        2. **Grids:** For lists/features, use:
+           <div class="feature-grid">
+             <div class="feature-card"><strong>Point 1</strong><p>Detail...</p></div>
+             <div class="feature-card"><strong>Point 2</strong><p>Detail...</p></div>
+           </div>
+        3. **Stats:** For numbers, use:
+           <div class="stat-box"><span class="stat-number">80%</span><span class="stat-label">Retention Rate</span></div>
+        4. **Media:** If mentioning a video, use <div class="media-container">...placeholder...</div>
+        5. **Quotes:** Use <blockquote> for cinematic pull quotes.
+
         **CONTEXT:**
         Style: ${styleContext[archetype]}
         Archetype: ${archetype}
