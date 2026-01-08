@@ -2,10 +2,17 @@
 // Admin Logic: Auth, Theme, Mobile
 document.addEventListener('DOMContentLoaded', () => {
     
-    // 1. Theme Logic
+    // 1. Theme Logic - Sync with Chrono-Theme
     const html = document.documentElement;
-    const savedTheme = localStorage.getItem('theme') || 'dark';
+    let savedTheme = localStorage.getItem('theme');
+    
+    if (!savedTheme) {
+        const hour = new Date().getHours();
+        savedTheme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+    }
+    
     if(savedTheme === 'light') html.setAttribute('data-theme', 'light');
+    else html.removeAttribute('data-theme');
 
     // Inject Theme Toggle
     const header = document.querySelector('.admin-header');

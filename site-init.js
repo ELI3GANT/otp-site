@@ -124,8 +124,20 @@ window.OTP.setTheme = function(theme) {
 
 window.OTP.initTheme = function() {
     const savedTheme = localStorage.getItem('theme');
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const currentTheme = savedTheme || (systemDark ? 'dark' : 'light');
+    
+    let currentTheme;
+    if (savedTheme) {
+        currentTheme = savedTheme;
+    } else {
+        // AUTOMATIC TIME-BASED CHRONO-THEME
+        // Day Mode: 6:00 AM - 5:59 PM
+        // Night Mode: 6:00 PM - 5:59 AM
+        const hour = new Date().getHours();
+        const isDaytime = hour >= 6 && hour < 18;
+        currentTheme = isDaytime ? 'light' : 'dark';
+        
+        console.log(`[OTP] Chrono-Theme initialized. Current hour: ${hour}. Mode: ${currentTheme.toUpperCase()}`);
+    }
     
     // Apply immediately
     window.OTP.setTheme(currentTheme);
@@ -139,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- THEME TOGGLE UI ---
     (function injectThemeToggle() {
-        const currentTheme = localStorage.getItem('theme') || 'dark';
+        const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
         
         // Create Toggle Button
         const toggleBtn = document.createElement('button');
