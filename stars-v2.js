@@ -204,11 +204,14 @@ class Star {
     }
 
     draw() {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         ctx.beginPath();
+        
         if (attractor.active && this.hue != null) {
             // WARP STREAKS (Vibrant HSL)
             // Use Hue for color, Alpha for fade
-            ctx.strokeStyle = `hsla(${this.hue}, 100%, 70%, ${this.alpha})`;
+            const lightness = isLight ? '30%' : '70%'; // Darker in light mode
+            ctx.strokeStyle = `hsla(${this.hue}, 100%, ${lightness}, ${this.alpha})`;
             ctx.lineWidth = Math.max(1, this.size * this.z); 
             ctx.moveTo(this.x, this.y);
             // Longer tails for faster speed
@@ -216,9 +219,18 @@ class Star {
             ctx.stroke();
         } else {
             // STANDARD STAR (RGB)
+            let drawColor = this.baseColor;
+            
+            if (isLight) {
+                // PREMIUM DAY MODE PALETTE: Using deep space variations instead of pure black
+                if (this.baseColor === '255, 255, 255') drawColor = '20, 20, 45'; // Deep Midnight
+                else if (this.baseColor === '0, 195, 255') drawColor = '0, 110, 220'; // Vivid Blue
+                else if (this.baseColor === '112, 0, 255') drawColor = '112, 0, 255'; // Keep Purple
+            }
+
             ctx.arc(this.x, this.y, this.size * this.z * 0.8, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${this.baseColor}, ${this.alpha})`;
-            ctx.fill(); // Explicitly use baseColor here since 'this.color' isn't used
+            ctx.fillStyle = `rgba(${drawColor}, ${this.alpha})`;
+            ctx.fill();
         }
     }
 }
@@ -241,13 +253,21 @@ class ShootingStar {
     }
 
     draw() {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         ctx.beginPath();
         const endX = this.x + this.length * Math.cos(this.angle); 
         const endY = this.y - this.length * Math.sin(this.angle);
         
+        // Adjust color for light mode visibility
+        let drawColor = this.color;
+        if (isLight) {
+            if (this.color === '255, 255, 255') drawColor = '20, 20, 45'; // Matching Deep Midnight
+            else if (this.color === '0, 195, 255') drawColor = '0, 80, 200';
+        }
+
         const g = ctx.createLinearGradient(this.x, this.y, endX, endY);
-        g.addColorStop(0, `rgba(${this.color}, ${this.life})`);
-        g.addColorStop(1, `rgba(${this.color}, 0)`);
+        g.addColorStop(0, `rgba(${drawColor}, ${this.life})`);
+        g.addColorStop(1, `rgba(${drawColor}, 0)`);
         
         ctx.strokeStyle = g;
         ctx.lineWidth = 2;
@@ -264,6 +284,7 @@ for (let i = 0; i < STAR_COUNT; i++) {
 
 function animate() {
     ctx.clearRect(0, 0, width, height);
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
 
     // Check for Archive Page (No Motion Request)
     const isArchive = document.body.classList.contains('archive-page');
@@ -285,7 +306,12 @@ function animate() {
             if (dx * dx + dy * dy < CONNECTION_DIST * CONNECTION_DIST) {
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 ctx.beginPath();
-                ctx.strokeStyle = `rgba(112, 0, 255, ${1 - distance / CONNECTION_DIST})`; 
+                
+                // Theme-aware connections: Richer violet in Day Mode
+                let connColor = isLight ? '112, 0, 255' : '112, 0, 255';
+                let opacity = (1 - distance / CONNECTION_DIST) * (isLight ? 0.35 : 0.8);
+                
+                ctx.strokeStyle = `rgba(${connColor}, ${opacity})`; 
                 ctx.lineWidth = 0.5;
                 ctx.moveTo(star.x, star.y);
                 ctx.lineTo(mouse.x, mouse.y);

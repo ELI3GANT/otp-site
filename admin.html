@@ -933,6 +933,9 @@
               document.getElementById('seoDesc').value = result.seo_desc;
               document.getElementById('catInput').value = result.category || 'Tech';
               
+              // NEW: Auto-generate slug from the AI-provided SEO title
+              if (result.seo_title) generateSlug(result.seo_title);
+              
               aiStatus.textContent = "INTEL RECEIVED. SYNC COMPLETE.";
               aiStatus.style.color = "var(--success)";
           } catch(e) {
