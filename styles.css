@@ -311,8 +311,8 @@ html {
 
 
 .wrap { width: min(1100px, 92vw); margin: 0 auto; max-width: 100%; }
-.section { padding: 96px 0; scroll-margin-top: 100px; }
-.section-tight { padding: 72px 0; scroll-margin-top: 100px; }
+.section { padding: 96px 0; scroll-margin-top: 80px; }
+.section-tight { padding: 72px 0; scroll-margin-top: 80px; }
 
 .kicker {
   margin-top: 14px;
@@ -1641,8 +1641,8 @@ input:focus, select:focus, textarea:focus {
   .hero h1 { letter-spacing: 2px; }
   .hero .title { letter-spacing: 2px; }
   .hero { padding-top: 96px; }
-  /* Ensure sections snap flush to the 70px mobile header */
-  .section, .section-tight { scroll-margin-top: 70px; }
+  /* Ensure sections snap slightly UNDER the 70px mobile header (60px) to prevent previous section gaps */
+  .section, .section-tight { scroll-margin-top: 50px; }
 }
 
 /* =============================
