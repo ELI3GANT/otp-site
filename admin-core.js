@@ -415,7 +415,25 @@
                 };
 
                 try {
-                    const { error } = await state.client.from('posts').insert([newPost]);
+                    let { error } = await state.client.from('posts').insert([newPost]);
+                    
+                    // FALLBACK: If Schema Cache is stale (PGRST204), try removing new columns
+                    if (error && error.code === 'PGRST204') {
+                        console.warn("⚠️ SCHEMA CACHE STALE: Retrying without new columns (author/seo)...");
+                        delete newPost.author;
+                        delete newPost.seo_title;
+                        delete newPost.seo_desc;
+                        
+                        const retry = await state.client.from('posts').insert([newPost]);
+                        error = retry.error;
+
+                        if(!error) {
+                            showToast("POSTED (METADATA SKIPPED - SCHEMA UPDATING)");
+                            setTimeout(() => window.location.reload(), 1500);
+                            return;
+                        }
+                    }
+
                     if(error) throw error;
                     showToast("POST BROADCAST SUCCESSFULLY");
                     setTimeout(() => window.location.reload(), 1500);
@@ -483,17 +501,18 @@ ALTER TABLE posts ADD COLUMN IF NOT EXISTS author text default 'OTP Admin';
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_title text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_desc text;
 
--- 3. STORAGE BUCKETS
+-- 3. FORCE API CACHE REFRESH (The Trick)
+COMMENT ON TABLE posts IS 'OTP Posts Table (Refreshed)';
+NOTIFY pgrst, 'reload schema';
+
+-- 4. STORAGE BUCKETS
 insert into storage.buckets (id, name, public) 
 values ('uploads', 'uploads', true)
 on conflict (id) do nothing;
 
--- 4. PUBLIC ACCESS POLICIES
+-- 5. PUBLIC ACCESS POLICIES
 create policy "Public Access" on storage.objects for select using ( bucket_id = 'uploads' );
 create policy "Public Insert" on storage.objects for insert with check ( bucket_id = 'uploads' );
-
--- 5. FORCE API CACHE RELOAD
-NOTIFY pgrst, 'reload schema';
         `;
         navigator.clipboard.writeText(sql);
         alert("SQL Logic Copied to Clipboard. Run in Supabase Dashboard.");
