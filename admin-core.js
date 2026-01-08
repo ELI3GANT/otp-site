@@ -419,11 +419,12 @@
                     
                     // FALLBACK: If Schema Cache is stale (PGRST204), try removing new columns
                     if (error && error.code === 'PGRST204') {
-                        console.warn("⚠️ SCHEMA CACHE STALE: Retrying without new columns (author/seo/category)...");
+                        console.warn("⚠️ SCHEMA CACHE STALE: Retrying without new columns...");
                         delete newPost.author;
                         delete newPost.seo_title;
                         delete newPost.seo_desc;
                         delete newPost.category;
+                        delete newPost.views;
                         
                         const retry = await state.client.from('posts').insert([newPost]);
                         error = retry.error;
@@ -502,6 +503,7 @@ ALTER TABLE posts ADD COLUMN IF NOT EXISTS author text default 'OTP Admin';
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_title text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_desc text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS category text;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS views int8 default 0;
 
 -- 3. FORCE API CACHE REFRESH (The Trick)
 COMMENT ON TABLE posts IS 'OTP Posts Table (Refreshed)';
