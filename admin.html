@@ -3,64 +3,161 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OTP Admin | Mobile Uplink</title>
+  <title>OTP Pocket Command</title>
   <link rel="stylesheet" href="./styles.css?v=2.6" />
-  <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; }</style>
+  <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; background: #050505; color: white; }</style>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   
   <style>
       .admin-wrap {
-          max-width: 500px;
-          margin: 100px auto;
+          max-width: 600px;
+          margin: 40px auto;
           padding: 20px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 16px;
+          padding-bottom: 100px;
       }
-      h1 { text-align: center; color: var(--accent2); margin-bottom: 30px; }
-      input, textarea {
+      h1 { text-align: center; color: var(--accent2); margin-bottom: 10px; font-family: 'Syne', sans-serif; }
+      p.subtitle { text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 30px; }
+      
+      .input-group { margin-bottom: 25px; }
+      label { display: block; margin-bottom: 8px; font-weight: bold; color: #888; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
+      .desc { font-size: 0.75rem; color: #555; margin-bottom: 8px; display: block; }
+      
+      input, textarea, select {
           width: 100%;
-          background: #000;
+          background: #111;
           border: 1px solid #333;
           color: #fff;
           padding: 15px;
-          margin-bottom: 15px;
           border-radius: 8px;
-          font-family: inherit;
+          font-family: 'Inter', sans-serif;
+          font-size: 1rem;
+          transition: border-color 0.2s;
       }
-      textarea { height: 200px; }
+      input:focus, textarea:focus { border-color: var(--accent2); outline: none; }
+      textarea { height: 150px; line-height: 1.5; }
+      
+      /* File Upload Styling */
+      .file-drop {
+          border: 2px dashed #333;
+          padding: 30px;
+          text-align: center;
+          border-radius: 8px;
+          margin-bottom: 10px;
+          cursor: pointer;
+          background: #0a0a0a;
+      }
+      .file-drop.dragover { border-color: var(--accent2); background: rgba(0,255,170,0.05); }
+      
       button {
           width: 100%;
           padding: 20px;
-          background: var(--accent);
+          background: var(--accent2); /* Cyan */
           color: #000;
           border: none;
-          font-weight: bold;
-          border-radius: 8px;
+          font-weight: 800;
+          border-radius: 12px;
+          font-size: 1.1rem;
           cursor: pointer;
+          margin-top: 20px;
+          box-shadow: 0 4px 20px rgba(0,255,170,0.2);
+          transition: transform 0.1s;
       }
-      .status { text-align: center; margin-top: 20px; color: #666; font-size: 0.9rem; }
+      button:active { transform: scale(0.98); }
+      
+      .ai-tips {
+          background: #1a1a1a;
+          padding: 15px;
+          border-radius: 8px;
+          border-left: 3px solid #ff00ff;
+          margin: 30px 0;
+      }
+      .ai-tips h4 { margin: 0 0 5px 0; color: #ff00ff; }
+      .ai-tips p { font-size: 0.85rem; color: #aaa; margin: 0; line-height: 1.4; }
+
+      .status { 
+          position: fixed; 
+          bottom: 20px; 
+          left: 50%; 
+          transform: translateX(-50%); 
+          background: #222; 
+          padding: 10px 20px; 
+          border-radius: 50px; 
+          border: 1px solid #444; 
+          font-size: 0.8rem;
+          white-space: nowrap;
+          z-index: 100;
+      }
   </style>
 </head>
 <body>
 
   <div class="admin-wrap">
-      <h1>UPLINK TERMINAL</h1>
+      <h1>OTP COMMAND</h1>
+      <p class="subtitle">Mobile Content Uplink</p>
       
       <form id="postForm">
-          <input type="password" id="passcode" placeholder="ACCESS CODE" required>
-          <hr style="border-color: #333; margin: 20px 0;">
           
-          <input type="text" name="title" placeholder="Post Title" required>
-          <input type="text" name="slug" placeholder="url-slug-like-this" required>
-          <input type="text" name="image_url" placeholder="Image URL (Unsplash/Imgur)" required>
-          <input type="text" name="excerpt" placeholder="Short Excerpt (for card)" required>
-          <textarea name="content" placeholder="Full Content (use double enter for paragraphs)" required></textarea>
+          <!-- ACCESS -->
+          <div class="input-group">
+              <label>Security Clearance</label>
+              <input type="password" id="passcode" placeholder="Enter Access Code" required>
+          </div>
+
+          <hr style="border-color: #222; margin: 30px 0;">
+
+          <!-- IMAGE UPLOAD -->
+          <div class="input-group">
+            <label>1. Visual Asset</label>
+            <span class="desc">Where the image lives. Upload from phone or paste a URL.</span>
+            
+            <div class="file-drop" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <span id="fileName">Tap to Select Photo</span>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" style="display: none">
+            <input type="hidden" name="image_url" id="imageUrl">
+            
+            <div style="text-align: center; color: #444; font-size: 0.8rem; margin: 5px 0;">OR</div>
+            <input type="text" id="urlInput" placeholder="Paste external link (Unsplash/Imgur)">
+          </div>
+
+          <!-- CONTENT -->
+          <div class="input-group">
+              <label>2. The Hook (Title)</label>
+              <span class="desc">Catchy headline. 50 characters max.</span>
+              <input type="text" name="title" id="titleInput" placeholder="e.g. The Death of 1080p" required oninput="generateSlug(this.value)">
+          </div>
+
+          <div class="input-group">
+              <label>3. URL Slug (Auto-Generated)</label>
+              <span class="desc">The link address. Keep it clean.</span>
+              <input type="text" name="slug" id="slugInput" style="color: #666;" placeholder="the-death-of-1080p">
+          </div>
+
+          <div class="input-group">
+              <label>4. Short Summary</label>
+              <span class="desc">What shows on the card grid. 1-2 sentences.</span>
+              <textarea name="excerpt" placeholder="Tease the content..." style="height: 80px;" required></textarea>
+          </div>
           
-          <button type="submit">PUBLISH TO NETWORK</button>
+          <!-- AI ASSISTANT -->
+          <div class="ai-tips">
+              <h4>🤖 AI Workflow</h4>
+              <p>For the "Main Content" below, open ChatGPT/Claude app.</p>
+              <p>Prompt: "Write a short, punchy blog post about [Topic] for a high-end video production studio. Tone: Professional, Edgy, Technical."</p>
+              <p>Then copy/paste the result below.</p>
+          </div>
+
+          <div class="input-group">
+              <label>5. Main Content</label>
+              <span class="desc">The full article. Use double return for new paragraphs.</span>
+              <textarea name="content" placeholder="Paste your article here..." style="height: 300px;" required></textarea>
+          </div>
+          
+          <button type="submit">PUBLISH LIVE</button>
       </form>
-      <div id="status" class="status">Waiting for input...</div>
   </div>
+  
+  <div id="status" class="status">System Ready.</div>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   
@@ -68,28 +165,84 @@
     const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const status = document.getElementById('status');
 
+    // Auto-Slug Generator
+    function generateSlug(val) {
+        const slug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        document.getElementById('slugInput').value = slug;
+    }
+
+    // File Upload Handler
+    const fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const pass = document.getElementById('passcode').value;
+        if(pass !== 'otp2026') { alert("Enter Security Code First"); return; }
+
+        status.textContent = "UPLOADING IMAGE...";
+        status.style.color = "yellow";
+        document.getElementById('fileName').textContent = "Uploading: " + file.name;
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            // Upload to Supabase Storage bucket 'uploads'
+            const { data, error } = await supabase.storage
+                .from('uploads')
+                .upload(filePath, file);
+
+            if (error) throw error;
+
+            // Get Public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('uploads')
+                .getPublicUrl(filePath);
+
+            document.getElementById('imageUrl').value = publicUrl;
+            document.getElementById('fileName').textContent = "✅ Image Locked";
+            status.textContent = "IMAGE UPLOADED.";
+            status.style.color = "#00ffaa";
+            
+        } catch (error) {
+            console.error(error);
+            status.textContent = "UPLOAD ERROR: " + error.message;
+            status.style.color = "red";
+            document.getElementById('fileName').textContent = "❌ Retry Upload";
+        }
+    });
+
+    // Form Submit
     document.getElementById('postForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const status = document.getElementById('status');
         
         // 1. Simple Security Check
         const pass = document.getElementById('passcode').value;
-        if(pass !== 'otp2026') { // Hardcoded for simplicity on static site
+        if(pass !== 'otp2026') { 
             status.textContent = "ACCESS DENIED.";
             status.style.color = "red";
             return;
         }
+        
+        // Check image
+        const imgUrl = document.getElementById('imageUrl').value || document.getElementById('urlInput').value;
+        if (!imgUrl) {
+            status.textContent = "MISSING VISUAL ASSET.";
+            return;
+        }
 
-        status.textContent = "UPLOADING...";
-        status.style.color = "var(--accent2)";
-
+        status.textContent = "PUBLISHING...";
+        
         const formData = new FormData(e.target);
         
         const newPost = {
             title: formData.get('title'),
             slug: formData.get('slug'),
-            image_url: formData.get('image_url'),
+            image_url: imgUrl,
             excerpt: formData.get('excerpt'),
             content: formData.get('content'),
             published: true
@@ -100,12 +253,18 @@
             
             if(error) throw error;
             
-            status.textContent = "SUCCESS. POST LIVE.";
+            status.textContent = "SUCCESS. POST IS LIVE.";
             status.style.color = "#00ffaa";
-            e.target.reset();
+            
+            // Optional: delayed reset
+            setTimeout(() => {
+                e.target.reset();
+                document.getElementById('fileName').textContent = "Tap to Select Photo";
+            }, 2000);
+            
         } catch (err) {
             console.error(err);
-            status.textContent = "UPLOAD FAILED: " + err.message;
+            status.textContent = "DB ERROR: " + err.message;
             status.style.color = "red";
         }
     });
