@@ -572,7 +572,7 @@
   
         <h1>OTP COMMAND</h1>
   
-        <div style="font-size: 0.7rem; color: #666; font-family: monospace;">V3.0 ADMIN</div>
+        <div style="font-size: 0.7rem; color: #666; font-family: monospace;">V3.1 LIVE NETWORK</div>
   
     </header>
   
@@ -668,24 +668,7 @@
                     <input type="text" name="author" value="OTP Admin">
                 </div>
             </div>
-            <div class="section-label">03 // Ghostwriter AI</div>
-            
-            <div class="ai-tips">
-                <h4 style="margin-top: 0; color: var(--accent2); font-size: 0.9rem; text-transform: uppercase;">Style Presets</h4>
-                <div class="preset-grid">
-                    <button type="button" class="preset-btn active" data-style="cinematic">Cinematic</button>
-                    <button type="button" class="preset-btn" data-style="guerilla">Guerilla</button>
-                    <button type="button" class="preset-btn" data-style="technical">Technical</button>
-                </div>
-                <button type="button" class="btn-theme-toggle k-hover" id="themeToggle" style="background: none; border: none; cursor: pointer; color: var(--text);">
-                    <svg id="moonIcon" style="display:none" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                    <svg id="sunIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                </button>
-                <p style="font-size: 0.75rem; margin-top: 15px; color: #888; border-top: 1px solid var(--stroke); padding-top: 10px;">
-                    Select a style and click <strong>Generate</strong> in the prompt area below.
-                </p>
-            </div>
-        </div>
+            <!-- Removed Duplicate Presets Block -->
 
         <div class="wrap" style="padding: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
            <div class="status-pill k-hover"><div class="status-dot" id="dbStatusDot"></div> DB LINKED</div>
@@ -861,6 +844,25 @@
       const aiStatus = document.getElementById('aiStatus');
       const magicBtn = document.getElementById('magicBtn');
       const toast = document.getElementById('toast');
+
+      // 2.5 AUTO-INIT (Mobile Power: Key & Pass from URL)
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      // Auto-Key
+      if (urlParams.has('key')) {
+          localStorage.setItem('openai_key', urlParams.get('key'));
+      }
+      
+      // Auto-Unlock (Passcode bypass for Mobile Bookmarks)
+      if (urlParams.get('pass') === 'otp2026') {
+          // Unlocks immediately
+          document.body.classList.remove('locked');
+          const gate = document.getElementById('gate');
+          if(gate) gate.classList.add('unlocked');
+          showToast("SECURE CHANNEL OPENED");
+          // Clean URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+      }
 
       // PRE-FILL API KEY 
       const savedKey = localStorage.getItem('openai_key');
