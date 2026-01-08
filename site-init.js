@@ -152,45 +152,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- THEME TOGGLE UI ---
     (function injectThemeToggle() {
-        // Determine current state
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         const currentTheme = isLight ? 'light' : 'dark';
         
-        // Create Toggle Button
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'theme-toggle-btn';
-        toggleBtn.ariaLabel = 'Toggle Theme';
-        // Icon should represent the ACTION (Switch to X), not current state.
-        // But typical UI shows the symbol of the mode you are entering (Moon for Dark) or currently in (Sun for Light).
-        // Let's stick to standard: Sun = Light Mode Active, Moon = Dark Mode Active.
-        // Actually, many sites show Moon when in Light mode (click to go dark).
-        // My getThemeIcon does: passed 'light' -> returns Moon. Passed 'dark' -> returns Sun.
-        toggleBtn.innerHTML = window.OTP.getThemeIcon(currentTheme);
+        // Helper: Update all toggle buttons on page
+        const updateAllToggles = (theme) => {
+            const icon = window.OTP.getThemeIcon(theme);
+            document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+                // Determine if it's the mobile one (has text) or desktop (icon only) based on class
+                const isMobileBtn = btn.classList.contains('mobile-theme-toggle');
+                
+                // Animate
+                btn.style.transform = 'scale(0.8) rotate(90deg)';
+                setTimeout(() => {
+                    if (isMobileBtn) {
+                        btn.innerHTML = icon + '<span style="margin-left:10px; font-weight:600; font-size: 0.9rem;">Switch Theme</span>';
+                    } else {
+                        btn.innerHTML = icon;
+                    }
+                    btn.style.transform = 'scale(1) rotate(0deg)';
+                }, 150);
+            });
+        };
 
-        // Inject Button
-        const navLinks = document.querySelector('.nav-links');
-        if (navLinks) {
-            navLinks.appendChild(toggleBtn);
-        } else {
-            const nav = document.querySelector('nav') || document.querySelector('header');
-            if (nav) nav.appendChild(toggleBtn);
-        }
-
-        // Handle Click
-        toggleBtn.addEventListener('click', () => {
+        // Shared Click Handler
+        const handleToggle = () => {
             const wasLight = document.documentElement.getAttribute('data-theme') === 'light';
             const newTheme = wasLight ? 'dark' : 'light';
             
             window.OTP.setTheme(newTheme);
-            localStorage.setItem('theme', newTheme); // Persist selection
+            localStorage.setItem('theme', newTheme);
+            updateAllToggles(newTheme);
+        };
+
+        // Create Main Toggle (Desktop)
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'theme-toggle-btn';
+        toggleBtn.ariaLabel = 'Toggle Theme';
+        toggleBtn.innerHTML = window.OTP.getThemeIcon(currentTheme);
+        toggleBtn.addEventListener('click', handleToggle);
+
+        // Inject Desktop
+        const navLinks = document.querySelector('.nav-links');
+        if (navLinks) {
+            navLinks.appendChild(toggleBtn);
+        } else {
+             // Fallback
+             const nav = document.querySelector('nav') || document.querySelector('header');
+             if (nav && !navLinks) nav.appendChild(toggleBtn);
+        }
+
+        // Inject Mobile Drawer Toggle
+        const navDrawer = document.querySelector('.nav-drawer');
+        if (navDrawer) {
+            const mobileToggle = document.createElement('button');
+            mobileToggle.className = 'theme-toggle-btn mobile-theme-toggle';
+            mobileToggle.ariaLabel = 'Toggle Theme';
+            // Inline styles for mobile layout
+            mobileToggle.style.marginLeft = '0';
+            mobileToggle.style.marginTop = '10px';
+            mobileToggle.style.width = '100%';
+            mobileToggle.style.borderRadius = '12px';
+            mobileToggle.style.justifyContent = 'center';
+            mobileToggle.style.background = 'rgba(255,255,255,0.05)';
+            mobileToggle.innerHTML = window.OTP.getThemeIcon(currentTheme) + '<span style="margin-left:10px; font-weight:600; font-size: 0.9rem;">Switch Theme</span>';
             
-            // Animate Icon Swap
-            toggleBtn.style.transform = 'scale(0.8) rotate(90deg)';
-            setTimeout(() => {
-                toggleBtn.innerHTML = window.OTP.getThemeIcon(newTheme);
-                toggleBtn.style.transform = 'scale(1) rotate(0deg)';
-            }, 150);
-        });
+            mobileToggle.addEventListener('click', handleToggle);
+            navDrawer.appendChild(mobileToggle);
+        }
     })();
     
     // --- ACTIVE LINK LOGIC ---
