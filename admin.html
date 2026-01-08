@@ -902,10 +902,15 @@
               strategy: "ROI, business growth, and brand positioning."
           };
 
-          const systemPrompt = `You are the Lead Creative Director for OTP. Style: ${styleContext[currentStyle]}. Archetype: ${archetype}. 
-          Return ONLY a JSON object: { "content": "HTML string", "excerpt": "One punchy sentence", "seo_title": "Slug", "seo_desc": "Desc", "category": "Tech/Strategy/Production" }`;
+          const systemPrompt = `You are the Lead Creative Director and Head of Strategy for OTP (Only True Perspective). 
+          Your writing style is edgy, high-end, and deeply technical yet accessible to visionaries. 
+          Style Preset: ${styleContext[currentStyle]}. 
+          Archetype: ${archetype}. 
+          Return ONLY a JSON object: { "content": "A comprehensive, high-value HTML string including structured <h2> and <p> tags. Write a complete, ready-to-publish article.", "excerpt": "One punchy sentence that hooks the reader instantly.", "seo_title": "Optimized SEO Title", "seo_desc": "Engaging Search Description", "category": "Tech, Strategy, or Production" }`;
           
-          const userPrompt = `Write a viral blog post about: ${title}. Extra context: ${promptContext}. Use professional but edgy industry jargon.`;
+          const userPrompt = `Generate a world-class, viral post titled: "${title}". 
+          Context/Focus: ${promptContext}. 
+          Requirements: Use bold industry insights, a visionary tone, and structured HTML layout. Make it a complete, full-length insight.`;
 
           try {
               const res = await fetch('https://api.openai.com/v1/chat/completions', {
