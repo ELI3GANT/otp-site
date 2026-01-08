@@ -8,328 +8,1124 @@
   <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; background: #050505; color: white; }</style>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   
-  <style>
-      .admin-wrap {
-          max-width: 600px;
-          margin: 40px auto;
-          padding: 20px;
-          padding-bottom: 100px;
-      }
-      h1 { text-align: center; color: var(--accent2); margin-bottom: 10px; font-family: 'Syne', sans-serif; }
-      p.subtitle { text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 30px; }
-      
-      .input-group { margin-bottom: 25px; }
-      label { display: block; margin-bottom: 8px; font-weight: bold; color: #888; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
-      .desc { font-size: 0.75rem; color: #555; margin-bottom: 8px; display: block; }
-      
-      input, textarea, select {
-          width: 100%;
-          background: #111;
-          border: 1px solid #333;
-          color: #fff;
-          padding: 15px;
-          border-radius: 8px;
-          font-family: 'Inter', sans-serif;
-          font-size: 1rem;
-          transition: border-color 0.2s;
-      }
-      input:focus, textarea:focus { border-color: var(--accent2); outline: none; }
-      textarea { height: 150px; line-height: 1.5; }
-      
-      /* File Upload Styling */
-      .file-drop {
-          border: 2px dashed #333;
-          padding: 30px;
-          text-align: center;
-          border-radius: 8px;
-          margin-bottom: 10px;
-          cursor: pointer;
-          background: #0a0a0a;
-      }
-      .file-drop.dragover { border-color: var(--accent2); background: rgba(0,255,170,0.05); }
-      
-      button {
-          width: 100%;
-          padding: 20px;
-          background: var(--accent2); /* Cyan */
-          color: #000;
-          border: none;
-          font-weight: 800;
-          border-radius: 12px;
-          font-size: 1.1rem;
-          cursor: pointer;
-          margin-top: 20px;
-          box-shadow: 0 4px 20px rgba(0,255,170,0.2);
-          transition: transform 0.1s;
-      }
-      button:active { transform: scale(0.98); }
-      
-      .ai-tips {
-          background: #1a1a1a;
-          padding: 15px;
-          border-radius: 8px;
-          border-left: 3px solid #ff00ff;
-          margin: 30px 0;
-      }
-      .ai-tips h4 { margin: 0 0 5px 0; color: #ff00ff; }
-      .ai-tips p { font-size: 0.85rem; color: #aaa; margin: 0; line-height: 1.4; }
-
-      .status { 
-          position: fixed; 
-          bottom: 20px; 
-          left: 50%; 
-          transform: translateX(-50%); 
-          background: #222; 
-          padding: 10px 20px; 
-          border-radius: 50px; 
-          border: 1px solid #444; 
-          font-size: 0.8rem;
-          white-space: nowrap;
-          z-index: 100;
-      }
-  </style>
-</head>
-<body>
-
-  <div class="admin-wrap">
-      <h1>OTP COMMAND</h1>
-      <p class="subtitle">Mobile Content Uplink</p>
-      
-      <form id="postForm">
-          
-          <!-- ACCESS -->
-          <div class="input-group">
-              <label>Security Clearance</label>
-              <input type="password" id="passcode" placeholder="Enter Access Code" required>
-          </div>
-
-          <hr style="border-color: #222; margin: 30px 0;">
-
-          <!-- IMAGE UPLOAD -->
-          <div class="input-group">
-            <label>1. Visual Asset</label>
-            <span class="desc">Where the image lives. Upload from phone or paste a URL.</span>
+    <style>
+  
+        :root {
+  
+            --accent: #7000ff;
+  
+            --accent2: #00c3ff;
+  
+            --bg: #030305;
+  
+            --card: rgba(255, 255, 255, 0.04);
+  
+            --stroke: rgba(255, 255, 255, 0.1);
+  
+            --success: #00ffaa;
+  
+        }
+  
+  
+  
+        body { 
+  
+            margin: 0 !important; 
+  
+            font-family: 'Inter', sans-serif; 
+  
+            background: var(--bg); 
+  
+            color: white; 
+  
+            -webkit-font-smoothing: antialiased;
+  
+            padding-bottom: 50px;
+  
+        }
+  
+  
+  
+        .admin-header {
+  
+            position: sticky;
+  
+            top: 0;
+  
+            background: rgba(3, 3, 5, 0.95);
+  
+            backdrop-filter: blur(20px);
+  
+            -webkit-backdrop-filter: blur(20px);
+  
+            padding: 15px 20px;
+  
+            border-bottom: 1px solid var(--stroke);
+  
+            z-index: 100;
+  
+            display: flex;
+  
+            justify-content: space-between;
+  
+            align-items: center;
+  
+        }
+  
+  
+  
+        .admin-header h1 { 
+  
+            margin: 0; 
+  
+            font-size: 1.1rem;
+  
+            letter-spacing: 2px;
+  
+            font-family: 'Space Grotesk', sans-serif;
+  
+            color: var(--accent2);
+  
+            text-transform: uppercase;
+  
+        }
+  
+  
+  
+        .admin-wrap {
+  
+            max-width: 800px; /* Widen for more controls */
+  
+            margin: 0 auto;
+  
+            padding: 20px;
+  
+            padding-bottom: 120px;
+  
+        }
+  
+        
+  
+        .section-label {
+  
+            font-family: 'Space Grotesk', sans-serif;
+  
+            font-size: 0.75rem;
+  
+            font-weight: 800;
+  
+            color: var(--accent);
+  
+            text-transform: uppercase;
+  
+            letter-spacing: 2px;
+  
+            margin: 30px 0 15px;
+  
+            display: flex;
+  
+            align-items: center;
+  
+            gap: 15px;
+  
+        }
+  
+        .section-label::after {
+  
+            content: "";
+  
+            flex: 1;
+  
+            height: 1px;
+  
+            background: linear-gradient(90deg, var(--accent), transparent);
+  
+            opacity: 0.3;
+  
+        }
+  
+  
+  
+        .input-group { margin-bottom: 20px; position: relative; }
+  
+        
+  
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+  
+        @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+  
+  
+  
+        label { 
+  
+            display: block; 
+  
+            margin-bottom: 8px; 
+  
+            font-weight: 700; 
+  
+            color: #888; 
+  
+            font-size: 0.75rem; 
+  
+            text-transform: uppercase;
+  
+            letter-spacing: 0.5px;
+  
+        }
+  
+        .desc { font-size: 0.75rem; color: #555; margin-bottom: 10px; display: block; line-height: 1.4; }
+  
+        
+  
+        input, textarea, select {
+  
+            width: 100%;
+  
+            background: rgba(255,255,255,0.03);
+  
+            border: 1px solid var(--stroke);
+  
+            color: #fff;
+  
+            padding: 14px;
+  
+            border-radius: 8px;
+  
+            font-family: inherit;
+  
+            font-size: 0.95rem;
+  
+            transition: all 0.2s ease;
+  
+        }
+  
+        input:focus, textarea:focus, select:focus { 
+  
+            border-color: var(--accent2); 
+  
+            background: rgba(255,255,255,0.06);
+  
+            outline: none; 
+  
+            box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
+  
+        }
+  
+        textarea { height: 120px; line-height: 1.6; resize: vertical; }
+  
+        
+  
+        /* Toggle Switch */
+  
+        .toggle-wrap { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--stroke); }
+  
+        .toggle-label { margin: 0; color: #ccc; }
+  
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+  
+        .switch input { opacity: 0; width: 0; height: 0; }
+  
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
+  
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+  
+        input:checked + .slider { background-color: var(--success); }
+  
+        input:checked + .slider:before { transform: translateX(20px); }
+  
+  
+  
+        /* AI Panel */
+  
+        .ai-tips {
+  
+            background: linear-gradient(135deg, rgba(112, 0, 255, 0.08), rgba(0, 0, 0, 0.4));
+  
+            padding: 20px;
+  
+            border-radius: 12px;
+  
+            border: 1px solid rgba(112, 0, 255, 0.3);
+  
+            margin: 30px 0;
+  
+            position: relative;
+  
+        }
+  
+        .ai-tips h4 { margin: 0 0 10px 0; color: #fff; font-family: 'Space Grotesk', sans-serif; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+  
+        
+  
+        button {
+  
+            width: 100%;
+  
+            padding: 16px;
+  
+            background: var(--accent2);
+  
+            color: #000;
+  
+            border: none;
+  
+            font-weight: 800;
+  
+            border-radius: 10px;
+  
+            font-size: 1rem;
+  
+            font-family: 'Space Grotesk', sans-serif;
+  
+            cursor: pointer;
+  
+            text-transform: uppercase;
+  
+            letter-spacing: 1px;
+  
+            transition: all 0.2s ease;
+  
+            box-shadow: 0 5px 20px rgba(0, 195, 255, 0.15);
+  
+        }
+  
+        button:active { transform: scale(0.98); opacity: 0.9; }
+  
+        
+  
+        .btn-secondary {
+  
+            background: transparent;
+  
+            border: 1px solid var(--stroke);
+  
+            color: #888;
+  
+            box-shadow: none;
+  
+            font-size: 0.8rem;
+  
+            padding: 10px;
+  
+        }
+  
+        .btn-secondary:hover { border-color: #fff; color: #fff; }
+  
+  
+  
+        /* TOAST NOTIFICATION */
+  
+        .toast {
+  
+            position: fixed;
+  
+            top: 20px;
+  
+            left: 50%;
+  
+            transform: translateX(-50%) translateY(-100px);
+  
+            background: rgba(0, 255, 170, 0.15);
+  
+            backdrop-filter: blur(15px);
+  
+            border: 1px solid var(--success);
+  
+            padding: 16px 24px;
+  
+            border-radius: 12px;
+  
+            display: flex;
+  
+            align-items: center;
+  
+            gap: 12px;
+  
+            color: var(--success);
+  
+            font-weight: 700;
+  
+            font-size: 0.9rem;
+  
+            letter-spacing: 1px;
+  
+            box-shadow: 0 10px 40px rgba(0, 255, 170, 0.2);
+  
+            z-index: 9999;
+  
+            opacity: 0;
+  
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+            pointer-events: none;
+  
+        }
+  
+        .toast.show {
+  
+            transform: translateX(-50%) translateY(0);
+  
+            opacity: 1;
+  
+        }
+  
+        .checkmark-circle {
+  
+            width: 24px; height: 24px;
+  
+            background: var(--success);
+  
+            border-radius: 50%;
+  
+            display: grid;
+  
+            place-items: center;
+  
+            color: #000;
+  
+            font-size: 14px;
+  
+        }
+  
+  
+  
+        /* Image Preview */
+  
+        #imagePreview {
+  
+            width: 100%;
+  
+            height: 240px;
+  
+            border-radius: 12px;
+  
+            background-size: cover;
+  
+            background-position: center;
+  
+            margin-bottom: 15px;
+  
+            display: none;
+  
+            border: 1px solid var(--stroke);
+  
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  
+        }
+  
+  
+  
+    </style>
+  
+  </head>
+  
+  <body>
+  
+  
+  
+    <!-- TOAST -->
+  
+    <div id="toast" class="toast">
+  
+        <div class="checkmark-circle">✓</div>
+  
+        <span>POST PUBLISHED SUCCESSFULLY</span>
+  
+    </div>
+  
+  
+  
+    <header class="admin-header">
+  
+        <h1>OTP COMMAND</h1>
+  
+        <div style="font-size: 0.7rem; color: #666; font-family: monospace;">V3.0 ADMIN</div>
+  
+    </header>
+  
+  
+  
+    <div class="admin-wrap">
+  
+        
+  
+        <form id="postForm">
+  
             
-            <div class="file-drop" id="dropZone" onclick="document.getElementById('fileInput').click()">
-                <span id="fileName">Tap to Select Photo</span>
+  
+            <!-- ACCESS -->
+  
+            <div class="input-group">
+  
+                <label>Security Clearance</label>
+  
+                <input type="password" id="passcode" placeholder="Enter Access Code" required autocomplete="current-password">
+  
             </div>
-            <input type="file" id="fileInput" accept="image/*" style="display: none">
-            <input type="hidden" name="image_url" id="imageUrl">
-            
-            <div style="text-align: center; color: #444; font-size: 0.8rem; margin: 5px 0;">OR</div>
-            <input type="text" id="urlInput" placeholder="Paste external link (Unsplash/Imgur)">
-          </div>
-
-          <!-- CONTENT -->
-          <div class="input-group">
-              <label>2. The Hook (Title)</label>
-              <span class="desc">Catchy headline. 50 characters max.</span>
-              <input type="text" name="title" id="titleInput" placeholder="e.g. The Death of 1080p" required oninput="generateSlug(this.value)">
-          </div>
-
-          <div class="input-group">
-              <label>3. URL Slug (Auto-Generated)</label>
-              <span class="desc">The link address. Keep it clean.</span>
-              <input type="text" name="slug" id="slugInput" style="color: #666;" placeholder="the-death-of-1080p">
-          </div>
-
-          <div class="input-group">
-              <label>4. Short Summary</label>
-              <span class="desc">What shows on the card grid. 1-2 sentences.</span>
-              <textarea name="excerpt" placeholder="Tease the content..." style="height: 80px;" required></textarea>
-          </div>
-          
-          <!-- AI ASSISTANT -->
-          <div class="ai-tips">
-              <h4>🤖 AI Generator</h4>
-              <div class="input-group" style="margin-bottom: 10px;">
-                  <label>OpenAI API Key (Stored Locally)</label>
-                  <input type="password" id="apiKey" placeholder="sk-..." onchange="localStorage.setItem('openai_key', this.value)">
-              </div>
-              <button type="button" id="magicBtn" style="background: #ff00ff; color: white; margin-top: 5px;">✨ GENERATE CONTENT</button>
-          </div>
-
-          <div class="input-group">
-              <label>5. Main Content</label>
-              <span class="desc">The full article. Auto-generated or custom.</span>
-              <textarea name="content" id="contentArea" placeholder="Paste your article here..." style="height: 300px;" required></textarea>
-          </div>
-          
-          <button type="submit">PUBLISH LIVE</button>
-      </form>
-  </div>
   
-  <div id="status" class="status">System Ready.</div>
-
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   
-  <script>
-    const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    const status = document.getElementById('status');
-
-    // Load Saved Key
-    const savedKey = localStorage.getItem('openai_key');
-    if(savedKey) document.getElementById('apiKey').value = savedKey;
-
-    // AI Generator Logic
-    document.getElementById('magicBtn').addEventListener('click', async () => {
-        const key = document.getElementById('apiKey').value;
-        const title = document.getElementById('titleInput').value;
-        const excerpt = document.querySelector('textarea[name="excerpt"]').value;
-
-        if(!key) { alert("Enter OpenAI API Key First"); return; }
-        if(!title) { alert("Enter a Title to base the article on"); return; }
-
-        status.textContent = "CONTACTING AI...";
-        status.style.color = "#ff00ff";
-        
-        const prompt = `Write a high-end, professional, and slightly edgy blog post for a Video Production Studio about: "${title}". Use the context: "${excerpt}". meaningful, technical, short paragraphs. No intro fluff.`;
-
-        try {
-            const res = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${key}`
-                },
-                body: JSON.stringify({
-                    model: "gpt-4-turbo", // or gpt-3.5-turbo
-                    messages: [{ role: "user", content: prompt }],
-                    temperature: 0.7
-                })
-            });
-
-            const data = await res.json();
+  
+            <!-- SECTION: MEDIA -->
+  
+            <div class="section-label">01 // Visual Intelligence</div>
+  
+            <div class="input-group">
+  
+                <div id="imagePreview"></div>
+  
+                <div style="display: flex; gap: 10px;">
+  
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('fileInput').click()">Upload File</button>
+  
+                    <input type="file" id="fileInput" accept="image/*" style="display: none">
+  
+                    <input type="text" id="urlInput" placeholder="Or Paste URL..." style="border: 1px solid var(--stroke); background: transparent;">
+  
+                </div>
+  
+                <input type="hidden" name="image_url" id="imageUrl">
+  
+            </div>
+  
+  
+  
+            <!-- SECTION: CORE DATA -->
+  
+            <div class="section-label">02 // Core Data</div>
+  
             
-            if(data.error) throw new Error(data.error.message);
+  
+            <div class="input-group">
+  
+                <label>Headline</label>
+  
+                <input type="text" name="title" id="titleInput" placeholder="The Death of 1080p" required oninput="generateSlug(this.value)">
+  
+            </div>
+  
+  
+  
+            <div class="row">
+  
+                <div class="input-group">
+  
+                    <label>Slug</label>
+  
+                    <input type="text" name="slug" id="slugInput" placeholder="auto-generated" style="color: var(--accent2);">
+  
+                </div>
+  
+                <div class="input-group">
+  
+                    <label>Category</label>
+  
+                    <select name="category" id="catInput">
+  
+                        <option value="Strategy">Strategy</option>
+  
+                        <option value="Tech">Tech</option>
+  
+                        <option value="Production">Production</option>
+  
+                        <option value="Case Study">Case Study</option>
+  
+                    </select>
+  
+                </div>
+  
+            </div>
+  
+  
+  
+            <div class="row">
+  
+                <div class="input-group">
+  
+                    <label>Author</label>
+  
+                    <input type="text" name="author" value="OTP Admin">
+  
+                </div>
+  
+                <div class="input-group">
+  
+                    <label>Publish Date</label>
+  
+                    <input type="datetime-local" name="published_at">
+  
+                </div>
+  
+            </div>
+  
+  
+  
+            <!-- SECTION: AI BRAIN -->
+  
+            <div class="ai-tips">
+  
+                <h4>🤖 AUTO-GENERATOR</h4>
+  
+                <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 15px;">Fills Content, SEO, and Metadata automatically.</p>
+  
+                
+  
+                <div class="input-group">
+  
+                    <input type="password" id="apiKey" placeholder="OpenAI API Key (sk-...)" onchange="localStorage.setItem('openai_key', this.value)" style="background: rgba(0,0,0,0.3);">
+  
+                </div>
+  
+                
+  
+                <div class="row">
+  
+                    <div class="input-group">
+  
+                         <label>Prompt Context (Optional)</label>
+  
+                         <textarea id="aiPrompt" placeholder="e.g. Focus on color grading workflows..." style="height: 60px;"></textarea>
+  
+                    </div>
+  
+                    <button type="button" id="magicBtn" style="height: 100%; margin-top: 23px;">⚡ FULL AUTO GENERATE</button>
+  
+                </div>
+  
+                <div id="aiStatus" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px;"></div>
+  
+            </div>
+  
+  
+  
+            <!-- SECTION: CONTENT -->
+  
+            <div class="section-label">03 // The Meat</div>
+  
             
-            const aiText = data.choices[0].message.content;
+  
+            <div class="input-group">
+  
+                <label>Excerpt (Card Summary)</label>
+  
+                <textarea name="excerpt" id="excerptInput" style="height: 80px;" required></textarea>
+  
+            </div>
+  
+  
+  
+            <div class="input-group">
+  
+                <label>Full Content (Markdown/HTML)</label>
+  
+                <textarea name="content" id="contentArea" style="height: 400px; font-family: monospace; font-size: 0.9rem;" required></textarea>
+  
+            </div>
+  
+  
+  
+            <!-- SECTION: SEO & ANALYTICS -->
+  
+            <div class="section-label">04 // SEO & Analytics</div>
+  
             
-            // Typewriter effect
-            const textArea = document.getElementById('contentArea');
-            textArea.value = "";
-            let i = 0;
-            const typeVar = setInterval(() => {
-                textArea.value += aiText.charAt(i);
-                i++;
-                if(i > aiText.length) clearInterval(typeVar);
-            }, 5); // Fast typing
-
-            status.textContent = "AI GENERATION COMPLETE.";
-            status.style.color = "#00ffaa";
-
-        } catch (err) {
-            console.error(err);
-            status.textContent = "AI ERROR: " + err.message;
-            status.style.color = "red";
-        }
-    });
-
-
-    // Auto-Slug Generator
-    function generateSlug(val) {
-        const slug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        document.getElementById('slugInput').value = slug;
-    }
-
-    // File Upload Handler
-    const fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const pass = document.getElementById('passcode').value;
-        if(pass !== 'otp2026') { alert("Enter Security Code First"); return; }
-
-        status.textContent = "UPLOADING IMAGE...";
-        status.style.color = "yellow";
-        document.getElementById('fileName').textContent = "Uploading: " + file.name;
-
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}.${fileExt}`;
-            const filePath = `${fileName}`;
-
-            // Upload to Supabase Storage bucket 'uploads'
-            const { data, error } = await supabase.storage
-                .from('uploads')
-                .upload(filePath, file);
-
-            if (error) throw error;
-
-            // Get Public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('uploads')
-                .getPublicUrl(filePath);
-
-            document.getElementById('imageUrl').value = publicUrl;
-            document.getElementById('fileName').textContent = "✅ Image Locked";
-            status.textContent = "IMAGE UPLOADED.";
-            status.style.color = "#00ffaa";
+  
+            <div class="input-group">
+  
+                <label>SEO Meta Title</label>
+  
+                <input type="text" name="seo_title" id="seoTitle">
+  
+            </div>
+  
             
-        } catch (error) {
-            console.error(error);
-            status.textContent = "UPLOAD ERROR: " + error.message;
-            status.style.color = "red";
-            document.getElementById('fileName').textContent = "❌ Retry Upload";
-        }
-    });
-
-    // Form Submit
-    document.getElementById('postForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // 1. Simple Security Check
-        const pass = document.getElementById('passcode').value;
-        if(pass !== 'otp2026') { 
-            status.textContent = "ACCESS DENIED.";
-            status.style.color = "red";
-            return;
-        }
-        
-        // Check image
-        const imgUrl = document.getElementById('imageUrl').value || document.getElementById('urlInput').value;
-        if (!imgUrl) {
-            status.textContent = "MISSING VISUAL ASSET.";
-            return;
-        }
-
-        status.textContent = "PUBLISHING...";
-        
-        const formData = new FormData(e.target);
-        
-        const newPost = {
-            title: formData.get('title'),
-            slug: formData.get('slug'),
-            image_url: imgUrl,
-            excerpt: formData.get('excerpt'),
-            content: formData.get('content'),
-            published: true
-        };
-
-        try {
-            const { error } = await supabase.from('posts').insert([newPost]);
+  
+            <div class="input-group">
+  
+                <label>SEO Meta Description</label>
+  
+                <textarea name="seo_desc" id="seoDesc" style="height: 80px;"></textarea>
+  
+            </div>
+  
+  
+  
+            <div class="row">
+  
+               <div class="input-group">
+  
+                   <label>Initial Views</label>
+  
+                   <input type="number" name="views" value="124" placeholder="Fake it till you make it">
+  
+               </div>
+  
+               <div class="toggle-wrap">
+  
+                   <span class="toggle-label">Enable Comments</span>
+  
+                   <label class="switch">
+  
+                     <input type="checkbox" checked>
+  
+                     <span class="slider"></span>
+  
+                   </label>
+  
+               </div>
+  
+            </div>
+  
+  
+  
+            <div style="height: 30px;"></div>
+  
             
-            if(error) throw error;
+  
+            <button type="submit" style="height: 70px; font-size: 1.2rem; margin-bottom: 20px;">PUBLISH TO NETWORK</button>
+  
             
-            status.textContent = "SUCCESS. POST IS LIVE.";
-            status.style.color = "#00ffaa";
-            
-            // Optional: delayed reset
-            setTimeout(() => {
-                e.target.reset();
-                document.getElementById('fileName').textContent = "Tap to Select Photo";
-            }, 2000);
-            
-        } catch (err) {
-            console.error(err);
-            status.textContent = "DB ERROR: " + err.message;
-            status.style.color = "red";
-        }
-    });
-  </script>
-
-</body>
-</html>
+  
+            <div style="text-align: center;">
+  
+                <button type="button" class="btn-secondary" onclick="copySchema()" style="width: auto; opacity: 0.5;">📋 Copy DB Upgrade SQL</button>
+  
+            </div>
+  
+  
+  
+        </form>
+  
+    </div>
+  
+    
+  
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  
+    
+  
+    <script>
+  
+      const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
+  
+      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
+  
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  
+  
+  
+      // Load Key
+  
+      const savedKey = localStorage.getItem('openai_key');
+  
+      if(savedKey) document.getElementById('apiKey').value = savedKey;
+  
+  
+  
+      // Elements
+  
+      const preview = document.getElementById('imagePreview');
+  
+      const urlInput = document.getElementById('urlInput');
+  
+      const toast = document.getElementById('toast');
+  
+      const aiStatus = document.getElementById('aiStatus');
+  
+  
+  
+      // Show/Hide Toast
+  
+      function showToast() {
+  
+          toast.classList.add('show');
+  
+          setTimeout(() => toast.classList.remove('show'), 3000);
+  
+      }
+  
+  
+  
+      // URL Preview
+  
+      urlInput.addEventListener('input', (e) => {
+  
+          const url = e.target.value;
+  
+          if(url && (url.startsWith('http'))) {
+  
+              preview.style.backgroundImage = `url(${url})`;
+  
+              preview.style.display = 'block';
+  
+              document.getElementById('imageUrl').value = url;
+  
+          }
+  
+      });
+  
+  
+  
+      // AI AUTO-GENERATOR
+  
+      document.getElementById('magicBtn').addEventListener('click', async () => {
+  
+          const key = document.getElementById('apiKey').value;
+  
+          const title = document.getElementById('titleInput').value;
+  
+          const context = document.getElementById('aiPrompt').value;
+  
+  
+  
+          if(!key || !title) { 
+  
+              aiStatus.textContent = "ERROR: API Key and Title required.";
+  
+              aiStatus.style.color = "red";
+  
+              return; 
+  
+          }
+  
+  
+  
+          aiStatus.textContent = "NEURAL LINK ESTABLISHED... PROCESSING...";
+  
+          aiStatus.style.color = "var(--accent2)";
+  
+          
+  
+          const systemPrompt = `You are the backend for a high-end video production blog. 
+  
+          Return ONLY a raw JSON object (no markdown formatting) with these keys:
+  
+          {
+  
+              "content": "HTML string with <h2>, <p class='lead'>, <p>, <ul>, <strong>. Professional, edgy, technical tone.",
+  
+              "excerpt": "One punchy sentence summary.",
+  
+              "seo_title": "SEO optimized title (under 60 chars)",
+  
+              "seo_desc": "SEO meta description (under 160 chars)",
+  
+              "category": "One of: Strategy, Tech, Production",
+  
+              "tags": "comma, separated, list"
+  
+          }`;
+  
+  
+  
+          const userPrompt = `Write a blog post titled "${title}". Context: ${context}. Keep it technical and sharp.`;
+  
+  
+  
+          try {
+  
+              const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  
+                  method: 'POST',
+  
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+  
+                  body: JSON.stringify({
+  
+                      model: "gpt-4-turbo",
+  
+                      messages: [
+  
+                          { role: "system", content: systemPrompt },
+  
+                          { role: "user", content: userPrompt }
+  
+                      ],
+  
+                      temperature: 0.7,
+  
+                      response_format: { type: "json_object" }
+  
+                  })
+  
+              });
+  
+  
+  
+              const data = await res.json();
+  
+              if(data.error) throw new Error(data.error.message);
+  
+              
+  
+              const result = JSON.parse(data.choices[0].message.content);
+  
+              
+  
+              // Populate Fields
+  
+              document.getElementById('contentArea').value = result.content;
+  
+              document.getElementById('excerptInput').value = result.excerpt;
+  
+              document.getElementById('seoTitle').value = result.seo_title;
+  
+              document.getElementById('seoDesc').value = result.seo_desc;
+  
+              document.getElementById('catInput').value = result.category || 'Tech';
+  
+              
+  
+              aiStatus.textContent = "GENERATION COMPLETE.";
+  
+              aiStatus.style.color = "var(--success)";
+  
+  
+  
+          } catch (err) {
+  
+              console.error(err);
+  
+              aiStatus.textContent = "AI FAIL: " + err.message;
+  
+              aiStatus.style.color = "red";
+  
+          }
+  
+      });
+  
+  
+  
+      // Auto-Slug
+  
+      function generateSlug(val) {
+  
+          const slug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  
+          document.getElementById('slugInput').value = slug;
+  
+      }
+  
+  
+  
+      // File Upload
+  
+      const fileInput = document.getElementById('fileInput');
+  
+      fileInput.addEventListener('change', async (e) => {
+  
+          const file = e.target.files[0];
+  
+          if (!file) return;
+  
+  
+  
+          const pass = document.getElementById('passcode').value;
+  
+          if(pass !== 'otp2026') { alert("Enter Security Code First"); return; }
+  
+  
+  
+          // Local Preview
+  
+          const reader = new FileReader();
+  
+          reader.onload = (e) => {
+  
+              preview.style.backgroundImage = `url(${e.target.result})`;
+  
+              preview.style.display = 'block';
+  
+          };
+  
+          reader.readAsDataURL(file);
+  
+  
+  
+          try {
+  
+              const fileExt = file.name.split('.').pop();
+  
+              const fileName = `${Date.now()}.${fileExt}`;
+  
+              const { data, error } = await supabase.storage.from('uploads').upload(fileName, file);
+  
+              if (error) throw error;
+  
+              
+  
+              const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
+  
+              document.getElementById('imageUrl').value = publicUrl;
+  
+              
+  
+          } catch (error) {
+  
+              alert("Upload Failed: " + error.message);
+  
+          }
+  
+      });
+  
+  
+  
+      // Main Submit
+  
+      document.getElementById('postForm').addEventListener('submit', async (e) => {
+  
+          e.preventDefault();
+  
+          
+  
+          const pass = document.getElementById('passcode').value;
+  
+          if(pass !== 'otp2026') { alert("ACCESS DENIED"); return; }
+  
+          
+  
+          const formData = new FormData(e.target);
+  
+          
+  
+          // Build Object
+  
+          const newPost = {
+  
+              title: formData.get('title'),
+  
+              slug: formData.get('slug'),
+  
+              image_url: formData.get('image_url') || document.getElementById('urlInput').value,
+  
+              excerpt: formData.get('excerpt'),
+  
+              content: formData.get('content'),
+  
+              published: true,
+  
+              // New Fields - Note: These require DB columns. If missing, Supabase might ignore or error.
+  
+              category: formData.get('category'),
+  
+              author: formData.get('author'),
+  
+              seo_title: formData.get('seo_title'),
+  
+              seo_desc: formData.get('seo_desc'),
+  
+              views: parseInt(formData.get('views') || 0)
+  
+          };
+  
+          
+  
+          // Handle Date
+  
+          const pubDate = formData.get('published_at');
+  
+          if(pubDate) newPost.created_at = new Date(pubDate).toISOString();
+  
+  
+  
+          try {
+  
+              const { error } = await supabase.from('posts').insert([newPost]);
+  
+              
+  
+              if(error) {
+  
+                  // Fallback for schema mismatch
+  
+                  console.warn("Full insert failed, trying basic insert...", error);
+  
+                  const basicPost = {
+  
+                      title: newPost.title,
+  
+                      slug: newPost.slug,
+  
+                      image_url: newPost.image_url,
+  
+                      excerpt: newPost.excerpt,
+  
+                      content: newPost.content,
+  
+                      published: true
+  
+                  };
+  
+                  const { error: error2 } = await supabase.from('posts').insert([basicPost]);
+  
+                  if(error2) throw error2;
+  
+                  alert("Warning: Post published but some advanced fields were not saved because the database is outdated. Use the 'Copy DB Upgrade' button.");
+  
+              }
+  
+  
+  
+              // SUCCESS
+  
+              showToast();
+  
+              
+  
+              setTimeout(() => {
+  
+                  // e.target.reset(); // Optional: keep data for multiple variants?
+  
+                  // document.getElementById('imagePreview').style.display = 'none';
+  
+              }, 1000);
+  
+              
+  
+          } catch (err) {
+  
+              console.error(err);
+  
+              alert("DB ERROR: " + err.message);
+  
+          }
+  
+      });
+  
+  
+  
+      // Helper for User
+  
+      function copySchema() {
+  
+          const sql = `
+  
+          alter table posts 
+  
+          add column if not exists category text,
+  
+          add column if not exists author text default 'OTP Admin',
+  
+          add column if not exists seo_title text,
+  
+          add column if not exists seo_desc text,
+  
+          add column if not exists views int8 default 0;
+  
+          `;
+  
+          navigator.clipboard.writeText(sql);
+  
+          alert("SQL Copied to Clipboard! Run this in Supabase SQL Editor to enable all features.");
+  
+      }
+  
+    </script>
+  
+  
+  
+  </body>
+  
+  </html>
+  
+  

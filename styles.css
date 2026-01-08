@@ -61,6 +61,135 @@
   --ring: 0 0 0 2px rgba(112, 0, 255, 0.4);
 }
 
+/* LIGHT THEME OVERRIDES */
+[data-theme="light"] {
+  --bg: #f5f5f7;
+  --bg2: #ffffff;
+  --text: #1a1a1a;
+  --muted: rgba(0,0,0,0.65);
+  --muted2: rgba(0,0,0,0.45);
+
+  /* Accents stay similar but adjusted for white bg contrast if needed */
+  --accent: #6200e0;
+  --accent2: #0088cc; 
+  --accent-glow: rgba(98, 0, 224, 0.2);
+
+  --card: rgba(255, 255, 255, 0.65);
+  --stroke: rgba(0, 0, 0, 0.08);
+
+  --shadow: 0 20px 60px rgba(0,0,0,0.12);
+  --shadowSoft: 0 10px 20px rgba(0,0,0,0.06);
+
+  --ring: 0 0 0 2px rgba(98, 0, 224, 0.3);
+}
+
+/* Light Mode Specific Adjustments */
+[data-theme="light"] .bg-fixed {
+  background: 
+    radial-gradient(circle at 50% 0%, rgba(112,0,255,0.03), transparent 70%),
+    radial-gradient(circle at 80% 100%, rgba(0,195,255,0.03), transparent 70%),
+    #f5f5f7;
+}
+[data-theme="light"] .nav {
+  background: rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+[data-theme="light"] .hero h1 {
+  text-shadow: none; /* Clean look for light mode */
+  color: #000;
+}
+[data-theme="light"] .eyebrow {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #333;
+}
+[data-theme="light"] .card, 
+[data-theme="light"] .service, 
+[data-theme="light"] .contact-card, 
+[data-theme="light"] .form, 
+[data-theme="light"] .process-card,
+[data-theme="light"] .package,
+[data-theme="light"] .review-card {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  color: var(--text);
+}
+[data-theme="light"] .service ul,
+[data-theme="light"] .process-card p,
+[data-theme="light"] .card-body p {
+  color: var(--muted);
+}
+[data-theme="light"] .section-head h2, 
+[data-theme="light"] .minihead {
+  background: none;
+  -webkit-text-fill-color: initial;
+  color: #111;
+  text-shadow: none;
+}
+[data-theme="light"] input, 
+[data-theme="light"] select, 
+[data-theme="light"] textarea {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #111;
+}
+[data-theme="light"] .footer {
+  background: #eaeaec;
+  border-top-color: rgba(0,0,0,0.05);
+}
+/* Force white text in light mode for specific dark badges if needed, or invert them */
+[data-theme="light"] .play-badge {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+
+/* THEME TOGGLE BUTTON */
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 20px;
+  position: relative;
+  z-index: 100;
+  overflow: hidden;
+}
+
+[data-theme="light"] .theme-toggle-btn {
+  border-color: rgba(0,0,0,0.1);
+  color: #333;
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(255,255,255,0.05);
+  transform: rotate(15deg);
+}
+
+[data-theme="light"] .theme-toggle-btn:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.theme-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+}
+
 /* BASE */
 /* BACKGROUND FIXED CONTAINER */
 
