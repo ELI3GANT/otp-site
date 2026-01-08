@@ -167,9 +167,14 @@
         try {
             console.log(`🗑️ ATTEMPTING DELETE: Post ID ${pendingDeleteId}`);
             
-            const { error } = await state.client.from('posts').delete().eq('id', pendingDeleteId);
+            const response = await state.client.from('posts').delete().eq('id', pendingDeleteId).select();
+            console.log("DELETE RESPONSE:", response);
+
+            if (response.error) throw response.error;
             
-            if (error) throw error;
+            if (response.data && response.data.length === 0) {
+                throw new Error("Deletion appeared successful but no rows were returned. RLS might be blocking delete.");
+            }
             
             console.log("✅ DELETION SUCCESS");
             showToast("BROADCAST TERMINATED");
@@ -611,12 +616,17 @@ create table if not exists posts (
   created_at timestamp with time zone default timezone('utc'::text, now())
 );
 
--- 2. UPDATE EXISTING TABLES (Safe Migrations)
+-- 2. UPDATE EXISTING TABLES & PERMISSIONS
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS author text default 'OTP Admin';
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_title text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_desc text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS category text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS views int8 default 0;
+
+-- ENABLE RLS & ALLOW ALL (Needed for Delete/Update if RLS is on)
+ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow All" ON posts;
+CREATE POLICY "Allow All" ON posts FOR ALL USING (true) WITH CHECK (true);
 
 -- 3. FORCE API CACHE REFRESH (The Trick)
 COMMENT ON TABLE posts IS 'OTP Posts Table (Refreshed)';
