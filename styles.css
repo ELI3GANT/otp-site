@@ -1416,6 +1416,7 @@ html {
   border-bottom: 1px solid rgba(255,255,255,0.1);
   transition: background 0.3s ease;
   position: relative;
+  will-change: background;
 }
 
 .service-item:hover {
@@ -1507,6 +1508,7 @@ html {
   border-radius: 20px;
   transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
   height: 100%; /* Equal height */
+  will-change: transform;
 }
 .process-card:hover { /* Explicit hover state */
   background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
@@ -2170,6 +2172,7 @@ input:focus, select:focus, textarea:focus {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
+  will-change: transform;
 }
 
 .icon-link::after {
@@ -2917,6 +2920,8 @@ input:focus, select:focus, textarea:focus {
   object-fit: cover;
   transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease;
   z-index: 1;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
 }
 
 .project-card.has-video:hover .project-img-static {
@@ -2967,6 +2972,7 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid rgba(255, 255, 255, 0.25);
   cursor: pointer;
   transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+  will-change: transform, box-shadow;
 }
 
 .project-card:hover {
