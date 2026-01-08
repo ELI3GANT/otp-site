@@ -547,7 +547,7 @@
     <div id="gate" class="gatekeeper">
         <div class="gate-blur"></div>
         <div class="gate-content">
-            <h1 style="color: var(--accent2); font-size: 1rem; margin-bottom: 25px; letter-spacing: 2px;">ENCRYPTED CHANNEL</h1>
+            <h1 style="color: var(--accent2); font-size: 1rem; margin-bottom: 25px; letter-spacing: 2px;">ENCRYPTED CHANNEL <span id="gateCheck" style="display:none; color: var(--success); margin-left: 10px;">✓</span></h1>
             <input type="password" id="gatePass" class="gate-input" placeholder="••••" maxlength="8">
             <button onclick="unlockChannel()" class="gate-btn">ESTABLISH CONNECTION</button>
             <p id="gateError" style="color: #ff4444; font-size: 0.8rem; margin-top: 15px; display: none;">ACCESS DENIED: INVALID SIGNAL</p>
@@ -1113,6 +1113,22 @@
               submitBtn.disabled = false;
           }
       });
+
+      function unlockChannel() {
+          const val = document.getElementById('gatePass').value;
+          if(val === 'otp2026') {
+              document.getElementById('gateCheck').style.display = 'inline';
+              showToast("CONNECTION ESTABLISHED");
+              setTimeout(() => {
+                  document.getElementById('gate').classList.add('unlocked');
+                  document.body.classList.remove('locked');
+              }, 800);
+          } else {
+              const err = document.getElementById('gateError');
+              err.style.display = 'block';
+              document.getElementById('gatePass').value = '';
+          }
+      }
 
       function copySchema() {
           const sql = `
