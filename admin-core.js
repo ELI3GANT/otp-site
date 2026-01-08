@@ -52,9 +52,16 @@
             window.sb = state.client; // Expose global
             
             // Test Connection
-            const { count, error } = await state.client.from('posts').select('*', { count: 'exact', head: true });
+            const { data: schemaTest, error } = await state.client.from('posts').select('*').limit(1);
             
             if (error) throw error;
+
+            // Diagnostic: Check for author column
+            if (schemaTest && schemaTest.length > 0) {
+                const hasAuthor = 'author' in schemaTest[0];
+                console.log(`📊 SCHEMA CHECK: author column ${hasAuthor ? 'EXISTS' : 'MISSING'}`);
+                if(!hasAuthor) updateDiagnostics('db', 'SCHEMA OUTDATED', 'orange');
+            }
 
             state.isConnected = true;
             console.log(`✅ DATABASE ONLINE. Posts: ${count}`);
@@ -484,6 +491,9 @@ on conflict (id) do nothing;
 -- 4. PUBLIC ACCESS POLICIES
 create policy "Public Access" on storage.objects for select using ( bucket_id = 'uploads' );
 create policy "Public Insert" on storage.objects for insert with check ( bucket_id = 'uploads' );
+
+-- 5. FORCE API CACHE RELOAD
+NOTIFY pgrst, 'reload schema';
         `;
         navigator.clipboard.writeText(sql);
         alert("SQL Logic Copied to Clipboard. Run in Supabase Dashboard.");
