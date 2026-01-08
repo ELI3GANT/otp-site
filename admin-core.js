@@ -78,6 +78,10 @@
             const keyEl = document.getElementById('apiKey');
             if(savedKey && keyEl) keyEl.value = savedKey;
 
+            const savedGemModel = localStorage.getItem('gemini_model');
+            const gemModEl = document.getElementById('geminiModel');
+            if(savedGemModel && gemModEl) gemModEl.value = savedGemModel;
+
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
             updateDiagnostics('db', 'CONNECTION FAILED', '#ff4444');
@@ -279,7 +283,8 @@
     }
 
     async function fetchGemini(key, title, prompt, system) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+        const model = document.getElementById('geminiModel').value;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
         const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -298,7 +303,10 @@
     window.switchProvider = function(val) {
         localStorage.setItem('ai_provider', val);
         const keyEl = document.getElementById('apiKey');
+        const geminiGroup = document.getElementById('geminiModelGroup');
         if(!keyEl) return;
+
+        if(geminiGroup) geminiGroup.style.display = (val === 'gemini') ? 'block' : 'none';
 
         // Update Placeholder
         keyEl.placeholder = (val === 'gemini') ? 'Gemini Key (AI Studio)' : 'OpenAI Key (sk-...)';
