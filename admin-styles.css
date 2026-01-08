@@ -67,6 +67,7 @@
     input, textarea, select, button {
         font-size: 16px !important; /* Prevent iOS auto-zoom */
         padding: 14px !important;
+        backdrop-filter: blur(10px) !important;
     }
     .row {
         grid-template-columns: 1fr !important;
