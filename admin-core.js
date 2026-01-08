@@ -135,25 +135,62 @@
                         <span style="color: ${post.published ? 'var(--success)' : '#ff4444'}">${post.published ? 'LIVE' : 'DRAFT'}</span>
                     </div>
                 </div>
-                <button onclick="deletePost(${post.id})" style="width: auto; padding: 6px 12px; background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3); color: #ff4444; font-size: 0.7rem;">DELETE</button>
+                <button onclick="openDeleteModal(${post.id})" style="width: auto; padding: 6px 12px; background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3); color: #ff4444; font-size: 0.7rem;">DELETE</button>
             </div>
         `).join('');
     }
 
-    window.deletePost = async function(id) {
-        if (!confirm("⚠️ PERMANENTLY DELETE THIS BROADCAST?\n\nThis action cannot be undone.")) return;
+    // New Robust Deletion Logic
+    let pendingDeleteId = null;
 
-        try {
-            const { error } = await state.client.from('posts').delete().eq('id', id);
-            if (error) throw error;
-            
-            showToast("BROADCAST TERMINATED");
-            fetchPosts(); // Refresh list
-        } catch (err) {
-            console.error(err);
-            alert("DELETION FAILED: " + err.message);
+    window.openDeleteModal = function(id) {
+        pendingDeleteId = id;
+        const modal = document.getElementById('deleteModal');
+        if(modal) modal.style.display = 'flex';
+        
+        // Re-bind confirm button to ensure clean state
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        if(confirmBtn) {
+            confirmBtn.onclick = () => executeDelete();
         }
     };
+
+    async function executeDelete() {
+        if (!pendingDeleteId) return;
+        
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        if(confirmBtn) {
+            confirmBtn.textContent = "DELETING...";
+            confirmBtn.disabled = true;
+        }
+
+        try {
+            console.log(`🗑️ ATTEMPTING DELETE: Post ID ${pendingDeleteId}`);
+            
+            const { error } = await state.client.from('posts').delete().eq('id', pendingDeleteId);
+            
+            if (error) throw error;
+            
+            console.log("✅ DELETION SUCCESS");
+            showToast("BROADCAST TERMINATED");
+            
+            // Close Modal
+            document.getElementById('deleteModal').style.display = 'none';
+            
+            // Refresh List
+            fetchPosts(); 
+        } catch (err) {
+            console.error("❌ DELETION FAILED:", err);
+            alert("DELETION FAILED: " + err.message);
+        } finally {
+            // Reset Button State
+            if(confirmBtn) {
+                confirmBtn.textContent = "DELETE";
+                confirmBtn.disabled = false;
+            }
+            pendingDeleteId = null;
+        }
+    }
 
     // 4. AUTH & GATEKEEPER
     window.unlockChannel = function() {

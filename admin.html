@@ -894,6 +894,20 @@
         </div>
     </div>
 
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div id="deleteModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20001; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div style="background: #111; border: 1px solid #ff4444; width: 90%; max-width: 400px; padding: 30px; border-radius: 16px; text-align: center; box-shadow: 0 0 60px rgba(255, 68, 68, 0.15);">
+            <div style="font-size: 3rem; margin-bottom: 10px;">⚠️</div>
+            <h3 style="color: #fff; margin: 0 0 10px 0; font-family: 'Space Grotesk', sans-serif; letter-spacing: 1px;">TERMINATE BROADCAST?</h3>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5;">This action is permanent.<br>The data cannot be recovered.</p>
+            
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button onclick="document.getElementById('deleteModal').style.display='none'" style="background: transparent; border: 1px solid #444; color: #fff; flex: 1;">CANCEL</button>
+                <button id="confirmDeleteBtn" style="background: #ff4444; color: #fff; border: none; flex: 1; box-shadow: 0 5px 20px rgba(255, 68, 68, 0.25);">DELETE</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 1. SUPABASE LIBRARY -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
