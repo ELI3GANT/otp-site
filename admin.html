@@ -878,6 +878,18 @@
   
     
   
+    <!-- ERROR LOG MODAL -->
+    <div id="errorModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 20000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div style="background: #111; border: 1px solid #ff4444; width: 90%; max-width: 600px; padding: 25px; border-radius: 12px; position: relative; box-shadow: 0 0 50px rgba(255, 68, 68, 0.2);">
+            <h3 style="color: #ff4444; margin-top: 0; font-family: 'Space Grotesk', sans-serif;">⚠️ BROADCAST FAILURE</h3>
+            <div id="errorContent" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; color: #ffaaaa; font-family: monospace; font-size: 0.85rem; max-height: 300px; overflow-y: auto; white-space: pre-wrap; margin-bottom: 20px; border: 1px solid rgba(255, 68, 68, 0.3);"></div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="document.getElementById('errorModal').style.display='none'" style="background: transparent; border: 1px solid #555; color: #fff;">DISMISS</button>
+                <button onclick="navigator.clipboard.writeText(document.getElementById('errorContent').textContent); this.textContent='COPIED!'" style="background: #333; color: #fff; border: 1px solid #555;">COPY LOG</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 1. SUPABASE LIBRARY -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     

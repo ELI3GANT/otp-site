@@ -413,8 +413,20 @@
                     showToast("POST BROADCAST SUCCESSFULLY");
                     setTimeout(() => window.location.reload(), 1500);
                 } catch(err) {
-                    console.error(err);
-                    alert("CRITICAL ERROR: " + err.message);
+                    console.error("BROADCAST ERROR:", err);
+                    
+                    const modal = document.getElementById('errorModal');
+                    const content = document.getElementById('errorContent');
+                    
+                    let errorMsg = `TIMESTAMP: ${new Date().toISOString()}\n`;
+                    errorMsg += `ERROR TYPE: ${err.code || 'Unknown'}\n`;
+                    errorMsg += `MESSAGE: ${err.message || JSON.stringify(err)}\n`;
+                    if(err.details) errorMsg += `DETAILS: ${err.details}\n`;
+                    if(err.hint) errorMsg += `HINT: ${err.hint}\n`;
+                    
+                    if(content) content.textContent = errorMsg;
+                    if(modal) modal.style.display = 'flex';
+                    
                     submitBtn.textContent = "RETRY BROADCAST";
                     submitBtn.disabled = false;
                 }
