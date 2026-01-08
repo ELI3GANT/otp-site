@@ -719,8 +719,22 @@
             </div>
           </div>
           
+          </div>
+          
           <div id="formStatus" class="form-status"></div>
         </form>
+
+        <!-- CINEMATIC SUCCESS STATE (Hidden by default) -->
+        <div id="successState" class="success-state" style="display: none; text-align: center; padding: 40px;">
+           <div class="success-icon" style="opacity: 0; transform: scale(0.5);">
+             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+               <polyline points="22 4 12 14.01 9 11.01"></polyline>
+             </svg>
+           </div>
+           <h3 class="syne-bold" style="font-size: 2rem; margin: 20px 0 10px; opacity: 0; transform: translateY(10px);">LOCKED IN.</h3>
+           <p style="color: var(--muted); opacity: 0; transform: translateY(10px);">We'll be in touch shortly.</p>
+        </div>
 
         <div class="contact-sidebar">
           <div class="contact-icons">
@@ -877,9 +891,12 @@
         const formData = new FormData(contactForm);
         const data = Object.fromEntries(formData.entries());
         
-        // Remove anti-spam field logic if present, or just ignore it
-        if (data._gotcha) delete data._gotcha; 
+        const successState = document.getElementById('successState');
 
+        // Unconditionally remove Formspree-specific fields
+        delete data._gotcha; 
+        
+        // Show loading state
         formStatus.textContent = 'Locking the vision...';
         formStatus.style.color = 'var(--accent2)';
         
@@ -890,12 +907,33 @@
 
           if (error) throw error;
 
-          formStatus.textContent = 'Success! We represent the only true perspective.';
-          formStatus.style.color = '#00ffaa';
-          contactForm.reset();
+          // SUCCESS ANIMATION
+          if (typeof gsap !== 'undefined') {
+              // Fade out form
+              gsap.to(contactForm, { 
+                  opacity: 0, 
+                  y: -20, 
+                  duration: 0.5, 
+                  onComplete: () => {
+                      contactForm.style.display = 'none';
+                      successState.style.display = 'block';
+                      
+                      // Animate Success State
+                      gsap.to('.success-icon', { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' });
+                      gsap.to('#successState h3', { opacity: 1, y: 0, duration: 0.6, delay: 0.2 });
+                      gsap.to('#successState p', { opacity: 1, y: 0, duration: 0.6, delay: 0.3 });
+                  }
+              });
+          } else {
+             // Fallback if GSAP fails
+             contactForm.style.display = 'none';
+             successState.style.display = 'block';
+             successState.querySelector('h3').style.opacity = 1;
+          }
+
         } catch (error) {
-          console.error(error);
-          formStatus.textContent = 'Connection error. Please try again.';
+          console.error("Full Error:", error);
+          formStatus.textContent = 'Error: ' + (error.message || JSON.stringify(error));
           formStatus.style.color = '#ff4444';
         }
       });
