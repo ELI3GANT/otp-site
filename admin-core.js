@@ -89,7 +89,7 @@
             const gemModEl = document.getElementById('geminiModel');
             if(savedGemModel && gemModEl) gemModEl.value = savedGemModel;
 
-            // Load Posts for Manager
+            // Load Posts for Manager & Stats
             fetchPosts();
 
         } catch (e) {
@@ -98,22 +98,33 @@
         }
     }
 
-    // --- POST MANAGER LOGIC ---
+    // --- POST MANAGER & STATS LOGIC ---
     async function fetchPosts() {
         const list = document.getElementById('postManager');
+        const statPosts = document.getElementById('statPosts');
+        const statViews = document.getElementById('statViews');
+
         if(!list) return;
 
         try {
             const { data: posts, error } = await state.client
                 .from('posts')
-                .select('id, title, created_at, published')
+                .select('id, title, created_at, published, views')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
+            
+            // Render Stats
+            if(statPosts) statPosts.textContent = posts.length;
+            if(statViews) {
+                const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
+                statViews.textContent = totalViews.toLocaleString();
+            }
+
             renderPosts(posts);
         } catch (err) {
             console.error("FETCH ERROR:", err);
-            list.innerHTML = `<div style="text-align: center; color: #ff4444;">ERROR LOADING: ${err.message}</div>`;
+            list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">ERROR LOADING: ${err.message}</div>`;
         }
     }
 
@@ -127,15 +138,15 @@
         }
 
         list.innerHTML = posts.map(post => `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--stroke); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+            <div class="post-row">
                 <div>
-                    <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">${post.title || 'Untitled'}</div>
-                    <div style="font-size: 0.7rem; color: #666;">
-                        ${new Date(post.created_at).toLocaleDateString()} • 
-                        <span style="color: ${post.published ? 'var(--success)' : '#ff4444'}">${post.published ? 'LIVE' : 'DRAFT'}</span>
-                    </div>
+                    <div class="post-title">${post.title || 'Untitled'}</div>
+                    <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • ${post.views || 0} Views</div>
                 </div>
-                <button onclick="openDeleteModal(${post.id})" style="width: auto; padding: 6px 12px; background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3); color: #ff4444; font-size: 0.7rem;">DELETE</button>
+                <div class="status-badge ${post.published ? 'status-live' : 'status-draft'}">
+                    ${post.published ? 'LIVE' : 'DRAFT'}
+                </div>
+                <button onclick="openDeleteModal(${post.id})" class="delete-btn">DELETE</button>
             </div>
         `).join('');
     }
