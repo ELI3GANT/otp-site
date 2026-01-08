@@ -99,15 +99,40 @@
 }
 
 [data-theme="light"] .nav-logo img {
-  filter: none; /* Keep original white logo color */
+  filter: brightness(0); /* Black logo for light mode */
   mix-blend-mode: normal !important;
 }
 
-[data-theme="light"] .nav-logo .otp-mark {
-  background: #111111 !important; /* Bold black mark background */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: 32px; /* Ensure strictly sized for spin */
+  height: 32px;
+  animation: spin-slow 8s linear infinite !important; /* Slightly faster spin for logo */
+}
+
+/* Apply the box container to the parent link instead */
+[data-theme="light"] .nav-logo {
+  background: #111111 !important;
   border: 1px solid #000000 !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+  border-radius: 10px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+}
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Footer Logo Light Mode */
+[data-theme="light"] .nav-gif {
+  filter: brightness(0);
   mix-blend-mode: normal !important;
+  opacity: 0.8;
 }
 
 [data-theme="light"] .hero h1 {
@@ -579,28 +604,24 @@ h1, h2, h3 {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
+  background: repeating-linear-gradient(
     115deg, 
-    transparent 15%, 
-    rgba(255, 0, 150, 0.15) 20%, 
-    rgba(0, 200, 255, 0.15) 25%, 
-    rgba(255, 255, 0, 0.15) 30%, 
-    rgba(0, 255, 100, 0.15) 35%, 
-    rgba(150, 0, 255, 0.15) 40%, 
-    transparent 45%
+    transparent 0%, 
+    rgba(255, 0, 150, 0.1) 15%, 
+    rgba(255, 255, 0, 0.1) 40%, 
+    transparent 50%
   );
-  background-size: 250% 250%;
+  background-size: 200% 200%;
   mix-blend-mode: color-burn;
   opacity: 0.5; /* Always visible */
   pointer-events: none;
   z-index: 2;
   transition: opacity 0.6s ease;
-  animation: holoFlow 8s infinite linear; /* Constant gentle flow */
+  animation: holoFlow 15s linear infinite; /* Slower, smoother flow */
 }
 
 [data-theme="light"] .glass-manifesto:hover::after {
-  opacity: 1; /* Intensify on hover */
-  animation: holoFlow 3s infinite linear; /* Faster on focus */
+  opacity: 0.9; /* Intensify on focus, no speed change to prevent jump */
 }
 
 /* Add a holographic holographic 'grain' for that rare card feel */
@@ -609,7 +630,7 @@ h1, h2, h3 {
   position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.05;
+  opacity: 0.12;
   pointer-events: none;
   z-index: 1;
 }
@@ -3028,7 +3049,26 @@ input:focus, select:focus, textarea:focus {
   text-decoration: none;
   font-family: 'Space Grotesk', sans-serif;
   letter-spacing: 0.5px;
+  letter-spacing: 0.5px;
   transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* HIGH TIER (PARTNER/NETWORK) SPECIAL BUTTON */
+.network-pkg .pkg-select-btn,
+.package.featured .pkg-select-btn {
+  background: linear-gradient(135deg, #7000ff 0%, #aa00ff 100%);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);
+}
+
+.network-pkg .pkg-select-btn:hover,
+.package.featured .pkg-select-btn:hover {
+  background: linear-gradient(135deg, #8a2be2 0%, #bf40bf 100%); /* Lighter Royal Purple */
+  box-shadow: 0 0 25px rgba(138, 43, 226, 0.6), inset 0 0 10px rgba(255,255,255,0.2);
+  transform: translateY(-2px) scale(1.02);
+  border-color: #fff;
 }
 .k-hover-primary:hover {
   box-shadow: 0 10px 40px rgba(112,0,255,0.5);
@@ -3338,6 +3378,38 @@ input:focus, select:focus, textarea:focus {
 .package-static:hover .pkg-neon-icon {
   transform: scale(1.1);
   filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* DAY MODE ICON OVERRIDES */
+[data-theme="light"] .pkg-icon-bubble {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+[data-theme="light"] .pkg-neon-icon.icon-content {
+  stroke: #111111; /* Carbon Black */
+  filter: none; /* Remove glow for crisp look */
+}
+
+[data-theme="light"] .pkg-neon-icon.icon-music {
+  stroke: #0077b6; /* Deep Ocean */
+  filter: none;
+}
+
+[data-theme="light"] .pkg-neon-icon.icon-business {
+  stroke: #6200e0; /* Deep Violet */
+  filter: none;
+}
+
+[data-theme="light"] .pkg-neon-icon.icon-partner {
+  stroke: #b8860b; /* Dark Goldenrod */
+  filter: none;
+}
+
+[data-theme="light"] .pkg-icon-bubble:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .pkg-meta {

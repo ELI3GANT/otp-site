@@ -672,11 +672,10 @@
             <label for="service">Interested In</label>
             <select id="service" name="service" required>
               <option value="" disabled selected>Select a service</option>
-              <option value="Music Video">Music Video</option>
-              <option value="Brand Identity">Brand Identity</option>
-              <option value="Content & Growth">Content & Growth</option>
+              <option value="The Base">The Base (Music / Single Release)</option>
+              <option value="The Stack">The Stack (Strategic Content / Business)</option>
+              <option value="The Partner">The Partner (Full Retainer / All Access)</option>
               <option value="Web & Digital">Web & Digital</option>
-              <option value="Full Retainer">Full Retainer / Partner</option>
               <option value="Custom">Custom / Other</option>
             </select>
           </div>
@@ -881,6 +880,28 @@
                 console.error("Supabase library not loaded");
             }
         } catch(e) { console.error("Supabase Init Error", e); }
+
+        // PACKAGE SELECTION BRIDGE
+        const pkgBtns = document.querySelectorAll('.pkg-select-btn');
+        const serviceSelect = document.getElementById('service');
+        if(pkgBtns.length) {
+            pkgBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const pkg = btn.dataset.package;
+                    if(serviceSelect) {
+                        serviceSelect.value = pkg;
+                        // Scroll to contact
+                        const contactSection = document.getElementById('contact');
+                        if(contactSection) {
+                            contactSection.scrollIntoView({ behavior: 'smooth' });
+                            // Highlight the select
+                            serviceSelect.style.borderColor = 'var(--accent2)';
+                            setTimeout(() => serviceSelect.style.borderColor = '', 2000);
+                        }
+                    }
+                });
+            });
+        }
 
         // FORM HANDLING
         const contactForm = document.getElementById('contactForm');

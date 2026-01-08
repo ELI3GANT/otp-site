@@ -443,6 +443,55 @@
         }
         body.locked { overflow: hidden; }
 
+        /* STATUS INDICATORS */
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #aaa;
+            border: 1px solid var(--stroke);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+        }
+        [data-theme="light"] .status-pill {
+            background: #fff;
+            border-color: #d2d2d7;
+            color: #555;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #444;
+            transition: all 0.3s ease;
+        }
+        .status-dot.active {
+            background: var(--success);
+            box-shadow: 0 0 10px var(--success);
+            animation: pulse-green 2s infinite;
+        }
+        .status-pill.active {
+            border-color: rgba(0, 255, 170, 0.4);
+            color: #fff;
+            background: rgba(0, 255, 170, 0.05);
+        }
+        [data-theme="light"] .status-pill.active {
+            background: rgba(40, 205, 65, 0.1);
+            border-color: var(--success);
+            color: #111;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 170, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(0, 255, 170, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 170, 0); }
+        }
+
         .checkmark-circle {
   
             width: 24px; height: 24px;
@@ -639,9 +688,9 @@
         </div>
 
         <div class="wrap" style="padding: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-           <div class="status-pill"><div class="status-dot active"></div> DB Linked</div>
-           <div class="status-pill"><div class="status-dot" id="uploadStatusDot"></div> Media</div>
-           <div class="status-pill"><div class="status-dot" id="aiStatusDot"></div> AI Ghost</div>
+           <div class="status-pill k-hover"><div class="status-dot" id="dbStatusDot"></div> DB LINKED</div>
+           <div class="status-pill k-hover"><div class="status-dot" id="uploadStatusDot"></div> MEDIA SYNC</div>
+           <div class="status-pill k-hover"><div class="status-dot" id="aiStatusDot"></div> AI GHOST</div>
         </div>
   
             <!-- AI BRAIN -->
@@ -801,21 +850,23 @@
       const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImexCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      // 2. UI ELEMENTS & STATE
+      // 2. DOM ELEMENTS
       const postForm = document.getElementById('postForm');
+      const submitBtn = document.getElementById('submitBtn');
       const titleInput = document.getElementById('titleInput');
       const slugInput = document.getElementById('slugInput');
       const urlInput = document.getElementById('urlInput');
       const imagePreview = document.getElementById('imagePreview');
       const imageUrlHidden = document.getElementById('imageUrl');
       const aiStatus = document.getElementById('aiStatus');
-      const toast = document.getElementById('toast');
       const magicBtn = document.getElementById('magicBtn');
-      const submitBtn = document.getElementById('submitBtn');
+      const toast = document.getElementById('toast');
 
-      // Load saved OpenAI Key
+      // PRE-FILL API KEY 
       const savedKey = localStorage.getItem('openai_key');
-      if(savedKey) document.getElementById('apiKey').value = savedKey;
+      if(savedKey) {
+          document.getElementById('apiKey').value = savedKey;
+      }
 
       // 3. UTILITIES
       function showToast(text) {
@@ -824,13 +875,41 @@
           setTimeout(() => toast.classList.remove('show'), 3000);
       }
 
+      function updateStatusDots() {
+          const dbPill = document.getElementById('dbStatusDot').parentElement;
+          const mediaPill = document.getElementById('uploadStatusDot').parentElement;
+          const aiPill = document.getElementById('aiStatusDot').parentElement;
+
+          if(window.supabase) {
+              document.getElementById('dbStatusDot').classList.add('active');
+              dbPill.classList.add('active');
+          }
+
+          if(imageUrlHidden && imageUrlHidden.value) {
+              document.getElementById('uploadStatusDot').classList.add('active');
+              mediaPill.classList.add('active');
+          } else {
+              document.getElementById('uploadStatusDot').classList.remove('active');
+              mediaPill.classList.remove('active');
+          }
+
+          if(document.getElementById('contentArea').value) {
+              document.getElementById('aiStatusDot').classList.add('active');
+              aiPill.classList.add('active');
+          } else {
+              document.getElementById('aiStatusDot').classList.remove('active');
+              aiPill.classList.remove('active');
+          }
+      }
+      setInterval(updateStatusDots, 1500);
+
       function generateSlug(title) {
           const slug = title.toLowerCase()
-              .replace(/[^\w\s-]/g, '') // Remove non-word chars
+              .replace(/[^\w\s-]/g, '')
               .trim()
-              .replace(/\s+/g, '-')    // Replace spaces with -
-              .replace(/-+/g, '-');    // Remove double -
-          slugInput.value = slug;
+              .replace(/\s+/g, '-')
+              .replace(/-+/g, '-');
+          if(slugInput) slugInput.value = slug;
       }
 
       function unlockChannel() {

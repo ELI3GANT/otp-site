@@ -86,13 +86,20 @@
       <img src="assets/otp_v2.png" alt="OTP" class="otp-mark" />
     </a>
     <nav class="nav-links">
-      <a href="index.html" class="k-hover">Work</a>
+      <a href="index.html#work" class="k-hover">Work</a>
       <a href="archive.html" class="k-hover">Archive</a>
       <a href="insights.html" class="active k-hover">Insights</a>
       <a href="index.html#services" class="k-hover">Services</a>
       <a href="index.html#contact" class="k-hover">Contact</a>
     </nav>
     <button class="nav-toggle"><span></span><span></span><span></span></button>
+    <nav class="nav-drawer" aria-label="Mobile">
+      <a href="index.html#work">Work</a>
+      <a href="archive.html">Archive</a>
+      <a href="insights.html">Insights</a>
+      <a href="index.html#services">Services</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
   </header>
 
   <main>
@@ -201,27 +208,9 @@
     });
 
     // Year update
-    document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 
   <script src="site-init.js"></script>
   <script src="stars-v2.js"></script>
-  <!-- Basic Nav Toggle Logic (Inline for simplicity) -->
-  <script>
-      const toggle = document.querySelector('.nav-toggle');
-      if(toggle) {
-          toggle.addEventListener('click', () => {
-             // Redirect to home menu or toggle drawer (simplified for this page)
-             window.location.href = 'insights.html';
-          });
-      }
-      
-      // Init Kursor
-      new kursor({
-          type: 4,
-          color: '#ffffff',
-          removeDefaultCursor: true
-      });
-  </script>
 </body>
 </html>
