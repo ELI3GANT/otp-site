@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OTP Admin | Mobile Uplink</title>
+  <link rel="stylesheet" href="./styles.css?v=2.6" />
+  <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; }</style>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  
+  <style>
+      .admin-wrap {
+          max-width: 500px;
+          margin: 100px auto;
+          padding: 20px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 16px;
+      }
+      h1 { text-align: center; color: var(--accent2); margin-bottom: 30px; }
+      input, textarea {
+          width: 100%;
+          background: #000;
+          border: 1px solid #333;
+          color: #fff;
+          padding: 15px;
+          margin-bottom: 15px;
+          border-radius: 8px;
+          font-family: inherit;
+      }
+      textarea { height: 200px; }
+      button {
+          width: 100%;
+          padding: 20px;
+          background: var(--accent);
+          color: #000;
+          border: none;
+          font-weight: bold;
+          border-radius: 8px;
+          cursor: pointer;
+      }
+      .status { text-align: center; margin-top: 20px; color: #666; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <div class="admin-wrap">
+      <h1>UPLINK TERMINAL</h1>
+      
+      <form id="postForm">
+          <input type="password" id="passcode" placeholder="ACCESS CODE" required>
+          <hr style="border-color: #333; margin: 20px 0;">
+          
+          <input type="text" name="title" placeholder="Post Title" required>
+          <input type="text" name="slug" placeholder="url-slug-like-this" required>
+          <input type="text" name="image_url" placeholder="Image URL (Unsplash/Imgur)" required>
+          <input type="text" name="excerpt" placeholder="Short Excerpt (for card)" required>
+          <textarea name="content" placeholder="Full Content (use double enter for paragraphs)" required></textarea>
+          
+          <button type="submit">PUBLISH TO NETWORK</button>
+      </form>
+      <div id="status" class="status">Waiting for input...</div>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  
+  <script>
+    const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const status = document.getElementById('status');
+        
+        // 1. Simple Security Check
+        const pass = document.getElementById('passcode').value;
+        if(pass !== 'otp2026') { // Hardcoded for simplicity on static site
+            status.textContent = "ACCESS DENIED.";
+            status.style.color = "red";
+            return;
+        }
+
+        status.textContent = "UPLOADING...";
+        status.style.color = "var(--accent2)";
+
+        const formData = new FormData(e.target);
+        
+        const newPost = {
+            title: formData.get('title'),
+            slug: formData.get('slug'),
+            image_url: formData.get('image_url'),
+            excerpt: formData.get('excerpt'),
+            content: formData.get('content'),
+            published: true
+        };
+
+        try {
+            const { error } = await supabase.from('posts').insert([newPost]);
+            
+            if(error) throw error;
+            
+            status.textContent = "SUCCESS. POST LIVE.";
+            status.style.color = "#00ffaa";
+            e.target.reset();
+        } catch (err) {
+            console.error(err);
+            status.textContent = "UPLOAD FAILED: " + err.message;
+            status.style.color = "red";
+        }
+    });
+  </script>
+
+</body>
+</html>

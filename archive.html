@@ -203,9 +203,17 @@
   </footer>
 
   <canvas id="cursor-canvas"></canvas>
-  <div id="curtains-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1;"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/curtainsjs/8.1.2/curtains.min.js"></script>
+  <!-- SVG Filter for Liquid Distortion (Works with YouTube/External Images) -->
+  <svg style="position: absolute; width: 0; height: 0; pointer-events: none;">
+    <defs>
+      <filter id="liquid-distortion">
+        <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" result="warp"></feTurbulence>
+        <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="0" in="SourceGraphic" in2="warp"></feDisplacementMap>
+      </filter>
+    </defs>
+  </svg>
+
   <script src="https://unpkg.com/kursor"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -257,7 +265,56 @@
   </script>
 
   <script src="stars-v2.js"></script>
+  <script>
+    // Page-specific: SVG Liquid Distortion Effect
+    document.addEventListener("DOMContentLoaded", () => {
+        const turbulence = document.querySelector('#liquid-distortion feTurbulence');
+        const displacement = document.querySelector('#liquid-distortion feDisplacementMap');
+        const cards = document.querySelectorAll('.project-card');
+
+        // Apply filter to images via CSS
+        // We dynamically add the filter only on hover to save performance
+        
+        cards.forEach(card => {
+            const img = card.querySelector('img');
+            
+            card.addEventListener('mouseenter', () => {
+                // Activate Filter
+                img.style.filter = 'url(#liquid-distortion)';
+                
+                // Animate Scale (Distort)
+                gsap.to(displacement, {
+                    attr: { scale: 100 }, // Intensity
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
+                
+                // Animate Base Frequency (Turbulence flow)
+                gsap.to(turbulence, {
+                    attr: { baseFrequency: '0.04 0.04' },
+                    duration: 0.5
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                // Animate Back
+                gsap.to(displacement, {
+                    attr: { scale: 0 },
+                    duration: 0.5,
+                    ease: 'power2.out',
+                    onComplete: () => {
+                        img.style.filter = 'none'; // Cleanup
+                    }
+                });
+                
+                gsap.to(turbulence, {
+                    attr: { baseFrequency: '0.01 0.01' },
+                    duration: 0.5
+                });
+            });
+        });
+    });
+  </script>
   <script src="site-init.js"></script>
-  <script src="archive-webgl.js"></script>
 </body>
 </html>
