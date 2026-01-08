@@ -311,8 +311,8 @@ html {
 
 
 .wrap { width: min(1100px, 92vw); margin: 0 auto; max-width: 100%; }
-.section { padding: 96px 0; }
-.section-tight { padding: 72px 0; }
+.section { padding: 96px 0; scroll-margin-top: 100px; }
+.section-tight { padding: 72px 0; scroll-margin-top: 100px; }
 
 .kicker {
   margin-top: 14px;
@@ -895,6 +895,14 @@ html {
   display: flex; 
   transform: translateY(0);
   opacity: 1;
+}
+
+/* Highlight Mobile Contact Button */
+.nav-drawer a[href="#contact"] {
+  background: linear-gradient(135deg, var(--accent) 0%, #4a00e0 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);
 }
 
 

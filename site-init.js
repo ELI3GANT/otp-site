@@ -417,4 +417,24 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // --- PORTAL DROPDOWN ---
+    const portalBtn = document.querySelector('.portal-btn');
+    const portalDropdown = document.querySelector('.portal-dropdown');
+    
+    if (portalBtn && portalDropdown) {
+        portalBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const expanded = portalBtn.getAttribute('aria-expanded') === 'true';
+            portalBtn.setAttribute('aria-expanded', !expanded);
+            portalDropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!portalDropdown.contains(e.target)) {
+                portalDropdown.classList.remove('active');
+                portalBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
 });
