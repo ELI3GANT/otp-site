@@ -104,11 +104,11 @@ window.OTP = window.OTP || {};
 
 window.OTP.getThemeIcon = function(theme) {
     if (theme === 'light') {
-        // Moon Icon
-        return `<svg class="theme-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+        // Moon Icon (Switch to Dark)
+        return `<svg class="theme-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
     } else {
-        // Sun Icon
-        return `<svg class="theme-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+        // Sun Icon (Switch to Light)
+        return `<svg class="theme-icon" viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
     }
 };
 
@@ -119,44 +119,52 @@ window.OTP.setTheme = function(theme) {
     } else {
         html.removeAttribute('data-theme');
     }
-    localStorage.setItem('theme', theme);
+    // Only save if it's an explicit user action? 
+    // Usually standard practice is to save any state the user is currently "in" if they toggle.
+    // But for auto-switch, we don't save to LS so it can auto-switch next time.
+    // We'll handle LS saving in the toggle event listener, not here.
 };
 
 window.OTP.initTheme = function() {
     const savedTheme = localStorage.getItem('theme');
-    
-    let currentTheme;
+    let targetTheme;
+
     if (savedTheme) {
-        currentTheme = savedTheme;
+        // User Override
+        targetTheme = savedTheme;
+        console.log(`[OTP] Theme initialized: ${targetTheme} (User Override)`);
     } else {
-        // AUTOMATIC TIME-BASED CHRONO-THEME
-        // Day Mode: 6:00 AM - 5:59 PM
-        // Night Mode: 6:00 PM - 5:59 AM
+        // Chrono-Logic (Local Time)
         const hour = new Date().getHours();
-        const isDaytime = hour >= 6 && hour < 18;
-        currentTheme = isDaytime ? 'light' : 'dark';
-        
-        console.log(`[OTP] Chrono-Theme initialized. Current hour: ${hour}. Mode: ${currentTheme.toUpperCase()}`);
+        const isDaytime = hour >= 6 && hour < 18; // 6:00 AM to 5:59 PM
+        targetTheme = isDaytime ? 'light' : 'dark';
+        console.log(`[OTP] Theme initialized: ${targetTheme} (Auto-Chrono: ${hour}:00)`);
     }
     
-    // Apply immediately
-    window.OTP.setTheme(currentTheme);
-    return currentTheme;
+    window.OTP.setTheme(targetTheme);
+    return targetTheme;
 };
 
-// Run init immediately (safe to access documentElement)
+// Run init immediately
 window.OTP.initTheme();
 
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- THEME TOGGLE UI ---
     (function injectThemeToggle() {
-        const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        // Determine current state
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const currentTheme = isLight ? 'light' : 'dark';
         
         // Create Toggle Button
         const toggleBtn = document.createElement('button');
         toggleBtn.className = 'theme-toggle-btn';
         toggleBtn.ariaLabel = 'Toggle Theme';
+        // Icon should represent the ACTION (Switch to X), not current state.
+        // But typical UI shows the symbol of the mode you are entering (Moon for Dark) or currently in (Sun for Light).
+        // Let's stick to standard: Sun = Light Mode Active, Moon = Dark Mode Active.
+        // Actually, many sites show Moon when in Light mode (click to go dark).
+        // My getThemeIcon does: passed 'light' -> returns Moon. Passed 'dark' -> returns Sun.
         toggleBtn.innerHTML = window.OTP.getThemeIcon(currentTheme);
 
         // Inject Button
@@ -170,10 +178,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Handle Click
         toggleBtn.addEventListener('click', () => {
-            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-            const newTheme = isLight ? 'dark' : 'light';
+            const wasLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const newTheme = wasLight ? 'dark' : 'light';
             
             window.OTP.setTheme(newTheme);
+            localStorage.setItem('theme', newTheme); // Persist selection
             
             // Animate Icon Swap
             toggleBtn.style.transform = 'scale(0.8) rotate(90deg)';
