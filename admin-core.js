@@ -100,22 +100,209 @@
         }
     };
 
-    // 5. EVENT LISTENERS & BINDINGS happens when DOM is ready
-    document.addEventListener('DOMContentLoaded', () => {
-        // Init System
-        init();
+    // 5. THEME MANAGEMENT
+    function setupTheme() {
+        const html = document.documentElement;
+        let savedTheme = localStorage.getItem('theme');
+        if (!savedTheme) {
+            const hour = new Date().getHours();
+            savedTheme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+        }
+        if(savedTheme === 'light') html.setAttribute('data-theme', 'light');
+        else html.removeAttribute('data-theme');
 
-        // Bind Enter Key for Gate
+        const header = document.querySelector('.admin-header');
+        if(header && !header.querySelector('.theme-toggle-btn')) {
+            const toggleBtn = document.createElement('button');
+            toggleBtn.className = 'theme-toggle-btn admin-toggle';
+            toggleBtn.innerHTML = getThemeIcon(savedTheme);
+            toggleBtn.onclick = () => {
+                const isLight = html.getAttribute('data-theme') === 'light';
+                const next = isLight ? 'dark' : 'light';
+                isLight ? html.removeAttribute('data-theme') : html.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', next);
+                toggleBtn.innerHTML = getThemeIcon(next);
+            };
+            header.appendChild(toggleBtn);
+        }
+    }
+
+    function getThemeIcon(theme) {
+        return theme === 'light' 
+            ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`
+            : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+    }
+
+    // 6. UPLOAD MANAGEMENT
+    async function handleFileUpload(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        // Visual Feedback
+        const previewImg = document.getElementById('previewImg');
+        const previewDiv = document.getElementById('imagePreview');
+        const detailsDiv = document.getElementById('fileDetails');
+        
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            if(previewImg) previewImg.src = ev.target.result;
+            if(previewDiv) previewDiv.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+
+        if(detailsDiv) {
+            detailsDiv.style.display = 'block';
+            document.getElementById('fileNameDisplay').textContent = file.name;
+            document.getElementById('fileSizeDisplay').textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+        }
+
+        updateDiagnostics('storage', 'UPLOADING...', 'yellow');
+
+        try {
+            const fileName = `blog/${Date.now()}_${file.name}`;
+            const { data, error } = await state.client.storage.from('uploads').upload(fileName, file);
+            if (error) throw error;
+
+            const { data: { publicUrl } } = state.client.storage.from('uploads').getPublicUrl(fileName);
+            document.getElementById('imageUrl').value = publicUrl;
+            
+            updateDiagnostics('storage', 'UPLOAD COMPLETE', 'var(--success)');
+            showToast("MEDIA SECURED");
+        } catch(err) {
+            console.error(err);
+            updateDiagnostics('storage', 'FAILED', '#ff4444');
+            showToast("UPLOAD FAILED");
+        }
+    }
+
+    // 7. AI NEURAL GENERATOR
+    async function triggerAIGenerator() {
+        const promptContext = document.getElementById('aiPrompt').value;
+        const title = document.getElementById('titleInput').value;
+        const key = document.getElementById('apiKey').value;
+        const archetype = document.getElementById('archetype').value;
+        const btn = document.getElementById('magicBtn');
+        const status = document.getElementById('aiStatus');
+
+        if(!key || !title || !promptContext) { 
+            if(status) { status.textContent = "ERROR: Key, Title, and Prompt required."; status.style.color = "#ff4444"; }
+            return; 
+        }
+
+        btn.textContent = "SYNTHESIZING...";
+        btn.disabled = true;
+        
+        const currentStyleBtn = document.querySelector('.preset-btn.active');
+        const styleName = currentStyleBtn ? currentStyleBtn.dataset.style : 'cinematic';
+
+        const styleContext = {
+            cinematic: "High-end production, color grading, and polished sequences.",
+            guerilla: "Fast-paced, raw, authentic, and high-energy.",
+            technical: "Equipment details, camera settings, and precision.",
+            strategy: "ROI, business growth, and brand positioning."
+        };
+
+        const systemPrompt = `You are the Lead Creative Director and Head of Strategy for OTP (Only True Perspective). 
+        Style: ${styleContext[styleName]}. Archetype: ${archetype}. 
+        Return ONLY a JSON object: { "content": "HTML string with h2/p tags", "excerpt": "1 sentence hook", "seo_title": "SEO Title", "seo_desc": "Engaging description", "category": "Tech/Strategy/Production" }`;
+
+        try {
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                body: JSON.stringify({
+                    model: "gpt-4-turbo",
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: `Generate post: "${title}". Focus: ${promptContext}` }
+                    ],
+                    temperature: 0.8,
+                    response_format: { type: "json_object" }
+                })
+            });
+
+            const data = await res.json();
+            if(data.error) throw new Error(data.error.message);
+            const result = JSON.parse(data.choices[0].message.content);
+
+            document.getElementById('contentArea').value = result.content;
+            document.getElementById('excerptInput').value = result.excerpt;
+            document.getElementById('seoTitle').value = result.seo_title;
+            document.getElementById('seoDesc').value = result.seo_desc;
+            document.getElementById('catInput').value = result.category || 'Tech';
+            
+            if(status) { status.textContent = "INTEL RECEIVED. SYNC COMPLETE."; status.style.color = "var(--success)"; }
+        } catch(e) {
+            console.error(e);
+            if(status) { status.textContent = "SIGNAL LOST: " + e.message; status.style.color = "#ff4444"; }
+        } finally {
+            btn.textContent = "⚡ TRANSMIT TO AI";
+            btn.disabled = false;
+        }
+    }
+
+    // 8. EVENT LISTENERS & BINDINGS
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+        setupTheme();
+
         const passInfo = document.getElementById('gatePass');
-        if(passInfo) {
-            passInfo.addEventListener('keypress', (e) => {
-                if(e.key === 'Enter') window.unlockChannel();
+        if(passInfo) passInfo.addEventListener('keypress', (e) => { if(e.key === 'Enter') window.unlockChannel(); });
+
+        // AI Magic
+        const magicBtn = document.getElementById('magicBtn');
+        if(magicBtn) magicBtn.addEventListener('click', triggerAIGenerator);
+
+        // Uploads
+        const fileInput = document.getElementById('fileInput');
+        if(fileInput) fileInput.addEventListener('change', handleFileUpload);
+
+        // Presets
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Form Submission
+        const postForm = document.getElementById('postForm');
+        if(postForm) {
+            postForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.textContent = "BROADCASTING...";
+                submitBtn.disabled = true;
+
+                const formData = new FormData(postForm);
+                const newPost = {
+                    title: formData.get('title'),
+                    slug: formData.get('slug'),
+                    image_url: document.getElementById('imageUrl').value || formData.get('image_url'),
+                    excerpt: formData.get('excerpt'),
+                    content: formData.get('content'),
+                    published: document.getElementById('pubToggle').checked,
+                    category: formData.get('category'),
+                    author: formData.get('author'),
+                    seo_title: formData.get('seo_title'),
+                    seo_desc: formData.get('seo_desc'),
+                    views: parseInt(formData.get('views') || 0),
+                    created_at: new Date().toISOString()
+                };
+
+                try {
+                    const { error } = await state.client.from('posts').insert([newPost]);
+                    if(error) throw error;
+                    showToast("POST BROADCAST SUCCESSFULLY");
+                    setTimeout(() => window.location.reload(), 1500);
+                } catch(err) {
+                    console.error(err);
+                    alert("CRITICAL ERROR: " + err.message);
+                    submitBtn.textContent = "RETRY BROADCAST";
+                    submitBtn.disabled = false;
+                }
             });
         }
-        
-        // Re-bind other UI logic here if needed (File Upload, Magic Button)
-        // For now, let's keep the other inline script for UI specific logic 
-        // OR move it all here. Moving it all here is safer.
     });
 
     // UTILS
@@ -129,5 +316,37 @@
     
     // Expose Utils
     window.showToast = showToast;
+
+    window.copySchema = function() {
+        const sql = `
+-- RUN THIS IN SUPABASE SQL EDITOR --
+create table if not exists posts (
+  id bigint generated by default as identity primary key,
+  title text,
+  slug text unique,
+  excerpt text,
+  content text,
+  category text,
+  author text default 'OTP Admin',
+  image_url text,
+  views int8 default 0,
+  published boolean default true,
+  seo_title text,
+  seo_desc text,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+-- STORAGE BUCKETS
+insert into storage.buckets (id, name, public) 
+values ('uploads', 'uploads', true)
+on conflict (id) do nothing;
+
+-- PUBLIC ACCESS POLICIES
+create policy "Public Access" on storage.objects for select using ( bucket_id = 'uploads' );
+create policy "Public Insert" on storage.objects for insert with check ( bucket_id = 'uploads' );
+        `;
+        navigator.clipboard.writeText(sql);
+        alert("SQL Logic Copied to Clipboard. Run in Supabase Dashboard.");
+    };
 
 })();

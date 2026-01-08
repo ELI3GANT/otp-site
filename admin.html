@@ -843,35 +843,11 @@
     <!-- 3. ADMIN CORE (Auth, DB, Logic) -->
     <script src="admin-core.js"></script>
 
-    <!-- 4. UI SPECIFIC (Uploads, AI - To be migrated or kept if simple) -->
+    <!-- 4. UI SPECIFIC (Uploads, AI - Managed by Admin Core) -->
     <script>
-      // DOM Elements & UI Bindings that rely on Core
-      // We will move the rest of the logic to admin-core.js in the next step or keep it here if it's purely UI
-      // For now, let's keep the UI logic here but remove the conflicting init logic
-      
-      const postForm = document.getElementById('postForm');
-      const submitBtn = document.getElementById('submitBtn');
+      // Slug Auto-Gen (Keep here for snappy UI, or move to core)
       const titleInput = document.getElementById('titleInput');
       const slugInput = document.getElementById('slugInput');
-      const urlInput = document.getElementById('urlInput');
-      const imagePreview = document.getElementById('imagePreview');
-      const imageUrlHidden = document.getElementById('imageUrl');
-      const aiStatus = document.getElementById('aiStatus');
-      const magicBtn = document.getElementById('magicBtn');
-
-      // PREVIEW LOGIC
-      if(urlInput) {
-          urlInput.addEventListener('input', (e) => {
-              const url = e.target.value;
-              if(url && url.startsWith('http')) {
-                  imagePreview.style.backgroundImage = `url(${url})`;
-                  imagePreview.style.display = 'block';
-                  imageUrlHidden.value = url;
-              }
-          });
-      }
-
-      // SLUG GEN
       if(titleInput) {
           titleInput.addEventListener('input', (e) => {
                const slug = e.target.value.toLowerCase()
@@ -883,6 +859,5 @@
           });
       }
     </script>
-    <script src="admin-init.js"></script>
   </body>
 </html>
