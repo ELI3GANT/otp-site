@@ -89,11 +89,71 @@
             const gemModEl = document.getElementById('geminiModel');
             if(savedGemModel && gemModEl) gemModEl.value = savedGemModel;
 
+            // Load Posts for Manager
+            fetchPosts();
+
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
             updateDiagnostics('db', 'CONNECTION FAILED', '#ff4444');
         }
     }
+
+    // --- POST MANAGER LOGIC ---
+    async function fetchPosts() {
+        const list = document.getElementById('postManager');
+        if(!list) return;
+
+        try {
+            const { data: posts, error } = await state.client
+                .from('posts')
+                .select('id, title, created_at, published')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            renderPosts(posts);
+        } catch (err) {
+            console.error("FETCH ERROR:", err);
+            list.innerHTML = `<div style="text-align: center; color: #ff4444;">ERROR LOADING: ${err.message}</div>`;
+        }
+    }
+
+    function renderPosts(posts) {
+        const list = document.getElementById('postManager');
+        if(!list) return;
+
+        if (posts.length === 0) {
+            list.innerHTML = `<div style="text-align: center; color: #666; font-size: 0.8rem; padding: 20px;">NO ACTIVE BROADCASTS</div>`;
+            return;
+        }
+
+        list.innerHTML = posts.map(post => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--stroke); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                <div>
+                    <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">${post.title || 'Untitled'}</div>
+                    <div style="font-size: 0.7rem; color: #666;">
+                        ${new Date(post.created_at).toLocaleDateString()} • 
+                        <span style="color: ${post.published ? 'var(--success)' : '#ff4444'}">${post.published ? 'LIVE' : 'DRAFT'}</span>
+                    </div>
+                </div>
+                <button onclick="deletePost(${post.id})" style="width: auto; padding: 6px 12px; background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3); color: #ff4444; font-size: 0.7rem;">DELETE</button>
+            </div>
+        `).join('');
+    }
+
+    window.deletePost = async function(id) {
+        if (!confirm("⚠️ PERMANENTLY DELETE THIS BROADCAST?\n\nThis action cannot be undone.")) return;
+
+        try {
+            const { error } = await state.client.from('posts').delete().eq('id', id);
+            if (error) throw error;
+            
+            showToast("BROADCAST TERMINATED");
+            fetchPosts(); // Refresh list
+        } catch (err) {
+            console.error(err);
+            alert("DELETION FAILED: " + err.message);
+        }
+    };
 
     // 4. AUTH & GATEKEEPER
     window.unlockChannel = function() {
