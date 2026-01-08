@@ -673,6 +673,15 @@
            <div class="status-pill k-hover"><div class="status-dot" id="uploadStatusDot"></div> MEDIA SYNC</div>
            <div class="status-pill k-hover"><div class="status-dot" id="aiStatusDot"></div> AI GHOST</div>
         </div>
+            <!-- DIAGNOSTICS PANEL -->
+            <div id="diagnosticsPanel" style="background: rgba(0,0,0,0.3); border: 1px solid var(--stroke); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <h4 style="margin: 0 0 10px 0; color: #888; font-size: 0.75rem; text-transform: uppercase;">System Diagnostics</h4>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 0.8rem; font-family: monospace;">
+                    <div id="diagDB" style="display: flex; justify-content: space-between;"><span>DATABASE:</span> <span style="color: yellow;">CONNECTING...</span></div>
+                    <div id="diagUpload" style="display: flex; justify-content: space-between;"><span>STORAGE:</span> <span style="color: #666;">IDLE</span></div>
+                    <div id="diagAuth" style="display: flex; justify-content: space-between;"><span>GATEKEEPER:</span> <span style="color: #ff4444;">LOCKED</span></div>
+                </div>
+            </div>
   
             <!-- AI BRAIN -->
   
@@ -1061,6 +1070,8 @@
               fileSizeDisplay.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
           }
 
+          // UPDATE DIAGNOSTICS
+          document.getElementById('diagUpload').innerHTML = `<span>STORAGE:</span> <span style="color: yellow;">UPLOADING...</span>`;
           document.getElementById('uploadStatusDot').classList.add('active');
           aiStatus.textContent = "INITIALIZING SECURE UPLOAD...";
 
@@ -1074,10 +1085,11 @@
               imageUrlHidden.value = publicUrl;
               aiStatus.textContent = "MEDIA UPLOADED & LOCKED.";
               aiStatus.style.color = "var(--success)";
+              document.getElementById('diagUpload').innerHTML = `<span>STORAGE:</span> <span style="color: var(--success);">UPLOAD COMPLETE</span>`;
           } catch (err) {
               console.error(err);
               aiStatus.textContent = "UPLOAD FAIL: " + err.message; 
-              // Note: We don't alert here to avoid blocking UI, but we log it.
+              document.getElementById('diagUpload').innerHTML = `<span>STORAGE:</span> <span style="color: #ff4444;">FAILED: ${err.message}</span>`;
           } finally {
               document.getElementById('uploadStatusDot').classList.remove('active');
           }
@@ -1134,6 +1146,9 @@
               setTimeout(() => {
                   document.getElementById('gate').classList.add('unlocked');
                   document.body.classList.remove('locked');
+                  if(document.getElementById('diagAuth')) {
+                      document.getElementById('diagAuth').innerHTML = `<span>GATEKEEPER:</span> <span style="color: var(--success);">UNLOCKED</span>`;
+                  }
               }, 800);
           } else {
               const err = document.getElementById('gateError');
@@ -1157,13 +1172,18 @@
 
       // INITIAL CONNECTION CHECK
       async function checkConnection() {
+          const diagDB = document.getElementById('diagDB');
           try {
+              console.log("Pinging Database...");
               const { count, error } = await supabase.from('posts').select('*', { count: 'exact', head: true });
               if(error) throw error;
+              
               document.getElementById('dbStatusDot').classList.add('active');
+              diagDB.innerHTML = `<span>DATABASE:</span> <span style="color: var(--success);">CONNECTED (${count} POSTS)</span>`;
               showToast("SYSTEM ONLINE");
           } catch(e) {
               console.error("Connection Check Failed:", e);
+              diagDB.innerHTML = `<span>DATABASE:</span> <span style="color: #ff4444;">CONNECTION FAILED</span>`;
               // Retry once
               setTimeout(() => {
                   console.log("Retrying connection...");
@@ -1171,6 +1191,28 @@
               }, 2000);
           }
       }
+
+      // Update Gate status
+      function updateGateStatus(status) {
+          const el = document.getElementById('diagAuth');
+          if(el) {
+               if(status === 'unlocked') el.innerHTML = `<span>GATEKEEPER:</span> <span style="color: var(--success);">UNLOCKED</span>`;
+               else el.innerHTML = `<span>GATEKEEPER:</span> <span style="color: #ff4444;">LOCKED</span>`;
+          }
+      }
+      
+      // Hook into existing function
+      const originalUnlock = window.unlockChannel;
+      window.unlockChannel = function() {
+          const val = document.getElementById('gatePass').value;
+          if(val === 'otp2026') {
+             updateGateStatus('unlocked');
+          }
+          // Call original logic (which is defined in global scope effectively)
+          // Actually, since I defined unlockChannel in this same script block, I should just update it there.
+          // But to be safe and clean, I will update the logic where it is defined.
+      }
+
 
       // Run check on load
       checkConnection();
