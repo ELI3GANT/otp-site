@@ -237,15 +237,31 @@
         if(status) { status.textContent = `CONNECTED TO ${provider.toUpperCase()}. GENERATING...`; status.style.color = "var(--accent2)"; }
         
         const styleContext = {
-            technical: "High-end technical breakdown, edgy, deep, filmmaker focus.",
-            launch: "Visual launch, high excitement, hype, fast-paced.",
-            strategy: "ROI, business growth, brand positioning, professional.",
-            'case-study': "Data driven results, methodology, success metrics."
+            technical: "Cinematic Tech. Focus on the feeling of using the gear, not just specs. High-energy, visual language. Think MKBHD meets Blade Runner.",
+            launch: "Hype & Drop. Short, punchy, exclusive. The vibe is 'if you know, you know'. Fast-paced.",
+            strategy: "Street-Smart Business. No corporate jargon. Real talk about ROI and leverage. Direct and confident.",
+            'case-study': "The War Room. Behind the scenes. Gritty details of how we pulled it off. Show, don't just tell."
         };
 
         const systemPrompt = `You are the Lead Creative Director and Head of Strategy for OTP (Only True Perspective). 
-        Style: ${styleContext[archetype]}. Archetype: ${archetype}. 
-        Return ONLY a JSON object: { "content": "HTML string with h2/p tags", "excerpt": "1 sentence hook", "seo_title": "SEO Title", "seo_desc": "Engaging description", "category": "Tech/Strategy/Production" }`;
+        
+        **TONE MANDATE:**
+        - Voice: Modern, accessible, "dope", confident.
+        - Ban: "Delve", "Showcase", "In the realm of", academic fluff, corporate jargon.
+        - Style: Short paragraphs. Active voice. Punchy sentences.
+        - Goal: Make the reader feel like an insider.
+
+        **FORMATTING:**
+        - Return ONLY a JSON object.
+        - "content": Use HTML (<h2>, <p>, <ul>, <li>, <strong>). 
+        - Start with a strong hook in the first <p>.
+        - Use <h2> for section breaks (keep them edgy).
+        
+        **CONTEXT:**
+        Style: ${styleContext[archetype]}
+        Archetype: ${archetype}
+        
+        JSON Structure: { "content": "HTML string", "excerpt": "1 sentence viral hook", "seo_title": "Clickable Title", "seo_desc": "Meta description", "category": "Tech/Strategy/Production" }`;
 
         try {
             let result;
