@@ -52,7 +52,7 @@
             window.sb = state.client; // Expose global
             
             // Test Connection
-            const { data: schemaTest, error } = await state.client.from('posts').select('*').limit(1);
+            const { data: schemaTest, count, error } = await state.client.from('posts').select('*', { count: 'exact' }).limit(1);
             
             if (error) throw error;
 
