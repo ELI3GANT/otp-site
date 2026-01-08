@@ -158,8 +158,21 @@
                 return;
             }
 
-            // 3. Render Content
+            // 3. Render Content & SEO
             document.title = `${data.title} | OTP Insights`;
+            
+            // Update Meta Description
+            let metaDesc = document.querySelector('meta[name="description"]');
+            if (!metaDesc) {
+                metaDesc = document.createElement('meta');
+                metaDesc.name = 'description';
+                document.head.appendChild(metaDesc);
+            }
+            metaDesc.content = data.excerpt || data.content.substring(0, 150);
+            
+            // Update OG Title
+            let ogTitle = document.querySelector('meta[property="og:title"]');
+            if (ogTitle) ogTitle.content = data.title;
             
             const date = new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
             document.getElementById('postMeta').textContent = `${date} • INSIGHT`;
