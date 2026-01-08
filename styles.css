@@ -2208,12 +2208,55 @@ input:focus, select:focus, textarea:focus {
 }
 
 .pkg-tag {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--accent2);
-  letter-spacing: 0.05em;
-  margin-top: 4px;
+  display: none; /* Hide old text tag */
+}
+
+.pkg-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.pkg-neon-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  transition: all 0.3s ease;
+}
+
+/* Category Specific Colors */
+.pkg-neon-icon.icon-music {
+  stroke: var(--accent2); /* Cyan */
+  filter: drop-shadow(0 0 4px var(--accent2));
+}
+
+.pkg-neon-icon.icon-business {
+  stroke: #7000ff; /* Purple */
+  filter: drop-shadow(0 0 4px #7000ff);
+}
+
+.pkg-neon-icon.icon-content {
+  stroke: #ffffff; /* White/Bright */
+  filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));
+}
+
+.pkg-neon-icon.icon-partner {
+  stroke: #ffd700; /* Gold */
+  filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6));
+}
+
+.package-static:hover .pkg-neon-icon {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 8px currentColor);
 }
 
 .pkg-meta {
