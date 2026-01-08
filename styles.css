@@ -131,10 +131,36 @@
 [data-theme="light"] .package,
 [data-theme="light"] .review-card,
 [data-theme="light"] .result-card {
-  background: var(--bg2);
-  border: 1px solid var(--stroke);
-  box-shadow: var(--shadowSoft);
-  color: var(--text);
+  background: #ffffff;
+  border: 1px solid #e0e0e5;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.02);
+  color: #111111;
+}
+
+[data-theme="light"] .footer {
+  background: #fdfdff;
+  border-top: 1px solid #e0e0e5;
+  color: #111;
+}
+
+[data-theme="light"] .footer-link {
+  color: #555;
+}
+
+[data-theme="light"] .footer-link:hover {
+  color: var(--accent);
+}
+
+[data-theme="light"] .nav-link {
+  color: #1d1d1f;
+}
+
+[data-theme="light"] .nav-link:hover {
+  color: var(--accent);
+}
+
+[data-theme="light"] .nav-link.active {
+  color: var(--accent);
 }
 
 /* How We Work Cards Fix */

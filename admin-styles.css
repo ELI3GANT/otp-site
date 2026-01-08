@@ -53,15 +53,49 @@
 
 @media (max-width: 600px) {
     .admin-header {
-        padding: 15px;
+        padding: 12px 15px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    .admin-header h1 {
+        font-size: 0.95rem;
     }
     .admin-wrap {
-        padding: 15px;
+        padding: 10px 15px 150px;
     }
     input, textarea, select, button {
-        font-size: 16px !important; /* Prevent zoom */
+        font-size: 16px !important; /* Prevent iOS auto-zoom */
+        padding: 14px !important;
     }
-    button {
-        min-height: 56px; /* Touch target */
+    .row {
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+    }
+    /* Fix AI prompt row when stacked */
+    .row #magicBtn {
+        margin-top: 0 !important;
+        height: 60px;
+    }
+    .section-label {
+        font-size: 0.7rem;
+        margin: 25px 0 12px;
+    }
+    .ai-tips {
+        padding: 15px;
+    }
+    /* Fixed broadcast button on mobile */
+    #submitBtn {
+        position: fixed;
+        bottom: 20px;
+        left: 15px;
+        right: 15px;
+        width: calc(100% - 30px);
+        z-index: 99;
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+    }
+    /* Gatekeeper mobile tweaks */
+    .gate-content {
+        max-width: 280px;
     }
 }
