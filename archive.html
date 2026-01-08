@@ -82,7 +82,7 @@
         Explore the vault.
       </p>
 
-      <div class="archive-grid">
+      <div class="archive-grid" style="perspective: 2000px;">
         <!-- Project 1: Vlog -->
         <a href="https://www.youtube.com/watch?v=oFM_roer79A" target="_blank" class="project-card k-hover">
              <img src="https://i.ytimg.com/vi/oFM_roer79A/hqdefault.jpg" alt="2 The Froze Tour Vlog" class="project-img-static" loading="lazy">
@@ -210,17 +210,46 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   
   <script>
-    // Page-specific: Project Reveal Animation
+    // Page-specific: Project Reveal & 3D Parallax
     document.addEventListener("DOMContentLoaded", (event) => {
        if (typeof gsap !== 'undefined') {
+         // 1. Dramatic Intro
          gsap.from('.project-card', {
             opacity: 0,
-            y: 30,
-            stagger: 0.15,
-            duration: 0.8,
-            ease: 'power2.out',
-            delay: 0.2
-          });
+            y: 50,
+            rotationX: 10,
+            stagger: 0.1,
+            duration: 1.2,
+            ease: 'power3.out'
+         });
+
+         // 2. "Gravity Cloud" Effect (Desktop Only)
+         if (window.innerWidth > 768) {
+             const cards = document.querySelectorAll('.project-card');
+             
+             // Assign random "Z-Depth" weight to each card for varied movement
+             cards.forEach(card => {
+                 card.dataset.speed = Math.random() * 0.4 + 0.6; // Speed factor 0.6 - 1.0
+             });
+
+             document.addEventListener('mousemove', (e) => {
+                 const xNorm = (e.clientX / window.innerWidth) - 0.5; // -0.5 to 0.5
+                 const yNorm = (e.clientY / window.innerHeight) - 0.5; 
+
+                 cards.forEach(card => {
+                     const speed = parseFloat(card.dataset.speed);
+                     
+                     gsap.to(card, {
+                         x: xNorm * 50 * speed,       // Move horizontally
+                         y: yNorm * 50 * speed,       // Move vertically
+                         rotationY: xNorm * 10 * speed, // Tilt L/R
+                         rotationX: -yNorm * 10 * speed, // Tilt U/D
+                         duration: 1.5,
+                         ease: 'power2.out'
+                     });
+                 });
+             });
+         }
        }
     });
   </script>
