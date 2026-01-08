@@ -240,24 +240,62 @@ html {
 
 .result-value {
   font-family: 'Syne', sans-serif;
-  font-size: 3.5rem;
+  font-size: 0.9rem;
   font-weight: 800;
   color: #fff;
   line-height: 1;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .result-label {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   font-weight: 600;
+  opacity: 0.7;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.pkg-group-header {
+  grid-column: 1 / -1;
+  padding: 60px 0 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: var(--accent2);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  opacity: 0.8;
+}
+
+.pkg-group-header::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent2), transparent);
+  opacity: 0.2;
+}
+
+@media (max-width: 768px) {
+  .pkg-group-header {
+    padding: 40px 0 10px;
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+  }
 }
 
 @media (max-width: 800px) {
   .results-grid { grid-template-columns: 1fr; }
-  .result-value { font-size: 2.5rem; }
+
 }
 
 
@@ -1324,13 +1362,18 @@ html {
 /* Specific Sizes */
 .section-head h2 {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
-  line-height: 1.1;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
 }
 
 .minihead {
   font-size: 2rem;
-  margin-bottom: 1.5rem; /* Tighter for subsections */
-  display: block; /* Ensure it takes line */
+  margin-bottom: 1.5rem;
+  display: block;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  padding-block: 0.2em; /* Prevents clipping of ascenders/descenders with background-clip */
 }
 
 /* Decorative Underline (Optional, subtle) */
@@ -1379,7 +1422,7 @@ html {
   display: flex;
   flex-direction: column; /* Stack content vertically for grid card */
   align-items: flex-start;
-  gap: 16px;
+  gap: 12px;
   border: 1px solid rgba(255,255,255,0.08);
   background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
   border-radius: 20px;
@@ -1416,7 +1459,8 @@ html {
 .process-card p {
   font-size: 0.95rem;
   color: var(--muted);
-  line-height: 1.5;
+  line-height: 1.6;
+  opacity: 0.85;
 }
 
 .contact-grid {
@@ -4040,6 +4084,34 @@ input:focus, select:focus, textarea:focus {
   margin: 0 auto;
 }
 
+/* Package Group Headers */
+.pkg-group-header {
+  grid-column: 1 / -1;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--accent2);
+  margin: 40px 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  opacity: 0.9;
+}
+
+.pkg-group-header::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent2), transparent);
+  opacity: 0.2;
+}
+
+.pkg-group-header.hidden {
+  display: none !important;
+}
+
 @media (max-width: 900px) {
   .pkg-grid-dynamic {
     grid-template-columns: repeat(2, 1fr);
@@ -4050,16 +4122,17 @@ input:focus, select:focus, textarea:focus {
   .pkg-grid-dynamic {
     grid-template-columns: 1fr;
   }
+  .pkg-group-header {
+    font-size: 1rem;
+    margin-top: 30px;
+  }
 }
 
 /* Hide items when filtered */
 .package-static {
-  display: flex; /* Ensure they are flex by default as per existing style (implied) */
+  display: flex;
   flex-direction: column;
   height: 100%;
-  /* Assuming existing .package-static styles exist in file, if not I rely on previous view. 
-     Based on view_file earlier, .package-static is class used. 
-  */
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 

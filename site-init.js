@@ -100,6 +100,30 @@
 // 7. Site-Wide Initialization
 document.addEventListener('DOMContentLoaded', () => {
     
+    // --- ACTIVE LINK LOGIC ---
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-links a, .nav-drawer a');
+    
+    // Normalize path (handle root / vs index.html)
+    const normalize = (p) => (p === '/' || p.endsWith('index.html')) ? 'index.html' : p;
+    const effectivePath = normalize(currentPath);
+
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        // Simple exact match logic for static pages
+        if (normalize(href) === effectivePath || (effectivePath === 'index.html' && href === 'index.html')) {
+             // For anchors on index (e.g. #work), this might clash if we want scroll spy. 
+             // But request just wants "subtle active-page indicator".
+             // We'll trust the hardcoded HTML .active for index.html anchors for now, 
+             // but ensure cross-page navigation sets it correctly.
+             // Actually, if we are on archive.html, we want "Archive" active.
+             if (!href.startsWith('#')) {
+                 navLinks.forEach(l => l.classList.remove('active'));
+                 link.classList.add('active');
+             }
+        }
+    });
+
     // --- IDENTITY CARD & PHYSICS ---
     const card = document.querySelector('.glass-manifesto');
     if (card) {
@@ -140,10 +164,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const handleOrientation = (e) => {
             const gamma = e.gamma || 0; 
             const beta = e.beta || 0;
-            targetX = Math.min(Math.max(beta / 3, -15), 15) * -1;
-            targetY = Math.min(Math.max(gamma / 3, -15), 15);
-            bgTargetX = 50 + (gamma / 90 * 50);
-            bgTargetY = 50 + (beta / 90 * 50);
+            // REDUCED SENSITIVITY: Divisors increased for calmer feel
+            targetX = Math.min(Math.max(beta / 6, -10), 10) * -1; // Was /3, -15
+            targetY = Math.min(Math.max(gamma / 6, -10), 10);     // Was /3
+            bgTargetX = 50 + (gamma / 90 * 30); // Reduced range
+            bgTargetY = 50 + (beta / 90 * 30);
         };
 
         const enableGyro = async () => {
@@ -164,13 +189,15 @@ document.addEventListener('DOMContentLoaded', () => {
         let startTime = Date.now();
         function update() {
             const elapsed = (Date.now() - startTime) / 1000;
-            const floatY = Math.sin(elapsed * 1.5) * 10;
-            currentX = lerp(currentX, targetX, 0.1);
-            currentY = lerp(currentY, targetY, 0.1);
-            bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.1);
-            bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.1);
-            currentEyeX = lerp(currentEyeX, targetEyeX, 0.1);
-            currentEyeY = lerp(currentEyeY, targetEyeY, 0.1);
+            // CALMER FLOAT: Slower frequency, smaller amplitude
+            const floatY = Math.sin(elapsed * 1.0) * 8; 
+            // SMOOTHER EASING: 0.1 -> 0.05
+            currentX = lerp(currentX, targetX, 0.05);
+            currentY = lerp(currentY, targetY, 0.05);
+            bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.05);
+            bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.05);
+            currentEyeX = lerp(currentEyeX, targetEyeX, 0.05);
+            currentEyeY = lerp(currentEyeY, targetEyeY, 0.05);
 
             card.style.setProperty('--rotateX', `${currentX}deg`);
             card.style.setProperty('--rotateY', `${currentY}deg`);
@@ -317,4 +344,77 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- PACKAGE FILTERING ---
+    const pkgTabs = document.querySelectorAll('.pkg-tab-btn');
+    const pkgItems = document.querySelectorAll('.package-static');
+    const pkgHeaders = document.querySelectorAll('.pkg-group-header');
+
+    if (pkgTabs.length > 0) {
+        pkgTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                pkgTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const category = tab.getAttribute('data-tab');
+
+                pkgItems.forEach(item => {
+                    item.classList.remove('hidden');
+                    if (category === 'all') return;
+
+                    const cat1 = item.getAttribute('data-category');
+                    const cat2 = item.getAttribute('data-category-2');
+                    const cat3 = item.getAttribute('data-category-3');
+
+                    if (cat1 !== category && cat2 !== category && cat3 !== category) {
+                        item.classList.add('hidden');
+                    }
+                });
+
+                pkgHeaders.forEach(header => {
+                    header.classList.remove('hidden');
+                    if (category !== 'all' && header.getAttribute('data-category') !== category) {
+                        header.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    }
+
+    // --- PACKAGE SELECTION (CONTACT PRE-FILL) ---
+    const pkgButtons = document.querySelectorAll('.pkg-select-btn');
+    const contactSection = document.getElementById('contact');
+    const serviceSelect = document.getElementById('service');
+    const messageInput = document.getElementById('message');
+
+    if (pkgButtons.length > 0 && contactSection && serviceSelect && messageInput) {
+        pkgButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pkgName = btn.getAttribute('data-package');
+                
+                let category = 'Custom';
+                if (pkgName.includes('Visualizer') || pkgName.includes('Video') || pkgName.includes('Rollout')) category = 'Music Video';
+                if (pkgName.includes('Identity') || pkgName.includes('Rebrand')) category = 'Brand Identity';
+                if (pkgName.includes('Digital HQ')) category = 'Web & Digital';
+                if (pkgName.includes('Drop') || pkgName.includes('Stack')) category = 'Content & Growth';
+                if (pkgName.includes('Partner')) category = 'Full Retainer';
+
+                const optionExists = Array.from(serviceSelect.options).some(o => o.value === category);
+                serviceSelect.value = optionExists ? category : 'Custom';
+
+                messageInput.value = `I'm interested in the "${pkgName}" package. \n\nHere are some details about my project:`;
+
+                if (typeof gsap !== 'undefined' && typeof ScrollToPlugin !== 'undefined') {
+                    gsap.registerPlugin(ScrollToPlugin);
+                    gsap.to(window, {
+                        duration: 1,
+                        scrollTo: { y: contactSection, offsetY: 80, autoKill: false },
+                        ease: "power2.inOut"
+                    });
+                } else {
+                    contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    }
 });
