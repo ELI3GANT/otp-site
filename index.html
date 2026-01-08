@@ -654,7 +654,8 @@
       </header>
 
       <div class="contact-container">
-        <form action="https://formspree.io/f/mwvprvll" method="POST" class="contact-form" id="contactForm">
+        <!-- Removed Formspree Action to force JS Handling -->
+        <form class="contact-form" id="contactForm">
           <div class="form-row">
             <div class="form-group">
               <label for="name">Name</label>
@@ -852,16 +853,25 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
-    // SUPABASE INIT
-    const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    document.addEventListener('DOMContentLoaded', () => {
+        // SUPABASE INIT
+        const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
+        
+        let supabase;
+        try {
+            if (window.supabase) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            } else {
+                console.error("Supabase library not loaded");
+            }
+        } catch(e) { console.error("Supabase Init Error", e); }
 
-    // FORM HANDLING
-    const contactForm = document.getElementById('contactForm');
-    const formStatus = document.getElementById('formStatus');
-    
-    if (contactForm) {
+        // FORM HANDLING
+        const contactForm = document.getElementById('contactForm');
+        const formStatus = document.getElementById('formStatus');
+        
+        if (contactForm) {
       contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(contactForm);
@@ -928,6 +938,7 @@
         }
       });
     }
+  });
   </script>
 </body>
 </html>
