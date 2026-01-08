@@ -96,7 +96,7 @@ body::before {
 }
 
 html, body {
-  scroll-padding-top: 100px; /* Prevent fixed nav from covering anchors */
+  scroll-padding-top: 0; /* Handled via scroll-margin-top */
   cursor: auto; /* Ensure default cursor */
   margin: 0 !important;
   padding: 0 !important;
@@ -311,8 +311,8 @@ html {
 
 
 .wrap { width: min(1100px, 92vw); margin: 0 auto; max-width: 100%; }
-.section { padding: 96px 0; scroll-margin-top: 80px; }
-.section-tight { padding: 72px 0; scroll-margin-top: 80px; }
+.section { padding: 96px 0; scroll-margin-top: 95px; }
+.section-tight { padding: 72px 0; scroll-margin-top: 95px; }
 
 .kicker {
   margin-top: 14px;
@@ -1635,14 +1635,13 @@ input:focus, select:focus, textarea:focus {
 }
 
 @media (max-width: 768px) {
+  .section, .section-tight { scroll-margin-top: 75px; }
   .nav { padding: 16px 18px; }
   .nav-links { display: none; }
   .nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
   .hero h1 { letter-spacing: 2px; }
   .hero .title { letter-spacing: 2px; }
   .hero { padding-top: 96px; }
-  /* Ensure sections snap slightly UNDER the 70px mobile header (60px) to prevent previous section gaps */
-  .section, .section-tight { scroll-margin-top: 50px; }
 }
 
 /* =============================
