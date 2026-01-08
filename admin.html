@@ -595,17 +595,15 @@
             <div class="input-group">
   
                 <div id="imagePreview"></div>
-  
-                <div style="display: flex; gap: 10px;">
-  
-                    <button type="button" class="btn-secondary" onclick="document.getElementById('fileInput').click()">Upload File</button>
-  
-                    <input type="file" id="fileInput" accept="image/*" style="display: none">
-  
-                    <input type="text" id="urlInput" placeholder="Or Paste URL..." style="border: 1px solid var(--stroke); background: transparent;">
-  
+                <!-- File Details Container -->
+                <div id="fileDetails" style="display: none; padding: 10px; border: 1px dashed var(--stroke); border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #888;">
+                    <span id="fileNameDisplay"></span> <span id="fileSizeDisplay" style="color: var(--accent);"></span>
                 </div>
-  
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('fileInput').click()">Upload File</button>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none">
+                    <input type="text" id="urlInput" placeholder="Or Paste URL..." style="border: 1px solid var(--stroke); background: transparent;">
+                </div>
                 <input type="hidden" name="image_url" id="imageUrl">
   
             </div>
@@ -1039,6 +1037,17 @@
       document.getElementById('fileInput').addEventListener('change', async (e) => {
           const file = e.target.files[0];
           if(!file) return;
+
+          // SHOW PREVIEW DETAILS
+          const fileDetails = document.getElementById('fileDetails');
+          const fileNameDisplay = document.getElementById('fileNameDisplay');
+          const fileSizeDisplay = document.getElementById('fileSizeDisplay');
+          
+          if(fileDetails) {
+              fileDetails.style.display = 'block';
+              fileNameDisplay.textContent = file.name;
+              fileSizeDisplay.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+          }
 
           document.getElementById('uploadStatusDot').classList.add('active');
           aiStatus.textContent = "INITIALIZING UPLOAD...";
