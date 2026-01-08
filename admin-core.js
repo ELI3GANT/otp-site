@@ -65,6 +65,11 @@
             const dot = document.getElementById('dbStatusDot');
             if(dot) dot.classList.add('active');
 
+            // Load persistent key
+            const savedKey = localStorage.getItem('openai_key');
+            const keyEl = document.getElementById('apiKey');
+            if(savedKey && keyEl) keyEl.value = savedKey;
+
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
             updateDiagnostics('db', 'CONNECTION FAILED', '#ff4444');
@@ -183,30 +188,41 @@
 
     // 7. AI NEURAL GENERATOR
     async function triggerAIGenerator() {
-        const promptContext = document.getElementById('aiPrompt').value;
-        const title = document.getElementById('titleInput').value;
-        const key = document.getElementById('apiKey').value;
+        const promptContext = document.getElementById('aiPrompt').value.trim();
+        const title = document.getElementById('titleInput').value.trim();
+        const key = document.getElementById('apiKey').value.trim();
         const archetype = document.getElementById('archetype').value;
         const btn = document.getElementById('magicBtn');
         const status = document.getElementById('aiStatus');
 
-        if(!key || !title || !promptContext) { 
-            if(status) { status.textContent = "ERROR: Key, Title, and Prompt required."; status.style.color = "#ff4444"; }
+        // Granular Validation
+        if(!key) { 
+            if(status) { status.textContent = "ERROR: Missing OpenAI API Key."; status.style.color = "#ff4444"; }
+            return; 
+        }
+        if(!title) { 
+            if(status) { status.textContent = "ERROR: Please enter a Headline first."; status.style.color = "#ff4444"; }
+            document.getElementById('titleInput').focus();
+            return; 
+        }
+        if(!promptContext) { 
+            if(status) { status.textContent = "ERROR: Please enter a Concept / Prompt."; status.style.color = "#ff4444"; }
+            document.getElementById('aiPrompt').focus();
             return; 
         }
 
         btn.textContent = "SYNTHESIZING...";
         btn.disabled = true;
+        if(status) { status.textContent = "CONNECTED. ANALYZING ARCHETYPE..."; status.style.color = "var(--accent2)"; }
         
-        const currentStyleBtn = document.querySelector('.preset-btn.active');
-        const styleName = currentStyleBtn ? currentStyleBtn.dataset.style : 'cinematic';
-
         const styleContext = {
-            cinematic: "High-end production, color grading, and polished sequences.",
-            guerilla: "Fast-paced, raw, authentic, and high-energy.",
-            technical: "Equipment details, camera settings, and precision.",
-            strategy: "ROI, business growth, and brand positioning."
+            technical: "High-end technical breakdown, edgy, deep, filmmaker focus.",
+            launch: "Visual launch, high excitement, hype, fast-paced.",
+            strategy: "ROI, business growth, brand positioning, professional.",
+            'case-study': "Data driven results, methodology, success metrics."
         };
+
+        const styleName = archetype; // Use the select value directly
 
         const systemPrompt = `You are the Lead Creative Director and Head of Strategy for OTP (Only True Perspective). 
         Style: ${styleContext[styleName]}. Archetype: ${archetype}. 
