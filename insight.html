@@ -8,6 +8,7 @@
   <!-- SEO / Social (Dynamic via JS, but defaults here) -->
   <meta property="og:type" content="article" />
   <link rel="stylesheet" href="./styles.css?v=2.6" />
+  <link rel="stylesheet" href="./blog-enhancements.css" />
   <style>body { margin: 0 !important; }</style>
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -108,6 +109,11 @@
       <div id="content" class="blog-container" style="display: none; opacity: 0;">
           <a href="insights.html" class="back-link">← Back to Insights</a>
           
+          <!-- Hero Image -->
+          <div id="heroImageContainer" class="blog-hero-wrap" style="display:none;">
+              <img id="postHeroImage" class="blog-hero-img" src="" alt="Hero Visual">
+          </div>
+
           <header class="blog-header">
               <div id="postMeta" class="blog-meta"></div>
               <h1 id="postTitle" class="blog-title"></h1>
@@ -184,6 +190,15 @@
             const date = new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
             document.getElementById('postMeta').textContent = `${date} • INSIGHT`;
             document.getElementById('postTitle').textContent = data.title;
+
+            // Hero Image
+            if (data.image_url) {
+                const heroImg = document.getElementById('postHeroImage');
+                const heroWrap = document.getElementById('heroImageContainer');
+                heroImg.src = data.image_url;
+                heroImg.alt = data.title;
+                heroWrap.style.display = 'block';
+            }
             
             // Handle simple text newlines for now (in future use a Markdown parser like 'marked')
             // This replaces double newlines with paragraph tags

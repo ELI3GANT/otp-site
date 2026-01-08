@@ -1,0 +1,65 @@
+
+/* BLOG POST ENHANCEMENTS */
+
+/* Hero Image */
+.blog-hero-wrap {
+    width: 100%;
+    margin-bottom: 40px;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.blog-hero-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    aspect-ratio: 16/9;
+}
+
+/* Dope Content Styling */
+.blog-content h2 {
+    font-size: 2rem;
+    margin-top: 60px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.blog-content blockquote {
+    margin: 40px 0;
+    padding: 20px 30px;
+    border-left: 4px solid var(--accent);
+    background: linear-gradient(90deg, rgba(112,0,255,0.1), transparent);
+    font-size: 1.2rem;
+    font-style: italic;
+    color: rgba(255,255,255,0.9);
+}
+
+.blog-content ul {
+    list-style: none;
+    padding: 0;
+}
+
+.blog-content li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 15px;
+    color: rgba(255,255,255,0.8);
+}
+
+.blog-content li::before {
+    content: "➤";
+    position: absolute;
+    left: 0;
+    color: var(--accent2);
+    font-size: 0.8rem;
+    top: 4px;
+}
+
+.blog-content strong {
+    color: #fff;
+    font-weight: 700;
+}
