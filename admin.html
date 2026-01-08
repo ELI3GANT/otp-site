@@ -1138,26 +1138,31 @@
           }
       });
 
-      function unlockChannel() {
+      // --- GLOBAL ADMIN CONTROLLERS ---
+
+      // Expose unlockChannel to window immediately
+      window.unlockChannel = function() {
           const val = document.getElementById('gatePass').value;
           if(val === 'otp2026') {
               document.getElementById('gateCheck').style.display = 'inline';
               showToast("CONNECTION ESTABLISHED");
+              
+              const diagAuth = document.getElementById('diagAuth');
+              if(diagAuth) diagAuth.innerHTML = `<span>GATEKEEPER:</span> <span style="color: var(--success);">UNLOCKED</span>`;
+
               setTimeout(() => {
                   document.getElementById('gate').classList.add('unlocked');
                   document.body.classList.remove('locked');
-                  if(document.getElementById('diagAuth')) {
-                      document.getElementById('diagAuth').innerHTML = `<span>GATEKEEPER:</span> <span style="color: var(--success);">UNLOCKED</span>`;
-                  }
               }, 800);
           } else {
               const err = document.getElementById('gateError');
               err.style.display = 'block';
               document.getElementById('gatePass').value = '';
           }
-      }
+      };
 
-      function copySchema() {
+      // Ensure Copy Schema is also global
+      window.copySchema = function() {
           const sql = `
           alter table posts 
           add column if not exists category text,
@@ -1168,14 +1173,20 @@
           `;
           navigator.clipboard.writeText(sql);
           alert("Neural Schema Copied! Run in Supabase SQL Editor.");
-      }
+      };
 
       // INITIAL CONNECTION CHECK
       async function checkConnection() {
           const diagDB = document.getElementById('diagDB');
+          if(!window.supabase) {
+              console.error("Supabase client not found (window.supabase is undefined).");
+              diagDB.innerHTML = `<span>DATABASE:</span> <span style="color: #ff4444;">CLIENT MISSING</span>`;
+              return;
+          }
+
           try {
               console.log("Pinging Database...");
-              const { count, error } = await supabase.from('posts').select('*', { count: 'exact', head: true });
+              const { count, error } = await window.supabase.from('posts').select('*', { count: 'exact', head: true });
               if(error) throw error;
               
               document.getElementById('dbStatusDot').classList.add('active');
@@ -1183,39 +1194,15 @@
               showToast("SYSTEM ONLINE");
           } catch(e) {
               console.error("Connection Check Failed:", e);
-              diagDB.innerHTML = `<span>DATABASE:</span> <span style="color: #ff4444;">CONNECTION FAILED</span>`;
-              // Retry once
-              setTimeout(() => {
-                  console.log("Retrying connection...");
-                  checkConnection(); 
-              }, 2000);
+              diagDB.innerHTML = `<span>DATABASE:</span> <span style="color: #ff4444;">CONNECTION FAILED: ${e.message}</span>`;
           }
       }
 
-      // Update Gate status
-      function updateGateStatus(status) {
-          const el = document.getElementById('diagAuth');
-          if(el) {
-               if(status === 'unlocked') el.innerHTML = `<span>GATEKEEPER:</span> <span style="color: var(--success);">UNLOCKED</span>`;
-               else el.innerHTML = `<span>GATEKEEPER:</span> <span style="color: #ff4444;">LOCKED</span>`;
-          }
-      }
-      
-      // Hook into existing function
-      const originalUnlock = window.unlockChannel;
-      window.unlockChannel = function() {
-          const val = document.getElementById('gatePass').value;
-          if(val === 'otp2026') {
-             updateGateStatus('unlocked');
-          }
-          // Call original logic (which is defined in global scope effectively)
-          // Actually, since I defined unlockChannel in this same script block, I should just update it there.
-          // But to be safe and clean, I will update the logic where it is defined.
-      }
-
-
-      // Run check on load
-      checkConnection();
+      // Initialize when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+          // Wait a tick for Supabase to be injected by admin-init.js if needed
+          setTimeout(checkConnection, 500);
+      });
     </script>
     <script src="site-init.js"></script>
   </body>
