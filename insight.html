@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loading... | Only True Perspective</title>
+  
+  <!-- SEO / Social (Dynamic via JS, but defaults here) -->
+  <meta property="og:type" content="article" />
+  <link rel="stylesheet" href="./styles.css?v=2.6" />
+  <style>body { margin: 0 !important; }</style>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Syne:wght@700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  
+  <style>
+      /* Blog Specific Styles */
+      .blog-container {
+          max-width: 800px;
+          margin: 160px auto 100px;
+          padding: 0 20px;
+      }
+      .blog-header {
+          text-align: center;
+          margin-bottom: 60px;
+      }
+      .blog-meta {
+          color: var(--muted);
+          font-family: 'Space Grotesk', sans-serif;
+          font-size: 0.9rem;
+          margin-bottom: 20px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+      }
+      .blog-title {
+          font-family: 'Syne', sans-serif;
+          font-size: 3rem;
+          line-height: 1.1;
+          background: linear-gradient(to right, #fff, #aaa);
+          -webkit-background-clip: text;
+          color: transparent;
+          margin-bottom: 30px;
+      }
+      .blog-content {
+          font-family: 'Inter', sans-serif;
+          font-size: 1.1rem;
+          line-height: 1.8;
+          color: #ddd;
+      }
+      .blog-content p { margin-bottom: 24px; }
+      .blog-content h2 { 
+          color: #fff; 
+          margin-top: 50px; 
+          margin-bottom: 20px; 
+          font-family: 'Syne', sans-serif;
+      }
+      .blog-content ul { margin-bottom: 24px; padding-left: 20px; }
+      .blog-content li { margin-bottom: 10px; }
+      
+      .back-link {
+          display: inline-block;
+          margin-bottom: 40px;
+          color: var(--accent);
+          text-decoration: none;
+          font-family: 'Space Grotesk', sans-serif;
+          opacity: 0.7;
+          transition: opacity 0.3s;
+      }
+      .back-link:hover { opacity: 1; }
+
+      /* Loading State */
+      .loader {
+          text-align: center;
+          margin-top: 200px;
+          font-family: 'Space Grotesk', sans-serif;
+          color: var(--accent2);
+          animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+  </style>
+</head>
+<body class="insight-post-page">
+  <div class="bg-fixed"></div>
+
+  <header class="nav nav-split">
+    <a href="index.html" class="nav-logo" aria-label="OTP">
+      <img src="assets/otp_v2.png" alt="OTP" class="otp-mark" />
+    </a>
+    <nav class="nav-links">
+      <a href="index.html" class="k-hover">Work</a>
+      <a href="archive.html" class="k-hover">Archive</a>
+      <a href="insights.html" class="active k-hover">Insights</a>
+      <a href="index.html#contact" class="k-hover">Contact</a>
+    </nav>
+    <button class="nav-toggle"><span></span><span></span><span></span></button>
+  </header>
+
+  <main>
+      <div id="loader" class="loader">DECODING SIGNAL...</div>
+
+      <div id="content" class="blog-container" style="display: none; opacity: 0;">
+          <a href="insights.html" class="back-link">← Back to Insights</a>
+          
+          <header class="blog-header">
+              <div id="postMeta" class="blog-meta"></div>
+              <h1 id="postTitle" class="blog-title"></h1>
+          </header>
+          
+          <article id="postBody" class="blog-content">
+              <!-- Content injected here -->
+          </article>
+      </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-left">
+        <div class="fineprint">© <span id="year"></span> OTP.</div>
+      </div>
+    </div>
+  </footer>
+
+  <canvas id="cursor-canvas"></canvas>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/kursor"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        // 1. Parse URL Parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const slug = urlParams.get('slug');
+
+        if (!slug) {
+            window.location.href = 'insights.html';
+            return;
+        }
+
+        // 2. Fetch from Supabase
+        const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
+        
+        try {
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            const { data, error } = await supabase
+                .from('posts')
+                .select('*')
+                .eq('slug', slug)
+                .single();
+
+            if (error || !data) {
+                document.getElementById('loader').textContent = "TRANSMISSION NOT FOUND.";
+                document.getElementById('loader').style.color = "red";
+                // Optional: Redirect after delay
+                return;
+            }
+
+            // 3. Render Content
+            document.title = `${data.title} | OTP Insights`;
+            
+            const date = new Date(data.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            document.getElementById('postMeta').textContent = `${date} • INSIGHT`;
+            document.getElementById('postTitle').textContent = data.title;
+            
+            // Handle simple text newlines for now (in future use a Markdown parser like 'marked')
+            // This replaces double newlines with paragraph tags
+            const formattedContent = data.content
+                .split('\n\n').map(p => `<p>${p}</p>`).join('')
+                .replace(/\n/g, '<br/>');
+
+            document.getElementById('postBody').innerHTML = formattedContent;
+
+            // 4. Reveal
+            document.getElementById('loader').style.display = 'none';
+            const content = document.getElementById('content');
+            content.style.display = 'block';
+            
+            gsap.to(content, { opacity: 1, duration: 1, ease: 'power2.out' });
+            gsap.from('.blog-title', { y: 20, opacity: 0, duration: 0.8, delay: 0.2 });
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('loader').textContent = "SIGNAL INTERRUPTED.";
+        }
+    });
+
+    // Year update
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+  <script src="stars-v2.js"></script>
+  <!-- Basic Nav Toggle Logic (Inline for simplicity) -->
+  <script>
+      const toggle = document.querySelector('.nav-toggle');
+      if(toggle) {
+          toggle.addEventListener('click', () => {
+             // Redirect to home menu or toggle drawer (simplified for this page)
+             window.location.href = 'insights.html';
+          });
+      }
+      
+      // Init Kursor
+      new kursor({
+          type: 4,
+          color: '#ffffff',
+          removeDefaultCursor: true
+      });
+  </script>
+</body>
+</html>
