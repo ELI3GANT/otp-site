@@ -6,7 +6,8 @@
   <title>OTP Pocket Command</title>
   <link rel="stylesheet" href="./styles.css?v=2.6" />
   <link rel="stylesheet" href="./admin-styles.css" />
-  <script src="./admin-init.js" defer></script>
+  <link rel="stylesheet" href="./admin-styles.css" />
+  <!-- Removed defer/script from here to move to bottom for safety -->
   <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); }</style>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   
@@ -833,16 +834,21 @@
   
     
   
+    <!-- 1. SUPABASE LIBRARY -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script>
-      // 1. SUPABASE INITIALIZATION
-      const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
-      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImexCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-      window.sb = supabase; // EXPOSE TO WINDOW FOR DIAGNOSTICS
-      console.log("Supabase Client Initialized:", window.sb);
+    
+    <!-- 2. SITE INIT (Theme, Global Utils) -->
+    <script src="site-init.js"></script>
 
-      // 2. DOM ELEMENTS
+    <!-- 3. ADMIN CORE (Auth, DB, Logic) -->
+    <script src="admin-core.js"></script>
+
+    <!-- 4. UI SPECIFIC (Uploads, AI - To be migrated or kept if simple) -->
+    <script>
+      // DOM Elements & UI Bindings that rely on Core
+      // We will move the rest of the logic to admin-core.js in the next step or keep it here if it's purely UI
+      // For now, let's keep the UI logic here but remove the conflicting init logic
+      
       const postForm = document.getElementById('postForm');
       const submitBtn = document.getElementById('submitBtn');
       const titleInput = document.getElementById('titleInput');
@@ -852,360 +858,31 @@
       const imageUrlHidden = document.getElementById('imageUrl');
       const aiStatus = document.getElementById('aiStatus');
       const magicBtn = document.getElementById('magicBtn');
-      const toast = document.getElementById('toast');
 
-      // 2.5 AUTO-INIT (Mobile Power: Key & Pass from URL)
-      const urlParams = new URLSearchParams(window.location.search);
-      
-      // Auto-Key
-      if (urlParams.has('key')) {
-          localStorage.setItem('openai_key', urlParams.get('key'));
-      }
-      
-      // Auto-Unlock (Passcode bypass for Mobile Bookmarks)
-      if (urlParams.get('pass') === 'otp2026') {
-          // Unlocks immediately
-          document.body.classList.remove('locked');
-          const gate = document.getElementById('gate');
-          if(gate) gate.classList.add('unlocked');
-          showToast("SECURE CHANNEL OPENED");
-          // Clean URL
-          window.history.replaceState({}, document.title, window.location.pathname);
-      }
-
-      // PRE-FILL API KEY 
-      const savedKey = localStorage.getItem('openai_key');
-      if(savedKey) {
-          document.getElementById('apiKey').value = savedKey;
-      }
-
-      // 3. UTILITIES
-      function showToast(text) {
-          if(text) toast.querySelector('span').textContent = text;
-          toast.classList.add('show');
-          setTimeout(() => toast.classList.remove('show'), 3000);
-      }
-
-      function updateStatusDots() {
-          const dbPill = document.getElementById('dbStatusDot').parentElement;
-          const mediaPill = document.getElementById('uploadStatusDot').parentElement;
-          const aiPill = document.getElementById('aiStatusDot').parentElement;
-
-          if(window.supabase) {
-              document.getElementById('dbStatusDot').classList.add('active');
-              dbPill.classList.add('active');
-          }
-
-          if(imageUrlHidden && imageUrlHidden.value) {
-              document.getElementById('uploadStatusDot').classList.add('active');
-              mediaPill.classList.add('active');
-          } else {
-              document.getElementById('uploadStatusDot').classList.remove('active');
-              mediaPill.classList.remove('active');
-          }
-
-          if(document.getElementById('contentArea').value) {
-              document.getElementById('aiStatusDot').classList.add('active');
-              aiPill.classList.add('active');
-          } else {
-              document.getElementById('aiStatusDot').classList.remove('active');
-              aiPill.classList.remove('active');
-          }
-      }
-      setInterval(updateStatusDots, 1500);
-
-      function generateSlug(title) {
-          const slug = title.toLowerCase()
-              .replace(/[^\w\s-]/g, '')
-              .trim()
-              .replace(/\s+/g, '-')
-              .replace(/-+/g, '-');
-          if(slugInput) slugInput.value = slug;
-      }
-
-      function unlockChannel() {
-          const val = document.getElementById('gatePass').value;
-          if(val === 'otp2026') {
-              document.getElementById('gate').classList.add('unlocked');
-              document.body.classList.remove('locked');
-              showToast("CONNECTION ESTABLISHED");
-          } else {
-              const err = document.getElementById('gateError');
-              err.style.display = 'block';
-              document.getElementById('gatePass').value = '';
-          }
-      }
-
-      // Allow Enter Key for Gatekeeper
-      document.getElementById('gatePass').addEventListener('keypress', (e) => {
-          if(e.key === 'Enter') unlockChannel();
-      });
-
-      // 4. PREVIEW LOGIC
-      urlInput.addEventListener('input', (e) => {
-          const url = e.target.value;
-          if(url && url.startsWith('http')) {
-              imagePreview.style.backgroundImage = `url(${url})`;
-              imagePreview.style.display = 'block';
-              imageUrlHidden.value = url;
-          }
-      });
-
-      // Hook up title input to slug generation
-      titleInput.addEventListener('input', (e) => {
-          generateSlug(e.target.value);
-      });
-
-      // 5. STYLE PRESETS LOGIC
-      let currentStyle = 'cinematic';
-      document.querySelectorAll('.preset-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-              document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-              btn.classList.add('active');
-              currentStyle = btn.dataset.style;
+      // PREVIEW LOGIC
+      if(urlInput) {
+          urlInput.addEventListener('input', (e) => {
+              const url = e.target.value;
+              if(url && url.startsWith('http')) {
+                  imagePreview.style.backgroundImage = `url(${url})`;
+                  imagePreview.style.display = 'block';
+                  imageUrlHidden.value = url;
+              }
           });
-      });
-
-      // 6. AI GHOSTWRITER LOGIC
-      async function triggerAIGenerator() {
-          const promptContext = document.getElementById('aiPrompt').value;
-          const title = titleInput.value;
-          const key = document.getElementById('apiKey').value;
-          const archetype = document.getElementById('archetype').value;
-
-          if(!key || !title || !promptContext) { 
-              aiStatus.textContent = "ERROR: Key, Title, and Prompt required.";
-              aiStatus.style.color = "#ff4444";
-              return; 
-          }
-
-          magicBtn.textContent = "SYNTHESIZING...";
-          magicBtn.disabled = true;
-          document.getElementById('aiStatusDot').classList.add('active');
-          aiStatus.textContent = "TRANSMITTING TO NEURAL CORE...";
-          aiStatus.style.color = "var(--accent2)";
-
-          const styleContext = {
-              cinematic: "High-end production, color grading, and polished sequences.",
-              guerilla: "Fast-paced, raw, authentic, and high-energy.",
-              technical: "Equipment details, camera settings, and precision.",
-              strategy: "ROI, business growth, and brand positioning."
-          };
-
-          const systemPrompt = `You are the Lead Creative Director and Head of Strategy for OTP (Only True Perspective). 
-          Your writing style is edgy, high-end, and deeply technical yet accessible to visionaries. 
-          Style Preset: ${styleContext[currentStyle]}. 
-          Archetype: ${archetype}. 
-          Return ONLY a JSON object: { "content": "A comprehensive, high-value HTML string including structured <h2> and <p> tags. Write a complete, ready-to-publish article.", "excerpt": "One punchy sentence that hooks the reader instantly.", "seo_title": "Optimized SEO Title", "seo_desc": "Engaging Search Description", "category": "Tech, Strategy, or Production" }`;
-          
-          const userPrompt = `Generate a world-class, viral post titled: "${title}". 
-          Context/Focus: ${promptContext}. 
-          Requirements: Use bold industry insights, a visionary tone, and structured HTML layout. Make it a complete, full-length insight.`;
-
-          try {
-              const res = await fetch('https://api.openai.com/v1/chat/completions', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-                  body: JSON.stringify({
-                      model: "gpt-4-turbo",
-                      messages: [
-                          { role: "system", content: systemPrompt },
-                          { role: "user", content: userPrompt }
-                      ],
-                      temperature: 0.8,
-                      response_format: { type: "json_object" }
-                  })
-              });
-
-              const data = await res.json();
-              if(data.error) throw new Error(data.error.message);
-              
-              const result = JSON.parse(data.choices[0].message.content);
-              
-              document.getElementById('contentArea').value = result.content;
-              document.getElementById('excerptInput').value = result.excerpt;
-              document.getElementById('seoTitle').value = result.seo_title;
-              document.getElementById('seoDesc').value = result.seo_desc;
-              document.getElementById('catInput').value = result.category || 'Tech';
-              
-              // NEW: Auto-generate slug from the AI-provided SEO title
-              if (result.seo_title) generateSlug(result.seo_title);
-              
-              aiStatus.textContent = "INTEL RECEIVED. SYNC COMPLETE.";
-              aiStatus.style.color = "var(--success)";
-          } catch(e) {
-              console.error(e);
-              aiStatus.textContent = "SIGNAL LOST: " + e.message;
-              aiStatus.style.color = "#ff4444";
-          } finally {
-              magicBtn.textContent = "⚡ TRANSMIT TO AI (FULL AUTO)";
-              magicBtn.disabled = false;
-              document.getElementById('aiStatusDot').classList.remove('active');
-          }
       }
 
-      magicBtn.addEventListener('click', triggerAIGenerator);
-
-      // 7. FILE UPLOAD LOGIC
-      document.getElementById('fileInput').addEventListener('change', async (e) => {
-          const file = e.target.files[0];
-          if(!file) return;
-
-          // IMMEDIATE LOCAL PREVIEW
-          const reader = new FileReader();
-          reader.onload = function(e) {
-              const previewBox = document.getElementById('imagePreview');
-              const previewImg = document.getElementById('previewImg');
-              previewImg.src = e.target.result;
-              previewBox.style.display = 'block';
-          }
-          reader.readAsDataURL(file);
-
-          // SHOW PREVIEW DETAILS
-          const fileDetails = document.getElementById('fileDetails');
-          const fileNameDisplay = document.getElementById('fileNameDisplay');
-          const fileSizeDisplay = document.getElementById('fileSizeDisplay');
-          
-          if(fileDetails) {
-              fileDetails.style.display = 'block';
-              fileNameDisplay.textContent = file.name;
-              fileSizeDisplay.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-          }
-
-          // UPDATE DIAGNOSTICS
-          document.getElementById('diagUpload').innerHTML = `<span>STORAGE:</span> <span style="color: yellow;">UPLOADING...</span>`;
-          document.getElementById('uploadStatusDot').classList.add('active');
-          aiStatus.textContent = "INITIALIZING SECURE UPLOAD...";
-
-          try {
-              const fileName = `blog/${Date.now()}_${file.name}`;
-              const { data, error } = await window.sb.storage.from('uploads').upload(fileName, file);
-              if (error) throw error;
-
-              const { data: { publicUrl } } = window.sb.storage.from('uploads').getPublicUrl(fileName);
-              
-              imageUrlHidden.value = publicUrl;
-              aiStatus.textContent = "MEDIA UPLOADED & LOCKED.";
-              aiStatus.style.color = "var(--success)";
-              document.getElementById('diagUpload').innerHTML = `<span>STORAGE:</span> <span style="color: var(--success);">UPLOAD COMPLETE</span>`;
-          } catch (err) {
-              console.error(err);
-              aiStatus.textContent = "UPLOAD FAIL: " + err.message; 
-              document.getElementById('diagUpload').innerHTML = `<span>STORAGE:</span> <span style="color: #ff4444;">FAILED: ${err.message}</span>`;
-          } finally {
-              document.getElementById('uploadStatusDot').classList.remove('active');
-          }
-      });
-
-      // 8. FORM SUBMISSION
-      postForm.addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const originalText = submitBtn.textContent;
-          submitBtn.textContent = "BROADCASTING...";
-          submitBtn.disabled = true;
-
-          const formData = new FormData(postForm);
-          const newPost = {
-              title: formData.get('title'),
-              slug: formData.get('slug'),
-              image_url: imageUrlHidden.value || formData.get('image_url'),
-              excerpt: formData.get('excerpt'),
-              content: formData.get('content'),
-              published: document.getElementById('pubToggle').checked,
-              category: formData.get('category'),
-              author: formData.get('author'),
-              seo_title: formData.get('seo_title'),
-              seo_desc: formData.get('seo_desc'),
-              views: parseInt(formData.get('views') || 0),
-              created_at: new Date().toISOString()
-          };
-
-          try {
-              const { error } = await window.sb.from('posts').insert([newPost]);
-              if(error) throw error;
-
-              showToast("POST BROADCAST SUCCESSFULLY");
-              setTimeout(() => {
-                  if(confirm("Post is Live. View Transmission?")) {
-                      window.location.href = `insight.html?slug=${newPost.slug}`;
-                  }
-                  submitBtn.textContent = originalText;
-                  submitBtn.disabled = false;
-              }, 1000);
-          } catch (err) {
-              console.error(err);
-              alert("CRITICAL ERROR: " + err.message);
-              submitBtn.textContent = originalText;
-              submitBtn.disabled = false;
-          }
-      });
-
-      // --- GLOBAL ADMIN CONTROLLERS ---
-
-      // Expose unlockChannel to window immediately
-      window.unlockChannel = function() {
-          const val = document.getElementById('gatePass').value;
-          if(val === 'otp2026') {
-              document.getElementById('gateCheck').style.display = 'inline';
-              showToast("CONNECTION ESTABLISHED");
-              
-              const diagAuth = document.getElementById('diagAuth');
-              if(diagAuth) diagAuth.innerHTML = `<span>GATEKEEPER:</span> <span style="color: var(--success);">UNLOCKED</span>`;
-
-              setTimeout(() => {
-                  document.getElementById('gate').classList.add('unlocked');
-                  document.body.classList.remove('locked');
-              }, 800);
-          } else {
-              const err = document.getElementById('gateError');
-              err.style.display = 'block';
-              document.getElementById('gatePass').value = '';
-          }
-      };
-
-      // Ensure Copy Schema is also global
-      window.copySchema = function() {
-          const sql = `
-          alter table posts 
-          add column if not exists category text,
-          add column if not exists author text default 'OTP Admin',
-          add column if not exists seo_title text,
-          add column if not exists seo_desc text,
-          add column if not exists views int8 default 0;
-          `;
-          navigator.clipboard.writeText(sql);
-          alert("Neural Schema Copied! Run in Supabase SQL Editor.");
-      };
-
-      // INITIAL CONNECTION CHECK
-      async function checkConnection() {
-          const diagDB = document.getElementById('diagDB');
-          if(!window.sb) {
-              console.error("Supabase client not found (window.sb is undefined).");
-              diagDB.innerHTML = `<span>DATABASE:</span> <span style="color: #ff4444;">CLIENT MISSING</span>`;
-              return;
-          }
-
-          try {
-              console.log("Pinging Database...");
-              const { count, error } = await window.sb.from('posts').select('*', { count: 'exact', head: true });
-              if(error) throw error;
-              
-              document.getElementById('dbStatusDot').classList.add('active');
-              diagDB.innerHTML = `<span>DATABASE:</span> <span style="color: var(--success);">CONNECTED (${count} POSTS)</span>`;
-              showToast("SYSTEM ONLINE");
-          } catch(e) {
-              console.error("Connection Check Failed:", e);
-              diagDB.innerHTML = `<span>DATABASE:</span> <span style="color: #ff4444;">CONNECTION FAILED: ${e.message}</span>`;
-          }
+      // SLUG GEN
+      if(titleInput) {
+          titleInput.addEventListener('input', (e) => {
+               const slug = e.target.value.toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .trim()
+                  .replace(/\s+/g, '-')
+                  .replace(/-+/g, '-');
+               if(slugInput) slugInput.value = slug;
+          });
       }
-
-      // Initialize when DOM is ready
-      document.addEventListener('DOMContentLoaded', () => {
-          // Wait a tick for Supabase to be injected by admin-init.js if needed
-          setTimeout(checkConnection, 500);
-      });
     </script>
-    <script src="site-init.js"></script>
+    <script src="admin-init.js"></script>
   </body>
 </html>
