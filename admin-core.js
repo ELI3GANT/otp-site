@@ -161,7 +161,13 @@
         try {
             const fileName = `blog/${Date.now()}_${file.name}`;
             const { data, error } = await state.client.storage.from('uploads').upload(fileName, file);
-            if (error) throw error;
+            
+            if (error) {
+                if (error.message.includes('bucket_id') || error.message.includes('not found')) {
+                    throw new Error("BUCKET MISSING. Click 'COPY DB UPGRADE SQL' below and run it in Supabase.");
+                }
+                throw error;
+            }
 
             const { data: { publicUrl } } = state.client.storage.from('uploads').getPublicUrl(fileName);
             document.getElementById('imageUrl').value = publicUrl;
@@ -170,8 +176,8 @@
             showToast("MEDIA SECURED");
         } catch(err) {
             console.error(err);
-            updateDiagnostics('storage', 'FAILED', '#ff4444');
-            showToast("UPLOAD FAILED");
+            updateDiagnostics('storage', err.message.includes('BUCKET MISSING') ? 'BUCKET MISSING' : 'FAILED', '#ff4444');
+            showToast(err.message.includes('BUCKET MISSING') ? "BUCKET SETUP REQUIRED" : "UPLOAD FAILED");
         }
     }
 
@@ -310,6 +316,10 @@
         const toast = document.getElementById('toast');
         if(!toast) return;
         toast.querySelector('span').textContent = msg;
+        
+        if(window.innerWidth < 768) toast.classList.add('mobile-toast');
+        else toast.classList.remove('mobile-toast');
+
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 3000);
     }

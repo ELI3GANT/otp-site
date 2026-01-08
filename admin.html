@@ -539,6 +539,25 @@
   
   
   
+        #toast.mobile-toast {
+            z-index: 1000 !important;
+            top: 70px !important;
+        }
+
+        @media (max-width: 768px) {
+            .admin-header h1 { font-size: 0.9rem; letter-spacing: 1px; }
+            .btn-broadcast { 
+                position: fixed; 
+                bottom: 20px; 
+                left: 20px; 
+                right: 20px; 
+                width: calc(100% - 40px);
+                z-index: 99;
+                box-shadow: 0 10px 30px rgba(112, 0, 255, 0.4);
+            }
+            .form-container { padding-bottom: 150px; } /* Extra space for sticky btn */
+            .diagnostics-panel { margin-bottom: 100px; }
+        }
     </style>
   
   </head>
