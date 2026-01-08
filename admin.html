@@ -713,10 +713,18 @@
   
                 
   
-                <div class="input-group">
-  
-                    <input type="password" id="apiKey" placeholder="OpenAI API Key (sk-...)" onchange="localStorage.setItem('openai_key', this.value)" style="background: rgba(0,0,0,0.3);">
-  
+                <div class="row" style="gap: 12px; margin-bottom: 12px;">
+                    <div class="input-group" style="flex: 0.4;">
+                        <label>AI Provider</label>
+                        <select id="aiProvider" onchange="window.switchProvider(this.value)" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
+                            <option value="openai">OpenAI (GPT-4o)</option>
+                            <option value="gemini">Google Gemini (1.5 Flash - Free)</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Neural Access Key</label>
+                        <input type="password" id="apiKey" placeholder="OpenAI API Key (sk-...)" onchange="localStorage.setItem('ai_key_' + document.getElementById('aiProvider').value, this.value)" style="background: rgba(0,0,0,0.3);">
+                    </div>
                 </div>
   
                 

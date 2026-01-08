@@ -65,8 +65,16 @@
             const dot = document.getElementById('dbStatusDot');
             if(dot) dot.classList.add('active');
 
-            // Load persistent key
-            const savedKey = localStorage.getItem('openai_key');
+            // Load persistent key & provider
+            const savedProvider = localStorage.getItem('ai_provider') || 'openai';
+            const provEl = document.getElementById('aiProvider');
+            if(provEl) {
+                provEl.value = savedProvider;
+                // Trigger placeholder update
+                provEl.dispatchEvent(new Event('change'));
+            }
+
+            const savedKey = localStorage.getItem('ai_key_' + savedProvider);
             const keyEl = document.getElementById('apiKey');
             if(savedKey && keyEl) keyEl.value = savedKey;
 
@@ -187,7 +195,9 @@
     }
 
     // 7. AI NEURAL GENERATOR
+    // 7. AI NEURAL GENERATOR
     async function triggerAIGenerator() {
+        const provider = document.getElementById('aiProvider').value;
         const promptContext = document.getElementById('aiPrompt').value.trim();
         const title = document.getElementById('titleInput').value.trim();
         const key = document.getElementById('apiKey').value.trim();
@@ -197,7 +207,7 @@
 
         // Granular Validation
         if(!key) { 
-            if(status) { status.textContent = "ERROR: Missing OpenAI API Key."; status.style.color = "#ff4444"; }
+            if(status) { status.textContent = `ERROR: Missing ${provider === 'gemini' ? 'Gemini' : 'OpenAI'} API Key.`; status.style.color = "#ff4444"; }
             return; 
         }
         if(!title) { 
@@ -213,7 +223,7 @@
 
         btn.textContent = "SYNTHESIZING...";
         btn.disabled = true;
-        if(status) { status.textContent = "CONNECTED. ANALYZING ARCHETYPE..."; status.style.color = "var(--accent2)"; }
+        if(status) { status.textContent = `CONNECTED TO ${provider.toUpperCase()}. GENERATING...`; status.style.color = "var(--accent2)"; }
         
         const styleContext = {
             technical: "High-end technical breakdown, edgy, deep, filmmaker focus.",
@@ -222,30 +232,17 @@
             'case-study': "Data driven results, methodology, success metrics."
         };
 
-        const styleName = archetype; // Use the select value directly
-
         const systemPrompt = `You are the Lead Creative Director and Head of Strategy for OTP (Only True Perspective). 
-        Style: ${styleContext[styleName]}. Archetype: ${archetype}. 
+        Style: ${styleContext[archetype]}. Archetype: ${archetype}. 
         Return ONLY a JSON object: { "content": "HTML string with h2/p tags", "excerpt": "1 sentence hook", "seo_title": "SEO Title", "seo_desc": "Engaging description", "category": "Tech/Strategy/Production" }`;
 
         try {
-            const res = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-                body: JSON.stringify({
-                    model: "gpt-4o",
-                    messages: [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: `Generate post: "${title}". Focus: ${promptContext}` }
-                    ],
-                    temperature: 0.8,
-                    response_format: { type: "json_object" }
-                })
-            });
-
-            const data = await res.json();
-            if(data.error) throw new Error(data.error.message);
-            const result = JSON.parse(data.choices[0].message.content);
+            let result;
+            if (provider === 'openai') {
+                result = await fetchOpenAI(key, title, promptContext, systemPrompt);
+            } else {
+                result = await fetchGemini(key, title, promptContext, systemPrompt);
+            }
 
             document.getElementById('contentArea').value = result.content;
             document.getElementById('excerptInput').value = result.excerpt;
@@ -256,14 +253,61 @@
             if(status) { status.textContent = "INTEL RECEIVED. SYNC COMPLETE."; status.style.color = "var(--success)"; }
         } catch(e) {
             console.error(e);
-            if(status) { status.textContent = "SIGNAL LOST: " + e.message; status.style.color = "#ff4444"; }
+            let msg = e.message;
+            if(msg.includes('quota') || msg.includes('429')) msg = "QUOTA EXCEEDED. Try the other provider!";
+            if(status) { status.textContent = "SIGNAL LOST: " + msg; status.style.color = "#ff4444"; }
         } finally {
             btn.textContent = "⚡ TRANSMIT TO AI";
             btn.disabled = false;
         }
     }
 
+    async function fetchOpenAI(key, title, prompt, system) {
+        const res = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+            body: JSON.stringify({
+                model: "gpt-4o",
+                messages: [{ role: "system", content: system }, { role: "user", content: `Generate post: "${title}". Focus: ${prompt}` }],
+                temperature: 0.8,
+                response_format: { type: "json_object" }
+            })
+        });
+        const data = await res.json();
+        if(data.error) throw new Error(data.error.message);
+        return JSON.parse(data.choices[0].message.content);
+    }
+
+    async function fetchGemini(key, title, prompt, system) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `${system}\n\nUser Input: Generate post titled "${title}" based on prompt: "${prompt}"` }] }],
+                generationConfig: { responseMimeType: "application/json" }
+            })
+        });
+        const data = await res.json();
+        if(data.error) throw new Error(data.error.message);
+        const text = data.candidates[0].content.parts[0].text;
+        return JSON.parse(text);
+    }
+
     // 8. EVENT LISTENERS & BINDINGS
+    window.switchProvider = function(val) {
+        localStorage.setItem('ai_provider', val);
+        const keyEl = document.getElementById('apiKey');
+        if(!keyEl) return;
+
+        // Update Placeholder
+        keyEl.placeholder = (val === 'gemini') ? 'Gemini Key (AI Studio)' : 'OpenAI Key (sk-...)';
+        
+        // Load existing key for this provider
+        const saved = localStorage.getItem('ai_key_' + val) || '';
+        keyEl.value = saved;
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         init();
         setupTheme();
