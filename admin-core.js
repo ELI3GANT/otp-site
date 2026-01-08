@@ -286,7 +286,7 @@
         const model = document.getElementById('geminiModel').value;
         const payload = {
             contents: [{ parts: [{ text: `${system}\n\nUser Input: Generate post titled "${title}" based on prompt: "${prompt}"` }] }],
-            generationConfig: { responseMimeType: "application/json" }
+            generationConfig: { response_mime_type: "application/json" }
         };
 
         // Try v1 first (Stable)
@@ -307,11 +307,28 @@
         }
 
         const data = await res.json();
+        
+        // Handle Payload Errors (Unknown fields etc) -> Retry without Config
+        if (data.error && data.error.message.includes('Invalid JSON payload')) {
+            console.warn("⚠️ Gemini Payload Error. Retrying in 'Safe Mode' (No Config)...");
+            const safeRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: payload.contents }) // Strip Config
+            });
+            const safeData = await safeRes.json();
+            if(safeData.error) throw new Error(safeData.error.message);
+            const text = safeData.candidates[0].content.parts[0].text;
+            return JSON.parse(text.replace(/```json|```/g, '').trim()); // Manual strip of markdown
+        }
+
         if(data.error) throw new Error(data.error.message);
         if(!data.candidates || !data.candidates[0]) throw new Error("No candidates returned from Gemini.");
         
         const text = data.candidates[0].content.parts[0].text;
-        return JSON.parse(text);
+        // Strip markdown if present
+        const cleaned = text.replace(/```json|```/g, '').trim();
+        return JSON.parse(cleaned);
     }
 
     // 8. EVENT LISTENERS & BINDINGS
