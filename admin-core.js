@@ -233,7 +233,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
                 body: JSON.stringify({
-                    model: "gpt-4-turbo",
+                    model: "gpt-4o",
                     messages: [
                         { role: "system", content: systemPrompt },
                         { role: "user", content: `Generate post: "${title}". Focus: ${promptContext}` }
