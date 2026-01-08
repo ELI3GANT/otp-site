@@ -138,6 +138,7 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/kursor"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="site-config.js"></script>
   
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
@@ -151,8 +152,8 @@
         }
 
         // 2. Fetch from Supabase
-        const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
+        const SUPABASE_URL = window.OTP_CONFIG.supabaseUrl;
+        const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
         
         try {
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
