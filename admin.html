@@ -594,7 +594,9 @@
   
             <div class="input-group">
   
-                <div id="imagePreview"></div>
+                <div id="imagePreview" style="display:none; border-radius: 12px; overflow: hidden; border: 1px solid var(--stroke); margin-bottom: 15px;">
+                    <img id="previewImg" src="" alt="Preview" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">
+                </div>
                 <!-- File Details Container -->
                 <div id="fileDetails" style="display: none; padding: 10px; border: 1px dashed var(--stroke); border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #888;">
                     <span id="fileNameDisplay"></span> <span id="fileSizeDisplay" style="color: var(--accent);"></span>
@@ -1038,6 +1040,16 @@
           const file = e.target.files[0];
           if(!file) return;
 
+          // IMMEDIATE LOCAL PREVIEW
+          const reader = new FileReader();
+          reader.onload = function(e) {
+              const previewBox = document.getElementById('imagePreview');
+              const previewImg = document.getElementById('previewImg');
+              previewImg.src = e.target.result;
+              previewBox.style.display = 'block';
+          }
+          reader.readAsDataURL(file);
+
           // SHOW PREVIEW DETAILS
           const fileDetails = document.getElementById('fileDetails');
           const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -1050,7 +1062,7 @@
           }
 
           document.getElementById('uploadStatusDot').classList.add('active');
-          aiStatus.textContent = "INITIALIZING UPLOAD...";
+          aiStatus.textContent = "INITIALIZING SECURE UPLOAD...";
 
           try {
               const fileName = `blog/${Date.now()}_${file.name}`;
@@ -1060,12 +1072,12 @@
               const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
               
               imageUrlHidden.value = publicUrl;
-              imagePreview.style.backgroundImage = `url(${publicUrl})`;
-              imagePreview.style.display = 'block';
-              aiStatus.textContent = "MEDIA LOCKED.";
+              aiStatus.textContent = "MEDIA UPLOADED & LOCKED.";
               aiStatus.style.color = "var(--success)";
           } catch (err) {
-              alert("UPLOAD FAILED: " + err.message);
+              console.error(err);
+              aiStatus.textContent = "UPLOAD FAIL: " + err.message; 
+              // Note: We don't alert here to avoid blocking UI, but we log it.
           } finally {
               document.getElementById('uploadStatusDot').classList.remove('active');
           }
@@ -1142,6 +1154,26 @@
           navigator.clipboard.writeText(sql);
           alert("Neural Schema Copied! Run in Supabase SQL Editor.");
       }
+
+      // INITIAL CONNECTION CHECK
+      async function checkConnection() {
+          try {
+              const { count, error } = await supabase.from('posts').select('*', { count: 'exact', head: true });
+              if(error) throw error;
+              document.getElementById('dbStatusDot').classList.add('active');
+              showToast("SYSTEM ONLINE");
+          } catch(e) {
+              console.error("Connection Check Failed:", e);
+              // Retry once
+              setTimeout(() => {
+                  console.log("Retrying connection...");
+                  checkConnection(); 
+              }, 2000);
+          }
+      }
+
+      // Run check on load
+      checkConnection();
     </script>
     <script src="site-init.js"></script>
   </body>
