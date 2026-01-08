@@ -839,6 +839,8 @@
       const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
       const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImexCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      window.sb = supabase; // EXPOSE TO WINDOW FOR DIAGNOSTICS
+      console.log("Supabase Client Initialized:", window.sb);
 
       // 2. DOM ELEMENTS
       const postForm = document.getElementById('postForm');
@@ -1077,10 +1079,10 @@
 
           try {
               const fileName = `blog/${Date.now()}_${file.name}`;
-              const { data, error } = await supabase.storage.from('uploads').upload(fileName, file);
+              const { data, error } = await window.sb.storage.from('uploads').upload(fileName, file);
               if (error) throw error;
 
-              const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
+              const { data: { publicUrl } } = window.sb.storage.from('uploads').getPublicUrl(fileName);
               
               imageUrlHidden.value = publicUrl;
               aiStatus.textContent = "MEDIA UPLOADED & LOCKED.";
@@ -1119,7 +1121,7 @@
           };
 
           try {
-              const { error } = await supabase.from('posts').insert([newPost]);
+              const { error } = await window.sb.from('posts').insert([newPost]);
               if(error) throw error;
 
               showToast("POST BROADCAST SUCCESSFULLY");
@@ -1178,15 +1180,15 @@
       // INITIAL CONNECTION CHECK
       async function checkConnection() {
           const diagDB = document.getElementById('diagDB');
-          if(!window.supabase) {
-              console.error("Supabase client not found (window.supabase is undefined).");
+          if(!window.sb) {
+              console.error("Supabase client not found (window.sb is undefined).");
               diagDB.innerHTML = `<span>DATABASE:</span> <span style="color: #ff4444;">CLIENT MISSING</span>`;
               return;
           }
 
           try {
               console.log("Pinging Database...");
-              const { count, error } = await window.supabase.from('posts').select('*', { count: 'exact', head: true });
+              const { count, error } = await window.sb.from('posts').select('*', { count: 'exact', head: true });
               if(error) throw error;
               
               document.getElementById('dbStatusDot').classList.add('active');
