@@ -284,17 +284,32 @@
 
     async function fetchGemini(key, title, prompt, system) {
         const model = document.getElementById('geminiModel').value;
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-        const res = await fetch(url, {
+        const payload = {
+            contents: [{ parts: [{ text: `${system}\n\nUser Input: Generate post titled "${title}" based on prompt: "${prompt}"` }] }],
+            generationConfig: { responseMimeType: "application/json" }
+        };
+
+        // Try v1 first (Stable)
+        let res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${key}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: `${system}\n\nUser Input: Generate post titled "${title}" based on prompt: "${prompt}"` }] }],
-                generationConfig: { responseMimeType: "application/json" }
-            })
+            body: JSON.stringify(payload)
         });
+
+        // Fallback to v1beta if v1 fails to find model
+        if (res.status === 404) {
+             console.warn(`🔄 Gemini v1 (404). Retrying with v1beta for model: ${model}`);
+             res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
         const data = await res.json();
         if(data.error) throw new Error(data.error.message);
+        if(!data.candidates || !data.candidates[0]) throw new Error("No candidates returned from Gemini.");
+        
         const text = data.candidates[0].content.parts[0].text;
         return JSON.parse(text);
     }
