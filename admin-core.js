@@ -637,9 +637,12 @@ insert into storage.buckets (id, name, public)
 values ('uploads', 'uploads', true)
 on conflict (id) do nothing;
 
--- 5. PUBLIC ACCESS POLICIES
-create policy "Public Access" on storage.objects for select using ( bucket_id = 'uploads' );
-create policy "Public Insert" on storage.objects for insert with check ( bucket_id = 'uploads' );
+-- 5. PUBLIC ACCESS POLICIES (Idempotent)
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+DROP POLICY IF EXISTS "Public Insert" ON storage.objects;
+
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING ( bucket_id = 'uploads' );
+CREATE POLICY "Public Insert" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'uploads' );
         `;
         navigator.clipboard.writeText(sql);
         alert("SQL Logic Copied to Clipboard. Run in Supabase Dashboard.");
