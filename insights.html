@@ -166,14 +166,61 @@
 
   <canvas id="cursor-canvas"></canvas>
 
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/kursor"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   
   <script>
-    // Page-specific: Insight Card Spotlight Effect
-    document.addEventListener("DOMContentLoaded", () => {
-        // Spotlight Effect
+    // Page-specific: Fetch Insights & Spotlight Effect
+    document.addEventListener("DOMContentLoaded", async () => {
+        
+        // 1. SUPABASE FETCH
+        const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
+        
+        try {
+            if (window.supabase) {
+                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                
+                // Fetch published posts
+                const { data: posts, error } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .eq('published', true)
+                    .order('created_at', { ascending: false });
+
+                if (!error && posts && posts.length > 0) {
+                    const grid = document.querySelector('.insights-grid');
+                    
+                    // Allow mixing static and dynamic, or replace. 
+                    // Let's PREPEND dynamic posts so they appear first.
+                    // If you want ONLY dynamic, uncomment: grid.innerHTML = '';
+                    
+                    posts.forEach(post => {
+                        const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                        
+                        // Create Card HTML
+                        const card = document.createElement('article');
+                        card.className = 'insight-card k-hover';
+                        card.innerHTML = `
+                            <div class="insight-date">${date} • Insight</div>
+                            <h2>${post.title}</h2>
+                            <p>${post.excerpt || post.content.substring(0, 100) + '...'}</p>
+                            <a href="insight.html?slug=${post.slug}" class="read-more">Read Insight</a>
+                        `;
+                        
+                        // Insert at the top
+                        grid.prepend(card);
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Error fetching insights:", e);
+        }
+
+
+        // 2. Spotlight Effect (Re-run for new elements)
         const cards = document.querySelectorAll('.insight-card');
         if (cards.length > 0) {
             cards.forEach(card => {
@@ -190,6 +237,7 @@
         // Immediate visibility ensure
         if (typeof gsap !== 'undefined') {
             gsap.set('.insight-card', { opacity: 1, y: 0 });
+            gsap.from('.insight-card', { opacity: 0, y: 20, stagger: 0.1, duration: 0.8 });
         }
     });
   </script>
