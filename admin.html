@@ -718,7 +718,8 @@
                         <label>AI Provider</label>
                         <select id="aiProvider" onchange="window.switchProvider(this.value); document.getElementById('geminiModelGroup').style.display = this.value === 'gemini' ? 'block' : 'none';" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
                             <option value="openai">OpenAI (GPT-4o)</option>
-                            <option value="gemini">Google Gemini (Free)</option>
+                            <option value="gemini">Google Gemini (Free Tier)</option>
+                            <option value="groq">Groq (Llama 3 - Mega Free)</option>
                         </select>
                     </div>
                     <div class="input-group" style="flex: 1;">
@@ -734,6 +735,17 @@
                             <option value="gemini-2.0-flash">Gemini 2.0 Flash (Next Gen / Free Preview)</option>
                             <option value="gemini-1.5-pro">Gemini 1.5 Pro (Smarter / Student/Pro Tier)</option>
                             <option value="gemini-1.5-flash">Gemini 1.5 Flash (Stable Free)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="groqModelGroup" style="display: none; margin-bottom: 12px;">
+                    <div class="input-group">
+                        <label>Groq Model Variant</label>
+                        <select id="groqModel" onchange="localStorage.setItem('groq_model', this.value)" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
+                            <option value="llama3-70b-8192">Llama 3 70B (Pro Intelligence)</option>
+                            <option value="llama3-8b-8192">Llama 3 8B (Lightning Fast)</option>
+                            <option value="mixtral-8x7b-32768">Mixtral 8x7B (Deep Context)</option>
                         </select>
                     </div>
                 </div>

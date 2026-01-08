@@ -82,6 +82,10 @@
             const gemModEl = document.getElementById('geminiModel');
             if(savedGemModel && gemModEl) gemModEl.value = savedGemModel;
 
+            const savedGroqModel = localStorage.getItem('groq_model');
+            const groqModEl = document.getElementById('groqModel');
+            if(savedGroqModel && groqModEl) groqModEl.value = savedGroqModel;
+
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
             updateDiagnostics('db', 'CONNECTION FAILED', '#ff4444');
@@ -244,6 +248,8 @@
             let result;
             if (provider === 'openai') {
                 result = await fetchOpenAI(key, title, promptContext, systemPrompt);
+            } else if (provider === 'groq') {
+                result = await fetchGroq(key, title, promptContext, systemPrompt);
             } else {
                 result = await fetchGemini(key, title, promptContext, systemPrompt);
             }
@@ -331,17 +337,42 @@
         return JSON.parse(cleaned);
     }
 
+    async function fetchGroq(key, title, prompt, system) {
+        const model = document.getElementById('groqModel').value;
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+            body: JSON.stringify({
+                model: model,
+                messages: [{ role: "system", content: system }, { role: "user", content: `Generate post: "${title}". Focus: ${prompt}` }],
+                temperature: 0.8,
+                response_format: { type: "json_object" }
+            })
+        });
+        const data = await res.json();
+        if(data.error) throw new Error(data.error.message);
+        return JSON.parse(data.choices[0].message.content);
+    }
+    
     // 8. EVENT LISTENERS & BINDINGS
     window.switchProvider = function(val) {
         localStorage.setItem('ai_provider', val);
         const keyEl = document.getElementById('apiKey');
         const geminiGroup = document.getElementById('geminiModelGroup');
+        const groqGroup = document.getElementById('groqModelGroup');
+        
         if(!keyEl) return;
 
         if(geminiGroup) geminiGroup.style.display = (val === 'gemini') ? 'block' : 'none';
+        if(groqGroup) groqGroup.style.display = (val === 'groq') ? 'block' : 'none';
 
         // Update Placeholder
-        keyEl.placeholder = (val === 'gemini') ? 'Gemini Key (AI Studio)' : 'OpenAI Key (sk-...)';
+        const placeholders = {
+            openai: 'OpenAI Key (sk-...)',
+            gemini: 'Gemini Key (AI Studio)',
+            groq: 'Groq Key (gsk_...)'
+        };
+        keyEl.placeholder = placeholders[val] || 'API Key...';
         
         // Load existing key for this provider
         const saved = localStorage.getItem('ai_key_' + val) || '';
