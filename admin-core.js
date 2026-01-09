@@ -836,6 +836,9 @@ INSERT INTO posts (title, slug, excerpt, content, published, category, image_url
   true, 'Music Video', 'https://img.youtube.com/vi/7Zx5fRPmrCU/maxresdefault.jpg', 1240
 )
 ON CONFLICT (slug) DO NOTHING;
+
+-- 7. CLEANUP TRASH (Remove short/empty tests)
+DELETE FROM posts WHERE length(content) < 50;
         `;
         navigator.clipboard.writeText(sql);
         alert("SQL Logic Copied to Clipboard. Run in Supabase Dashboard.");
