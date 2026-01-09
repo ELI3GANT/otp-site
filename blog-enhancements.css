@@ -30,13 +30,13 @@
 /* Dope Content Styling */
 .blog-content h2 {
     font-size: 2.2rem;
-    line-height: 1.3;
+    line-height: 1.4; /* Slightly increased for better rendering */
     margin-top: 70px;
     margin-bottom: 30px;
     padding-bottom: 10px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     color: #fff;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em; /* Adjusted to be less tight */
 }
 
 .blog-content h3 {

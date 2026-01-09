@@ -333,7 +333,7 @@
 
 /* RESPONSIVE TYPOGRAPHY (Global & Light Mode) */
 h1, h2, h3 {
-  line-height: 1.2; /* Tighten up headings slightly less to prevent clipping */
+  line-height: 1.3; /* Increased slightly to prevent clipping while maintaining a tight look */
 }
 
 [data-theme="light"] h1, 

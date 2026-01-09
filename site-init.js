@@ -190,6 +190,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- THEME TOGGLE UI ---
     (function injectThemeToggle() {
+        if (window.OTP_THEME_TOGGLE_INJECTED) return;
+        window.OTP_THEME_TOGGLE_INJECTED = true;
+
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         const currentTheme = isLight ? 'light' : 'dark';
         

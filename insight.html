@@ -38,10 +38,11 @@
       .blog-title {
           font-family: 'Syne', sans-serif;
           font-size: 3rem;
-          line-height: 1.4;
+          line-height: 1.4; /* Generous line-height to prevent 'g' clipping */
+          letter-spacing: -0.01em;
           color: var(--text);
           margin-bottom: 30px;
-          padding-bottom: 0.2em;
+          padding-bottom: 0.4em; /* Increased to prevent clipping */
           overflow: visible;
       }
       .blog-content {
@@ -56,8 +57,9 @@
           margin-top: 50px; 
           margin-bottom: 20px; 
           font-family: 'Syne', sans-serif;
-          line-height: 1.3;
-          padding-bottom: 0.1em;
+          line-height: 1.4; /* Increased to fix 'g' issues */
+          letter-spacing: -0.01em;
+          padding-bottom: 0.4em; /* Increased to prevent clipping of descenders */
       }
       .blog-content ul { margin-bottom: 24px; padding-left: 20px; }
       .blog-content li { margin-bottom: 10px; }
@@ -259,7 +261,6 @@
     // Year update
   </script>
 
-  <script src="site-init.js"></script>
   <script src="stars-v2.js"></script>
 </body>
 </html>
