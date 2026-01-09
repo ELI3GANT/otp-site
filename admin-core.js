@@ -679,16 +679,27 @@
 
         document.addEventListener('mousemove', (e) => {
             if (activeTarget && tooltip.style.display === 'block') {
-                const x = e.clientX + 15;
-                const y = e.clientY + 15;
+                const offset = 20; // Increased offset
+                let x = e.clientX + offset;
+                let y = e.clientY + offset;
                 
                 // Boundary check (prevent going off screen)
                 const rect = tooltip.getBoundingClientRect();
-                const finalX = (x + rect.width > window.innerWidth) ? e.clientX - rect.width - 10 : x;
-                const finalY = (y + rect.height > window.innerHeight) ? e.clientY - rect.height - 10 : y;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
 
-                tooltip.style.left = `${finalX}px`;
-                tooltip.style.top = `${finalY}px`;
+                // Flip horizontally if too close to right edge
+                if (x + rect.width > viewportWidth) {
+                    x = e.clientX - rect.width - offset;
+                }
+
+                // Flip vertically if too close to bottom edge
+                if (y + rect.height > viewportHeight) {
+                    y = e.clientY - rect.height - offset;
+                }
+
+                tooltip.style.left = `${x}px`;
+                tooltip.style.top = `${y}px`;
             }
         });
 
