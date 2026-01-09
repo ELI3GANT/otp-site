@@ -805,7 +805,21 @@ DROP POLICY IF EXISTS "Public Insert" ON storage.objects;
 CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING ( bucket_id = 'uploads' );
 CREATE POLICY "Public Insert" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'uploads' );
 
--- 6. INSERT MISSING CONTENT (Idempotent)
+-- 6. SMART DEDUPLICATION (Keep longest content)
+WITH duplicates AS (
+  SELECT id,
+         ROW_NUMBER() OVER (
+           PARTITION BY slug 
+           ORDER BY length(content) DESC, created_at DESC
+         ) as rank
+  FROM posts
+)
+DELETE FROM posts WHERE id IN (SELECT id FROM duplicates WHERE rank > 1);
+
+-- 7. PURGE STUBS
+DELETE FROM posts WHERE length(content) < 50;
+
+-- 8. INSERT/UPDATE CONTENT
 INSERT INTO posts (title, slug, excerpt, content, published, category, image_url, views) VALUES
 (
   'The Architecture of a Visual Drop',
@@ -836,9 +850,6 @@ INSERT INTO posts (title, slug, excerpt, content, published, category, image_url
   true, 'Music Video', 'https://img.youtube.com/vi/7Zx5fRPmrCU/maxresdefault.jpg', 1240
 )
 ON CONFLICT (slug) DO NOTHING;
-
--- 7. CLEANUP TRASH (Remove short/empty tests)
-DELETE FROM posts WHERE length(content) < 50;
         `;
         navigator.clipboard.writeText(sql);
         alert("SQL Logic Copied to Clipboard. Run in Supabase Dashboard.");

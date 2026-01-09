@@ -1,20 +1,39 @@
--- 1. PURGE TRASH CONTENT (Length check)
--- Deletes any post with content shorter than 50 characters
+
+-- 1. SMART DEDUPLICATION (The "Highlander" Logic)
+-- Keeps the version of the post with the longest content. Deletes duplicates/stubs.
+WITH duplicates AS (
+  SELECT id,
+         ROW_NUMBER() OVER (
+           PARTITION BY slug 
+           ORDER BY length(content) DESC, created_at DESC
+         ) as rank
+  FROM posts
+)
+DELETE FROM posts
+WHERE id IN (SELECT id FROM duplicates WHERE rank > 1);
+
+-- 2. PURGE LOW QUALITY STUBS
+-- Deletes any remaining unique posts that are still too short (under 50 chars)
 DELETE FROM posts WHERE length(content) < 50;
 
--- 2. FIX MISSING COLUMNS
+-- 3. FIX MISSING COLUMNS
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS author text default 'OTP Admin';
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_title text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_desc text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS category text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS views int8 default 0;
 
--- 3. PERMISSIONS
+-- 4. PERMISSIONS & STORAGE
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow All" ON posts;
 CREATE POLICY "Allow All" ON posts FOR ALL USING (true) WITH CHECK (true);
 
--- 4. INSERT HIGH-QUALITY CONTENT (Idempotent)
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+DROP POLICY IF EXISTS "Public Insert" ON storage.objects;
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING ( bucket_id = 'uploads' );
+CREATE POLICY "Public Insert" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'uploads' );
+
+-- 5. ENSURE CONTENT EXISTS (Idempotent Insert)
 INSERT INTO posts (title, slug, excerpt, content, published, category, image_url, views) VALUES
 (
   'The Architecture of a Visual Drop',
@@ -33,18 +52,20 @@ INSERT INTO posts (title, slug, excerpt, content, published, category, image_url
 (
   'Turning Vision into Strategy',
   'turning-vision-into-strategy',
-  'A look into the Phase 01 process of OTP. How alignment in the pre-production phase saves 10 hours of editing.',
-  '<p class="lead">You can have the best camera in the world, but if you don''t know <em>what</em> you''re shooting, you''re just capturing noise.</p><div class="stat-box"><span class="stat-number">80%</span><span class="stat-label">of the edit happens in pre-production</span></div><h2>The Moodboard Trap</h2><p>Clients often send us 50 images that look "cool." But cool isn''t a strategy. We filter those down to 3 key pillars: Tone, Texture, and Pacing.</p>',
+  'A look into the Phase 01 process of OTP.',
+  '<p class="lead">You can have the best camera in the world, but if you don''t know what you''re shooting, it''s noise.</p>',
   true, 'Process', 'https://images.unsplash.com/photo-1460925895917-afdab827c52f', 530
 ),
 (
   'Spooky: Luh Ooky',
   'spooky-luh-ooky',
-  'Visuals from the Morbid Musik project. Showcasing the best of RI underground talent.',
-  '<p class="lead">Fresh off the release of his latest project <strong>Morbid Musik</strong>, RIs own <strong>Spooky</strong> delivers the visual for "Luh Ooky".</p><div class="media-container"><iframe src="https://www.youtube.com/embed/7Zx5fRPmrCU" frameborder="0" allowfullscreen></iframe></div><h2>The Morbid Aesthetic</h2><p>The <em>Morbid Musik</em> era is defined by its refusal to compromise. High contrast and kinetic pacing.</p><blockquote>"It is not just about the music. It is about the movement."</blockquote>',
+  'Visuals from the Morbid Musik project.',
+  '<p class="lead">Fresh off the release of his latest project.</p>',
   true, 'Music Video', 'https://img.youtube.com/vi/7Zx5fRPmrCU/maxresdefault.jpg', 1240
 )
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE 
+SET content = EXCLUDED.content 
+WHERE length(posts.content) < length(EXCLUDED.content);
 
--- 5. REFRESH CACHE
+-- 6. REFRESH CACHE
 NOTIFY pgrst, 'reload schema';
