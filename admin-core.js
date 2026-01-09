@@ -5,7 +5,7 @@
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE: Boot sequence initiated...");
+    console.log("🚀 ADMIN CORE V3.5 PRO: Boot sequence initiated...");
 
     // 0. CONFIGURATION
     const CONFIG = {

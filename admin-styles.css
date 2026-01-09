@@ -259,6 +259,16 @@ button {
     background: rgba(120, 120, 120, 0.05); /* Works for light and dark */
 }
 
+@media (max-width: 500px) {
+    .post-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 20px;
+    }
+    .status-badge { width: fit-content; }
+    .delete-btn { width: 100%; padding: 12px; }
+}
+
 .post-title {
     font-weight: 600;
     color: var(--admin-text);

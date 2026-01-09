@@ -1,4 +1,3 @@
-
 /**
  * OTP Site Configuration
  * Centralized credentials and settings.

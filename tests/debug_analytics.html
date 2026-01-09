@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OTP Analytics Debugger</title>
+    <style>
+        body { background: #111; color: #fff; font-family: monospace; padding: 20px; }
+        .log { background: #222; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid #555; }
+        .success { border-color: #00ffaa; color: #aaffaa; }
+        .error { border-color: #ff4444; color: #ffaaaa; }
+        .warn { border-color: #ffcc00; color: #ffffcc; }
+        button { padding: 10px 20px; font-weight: bold; cursor: pointer; background: #00c3ff; border: none; border-radius: 5px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 OTP Analytics Debugger</h1>
+    <div style="margin-bottom: 20px;">
+        <button onclick="runDiagnostics()">RUN DIAGNOSTICS</button>
+        <button onclick="testIncrement()">TEST INCREMENT (RPC)</button>
+        <button onclick="checkPolicies()">CHECK POLICIES (Insert/Update)</button>
+    </div>
+    <div id="logs"></div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="site-config.js"></script>
+    <script>
+        const logDiv = document.getElementById('logs');
+        function log(msg, type = 'log') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logDiv.appendChild(div);
+            console[type === 'error' ? 'error' : 'log'](msg);
+        }
+
+        let supabase;
+
+        try {
+            if (!window.OTP_CONFIG) throw new Error("site-config.js not loaded or empty.");
+            supabase = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+            log("✅ Supabase Client Initialized");
+        } catch (e) {
+            log("❌ INIT FAILED: " + e.message, 'error');
+        }
+
+        async function runDiagnostics() {
+            logDiv.innerHTML = '';
+            log("--- STARTING DIAGNOSTICS ---");
+
+            // 1. Connection Test
+            try {
+                const { data, error } = await supabase.from('posts').select('count', { count: 'exact', head: true });
+                if (error) throw error;
+                log(`✅ Connection Successful. Posts in DB: ${data.length === 0 ? 'Verified' : data.length}`, 'success');
+            } catch (e) {
+                log("❌ CONNECTION FAILED: " + e.message, 'error');
+                return;
+            }
+
+            // 2. Check for Spooky Post
+            try {
+                const { data, error } = await supabase
+                    .from('posts')
+                    .select('slug, views')
+                    .eq('slug', 'spooky-luh-ooky')
+                    .single();
+                
+                if (error) throw error;
+                if (!data) throw new Error("Spooky post not found in DB.");
+                log(`✅ Found 'spooky-luh-ooky'. Current Views: ${data.views}`, 'success');
+            } catch (e) {
+                log("⚠️ SPOOKY POST MISSING: " + e.message, 'warn');
+                log("👉 ACTION: Run the 'Copy DB Upgrade SQL' script in Supabase to insert it.");
+            }
+        }
+
+        async function testIncrement() {
+            log("--- TESTING RPC INCREMENT ---");
+            const slug = 'spooky-luh-ooky';
+            
+            try {
+                // Pre-check
+                const { data: pre } = await supabase.from('posts').select('views').eq('slug', slug).single();
+                const startViews = pre ? pre.views : 0;
+                log(`Current Views: ${startViews}`);
+
+                // Call RPC
+                const { error } = await supabase.rpc('increment_view_count', { post_slug: slug });
+                
+                if (error) {
+                    log("❌ RPC FAILED: " + error.message, 'error');
+                    if (error.message.includes('function') && error.message.includes('does not exist')) {
+                        log("💡 HINT: The function 'increment_view_count' is missing. Run the SQL upgrade script.", 'warn');
+                    }
+                    return;
+                }
+
+                // Post-check
+                const { data: post } = await supabase.from('posts').select('views').eq('slug', slug).single();
+                const endViews = post ? post.views : 0;
+
+                if (endViews > startViews) {
+                    log(`✅ SUCCESS! Views went from ${startViews} -> ${endViews}`, 'success');
+                } else {
+                    log(`⚠️ RPC executed but views did not change.`, 'warn');
+                }
+
+            } catch (e) {
+                log("❌ TEST FAILED: " + e.message, 'error');
+            }
+        }
+
+        async function checkPolicies() {
+            log("--- CHECKING PERMISSIONS ---");
+            // Try a dummy update (should work if RLS allows)
+            const slug = 'spooky-luh-ooky';
+            
+            try {
+                const { error } = await supabase
+                    .from('posts')
+                    .update({ views: 9999 }) // Try to set a fake number (we'll revert it or it will fail)
+                    .eq('slug', 'non-existent-slug-just-testing-perms'); 
+                
+                // If we get "new row violates row-level security policy", we know.
+                // Actually, updating a non-existent row shouldn't fail unless RLS blocks the *attempt*.
+                
+                if (error) {
+                    log("❌ PERMISSION DENIED: " + error.message, 'error');
+                    log("👉 ACTION: Run the SQL upgrade script to add 'Allow All' policy.", 'warn');
+                } else {
+                    log("✅ UPDATE Permission seems Active (No RLS error returned).", 'success');
+                }
+            } catch (e) {
+                log("❌ CHECK FAILED: " + e.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
