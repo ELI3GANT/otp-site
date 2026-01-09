@@ -251,6 +251,36 @@
         }
     }
 
+    window.deleteBySlug = async function() {
+        const input = document.getElementById('manualDeleteSlug');
+        const slug = input ? input.value.trim() : '';
+        
+        if (!slug) {
+            alert("Please enter a slug to remove.");
+            return;
+        }
+
+        if (!confirm(`⚠️ PERMANENTLY KILL SLUG: ${slug}?\n\nThis will scrub it from the live network.`)) return;
+
+        try {
+            console.log(`🚀 TERMINATING SLUG: ${slug}`);
+            const { data, error } = await state.client.from('posts').delete().eq('slug', slug).select();
+            
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                showToast(`SLUG ${slug} TERMINATED`);
+                if(input) input.value = '';
+                fetchPosts(true); // Refresh
+            } else {
+                alert(`NO RECORD FOUND FOR SLUG: ${slug}`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("TERMINATION FAILED: " + err.message);
+        }
+    };
+
     // --- DATABASE MAINTENANCE ---
     window.runDatabaseCleanup = function() {
         const modal = document.getElementById('maintenanceModal');

@@ -893,6 +893,13 @@
 
             <!-- SECTION: MANAGE -->
             <div class="section-label">05 // Active Broadcasts</div>
+            
+            <!-- Manual Slug Deletion -->
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="text" id="manualDeleteSlug" placeholder="Paste slug to remove (e.g. whats-so-elegant...)" style="flex: 1; padding: 10px; font-size: 0.8rem;">
+                <button type="button" onclick="deleteBySlug()" style="width: auto; background: var(--admin-danger); color: #fff; padding: 0 20px; font-size: 0.8rem;">KILL SLUG</button>
+            </div>
+
             <div id="postManager" style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--stroke); padding: 15px; max-height: 400px; overflow-y: auto;">
                 <div style="text-align: center; color: #666; font-size: 0.8rem; padding: 20px;">LOADING TRANSMISSIONS...</div>
             </div>
