@@ -89,37 +89,8 @@
 
 
       <div class="insights-grid">
-        <!-- Post 1 -->
-        <article class="insight-card k-hover">
-          <div class="insight-date">Oct 24, 2025 • 5 min read</div>
-          <h2>The Architecture of a Visual Drop</h2>
-          <p>Why pacing and cinematic color are the most underrated tools in your rollout strategy. We deconstruct the "The Takeover" approach.</p>
-          <a href="insight-post-1.html" class="read-more">Read Insight</a>
-        </article>
-
-        <!-- Post 2 -->
-        <article class="insight-card k-hover">
-          <div class="insight-date">Oct 12, 2025 • 3 min read</div>
-          <h2>Beyond the Edit: Brand Identity</h2>
-          <p>How we build consistency across 9:16 and 16:9 formats without losing the soul of the project.</p>
-          <a href="insight-post-2.html" class="read-more">Read Insight</a>
-        </article>
-
-        <!-- Post 3 -->
-        <article class="insight-card k-hover">
-          <div class="insight-date">Sep 28, 2025 • 4 min read</div>
-          <h2>Turning Vision into Strategy</h2>
-          <p>A look into the "Phase 01" process of OTP. How alignment in the pre-production phase saves 10 hours of editing.</p>
-          <a href="insight-post-3.html" class="read-more">Read Insight</a>
-        </article>
-
-        <!-- Post 4_Spooky -->
-        <article class="insight-card k-hover">
-          <div class="insight-date">Jan 03, 2026 • Music Video</div>
-          <h2>Spooky: Luh Ooky</h2>
-          <p>Visuals from the "Morbid Musik" project. Showcasing the best of RI's underground talent.</p>
-          <a href="spooky-luh-ooky.html" class="read-more">Watch Video</a>
-        </article>
+        <!-- Content populated dynamically from Supabase -->
+        <div class="loader" style="grid-column: 1/-1; text-align: center; color: var(--muted);">LOADING SIGNAL...</div>
       </div>
 
       <!-- Subscribe / Connect Section -->
@@ -193,27 +164,34 @@
 
                 if (!error && posts && posts.length > 0) {
                     const grid = document.querySelector('.insights-grid');
+                    grid.innerHTML = ''; // Clear loader
                     
-                    // Allow mixing static and dynamic, or replace. 
-                    // Let's PREPEND dynamic posts so they appear first.
-                    // If you want ONLY dynamic, uncomment: grid.innerHTML = '';
-                    
+                    const seenSlugs = new Set();
+
                     posts.forEach(post => {
+                        if (seenSlugs.has(post.slug)) return; // Client-side Dedupe
+                        seenSlugs.add(post.slug);
+
                         const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                        
+                        // Handle special case for Spooky (External/Static file) vs Dynamic
+                        let link = `insight.html?slug=${post.slug}`;
+                        if (post.slug === 'spooky-luh-ooky') link = 'spooky-luh-ooky.html';
                         
                         // Create Card HTML
                         const card = document.createElement('article');
                         card.className = 'insight-card k-hover';
                         card.innerHTML = `
-                            <div class="insight-date">${date} • Insight</div>
+                            <div class="insight-date">${date} • ${post.category || 'Insight'}</div>
                             <h2>${post.title}</h2>
                             <p>${post.excerpt || post.content.substring(0, 100) + '...'}</p>
-                            <a href="insight.html?slug=${post.slug}" class="read-more">Read Insight</a>
+                            <a href="${link}" class="read-more">Read Insight</a>
                         `;
                         
-                        // Insert at the top
-                        grid.prepend(card);
+                        grid.appendChild(card);
                     });
+                } else {
+                    document.querySelector('.insights-grid').innerHTML = '<div style="grid-column: 1/-1; text-align:center;">No signals detected.</div>';
                 }
             }
         } catch (e) {
