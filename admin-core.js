@@ -99,7 +99,11 @@
     }
 
     // --- POST MANAGER & STATS LOGIC ---
-    async function fetchPosts() {
+    let postsCache = null;
+    let lastFetchTime = 0;
+    const CACHE_TTL = 60000; // 60s Cache
+
+    async function fetchPosts(force = false) {
         const list = document.getElementById('postManager');
         const statPosts = document.getElementById('statPosts');
         const statViews = document.getElementById('statViews');
@@ -109,6 +113,14 @@
 
         if(!list) return;
 
+        // Cache Check
+        const now = Date.now();
+        if (!force && postsCache && (now - lastFetchTime < CACHE_TTL)) {
+            renderPosts(postsCache);
+            updateStats(postsCache); // Ensure stats simulate live even on cache
+            return;
+        }
+
         try {
             const { data: posts, error } = await state.client
                 .from('posts')
@@ -117,34 +129,45 @@
 
             if (error) throw error;
             
-            // Render Stats
-            const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
-            
-            if(statPosts) statPosts.textContent = posts.length;
-            if(statViews) statViews.textContent = totalViews.toLocaleString();
-            
-            // Simulated/Derived Real-time Metrics
-            if(statLive) {
-                // "Active" users based on recent hits (Simulated for now)
-                const baseLive = Math.floor(Math.random() * 8) + 2; 
-                statLive.textContent = baseLive;
-                statLive.previousElementSibling.textContent = "Active (Est)"; // Update label
-            }
-            if(statPeak) {
-                const maxView = Math.max(...posts.map(p => p.views || 0), 0);
-                statPeak.textContent = Math.floor(maxView * 0.45).toLocaleString();
-            }
-            if(statDuration) {
-                statDuration.textContent = "2m 41s"; // Placeholder avg
-            }
+            // Update Cache
+            postsCache = posts;
+            lastFetchTime = now;
 
             renderPosts(posts);
+            updateStats(posts);
+
         } catch (err) {
             console.error("FETCH ERROR:", err);
-            // Don't wipe list on transient error during auto-refresh
             if (list.children.length === 0) {
                  list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">ERROR LOADING: ${err.message}</div>`;
             }
+        }
+    }
+
+    function updateStats(posts) {
+        const statPosts = document.getElementById('statPosts');
+        const statViews = document.getElementById('statViews');
+        const statLive = document.getElementById('statLive');
+        const statPeak = document.getElementById('statPeak');
+        const statDuration = document.getElementById('statDuration');
+
+        const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
+            
+        if(statPosts) statPosts.textContent = posts.length;
+        if(statViews) statViews.textContent = totalViews.toLocaleString();
+        
+        // Simulated/Derived Real-time Metrics
+        if(statLive) {
+            const baseLive = Math.floor(Math.random() * 8) + 2; 
+            statLive.textContent = baseLive;
+            statLive.previousElementSibling.textContent = "Active (Est)";
+        }
+        if(statPeak) {
+            const maxView = Math.max(...posts.map(p => p.views || 0), 0);
+            statPeak.textContent = Math.floor(maxView * 0.45).toLocaleString();
+        }
+        if(statDuration) {
+            statDuration.textContent = "2m 41s"; 
         }
     }
 
@@ -213,8 +236,8 @@
             // Close Modal
             document.getElementById('deleteModal').style.display = 'none';
             
-            // Refresh List
-            fetchPosts(); 
+            // Refresh List (Force)
+            fetchPosts(true); 
         } catch (err) {
             console.error("❌ DELETION FAILED:", err);
             alert("DELETION FAILED: " + err.message);
@@ -609,6 +632,13 @@
 
                     if(error) throw error;
                     showToast("POST BROADCAST SUCCESSFULLY");
+                    
+                    // Force refresh of list and stats
+                    await fetchPosts(true); 
+                    
+                    // Optional: Reset form? Or reload page? Original code reloaded page.
+                    // setTimeout(() => window.location.reload(), 1500); 
+                    // Let's keep reload for full state reset as per original, but update list first for feedback.
                     setTimeout(() => window.location.reload(), 1500);
                 } catch(err) {
                     console.error("BROADCAST ERROR:", err);
