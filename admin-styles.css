@@ -125,24 +125,25 @@ body {
     position: absolute;
     bottom: 100%;
     left: 50%;
-    transform: translateX(-50%) translateY(-8px);
-    padding: 8px 12px;
-    background: rgba(0, 0, 0, 0.9);
+    transform: translateX(-50%) translateY(10px);
+    padding: 10px 14px;
+    background: rgba(10, 10, 15, 0.95);
     color: #fff;
     font-size: 0.75rem;
-    border-radius: 6px;
+    border-radius: 8px;
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
     pointer-events: none;
-    z-index: 1000;
+    z-index: 9999;
     border: 1px solid var(--admin-border);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     font-family: 'Inter', sans-serif;
     font-weight: 500;
     letter-spacing: 0;
     text-transform: none;
+    line-height: 1.4;
 }
 
 [data-tooltip]::after {
@@ -150,22 +151,22 @@ body {
     position: absolute;
     bottom: 100%;
     left: 50%;
-    transform: translateX(-50%) translateY(-2px);
+    transform: translateX(-50%) translateY(10px);
     border-width: 6px;
     border-style: solid;
-    border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
+    border-color: rgba(10, 10, 15, 0.95) transparent transparent transparent;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
     pointer-events: none;
-    z-index: 1000;
+    z-index: 9999;
 }
 
 [data-tooltip]:hover::before,
 [data-tooltip]:hover::after {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(0);
+    transform: translateX(-50%) translateY(-5px);
 }
 
 /* MAIN FORM AREA */
