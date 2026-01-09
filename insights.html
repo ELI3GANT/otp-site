@@ -138,6 +138,7 @@
 
   <canvas id="cursor-canvas"></canvas>
 
+  <script src="site-config.js"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/kursor"></script>
 
@@ -147,12 +148,12 @@
     // Page-specific: Fetch Insights & Spotlight Effect
     document.addEventListener("DOMContentLoaded", async () => {
         
-        // 1. SUPABASE FETCH
-        const SUPABASE_URL = 'https://ckumhowhucbbmpdeqkrl.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag';
+        // 1. SUPABASE FETCH (Using centralized config)
+        const SUPABASE_URL = window.OTP_CONFIG.supabaseUrl;
+        const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
         
         try {
-            if (window.supabase) {
+            if (window.supabase \u0026\u0026 SUPABASE_URL) {
                 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 
                 // Fetch published posts

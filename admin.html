@@ -6,7 +6,6 @@
   <title>OTP Pocket Command</title>
   <link rel="stylesheet" href="./styles.css?v=2.6" />
   <link rel="stylesheet" href="./admin-styles.css" />
-  <link rel="stylesheet" href="./admin-styles.css" />
   <!-- Removed defer/script from here to move to bottom for safety -->
   <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); }</style>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
@@ -953,13 +952,13 @@
     <!-- 1. SUPABASE LIBRARY -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
-    <!-- 2. SITE INIT (Theme, Global Utils) -->
-    <script src="site-init.js"></script>
-
-    <!-- 2.5 SITE CONFIG -->
+    <!-- 2. SITE CONFIG (Keys and Credentials First) -->
     <script src="site-config.js"></script>
 
-    <!-- 3. ADMIN CORE (Auth, DB, Logic) -->
+    <!-- 3. SITE INIT (Theme, Global Utils) -->
+    <script src="site-init.js"></script>
+
+    <!-- 4. ADMIN CORE (Auth, DB, Logic) -->
     <script src="admin-core.js"></script>
 
     <!-- 4. UI SPECIFIC (Uploads, AI - Managed by Admin Core) -->

@@ -37,13 +37,14 @@
       }
       .blog-title {
           font-family: 'Syne', sans-serif;
-          font-size: 3rem;
-          line-height: 1.4; /* Generous line-height to prevent 'g' clipping */
+          font-size: clamp(2.5rem, 8vw, 4rem);
+          line-height: 1.6; /* Aggressively increased for Syne's deep descenders */
           letter-spacing: -0.01em;
           color: var(--text);
-          margin-bottom: 30px;
-          padding-bottom: 0.4em; /* Increased to prevent clipping */
-          overflow: visible;
+          margin-bottom: 40px;
+          padding-bottom: 0.6em; /* Increased to prevent 'g' clipping */
+          overflow: visible !important;
+          display: block;
       }
       .blog-content {
           font-family: 'Inter', sans-serif;
@@ -236,11 +237,19 @@
                 heroWrap.style.display = 'block';
             }
             
-            // Handle simple text newlines for now (in future use a Markdown parser like 'marked')
-            // This replaces double newlines with paragraph tags
-            const formattedContent = data.content
-                .split('\n\n').map(p => `<p>${p}</p>`).join('')
-                .replace(/\n/g, '<br/>');
+            // 3. RENDER CONTENT
+            // If content starts with HTML tags, assume it's pre-formatted HTML from AI
+            const isHTML = data.content.trim().startsWith('<');
+            let formattedContent = data.content;
+            
+            if (!isHTML) {
+                // Legacy support for plain text posts: split double newlines into paragraphs
+                formattedContent = data.content
+                    .split('\n\n')
+                    .map(p => `<p>${p}</p>`)
+                    .join('')
+                    .replace(/\n/g, '<br/>');
+            }
 
             document.getElementById('postBody').innerHTML = formattedContent;
 

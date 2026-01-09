@@ -30,20 +30,25 @@
 /* Dope Content Styling */
 .blog-content h2 {
     font-size: 2.2rem;
-    line-height: 1.4; /* Slightly increased for better rendering */
+    line-height: 1.6; /* Increased for Syne descenders */
     margin-top: 70px;
     margin-bottom: 30px;
-    padding-bottom: 10px;
+    padding-bottom: 25px; /* Significant padding to clear descenders like 'g' */
     border-bottom: 1px solid rgba(255,255,255,0.1);
     color: #fff;
-    letter-spacing: -0.01em; /* Adjusted to be less tight */
+    letter-spacing: -0.01em;
+    overflow: visible !important;
 }
 
 .blog-content h3 {
+    font-family: 'Syne', sans-serif;
     font-size: 1.5rem;
+    line-height: 1.5;
     margin-top: 40px;
     color: var(--accent2);
     margin-bottom: 15px;
+    padding-bottom: 15px; /* Added padding for Syne descenders */
+    overflow: visible !important;
 }
 
 /* Cinematic Pull Quotes */
@@ -107,7 +112,9 @@
     font-size: 2.5rem;
     font-weight: 800;
     color: var(--success);
-    line-height: 1;
+    line-height: 1.2; /* Increased from 1 to prevent clipping */
+    padding-bottom: 10px;
+    overflow: visible;
 }
 
 .stat-label {
