@@ -75,8 +75,18 @@
   </footer>
 
   <canvas id="cursor-canvas"></canvas>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/kursor"></script>
+  <script src="site-config.js"></script>
   <script src="stars-v2.js"></script>
   <script src="site-init.js"></script>
+  <script>
+      // Track View
+      document.addEventListener("DOMContentLoaded", () => {
+          if (window.OTP && window.OTP.trackView) {
+              window.OTP.trackView('turning-vision-into-strategy');
+          }
+      });
+  </script>
 </body>
 </html>

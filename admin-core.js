@@ -774,6 +774,38 @@ DROP POLICY IF EXISTS "Public Insert" ON storage.objects;
 
 CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING ( bucket_id = 'uploads' );
 CREATE POLICY "Public Insert" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'uploads' );
+
+-- 6. INSERT MISSING CONTENT (Idempotent)
+INSERT INTO posts (title, slug, excerpt, content, published, category, image_url, views) VALUES
+(
+  'The Architecture of a Visual Drop',
+  'architecture-visual-drop',
+  'Why pacing and cinematic color are the most underrated tools in your rollout strategy.',
+  '<p class="lead">In the age of infinite scroll, "good" visuals aren''t enough.</p><blockquote>"Silence is the loudest sound in the room."</blockquote>',
+  true, 'Creative Strategy', 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4', 842
+),
+(
+  'Beyond the Edit: Brand Identity',
+  'beyond-the-edit',
+  'How we build consistency across 9:16 and 16:9 formats without losing the soul of the project.',
+  '<p class="lead">A video is not just a file; it''s a piece of a larger puzzle.</p><h2>The Paradox</h2><p>Vertical demands intimacy.</p>',
+  true, 'Brand Identity', 'https://images.unsplash.com/photo-1550745165-9bc0b252726f', 621
+),
+(
+  'Turning Vision into Strategy',
+  'turning-vision-into-strategy',
+  'A look into the Phase 01 process of OTP.',
+  '<p class="lead">You can have the best camera in the world, but if you don''t know what you''re shooting, it''s noise.</p>',
+  true, 'Process', 'https://images.unsplash.com/photo-1460925895917-afdab827c52f', 530
+),
+(
+  'Spooky: Luh Ooky',
+  'spooky-luh-ooky',
+  'Visuals from the Morbid Musik project.',
+  '<p class="lead">Fresh off the release of his latest project.</p>',
+  true, 'Music Video', 'https://img.youtube.com/vi/7Zx5fRPmrCU/maxresdefault.jpg', 1240
+)
+ON CONFLICT (slug) DO NOTHING;
         `;
         navigator.clipboard.writeText(sql);
         alert("SQL Logic Copied to Clipboard. Run in Supabase Dashboard.");
