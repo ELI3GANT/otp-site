@@ -645,6 +645,62 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
     
+    // --- MOUSE FOLLOWING TOOLTIP SYSTEM ---
+    (function initTooltips() {
+        const tooltip = document.createElement('div');
+        tooltip.id = 'admin-tooltip';
+        Object.assign(tooltip.style, {
+            position: 'fixed',
+            background: 'rgba(10, 10, 15, 0.95)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            color: '#fff',
+            fontSize: '0.75rem',
+            pointerEvents: 'none',
+            zIndex: '10000',
+            display: 'none',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+            whiteSpace: 'nowrap',
+            backdropFilter: 'blur(5px)'
+        });
+        document.body.appendChild(tooltip);
+
+        let activeTarget = null;
+
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target) {
+                activeTarget = target;
+                tooltip.textContent = target.getAttribute('data-tooltip');
+                tooltip.style.display = 'block';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (activeTarget && tooltip.style.display === 'block') {
+                const x = e.clientX + 15;
+                const y = e.clientY + 15;
+                
+                // Boundary check (prevent going off screen)
+                const rect = tooltip.getBoundingClientRect();
+                const finalX = (x + rect.width > window.innerWidth) ? e.clientX - rect.width - 10 : x;
+                const finalY = (y + rect.height > window.innerHeight) ? e.clientY - rect.height - 10 : y;
+
+                tooltip.style.left = `${finalX}px`;
+                tooltip.style.top = `${finalY}px`;
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target && target === activeTarget) {
+                activeTarget = null;
+                tooltip.style.display = 'none';
+            }
+        });
+    })();
+    
     // Expose Utils
     window.showToast = showToast;
 
