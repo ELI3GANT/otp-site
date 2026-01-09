@@ -251,6 +251,48 @@
         }
     }
 
+    // --- DATABASE MAINTENANCE ---
+    window.runDatabaseCleanup = async function() {
+        if (!confirm("🧹 RUN SMART CLEANUP?\n\nThis will permanently delete all posts with less than 50 words, except for Spooky and Elegant.\n\nProceed?")) return;
+
+        try {
+            showToast("SCANNING DATABASE...");
+            
+            // 1. Fetch all posts
+            const { data: posts, error: fetchError } = await state.client.from('posts').select('id, title, slug, content');
+            if (fetchError) throw fetchError;
+
+            // 2. Identify trash
+            const trash = posts.filter(post => {
+                const isSpooky = post.slug.includes('spooky');
+                const isElegant = post.slug.includes('eli3gant');
+                const wordCount = (post.content || "").trim().split(/\s+/).length;
+                
+                // Criteria: Not Spooky, Not Elegant, and word count < 50
+                return !isSpooky && !isElegant && wordCount < 50;
+            });
+
+            if (trash.length === 0) {
+                showToast("NO TRASH DETECTED");
+                return;
+            }
+
+            // 3. Delete trash
+            const idsToDelete = trash.map(t => t.id);
+            console.log(`🧹 Purging IDs: ${idsToDelete.join(', ')}`);
+            
+            const { error: deleteError } = await state.client.from('posts').delete().in('id', idsToDelete);
+            if (deleteError) throw deleteError;
+
+            showToast(`CLEANUP COMPLETE: ${trash.length} POSTS PURGED`);
+            fetchPosts(true); // Refresh UI
+
+        } catch (e) {
+            console.error("MAINTENANCE ERROR:", e);
+            alert("MAINTENANCE FAILED: " + e.message);
+        }
+    };
+
     // 4. AUTH & GATEKEEPER
     window.unlockChannel = function() {
         const input = document.getElementById('gatePass');
@@ -816,38 +858,45 @@ WITH duplicates AS (
 )
 DELETE FROM posts WHERE id IN (SELECT id FROM duplicates WHERE rank > 1);
 
--- 7. PURGE STUBS
-DELETE FROM posts WHERE length(content) < 50;
+-- 6. HARD RESET ANALYTICS (Start Fresh)
+UPDATE posts SET views = 0;
 
--- 8. INSERT/UPDATE CONTENT
+-- 7. INSERT MISSING CONTENT (Idempotent)
 INSERT INTO posts (title, slug, excerpt, content, published, category, image_url, views) VALUES
 (
   'The Architecture of a Visual Drop',
   'architecture-visual-drop',
   'Why pacing and cinematic color are the most underrated tools in your rollout strategy.',
   '<p class="lead">In the age of infinite scroll, "good" visuals aren''t enough.</p><blockquote>"Silence is the loudest sound in the room."</blockquote>',
-  true, 'Creative Strategy', 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4', 842
+  true, 'Creative Strategy', 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4', 0
 ),
 (
   'Beyond the Edit: Brand Identity',
   'beyond-the-edit',
   'How we build consistency across 9:16 and 16:9 formats without losing the soul of the project.',
   '<p class="lead">A video is not just a file; it''s a piece of a larger puzzle.</p><h2>The Paradox</h2><p>Vertical demands intimacy.</p>',
-  true, 'Brand Identity', 'https://images.unsplash.com/photo-1550745165-9bc0b252726f', 621
+  true, 'Brand Identity', 'https://images.unsplash.com/photo-1550745165-9bc0b252726f', 0
 ),
 (
   'Turning Vision into Strategy',
   'turning-vision-into-strategy',
   'A look into the Phase 01 process of OTP.',
   '<p class="lead">You can have the best camera in the world, but if you don''t know what you''re shooting, it''s noise.</p>',
-  true, 'Process', 'https://images.unsplash.com/photo-1460925895917-afdab827c52f', 530
+  true, 'Process', 'https://images.unsplash.com/photo-1460925895917-afdab827c52f', 0
 ),
 (
   'Spooky: Luh Ooky',
   'spooky-luh-ooky',
   'Visuals from the Morbid Musik project.',
   '<p class="lead">Fresh off the release of his latest project.</p>',
-  true, 'Music Video', 'https://img.youtube.com/vi/7Zx5fRPmrCU/maxresdefault.jpg', 1240
+  true, 'Music Video', 'https://img.youtube.com/vi/7Zx5fRPmrCU/maxresdefault.jpg', 0
+),
+(
+  'What is so Elegant about ELI3GANT?',
+  'whats-so-elegant-about-eli3gant',
+  'Deconstructing the aesthetic philosophy of modern visual drops.',
+  '<p class="lead">Elegance isn''t about being noticed, it''s about being remembered.</p><h2>The Core Vibe</h2><p>High-end minimalism meets tactical execution.</p>',
+  true, 'Creative Strategy', 'https://onlytrueperspective.tech/og.jpg', 0
 )
 ON CONFLICT (slug) DO NOTHING;
         `;
