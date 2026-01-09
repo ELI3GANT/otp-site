@@ -676,16 +676,20 @@ ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_desc text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS category text;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS views int8 default 0;
 
+-- 3. PURGE FAKE DATA (Clean Slate)
+UPDATE posts SET views = 0 WHERE views = 441;
+UPDATE posts SET views = 0 WHERE slug LIKE '%eli3gant%';
+
 -- ENABLE RLS & ALLOW ALL (Needed for Delete/Update if RLS is on)
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow All" ON posts;
 CREATE POLICY "Allow All" ON posts FOR ALL USING (true) WITH CHECK (true);
 
--- 3. FORCE API CACHE REFRESH (The Trick)
-COMMENT ON TABLE posts IS 'OTP Posts Table (Refreshed)';
+-- 4. FORCE API CACHE REFRESH (The Trick)
+COMMENT ON TABLE posts IS 'OTP Posts Table (Verified Real Data)';
 NOTIFY pgrst, 'reload schema';
 
--- 4. STORAGE BUCKETS
+-- 5. STORAGE BUCKETS
 insert into storage.buckets (id, name, public) 
 values ('uploads', 'uploads', true)
 on conflict (id) do nothing;
