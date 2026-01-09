@@ -333,7 +333,7 @@
 
 /* RESPONSIVE TYPOGRAPHY (Global & Light Mode) */
 h1, h2, h3 {
-  line-height: 1.1; /* Tighten up headings */
+  line-height: 1.2; /* Tighten up headings slightly less to prevent clipping */
 }
 
 [data-theme="light"] h1, 
@@ -1507,7 +1507,7 @@ html {
 
 /* HERO TITLE ADJUSTMENT - Ensuring large size is maintained */
 .hero-title-adjust {
-  line-height: 1.1;
+  line-height: 1.2;
 }
 .hero-title-adjust .title {
   font-size: inherit;
@@ -1861,7 +1861,7 @@ html {
 .hero h1 {
   font-size: clamp(2rem, 5vw, 3.4rem); 
   letter-spacing: clamp(1px, 1.2vw, 5px);
-  line-height: 1.1; /* More breathing room for text lines */
+  line-height: 1.2; /* More breathing room for text lines */
   text-transform: uppercase;
   text-shadow: 0 10px 40px rgba(0,0,0,0.55);
   margin-bottom: 12px; /* Opened up */
@@ -4857,7 +4857,7 @@ input:focus, select:focus, textarea:focus {
 .studio-title {
   /* Tamed typography size for desktop */
   font-size: clamp(2rem, 3vw, 3rem);
-  line-height: 1.1;
+  line-height: 1.2;
   margin-bottom: 24px;
   background: linear-gradient(180deg, #fff, rgba(255,255,255,0.6));
   -webkit-background-clip: text;
@@ -5110,7 +5110,7 @@ input:focus, select:focus, textarea:focus {
   }
   .studio-title {
     font-size: clamp(1.1rem, 6vw, 1.6rem) !important; /* Force override */
-    line-height: 1.1;
+    line-height: 1.2;
     margin-bottom: 10px;
     word-wrap: break-word;
     overflow-wrap: break-word;
