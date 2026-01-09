@@ -156,9 +156,10 @@ window.OTP.trackView = async function(slug) {
     const storageKey = `otp_view_${slug}`;
     const lastView = localStorage.getItem(storageKey);
     const now = Date.now();
+    const isDebug = window.location.search.includes('debug=true');
     
-    // Only count if never viewed or viewed > 24 hours ago
-    if (lastView && (now - parseInt(lastView)) < 24 * 60 * 60 * 1000) {
+    // Only count if never viewed or viewed > 24 hours ago (unless debugging)
+    if (!isDebug && lastView && (now - parseInt(lastView)) < 24 * 60 * 60 * 1000) {
         console.log(`[OTP] View deduped for: ${slug}`);
         return;
     }

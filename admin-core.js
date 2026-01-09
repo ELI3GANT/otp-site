@@ -658,7 +658,7 @@
             color: '#fff',
             fontSize: '0.75rem',
             pointerEvents: 'none',
-            zIndex: '10000',
+            zIndex: '20000', // Above everything
             display: 'none',
             boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
             whiteSpace: 'nowrap',
@@ -667,6 +667,13 @@
         document.body.appendChild(tooltip);
 
         let activeTarget = null;
+
+        const hideTooltip = () => {
+            activeTarget = null;
+            tooltip.style.display = 'none';
+        };
+
+        window.addEventListener('scroll', hideTooltip, { passive: true });
 
         document.addEventListener('mouseover', (e) => {
             const target = e.target.closest('[data-tooltip]');
