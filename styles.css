@@ -416,8 +416,18 @@ h1, h2, h3 {
   box-shadow: var(--shadowSoft);
 }
 [data-theme="light"] .insight-card:hover {
-  border-color: var(--accent2);
-  box-shadow: var(--shadow);
+  transform: translateY(-10px) scale(1.02);
+  border-color: #d4af37; /* Gold border on hover */
+  background: #ffffff;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.1), 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+[data-theme="light"] .insight-card::before {
+  background: radial-gradient(
+    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(214, 178, 94, 0.15),
+    transparent 40%
+  );
 }
 [data-theme="light"] .insight-card h2 {
   color: #000;
@@ -3419,6 +3429,24 @@ input:focus, select:focus, textarea:focus {
   border-color: rgba(0, 0, 0, 0.2);
 }
 
+/* DAY MODE: PACKAGE HOVERS */
+[data-theme="light"] .package-static.featured .pkg-select-btn:hover,
+[data-theme="light"] .network-pkg .pkg-select-btn:hover {
+  background: linear-gradient(135deg, #d4af37 0%, #f9d71c 100%) !important;
+  color: #000 !important;
+  border-color: #b8860b !important;
+  box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4) !important;
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* Ensure the normal featured button in light mode is still clear */
+[data-theme="light"] .package-static.featured .pkg-select-btn,
+[data-theme="light"] .network-pkg .pkg-select-btn {
+  background: #111;
+  color: #fff;
+  border: 1px solid #000;
+}
+
 .pkg-meta {
   margin-top: auto;
   padding-top: 15px;
@@ -4437,83 +4465,110 @@ input:focus, select:focus, textarea:focus {
 }
 
 .insight-card {
-  background: rgba(20, 20, 32, 0.85); /* High contrast */
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 20px;
-  padding: 30px;
+  background: rgba(15, 15, 25, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
   text-decoration: none;
   color: inherit;
   position: relative;
   overflow: hidden;
-  height: 100%; /* Ensure equal height */
+  height: 100%;
+}
+
+.insight-card-inner {
+  padding: 35px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex-grow: 1;
 }
 
 .insight-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.03), transparent 40%);
+  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.06), transparent 40%);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.5s ease;
   pointer-events: none;
+  z-index: 1;
 }
 
 .insight-card:hover {
-  border-color: rgba(255,255,255,0.15);
-  transform: translateY(-6px);
-  background: rgba(15, 15, 25, 0.75);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-10px) scale(1.02);
+  background: rgba(20, 20, 35, 0.6);
+  box-shadow: 
+    0 30px 60px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(112, 0, 255, 0.1);
 }
 
 .insight-card:hover::before {
   opacity: 1;
 }
 
-
 .insight-date {
-  font-size: 0.8rem;
-  color: var(--accent);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  color: var(--accent2);
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 15px;
-  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+  font-weight: 800;
+  opacity: 0.9;
 }
 
 .insight-card h2 {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.4rem; /* Smaller title */
-  line-height: 1.2;
-  margin-bottom: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.6rem;
+  line-height: 1.25;
+  margin-bottom: 18px;
+  color: #fff;
+  font-weight: 700;
+  overflow: visible;
 }
 
 .insight-card p {
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 25px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.7;
+  margin-bottom: 30px;
+  font-size: 0.95rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.insight-footer {
+  margin-top: auto;
+  padding-top: 10px;
 }
 
 .read-more {
-  margin-top: auto;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
-  color: rgba(255,255,255,0.9);
+  color: #fff;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  padding: 10px 16px;
-  border-radius: 99px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: all 0.3s ease;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  padding: 12px 24px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   width: fit-content;
+  position: relative;
+  overflow: hidden;
 }
 
 .read-more::after {
@@ -4522,10 +4577,11 @@ input:focus, select:focus, textarea:focus {
 }
 
 .insight-card:hover .read-more {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(112, 0, 255, 0.4);
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: #000;
+  box-shadow: 0 10px 25px rgba(0, 195, 255, 0.4);
+  transform: translateX(5px);
 }
 
 .insight-card:hover .read-more::after {
@@ -4769,7 +4825,7 @@ input:focus, select:focus, textarea:focus {
   transform-style: preserve-3d;
   transform: perspective(1200px) rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg)) translateY(var(--floatY, 0px));
   /* Transition on transform removed to fix glitching with dynamic variables */
-  transition: box-shadow 0.5s ease, opacity 0.5s ease;
+  transition: all 0.1s linear;
   
   touch-action: pan-y; 
   overflow: hidden;

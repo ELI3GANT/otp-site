@@ -5,7 +5,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function checkPosts() {
-    const { data, error } = await supabase.from('posts').select('slug, title');
+    const { data, error } = await supabase.from('posts').select('slug, title, published, created_at');
     if (error) {
         console.error('Error fetching posts:', error);
         return;

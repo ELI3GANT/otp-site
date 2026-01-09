@@ -21,7 +21,7 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;800&family=Syne:wght@700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
 </head>
 <body class="insights-page">
   <div class="bg-fixed"></div>
@@ -147,77 +147,133 @@
   <script>
     // Page-specific: Fetch Insights & Spotlight Effect
     document.addEventListener("DOMContentLoaded", async () => {
-        
+        const grid = document.querySelector('.insights-grid');
+        const loader = document.querySelector('.loader');
+
         // 1. SUPABASE FETCH (Using centralized config)
-        const SUPABASE_URL = window.OTP_CONFIG.supabaseUrl;
-        const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
+        const SUPABASE_URL = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : null;
+        const SUPABASE_KEY = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseKey : null;
         
+        const setStatus = (msg, isError = false) => {
+            if (grid) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: ${isError ? '#ff4444' : 'var(--muted)'}; opacity: 0.8;">${msg}</div>`;
+            }
+        };
+
         try {
-            if (window.supabase \u0026\u0026 SUPABASE_URL) {
-                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            // 0. LOAD FROM CACHE FIRST (Instant UI)
+            const cachedData = localStorage.getItem('otp_insights_cache');
+            if (cachedData) {
+                try {
+                    const posts = JSON.parse(cachedData);
+                    renderPosts(posts, true); // Render with "cached" flag
+                    console.log("💾 Loaded from Persistence Cache");
+                } catch(e) { console.error("Cache corrupt", e); }
+            }
+
+            // Check if library is loaded
+            if (typeof window.supabase === 'undefined') {
+                if (!cachedData) setStatus("SIGNAL INTERRUPTED: Database Library Offline.", true);
+                return;
+            }
+
+            if (!SUPABASE_URL || !SUPABASE_KEY) {
+                if (!cachedData) setStatus("CONFIGURATION ERROR: Missing credentials.", true);
+                return;
+            }
+
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            const fetchPromise = supabase
+                .from('posts')
+                .select('*')
+                .eq('published', true)
+                .order('created_at', { ascending: false });
+
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Connection Timeout")), 5000)
+            );
+
+            const { data: posts, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
+            if (error) throw error;
+
+            if (posts && posts.length > 0) {
+                // 1. Update Cache
+                localStorage.setItem('otp_insights_cache', JSON.stringify(posts));
                 
-                // Fetch published posts
-                const { data: posts, error } = await supabase
-                    .from('posts')
-                    .select('*')
-                    .eq('published', true)
-                    .order('created_at', { ascending: false });
-
-                if (!error && posts && posts.length > 0) {
-                    const grid = document.querySelector('.insights-grid');
-                    grid.innerHTML = ''; // Clear loader
-                    
-                    const seenSlugs = new Set();
-
-                    posts.forEach(post => {
-                        if (seenSlugs.has(post.slug)) return; // Client-side Dedupe
-                        seenSlugs.add(post.slug);
-
-                        const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                        
-                        // Handle special case for Spooky (External/Static file) vs Dynamic
-                        let link = `insight.html?slug=${post.slug}`;
-                        if (post.slug === 'spooky-luh-ooky') link = 'spooky-luh-ooky.html';
-                        
-                        // Create Card HTML
-                        const card = document.createElement('article');
-                        card.className = 'insight-card k-hover';
-                        card.innerHTML = `
-                            <div class="insight-date">${date} • ${post.category || 'Insight'}</div>
-                            <h2>${post.title}</h2>
-                            <p>${post.excerpt || post.content.substring(0, 100) + '...'}</p>
-                            <a href="${link}" class="read-more">Read Insight</a>
-                        `;
-                        
-                        grid.appendChild(card);
-                    });
-                } else {
-                    document.querySelector('.insights-grid').innerHTML = '<div style="grid-column: 1/-1; text-align:center;">No signals detected.</div>';
-                }
+                // 2. Render Fresh Data
+                renderPosts(posts, false);
+            } else if (!cachedData) {
+                setStatus("NO SIGNALS DETECTED. STATION IS SILENT.");
             }
         } catch (e) {
             console.error("Error fetching insights:", e);
+            if (!localStorage.getItem('otp_insights_cache')) {
+                setStatus(`SIGNAL LOSS: ${e.message === 'Connection Timeout' ? 'Timed out. Check network.' : 'Failed to sync.'}`, true);
+            }
         }
 
+        function renderPosts(posts, isCached) {
+            if (!grid) return;
+            grid.innerHTML = ''; // Clear
+            
+            const seenSlugs = new Set();
+            posts.forEach(post => {
+                if (seenSlugs.has(post.slug)) return;
+                seenSlugs.add(post.slug);
 
-        // 2. Spotlight Effect (Re-run for new elements)
-        const cards = document.querySelectorAll('.insight-card');
-        if (cards.length > 0) {
-            cards.forEach(card => {
-              card.addEventListener('mousemove', e => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-              });
+                const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                let link = `insight.html?slug=${post.slug}`;
+                if (post.slug === 'spooky-luh-ooky') link = 'spooky-luh-ooky.html';
+                
+                const card = document.createElement('article');
+                card.className = 'insight-card k-hover';
+
+                card.innerHTML = `
+                    <div class="insight-card-inner">
+                        <div class="insight-date">${date} • ${post.category || 'Insight'}</div>
+                        <h2>${post.title}</h2>
+                        <p>${post.excerpt || (post.content ? post.content.substring(0, 100).replace(/<[^>]*>/g, '') + '...' : '')}</p>
+                        <div class="insight-footer">
+                            <a href="${link}" class="read-more">Read Insight</a>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
             });
-        }
-        
-        // Immediate visibility ensure
-        if (typeof gsap !== 'undefined') {
-            gsap.set('.insight-card', { opacity: 1, y: 0 });
-            gsap.from('.insight-card', { opacity: 0, y: 20, stagger: 0.1, duration: 0.8 });
+
+            // Re-bind effects
+            const cards = document.querySelectorAll('.insight-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', e => {
+                    const rect = card.getBoundingClientRect();
+                    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                });
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    const link = card.querySelector('a.read-more');
+                    if (link && e.target !== link) { link.click(); }
+                });
+            });
+
+            if (typeof gsap !== 'undefined' && !isCached) {
+                // Snappier, more consistent animation
+                gsap.from(cards, { 
+                    opacity: 0, 
+                    y: 20, 
+                    stagger: 0.05, 
+                    duration: 0.5, 
+                    ease: "power2.out",
+                    clearProps: "all" // Ensure it finishes with clean styles
+                });
+            } else {
+                cards.forEach(c => {
+                    c.style.opacity = '1';
+                    c.style.transform = 'none';
+                });
+            }
         }
     });
   </script>

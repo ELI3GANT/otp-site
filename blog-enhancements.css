@@ -16,8 +16,9 @@
     width: 100%;
     height: auto;
     display: block;
-    object-fit: cover;
-    aspect-ratio: 16/9;
+    object-fit: contain;
+    aspect-ratio: 21/9;
+    background: #000;
 }
 
 .blog-hero-video {
@@ -29,26 +30,25 @@
 
 /* Dope Content Styling */
 .blog-content h2 {
+    font-family: 'Outfit', sans-serif;
     font-size: 2.2rem;
-    line-height: 1.6; /* Increased for Syne descenders */
-    margin-top: 70px;
-    margin-bottom: 30px;
-    padding-bottom: 25px; /* Significant padding to clear descenders like 'g' */
+    line-height: 1.3;
+    margin-top: 60px;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     color: #fff;
-    letter-spacing: -0.01em;
-    overflow: visible !important;
+    font-weight: 700;
 }
 
 .blog-content h3 {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 1.5rem;
-    line-height: 1.5;
+    line-height: 1.3;
     margin-top: 40px;
     color: var(--accent2);
     margin-bottom: 15px;
-    padding-bottom: 15px; /* Added padding for Syne descenders */
-    overflow: visible !important;
+    font-weight: 600;
 }
 
 /* Cinematic Pull Quotes */
@@ -108,12 +108,11 @@
 }
 
 .stat-number {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Outfit', sans-serif;
     font-size: 2.5rem;
     font-weight: 800;
     color: var(--success);
-    line-height: 1.2; /* Increased from 1 to prevent clipping */
-    padding-bottom: 10px;
+    line-height: 1.2;
     overflow: visible;
 }
 
