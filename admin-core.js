@@ -252,10 +252,22 @@
     }
 
     // --- DATABASE MAINTENANCE ---
-    window.runDatabaseCleanup = async function() {
-        if (!confirm("🧹 RUN SMART CLEANUP?\n\nThis will permanently delete all posts with less than 50 words, except for Spooky and Elegant.\n\nProceed?")) return;
+    window.runDatabaseCleanup = function() {
+        const modal = document.getElementById('maintenanceModal');
+        if(modal) modal.style.display = 'flex';
+        
+        const btn = document.getElementById('confirmMaintenanceBtn');
+        if(btn) {
+            btn.onclick = () => executeDatabaseCleanup();
+        }
+    };
+
+    async function executeDatabaseCleanup() {
+        const btn = document.getElementById('confirmMaintenanceBtn');
+        const modal = document.getElementById('maintenanceModal');
 
         try {
+            if(btn) { btn.textContent = "PURGING..."; btn.disabled = true; }
             showToast("SCANNING DATABASE...");
             
             // 1. Fetch all posts
@@ -266,14 +278,15 @@
             const trash = posts.filter(post => {
                 const isSpooky = post.slug.includes('spooky');
                 const isElegant = post.slug.includes('eli3gant');
-                const wordCount = (post.content || "").trim().split(/\s+/).length;
+                // Use a simple word count
+                const wordCount = (post.content || "").trim().split(/\s+/).filter(w => w.length > 0).length;
                 
-                // Criteria: Not Spooky, Not Elegant, and word count < 50
                 return !isSpooky && !isElegant && wordCount < 50;
             });
 
             if (trash.length === 0) {
                 showToast("NO TRASH DETECTED");
+                if(modal) modal.style.display = 'none';
                 return;
             }
 
@@ -285,13 +298,16 @@
             if (deleteError) throw deleteError;
 
             showToast(`CLEANUP COMPLETE: ${trash.length} POSTS PURGED`);
+            if(modal) modal.style.display = 'none';
             fetchPosts(true); // Refresh UI
 
         } catch (e) {
             console.error("MAINTENANCE ERROR:", e);
             alert("MAINTENANCE FAILED: " + e.message);
+        } finally {
+            if(btn) { btn.textContent = "PROCEED"; btn.disabled = false; }
         }
-    };
+    }
 
     // 4. AUTH & GATEKEEPER
     window.unlockChannel = function() {
