@@ -162,7 +162,16 @@
             submitBtn.style.color = "#fff";
         }
         
-        document.getElementById('postForm').scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('postForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Update Word Count (New Feature)
+        const content = document.getElementById('contentArea');
+        if(content) {
+             content.dispatchEvent(new Event('input')); // Trigger counter update
+             // Optional: Focus explicitly if needed
+             // content.focus(); 
+        }
+
         showToast("POST LOADED FOR EDITING");
     };
 
@@ -258,7 +267,10 @@
                 <div class="status-badge ${post.published ? 'status-live' : 'status-draft'}">
                     ${post.published ? 'LIVE' : 'DRAFT'}
                 </div>
-                <button onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    ${post.published && post.slug ? `<a href="/journal/${post.slug}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>` : ''}
+                    <button onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
+                </div>
             </div>
         `).join('');
     }
@@ -694,6 +706,12 @@
 
 
 
+
+    window.updateWordCount = function(textarea) {
+        const count = textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+        const disp = document.getElementById('wordCountDisplay');
+        if(disp) disp.textContent = count;
+    };
 
     window.copySchema = function() {
         const sql = `

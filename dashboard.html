@@ -288,7 +288,8 @@
     
                 <div class="input-group">
                     <label for="contentArea">Full Content (Markdown/HTML)</label>
-                    <textarea name="content" id="contentArea" style="height: 400px; font-family: monospace; font-size: 0.9rem;" required placeholder="Paste your article here or use the generator above..."></textarea>
+                    <textarea name="content" id="contentArea" style="height: 400px; font-family: monospace; font-size: 0.9rem;" required placeholder="Paste your article here or use the generator above..." oninput="updateWordCount(this)"></textarea>
+                    <div style="text-align: right; font-size: 0.75rem; color: var(--admin-muted); margin-top: 5px;">Words: <span id="wordCountDisplay">0</span></div>
                 </div>
             </section>
   
