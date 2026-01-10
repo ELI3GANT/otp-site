@@ -177,7 +177,9 @@ window.OTP.initRealtimeState = function() {
         if (type === 'theme') window.OTP.setTheme(value);
         if (type === 'refresh') location.reload();
         if (type === 'alert') alert("BROADCAST: " + value);
-    }).subscribe();
+    }).subscribe((status) => {
+        console.log("📡 SITE COMMAND CHANNEL:", status);
+    });
 
     // Init Presence
     const room = client.channel('system', {

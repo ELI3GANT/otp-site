@@ -118,6 +118,16 @@
             if(cloudGr) cloudGr.value = localStorage.getItem('cloud_groq') || '';
             if(satUrl) satUrl.value = localStorage.getItem('otp_api_base') || '';
 
+            // 6. SITE COMMAND UPLINK (Realtime)
+            state.siteChannel = state.client.channel('site_state');
+            state.siteChannel.subscribe((status) => {
+                console.log("📡 SITE COMMAND UPLINK:", status);
+                if(status === 'SUBSCRIBED') {
+                    const centerDot = document.getElementById('aiStatusDot');
+                    if(centerDot) centerDot.style.background = 'var(--admin-success)';
+                }
+            });
+
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
             updateDiagnostics('db', 'CONNECTION FAILED', '#ff4444');
@@ -948,15 +958,14 @@
 
     // --- SITE COMMAND PRO LOGIC ---
     window.toggleSiteControl = async function(type) {
-        if(!state.client) return;
-        const channel = state.client.channel('site_state');
+        if(!state.siteChannel) return;
         const statusEl = document.getElementById(`status-${type}`);
-        const isCurrentlyOn = statusEl.textContent === 'ONLINE' || statusEl.textContent === 'DAY-MODE';
+        if(!statusEl) return;
         
         // Maintenance specialized toggle
         if (type === 'maintenance') {
             const newState = statusEl.textContent === 'OFFLINE' ? 'on' : 'off';
-            await channel.send({ type: 'broadcast', event: 'command', payload: { type: 'maintenance', value: newState } });
+            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'maintenance', value: newState } });
             statusEl.textContent = newState === 'on' ? 'ACTIVE' : 'OFFLINE';
             statusEl.style.color = newState === 'on' ? 'var(--admin-success)' : 'var(--admin-danger)';
             showToast("MAINTENANCE SIGNAL SENT");
@@ -964,13 +973,12 @@
     };
 
     window.toggleLiveTheme = async function() {
-        if(!state.client) return;
-        const channel = state.client.channel('site_state');
+        if(!state.siteChannel) return;
         const statusEl = document.getElementById('status-theme');
         const isDay = statusEl.textContent === 'DAY-MODE';
         const nextTheme = isDay ? 'dark' : 'light';
         
-        await channel.send({ type: 'broadcast', event: 'command', payload: { type: 'theme', value: nextTheme } });
+        await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'theme', value: nextTheme } });
         statusEl.textContent = nextTheme === 'light' ? 'DAY-MODE' : 'NIGHT-MODE';
         statusEl.style.color = nextTheme === 'light' ? '#ffaa00' : 'var(--accent2)';
         showToast("THEME SYNCED TO NETWORK");
@@ -978,17 +986,15 @@
 
     window.openBroadcastPrompt = async function() {
         const msg = prompt("ENTER EMERGENCY BROADCAST MESSAGE:");
-        if(!msg || !state.client) return;
-        const channel = state.client.channel('site_state');
-        await channel.send({ type: 'broadcast', event: 'command', payload: { type: 'alert', value: msg } });
+        if(!msg || !state.siteChannel) return;
+        await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'alert', value: msg } });
         showToast("EMERGENCY BROADCAST SENT");
     };
 
     window.refreshLiveSite = async function() {
         if(!confirm("THIS WILL REFRESH ALL ACTIVE VISITOR SESSIONS. PROCEED?")) return;
-        if(!state.client) return;
-        const channel = state.client.channel('site_state');
-        await channel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh' } });
+        if(!state.siteChannel) return;
+        await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh' } });
         showToast("NETWORK REFRESH COMMAND SENT");
     };
 
