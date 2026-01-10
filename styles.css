@@ -5241,6 +5241,8 @@ input:focus, select:focus, textarea:focus {
   #cursor-canvas {
     opacity: 1 !important; 
     display: block !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
   }
 }
 

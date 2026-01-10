@@ -394,6 +394,8 @@ window.OTP.initLiveEditor = async function() {
 // Initialize Live Editor
 setTimeout(window.OTP.initLiveEditor, 500);
 
+document.addEventListener('DOMContentLoaded', () => {
+
     (function injectThemeToggle() {
         if (window.OTP_THEME_TOGGLE_INJECTED) return;
         // Don't inject on Admin/Dashboard (they handle it manually)
@@ -788,4 +790,6 @@ setTimeout(window.OTP.initLiveEditor, 500);
             });
         });
     }
+});
+
 });
