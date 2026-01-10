@@ -656,7 +656,7 @@
 
       <div class="contact-container">
         <!-- Removed Formspree Action to force JS Handling -->
-        <form class="contact-form" id="contactForm">
+        <form class="contact-form" id="contactForm" onsubmit="event.preventDefault();">
           <div class="form-row">
             <div class="form-group">
               <label for="name">Name</label>

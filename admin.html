@@ -2,924 +2,289 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OTP Pocket Command</title>
-  <link rel="stylesheet" href="./styles.css?v=2.6" />
-  <link rel="stylesheet" href="./admin-styles.css" />
-  <!-- Removed defer/script from here to move to bottom for safety -->
-  <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; background: var(--bg); color: var(--text); }</style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="description" content="OTP Secure Admin Console" />
+  <title>OTP Pocket Command (Secure)</title>
+  
+  <!-- Critical CSS -->
+  <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; background: var(--bg, #030305); color: var(--text, #fff); }</style>
+  
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
-  
-    <style>
-  
-        :root {
-  
-            --accent: #7000ff;
-  
-            --accent2: #00c3ff;
-  
-            --bg: #030305;
-  
-            --card: rgba(255, 255, 255, 0.04);
-  
-            --stroke: rgba(255, 255, 255, 0.1);
-  
-            --success: #00ffaa;
-  
-        }
-  
-  
-  
-        body { 
-  
-            margin: 0 !important; 
-  
-            font-family: 'Inter', sans-serif; 
-  
-            background: var(--bg); 
-  
-            color: var(--text); 
-  
-            -webkit-font-smoothing: antialiased;
-  
-            padding-bottom: 50px;
-  
-        }
+  <link rel="stylesheet" href="./styles.css?v=3.0" />
+  <link rel="stylesheet" href="./admin-styles.css?v=3.7" />
+</head>
 
-        [data-theme="light"] {
-            --bg: #f5f5f7;
-            --text: #1d1d1f;
-            --card: #ffffff;
-            --stroke: #d2d2d7;
-            --accent: #6200e0;
-            --accent2: #0071e3;
-            --success: #28cd41;
-        }
-
-        [data-theme="light"] input, 
-        [data-theme="light"] textarea, 
-        [data-theme="light"] select {
-            background: #fff;
-            color: #1d1d1f;
-            border-color: #d2d2d7;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-        }
-
-        [data-theme="light"] .admin-header {
-            background: rgba(255,255,255,0.8);
-            border-bottom: 1px solid #d2d2d7;
-        }
-
-        [data-theme="light"] .toggle-wrap {
-            background: #fff;
-            border-color: #d2d2d7;
-        }
-
-        [data-theme="light"] .ai-tips {
-            background: #fdfdff;
-            border: 1px solid #d2d2d7; /* Soft border */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-        }
-
-        [data-theme="light"] .preset-btn {
-            background: #fff;
-            color: #555;
-            border: 1px solid #d2d2d7;
-        }
-
-        [data-theme="light"] .preset-btn:hover {
-            border-color: #6200e0;
-            color: #6200e0;
-            background: #f8f5ff;
-        }
-
-        [data-theme="light"] .ai-tips h4 { color: #1d1d1f; }
-        [data-theme="light"] .section-label { color: #6200e0; }
-        [data-theme="light"] .btn-secondary { color: #555; border-color: #d2d2d7; }
-        [data-theme="light"] .btn-secondary:hover { background: #f5f5f7; color: #000; }
-        [data-theme="light"] .toggle-label { color: #1d1d1f; }
-        [data-theme="light"] .input-group label { color: #444; }
-  
-  
-  
-        .admin-header {
-  
-            position: sticky;
-  
-            top: 0;
-  
-            background: rgba(3, 3, 5, 0.95);
-  
-            backdrop-filter: blur(20px);
-  
-            -webkit-backdrop-filter: blur(20px);
-  
-            padding: 15px 20px;
-  
-            border-bottom: 1px solid var(--stroke);
-  
-            z-index: 100;
-  
-            display: flex;
-  
-            justify-content: space-between;
-  
-            align-items: center;
-  
-        }
-  
-  
-  
-        .admin-header h1 { 
-  
-            margin: 0; 
-  
-            font-size: 1.1rem;
-  
-            letter-spacing: 2px;
-  
-            font-family: 'Space Grotesk', sans-serif;
-  
-            color: var(--accent2);
-  
-            text-transform: uppercase;
-  
-        }
-  
-  
-  
-        .admin-wrap {
-  
-            max-width: 800px; /* Widen for more controls */
-  
-            margin: 0 auto;
-  
-            padding: 20px;
-  
-            padding-bottom: 120px;
-  
-        }
-  
-        
-  
-        .section-label {
-  
-            font-family: 'Space Grotesk', sans-serif;
-  
-            font-size: 0.75rem;
-  
-            font-weight: 800;
-  
-            color: var(--accent);
-  
-            text-transform: uppercase;
-  
-            letter-spacing: 2px;
-  
-            margin: 30px 0 15px;
-  
-            display: flex;
-  
-            align-items: center;
-  
-            gap: 15px;
-  
-        }
-  
-        .section-label::after {
-  
-            content: "";
-  
-            flex: 1;
-  
-            height: 1px;
-  
-            background: linear-gradient(90deg, var(--accent), transparent);
-  
-            opacity: 0.3;
-  
-        }
-  
-  
-  
-        .input-group { margin-bottom: 20px; position: relative; }
-  
-        
-  
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-  
-        @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
-  
-  
-  
-        label { 
-  
-            display: block; 
-  
-            margin-bottom: 8px; 
-  
-            font-weight: 700; 
-  
-            color: #888; 
-  
-            font-size: 0.75rem; 
-  
-            text-transform: uppercase;
-  
-            letter-spacing: 0.5px;
-  
-        }
-  
-        .desc { font-size: 0.75rem; color: #555; margin-bottom: 10px; display: block; line-height: 1.4; }
-  
-        
-  
-        input, textarea, select {
-  
-            width: 100%;
-  
-            background: rgba(255,255,255,0.03);
-  
-            border: 1px solid var(--stroke);
-  
-            color: #fff;
-  
-            padding: 14px;
-  
-            border-radius: 8px;
-  
-            font-family: inherit;
-  
-            font-size: 0.95rem;
-  
-            transition: all 0.2s ease;
-  
-        }
-  
-        input:focus, textarea:focus, select:focus { 
-  
-            border-color: var(--accent2); 
-  
-            background: rgba(255,255,255,0.06);
-  
-            outline: none; 
-  
-            box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
-  
-        }
-  
-        textarea { height: 120px; line-height: 1.6; resize: vertical; }
-  
-        
-  
-        /* Toggle Switch */
-  
-        .toggle-wrap { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--stroke); }
-  
-        .toggle-label { margin: 0; color: #ccc; }
-  
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-  
-        .switch input { opacity: 0; width: 0; height: 0; }
-  
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; }
-  
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-  
-        input:checked + .slider { background-color: var(--success); }
-  
-        input:checked + .slider:before { transform: translateX(20px); }
-  
-  
-  
-        /* AI Panel */
-  
-        .ai-tips {
-  
-            background: linear-gradient(135deg, rgba(112, 0, 255, 0.08), rgba(0, 0, 0, 0.4));
-  
-            padding: 20px;
-  
-            border-radius: 12px;
-  
-            border: 1px solid rgba(112, 0, 255, 0.3);
-  
-            margin: 30px 0;
-  
-            position: relative;
-  
-        }
-  
-        .ai-tips h4 { margin: 0 0 10px 0; color: #fff; font-family: 'Space Grotesk', sans-serif; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
-  
-        
-  
-        button {
-  
-            width: 100%;
-  
-            padding: 16px;
-  
-            background: var(--accent2);
-  
-            color: #000;
-  
-            border: none;
-  
-            font-weight: 800;
-  
-            border-radius: 10px;
-  
-            font-size: 1rem;
-  
-            font-family: 'Space Grotesk', sans-serif;
-  
-            cursor: pointer;
-  
-            text-transform: uppercase;
-  
-            letter-spacing: 1px;
-  
-            transition: all 0.2s ease;
-  
-            box-shadow: 0 5px 20px rgba(0, 195, 255, 0.15);
-  
-        }
-  
-        button:active { transform: scale(0.98); opacity: 0.9; }
-  
-        
-  
-        .btn-secondary {
-  
-            background: transparent;
-  
-            border: 1px solid var(--stroke);
-  
-            color: #888;
-  
-            box-shadow: none;
-  
-            font-size: 0.8rem;
-  
-            padding: 10px;
-  
-        }
-  
-        .btn-secondary:hover { border-color: #fff; color: #fff; }
-  
-  
-  
-        /* TOAST NOTIFICATION */
-  
-        .toast {
-  
-            position: fixed;
-  
-            top: 20px;
-        /* GATEKEEPER STYLES */
-        .gatekeeper {
-            position: fixed;
-            inset: 0;
-            background: #030305;
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 24px;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
-        }
-        .gate-blur {
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at center, var(--accent) 0%, transparent 60%);
-            opacity: 0.15;
-            filter: blur(80px);
-        }
-        .gate-content {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            width: 100%;
-            max-width: 320px;
-            padding: 20px;
-        }
-        .gate-input {
-            width: 100%;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--stroke);
-            padding: 16px;
-            border-radius: 12px;
-            color: #fff;
-            text-align: center;
-            font-size: 1.2rem;
-            letter-spacing: 4px;
-            margin-bottom: 15px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        .gate-input:focus {
-            border-color: var(--accent2);
-            box-shadow: 0 0 20px rgba(0, 195, 255, 0.2);
-        }
-        .gate-btn {
-            width: 100%;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            letter-spacing: 1px;
-            transition: transform 0.2s ease;
-        }
-        .gate-btn:active { transform: scale(0.98); }
-        .gatekeeper.unlocked {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-        body.locked { overflow: hidden; }
-
-        /* STATUS INDICATORS */
-        .status-pill {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #aaa;
-            border: 1px solid var(--stroke);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            backdrop-filter: blur(5px);
-        }
-        [data-theme="light"] .status-pill {
-            background: #fff;
-            border-color: #d2d2d7;
-            color: #555;
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #444;
-            transition: all 0.3s ease;
-        }
-        .status-dot.active {
-            background: var(--success);
-            box-shadow: 0 0 10px var(--success);
-            animation: pulse-green 2s infinite;
-        }
-        .status-pill.active {
-            border-color: rgba(0, 255, 170, 0.4);
-            color: #fff;
-            background: rgba(0, 255, 170, 0.05);
-        }
-        [data-theme="light"] .status-pill.active {
-            background: rgba(40, 205, 65, 0.1);
-            border-color: var(--success);
-            color: #111;
-        }
-        @keyframes pulse-green {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 170, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(0, 255, 170, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 255, 170, 0); }
-        }
-
-        .checkmark-circle {
-  
-            width: 24px; height: 24px;
-  
-            background: var(--success);
-  
-            border-radius: 50%;
-  
-            display: grid;
-  
-            place-items: center;
-  
-            color: #000;
-  
-            font-size: 14px;
-  
-        }
-  
-  
-  
-        /* Image Preview */
-  
-        #imagePreview {
-  
-            width: 100%;
-  
-            height: 240px;
-  
-            border-radius: 12px;
-  
-            background-size: cover;
-  
-            background-position: center;
-  
-            margin-bottom: 15px;
-  
-            display: none;
-  
-            border: 1px solid var(--stroke);
-  
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  
-        }
-  
-  
-  
-        #toast.mobile-toast {
-            z-index: 1000 !important;
-            top: 70px !important;
-        }
-
-        @media (max-width: 768px) {
-            .admin-header h1 { font-size: 0.9rem; letter-spacing: 1px; }
-            .btn-broadcast { 
-                position: fixed; 
-                bottom: 20px; 
-                left: 20px; 
-                right: 20px; 
-                width: calc(100% - 40px);
-                z-index: 99;
-                box-shadow: 0 10px 30px rgba(112, 0, 255, 0.4);
-            }
-            .form-container { padding-bottom: 150px; } /* Extra space for sticky btn */
-            .diagnostics-panel { margin-bottom: 100px; }
-        }
-    </style>
-  
-  </head>
-  
-  <body class="locked">
-    <!-- GATEKEEPER OVERLAY -->
+<body class="locked">
+    <!-- GATEKEEPER 2.0: SECURE AUTH TERMINAL -->
     <div id="gate" class="gatekeeper">
-        <div class="gate-blur"></div>
-        <div class="gate-content">
-            <h1 style="color: var(--accent2); font-size: 1rem; margin-bottom: 25px; letter-spacing: 2px;">ENCRYPTED CHANNEL <span id="gateCheck" style="display:none; color: var(--success); margin-left: 10px;">✓</span></h1>
-            <input type="password" id="gatePass" class="gate-input" placeholder="••••" maxlength="8">
-            <button onclick="unlockChannel()" class="gate-btn">ESTABLISH CONNECTION</button>
-            <p id="gateError" style="color: #ff4444; font-size: 0.8rem; margin-top: 15px; display: none;">ACCESS DENIED: INVALID SIGNAL</p>
+        <div class="scan-line"></div>
+        <div class="terminal-window">
+             <div class="terminal-header">
+                 <div class="term-dot red"></div>
+                 <div class="term-dot yellow"></div>
+                 <div class="term-dot green"></div>
+                 <span style="margin-left: 10px; opacity: 0.5;">SECURE_SHELL_V3.6</span>
+             </div>
+             <div class="terminal-body">
+                 <div class="logo-glitch-wrap">
+                     <img src="assets/otp_v2.png" class="gate-logo" alt="OTP System" loading="lazy">
+                 </div>
+                 <div class="status-readout">
+                     <p>> INITIALIZING SECURE UPLINK...</p>
+                     <p>> WAITING FOR AUTH TOKEN... <span class="blink">_</span></p>
+                 </div>
+                 
+                 <form class="auth-box" onsubmit="event.preventDefault(); window.unlockChannel();">
+                     <label for="gatePass">ENTER ADMIN PASSCODE</label>
+                     <div class="input-wrapper">
+                         <span class="prompt">></span>
+                         <input type="password" id="gatePass" class="gate-input" placeholder="••••" maxlength="20" autocomplete="off">
+                     </div>
+                     <button type="submit" class="gate-btn">EXECUTE</button>
+                 </form>
+
+                 <div id="gateError" class="error-msg" style="display:none;">
+                     [!] ACCESS DENIED: INVALID CREDENTIALS
+                 </div>
+             </div>
+        </div>
+        <div class="bg-noise"></div>
+    </div>
+
+    <!-- MEDIA LIBRARY MODAL -->
+    <div id="mediaModal" class="modal-overlay" style="display: none;">
+        <div class="media-browser">
+            <div class="media-header">
+                <h3>// ASSET_LIBRARY <span id="mediaCount" style="opacity: 0.5;">(0)</span></h3>
+                <button onclick="closeMediaLibrary()" class="close-icon">✕</button>
+            </div>
+            <div class="media-grid" id="mediaGrid">
+                <!-- Content injected via JS -->
+                <div class="loader">LOADING ASSETS...</div>
+            </div>
+            <div class="media-footer">
+                <button class="btn-secondary" onclick="closeMediaLibrary()">CANCEL</button>
+            </div>
         </div>
     </div>
-  
-  
-  
+
     <!-- TOAST -->
-  
     <div id="toast" class="toast">
-  
         <div class="checkmark-circle">✓</div>
-  
-        <span>POST PUBLISHED SUCCESSFULLY</span>
-  
+        <span>ACTION COMPLETE</span>
     </div>
-  
-  
-  
+
     <header class="admin-header" id="adminHeader">
-        <h1>OTP COMMAND</h1>
-        <div style="font-size: 0.7rem; color: #666; font-family: monospace;">V3.2 LIVE NETWORK</div>
-        <div class="nav-links" style="margin-left: auto;"></div>
+        <h1>OTP COMMAND <span style="font-size: 0.5em; opacity: 0.5; margin-left: 10px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px;">SECURE</span></h1>
+        <div style="font-size: 0.7rem; color: #666; font-family: monospace;">V3.6 PROXY ACTIVE</div>
+        <div class="nav-links" style="margin-left: auto;">
+            <button onclick="logout()" aria-label="Logout from admin panel" style="background: transparent; border: 1px solid #333; color: #666; font-size: 0.7rem; padding: 8px 12px; width: auto;">LOGOUT</button>
+        </div>
     </header>
   
-    <div class="admin-wrap">
+    <main class="admin-wrap">
 
         <!-- DASHBOARD STATS -->
-        <div class="dashboard-grid">
-            <div class="stat-card" data-tooltip="Total number of published posts and insights.">
-                <h3>Total Broadcasts</h3>
-                <div class="value" id="statPosts">--</div>
-            </div>
-            <div class="stat-card" data-tooltip="Aggregate count of all unique page views.">
-                <h3>Total Views</h3>
-                <div class="value" id="statViews">--</div>
-            </div>
-            <div class="stat-card" data-tooltip="Estimated number of users currently on the site.">
-                <h3>Live Viewers</h3>
-                <div class="value" id="statLive" style="color: var(--admin-success);">--</div>
-            </div>
-            <div class="stat-card" data-tooltip="Highest concurrent viewership recorded in 24h.">
-                <h3>Peak Viewers</h3>
-                <div class="value" id="statPeak">--</div>
-            </div>
-            <div class="stat-card" data-tooltip="Average time users spend on a page.">
-                <h3>Avg. Duration</h3>
-                <div class="value" id="statDuration">--</div>
-            </div>
-        </div>
+        <section class="stats-grid" aria-label="Dashboard Statistics">
+             <div class="stat-card">
+                 <h3>VIEWS (24H)</h3>
+                 <p class="stat-num" id="statViews">--</p>
+                 <span class="stat-change positive">SYNCED</span>
+             </div>
+             <div class="stat-card">
+                 <h3>ACTIVE NOW</h3>
+                 <p class="stat-num" id="statLive">--</p>
+                 <span class="stat-pulse" aria-hidden="true"></span>
+             </div>
+             <div class="stat-card">
+                 <h3>SYSTEM</h3>
+                 <p class="stat-num" style="color:var(--success)">ONLINE</p>
+                 <span class="stat-change">V3.6</span>
+             </div>
+        </section>
         
-        <form id="postForm">
-  
-            
-  
-            <!-- ACCESS -->
-  
-            
+        <form id="postForm" aria-label="Create or edit a broadcast">
   
             <!-- SECTION: MEDIA -->
-  
-            <div class="section-label">01 // Visual Intelligence</div>
-  
-            <div class="input-group">
-  
-                <div id="imagePreview" style="display:none; border-radius: 12px; overflow: hidden; border: 1px solid var(--stroke); margin-bottom: 15px;">
-                    <img id="previewImg" src="" alt="Preview" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">
+            <section class="input-section">
+                <div class="section-label">01 // Visual Intelligence</div>
+    
+                <div class="input-group">
+                    <div id="imagePreview" style="display:none; border-radius: 12px; overflow: hidden; border: 1px solid var(--stroke); margin-bottom: 15px;">
+                        <img id="previewImg" src="" alt="Post visual preview" loading="lazy" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">
+                    </div>
+                    <div id="fileDetails" style="display: none; padding: 10px; border: 1px dashed var(--stroke); border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #888;">
+                        <span id="fileNameDisplay"></span> <span id="fileSizeDisplay" style="color: var(--accent);"></span>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('fileInput').click()" style="flex: 1;" aria-label="Upload image or video">Upload Media</button>
+                        <button type="button" class="btn-secondary" onclick="openMediaLibrary()" style="flex: 1;" aria-label="Select from media library">Library</button>
+                        <input type="file" id="fileInput" accept="image/*,video/*" style="display: none">
+                    </div>
+                    <label for="urlInput" class="sr-only">External Media URL</label>
+                    <input type="text" id="urlInput" placeholder="Or Paste URL..." style="border: 1px solid var(--stroke); background: transparent; margin-top: 10px;">
+                    <input type="hidden" name="image_url" id="imageUrl">
                 </div>
-                <!-- File Details Container -->
-                <div id="fileDetails" style="display: none; padding: 10px; border: 1px dashed var(--stroke); border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #888;">
-                    <span id="fileNameDisplay"></span> <span id="fileSizeDisplay" style="color: var(--accent);"></span>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button type="button" class="btn-secondary" onclick="document.getElementById('fileInput').click()">Upload Media</button>
-                    <input type="file" id="fileInput" accept="image/*,video/*" style="display: none">
-                    <input type="text" id="urlInput" placeholder="Or Paste URL..." style="border: 1px solid var(--stroke); background: transparent;">
-                </div>
-                <input type="hidden" name="image_url" id="imageUrl">
-  
-            </div>
-  
-  
+            </section>
   
             <!-- SECTION: CORE DATA -->
-  
-            <div class="section-label">02 // Core Data</div>
-  
-            
-  
-            <div class="input-group">
-  
-                <label>Headline</label>
-  
-                <input type="text" name="title" id="titleInput" placeholder="The Death of 1080p" required>
-  
-            </div>
-  
-  
-  
-            <div class="row">
-  
+            <section class="input-section">
+                <div class="section-label">02 // Core Data</div>
+    
                 <div class="input-group">
-  
-                    <label>Slug</label>
-  
-                    <input type="text" name="slug" id="slugInput" placeholder="auto-generated" style="color: var(--accent2);">
-  
+                    <label for="titleInput">Headline</label>
+                    <input type="text" name="title" id="titleInput" placeholder="The Death of 1080p" required>
                 </div>
-  
-                <div class="input-group">
-  
-                    <label>Category</label>
-  
-                    <select name="category" id="catInput">
-  
-                        <option value="Strategy">Strategy</option>
-  
-                        <option value="Tech">Tech</option>
-  
-                        <option value="Production">Production</option>
-  
-                        <option value="Case Study">Case Study</option>
-  
-                    </select>
-  
-                </div>
-  
-            </div>
-  
-  
-  
-            <div class="row">
-                <div class="input-group">
-                    <label>Author</label>
-                    <input type="text" name="author" value="OTP Admin">
-                </div>
-            </div>
-            <!-- Removed Duplicate Presets Block -->
-
-        <div class="wrap" style="padding: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-           <div class="status-pill k-hover"><div class="status-dot" id="dbStatusDot"></div> DB LINKED</div>
-           <div class="status-pill k-hover"><div class="status-dot" id="uploadStatusDot"></div> MEDIA SYNC</div>
-           <div class="status-pill k-hover"><div class="status-dot" id="aiStatusDot"></div> AI GHOST</div>
-        </div>
-            <!-- DIAGNOSTICS PANEL -->
-            <div id="diagnosticsPanel" style="background: rgba(0,0,0,0.3); border: 1px solid var(--stroke); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <h4 style="margin: 0 0 10px 0; color: #888; font-size: 0.75rem; text-transform: uppercase;">System Diagnostics</h4>
-                <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 0.8rem; font-family: monospace;">
-                    <div id="diagDB" style="display: flex; justify-content: space-between;"><span>DATABASE:</span> <span style="color: yellow;">CONNECTING...</span></div>
-                    <div id="diagUpload" style="display: flex; justify-content: space-between;"><span>STORAGE:</span> <span style="color: #666;">IDLE</span></div>
-                    <div id="diagAuth" style="display: flex; justify-content: space-between;"><span>GATEKEEPER:</span> <span style="color: #ff4444;">LOCKED</span></div>
-                </div>
-            </div>
-  
-            <!-- AI BRAIN -->
-  
-            <div class="ai-tips">
-  
-                <h4>🤖 NEURAL GENERATOR V3</h4>
-  
-                <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 15px;">Fills Content, SEO, and Metadata automatically.</p>
-  
-                
-  
-                <div class="row" style="gap: 12px; margin-bottom: 12px;">
-                    <div class="input-group" style="flex: 0.4;">
-                        <label>AI Provider</label>
-                        <select id="aiProvider" onchange="window.switchProvider(this.value); document.getElementById('geminiModelGroup').style.display = (this.value === 'gemini') ? 'block' : 'none';" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
-                            <option value="openai">OpenAI (GPT-4o)</option>
-                            <option value="gemini">Google Gemini (Free Tier)</option>
+    
+                <div class="row">
+                    <div class="input-group">
+                        <label for="slugInput">Slug</label>
+                        <input type="text" name="slug" id="slugInput" placeholder="auto-generated" style="color: var(--accent2);">
+                        <input type="hidden" name="post_id" id="postIdInput"> <!-- Hidden ID for Edits -->
+                    </div>
+                    <div class="input-group">
+                        <label for="catInput">Category</label>
+                        <select name="category" id="catInput">
+                            <option value="Strategy">Strategy</option>
+                            <option value="Tech">Tech</option>
+                            <option value="Production">Production</option>
+                            <option value="Case Study">Case Study</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="row">
+                    <div class="input-group">
+                        <label for="authorInput">Author</label>
+                        <input type="text" name="author" id="authorInput" value="OTP Admin">
+                    </div>
+                </div>
+
+                <div class="wrap" style="padding: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                   <div class="status-pill k-hover"><div class="status-dot" id="dbStatusDot"></div> DB LINKED</div>
+                   <div class="status-pill k-hover"><div class="status-dot" id="aiStatusDot"></div> PROXY ACTIVE</div>
+                </div>
+
+                <div id="diagnosticsPanel" style="background: rgba(0,0,0,0.3); border: 1px solid var(--stroke); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #888; font-size: 0.75rem; text-transform: uppercase;">System Diagnostics</h4>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 0.8rem; font-family: monospace;">
+                        <div id="diagDB" style="display: flex; justify-content: space-between;"><span>DATABASE:</span> <span style="color: yellow;">CONNECTING...</span></div>
+                        <div id="diagAuth" style="display: flex; justify-content: space-between;"><span>GATEKEEPER:</span> <span style="color: #ff4444;">LOCKED</span></div>
+                    </div>
+                </div>
+            </section>
+  
+            <!-- AI BRAIN (SECURE) -->
+            <section class="ai-tips">
+                <h4>🤖 SECURE NEURAL GENERATOR</h4>
+                <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 15px;">Powered by Server-Side Proxy. Keys are hidden.</p>
+  
+                <div class="row" style="gap: 12px; margin-bottom: 12px;">
                     <div class="input-group" style="flex: 1;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label>Neural Access Key</label>
-                            <div id="keyLinks" style="font-size: 10px; opacity: 0.8;">
-                                <a href="https://platform.openai.com/api-keys" target="_blank" id="openaiKeyLink" style="color: var(--accent2); text-decoration: none;">[GET OPENAI KEY]</a>
-                                <a href="https://aistudio.google.com/app/apikey" target="_blank" id="geminiKeyLink" style="color: var(--accent2); text-decoration: none; display: none;">[GET GEMINI KEY]</a>
-                            </div>
-                        </div>
-                        <input type="password" id="apiKey" placeholder="OpenAI API Key (sk-...)" onchange="localStorage.setItem('ai_key_' + document.getElementById('aiProvider').value, this.value)" style="background: rgba(0,0,0,0.3);">
+                        <label for="aiProvider">AI Provider</label>
+                        <select id="aiProvider" onchange="window.switchProvider(this.value);" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
+                            <option value="openai">OpenAI (GPT-4o)</option>
+                            <option value="gemini">Google Gemini</option>
+                        </select>
                     </div>
                 </div>
 
                 <div id="geminiModelGroup" style="display: none; margin-bottom: 12px;">
                     <div class="input-group">
-                        <label>Gemini Model Variant</label>
-                        <select id="geminiModel" onchange="localStorage.setItem('gemini_model', this.value)" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
-                            <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fastest / Free)</option>
-                            <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Next Gen / Free Preview)</option>
-                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Smarter / Student/Pro Tier)</option>
+                        <label for="geminiModel">Gemini Model Variant</label>
+                        <select id="geminiModel" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
                         </select>
                     </div>
                 </div>
   
-                
-  
                 <div class="input-group">
-                     <label>Post Archetype (Presets)</label>
+                     <label for="archetype">Post Archetype</label>
                      <select id="archetype" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
-                         <option value="technical">Technical Breakdown (Edgy, Deep)</option>
-                         <option value="launch">Visual Launch (Hype, Fast)</option>
-                         <option value="strategy">Business Strategy (Professional, ROI focused)</option>
-                         <option value="case-study">Case Study (Data driven, Results)</option>
+                         <option value="technical">Technical Breakdown</option>
+                         <option value="launch">Visual Launch</option>
+                         <option value="strategy">Business Strategy</option>
+                         <option value="case-study">Case Study</option>
                      </select>
                 </div>
 
                 <div class="row">
-  
                     <div class="input-group">
-  
-                         <label>Core Concept / Prompt</label>
-  
-                         <textarea id="aiPrompt" placeholder="What is this about? (e.g. Testing the Sony A7SIII in low light Rhode Island rain)" style="height: 60px;"></textarea>
-  
+                         <label for="aiPrompt">Core Concept / Prompt</label>
+                         <textarea id="aiPrompt" placeholder="What is this about? (e.g. Testing the Sony A7SIII in low light)" style="height: 60px;"></textarea>
                     </div>
-  
-                    <button type="button" id="magicBtn" style="height: 100%; margin-top: 23px; background: linear-gradient(135deg, #7000ff, #ff00ff); color: white;">⚡ TRANSMIT TO AI (FULL AUTO)</button>
-  
+                    <button type="button" id="magicBtn" style="height: 100%; margin-top: 23px; background: linear-gradient(135deg, #7000ff, #ff00ff); color: white;" aria-label="Generate content using AI">⚡ TRANSMIT TO AI</button>
                 </div>
   
-                <div id="aiStatus" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px;"></div>
-  
-            </div>
-  
-  
+                <div id="aiStatus" role="status" aria-live="polite" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px;"></div>
+            </section>
   
             <!-- SECTION: CONTENT -->
-  
-            <div class="section-label">03 // The Meat</div>
-  
-            
-  
-            <div class="input-group">
-  
-                <label>Excerpt (Card Summary)</label>
-  
-                <textarea name="excerpt" id="excerptInput" style="height: 80px;" required placeholder="The short sequence that appears on the feed grid..."></textarea>
-  
-            </div>
-  
-  
-  
-            <div class="input-group">
-  
-                <label>Full Content (Markdown/HTML)</label>
-  
-                <textarea name="content" id="contentArea" style="height: 400px; font-family: monospace; font-size: 0.9rem;" required placeholder="Paste your article here or use the generator above..."></textarea>
-  
-            </div>
-  
-  
+            <section class="input-section">
+                <div class="section-label">03 // The Meat</div>
+    
+                <div class="input-group">
+                    <label for="excerptInput">Excerpt (Card Summary)</label>
+                    <textarea name="excerpt" id="excerptInput" style="height: 80px;" required placeholder="The short sequence that appears on the feed grid..."></textarea>
+                </div>
+    
+                <div class="input-group">
+                    <label for="contentArea">Full Content (Markdown/HTML)</label>
+                    <textarea name="content" id="contentArea" style="height: 400px; font-family: monospace; font-size: 0.9rem;" required placeholder="Paste your article here or use the generator above..."></textarea>
+                </div>
+            </section>
   
             <!-- SECTION: SEO & ANALYTICS -->
-  
-            <div class="section-label">04 // Visibility Controls</div>
-  
-            
-  
-            <div class="input-group">
-  
-                <label>SEO Meta Title</label>
-  
-                <input type="text" name="seo_title" id="seoTitle" placeholder="Google optimized title">
-  
-            </div>
-  
-            
-  
-            <div class="input-group">
-  
-                <label>SEO Meta Description</label>
-  
-                <textarea name="seo_desc" id="seoDesc" style="height: 80px;" placeholder="Snippet for search results..."></textarea>
-  
-            </div>
-  
-  
-  
-            <div class="row">
-  
-               <div class="input-group">
-  
-                   <label>Initial Views</label>
-  
-                   <input type="number" name="views" value="0" placeholder="0">
-  
-               </div>
-  
-               <div class="toggle-wrap">
-  
-                   <span class="toggle-label">Live Status</span>
-  
-                   <label class="switch">
-  
-                     <input type="checkbox" name="published" id="pubToggle" checked>
-  
-                     <span class="slider"></span>
-  
-                   </label>
-  
-               </div>
-  
-            </div>
-  
-  
+            <section class="input-section">
+                <div class="section-label">04 // Visibility Controls</div>
+                
+                <div class="input-group">
+                    <label for="seoTitle">SEO Meta Title</label>
+                    <input type="text" name="seo_title" id="seoTitle" placeholder="Google optimized title">
+                </div>
+                
+                <div class="input-group">
+                    <label for="seoDesc">SEO Meta Description</label>
+                    <textarea name="seo_desc" id="seoDesc" style="height: 80px;" placeholder="Snippet for search results..."></textarea>
+                </div>
+    
+                <div class="row">
+                   <div class="input-group">
+                       <label for="viewsInput">Initial Views</label>
+                       <input type="number" name="views" id="viewsInput" value="0" placeholder="0">
+                   </div>
+                   <div class="toggle-wrap">
+                       <span class="toggle-label">Live Status</span>
+                       <label class="switch">
+                         <input type="checkbox" name="published" id="pubToggle" checked aria-label="Publish status">
+                         <span class="slider"></span>
+                       </label>
+                   </div>
+                </div>
+            </section>
   
             <div style="height: 30px;"></div>
-  
             
-  
-            <button type="submit" id="submitBtn" style="height: 70px; font-size: 1.2rem; margin-bottom: 20px; background: var(--success); color: #000;">COMMENCE BROADCAST</button>
-  
+            <button type="submit" id="submitBtn" style="height: 70px; font-size: 1.2rem; margin-bottom: 20px; background: var(--success); color: #000;" aria-label="Publish post to the live network">COMMENCE BROADCAST</button>
             
-  
-            <div style="text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center;">
-  
-                <button type="button" class="btn-secondary" onclick="copySchema()" style="width: auto; opacity: 0.5;">📋 Copy DB Upgrade SQL</button>
-                <button type="button" class="btn-secondary" onclick="runDatabaseCleanup()" style="width: auto; border-color: var(--admin-danger); color: var(--admin-danger); opacity: 0.8;">🧹 Run Smart Cleanup (Purge Trash)</button>
-  
-            </div>
-
             <!-- SECTION: MANAGE -->
-            <div class="section-label">05 // Active Broadcasts</div>
-            
-            <!-- Manual Slug Deletion -->
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <input type="text" id="manualDeleteSlug" placeholder="Paste slug to remove (e.g. whats-so-elegant...)" style="flex: 1; padding: 10px; font-size: 0.8rem;">
-                <button type="button" onclick="deleteBySlug()" style="width: auto; background: var(--admin-danger); color: #fff; padding: 0 20px; font-size: 0.8rem;">KILL SLUG</button>
-            </div>
-
-            <div id="postManager" style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--stroke); padding: 15px; max-height: 400px; overflow-y: auto;">
-                <div style="text-align: center; color: #666; font-size: 0.8rem; padding: 20px;">LOADING TRANSMISSIONS...</div>
-            </div>
+            <section class="input-section">
+                <div class="section-label">05 // Active Broadcasts</div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <label for="manualDeleteSlug" class="sr-only">Slug to delete</label>
+                    <input type="text" id="manualDeleteSlug" placeholder="Paste slug to remove (e.g. whats-so-elegant...)" style="flex: 1; padding: 10px; font-size: 0.8rem;">
+                    <button type="button" onclick="deleteBySlug()" style="width: auto; background: var(--admin-danger); color: #fff; padding: 0 20px; font-size: 0.8rem;" aria-label="Delete post by slug">KILL SLUG</button>
+                </div>
+    
+                <div id="postManager" role="region" aria-label="Existing posts" style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--stroke); padding: 15px; max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; color: #666; font-size: 0.8rem; padding: 20px;">LOADING TRANSMISSIONS...</div>
+                </div>
+            </section>
   
         </form>
-  
-    </div>
-  
-    
-  
-    <!-- ERROR LOG MODAL -->
-    <div id="errorModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 20000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-        <div style="background: #111; border: 1px solid #ff4444; width: 90%; max-width: 600px; padding: 25px; border-radius: 12px; position: relative; box-shadow: 0 0 50px rgba(255, 68, 68, 0.2);">
-            <h3 style="color: #ff4444; margin-top: 0; font-family: 'Space Grotesk', sans-serif;">⚠️ BROADCAST FAILURE</h3>
-            <div id="errorContent" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; color: #ffaaaa; font-family: monospace; font-size: 0.85rem; max-height: 300px; overflow-y: auto; white-space: pre-wrap; margin-bottom: 20px; border: 1px solid rgba(255, 68, 68, 0.3);"></div>
-            <div style="display: flex; gap: 10px;">
-                <button onclick="document.getElementById('errorModal').style.display='none'" style="background: transparent; border: 1px solid #555; color: #fff;">DISMISS</button>
-                <button onclick="navigator.clipboard.writeText(document.getElementById('errorContent').textContent); this.textContent='COPIED!'" style="background: #333; color: #fff; border: 1px solid #555;">COPY LOG</button>
-            </div>
-        </div>
-    </div>
+    </main>
 
     <!-- DELETE CONFIRMATION MODAL -->
     <div id="deleteModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20001; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
@@ -935,37 +300,35 @@
         </div>
     </div>
 
-    <!-- MAINTENANCE CONFIRMATION MODAL -->
-    <div id="maintenanceModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20002; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
-        <div style="background: #111; border: 1px solid var(--admin-cyan); width: 90%; max-width: 400px; padding: 30px; border-radius: 16px; text-align: center; box-shadow: 0 0 60px rgba(0, 195, 255, 0.15);">
-            <div style="font-size: 3rem; margin-bottom: 10px;">🧹</div>
-            <h3 style="color: #fff; margin: 0 0 10px 0; font-family: 'Space Grotesk', sans-serif; letter-spacing: 1px;">DATABASE MAINTENANCE</h3>
-            <p style="color: #888; font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5;">This will purge all posts with less than 50 words.<br><span style="color: var(--admin-success);">Spooky and Elegant posts are protected.</span></p>
-            
-            <div style="display: flex; gap: 12px; justify-content: center;">
-                <button onclick="document.getElementById('maintenanceModal').style.display='none'" style="background: transparent; border: 1px solid #444; color: #fff; flex: 1;">CANCEL</button>
-                <button id="confirmMaintenanceBtn" style="background: var(--admin-cyan); color: #000; border: none; flex: 1; box-shadow: 0 5px 20px rgba(0, 195, 255, 0.25);">PROCEED</button>
-            </div>
-        </div>
-    </div>
-
     <!-- 1. SUPABASE LIBRARY -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
-    <!-- 2. SITE CONFIG (Keys and Credentials First) -->
+    <!-- 2. SITE CONFIG & INIT -->
     <script src="site-config.js"></script>
+    <script src="site-init.js" defer></script>
 
-    <!-- 3. SITE INIT (Theme, Global Utils) -->
-    <script src="site-init.js"></script>
+    <!-- 3. ADMIN CORE (Defer for perf) -->
+    <script src="admin-core.js?v=3.7"></script>
 
-    <!-- 4. ADMIN CORE (Auth, DB, Logic) -->
-    <script src="admin-core.js"></script>
-
-    <!-- 4. UI SPECIFIC (Uploads, AI - Managed by Admin Core) -->
+    <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
-      // Slug Auto-Gen (Keep here for snappy UI, or move to core)
+      // IMMEDIATE UNLOCK CHECK
+      // Runs before admin-core.js to ensure fast dashboard access
+      (function() {
+          const token = localStorage.getItem('otp_admin_token');
+          if(token) {
+              console.log("🔓 Valid Token Found. Unlocking UI...");
+              document.body.classList.remove('locked');
+              // Hide gate immediately
+              const style = document.createElement('style');
+              style.innerHTML = '#gate { display: none !important; }';
+              document.head.appendChild(style);
+          }
+      })();
+
       const titleInput = document.getElementById('titleInput');
       const slugInput = document.getElementById('slugInput');
+      // ... (rest of existing code)
       if(titleInput) {
           titleInput.addEventListener('input', (e) => {
                const slug = e.target.value.toLowerCase()
@@ -976,6 +339,73 @@
                if(slugInput) slugInput.value = slug;
           });
       }
+
+      // CRITICAL: Standalone Login Logic (Bootstrap)
+      // This ensures we can login even if admin-core.js is slow or failing
+      // CRITICAL: Standalone Login Logic (Bootstrap)
+      // This ensures we can login even if admin-core.js is slow or failing
+      window.unlockChannel = async function() {
+          // console.log("🔓 Bootstrap Login Initiated...");
+          
+          const input = document.getElementById('gatePass');
+          const btn = document.querySelector('.gate-btn');
+          const errorMsg = document.getElementById('gateError');
+
+          if (!input) return;
+          const passcode = input.value;
+          
+          if(btn) {
+              btn.textContent = "VERIFYING...";
+              btn.disabled = true;
+          }
+
+          try {
+              const res = await fetch('/api/auth/login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ passcode })
+              });
+
+              if (!res.ok) {
+                   if(res.status === 429) {
+                        alert("FAILED: Server says Rate Limited (429). Please wait 1 min.");
+                        throw new Error("RATE LIMIT (429)");
+                   }
+                   if(res.status === 401) {
+                        // alert("FAILED: Server says Wrong Password.");
+                        throw new Error("ACCESS DENIED (Wrong Passcode)");
+                   }
+                   throw new Error(`Server Error (${res.status})`);
+              }
+              
+              const data = await res.json();
+              
+              if (data.success && data.token) {
+                  console.log("🔓 TOKEN ACQUIRED. RELOADING...");
+                  localStorage.setItem('otp_admin_token', data.token);
+                  window.location.reload();
+              } else {
+                  throw new Error("INVALID CREDENTIALS");
+              }
+          } catch (e) {
+              console.warn("🔒 LOGIN FAILED:", e.message);
+              
+              if(errorMsg) {
+                  errorMsg.style.display = 'block';
+                  errorMsg.textContent = `[!] ${e.message}`;
+                  errorMsg.style.animation = 'none';
+                  errorMsg.offsetHeight; 
+                  errorMsg.style.animation = 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both';
+              }
+              input.value = '';
+              input.focus();
+          } finally {
+              if(btn) {
+                  btn.textContent = "EXECUTE";
+                  btn.disabled = false;
+              }
+          }
+      };
     </script>
-  </body>
+</body>
 </html>

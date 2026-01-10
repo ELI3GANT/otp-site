@@ -320,15 +320,16 @@
 
 /* PACKAGE BUTTONS (Light Mode) */
 [data-theme="light"] .pkg-select-btn {
-  border: 1px solid #d1d1d6;
-  color: #333;
+  border: 1px solid #ccc;
+  color: #000;
   font-weight: 700;
+  background: rgba(0,0,0,0.03);
 }
 [data-theme="light"] .pkg-select-btn:hover {
-  background: #111;
+  background: #000;
   color: #fff;
-  border-color: #111;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+  border-color: #000;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
 }
 
 /* RESPONSIVE TYPOGRAPHY (Global & Light Mode) */
@@ -1190,7 +1191,8 @@ html {
   font-family: 'Syne', sans-serif;
   font-size: 0.9rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--accent2); /* Neon Cyan */
+  text-shadow: 0 0 15px rgba(0, 195, 255, 0.5); /* Glow */
   line-height: 1.4; /* Increased from 1.0 */
   padding-bottom: 4px;
   margin-bottom: 6px;
@@ -5388,3 +5390,51 @@ input:focus, select:focus, textarea:focus {
   scroll-margin-top: 100px;
 }
 
+
+/* SPECIAL TIER BUTTON (The Partner - Night Mode) */
+.network-pkg .pkg-select-btn {
+  background: linear-gradient(135deg, rgba(112,0,255,0.1), rgba(0,195,255,0.1));
+  border: 1px solid rgba(0,195,255,0.3);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 0 15px rgba(0,195,255,0.1);
+}
+
+.network-pkg .pkg-select-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: 0.5s;
+}
+
+.network-pkg .pkg-select-btn:hover {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-color: rgba(255,255,255,0.8);
+  box-shadow: 0 0 30px rgba(0,195,255,0.5), 0 0 10px rgba(112,0,255,0.5);
+  transform: translateY(-2px);
+  text-shadow: 0 0 5px rgba(255,255,255,0.5);
+}
+
+.network-pkg .pkg-select-btn:hover::before {
+  left: 100%;
+}
+
+/* Ensure Light Mode override for Special Tier remains clean */
+[data-theme="light"] .network-pkg .pkg-select-btn {
+  background: linear-gradient(135deg, #f0f0f0, #fff);
+  border: 1px solid #ccc;
+  color: #000;
+  box-shadow: none;
+}
+[data-theme="light"] .network-pkg .pkg-select-btn:hover {
+  background: #000;
+  border-color: #000;
+  color: #fff;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}

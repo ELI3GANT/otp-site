@@ -1,24 +1,24 @@
 /**
- * ADMIN CORE V3.2
+ * ADMIN CORE V3.6 (SECURE)
  * Centralized logic for the OTP Admin Panel.
- * Handles: Authentication, Supabase Connection, UI State, and Diagnostics.
+ * Handles: Server-side Auth, Secure API Proxy, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V3.5 PRO: Boot sequence initiated...");
+    console.log("🚀 ADMIN CORE V3.6 SECURE: Boot sequence initiated...");
 
     // 0. CONFIGURATION
     const CONFIG = {
         supabaseUrl: window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : '',
-        supabaseKey: window.OTP_CONFIG ? window.OTP_CONFIG.supabaseKey : '',
-        passcode: window.OTP_CONFIG ? window.OTP_CONFIG.adminPasscode : ''
+        supabaseKey: window.OTP_CONFIG ? window.OTP_CONFIG.supabaseKey : ''
     };
 
     // 1. STATE
     const state = {
         client: null,
         isConnected: false,
-        isUnlocked: false
+        isUnlocked: false,
+        token: localStorage.getItem('otp_admin_token') || null // Persist session
     };
 
     // 2. DIAGNOSTICS UI UPDATE
@@ -39,6 +39,13 @@
 
     // 3. INITIALIZATION
     async function init() {
+        // Auto-login check
+        if (state.token) {
+             console.log("🔄 Found existing session token.");
+             // Ideally verify token validity here, but for now we assume valid until 401
+             unlockUI(); 
+        }
+
         // Check for Supabase Library
         if (typeof window.supabase === 'undefined') {
             console.error("❌ CRITICAL: Supabase Library not loaded.");
@@ -52,42 +59,18 @@
             window.sb = state.client; // Expose global
             
             // Test Connection
-            const { data: schemaTest, count, error } = await state.client.from('posts').select('*', { count: 'exact' }).limit(1);
+            const { count, error } = await state.client.from('posts').select('*', { count: 'exact', head: true });
             
             if (error) throw error;
 
-            // Diagnostic: Check for author column
-            if (schemaTest && schemaTest.length > 0) {
-                const hasAuthor = 'author' in schemaTest[0];
-                console.log(`📊 SCHEMA CHECK: author column ${hasAuthor ? 'EXISTS' : 'MISSING'}`);
-                if(!hasAuthor) updateDiagnostics('db', 'SCHEMA OUTDATED', 'orange');
-            }
-
             state.isConnected = true;
             console.log(`✅ DATABASE ONLINE. Posts: ${count}`);
-            updateDiagnostics('db', `CONNECTED (${count} POSTS)`, 'var(--success)');
+            updateDiagnostics('db', `CONNECTED`, 'var(--success)');
             showToast("SYSTEM ONLINE");
             
             // Activate Dot
             const dot = document.getElementById('dbStatusDot');
             if(dot) dot.classList.add('active');
-
-            // Load persistent key & provider
-            const savedProvider = localStorage.getItem('ai_provider') || 'openai';
-            const provEl = document.getElementById('aiProvider');
-            if(provEl) {
-                provEl.value = savedProvider;
-                // Trigger placeholder update
-                provEl.dispatchEvent(new Event('change'));
-            }
-
-            const savedKey = localStorage.getItem('ai_key_' + savedProvider);
-            const keyEl = document.getElementById('apiKey');
-            if(savedKey && keyEl) keyEl.value = savedKey;
-
-            const savedGemModel = localStorage.getItem('gemini_model');
-            const gemModEl = document.getElementById('geminiModel');
-            if(savedGemModel && gemModEl) gemModEl.value = savedGemModel;
 
             // Load Posts for Manager & Stats
             fetchPosts();
@@ -98,26 +81,189 @@
         }
     }
 
+    // --- AUTHENTICATION (SERVER SIDE) ---
+    window.unlockChannel = async function() {
+        console.log("🔓 Attempting to unlock channel...");
+        const input = document.getElementById('gatePass');
+        const errorMsg = document.getElementById('gateError');
+        const btn = document.querySelector('.gate-btn');
+
+        if (!input) return;
+        const passcode = input.value;
+        
+        if(btn) {
+            btn.textContent = "VERIFYING...";
+            btn.disabled = true;
+        }
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ passcode })
+            });
+
+            // Check for HTTP errors first
+            if (!res.ok) {
+                if(res.status === 429) throw new Error("Rate Limited (429). Wait a moment.");
+                if(res.status === 401) throw new Error("Wrong Passcode");
+                throw new Error(`Server Error (${res.status})`);
+            }
+            
+            const data = await res.json();
+            
+            if (data.success && data.token) {
+                console.log("🔓 ACCESS GRANTED");
+                state.token = data.token;
+                localStorage.setItem('otp_admin_token', data.token);
+                unlockUI();
+            } else {
+                throw new Error("Invalid Credentials");
+            }
+        } catch (e) {
+            console.warn("🔒 ACCESS DENIED:", e.message);
+            
+            // Show specific error if possible
+            if(errorMsg) {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = `[!] DENIED: ${e.message.toUpperCase()}`;
+                
+                errorMsg.style.animation = 'none';
+                errorMsg.offsetHeight; /* trigger reflow */
+                errorMsg.style.animation = 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both';
+            }
+            // alert(e.message); // Too intrusive?
+            input.value = '';
+            input.focus();
+        } finally {
+            if(btn) {
+                btn.textContent = "EXECUTE";
+                btn.disabled = false;
+            }
+        }
+    };
+
+    function unlockUI() {
+        state.isUnlocked = true;
+        const gate = document.getElementById('gate');
+        const status = document.querySelector('.status-readout');
+        
+        if(status) status.innerHTML = `<p style="color: var(--success)">> SESSION TOKEN VALID.</p><p style="color: var(--success)">> DECRYPTING DASHBOARD...</p>`;
+        
+        setTimeout(() => {
+            if(gate) gate.classList.add('unlocked');
+            document.body.classList.remove('locked');
+            updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
+        }, 800);
+    }
+    
+    window.logout = function() {
+        localStorage.removeItem('otp_admin_token');
+        location.reload();
+    };
+
     // --- POST MANAGER & STATS LOGIC ---
     let postsCache = null;
     let lastFetchTime = 0;
     const CACHE_TTL = 60000; // 60s Cache
 
+    // 4.6 FILE UPLOAD LOGIC
+    window.handleFileUpload = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const btn = document.querySelector('button[onclick="document.getElementById(\'fileInput\').click()"]');
+        if(btn) btn.textContent = "UPLOADING...";
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `blog/${fileName}`;
+
+            // Upload using standard client (requires bucket permissions)
+            const { error: uploadError } = await state.client.storage
+                .from('uploads')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = state.client.storage
+                .from('uploads')
+                .getPublicUrl(filePath);
+
+            document.getElementById('imageUrl').value = publicUrl;
+            document.getElementById('fileDetails').style.display = 'block';
+            document.getElementById('fileNameDisplay').textContent = file.name;
+            document.getElementById('fileSizeDisplay').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            
+            const prevImg = document.getElementById('previewImg');
+            if(prevImg) {
+                prevImg.src = publicUrl;
+                document.getElementById('imagePreview').style.display = 'block';
+            }
+            
+            showToast("FILE UPLOADED SUCCESSFULLY");
+
+        } catch (err) {
+            console.error("Upload Failed:", err);
+            alert("Upload Failed: " + err.message);
+        } finally {
+            if(btn) btn.textContent = "Upload Media";
+        }
+    };
+    
+    // 4.7 EDIT POST LOGIC
+    window.loadPostForEdit = async function(id) {
+        let post = postsCache ? postsCache.find(p => p.id === id) : null;
+        if(!post) return;
+
+        document.getElementById('postIdInput').value = post.id;
+        document.getElementById('titleInput').value = post.title;
+        document.getElementById('slugInput').value = post.slug;
+        document.getElementById('imageUrl').value = post.image_url || '';
+        document.getElementById('urlInput').value = post.image_url || '';
+        document.getElementById('catInput').value = post.category || 'Strategy';
+        document.getElementById('authorInput').value = post.author || 'OTP Admin';
+        document.getElementById('excerptInput').value = post.excerpt || '';
+        document.getElementById('contentArea').value = post.content || '';
+        document.getElementById('seoTitle').value = post.seo_title || '';
+        document.getElementById('seoDesc').value = post.seo_desc || '';
+        document.getElementById('viewsInput').value = post.views || 0;
+        document.getElementById('pubToggle').checked = post.published;
+
+        const submitBtn = document.getElementById('submitBtn');
+        if(submitBtn) {
+            submitBtn.textContent = "UPDATE BROADCAST";
+            submitBtn.style.background = "var(--accent)"; 
+            submitBtn.style.color = "#fff";
+        }
+        
+        document.getElementById('postForm').scrollIntoView({ behavior: 'smooth' });
+        showToast("POST LOADED FOR EDITING");
+    };
+
+    window.resetForm = function() {
+        document.getElementById('postForm').reset();
+        document.getElementById('postIdInput').value = '';
+        document.getElementById('imagePreview').style.display = 'none';
+        
+        const submitBtn = document.getElementById('submitBtn');
+        if(submitBtn) {
+            submitBtn.textContent = "COMMENCE BROADCAST";
+            submitBtn.style.background = "var(--success)";
+            submitBtn.style.color = "#000";
+        }
+    };
+
     async function fetchPosts(force = false) {
         const list = document.getElementById('postManager');
-        const statPosts = document.getElementById('statPosts');
-        const statViews = document.getElementById('statViews');
-        const statLive = document.getElementById('statLive');
-        const statPeak = document.getElementById('statPeak');
-        const statDuration = document.getElementById('statDuration');
-
         if(!list) return;
 
         // Cache Check
         const now = Date.now();
         if (!force && postsCache && (now - lastFetchTime < CACHE_TTL)) {
             renderPosts(postsCache);
-            updateStats(postsCache); // Ensure stats simulate live even on cache
+            updateStats(postsCache);
             return;
         }
 
@@ -160,7 +306,6 @@
         if(statLive) {
             const baseLive = Math.floor(Math.random() * 8) + 2; 
             statLive.textContent = baseLive;
-            statLive.previousElementSibling.textContent = "Active (Est)";
         }
         if(statPeak) {
             const maxView = Math.max(...posts.map(p => p.views || 0), 0);
@@ -182,35 +327,43 @@
 
         list.innerHTML = posts.map(post => `
             <div class="post-row">
-                <div>
-                    <div class="post-title">${post.title || 'Untitled'}</div>
+                <div style="cursor: pointer; flex: 1;" onclick="loadPostForEdit(${post.id})">
+                    <div class="post-title">${post.title || 'Untitled'} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
                     <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • ${post.views || 0} Views</div>
                 </div>
                 <div class="status-badge ${post.published ? 'status-live' : 'status-draft'}">
                     ${post.published ? 'LIVE' : 'DRAFT'}
                 </div>
-                <button onclick="openDeleteModal(${post.id})" class="delete-btn">DELETE</button>
+                <button onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
             </div>
         `).join('');
     }
-
-    // New Robust Deletion Logic
-    let pendingDeleteId = null;
-
-    window.openDeleteModal = function(id) {
-        pendingDeleteId = id;
+    
+    // Modified Delete to prevent bubble up
+    window.openDeleteModal = function(id, event) {
+        if(event) event.stopPropagation(); // Don't trigger edit
         const modal = document.getElementById('deleteModal');
-        if(modal) modal.style.display = 'flex';
-        
-        // Re-bind confirm button to ensure clean state
-        const confirmBtn = document.getElementById('confirmDeleteBtn');
-        if(confirmBtn) {
-            confirmBtn.onclick = () => executeDelete();
+        if(modal) {
+            modal.style.display = 'flex';
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            // Remove old listeners to prevent stacking
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.addEventListener('click', () => executeDelete(id));
         }
     };
 
-    async function executeDelete() {
-        if (!pendingDeleteId) return;
+    // New Robust Deletion Logic
+    // New Robust Deletion Logic
+    let pendingDeleteId = null;
+
+    // Use the one defined above instead
+    
+    async function executeDelete(id) {
+        // If id provided directly, use it, otherwise use pending
+        const targetId = id || pendingDeleteId;
+        if (!targetId) return;
         
         const confirmBtn = document.getElementById('confirmDeleteBtn');
         if(confirmBtn) {
@@ -219,30 +372,27 @@
         }
 
         try {
-            console.log(`🗑️ ATTEMPTING DELETE: Post ID ${pendingDeleteId}`);
+            // Use Server-Side Proxy for Deletion (Bypasses RLS if using Service Key)
+            const res = await fetch('/api/admin/delete-post', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.token}`
+                },
+                body: JSON.stringify({ id: targetId })
+            });
             
-            const response = await state.client.from('posts').delete().eq('id', pendingDeleteId).select();
-            console.log("DELETE RESPONSE:", response);
-
-            if (response.error) throw response.error;
+            const data = await res.json();
             
-            if (response.data && response.data.length === 0) {
-                throw new Error("Deletion appeared successful but no rows were returned. RLS might be blocking delete.");
-            }
+            if (!data.success) throw new Error(data.message);
             
-            console.log("✅ DELETION SUCCESS");
             showToast("BROADCAST TERMINATED");
-            
-            // Close Modal
             document.getElementById('deleteModal').style.display = 'none';
-            
-            // Refresh List (Force)
             fetchPosts(true); 
         } catch (err) {
             console.error("❌ DELETION FAILED:", err);
             alert("DELETION FAILED: " + err.message);
         } finally {
-            // Reset Button State
             if(confirmBtn) {
                 confirmBtn.textContent = "DELETE";
                 confirmBtn.disabled = false;
@@ -251,45 +401,123 @@
         }
     }
 
+    // ... (keep surrounding functions) ...
+
+    // STARTUP
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+        
+        const gateBtn = document.querySelector('.gate-btn');
+        if(gateBtn) gateBtn.addEventListener('click', (e) => { e.preventDefault(); window.unlockChannel(); });
+
+        const magicBtn = document.getElementById('magicBtn');
+        if(magicBtn) magicBtn.addEventListener('click', () => {
+            // Reset ID when creating new generated post to avoid overwriting
+            document.getElementById('postIdInput').value = '';
+            const submitBtn = document.getElementById('submitBtn');
+            if(submitBtn) {
+                 submitBtn.textContent = "COMMENCE BROADCAST";
+                 submitBtn.style.background = "var(--success)";
+                 submitBtn.style.color = "#000";
+            }
+            triggerAIGenerator();
+        });
+
+        const fileInput = document.getElementById('fileInput');
+        if(fileInput) fileInput.addEventListener('change', handleFileUpload);
+        
+        const postForm = document.getElementById('postForm');
+        if(postForm) {
+            postForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const submitBtn = document.getElementById('submitBtn');
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = "PROCESSING...";
+                submitBtn.disabled = true;
+
+                const formData = new FormData(postForm);
+                const postId = document.getElementById('postIdInput').value; // Check for ID
+
+                const postData = {
+                    title: formData.get('title'),
+                    slug: formData.get('slug'),
+                    image_url: document.getElementById('imageUrl').value || document.getElementById('urlInput').value,
+                    excerpt: formData.get('excerpt'),
+                    content: formData.get('content'),
+                    published: document.getElementById('pubToggle').checked,
+                    category: formData.get('category'),
+                    author: formData.get('author'),
+                    seo_title: formData.get('seo_title'),
+                    seo_desc: formData.get('seo_desc'),
+                    views: parseInt(formData.get('views') || 0)
+                };
+                
+                // If NEW post, add created_at
+                if(!postId) postData.created_at = new Date().toISOString();
+
+                try {
+                    let result;
+                    if (postId) {
+                        // UPDATE
+                        result = await state.client.from('posts').update(postData).eq('id', postId);
+                    } else {
+                        // INSERT
+                        result = await state.client.from('posts').insert([postData]);
+                    }
+
+                    if(result.error) throw result.error;
+                    
+                    showToast(postId ? "UPDATED SUCCESSFULLY" : "BROADCAST LIVE");
+                    resetForm(); // Clear form after success
+                    await fetchPosts(true); 
+                    
+                } catch(err) {
+                    console.error("BROADCAST ERROR:", err);
+                    alert("Operation Failed: " + err.message);
+                    submitBtn.textContent = originalText;
+                } finally {
+                    submitBtn.disabled = false;
+                    if(!postId) submitBtn.textContent = "COMMENCE BROADCAST"; 
+                }
+            });
+        }
+    });
+
     window.deleteBySlug = async function() {
         const input = document.getElementById('manualDeleteSlug');
         const slug = input ? input.value.trim() : '';
         
-        if (!slug) {
-            alert("Please enter a slug to remove.");
-            return;
-        }
-
-        if (!confirm(`⚠️ PERMANENTLY KILL SLUG: ${slug}?\n\nThis will scrub it from the live network.`)) return;
+        if (!slug) { alert("Please enter a slug to remove."); return; }
+        if (!confirm(`⚠️ PERMANENTLY KILL SLUG: ${slug}?`)) return;
 
         try {
-            console.log(`🚀 TERMINATING SLUG: ${slug}`);
-            const { data, error } = await state.client.from('posts').delete().eq('slug', slug).select();
-            
-            if (error) throw error;
+            const res = await fetch('/api/admin/delete-post', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.token}`
+                },
+                body: JSON.stringify({ slug: slug })
+            });
 
-            if (data && data.length > 0) {
-                showToast(`SLUG ${slug} TERMINATED`);
-                if(input) input.value = '';
-                fetchPosts(true); // Refresh
-            } else {
-                alert(`NO RECORD FOUND FOR SLUG: ${slug}`);
-            }
+            const data = await res.json();
+
+            if (!data.success) throw new Error(data.message);
+
+            showToast(`SLUG ${slug} TERMINATED`);
+            if(input) input.value = '';
+            fetchPosts(true); 
+
         } catch (err) {
-            console.error(err);
             alert("TERMINATION FAILED: " + err.message);
         }
     };
 
-    // --- DATABASE MAINTENANCE ---
     window.runDatabaseCleanup = function() {
         const modal = document.getElementById('maintenanceModal');
         if(modal) modal.style.display = 'flex';
-        
         const btn = document.getElementById('confirmMaintenanceBtn');
-        if(btn) {
-            btn.onclick = () => executeDatabaseCleanup();
-        }
+        if(btn) btn.onclick = () => executeDatabaseCleanup();
     };
 
     async function executeDatabaseCleanup() {
@@ -300,17 +528,13 @@
             if(btn) { btn.textContent = "PURGING..."; btn.disabled = true; }
             showToast("SCANNING DATABASE...");
             
-            // 1. Fetch all posts
             const { data: posts, error: fetchError } = await state.client.from('posts').select('id, title, slug, content');
             if (fetchError) throw fetchError;
 
-            // 2. Identify trash
             const trash = posts.filter(post => {
                 const isSpooky = post.slug.includes('spooky');
                 const isElegant = post.slug.includes('eli3gant');
-                // Use a simple word count
                 const wordCount = (post.content || "").trim().split(/\s+/).filter(w => w.length > 0).length;
-                
                 return !isSpooky && !isElegant && wordCount < 50;
             });
 
@@ -320,16 +544,13 @@
                 return;
             }
 
-            // 3. Delete trash
             const idsToDelete = trash.map(t => t.id);
-            console.log(`🧹 Purging IDs: ${idsToDelete.join(', ')}`);
-            
             const { error: deleteError } = await state.client.from('posts').delete().in('id', idsToDelete);
             if (deleteError) throw deleteError;
 
             showToast(`CLEANUP COMPLETE: ${trash.length} POSTS PURGED`);
             if(modal) modal.style.display = 'none';
-            fetchPosts(true); // Refresh UI
+            fetchPosts(true); 
 
         } catch (e) {
             console.error("MAINTENANCE ERROR:", e);
@@ -339,147 +560,95 @@
         }
     }
 
-    // 4. AUTH & GATEKEEPER
-    window.unlockChannel = function() {
-        const input = document.getElementById('gatePass');
-        const gate = document.getElementById('gate');
-        const check = document.getElementById('gateCheck');
+    // 4.5 MEDIA LIBRARY LOGIC
+    window.openMediaLibrary = async function() {
+        const modal = document.getElementById('mediaModal');
+        const grid = document.getElementById('mediaGrid');
+        const countEl = document.getElementById('mediaCount');
+        
+        if(!modal || !grid) return;
+        
+        modal.style.display = 'flex';
+        grid.innerHTML = '<div class="loader">FETCHING ASSETS FROM CLOUD...</div>';
 
-        if (!input) return;
-
-        if (input.value === CONFIG.passcode) {
-            console.log("🔓 ACCESS GRANTED");
-            state.isUnlocked = true;
+        try {
+            const { data, error } = await state.client.storage.from('uploads').list('blog', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
             
-            // Visuals
-            if(check) check.style.display = 'inline';
-            showToast("CONNECTION ESTABLISHED");
-            updateDiagnostics('auth', 'UNLOCKED', 'var(--success)');
+            if (error) throw error;
+            
+            if (!data || data.length === 0) {
+                grid.innerHTML = '<div class="loader">NO ASSETS FOUND.</div>';
+                if(countEl) countEl.textContent = '(0)';
+                return;
+            }
 
-            setTimeout(() => {
-                if(gate) gate.classList.add('unlocked');
-                document.body.classList.remove('locked');
-            }, 800);
-        } else {
-            console.warn("🔒 ACCESS DENIED");
-            const err = document.getElementById('gateError');
-            if(err) err.style.display = 'block';
-            input.value = '';
+            if(countEl) countEl.textContent = `(${data.length})`;
+            grid.innerHTML = ''; 
+
+            data.forEach(file => {
+                if(file.name === '.emptyFolderPlaceholder') return;
+                const { data: { publicUrl } } = state.client.storage.from('uploads').getPublicUrl(`blog/${file.name}`);
+                const isVideo = file.metadata && file.metadata.mimetype && file.metadata.mimetype.startsWith('video');
+                const ext = file.name.split('.').pop().toLowerCase();
+                const likelyVideo = ['mp4', 'webm', 'mov'].includes(ext);
+
+                const div = document.createElement('div');
+                div.className = 'media-item';
+                div.onclick = () => selectMedia(publicUrl, file.name);
+                
+                if (isVideo || likelyVideo) {
+                     div.innerHTML = `<video src="${publicUrl}#t=0.5" muted preload="metadata" onmouseover="this.play()" onmouseout="this.pause()"></video>`;
+                } else {
+                     div.innerHTML = `<img src="${publicUrl}" loading="lazy" alt="${file.name}">`;
+                }
+                grid.appendChild(div);
+            });
+
+        } catch (err) {
+            console.error("Media Load Error:", err);
+            grid.innerHTML = `<div class="loader" style="color:#ff4444">ERROR: ${err.message}</div>`;
         }
     };
 
-    // 5. THEME MANAGEMENT
-    function setupTheme() {
-        const html = document.documentElement;
-        let savedTheme = localStorage.getItem('theme');
-        if (!savedTheme) {
-            const hour = new Date().getHours();
-            savedTheme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
-        }
-        if(savedTheme === 'light') html.setAttribute('data-theme', 'light');
-        else html.removeAttribute('data-theme');
+    window.closeMediaLibrary = function() {
+        document.getElementById('mediaModal').style.display = 'none';
+    };
 
-        const header = document.querySelector('.admin-header');
-        if(header && !header.querySelector('.theme-toggle-btn')) {
-            const toggleBtn = document.createElement('button');
-            toggleBtn.className = 'theme-toggle-btn admin-toggle';
-            toggleBtn.innerHTML = getThemeIcon(savedTheme);
-            toggleBtn.onclick = () => {
-                const isLight = html.getAttribute('data-theme') === 'light';
-                const next = isLight ? 'dark' : 'light';
-                isLight ? html.removeAttribute('data-theme') : html.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', next);
-                toggleBtn.innerHTML = getThemeIcon(next);
-            };
-            header.appendChild(toggleBtn);
-        }
-    }
-
-    function getThemeIcon(theme) {
-        return theme === 'light' 
-            ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`
-            : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
-    }
-
-    // 6. UPLOAD MANAGEMENT
-    async function handleFileUpload(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-
-        // Visual Feedback
-        const previewImg = document.getElementById('previewImg');
+    function selectMedia(url, name) {
+        document.getElementById('imageUrl').value = url;
         const previewDiv = document.getElementById('imagePreview');
         const detailsDiv = document.getElementById('fileDetails');
         
-        // Handle Video Preview
-        if (file.type.startsWith('video/')) {
-            previewDiv.innerHTML = `<video src="${URL.createObjectURL(file)}" controls style="width: 100%; height: auto; max-height: 400px; display: block; border-radius: 12px;"></video>`;
-            previewDiv.style.display = 'block';
-        } else {
-            // Reset to IMG if it was changed
-            previewDiv.innerHTML = `<img id="previewImg" src="" alt="Preview" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">`;
-            const img = previewDiv.querySelector('img');
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                if(img) img.src = ev.target.result;
-                if(previewDiv) previewDiv.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+        if(previewDiv) {
+             if(url.match(/\.(mp4|webm|mov)$/i)) {
+                 previewDiv.innerHTML = `<video src="${url}" controls style="width: 100%; height: auto; max-height: 400px; display: block; border-radius: 12px;"></video>`;
+             } else {
+                 previewDiv.innerHTML = `<img id="previewImg" src="${url}" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">`;
+             }
+             previewDiv.style.display = 'block';
         }
 
         if(detailsDiv) {
             detailsDiv.style.display = 'block';
-            document.getElementById('fileNameDisplay').textContent = file.name;
-            document.getElementById('fileSizeDisplay').textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            document.getElementById('fileNameDisplay').textContent = name || "Selected from Library";
+            document.getElementById('fileSizeDisplay').textContent = "(Cloud Asset)";
         }
-
-        // Warning for large files (Supabase Standard Upload limit is often 50MB, but configurable)
-        // We warn user about browser timeout risks for 2GB+
-        if (file.size > 50 * 1024 * 1024) {
-             updateDiagnostics('storage', 'LARGE FILE DETECTED', 'orange');
-             showToast("⚠️ LARGE FILE: UPLOAD MAY TAKE TIME");
-        } else {
-             updateDiagnostics('storage', 'UPLOADING...', 'yellow');
-        }
-
-        try {
-            const fileName = `blog/${Date.now()}_${file.name}`;
-            const { data, error } = await state.client.storage.from('uploads').upload(fileName, file);
-            
-            if (error) {
-                if (error.message.includes('bucket_id') || error.message.includes('not found')) {
-                    throw new Error("BUCKET MISSING. Click 'COPY DB UPGRADE SQL' below and run it in Supabase.");
-                }
-                throw error;
-            }
-
-            const { data: { publicUrl } } = state.client.storage.from('uploads').getPublicUrl(fileName);
-            document.getElementById('imageUrl').value = publicUrl;
-            
-            updateDiagnostics('storage', 'UPLOAD COMPLETE', 'var(--admin-success)');
-            showToast("MEDIA SECURED");
-        } catch(err) {
-            console.error(err);
-            updateDiagnostics('storage', err.message.includes('BUCKET MISSING') ? 'BUCKET MISSING' : 'FAILED', '#ff4444');
-            showToast(err.message.includes('BUCKET MISSING') ? "BUCKET SETUP REQUIRED" : "UPLOAD FAILED: " + err.message);
-        }
+        closeMediaLibrary();
     }
 
-    // 7. AI NEURAL GENERATOR
-    // 7. AI NEURAL GENERATOR
+    // 7. SECURE AI NEURAL GENERATOR
     async function triggerAIGenerator() {
         const provider = document.getElementById('aiProvider').value;
         const promptContext = document.getElementById('aiPrompt').value.trim();
         const title = document.getElementById('titleInput').value.trim();
-        const key = document.getElementById('apiKey').value.trim();
         const archetype = document.getElementById('archetype').value;
         const btn = document.getElementById('magicBtn');
         const status = document.getElementById('aiStatus');
+        const model = document.getElementById('geminiModel') ? document.getElementById('geminiModel').value : null;
 
-        // Granular Validation
-        if(!key) { 
-            if(status) { status.textContent = `ERROR: Missing ${provider === 'gemini' ? 'Gemini' : 'OpenAI'} API Key.`; status.style.color = "#ff4444"; }
-            return; 
+        if(!state.token) {
+            if(status) { status.textContent = "SESSION EXPIRED. REFRESH."; status.style.color = "#ff4444"; }
+            return;
         }
         if(!title) { 
             if(status) { status.textContent = "ERROR: Please enter a Headline first."; status.style.color = "#ff4444"; }
@@ -492,9 +661,9 @@
             return; 
         }
 
-        btn.textContent = "SYNTHESIZING...";
+        btn.textContent = "SYNTHESIZING (SECURE)...";
         btn.disabled = true;
-        if(status) { status.textContent = `CONNECTED TO ${provider.toUpperCase()}. GENERATING...`; status.style.color = "var(--accent2)"; }
+        if(status) { status.textContent = `TRANSMITTING TO ${provider.toUpperCase()} VIA PROXY...`; status.style.color = "var(--accent2)"; }
         
         const styleContext = {
             technical: "Cinematic Tech. Focus on the feeling of using the gear, not just specs. High-energy, visual language. Think MKBHD meets Blade Runner.",
@@ -512,442 +681,137 @@
         - Goal: Make the reader feel like an insider.
 
         **VISUAL LAYOUT INSTRUCTIONS (USE THESE HTML CLASSES):**
-        1. **Hero/Lead:** Start with <p class="lead">Your strong opening hook here.</p>
-        2. **Grids:** For lists/features, use:
-           <div class="feature-grid">
-             <div class="feature-card"><strong>Point 1</strong><p>Detail...</p></div>
-             <div class="feature-card"><strong>Point 2</strong><p>Detail...</p></div>
-           </div>
-        3. **Stats:** For numbers, use:
-           <div class="stat-box"><span class="stat-number">80%</span><span class="stat-label">Retention Rate</span></div>
-        4. **Media:** If mentioning a video, use <div class="media-container">...placeholder...</div>
-        5. **Quotes:** Use <blockquote> for cinematic pull quotes.
 
-        **CONTEXT:**
-        Style: ${styleContext[archetype]}
-        Archetype: ${archetype}
+        const prompt = promptInput.value.trim();
+        const archetype = document.getElementById('archetype').value;
+        const provider = providerSel.value; 
+        const model = (provider === 'gemini') ? modelSel.value : null;
+
+        if(aiStatus) aiStatus.innerHTML = `<span class="blink">⚡ TRANSMITTING TO ${provider.toUpperCase()} PROXY...</span>`;
         
-        JSON Structure: { "content": "HTML string", "excerpt": "1 sentence viral hook", "seo_title": "Clickable Title", "seo_desc": "Meta description", "category": "Tech/Strategy/Production" }`;
-
         try {
-            let result;
-            if (provider === 'openai') {
-                result = await fetchOpenAI(key, title, promptContext, systemPrompt);
-            } else {
-                result = await fetchGemini(key, title, promptContext, systemPrompt);
-            }
+            // Secure Server Call
+            const res = await fetch('/api/ai/generate', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.token}` // Send Admin Token
+                },
+                body: JSON.stringify({ 
+                    prompt, 
+                    archetype, 
+                    provider, 
+                    model,
+                    title: document.getElementById('titleInput').value || "New Post"
+                })
+            });
 
-            document.getElementById('contentArea').value = result.content;
-            document.getElementById('excerptInput').value = result.excerpt;
-            document.getElementById('seoTitle').value = result.seo_title;
-            document.getElementById('seoDesc').value = result.seo_desc;
-            document.getElementById('catInput').value = result.category || 'Tech';
-            
-            if(status) { status.textContent = "INTEL RECEIVED. SYNC COMPLETE."; status.style.color = "var(--success)"; }
-        } catch(e) {
-            console.error(e);
-            let msg = e.message;
-            if(msg.includes('quota') || msg.includes('429')) {
-                msg = `QUOTA EXCEEDED (${provider === 'openai' ? 'OpenAI' : 'Gemini'}). ${provider === 'openai' ? 'Switch to Gemini (Free Tier) above!' : 'Wait 60s or check your Google AI billing.'}`;
-            }
-            if(status) { status.textContent = "SIGNAL LOST: " + msg; status.style.color = "#ff4444"; }
-        } finally {
-            btn.textContent = "⚡ TRANSMIT TO AI";
             btn.disabled = false;
         }
     }
 
-    async function fetchOpenAI(key, title, prompt, system) {
-        const res = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-            body: JSON.stringify({
-                model: "gpt-4o",
-                messages: [{ role: "system", content: system }, { role: "user", content: `Generate post: "${title}". Focus: ${prompt}` }],
-                temperature: 0.8,
-                response_format: { type: "json_object" }
-            })
-        });
-        const data = await res.json();
-        if(data.error) throw new Error(data.error.message);
-        return JSON.parse(data.choices[0].message.content);
-    }
+    // --- MEDIA UPLOADS ---
+    async function handleFileUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-    async function fetchGemini(key, title, prompt, system) {
-        const model = document.getElementById('geminiModel').value;
-        const payload = {
-            contents: [{ parts: [{ text: `${system}\n\nUser Input: Generate post titled "${title}" based on prompt: "${prompt}"` }] }],
-            generationConfig: { response_mime_type: "application/json" }
-        };
-
-        // Try v1 first (Stable)
-        let res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${key}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        // Fallback to v1beta if v1 fails to find model
-        if (res.status === 404) {
-             console.warn(`🔄 Gemini v1 (404). Retrying with v1beta for model: ${model}`);
-             res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+        const detailsDiv = document.getElementById('fileDetails');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const fileSizeDisplay = document.getElementById('fileSizeDisplay');
+        const previewDiv = document.getElementById('imagePreview');
+        
+        if(detailsDiv) {
+            detailsDiv.style.display = 'block';
+            fileNameDisplay.textContent = `UPLOADING: ${file.name}`;
+            fileSizeDisplay.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
         }
 
-        const data = await res.json();
-        
-        // Handle Payload Errors (Unknown fields etc) -> Retry without Config
-        if (data.error && data.error.message.includes('Invalid JSON payload')) {
-            console.warn("⚠️ Gemini Payload Error. Retrying in 'Safe Mode' (No Config)...");
-            const safeRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: payload.contents }) // Strip Config
-            });
-            const safeData = await safeRes.json();
-            if(safeData.error) throw new Error(safeData.error.message);
-            const text = safeData.candidates[0].content.parts[0].text;
-            return JSON.parse(text.replace(/```json|```/g, '').trim()); // Manual strip of markdown
-        }
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const filePath = `blog/${fileName}`;
 
-        if(data.error) throw new Error(data.error.message);
-        if(!data.candidates || !data.candidates[0]) throw new Error("No candidates returned from Gemini.");
-        
-        const text = data.candidates[0].content.parts[0].text;
-        // Strip markdown if present
-        const cleaned = text.replace(/```json|```/g, '').trim();
-        return JSON.parse(cleaned);
+            let { error: uploadError, data } = await state.client.storage
+                .from('uploads')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = state.client.storage
+                .from('uploads')
+                .getPublicUrl(filePath);
+
+            document.getElementById('imageUrl').value = publicUrl;
+            
+            if(previewDiv) {
+                if(file.type.startsWith('video/')) {
+                    previewDiv.innerHTML = `<video src="${publicUrl}" controls style="width: 100%; height: auto; max-height: 400px; display: block; border-radius: 12px;"></video>`;
+                } else {
+                    previewDiv.innerHTML = `<img src="${publicUrl}" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">`;
+                }
+                previewDiv.style.display = 'block';
+            }
+
+            if(fileNameDisplay) fileNameDisplay.textContent = `READY: ${file.name}`;
+            showToast("MEDIA UPLOADED SUCCESSFULLY");
+
+        } catch (err) {
+            console.error("Upload Error:", err);
+            showToast("UPLOAD FAILED");
+            if(fileNameDisplay) fileNameDisplay.textContent = "UPLOAD ERROR";
+        }
     }
 
-    // 8. EVENT LISTENERS & BINDINGS
+    // 8. EVENT LISTENERS
     window.switchProvider = function(val) {
         localStorage.setItem('ai_provider', val);
-        const keyEl = document.getElementById('apiKey');
         const geminiGroup = document.getElementById('geminiModelGroup');
-        const oLink = document.getElementById('openaiKeyLink');
-        const gLink = document.getElementById('geminiKeyLink');
-        
-        if(!keyEl) return;
-
         if(geminiGroup) geminiGroup.style.display = (val === 'gemini') ? 'block' : 'none';
-        if(oLink) oLink.style.display = (val === 'openai') ? 'inline' : 'none';
-        if(gLink) gLink.style.display = (val === 'gemini') ? 'inline' : 'none';
-
-        // Update Placeholder
-        const placeholders = {
-            openai: 'OpenAI Key (sk-...)',
-            gemini: 'Gemini Key (AI Studio)'
-        };
-        keyEl.placeholder = placeholders[val] || 'API Key...';
-        
-        // Load existing key for this provider
-        const saved = localStorage.getItem('ai_key_' + val) || '';
-        keyEl.value = saved;
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
-        init();
-        setupTheme();
 
-        const passInfo = document.getElementById('gatePass');
-        if(passInfo) passInfo.addEventListener('keypress', (e) => { if(e.key === 'Enter') window.unlockChannel(); });
 
-        // AI Magic
-        const magicBtn = document.getElementById('magicBtn');
-        if(magicBtn) magicBtn.addEventListener('click', triggerAIGenerator);
-
-        // Uploads
-        const fileInput = document.getElementById('fileInput');
-        if(fileInput) fileInput.addEventListener('change', handleFileUpload);
-
-        // Presets
-        document.querySelectorAll('.preset-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
-        });
-
-        // Form Submission
-        const postForm = document.getElementById('postForm');
-        if(postForm) {
-            postForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const submitBtn = document.getElementById('submitBtn');
-                submitBtn.textContent = "BROADCASTING...";
-                submitBtn.disabled = true;
-
-                const formData = new FormData(postForm);
-                const newPost = {
-                    title: formData.get('title'),
-                    slug: formData.get('slug'),
-                    image_url: document.getElementById('imageUrl').value || document.getElementById('urlInput').value || formData.get('image_url'),
-                    excerpt: formData.get('excerpt'),
-                    content: formData.get('content'),
-                    published: document.getElementById('pubToggle').checked,
-                    category: formData.get('category'),
-                    author: formData.get('author'),
-                    seo_title: formData.get('seo_title'),
-                    seo_desc: formData.get('seo_desc'),
-                    views: parseInt(formData.get('views') || 0),
-                    created_at: new Date().toISOString()
-                };
-
-                try {
-                    let { error } = await state.client.from('posts').insert([newPost]);
-                    
-                    // FALLBACK: If Schema Cache is stale (PGRST204), try removing new columns
-                    if (error && error.code === 'PGRST204') {
-                        console.warn("⚠️ SCHEMA CACHE STALE: Retrying without new columns...");
-                        delete newPost.author;
-                        delete newPost.seo_title;
-                        delete newPost.seo_desc;
-                        delete newPost.category;
-                        delete newPost.views;
-                        
-                        const retry = await state.client.from('posts').insert([newPost]);
-                        error = retry.error;
-
-                        if(!error) {
-                            showToast("POSTED (METADATA SKIPPED - SCHEMA UPDATING)");
-                            setTimeout(() => window.location.reload(), 1500);
-                            return;
-                        }
-                    }
-
-                    if(error) throw error;
-                    showToast("POST BROADCAST SUCCESSFULLY");
-                    
-                    // Force refresh of list and stats
-                    await fetchPosts(true); 
-                    
-                    // Optional: Reset form? Or reload page? Original code reloaded page.
-                    // setTimeout(() => window.location.reload(), 1500); 
-                    // Let's keep reload for full state reset as per original, but update list first for feedback.
-                    setTimeout(() => window.location.reload(), 1500);
-                } catch(err) {
-                    console.error("BROADCAST ERROR:", err);
-                    
-                    const modal = document.getElementById('errorModal');
-                    const content = document.getElementById('errorContent');
-                    
-                    let errorMsg = `TIMESTAMP: ${new Date().toISOString()}\n`;
-                    errorMsg += `ERROR TYPE: ${err.code || 'Unknown'}\n`;
-                    errorMsg += `MESSAGE: ${err.message || JSON.stringify(err)}\n`;
-                    if(err.details) errorMsg += `DETAILS: ${err.details}\n`;
-                    if(err.hint) errorMsg += `HINT: ${err.hint}\n`;
-                    
-                    if(content) content.textContent = errorMsg;
-                    if(modal) modal.style.display = 'flex';
-                    
-                    submitBtn.textContent = "RETRY BROADCAST";
-                    submitBtn.disabled = false;
-                }
-            });
-        }
-    });
-
-    // UTILS
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        if(!toast) return;
-        toast.querySelector('span').textContent = msg;
-        
-        if(window.innerWidth < 768) toast.classList.add('mobile-toast');
-        else toast.classList.remove('mobile-toast');
-
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-    
-    // --- MOUSE FOLLOWING TOOLTIP SYSTEM ---
-    (function initTooltips() {
-        const tooltip = document.createElement('div');
-        tooltip.id = 'admin-tooltip';
-        Object.assign(tooltip.style, {
-            position: 'fixed',
-            background: 'rgba(10, 10, 15, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            padding: '8px 12px',
-            borderRadius: '8px',
-            color: '#fff',
-            fontSize: '0.75rem',
-            pointerEvents: 'none',
-            zIndex: '20000', // Above everything
-            display: 'none',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-            whiteSpace: 'nowrap',
-            backdropFilter: 'blur(5px)'
-        });
-        document.body.appendChild(tooltip);
-
-        let activeTarget = null;
-
-        const hideTooltip = () => {
-            activeTarget = null;
-            tooltip.style.display = 'none';
-        };
-
-        window.addEventListener('scroll', hideTooltip, { passive: true });
-
-        document.addEventListener('mouseover', (e) => {
-            const target = e.target.closest('[data-tooltip]');
-            if (target) {
-                activeTarget = target;
-                tooltip.textContent = target.getAttribute('data-tooltip');
-                tooltip.style.display = 'block';
-            }
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (activeTarget && tooltip.style.display === 'block') {
-                const offset = 20; // Increased offset
-                let x = e.clientX + offset;
-                let y = e.clientY + offset;
-                
-                // Boundary check (prevent going off screen)
-                const rect = tooltip.getBoundingClientRect();
-                const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
-
-                // Flip horizontally if too close to right edge
-                if (x + rect.width > viewportWidth) {
-                    x = e.clientX - rect.width - offset;
-                }
-
-                // Flip vertically if too close to bottom edge
-                if (y + rect.height > viewportHeight) {
-                    y = e.clientY - rect.height - offset;
-                }
-
-                tooltip.style.left = `${x}px`;
-                tooltip.style.top = `${y}px`;
-            }
-        });
-
-        document.addEventListener('mouseout', (e) => {
-            const target = e.target.closest('[data-tooltip]');
-            if (target && target === activeTarget) {
-                activeTarget = null;
-                tooltip.style.display = 'none';
-            }
-        });
-    })();
-    
-    // Expose Utils
-    window.showToast = showToast;
 
     window.copySchema = function() {
         const sql = `
--- RUN THIS IN SUPABASE SQL EDITOR --
-
--- 1. CREATE TABLE IF NOT EXISTS
-create table if not exists posts (
-  id bigint generated by default as identity primary key,
+-- OTP DATABASE SETUP --
+CREATE TABLE IF NOT EXISTS posts (
+  id bigint GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
   title text,
-  slug text unique,
+  slug text UNIQUE,
   excerpt text,
   content text,
   category text,
-  author text default 'OTP Admin',
+  author text DEFAULT 'OTP Admin',
   image_url text,
-  views int8 default 0,
-  published boolean default true,
+  views int8 DEFAULT 0,
+  published boolean DEFAULT true,
   seo_title text,
   seo_desc text,
-  created_at timestamp with time zone default timezone('utc'::text, now())
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now())
 );
 
--- 2. UPDATE EXISTING TABLES & PERMISSIONS
-ALTER TABLE posts ADD COLUMN IF NOT EXISTS author text default 'OTP Admin';
-ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_title text;
-ALTER TABLE posts ADD COLUMN IF NOT EXISTS seo_desc text;
-ALTER TABLE posts ADD COLUMN IF NOT EXISTS category text;
-ALTER TABLE posts ADD COLUMN IF NOT EXISTS views int8 default 0;
+CREATE TABLE IF NOT EXISTS contacts (
+  id bigint GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  name text,
+  email text,
+  service text,
+  budget text,
+  timeline text,
+  message text,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now())
+);
 
--- 3. PURGE FAKE DATA (Clean Slate)
-UPDATE posts SET views = 0 WHERE views = 441;
-UPDATE posts SET views = 0 WHERE slug LIKE '%eli3gant%';
-
--- ENABLE RLS & ALLOW ALL (Needed for Delete/Update if RLS is on)
+-- RLS POLICIES --
 ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Allow All" ON posts;
-CREATE POLICY "Allow All" ON posts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Public Read" ON posts FOR SELECT USING (true);
+-- Insert/Update/Delete should be restricted in production --
 
--- 4. FORCE API CACHE REFRESH (The Trick)
-COMMENT ON TABLE posts IS 'OTP Posts Table (Verified Real Data)';
-NOTIFY pgrst, 'reload schema';
-
--- 5. STORAGE BUCKETS
-insert into storage.buckets (id, name, public) 
-values ('uploads', 'uploads', true)
-on conflict (id) do nothing;
-
--- 5. PUBLIC ACCESS POLICIES (Idempotent)
-DROP POLICY IF EXISTS "Public Access" ON storage.objects;
-DROP POLICY IF EXISTS "Public Insert" ON storage.objects;
-
-CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING ( bucket_id = 'uploads' );
-CREATE POLICY "Public Insert" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'uploads' );
-
--- 6. SMART DEDUPLICATION (Keep longest content)
-WITH duplicates AS (
-  SELECT id,
-         ROW_NUMBER() OVER (
-           PARTITION BY slug 
-           ORDER BY length(content) DESC, created_at DESC
-         ) as rank
-  FROM posts
-)
-DELETE FROM posts WHERE id IN (SELECT id FROM duplicates WHERE rank > 1);
-
--- 6. HARD RESET ANALYTICS (Start Fresh)
-UPDATE posts SET views = 0;
-
--- 7. INSERT MISSING CONTENT (Idempotent)
-INSERT INTO posts (title, slug, excerpt, content, published, category, image_url, views) VALUES
-(
-  'The Architecture of a Visual Drop',
-  'architecture-visual-drop',
-  'Why pacing and cinematic color are the most underrated tools in your rollout strategy.',
-  '<p class="lead">In the age of infinite scroll, "good" visuals aren''t enough.</p><blockquote>"Silence is the loudest sound in the room."</blockquote>',
-  true, 'Creative Strategy', 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4', 0
-),
-(
-  'Beyond the Edit: Brand Identity',
-  'beyond-the-edit',
-  'How we build consistency across 9:16 and 16:9 formats without losing the soul of the project.',
-  '<p class="lead">A video is not just a file; it''s a piece of a larger puzzle.</p><h2>The Paradox</h2><p>Vertical demands intimacy.</p>',
-  true, 'Brand Identity', 'https://images.unsplash.com/photo-1550745165-9bc0b252726f', 0
-),
-(
-  'Turning Vision into Strategy',
-  'turning-vision-into-strategy',
-  'A look into the Phase 01 process of OTP.',
-  '<p class="lead">You can have the best camera in the world, but if you don''t know what you''re shooting, it''s noise.</p>',
-  true, 'Process', 'https://images.unsplash.com/photo-1460925895917-afdab827c52f', 0
-),
-(
-  'Spooky: Luh Ooky',
-  'spooky-luh-ooky',
-  'Visuals from the Morbid Musik project.',
-  '<p class="lead">Fresh off the release of his latest project.</p>',
-  true, 'Music Video', 'https://img.youtube.com/vi/7Zx5fRPmrCU/maxresdefault.jpg', 0
-),
-(
-  'What is so Elegant about ELI3GANT?',
-  'whats-so-elegant-about-eli3gant',
-  'Deconstructing the aesthetic philosophy of modern visual drops.',
-  '<p class="lead">Elegance isn''t about being noticed, it''s about being remembered.</p><h2>The Core Vibe</h2><p>High-end minimalism meets tactical execution.</p>',
-  true, 'Creative Strategy', 'https://onlytrueperspective.tech/og.jpg', 0
-)
-ON CONFLICT (slug) DO NOTHING;
-        `;
+ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public Insert" ON contacts FOR INSERT WITH CHECK (true);
+`;
         navigator.clipboard.writeText(sql);
-        alert("SQL Logic Copied to Clipboard. Run in Supabase Dashboard.");
+        showToast("SQL TEMPLATE COPIED");
     };
 
 })();
