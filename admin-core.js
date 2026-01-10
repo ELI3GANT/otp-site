@@ -210,6 +210,24 @@
             if (providerSel) providerSel.value = defaultProvider;
             checkNeuralLink(defaultProvider);
 
+            // 9. LIVE STATUS TOGGLE UX
+            const pubToggle = document.getElementById('pubToggle');
+            const loopStatus = () => {
+                const span = document.querySelector('.toggle-label');
+                if(span && pubToggle) {
+                    span.textContent = pubToggle.checked ? "STATUS: LIVE" : "STATUS: DRAFT";
+                    span.style.color = pubToggle.checked ? "var(--admin-success)" : "var(--admin-muted)";
+                }
+            };
+            if(pubToggle) {
+                pubToggle.addEventListener('change', loopStatus);
+                // Run once
+                loopStatus();
+            }
+
+            // 10. FORCE PREVIEW INIT
+            setTimeout(window.updateSocialPreview, 1000);
+
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
             updateDiagnostics('db', 'CONNECTION FAILED', '#ff4444');
