@@ -202,10 +202,14 @@
 
         // Init Satellite Display
         (function() {
-            const saved = localStorage.getItem('otp_api_base');
+            let saved = localStorage.getItem('otp_api_base');
+            // Force secure default if legacy or empty
+            if(!saved || saved.includes('localhost') || saved.includes('127.0.0.1')) {
+                saved = 'https://otp-site.vercel.app';
+                localStorage.setItem('otp_api_base', saved);
+            }
             const el = document.getElementById('initSatUrl');
-            if(saved && el) el.value = saved;
-            else if(el) el.value = window.location.origin; // Default to self
+            if(el) el.value = saved;
         })();
 
         async function getBaseApiUrl() {

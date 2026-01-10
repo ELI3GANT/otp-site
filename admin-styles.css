@@ -62,11 +62,12 @@ h1, h2, h3, h4 {
     border-bottom: 1px solid var(--admin-border);
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 10000; /* Increased to ensure it's above other elements */
     padding: 12px 15px; /* Slightly tighter on mobile */
     display: flex;
     justify-content: space-between;
     align-items: center;
+    pointer-events: auto; /* Ensure clickable */
 }
 
 .admin-header h1 {
@@ -80,6 +81,13 @@ h1, h2, h3, h4 {
 
 @media (min-width: 400px) {
     .admin-header h1 { font-size: 1rem; letter-spacing: 1px; }
+}
+
+.admin-nav-actions {
+    display: flex !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 10001;
 }
 
 
