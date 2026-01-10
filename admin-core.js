@@ -73,8 +73,9 @@
 
             // Load Posts for Manager & Stats
             fetchPosts();
-            // Real-time update interval: 500ms
-            setInterval(() => fetchPosts(true), 500);
+            
+            // Backup Polling (30s) - Realtime handles immediate updates
+            setInterval(() => fetchPosts(false), 30000);
 
             // Live Clock System
             const clockEl = document.getElementById('liveClock');
@@ -493,17 +494,39 @@
         
         // Prepare Data: Top 10 Posts by Views
         const sorted = [...posts].sort((a,b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
-        const labels = sorted.map(p => (p.title || 'Untitled').substring(0, 15) + ((p.title && p.title.length > 15) ? '...' : ''));
+        // Shorten titles for labels
+        const labels = sorted.map(p => (p.title || 'Untitled').substring(0, 12) + ((p.title && p.title.length > 12) ? '...' : ''));
         const data = sorted.map(p => p.views || 0);
 
-        if(activityChartInstance) {
+        // Check if we can just update existing chart
+        if (activityChartInstance) {
+            // Check for identical data to avoid redraw flicker (simple JSON check)
+            const currentData = JSON.stringify(activityChartInstance.data.datasets[0].data);
+            const newData = JSON.stringify(data);
+            const currentLabels = JSON.stringify(activityChartInstance.data.labels);
+            const newLabels = JSON.stringify(labels);
+            const isThemeMismatch = activityChartInstance.options.scales.x.ticks.color !== (document.documentElement.getAttribute('data-theme') === 'light' ? '#000' : '#888');
+
+            if (currentData === newData && currentLabels === newLabels && !isThemeMismatch) {
+                return; // No change needed
+            }
             activityChartInstance.destroy();
         }
 
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         const colorText = isLight ? '#000' : '#888';
-        const colorBar = isLight ? '#5856d6' : '#7000ff';
         const colorGrid = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+        
+        // Gradient Build
+        const cvs = ctx.getContext('2d');
+        const gradient = cvs.createLinearGradient(0, 0, 0, 400);
+        if(isLight) {
+            gradient.addColorStop(0, 'rgba(88, 86, 214, 0.9)');
+            gradient.addColorStop(1, 'rgba(88, 86, 214, 0.2)');
+        } else {
+            gradient.addColorStop(0, 'rgba(112, 0, 255, 0.9)');
+            gradient.addColorStop(1, 'rgba(112, 0, 255, 0.2)');
+        }
 
         activityChartInstance = new Chart(ctx, {
             type: 'bar',
@@ -512,9 +535,11 @@
                 datasets: [{
                     label: 'Views',
                     data: data,
-                    backgroundColor: colorBar,
-                    borderRadius: 4,
-                    barThickness: 20
+                    backgroundColor: gradient,
+                    borderRadius: 6,
+                    barThickness: 'flex',
+                    maxBarThickness: 40,
+                    hoverBackgroundColor: isLight ? '#5856d6' : '#9d4dff'
                 }]
             },
             options: {
@@ -523,34 +548,43 @@
                 plugins: {
                     legend: { display: false },
                     tooltip: { 
-                        backgroundColor: '#000', 
-                        titleColor: '#fff', 
-                        bodyColor: '#ccc',
-                        borderColor: '#333',
+                        backgroundColor: isLight ? '#fff' : '#000', 
+                        titleColor: isLight ? '#000' : '#fff', 
+                        bodyColor: isLight ? '#666' : '#ccc',
+                        titleFont: { family: 'Space Grotesk', size: 13 },
+                        bodyFont: { family: 'monospace' },
+                        borderColor: isLight ? '#ccc' : '#333',
                         borderWidth: 1,
-                        padding: 10,
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false,
                         callbacks: {
                             title: (items) => {
                                 const idx = items[0].dataIndex;
                                 return sorted[idx].title; 
-                            }
+                            },
+                            label: (item) => `${item.formattedValue} Views`
                         }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: colorGrid },
-                        ticks: { color: colorText, font: { family: 'monospace' } },
+                        grid: { color: colorGrid, drawBorder: false },
+                        ticks: { color: colorText, font: { family: 'monospace', size: 10 } },
                         border: { display: false }
                     },
                     x: {
-                        grid: { display: false },
+                        grid: { display: false, drawBorder: false },
                         ticks: { color: colorText, font: { family: 'monospace', size: 10 } },
                         border: { display: false }
                     }
                 },
-                animation: { duration: 800, easing: 'easeOutQuart' }
+                animation: { 
+                    duration: 600, 
+                    easing: 'easeOutQuart' 
+                },
+                layout: { padding: { top: 20 } }
             }
         });
     }
