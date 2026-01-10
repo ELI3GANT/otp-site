@@ -197,6 +197,9 @@ window.OTP.initRealtimeState = function() {
                     const kNodes = document.querySelectorAll('.kursor, .kursor-child');
                     kNodes.forEach(n => n.style.opacity = config.kursor === 'on' ? '1' : '0');
                 }
+                
+                // Apply Theme
+                if (config.theme) window.OTP.setTheme(config.theme);
             }
         } catch(e) { console.error("Config Sync Error:", e); }
     })();

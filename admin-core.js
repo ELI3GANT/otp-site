@@ -1076,6 +1076,8 @@
         const nextTheme = isDay ? 'dark' : 'light';
         
         await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'theme', value: nextTheme } });
+        persistSystemState('theme', nextTheme); // PERSIST
+
         statusEl.textContent = nextTheme === 'light' ? 'DAY-MODE' : 'NIGHT-MODE';
         statusEl.style.color = nextTheme === 'light' ? '#ffaa00' : 'var(--accent2)';
         showToast("THEME SYNCED TO NETWORK");
