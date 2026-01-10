@@ -18,7 +18,12 @@ DROP POLICY IF EXISTS "Allow All" ON site_content;
 CREATE POLICY "Allow All" ON site_content FOR ALL USING (true) WITH CHECK (true);
 
 -- 3. ENABLE REALTIME FOR SITE_CONTENT
-ALTER PUBLICATION supabase_realtime ADD TABLE site_content;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'site_content') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE site_content;
+  END IF;
+END $$;
 
 -- 4. ENSURE SYSTEM GLOBAL STATE EXISTS
 -- This row is used to sync theme, maintenance mode, and visuals across all users
@@ -66,8 +71,16 @@ CREATE TABLE IF NOT EXISTS ai_archetypes (
 );
 
 -- 6.3 Enable Realtime & RLS
-ALTER PUBLICATION supabase_realtime ADD TABLE categories;
-ALTER PUBLICATION supabase_realtime ADD TABLE ai_archetypes;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'categories') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE categories;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'ai_archetypes') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE ai_archetypes;
+  END IF;
+END $$;
 
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow All" ON categories;
