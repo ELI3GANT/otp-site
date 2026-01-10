@@ -87,6 +87,12 @@
                 }, 1000);
             }
 
+            // 5. Neural Cloud Settings (Persistence)
+            const cloudOA = document.getElementById('cloudOpenAI');
+            const cloudG = document.getElementById('cloudGemini');
+            if(cloudOA) cloudOA.value = localStorage.getItem('cloud_openai') || '';
+            if(cloudG) cloudG.value = localStorage.getItem('cloud_gemini') || '';
+
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
             updateDiagnostics('db', 'CONNECTION FAILED', '#ff4444');
@@ -775,58 +781,76 @@
         }
 
         try {
-            // Priority: Discovered API Base -> Current Origin
-            const base = localStorage.getItem('otp_api_base') || window.location.origin;
-            const apiUrl = base + '/api/ai/generate';
-            
             const authToken = (state.token || '').trim();
+            const cloudOpenAI = localStorage.getItem('cloud_openai');
+            const cloudGemini = localStorage.getItem('cloud_gemini');
             
+            // --- MODE SELECTION: PROXY VS DIRECT ---
             if (authToken === 'static-bypass-token') {
-                const currentUrl = window.location.href;
-                throw new Error(`AI BLOCKED: You are in "LEGACY MODE". To use AI, you MUST access the site through the server PORT (usually 8080). \n\nDirect Link: http://localhost:8080/portal-gate.html`);
+                if (provider === 'openai' && !cloudOpenAI) throw new Error("LEGACY MODE: OpenAI key missing in Cloud Settings.");
+                if (provider === 'gemini' && !cloudGemini) throw new Error("LEGACY MODE: Gemini key missing in Cloud Settings.");
+                
+                if(status) { status.innerHTML = `<span class="blink">🚀 DIRECT CLOUD LINK ACTIVE...</span>`; }
+
+                if (provider === 'openai') {
+                    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudOpenAI}` },
+                        body: JSON.stringify({
+                            model: 'gpt-4o',
+                            messages: [
+                                { role: 'system', content: 'You are a professional blog writer. Output JSON only.' },
+                                { role: 'user', content: `Generate post titled "${title}" based on: ${prompt}. Archetype: ${archetypeInput ? archetypeInput.value : 'technical'}. Return { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }
+                            ],
+                            response_format: { type: "json_object" }
+                        })
+                    });
+                    const raw = await res.json();
+                    if(raw.error) throw new Error(raw.error.message);
+                    handleAIResponse(JSON.parse(raw.choices[0].message.content));
+                } else {
+                    const gemModel = model || 'gemini-1.5-flash';
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gemModel}:generateContent?key=${cloudGemini}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: `You are a professional blog writer. Return JSON ONLY. Generate post titled "${title}" based on: ${prompt}. Archetype: ${archetypeInput ? archetypeInput.value : 'technical'}. Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }],
+                            generationConfig: { response_mime_type: "application/json" }
+                        })
+                    });
+                    const raw = await res.json();
+                    if(raw.error) throw new Error(raw.error.message);
+                    handleAIResponse(JSON.parse(raw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim()));
+                }
+            } else {
+                // SERVER PROXY MODE
+                const base = localStorage.getItem('otp_api_base') || window.location.origin;
+                const apiUrl = base + '/api/ai/generate';
+                
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                    body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title })
+                });
+
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) throw new Error("Server returned non-JSON. System might be in Legacy Mode.");
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || `Server Error ${res.status}`);
+                handleAIResponse(data.data);
             }
-            
-            console.log("AI DEBUG: URL=" + apiUrl);
-            console.log("AI DEBUG: Token Length=" + authToken.length);
 
-            const res = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + authToken
-                },
-                body: JSON.stringify({ 
-                    prompt, 
-                    archetype: archetypeInput ? archetypeInput.value : 'technical', 
-                    provider: provider || 'openai', 
-                    model,
-                    title
-                })
-            });
-
-            // Handle potential non-JSON response (like 404/500 HTML)
-            const contentType = res.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                const text = await res.text();
-                console.error("Non-JSON Server Response:", text);
-                throw new Error("Server returned an invalid response format. Ensure your server is active.");
+            function handleAIResponse(data) {
+                if (!data) return;
+                if(data.content) document.getElementById('contentArea').value = data.content;
+                if(data.excerpt) document.getElementById('excerptInput').value = data.excerpt;
+                if(data.seo_title) document.getElementById('seoTitle').value = data.seo_title;
+                if(data.seo_desc) document.getElementById('seoDesc').value = data.seo_desc;
+                
+                showToast("NEURAL CONTENT RECEIVED");
+                if(status) { status.textContent = "GENERATION COMPLETE"; status.style.color = "var(--success)"; }
             }
-
-            const data = await res.json();
-
-            if (!res.ok) throw new Error(data.message || `Server Error ${res.status}`);
-            if (!data.success) throw new Error(data.message || "Generation Failed");
-
-            // Populate Fields
-            if (data.data) {
-                if(data.data.content) document.getElementById('contentArea').value = data.data.content;
-                if(data.data.excerpt) document.getElementById('excerptInput').value = data.data.excerpt;
-                if(data.data.seo_title) document.getElementById('seoTitle').value = data.data.seo_title;
-                if(data.data.seo_desc) document.getElementById('seoDesc').value = data.data.seo_desc;
-            }
-
-            showToast("NEURAL CONTENT RECEIVED");
-            if(status) { status.textContent = "GENERATION COMPLETE"; status.style.color = "var(--success)"; }
 
         } catch (err) {
             console.error("AI ERROR:", err);

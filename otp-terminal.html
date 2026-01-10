@@ -305,6 +305,22 @@
                 </div>
   
                 <div id="aiStatus" role="status" aria-live="polite" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px;"></div>
+
+                <!-- CLOUD OVERRIDE (For Mobile/Legacy) -->
+                <div style="margin-top: 15px; border-top: 1px dashed #333; padding-top: 15px;">
+                    <button type="button" onclick="document.getElementById('cloudSettings').style.display = document.getElementById('cloudSettings').style.display==='none'?'block':'none'" style="background: transparent; border: 1px solid #333; color: #555; font-size: 0.6rem; padding: 4px 8px; width: auto;">☁️ NEURAL CLOUD SETTINGS</button>
+                    <div id="cloudSettings" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                        <p style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 8px;">For Mobile/Legacy Mode: Enter keys below for direct cloud connection.</p>
+                        <div class="input-group">
+                            <label style="font-size: 0.6rem;">OPENAI KEY</label>
+                            <input type="password" id="cloudOpenAI" placeholder="sk-..." onchange="localStorage.setItem('cloud_openai', this.value)" style="font-size: 0.7rem; padding: 5px;">
+                        </div>
+                        <div class="input-group" style="margin-top: 5px;">
+                            <label style="font-size: 0.6rem;">GEMINI KEY</label>
+                            <input type="password" id="cloudGemini" placeholder="AIza..." onchange="localStorage.setItem('cloud_gemini', this.value)" style="font-size: 0.7rem; padding: 5px;">
+                        </div>
+                    </div>
+                </div>
             </section>
   
             <!-- SECTION: CONTENT -->
