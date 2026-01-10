@@ -432,7 +432,9 @@
           if (!input) return;
           const passcode = input.value;
           
+
           if(btn) {
+              if(btn.disabled) return; // Prevent double tap
               btn.textContent = "VERIFYING...";
               btn.disabled = true;
           }

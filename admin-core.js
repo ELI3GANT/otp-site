@@ -92,6 +92,7 @@
         const passcode = input.value;
         
         if(btn) {
+            if(btn.disabled) return;
             btn.textContent = "VERIFYING...";
             btn.disabled = true;
         }
