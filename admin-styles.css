@@ -543,7 +543,7 @@ button:focus-visible, a:focus-visible {
     max-width: 200px; /* Limit char width */
     margin: 0 auto;
     display: block;
-    background: rgba(0,0,0,0.3); /* Darker input */
+    background: var(--admin-bg); /* Use Theme BG */
 }
 
 .logo-glitch-wrap { 
