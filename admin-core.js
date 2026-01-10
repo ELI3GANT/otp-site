@@ -562,7 +562,7 @@
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     ${post.published && post.slug ? `
-                        <a href="/journal/${post.slug}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>
+                        <a href="/insight.html?slug=${post.slug}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>
                         <button onclick="copyPostLink('${post.slug}')" title="Copy Link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
                     ` : ''}
                     <button onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
@@ -1174,7 +1174,7 @@
 
     window.copyPostLink = function(slug) {
         if(!slug) return;
-        const url = window.location.origin + '/journal/' + slug;
+        const url = window.location.origin + '/insight.html?slug=' + slug;
         navigator.clipboard.writeText(url);
         showToast("LINK COPIED TO CLIPBOARD");
     };
@@ -1275,7 +1275,7 @@
     window.copyShareLink = function() {
         const slug = document.getElementById('slugInput').value;
         if(!slug) return;
-        const url = `https://onlytrueperspective.tech/journal/${slug}`;
+        const url = `https://onlytrueperspective.tech/insight.html?slug=${slug}`;
         navigator.clipboard.writeText(url);
         
         const btn = document.querySelector('.share-btn-mini');

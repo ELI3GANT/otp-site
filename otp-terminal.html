@@ -478,12 +478,10 @@
                 </div>
 
                 <!-- NEW: SHARE TOOLBAR -->
-                <div class="share-result-bar" id="shareToolbar" style="display:none;">
-                    <div style="font-size: 0.7rem; color: var(--admin-muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 60%; font-family: monospace;" id="shareUrlDisplay">
-                        https://onlytrueperspective.tech/journal/...
+                    <div id="shareToolbar" class="share-result-bar" style="display: none;">
+                        <span id="shareUrlDisplay" style="font-size: 0.65rem; color: var(--admin-success); font-family: monospace;">https://onlytrueperspective.tech/insight.html?slug=...</span>
+                        <button type="button" onclick="copyShareLink()" class="share-btn-mini">COPY LINK</button>
                     </div>
-                    <button type="button" class="share-btn-mini" onclick="copyShareLink()">COPY LINK</button>
-                </div>
     
                 <div class="row">
                    <!-- Views Removed (Organic Only) -->
@@ -597,7 +595,7 @@
                    const disp = document.getElementById('shareUrlDisplay');
                    if(slug && bar) {
                        bar.style.display = 'flex';
-                       disp.textContent = `https://onlytrueperspective.tech/journal/${slug}`;
+                       disp.textContent = `https://onlytrueperspective.tech/insight.html?slug=${slug}`;
                    } else if (bar) {
                        bar.style.display = 'none';
                    }
