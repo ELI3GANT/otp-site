@@ -427,8 +427,9 @@ button {
     transform: translateX(2px);
 }
 
-/* Specific Style for LIVE posts - AGGRESSIVE SELECTOR & RENAMED CLASS */
-.post-row.row-active-live {
+/* Specific Style for LIVE posts - AGGRESSIVE SELECTOR & DUAL CLASS SUPPORT */
+.post-row.row-active-live,
+.post-row.live-row {
     border-left-color: #00ffaa !important;
     box-shadow: -8px 0 20px -8px rgba(0, 255, 170, 0.15), inset 0 0 20px rgba(0, 255, 170, 0.02) !important;
     background: linear-gradient(90deg, rgba(0,255,170,0.03) 0%, rgba(255,255,255,0.01) 100%) !important;
@@ -807,6 +808,12 @@ input, textarea, select {
     animation: pulse-green 2s ease-in-out infinite;
     transform: translateZ(0); 
     will-change: opacity, transform;
+}
+
+/* Light Mode Polish for Status Dots */
+html[data-theme="light"] .status-dot {
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 0 5px rgba(52, 199, 89, 0.4);
 }
 
 /* FLOATING THEME TOGGLE (Unified Bottom Right) */

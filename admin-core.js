@@ -171,6 +171,17 @@
                 // 2. Sync Dashboard UI Buttons
                 if (['maintenance', 'visuals', 'kursor', 'theme'].includes(type)) {
                     syncDashboardElement(type, value);
+                    
+                    // Dashboard Theme Sync (Apply theme to self)
+                    if (type === 'theme') {
+                        const html = document.documentElement;
+                        if (value === 'light') html.setAttribute('data-theme', 'light');
+                        else html.removeAttribute('data-theme');
+                        
+                        const btns = document.querySelectorAll('.theme-btn');
+                        btns.forEach(btn => btn.textContent = value === 'light' ? '☀️' : '🌗');
+                    }
+                    
                     showToast(`CONTROL SYNCED: ${type.toUpperCase()}`);
                 }
             });

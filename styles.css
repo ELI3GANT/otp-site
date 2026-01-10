@@ -381,6 +381,11 @@ h1, h2, h3 {
 [data-theme="light"] .nav-toggle span {
   background: #333;
 }
+[data-theme="light"] .nav-toggle {
+  background: rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.1);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
 
 /* PRICING */
 [data-theme="light"] .price-card {
@@ -593,7 +598,19 @@ h1, h2, h3 {
   color: #111;
 }
 [data-theme="light"] .hero-micro .dot {
-  color: #d1d1d6;
+  background: var(--accent2);
+  box-shadow: none; /* Remove heavy glow from light mode */
+  opacity: 0.6;
+}
+
+[data-theme="light"] .dot {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .dot.active {
+  background: var(--accent2);
+  box-shadow: 0 0 8px rgba(0, 195, 255, 0.3);
 }
 [data-theme="light"] .scarcity-badge {
   background: rgba(0,0,0,0.05);
@@ -1171,9 +1188,13 @@ html {
 }
 
 @keyframes badgePulse {
-  0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.6); opacity: 1; }
-  70% { box-shadow: 0 0 0 6px rgba(255, 68, 68, 0); opacity: 0.8; }
+  0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); opacity: 1; }
+  70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); opacity: 0.8; }
   100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); opacity: 1; }
+}
+
+[data-theme="light"] .pulse-dot {
+  box-shadow: 0 0 6px rgba(255, 68, 68, 0.3);
 }
 
 .results-grid {
@@ -1997,16 +2018,18 @@ html {
 
 /* Custom separator dot for hero micro */
 .hero-micro .dot {
-  width: 5px;
-  height: 5px;
-  background: var(--accent2); /* Cyan glow */
+  width: 4px;
+  height: 4px;
+  background: var(--accent2);
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--accent2), 0 0 4px var(--accent2); /* Double glow */
+  box-shadow: 0 0 8px var(--accent2);
   opacity: 1;
   display: inline-block;
-  color: transparent; /* Hide text bullet */
-  font-size: 0; /* Ensures no text height issues */
   vertical-align: middle;
+  margin: 0 4px;
+  /* Reset text properties just in case */
+  font-size: 0;
+  line-height: 0;
 }
 
 /* BACKGROUND GRADIENT MOTION */
@@ -2906,6 +2929,16 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 12px var(--accent2);
   border-color: transparent;
   transform: scale(1.2);
+}
+
+[data-theme="light"] .dot {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .dot.active {
+  background: var(--accent2);
+  box-shadow: 0 0 10px rgba(0, 195, 255, 0.2);
 }
 
 /* ACTIVE FOCUS STATE */
@@ -4427,7 +4460,11 @@ input:focus, select:focus, textarea:focus {
     font-size: 0.9rem;
   }
   
-  .hero-micro .dot { display: none; }
+  .hero-micro .dot { 
+    display: inline-block; 
+    margin: 5px 0; /* Stacked vertical space if needed, but since it's column... */
+    opacity: 0.3; /* Subtle divider if in column */
+  }
   
   .subtitle-lead {
     font-size: 1.1rem;

@@ -108,7 +108,7 @@
     </div>
 
     <header class="admin-header" id="adminHeader">
-        <h1><div class="status-dot"></div> OTP COMMAND <span style="font-size: 0.5em; opacity: 0.5; margin-left: 10px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px;">SECURE</span></h1>
+        <h1><div class="status-dot"></div> OTP COMMAND <span style="font-size: 0.5em; opacity: 0.5; margin-left: 10px; border: 1px solid var(--admin-border); padding: 2px 6px; border-radius: 4px;">SECURE</span></h1>
         
         <div class="admin-nav-actions" style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
             <button onclick="logout()" aria-label="Logout" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.7rem; padding: 8px 12px; width: auto;">LOGOUT</button>
@@ -640,6 +640,23 @@
               else btn.classList.remove('theme-active');
           });
 
+          // BROADCAST TO NETWORK (Global Sync)
+          if (window.state && window.state.siteChannel) {
+              window.state.siteChannel.send({ 
+                  type: 'broadcast', 
+                  event: 'command', 
+                  payload: { type: 'theme', value: next } 
+              }).then(() => {
+                  showToast(`GLOBAL THEME: ${next.toUpperCase()}`);
+              }).catch(err => {
+                  console.error("Theme Broadcast Failed:", err);
+              });
+              
+              // Persist to DB for sticky loads
+              if (typeof persistSystemState === 'function') {
+                  persistSystemState('theme', next);
+              }
+          }
           // Refresh Chart Theme
           if(window.refreshDashboardChart) window.refreshDashboardChart();
       };
