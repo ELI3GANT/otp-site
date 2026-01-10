@@ -86,6 +86,20 @@
                 else if (isRemote) statusTag = '<span style="color:#00ffaa">[SATELLITE]</span>';
 
                 setInterval(() => {
+                    const currentBase = localStorage.getItem('otp_api_base') || '';
+                    const currentToken = localStorage.getItem('otp_admin_token') || '';
+                    const isStatic = currentToken === 'static-bypass-token';
+                    const isRemote = currentBase.startsWith('http') && !currentBase.includes('localhost');
+                    
+                    let statusTag = '<span style="color:var(--admin-success)">[NODE:LIVE]</span>';
+                    if (isStatic) {
+                        statusTag = isRemote 
+                            ? '<span style="color:#00ffaa; filter: drop-shadow(0 0 5px #00ffaa);">[SATELLITE:LINKED]</span>' 
+                            : '<span style="color:#ff8800">[LEGACY]</span>';
+                    } else if (isRemote) {
+                        statusTag = '<span style="color:#00ffaa; font-weight: bold; text-shadow: 0 0 10px #00ffaa;">[SATELLITE:SECURE]</span>';
+                    }
+
                     const now = new Date();
                     const timeStr = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
                     clockEl.innerHTML = `${statusTag} ${timeStr}`;
