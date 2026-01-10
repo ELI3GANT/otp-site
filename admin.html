@@ -96,10 +96,34 @@
 
             <div id="errorMsg" class="error">ACCESS DENIED</div>
         </div>
+
+        <!-- THEME TOGGLE -->
+        <button onclick="toggleTheme()" class="theme-btn" style="position: absolute; top: 20px; right: 20px;" aria-label="Toggle Dark/Light Mode">
+            🌗
+        </button>
     </div>
 
     <script>
-        // 1. AUTO-REDIRECT IF ALREADY LOGGED IN
+        // 1. THEME INIT
+        (function() {
+            const saved = localStorage.getItem('theme');
+            if(saved === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            
+            if(next === 'light') html.setAttribute('data-theme', 'light');
+            else html.removeAttribute('data-theme');
+            
+            localStorage.setItem('theme', next);
+        }
+
+        // 2. AUTO-REDIRECT IF ALREADY LOGGED IN
         if(localStorage.getItem('otp_admin_token')) {
             window.location.href = 'dashboard.html';
         }
