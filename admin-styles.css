@@ -263,7 +263,7 @@ button {
 .gatekeeper {
     position: fixed;
     inset: 0;
-    background: #030305;
+    background: var(--admin-bg); /* Use Theme BG */
     z-index: 10000;
     display: flex;
     align-items: center;
@@ -275,11 +275,11 @@ button {
 .terminal-window {
     width: 100%;
     max-width: 400px;
-    background: rgba(10, 10, 12, 0.98);
+    background: var(--admin-panel); /* Use Theme Panel */
     border: 1px solid var(--admin-border);
     border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5); /* Softer shadow for light mode */
 }
 
 .terminal-body {
