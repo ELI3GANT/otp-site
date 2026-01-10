@@ -280,10 +280,19 @@
 
                 <div id="geminiModelGroup" style="display: none; margin-bottom: 12px;">
                     <div class="input-group">
-                        <label for="geminiModel">Gemini Variant</label>
+                        <label for="geminiModel">Gemini Neural Variant</label>
                         <select id="geminiModel" style="background: var(--admin-panel); font-weight: bold; color: var(--accent2);">
-                            <option value="gemini-1.5-flash-latest">Gemini 1.5 Flash (Latest)</option>
-                            <option value="gemini-1.5-pro-latest">Gemini 1.5 Pro (Latest)</option>
+                            <optgroup label="GEMINI 2.5 (2026 STABLE)">
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Ultra Fast)</option>
+                                <option value="gemini-2.5-pro">Gemini 2.5 Pro (Extreme Logic)</option>
+                            </optgroup>
+                            <optgroup label="GEMINI 2.0 (LEGACY)">
+                                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                            </optgroup>
+                            <optgroup label="GEMINI 1.5 (CLASSIC)">
+                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                            </optgroup>
                         </select>
                     </div>
                 </div>
@@ -481,7 +490,7 @@
     <script src="site-init.js" defer></script>
 
     <!-- 3. ADMIN CORE (Defer for perf) -->
-    <script src="admin-core.js?v=3.9"></script>
+    <script src="admin-core.js?v=4.0"></script>
 
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>

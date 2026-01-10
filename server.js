@@ -121,22 +121,35 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
         } else if (provider === 'gemini') {
             if (!process.env.GEMINI_API_KEY) throw new Error("Gemini Key not configured on server.");
             
-            const geminiModel = model || 'gemini-1.5-flash';
+            const geminiModel = model || 'gemini-2.5-flash';
+            const payload = {
                 contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nUSER INSTRUCTION: Output RAW JSON ONLY. No markdown blocks. Generate post titled "${title}" based on prompt: "${prompt}". Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }]
             };
 
-            // Using v1 stable for better compatibility across keys
-            let apiRes = await fetch(`https://generativelanguage.googleapis.com/v1/models/${geminiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            const endpoints = ['v1', 'v1beta'];
+            let lastErr = "";
+            let success = false;
 
-            const data = await apiRes.json();
-            if (data.error) throw new Error(data.error.message);
-            
-            const text = data.candidates[0].content.parts[0].text;
-            result = JSON.parse(text.replace(/```json|```/g, '').trim());
+            for (const v of endpoints) {
+                if(success) break;
+                try {
+                    const apiRes = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${geminiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await apiRes.json();
+                    if (!data.error) {
+                        const text = data.candidates[0].content.parts[0].text;
+                        result = JSON.parse(text.replace(/```json|```/g, '').trim());
+                        success = true;
+                    } else { lastErr = data.error.message; }
+                } catch (e) { lastErr = e.message; }
+            }
+            if(!success) throw new Error(`Gemini Probe Failed: ${lastErr}`);
+
+        } else if (provider === 'groq' || provider === 'anthropic') {
+            throw new Error(`Cloud Only Provider: Please enter your key in 'Neural Cloud Settings' on the dashboard to use ${provider}. Server-side proxy for this provider is coming soon.`);
         } else {
             throw new Error("Invalid provider");
         }

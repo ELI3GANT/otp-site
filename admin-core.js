@@ -846,29 +846,17 @@
                     handleAIResponse(JSON.parse(raw.choices[0].message.content));
                 }
                 else if (provider === 'gemini') {
-                    // SMART PROBE LOGIC
-                    const gemModel = model || 'gemini-1.5-flash-latest';
+                    // SMART PROBE LOGIC (2026 CALIBRATED)
+                    const gemModel = model || 'gemini-2.5-flash';
+                    const endpoints = ['v1', 'v1beta'];
                     let success = false;
                     let lastErr = "";
 
-                    // Attempt 1: v1beta (often more permissive with Flash)
-                    try {
-                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gemModel}:generateContent?key=${cloudGemini}`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }] })
-                        });
-                        const raw = await res.json();
-                        if(!raw.error) {
-                            handleAIResponse(JSON.parse(raw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim()));
-                            success = true;
-                        } else { lastErr = raw.error.message; }
-                    } catch(e) { lastErr = e.message; }
-
-                    // Attempt 2: v1 (Stable)
-                    if(!success) {
+                    for (const v of endpoints) {
+                        if (success) break;
                         try {
-                            const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${gemModel}:generateContent?key=${cloudGemini}`, {
+                            if(status) { status.innerHTML = `<span class="blink">📡 PROBING GEMINI (${v})...</span>`; }
+                            const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudGemini}`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }] })
@@ -877,9 +865,11 @@
                             if(!raw.error) {
                                 handleAIResponse(JSON.parse(raw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim()));
                                 success = true;
-                            } else { throw new Error(raw.error.message); }
-                        } catch(e) { throw new Error(`Gemini Probe Failed. Final Error: ${e.message}`); }
+                            } else { lastErr = `${v}: ${raw.error.message}`; }
+                        } catch(e) { lastErr = `${v}: ${e.message}`; }
                     }
+
+                    if(!success) throw new Error(`Neural Bridge Failed. Final Report: ${lastErr}. Tip: Check if your key supports the ${gemModel} series.`);
                 }
             } else {
                 // SERVER PROXY MODE
