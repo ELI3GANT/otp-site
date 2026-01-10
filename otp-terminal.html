@@ -113,9 +113,10 @@
     </button>
   
     <main class="admin-wrap">
-
-        <!-- DASHBOARD STATS -->
-        <section class="stats-grid" aria-label="Dashboard Statistics">
+        <div class="admin-main-grid">
+            <div class="admin-main-content">
+                <!-- DASHBOARD STATS -->
+                <section class="stats-grid" aria-label="Dashboard Statistics">
              <div class="stat-card">
                  <h3>VIEWS (24H)</h3>
                  <p class="stat-num" id="statViews">--</p>
@@ -212,14 +213,12 @@
                 </div>
             </div>
 
-            </div>
-        </section>
-        
-        <form id="postForm" aria-label="Create or edit a broadcast">
-  
-            <!-- SECTION: MEDIA -->
-            <section class="input-section">
-                <div class="section-label">01 // Visual Intelligence</div>
+            </div> <!-- End .admin-main-content -->
+
+            <aside class="dashboard-sidebar">
+                <!-- SECTION: AI SYNTHESIZER -->
+                <section class="input-section" style="margin-top: 0;">
+                    <div class="section-label" style="margin-top: 0;">02 // Neural Hub</div>
     
                 <div class="input-group">
                     <div id="imagePreview" style="display:none; border-radius: 12px; overflow: hidden; border: 1px solid var(--stroke); margin-bottom: 15px;">
@@ -518,6 +517,8 @@
                     <div style="text-align: center; color: var(--admin-muted); font-size: 0.8rem; padding: 20px;">LOADING TRANSMISSIONS...</div>
                 </div>
             </section>
+            </aside>
+        </div> <!-- End .admin-main-grid -->
   
         </form>
     </main>

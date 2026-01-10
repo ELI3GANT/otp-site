@@ -1360,25 +1360,52 @@
     let cachedSqlSchema = null;
 
     window.testSatelliteConnection = async function() {
-        let url = document.getElementById('satelliteUrl').value.trim();
-        if(!url) { showToast("ENTER URL FIRST"); return; }
+        const input = document.getElementById('satelliteUrl');
+        let url = input ? input.value.trim() : '';
         
-        // Auto-fix URL for test
+        if(!url) { 
+            showToast("ENTER URL FIRST"); 
+            if(input) input.style.borderColor = 'var(--admin-danger)';
+            return; 
+        }
+        
+        // Robust URL Regex Validation (Handles localhost and standard URLs)
+        const urlPattern = /^(https?:\/\/)?(localhost|[\da-z.-]+\.[a-z.]{2,6})(:[\d]+)?([\/\w .-]*)*\/?$/;
+        if (!urlPattern.test(url)) {
+            showToast("INVALID URL FORMAT");
+            if(input) input.style.borderColor = 'var(--admin-danger)';
+            return;
+        }
+
+        if(input) input.style.borderColor = 'var(--admin-border)';
+        
+        // Auto-fix URL for test (Ensure protocol)
         if (!url.startsWith('http')) url = 'https://' + url;
         if (url.endsWith('/')) url = url.slice(0, -1);
         
         const healthUrl = url + '/api/health';
         showToast("PROBING SATELLITE...");
+        console.log(`📡 Probing: ${healthUrl}`);
         
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
             const start = Date.now();
-            const res = await fetch(healthUrl, { method: 'GET', cache: 'no-cache' });
+            const res = await fetch(healthUrl, { 
+                method: 'GET', 
+                cache: 'no-cache',
+                signal: controller.signal 
+            });
+            clearTimeout(timeoutId);
+            
             const latency = Date.now() - start;
             
             if (res.ok) {
                 const data = await res.json();
                 if (data.success) {
                     showToast(`SATELLITE ONLINE (${latency}ms)`);
+                    if(input) input.style.borderColor = 'var(--admin-success)';
                 } else {
                     showToast(`SATELLITE ERROR: ${data.status}`);
                 }
@@ -1387,7 +1414,12 @@
             }
         } catch(e) {
             console.error("Link Test Failed:", e);
-            showToast("LINK OFFLINE / TIMEOUT");
+            if (e.name === 'AbortError') {
+                showToast("PROBE TIMEOUT (10s)");
+            } else {
+                showToast("LINK OFFLINE / DNS ERROR");
+            }
+            if(input) input.style.borderColor = 'var(--admin-danger)';
         }
     };
 

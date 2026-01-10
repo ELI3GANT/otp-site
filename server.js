@@ -48,13 +48,21 @@ app.use(cors());
 app.set('trust proxy', 1); // Trust Vercel Proxy
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 50, // limit each IP to 50 requests per windowMs
+    max: 500, // Increased from 50 to 500 to support high-traffic drops
     message: { success: false, message: "Too many requests, please try again later." }
 });
 app.use('/api/', limiter); 
 
 // 5. Body Parsing
 app.use(bodyParser.json());
+
+// --- CACHE CONTROL HELPER ---
+app.use((req, res, next) => {
+    if (req.method === 'GET' && !req.path.startsWith('/api')) {
+        res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400'); // Cache static for 1hr browser, 24hr CDN
+    }
+    next();
+});
 
 // --- API ROUTES ---
 // Defined BEFORE static files to ensure they take precedence
