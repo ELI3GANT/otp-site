@@ -142,7 +142,7 @@
              </div>
              <div class="stat-card">
                  <h3>SYSTEM</h3>
-                 <p class="stat-num" style="color:var(--admin-muted)">V4.1</p>
+                 <p class="stat-num" style="color:var(--admin-muted)">V1.0</p>
                  <span class="stat-change">STABLE</span>
              </div>
         </section>
@@ -302,12 +302,17 @@
                     <div class="input-group" style="flex: 1;">
                         <label for="aiProvider">Neural Engine</label>
                         <select id="aiProvider" onchange="window.switchProvider(this.value);" style="background: var(--admin-panel); font-weight: bold; color: var(--accent2);">
-                            <option value="openai">OpenAI (GPT-4o) [PAID]</option>
-                            <option value="gemini">Google Gemini 1.5 [STUDIO]</option>
-                            <option value="anthropic">Anthropic Claude 3.5 [PREMIUM]</option>
-                            <option value="groq">Groq Llama 3.1 [FREE/FAST]</option>
+                            <option value="groq">Groq Llama 3.1 [FREE / OPEN-SOURCE]</option>
+                            <option value="gemini">Google Gemini 1.5 [FREE TIER / STUDIO]</option>
+                            <option value="openai">OpenAI (GPT-4o) [PAID / PREMIUM]</option>
+                            <option value="anthropic">Anthropic Claude 3.5 [PAID / PREMIUM]</option>
                         </select>
                     </div>
+                </div>
+
+                <div id="neuralLinkStatus" style="font-size: 0.6rem; color: var(--admin-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <span id="hubIndicator" class="status-dot-mini" style="width: 6px; height: 6px; background: var(--admin-success);"></span>
+                    <span id="hubText">UPLINK: SECURE SERVER HUB (NO KEY REQUIRED)</span>
                 </div>
 
                 <div id="geminiModelGroup" style="display: none; margin-bottom: 12px;">
@@ -348,6 +353,18 @@
                 </div>
   
                 <div id="aiStatus" role="status" aria-live="polite" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px;"></div>
+
+                <!-- COST TRACKING UI -->
+                <div id="aiCostTracking" style="display: none; margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--admin-border); font-family: monospace; font-size: 0.65rem;">
+                    <div style="display: flex; justify-content: space-between; color: var(--admin-muted); margin-bottom: 4px;">
+                        <span>EST. SESSION COST:</span>
+                        <span id="sessionCost" style="color: var(--admin-success);">$0.0000</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: var(--admin-muted);">
+                        <span>TOKENS CONSUMED:</span>
+                        <span id="sessionTokens" style="color: var(--admin-cyan);">0</span>
+                    </div>
+                </div>
 
                 <!-- SYSTEM & NEURAL SETTINGS (For Mobile/Live) -->
                 <div style="margin-top: 15px; border-top: 1px dashed #333; padding-top: 15px;">

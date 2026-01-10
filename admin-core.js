@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V3.6 (SECURE)
+ * ADMIN CORE V1.0.0 (RELEASE)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Server-side Auth, Secure API Proxy, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V3.6 SECURE: Boot sequence initiated...");
+    console.log("🚀 ADMIN CORE V1.0.0 RELEASE: Boot sequence initiated...");
 
     // 0. CONFIGURATION
     const CONFIG = {
@@ -20,6 +20,7 @@
         isUnlocked: false,
         token: localStorage.getItem('otp_admin_token') || null // Persist session
     };
+    window.state = state; // Expose to window for inline scripts
 
     // 2. DIAGNOSTICS UI UPDATE
     const updateDiagnostics = (key, status, color) => {
@@ -120,6 +121,8 @@
                     el.value = localStorage.getItem(key) || '';
                     el.addEventListener('input', (e) => {
                         localStorage.setItem(key, e.target.value.trim());
+                        const currentProvider = document.getElementById('aiProvider').value;
+                        checkNeuralLink(currentProvider);
                     });
                 }
             };
@@ -196,6 +199,12 @@
 
             // 7. SYNC SYSTEM STATE (Persistence)
             fetchSystemState();
+
+            // 8. INITIAL LINK CHECK
+            const defaultProvider = localStorage.getItem('ai_provider') || 'groq';
+            const providerSel = document.getElementById('aiProvider');
+            if (providerSel) providerSel.value = defaultProvider;
+            checkNeuralLink(defaultProvider);
 
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
@@ -1053,6 +1062,38 @@
 
     // ... (rest of init) ...
 
+    // 6.5 AI COST TRACKING
+    let aiSessionCost = 0;
+    let aiSessionTokens = 0;
+    const AI_PRICING = {
+        'openai': { input: 0.005, output: 0.015 }, // Per 1k tokens (GPT-4o)
+        'gemini': { input: 0.000125, output: 0.000375 }, // Per 1k (Flash)
+        'anthropic': { input: 0.003, output: 0.015 }, // Per 1k (Claude 3.5 Sonnet)
+        'groq': { input: 0, output: 0 } // Free Tier
+    };
+
+    function trackAICost(provider, tokens) {
+        if (!tokens || !AI_PRICING[provider]) return;
+        
+        const price = AI_PRICING[provider];
+        // Simplified: assume 30% input / 70% output distribution if only total is known
+        const inputTokens = tokens * 0.3;
+        const outputTokens = tokens * 0.7;
+        
+        const cost = (inputTokens / 1000 * price.input) + (outputTokens / 1000 * price.output);
+        aiSessionCost += cost;
+        aiSessionTokens += tokens;
+
+        // Update UI
+        const costPanel = document.getElementById('aiCostTracking');
+        const costDisp = document.getElementById('sessionCost');
+        const tokenDisp = document.getElementById('sessionTokens');
+
+        if (costPanel) costPanel.style.display = 'block';
+        if (costDisp) costDisp.textContent = `$${aiSessionCost.toFixed(4)}`;
+        if (tokenDisp) tokenDisp.textContent = aiSessionTokens.toLocaleString();
+    }
+
     // 7. SECURE AI NEURAL GENERATOR
     async function triggerAIGenerator() {
         const providerSel = document.getElementById('aiProvider');
@@ -1117,11 +1158,13 @@
                     const res = await fetch(base + '/api/ai/generate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title })
+                        body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title, systemPrompt: sysPrompt })
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
                         aiResult = data.data;
+                        if (data.usage) trackAICost(provider, data.usage.total_tokens);
+                        else trackAICost(provider, 1200); // Estimate if usage missing from proxy
                     } else {
                         console.warn("Secure Hub Failed/Unauthorized. Checking Cloud Failover.");
                     }
@@ -1151,6 +1194,7 @@
                     const raw = await res.json();
                     if(raw.error) throw new Error(raw.error.message);
                     aiResult = JSON.parse(raw.choices[0].message.content);
+                    if (raw.usage) trackAICost('openai', raw.usage.total_tokens);
                 } 
                 else if (provider === 'anthropic') {
                     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1165,6 +1209,7 @@
                     const raw = await res.json();
                     if(raw.error) throw new Error(raw.error.message);
                     aiResult = JSON.parse(raw.content[0].text);
+                    if (raw.usage) trackAICost('anthropic', raw.usage.input_tokens + raw.usage.output_tokens);
                 }
                 else if (provider === 'groq') {
                     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -1179,6 +1224,7 @@
                     const raw = await res.json();
                     if(raw.error) throw new Error(raw.error.message);
                     aiResult = JSON.parse(raw.choices[0].message.content);
+                    if (raw.usage) trackAICost('groq', raw.usage.total_tokens);
                 }
                 else if (provider === 'gemini') {
                     const gemModel = model || 'gemini-2.5-flash';
@@ -1194,7 +1240,7 @@
                                 payload.generationConfig = { response_mime_type: "application/json" };
                             }
 
-                            const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${geminiModel}:generateContent?key=${cloudKey}`, {
+                            const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudKey}`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify(payload)
@@ -1203,6 +1249,9 @@
                             if(!raw.error) {
                                 const text = raw.candidates[0].content.parts[0].text;
                                 aiResult = JSON.parse(text.replace(/```json|```/g, '').trim());
+                                // Gemini token tracking
+                                if (raw.usageMetadata) trackAICost('gemini', raw.usageMetadata.totalTokenCount);
+                                else trackAICost('gemini', 1000); 
                                 gemSuccess = true; break;
                             }
                         } catch(e) {}
@@ -1238,7 +1287,46 @@
         localStorage.setItem('ai_provider', val);
         const geminiGroup = document.getElementById('geminiModelGroup');
         if(geminiGroup) geminiGroup.style.display = (val === 'gemini') ? 'block' : 'none';
+        
+        // Update Link Status UI
+        checkNeuralLink(val);
+        
+        // Update Status with Usage Limits
+        const status = document.getElementById('aiStatus');
+        if (status) {
+            const limits = {
+                'groq': 'LIMITS: ~30 requests / min (FREE)',
+                'gemini': 'LIMITS: 15 requests / min (FREE TIER)',
+                'openai': 'LIMITS: Usage-based (PAID)',
+                'anthropic': 'LIMITS: Usage-based (PAID)'
+            };
+            status.textContent = limits[val] || '';
+            status.style.color = 'var(--admin-muted)';
+        }
     };
+
+    function checkNeuralLink(provider) {
+        const hubDot = document.getElementById('hubIndicator');
+        const hubText = document.getElementById('hubText');
+        if (!hubDot || !hubText) return;
+
+        const personalKey = localStorage.getItem(`cloud_${provider}`);
+        const hasServerKey = state.token && state.token !== 'static-bypass-token';
+
+        if (personalKey) {
+            hubDot.style.background = 'var(--admin-cyan)';
+            hubText.textContent = `UPLINK: DIRECT CLOUD (USING PERSONAL KEY)`;
+            hubText.style.color = 'var(--admin-cyan)';
+        } else if (hasServerKey) {
+            hubDot.style.background = 'var(--admin-success)';
+            hubText.textContent = `UPLINK: SECURE SERVER HUB (NO KEY REQUIRED)`;
+            hubText.style.color = 'var(--admin-success)';
+        } else {
+            hubDot.style.background = 'var(--admin-danger)';
+            hubText.textContent = `UPLINK: DISCONNECTED (KEY REQUIRED)`;
+            hubText.style.color = 'var(--admin-danger)';
+        }
+    }
 
 
 

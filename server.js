@@ -107,6 +107,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
     
     try {
         let result;
+        let usage;
         if (provider === 'openai') {
             if (!process.env.OPENAI_API_KEY) throw new Error("OpenAI Key not configured on server.");
             
@@ -130,6 +131,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
             result = JSON.parse(data.choices[0].message.content);
+            usage = data.usage;
 
         } else if (provider === 'gemini') {
             if (!process.env.GEMINI_API_KEY) throw new Error("Gemini Key not configured on server.");
@@ -158,6 +160,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                         const text = data.candidates[0].content.parts[0].text;
                         // With native JSON mode, we shouldn't need regex replacement, but keeping it for safety
                         result = JSON.parse(text.replace(/```json|```/g, '').trim());
+                        usage = data.usageMetadata ? { total_tokens: data.usageMetadata.totalTokenCount } : null;
                         success = true;
                     } else { lastErr = data.error.message; }
                 } catch (e) { lastErr = e.message; }
@@ -182,6 +185,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
             result = JSON.parse(data.content[0].text);
+            usage = data.usage ? { total_tokens: data.usage.input_tokens + data.usage.output_tokens } : null;
 
         } else if (provider === 'groq') {
             if (!process.env.GROQ_API_KEY) throw new Error("Groq Key not configured on server.");
@@ -200,12 +204,13 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             const data = await response.json();
             if (data.error) throw new Error(data.error.message);
             result = JSON.parse(data.choices[0].message.content);
+            usage = data.usage;
 
         } else {
             throw new Error("Invalid provider requested.");
         }
 
-        res.json({ success: true, data: result });
+        res.json({ success: true, data: result, usage });
 
     } catch (error) {
         console.error("AI Error:", error.stack);
@@ -284,7 +289,7 @@ app.use((req, res) => {
 
 // --- START SERVER ---
 const server = app.listen(port, () => {
-    console.log(`\n🚀 OTP SECURE SERVER V3.2.1 ONLINE`);
+    console.log(`\n🚀 OTP SECURE SERVER V1.0.0 ONLINE`);
     console.log(`🔒 Security Headers: ENABLED`);
     console.log(`📦 Compression: ENABLED`);
     console.log(`🔑 Auth System: JWT ENABLED`);
