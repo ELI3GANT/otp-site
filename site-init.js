@@ -128,16 +128,21 @@ window.OTP.setTheme = function(theme) {
 
 window.OTP.initTheme = function() {
     const savedTheme = localStorage.getItem('theme');
+    const lastGlobal = localStorage.getItem('last_global_theme');
     let targetTheme;
 
     if (savedTheme) {
-        // User Override
+        // User Explicit Preference
         targetTheme = savedTheme;
         console.log(`[OTP] Theme initialized: ${targetTheme} (User Override)`);
+    } else if (lastGlobal) {
+        // Last Known Global State
+        targetTheme = lastGlobal;
+        console.log(`[OTP] Theme initialized: ${targetTheme} (Last Global Sync)`);
     } else {
         // Chrono-Logic (Local Time)
         const hour = new Date().getHours();
-        const isDaytime = hour >= 6 && hour < 18; // 6:00 AM to 5:59 PM
+        const isDaytime = hour >= 6 && hour < 18; 
         targetTheme = isDaytime ? 'light' : 'dark';
         console.log(`[OTP] Theme initialized: ${targetTheme} (Auto-Chrono: ${hour}:00)`);
     }
@@ -371,7 +376,8 @@ window.OTP.initRealtimeState = function() {
 
         if (type === 'theme') {
             window.OTP.setTheme(value);
-            // Visual transition for theater feel
+            localStorage.setItem('last_global_theme', value);
+            // Visual transition
             if (typeof gsap !== 'undefined') {
                 gsap.fromTo('body', { opacity: 0.5, scale: 0.98 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" });
             }

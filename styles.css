@@ -599,8 +599,8 @@ h1, h2, h3 {
 }
 [data-theme="light"] .hero-micro .dot {
   background: var(--accent2);
-  box-shadow: none; /* Remove heavy glow from light mode */
-  opacity: 0.6;
+  box-shadow: none;
+  opacity: 0.8; /* Increased from 0.6 */
 }
 
 [data-theme="light"] .dot {
@@ -4459,12 +4459,7 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     font-size: 0.9rem;
   }
-  
-  .hero-micro .dot { 
-    display: inline-block; 
-    margin: 5px 0; /* Stacked vertical space if needed, but since it's column... */
-    opacity: 0.3; /* Subtle divider if in column */
-  }
+  .hero-micro .dot { display: none; }
   
   .subtitle-lead {
     font-size: 1.1rem;
