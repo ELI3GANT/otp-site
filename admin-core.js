@@ -243,11 +243,6 @@
         } catch (e) { console.error("Config Fetch Error:", e); }
     }
 
-        } catch (e) {
-            console.warn("State Sync Failed:", e);
-        }
-    }
-
     // --- AUTH UTILS ---
     window.logout = function() {
         localStorage.removeItem('otp_admin_token');
@@ -727,7 +722,7 @@
     // ... (keep surrounding functions) ...
 
     // STARTUP
-    document.addEventListener('DOMContentLoaded', () => {
+    function bootstrap() {
         init();
         
         const gateBtn = document.querySelector('.gate-btn');
@@ -812,7 +807,13 @@
                 }
             });
         }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrap);
+    } else {
+        bootstrap();
+    }
 
     window.deleteBySlug = async function() {
         const input = document.getElementById('manualDeleteSlug');

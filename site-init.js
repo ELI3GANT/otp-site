@@ -475,7 +475,7 @@ window.OTP.initLiveEditor = async function() {
 // Initialize Live Editor
 setTimeout(window.OTP.initLiveEditor, 500);
 
-document.addEventListener('DOMContentLoaded', () => {
+function initSite() {
 
     (function injectThemeToggle() {
         if (window.OTP_THEME_TOGGLE_INJECTED) return;
@@ -903,4 +903,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.OTP && window.OTP.initLiveEditor) {
         window.OTP.initLiveEditor();
     }
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSite);
+} else {
+    initSite();
+}
