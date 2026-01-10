@@ -176,7 +176,7 @@ window.OTP.initRealtimeState = function() {
 
         if (type === 'theme') window.OTP.setTheme(value);
         if (type === 'refresh') location.reload();
-        if (type === 'alert') alert("BROADCAST: " + value);
+        if (type === 'alert') window.OTP.showBroadcast(value);
     }).subscribe((status) => {
         console.log("📡 SITE COMMAND CHANNEL:", status);
     });
@@ -190,6 +190,37 @@ window.OTP.initRealtimeState = function() {
             await room.track({ online_at: new Date().toISOString(), page: window.location.pathname });
         }
     });
+};
+
+// 8.1 CUSTOM BROADCAST UI
+window.OTP.showBroadcast = function(message) {
+    // Remove existing if any
+    const old = document.querySelector('.otp-broadcast-toast');
+    if (old) old.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'otp-broadcast-toast';
+    toast.innerHTML = `
+        <button class="otp-broadcast-close" onclick="this.parentElement.classList.remove('show'); setTimeout(()=>this.parentElement.remove(), 600)">&times;</button>
+        <div class="otp-broadcast-header">
+            <div class="otp-broadcast-dot"></div>
+            <span>Transmission Received</span>
+        </div>
+        <div class="otp-broadcast-body">${message}</div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // Auto-remove after 8 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 600);
+        }
+    }, 8000);
 };
 
 // Init Realtime (Non-blocking)
