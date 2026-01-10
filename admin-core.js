@@ -90,8 +90,12 @@
             // 5. Neural Cloud Settings (Persistence)
             const cloudOA = document.getElementById('cloudOpenAI');
             const cloudG = document.getElementById('cloudGemini');
+            const cloudC = document.getElementById('cloudClaude');
+            const cloudGr = document.getElementById('cloudGroq');
             if(cloudOA) cloudOA.value = localStorage.getItem('cloud_openai') || '';
             if(cloudG) cloudG.value = localStorage.getItem('cloud_gemini') || '';
+            if(cloudC) cloudC.value = localStorage.getItem('cloud_claude') || '';
+            if(cloudGr) cloudGr.value = localStorage.getItem('cloud_groq') || '';
 
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
@@ -784,11 +788,18 @@
             const authToken = (state.token || '').trim();
             const cloudOpenAI = localStorage.getItem('cloud_openai');
             const cloudGemini = localStorage.getItem('cloud_gemini');
+            const cloudClaude = localStorage.getItem('cloud_claude');
+            const cloudGroq = localStorage.getItem('cloud_groq');
             
+            const sysPrompt = `You are a professional blog writer for a high-tech media brand. Output RAW JSON ONLY. No markdown blocks. Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }`;
+            const userPrompt = `Generate post titled "${title}" based on: ${prompt}. Archetype: ${archetypeInput ? archetypeInput.value : 'technical'}.`;
+
             // --- MODE SELECTION: PROXY VS DIRECT ---
             if (authToken === 'static-bypass-token') {
-                if (provider === 'openai' && !cloudOpenAI) throw new Error("LEGACY MODE: OpenAI key missing in Cloud Settings.");
-                if (provider === 'gemini' && !cloudGemini) throw new Error("LEGACY MODE: Gemini key missing in Cloud Settings.");
+                if (provider === 'openai' && !cloudOpenAI) throw new Error("LEGACY MODE: OpenAI key missing.");
+                if (provider === 'gemini' && !cloudGemini) throw new Error("LEGACY MODE: Gemini key missing.");
+                if (provider === 'anthropic' && !cloudClaude) throw new Error("LEGACY MODE: Anthropic key missing.");
+                if (provider === 'groq' && !cloudGroq) throw new Error("LEGACY MODE: Groq key missing.");
                 
                 if(status) { status.innerHTML = `<span class="blink">🚀 DIRECT CLOUD LINK ACTIVE...</span>`; }
 
@@ -798,29 +809,77 @@
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudOpenAI}` },
                         body: JSON.stringify({
                             model: 'gpt-4o',
-                            messages: [
-                                { role: 'system', content: 'You are a professional blog writer. Output JSON only.' },
-                                { role: 'user', content: `Generate post titled "${title}" based on: ${prompt}. Archetype: ${archetypeInput ? archetypeInput.value : 'technical'}. Return { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }
-                            ],
+                            messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }],
                             response_format: { type: "json_object" }
                         })
                     });
                     const raw = await res.json();
                     if(raw.error) throw new Error(raw.error.message);
                     handleAIResponse(JSON.parse(raw.choices[0].message.content));
-                } else {
-                    const gemModel = model || 'gemini-1.5-flash';
-                    // Use v1 for stable production keys
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${gemModel}:generateContent?key=${cloudGemini}`, {
+                } 
+                else if (provider === 'anthropic') {
+                    const res = await fetch('https://api.anthropic.com/v1/messages', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json', 'x-api-key': cloudClaude, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: `You are a professional blog writer. Return RAW JSON ONLY. No markdown wrappers. Generate post titled "${title}" based on: ${prompt}. Archetype: ${archetypeInput ? archetypeInput.value : 'technical'}. Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }]
+                            model: 'claude-3-5-sonnet-20240620',
+                            max_tokens: 4000,
+                            messages: [{ role: 'user', content: sysPrompt + "\n\n" + userPrompt }]
                         })
                     });
                     const raw = await res.json();
                     if(raw.error) throw new Error(raw.error.message);
-                    handleAIResponse(JSON.parse(raw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim()));
+                    handleAIResponse(JSON.parse(raw.content[0].text));
+                }
+                else if (provider === 'groq') {
+                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudGroq}` },
+                        body: JSON.stringify({
+                            model: 'llama-3.1-70b-versatile',
+                            messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }],
+                            response_format: { type: "json_object" }
+                        })
+                    });
+                    const raw = await res.json();
+                    if(raw.error) throw new Error(raw.error.message);
+                    handleAIResponse(JSON.parse(raw.choices[0].message.content));
+                }
+                else if (provider === 'gemini') {
+                    // SMART PROBE LOGIC
+                    const gemModel = model || 'gemini-1.5-flash-latest';
+                    let success = false;
+                    let lastErr = "";
+
+                    // Attempt 1: v1beta (often more permissive with Flash)
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gemModel}:generateContent?key=${cloudGemini}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }] })
+                        });
+                        const raw = await res.json();
+                        if(!raw.error) {
+                            handleAIResponse(JSON.parse(raw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim()));
+                            success = true;
+                        } else { lastErr = raw.error.message; }
+                    } catch(e) { lastErr = e.message; }
+
+                    // Attempt 2: v1 (Stable)
+                    if(!success) {
+                        try {
+                            const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${gemModel}:generateContent?key=${cloudGemini}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }] })
+                            });
+                            const raw = await res.json();
+                            if(!raw.error) {
+                                handleAIResponse(JSON.parse(raw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim()));
+                                success = true;
+                            } else { throw new Error(raw.error.message); }
+                        } catch(e) { throw new Error(`Gemini Probe Failed. Final Error: ${e.message}`); }
+                    }
                 }
             } else {
                 // SERVER PROXY MODE
@@ -857,7 +916,7 @@
             if(status) { status.textContent = "ERROR: " + err.message; status.style.color = "#ff4444"; }
             showToast("AI ERROR: " + err.message);
         } finally {
-            btn.textContent = "⚡ TRANSMIT TO AI";
+            btn.textContent = "⚡ TRANSMIT";
             btn.disabled = false;
         }
     }
