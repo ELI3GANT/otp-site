@@ -139,10 +139,15 @@ class Star {
                 this.vx += dx * 0.025 * this.z; // Stronger gravity
                 this.vy += dy * 0.025 * this.z;
 
-                // Event Horizon Swirl: If very close, add tangential velocity to orbit instead of crash
-                if (dist < 50) {
-                     this.vx += -dy * 0.1; 
-                     this.vy += dx * 0.1;
+                // Event Horizon Swirl: Scaled for 260px button (radius 130px)
+                if (dist < 130) {
+                     this.vx += -dy * 0.15; 
+                     this.vy += dx * 0.15;
+                }
+
+                // Fade out particles that are deep inside the button to "eliminate" clutter
+                if (dist < 80) {
+                    this.alpha = Math.max(0, this.alpha - 0.05);
                 }
 
                 // Warp Colors

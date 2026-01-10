@@ -4442,6 +4442,11 @@ input:focus, select:focus, textarea:focus {
     gap: 20px;
   }
 
+  .cool-work-link {
+    width: 260px !important;
+    height: 260px !important;
+  }
+
   .nav-drawer a {
     font-size: 1.1rem;
     padding: 18px;
