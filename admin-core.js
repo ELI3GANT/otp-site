@@ -771,8 +771,12 @@
         }
 
         try {
-            // Secure Server Call
-            const res = await fetch('/api/ai/generate', {
+            // Absolute URL to avoid 'string pattern' errors in some environments
+            const apiUrl = window.location.origin + '/api/ai/generate';
+            
+            console.log(`📡 Transmitting AI Request to: ${apiUrl}`);
+
+            const res = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -781,7 +785,7 @@
                 body: JSON.stringify({ 
                     prompt, 
                     archetype: archetypeInput ? archetypeInput.value : 'technical', 
-                    provider, 
+                    provider: provider || 'openai', 
                     model,
                     title
                 })
@@ -791,7 +795,8 @@
             const contentType = res.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
                 const text = await res.text();
-                throw new Error("Server returned non-JSON response. Check if server.js is running.");
+                console.error("Non-JSON Server Response:", text);
+                throw new Error("Server returned an invalid response format. Ensure your server is active.");
             }
 
             const data = await res.json();
