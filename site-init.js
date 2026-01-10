@@ -175,6 +175,7 @@ window.OTP.trackView = async function(slug) {
 };
 
 // 7.5 Premium Broadcast UI
+// 7.5 Cinematic Transmission Overlay
 window.OTP.showBroadcast = function(message) {
     const existing = document.getElementById('otp-broadcast-overlay');
     if (existing) existing.remove();
@@ -182,31 +183,102 @@ window.OTP.showBroadcast = function(message) {
     const overlay = document.createElement('div');
     overlay.id = 'otp-broadcast-overlay';
     overlay.style = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        z-index: 1000000; color: #fff; text-align: center; font-family: 'Space Grotesk', sans-serif;
-        padding: 40px; animation: broadcast-fade-in 0.5s ease;
+        position: fixed; inset: 0;
+        background: radial-gradient(circle at center, rgba(0,20,40,0.95) 0%, rgba(0,0,0,0.98) 100%);
+        backdrop-filter: blur(20px) saturate(1.5);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 2147483647; color: #fff; text-align: center; 
+        font-family: 'Space Grotesk', sans-serif;
+        overflow: hidden; pointer-events: auto;
     `;
 
     overlay.innerHTML = `
-        <div style="font-size: 0.8rem; letter-spacing: 4px; color: var(--accent2); margin-bottom: 20px; font-weight: 700;">📡 EMERGENCY BROADCAST</div>
-        <div style="font-size: clamp(1.5rem, 5vw, 3rem); font-weight: 800; max-width: 800px; line-height: 1.2;">${message.toUpperCase()}</div>
-        <div style="margin-top: 40px; font-size: 0.7rem; color: #666; letter-spacing: 2px;">DISMISSING IN 5 SECONDS...</div>
+        <!-- Scanlines -->
+        <div style="position:absolute; inset:0; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03)); background-size: 100% 4px, 3px 100%; pointer-events:none; z-index:1;"></div>
+        
+        <div class="bc-container" style="position:relative; z-index:2; padding: 60px; max-width: 900px; width: 90%;">
+            <!-- Close Button -->
+            <button onclick="this.closest('#otp-broadcast-overlay').remove()" style="position:fixed; top:40px; right:40px; background:transparent; border:1px solid rgba(255,255,255,0.2); color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:0.3s; z-index:10;">×</button>
+
+            <div class="bc-eyebrow" style="font-size: 0.7rem; letter-spacing: 0.5em; color: var(--accent2); margin-bottom: 30px; font-weight: 700; opacity: 0; transform: translateY(20px);">
+                <span style="display:inline-block; padding: 4px 12px; border: 1px solid var(--accent2); border-radius: 4px; background: rgba(0,195,255,0.05);">SYSTEM UPLINK ACTIVE</span>
+            </div>
+            
+            <h2 class="bc-title" style="font-size: clamp(1.8rem, 7vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 40px; text-transform: uppercase; font-family: 'Syne', sans-serif; opacity: 0; filter: blur(10px); color: #fff; text-shadow: 0 0 30px rgba(255,255,255,0.2);">
+                ${message}
+            </h2>
+            
+            <div class="bc-timer-bar" style="width: 100%; height: 2px; background: rgba(255,255,255,0.05); position:relative; overflow:hidden; border-radius: 2px; opacity: 0;">
+                <div class="bc-timer-fill" style="position:absolute; top:0; left:0; height:100%; width:100%; background: var(--accent2); transform-origin: left; box-shadow: 0 0 15px var(--accent2);"></div>
+            </div>
+            
+            <div class="bc-footer" style="margin-top: 30px; font-size: 0.6rem; color: #666; letter-spacing: 3px; font-weight: 600; opacity: 0;">
+                SECURE STREAM ESTABLISHED // AUTH_ID: ${Math.random().toString(36).substr(2, 6).toUpperCase()}
+            </div>
+        </div>
+
         <style>
-            @keyframes broadcast-fade-in { from { opacity: 0; transform: scale(1.1); } to { opacity: 1; transform: scale(1); } }
+            @keyframes bc-glitch {
+                0% { transform: translate(0); }
+                20% { transform: translate(-2px, 2px); }
+                40% { transform: translate(-2px, -2px); }
+                60% { transform: translate(2px, 2px); }
+                80% { transform: translate(2px, -2px); }
+                100% { transform: translate(0); }
+            }
+            .bc-glitch-active { animation: bc-glitch 0.2s infinite; }
         </style>
     `;
 
     document.body.appendChild(overlay);
-    
-    // Auto Dismiss
-    setTimeout(() => {
-        overlay.style.transition = 'opacity 1s ease, transform 1s ease';
-        overlay.style.opacity = '0';
-        overlay.style.transform = 'scale(0.9)';
-        setTimeout(() => overlay.remove(), 1000);
-    }, 5000);
+
+    // GSAP ANIMATION SEQUENCE
+    if (typeof gsap !== 'undefined') {
+        const tl = gsap.timeline();
+        
+        // Initial Blur & Pop
+        tl.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power4.out" });
+        
+        // Content Stagger
+        tl.to('.bc-eyebrow', { opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.7)" }, "-=0.2");
+        
+        tl.to('.bc-title', { 
+            opacity: 1, 
+            filter: 'blur(0px)', 
+            duration: 0.8, 
+            ease: "expo.out",
+            onStart: () => overlay.querySelector('.bc-title').classList.add('bc-glitch-active'),
+            onComplete: () => setTimeout(() => overlay.querySelector('.bc-title').classList.remove('bc-glitch-active'), 500)
+        }, "-=0.4");
+
+        tl.to('.bc-timer-bar', { opacity: 1, duration: 0.4 }, "-=0.4");
+        tl.to('.bc-footer', { opacity: 1, duration: 0.4 }, "-=0.2");
+
+        // Timer Fill Animation (5 seconds)
+        gsap.fromTo('.bc-timer-fill', 
+            { scaleX: 1 }, 
+            { scaleX: 0, duration: 6, ease: "none" }
+        );
+
+        // Auto Logout / Dismiss
+        tl.to(overlay, { 
+            opacity: 0, 
+            scale: 1.1, 
+            filter: 'blur(20px)',
+            duration: 1, 
+            delay: 5, 
+            ease: "power4.in",
+            onComplete: () => overlay.remove() 
+        });
+
+    } else {
+        // Fallback for no GSAP
+        setTimeout(() => {
+            overlay.style.transition = 'opacity 1s ease';
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 1000);
+        }, 6000);
+    }
 };
 
 // Run init immediately
@@ -321,7 +393,7 @@ window.OTP.initRealtimeState = function() {
             if (!dest.startsWith('http')) dest = 'https://' + dest;
 
             window.OTP.showBroadcast(`NETWORK WARP INITIATED: REDIRECTING TO ${dest}`);
-            setTimeout(() => { window.location.href = dest; }, 3000);
+            setTimeout(() => { window.location.href = dest; }, 5000);
         }
     }).subscribe((status) => {
         console.log("📡 SITE COMMAND CHANNEL:", status);
