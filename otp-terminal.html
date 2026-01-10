@@ -553,6 +553,26 @@
         </div>
     </div>
 
+    <!-- 4.1 NEURAL CONSOLE -->
+    <button class="console-btn" onclick="toggleNeuralConsole()" aria-label="Open Neural Console">
+        ⚡
+    </button>
+
+    <div id="neuralConsole" class="console-modal">
+        <div class="console-header">
+            <span>// NEURAL_UPLINK_V1</span>
+            <button onclick="toggleNeuralConsole()" style="background:none; border:none; color:var(--admin-cyan); cursor:pointer; font-size: 1rem;">✕</button>
+        </div>
+        <div class="console-log" id="consoleLog">
+            <div class="console-msg system">FAILSAFE ACTIVATED. SYSTEM LISTENING.</div>
+            <div class="console-msg system">Enter /help for commands or just type to chat.</div>
+        </div>
+        <div class="console-input-wrap">
+            <span class="prompt-char" style="color:var(--admin-cyan)">></span>
+            <input type="text" id="consoleInput" placeholder="Awaiting Input..." autocomplete="off">
+        </div>
+    </div>
+
     <!-- 1. SUPABASE LIBRARY -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
