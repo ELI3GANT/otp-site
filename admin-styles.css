@@ -612,3 +612,14 @@ button:focus-visible, a:focus-visible {
 input, textarea, select {
     font-size: 16px !important; /* Force iOS no-zoom */
 }
+
+/* SYSTEM STATUS ANIMATION */
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(0, 255, 170, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(0, 255, 170, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 255, 170, 0); }
+}
+
+.admin-header h1::before {
+    animation: pulse-green 2s infinite;
+}
