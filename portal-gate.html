@@ -75,9 +75,28 @@
             localStorage.setItem('theme', next);
         }
 
-        // 2. AUTO-REDIRECT IF ALREADY LOGGED IN
-        if(localStorage.getItem('otp_admin_token')) {
-            window.location.href = 'otp-terminal.html';
+        // 2. API DISCOVERY & LOGIN
+        async function getBaseApiUrl() {
+            // Priority 1: Current Origin
+            const current = window.location.origin;
+            try {
+                const check = await fetch(current + '/api/auth/login', { method: 'OPTIONS' }).catch(() => null);
+                if (check) return current;
+            } catch(e) {}
+
+            // Priority 2: Common Development Ports
+            const ports = [8080, 3000];
+            for (const p of ports) {
+                const url = `http://localhost:${p}`;
+                try {
+                    const check = await fetch(url + '/api/auth/login', { method: 'OPTIONS' }).catch(() => null);
+                    if (check) {
+                        console.log(`🔌 DISCOVERED BACKEND AT: ${url}`);
+                        return url;
+                    }
+                } catch(e) {}
+            }
+            return current; // Fallback to current
         }
 
         async function attemptLogin() {
@@ -94,11 +113,14 @@
             const FALLBACK_PASS = 'otp2026';
 
             try {
+                const baseUrl = await getBaseApiUrl();
+                localStorage.setItem('otp_api_base', baseUrl);
+
                 // A. SERVER CHECK (Preferred)
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s Timeout
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-                const res = await fetch('/api/auth/login', {
+                const res = await fetch(baseUrl + '/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ passcode: pass }),

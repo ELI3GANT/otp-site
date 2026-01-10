@@ -78,12 +78,12 @@ const verifyToken = (req, res, next) => {
         const bearer = bearerHeader.split(' ');
         const bearerToken = bearer[1];
         jwt.verify(bearerToken, process.env.JWT_SECRET, (err, authData) => {
-            if (err) return res.sendStatus(403);
+            if (err) return res.status(403).json({ success: false, message: "Invalid or expired token" });
             req.auth = authData;
             next();
         });
     } else {
-        res.sendStatus(401);
+        res.status(401).json({ success: false, message: "Authentication required" });
     }
 };
 

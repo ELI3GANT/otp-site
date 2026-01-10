@@ -771,8 +771,15 @@
         }
 
         try {
-            const apiUrl = window.location.origin + '/api/ai/generate';
+            // Priority: Discovered API Base -> Current Origin
+            const base = localStorage.getItem('otp_api_base') || window.location.origin;
+            const apiUrl = base + '/api/ai/generate';
+            
             const authToken = (state.token || '').trim();
+            
+            if (authToken === 'static-bypass-token') {
+                throw new Error("AI GENERATION UNAVAILABLE: You are in Static Mode. Please log in through the Secure Gateway on Port 8080.");
+            }
             
             console.log("AI DEBUG: URL=" + apiUrl);
             console.log("AI DEBUG: Token Length=" + authToken.length);
