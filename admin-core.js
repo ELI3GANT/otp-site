@@ -111,14 +111,30 @@
             const cloudC = document.getElementById('cloudClaude');
             const cloudGr = document.getElementById('cloudGroq');
             const satUrl = document.getElementById('satelliteUrl');
-            if(cloudOA) cloudOA.value = localStorage.getItem('cloud_openai') || '';
-            if(cloudG) cloudG.value = localStorage.getItem('cloud_gemini') || '';
-            if(cloudC) cloudC.value = localStorage.getItem('cloud_claude') || '';
-            if(cloudGr) cloudGr.value = localStorage.getItem('cloud_groq') || '';
+            
+            const bindPersist = (el, key) => {
+                if(el) {
+                    el.value = localStorage.getItem(key) || '';
+                    el.addEventListener('input', (e) => {
+                        localStorage.setItem(key, e.target.value.trim());
+                    });
+                }
+            };
+
+            bindPersist(cloudOA, 'cloud_openai');
+            bindPersist(cloudG, 'cloud_gemini');
+            bindPersist(cloudC, 'cloud_claude');
+            bindPersist(cloudGr, 'cloud_groq');
             
             // Satellite URL: Load & Validate
             if(satUrl) {
-                const storedUrl = localStorage.getItem('otp_api_base') || '';
+                // Force default secure URL if not set
+                let storedUrl = localStorage.getItem('otp_api_base');
+                if (!storedUrl || storedUrl === 'http://localhost:3000') {
+                    storedUrl = 'https://otp-site.vercel.app';
+                    localStorage.setItem('otp_api_base', storedUrl);
+                }
+                
                 satUrl.value = storedUrl;
                 
                 satUrl.addEventListener('change', (e) => {
