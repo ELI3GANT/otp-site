@@ -130,7 +130,7 @@
 
         } catch (err) {
             console.error("Upload Failed:", err);
-            alert("Upload Failed: " + err.message);
+            showToast("UPLOAD FAILED: " + err.message);
         } finally {
             if(btn) btn.textContent = "Upload Media";
         }
@@ -329,7 +329,7 @@
 
         } catch (err) {
             console.error("❌ DELETION FAILED:", err);
-            alert("DELETION FAILED: " + err.message);
+            showToast("DELETION FAILED: " + err.message);
         } finally {
             if(confirmBtn) {
                 confirmBtn.textContent = "DELETE";
@@ -416,7 +416,7 @@
                     
                 } catch(err) {
                     console.error("BROADCAST ERROR:", err);
-                    alert("Operation Failed: " + err.message);
+                    showToast("FAILED: " + err.message);
                     submitBtn.textContent = originalText;
                 } finally {
                     submitBtn.disabled = false;
@@ -452,7 +452,7 @@
             fetchPosts(true); 
 
         } catch (err) {
-            alert("TERMINATION FAILED: " + err.message);
+            showToast("TERMINATION FAILED: " + err.message);
         }
     };
 
@@ -497,7 +497,7 @@
 
         } catch (e) {
             console.error("MAINTENANCE ERROR:", e);
-            alert("MAINTENANCE FAILED: " + e.message);
+            showToast("CLEANUP ERROR: " + e.message);
         } finally {
             if(btn) { btn.textContent = "PROCEED"; btn.disabled = false; }
         }
@@ -592,10 +592,10 @@
         toast.querySelector('span').textContent = msg;
         toast.classList.add('show');
         
-        // Auto hide after 3s
+        // Auto hide after 4s (longer for errors)
         setTimeout(() => {
             toast.classList.remove('show');
-        }, 3000);
+        }, 4000);
     };
 
     // ... (rest of init) ...
@@ -676,7 +676,7 @@
         } catch (err) {
             console.error("AI ERROR:", err);
             if(status) { status.textContent = "ERROR: " + err.message; status.style.color = "#ff4444"; }
-            alert("AI Generation Failed: " + err.message);
+            showToast("AI ERROR: " + err.message);
         } finally {
             btn.textContent = "⚡ TRANSMIT TO AI";
             btn.disabled = false;
