@@ -11,7 +11,7 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=5.0" />
-  <link rel="stylesheet" href="./admin-styles.css?v=7.0" />
+  <link rel="stylesheet" href="./admin-styles.css?v=8.0" />
   <!-- CRITICAL STATUS STYLE OVERRIDE -->
   <style>
     .post-row.row-active-live, .post-row.live-row {
@@ -554,7 +554,7 @@
     </main>
 
     <!-- DELETE CONFIRMATION MODAL -->
-    <div id="deleteModal" class="modal-overlay">
+    <div id="deleteModal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 400px; text-align: center; padding: 30px; display: block;">
             <div style="font-size: 3rem; margin-bottom: 10px;">⚠️</div>
             <h3 style="color: #fff; margin: 0 0 10px 0; font-family: 'Space Grotesk', sans-serif; letter-spacing: 1px;">TERMINATE BROADCAST?</h3>
@@ -568,7 +568,7 @@
     </div>
 
     <!-- SQL SCHEMA MODAL -->
-    <div id="sqlModal" class="modal-overlay">
+    <div id="sqlModal" class="modal-overlay" style="display: none;">
         <div class="modal-content" style="max-width: 800px; max-height: 80vh;">
             <div class="modal-header">
                 <h3>DATABASE SCHEMA (DEPLOY_V1.sql)</h3>
