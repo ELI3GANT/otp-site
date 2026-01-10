@@ -261,7 +261,7 @@ button {
     }
     
     /* Force Header Links Visible (Override Site Styles) */
-    .admin-header .nav-links {
+    .admin-header .admin-nav-actions {
         display: flex !important;
         opacity: 1 !important;
         pointer-events: auto !important;
