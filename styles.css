@@ -3555,8 +3555,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 .cool-work-link {
-  width: 200px; /* Slightly smaller from 260px */
-  height: 200px;
+  width: 260px; 
+  height: 260px;
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.15);
   display: inline-flex;
@@ -3593,11 +3593,13 @@ input:focus, select:focus, textarea:focus {
   color: var(--accent2);
   opacity: 1;
 }
+
+.link-text {
   position: relative;
   z-index: 2;
   font-family: 'Syne', sans-serif;
   font-weight: 800;
-  font-size: 1.3rem; /* Smaller text */
+  font-size: 1.5rem; 
   color: #fff;
   letter-spacing: 2px;
   line-height: 1.4;
@@ -4397,6 +4399,11 @@ input:focus, select:focus, textarea:focus {
 
 /* GLOBAL MOBILE POLISH */
 @media (max-width: 768px) {
+  html, body { 
+    font-size: 16px; 
+    font-family: 'Inter', 'Space Grotesk', sans-serif;
+  }
+  
   .section { padding: 60px 0; }
   
   .hero-title-adjust .title {
