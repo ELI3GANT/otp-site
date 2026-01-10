@@ -453,31 +453,98 @@ button:focus-visible, a:focus-visible {
     background-size: 800px 104px;
     animation: shimmer 1s linear infinite forwards;
 }
-/* GATEKEEPER ASSETS FIX */
-.logo-glitch-wrap {
+
+/* MODAL OVERLAYS (Mobile First) */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85); /* Darker backdrop */
+    backdrop-filter: blur(8px);
+    z-index: 20000;
     display: flex;
+    align-items: center; /* Center vertically */
     justify-content: center;
-    margin-bottom: 20px;
+    padding: 15px; /* Safety padding */
 }
 
-.gate-logo {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    filter: drop-shadow(0 0 10px rgba(112,0,255,0.5));
-}
-
-.gate-btn {
+/* MEDIA LIBRARY MODAL */
+.media-browser {
     width: 100%;
-    margin-top: 20px;
-    background: var(--admin-accent);
-    color: #fff;
-    border: none;
-    box-shadow: 0 5px 20px rgba(112,0,255,0.3);
+    max-width: 900px; /* Wide on desktop */
+    height: 80vh; /* Fixed height ratio */
+    background: var(--admin-panel);
+    border: 1px solid var(--admin-border);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 50px 100px rgba(0,0,0,0.5);
 }
 
-.gate-btn:hover {
-    background: #fff;
-    color: #000;
-    box-shadow: 0 0 30px rgba(255,255,255,0.5);
+.media-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--admin-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.media-grid {
+    flex: 1; /* Takes remaining space */
+    overflow-y: auto;
+    padding: 15px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 col on mobile */
+    gap: 12px;
+}
+
+.media-footer {
+    padding: 15px 20px;
+    border-top: 1px solid var(--admin-border);
+    background: rgba(0,0,0,0.2);
+}
+
+@media (min-width: 600px) {
+    .media-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 900px) {
+    .media-grid { grid-template-columns: repeat(5, 1fr); }
+}
+
+/* GATEKEEPER FIXES */
+.gatekeeper {
+    padding: 15px; /* Prevent edge touching */
+}
+
+.terminal-window {
+    width: 100%;
+    max-width: 380px; /* Slightly narrower for mobile comfort */
+    border: 1px solid rgba(255,255,255,0.15); /* More visible border */
+}
+
+.gate-input {
+    width: 100%; /* Ensure full width */
+    max-width: 200px; /* Limit char width */
+    margin: 0 auto;
+    display: block;
+    background: rgba(0,0,0,0.3); /* Darker input */
+}
+
+.logo-glitch-wrap { 
+    margin-top: 10px; 
+    margin-bottom: 25px; 
+}
+
+/* BETTER TOUCH TARGETS */
+.post-row {
+    padding: 18px 15px; /* Taller hit area */
+}
+
+.delete-btn {
+    padding: 10px 16px; /* Easier to tap */
+}
+
+/* INPUT CLARITY */
+input, textarea, select {
+    font-size: 16px !important; /* Force iOS no-zoom */
 }
