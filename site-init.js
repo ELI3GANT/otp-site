@@ -156,6 +156,11 @@ window.OTP.initRealtimeState = function() {
     
     // 8.1 Fetch Remote State on Load (Sticky Config)
     (async function() {
+        // SAFETY: Ignore on Admin/Portal pages
+        if (window.location.pathname.includes('otp-terminal') || 
+            window.location.pathname.includes('portal') ||
+            window.location.pathname.includes('404')) return;
+
         try {
             const { data, error } = await client
                 .from('posts')
@@ -204,6 +209,10 @@ window.OTP.initRealtimeState = function() {
         const { type, value } = message.payload || {};
         
         if (type === 'maintenance') {
+            // SAFETY: Ignore on Admin/Portal
+            if (window.location.pathname.includes('otp-terminal') || 
+                window.location.pathname.includes('portal')) return;
+
             if (value === 'on') {
                 document.body.innerHTML = `
                     <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; font-family: 'Space Grotesk', sans-serif; text-align: center; padding: 20px;">
