@@ -146,6 +146,34 @@ window.OTP.initTheme = function() {
     return targetTheme;
 };
 
+window.OTP.trackView = async function(slug) {
+    if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
+    const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+    
+    try {
+        // 1. Check if it's a Post (Primary)
+        // We check existence first because the RPC generally returns void/success even on 0 updates.
+        const { count } = await client.from('posts').select('*', { count: 'exact', head: true }).eq('slug', slug);
+        
+        if (count && count > 0) {
+            // It exists in Posts, call the RPC
+            const { error } = await client.rpc('increment_view_count', { post_slug: slug });
+            if (error) console.warn('[OTP] RPC Error:', error);
+        } else {
+            // 2. Fallback to Broadcasts Table
+            // Fetch current count to increment (Native RPC for broadcasts pending)
+            const { data: bData } = await client.from('broadcasts').select('views').eq('slug', slug).single();
+            
+            if (bData) {
+                const currentViews = parseInt(bData.views) || 0;
+                await client.from('broadcasts').update({ views: currentViews + 1 }).eq('slug', slug);
+            }
+        }
+    } catch (e) {
+        console.warn("[OTP] Analytics Tracking Offline", e);
+    }
+};
+
 // Run init immediately
 window.OTP.initTheme();
 
