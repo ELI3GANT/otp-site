@@ -53,6 +53,26 @@
       ]
     }
   </script>
+  <!-- THEME GUARD: Prevents flickering by initializing theme before first paint -->
+  <script>
+    (function() {
+        const savedTheme = localStorage.getItem('theme');
+        const lastGlobal = localStorage.getItem('last_global_theme');
+        // Priority: User Override > Last Global Sync > Chrono-Logic
+        let theme = savedTheme || lastGlobal;
+        
+        if (!theme) {
+            const hour = new Date().getHours();
+            theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+        }
+
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+    })();
+  </script>
 </head>
 <body>
   <div class="bg-fixed"></div>

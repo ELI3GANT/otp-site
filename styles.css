@@ -5,6 +5,14 @@
   box-sizing: border-box;
 }
 /* GLOBAL POLISH [SIG:V3.0-FORCE-SYNC] */
+body { 
+    margin: 0 !important; 
+    font-family: 'Space Grotesk', sans-serif; 
+    background: var(--bg, #030305); 
+    color: var(--text, #fff);
+    transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
+}
+
 ::selection {
   background: var(--accent);
   color: #fff;

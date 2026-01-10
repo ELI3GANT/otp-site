@@ -24,6 +24,15 @@
   <!-- FAVICON -->
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <!-- THEME GUARD -->
+  <script>
+    (function() {
+        const t = localStorage.getItem('theme') || localStorage.getItem('last_global_theme');
+        if (t === 'light' || (!t \u0026\u0026 new Date().getHours() \u003e= 6 \u0026\u0026 new Date().getHours() \u003c 18)) {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    })();
+  </script>
 </head>
 <body class="archive-page">
   <div class="bg-fixed"></div>

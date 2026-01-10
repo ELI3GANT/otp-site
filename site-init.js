@@ -338,7 +338,10 @@ window.OTP.initRealtimeState = function() {
                 }
                 
                 // Apply Theme
-                if (config.theme) window.OTP.setTheme(config.theme);
+                if (config.theme) {
+                    window.OTP.setTheme(config.theme);
+                    localStorage.setItem('last_global_theme', config.theme);
+                }
             }
         } catch(e) { console.error("Config Sync Error:", e); }
     })();
@@ -366,7 +369,13 @@ window.OTP.initRealtimeState = function() {
             } else { location.reload(); }
         }
 
-        if (type === 'theme') window.OTP.setTheme(value);
+        if (type === 'theme') {
+            window.OTP.setTheme(value);
+            // Visual transition for theater feel
+            if (typeof gsap !== 'undefined') {
+                gsap.fromTo('body', { opacity: 0.5, scale: 0.98 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" });
+            }
+        }
         if (type === 'refresh') location.reload();
         if (type === 'alert') window.OTP.showBroadcast(value);
         
