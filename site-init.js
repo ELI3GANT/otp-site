@@ -241,8 +241,17 @@ window.OTP.initRealtimeState = function() {
         }
 
         if (type === 'warp') {
-            window.OTP.showBroadcast(`NETWORK WARP INITIATED: REDIRECTING TO ${value}`);
-            setTimeout(() => { window.location.href = value; }, 3000);
+            // SAFETY: Ignore on Admin/Portal
+            if (window.location.pathname.includes('otp-terminal') || 
+                window.location.pathname.includes('portal') ||
+                window.location.pathname.includes('404')) return;
+
+            // Ensure absolute URL
+            let dest = value;
+            if (!dest.startsWith('http')) dest = 'https://' + dest;
+
+            window.OTP.showBroadcast(`NETWORK WARP INITIATED: REDIRECTING TO ${dest}`);
+            setTimeout(() => { window.location.href = dest; }, 3000);
         }
     }).subscribe((status) => {
         console.log("📡 SITE COMMAND CHANNEL:", status);

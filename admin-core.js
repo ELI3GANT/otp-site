@@ -1038,9 +1038,31 @@
         }
     };
 
+    // Share Logic
+    window.copyShareLink = function() {
+        const slug = document.getElementById('slugInput').value;
+        if(!slug) return;
+        const url = `https://onlytrueperspective.tech/journal/${slug}`;
+        navigator.clipboard.writeText(url);
+        
+        const btn = document.querySelector('.share-btn-mini');
+        const orig = btn.textContent;
+        btn.textContent = "COPIED!";
+        btn.style.background = "var(--admin-success)";
+        setTimeout(() => {
+            btn.textContent = orig;
+            btn.style.background = "var(--admin-accent)";
+        }, 2000);
+    };
+
     window.triggerGlobalWarp = async function() {
-        const target = prompt("ENTER TARGET WARP URL (e.g. https://google.com):");
+        let target = prompt("ENTER TARGET WARP URL (e.g. google.com):");
         if(!target || !state.siteChannel) return;
+
+        // Auto-fix URL
+        target = target.trim();
+        if (!target.startsWith('http')) target = 'https://' + target;
+
         if(!confirm(`THIS WILL IMMEDIATELY REDIRECT ALL ACTIVE VISITORS TO ${target}. PROCEED?`)) return;
         
         await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'warp', value: target } });

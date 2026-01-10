@@ -99,36 +99,39 @@ h1, h2, h3, h4 {
 }
 
 .stat-card {
-    background: var(--admin-panel);
+    background: linear-gradient(145deg, var(--admin-panel) 0%, rgba(20,20,25,1) 100%);
     border: 1px solid var(--admin-border);
     padding: 15px;
     border-radius: var(--radius);
     position: relative;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    transition: transform 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+    overflow: hidden;
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
+    border-color: var(--admin-accent);
 }
 
 .stat-card h3 {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--admin-muted);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
+    letter-spacing: 2px; /* Wider spacing */
+    margin-bottom: 2px;
 }
 
 .stat-card .stat-num, .stat-card .value {
-    font-size: 1.5rem;
+    font-size: 1.8rem; /* Bigger for mobile too */
     font-weight: 700;
     color: var(--admin-text);
+    line-height: 1.2;
 }
 
 @media (min-width: 768px) {
     .stat-card { padding: 20px; }
-    .stat-card .stat-num, .stat-card .value { font-size: 2rem; }
+    .stat-card .stat-num, .stat-card .value { font-size: 2.2rem; }
 }
 
 /* FORM ELEMENTS */
@@ -632,6 +635,36 @@ button:focus-visible, a:focus-visible {
 /* INPUT CLARITY */
 input, textarea, select {
     font-size: 16px !important; /* Force iOS no-zoom */
+}
+
+/* PREVIEW CARDS (REFINED) */
+.prev-content {
+    animation: fadeIn 0.3s ease;
+}
+
+.preview-card {
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5); /* Deep shadow */
+    transition: transform 0.2s;
+}
+
+/* SHARE BUTTON */
+.share-result-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+}
+
+.share-btn-mini {
+    background: var(--admin-accent);
+    color: #fff;
+    padding: 6px 12px;
+    font-size: 0.7rem;
+    border-radius: 4px;
 }
 
 /* SYSTEM STATUS ANIMATION */

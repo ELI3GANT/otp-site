@@ -432,6 +432,14 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- NEW: SHARE TOOLBAR -->
+                <div class="share-result-bar" id="shareToolbar" style="display:none;">
+                    <div style="font-size: 0.7rem; color: var(--admin-muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 60%; font-family: monospace;" id="shareUrlDisplay">
+                        https://onlytrueperspective.tech/journal/...
+                    </div>
+                    <button type="button" class="share-btn-mini" onclick="copyShareLink()">COPY LINK</button>
+                </div>
     
                 <div class="row">
                    <!-- Views Removed (Organic Only) -->
@@ -524,7 +532,17 @@
                   .trim()
                   .replace(/\s+/g, '-')
                   .replace(/-+/g, '-');
-               if(slugInput) slugInput.value = slug;
+                   .replace(/-+/g, '-');
+               if(slugInput) {
+                   slugInput.value = slug;
+                   // Update Share Bar
+                   const bar = document.getElementById('shareToolbar');
+                   const disp = document.getElementById('shareUrlDisplay');
+                   if(slug && bar) {
+                       bar.style.display = 'flex';
+                       disp.textContent = `https://onlytrueperspective.tech/journal/${slug}`;
+                   }
+               }
           });
       }
 
