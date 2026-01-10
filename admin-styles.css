@@ -427,12 +427,11 @@ button {
     transform: translateX(2px);
 }
 
-/* Specific Style for LIVE posts - Using safer selector strategy */
-.post-row.live-row, 
-.post-row:has(.status-live) {
-    border-left-color: #00ffaa;
-    box-shadow: -8px 0 20px -8px rgba(0, 255, 170, 0.15);
-    background: linear-gradient(90deg, rgba(0,255,170,0.02) 0%, rgba(255,255,255,0.01) 100%);
+/* Specific Style for LIVE posts - AGGRESSIVE SELECTOR & RENAMED CLASS */
+.post-row.row-active-live {
+    border-left-color: #00ffaa !important;
+    box-shadow: -8px 0 20px -8px rgba(0, 255, 170, 0.15), inset 0 0 20px rgba(0, 255, 170, 0.02) !important;
+    background: linear-gradient(90deg, rgba(0,255,170,0.03) 0%, rgba(255,255,255,0.01) 100%) !important;
 }
 
 .post-title { 

@@ -601,7 +601,7 @@
         list.innerHTML = posts.map(post => {
             const isLive = post.published === true;
             return `
-            <div class="post-row ${isLive ? 'live-row' : ''}">
+            <div class="post-row ${isLive ? 'row-active-live' : ''}">
                 <div style="cursor: pointer; flex: 1;" onclick="loadPostForEdit(${post.id})">
                     <div class="post-title">${post.title || 'Untitled'} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
                     <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span class="theme-active" style="color:var(--admin-success); font-weight:bold;">${post.views || 0}</span> Views</div>
