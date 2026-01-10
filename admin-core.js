@@ -184,7 +184,7 @@
             const submitBtn = document.getElementById('submitBtn');
             if(submitBtn) {
                 submitBtn.textContent = "UPDATE BROADCAST";
-                submitBtn.style.background = "var(--accent)"; 
+                submitBtn.style.background = "var(--admin-accent)"; 
                 submitBtn.style.color = "#fff";
             }
             
@@ -212,7 +212,7 @@
         const submitBtn = document.getElementById('submitBtn');
         if(submitBtn) {
             submitBtn.textContent = "COMMENCE BROADCAST";
-            submitBtn.style.background = "var(--success)";
+            submitBtn.style.background = "var(--admin-success)";
             submitBtn.style.color = "#000";
         }
     };
@@ -321,7 +321,10 @@
                     ${post.published ? 'LIVE' : 'DRAFT'}
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    ${post.published && post.slug ? `<a href="/journal/${post.slug}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>` : ''}
+                    ${post.published && post.slug ? `
+                        <a href="/journal/${post.slug}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>
+                        <button onclick="copyPostLink('${post.slug}')" title="Copy Link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
+                    ` : ''}
                     <button onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
                 </div>
             </div>
@@ -791,9 +794,32 @@
 
 
     window.updateWordCount = function(textarea) {
-        const count = textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
+        const words = textarea.value.trim().split(/\s+/).filter(w => w.length > 0).length;
         const disp = document.getElementById('wordCountDisplay');
-        if(disp) disp.textContent = count;
+        const readDisp = document.getElementById('readTimeDisplay');
+        
+        if(disp) disp.textContent = words;
+        if(readDisp) {
+            const time = Math.max(1, Math.ceil(words / 200)); // ~200 WPM
+            readDisp.textContent = time + " min read";
+        }
+    };
+
+    window.copyPostLink = function(slug) {
+        if(!slug) return;
+        const url = window.location.origin + '/journal/' + slug;
+        navigator.clipboard.writeText(url);
+        showToast("LINK COPIED TO CLIPBOARD");
+    };
+
+    window.openDraftPreview = function() {
+        const title = document.getElementById('titleInput').value || "UNTITLED BROADCAST";
+        const content = document.getElementById('contentArea').value || "_No content captured._";
+        
+        document.getElementById('previewTitleDisplay').textContent = title;
+        // Simple display (could add markdown parser later if needed)
+        document.getElementById('previewBodyDisplay').innerHTML = content.replace(/\n/g, '<br>');
+        document.getElementById('previewModal').style.display = 'flex';
     };
 
     window.copySchema = function() {

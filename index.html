@@ -58,6 +58,19 @@
   <div class="bg-fixed"></div>
   <a class="skip" href="#work">Skip to content</a>
 
+  <!-- SYSTEM STATUS BAR -->
+  <div class="system-status-bar" style="background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 6px 15px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 0.65rem; color: #666; position: sticky; top: 0; z-index: 2000;">
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <span style="display: flex; align-items: center; gap: 5px;"><span class="status-dot-mini" style="width: 6px; height: 6px; background: #00ffaa; border-radius: 50%; box-shadow: 0 0 5px #00ffaa;"></span> GLOBAL NODE: ACTIVE</span>
+        <span style="opacity: 0.5;">|</span>
+        <span id="liveClock">00:00:00 UTC</span>
+    </div>
+    <div style="display: flex; gap: 15px; filter: grayscale(1);">
+        <span>LATENCY: 22MS</span>
+        <span class="desktop-only">ENCRYPTION: AES-256</span>
+    </div>
+  </div>
+
   <!-- NAV -->
   <header class="nav nav-split" id="top">
     <!-- Logo Left -->

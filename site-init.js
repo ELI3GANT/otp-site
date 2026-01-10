@@ -11,6 +11,15 @@
         yearEl.textContent = new Date().getFullYear();
     }
 
+    // Live UTC Clock
+    const clockEl = document.getElementById('liveClock');
+    if (clockEl) {
+        setInterval(() => {
+            const now = new Date();
+            clockEl.textContent = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
+        }, 1000);
+    }
+
     // 1.5 Lenis Smooth Scroll REMOVED for native feel.
 
 
