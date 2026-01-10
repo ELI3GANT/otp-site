@@ -74,12 +74,16 @@
             // Load Posts for Manager & Stats
             fetchPosts();
 
-            // Live Clock Service (Dashboard Edition)
+            // Live Clock System
             const clockEl = document.getElementById('liveClock');
             if (clockEl) {
+                const isStatic = state.token === 'static-bypass-token';
+                const statusTag = isStatic ? '<span style="color:#ff8800">[LEGACY]</span>' : '<span style="color:var(--admin-success)">[NODE:LIVE]</span>';
+                
                 setInterval(() => {
                     const now = new Date();
-                    clockEl.textContent = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
+                    const timeStr = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
+                    clockEl.innerHTML = `${statusTag} ${timeStr}`;
                 }, 1000);
             }
 
@@ -778,7 +782,8 @@
             const authToken = (state.token || '').trim();
             
             if (authToken === 'static-bypass-token') {
-                throw new Error("AI GENERATION UNAVAILABLE: You are in Static Mode. Please log in through the Secure Gateway on Port 8080.");
+                const currentUrl = window.location.href;
+                throw new Error(`AI BLOCKED: You are in "LEGACY MODE". To use AI, you MUST access the site through the server PORT (usually 8080). \n\nDirect Link: http://localhost:8080/portal-gate.html`);
             }
             
             console.log("AI DEBUG: URL=" + apiUrl);
