@@ -962,14 +962,43 @@
         const statusEl = document.getElementById(`status-${type}`);
         if(!statusEl) return;
         
-        // Maintenance specialized toggle
+        // 1. Maintenance
         if (type === 'maintenance') {
             const newState = statusEl.textContent === 'OFFLINE' ? 'on' : 'off';
             await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'maintenance', value: newState } });
             statusEl.textContent = newState === 'on' ? 'ACTIVE' : 'OFFLINE';
             statusEl.style.color = newState === 'on' ? 'var(--admin-success)' : 'var(--admin-danger)';
-            showToast("MAINTENANCE SIGNAL SENT");
+            showToast(`MAINTENANCE ${newState.toUpperCase()} SENT`);
         }
+
+        // 2. Visuals (FX Intensity)
+        if (type === 'visuals') {
+            const isHiFi = statusEl.textContent === 'HIGH-FI';
+            const next = isHiFi ? 'low' : 'high';
+            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'visuals', value: next } });
+            statusEl.textContent = next === 'high' ? 'HIGH-FI' : 'PERF-MODE';
+            statusEl.style.color = next === 'high' ? 'var(--admin-success)' : 'var(--accent2)';
+            showToast(`VISUAL QUALITY: ${next.toUpperCase()}`);
+        }
+
+        // 3. Kursor
+        if (type === 'kursor') {
+            const isActive = statusEl.textContent === 'ACTIVE';
+            const next = isActive ? 'off' : 'on';
+            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'kursor', value: next } });
+            statusEl.textContent = next === 'on' ? 'ACTIVE' : 'DISABLED';
+            statusEl.style.color = next === 'on' ? 'var(--admin-success)' : 'var(--admin-muted)';
+            showToast(`CURSOR SYSTEM: ${next.toUpperCase()}`);
+        }
+    };
+
+    window.triggerGlobalWarp = async function() {
+        const target = prompt("ENTER TARGET WARP URL (e.g. https://google.com):");
+        if(!target || !state.siteChannel) return;
+        if(!confirm(`THIS WILL IMMEDIATELY REDIRECT ALL ACTIVE VISITORS TO ${target}. PROCEED?`)) return;
+        
+        await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'warp', value: target } });
+        showToast("GLOBAL WARP INITIATED");
     };
 
     window.toggleLiveTheme = async function() {

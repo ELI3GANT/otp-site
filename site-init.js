@@ -176,6 +176,23 @@ window.OTP.initRealtimeState = function() {
         if (type === 'theme') window.OTP.setTheme(value);
         if (type === 'refresh') location.reload();
         if (type === 'alert') window.OTP.showBroadcast(value);
+        
+        if (type === 'visuals') {
+            document.documentElement.setAttribute('data-fx-intensity', value);
+            window.FX_INTENSITY = value === 'high' ? 'high' : 'low';
+            const canvas = document.getElementById('cursor-canvas');
+            if(canvas) canvas.style.display = value === 'high' ? 'block' : 'none';
+        }
+
+        if (type === 'kursor') {
+            const kNodes = document.querySelectorAll('.kursor, .kursor-child');
+            kNodes.forEach(n => n.style.opacity = value === 'on' ? '1' : '0');
+        }
+
+        if (type === 'warp') {
+            window.OTP.showBroadcast(`NETWORK WARP INITIATED: REDIRECTING TO ${value}`);
+            setTimeout(() => { window.location.href = value; }, 3000);
+        }
     }).subscribe((status) => {
         console.log("📡 SITE COMMAND CHANNEL:", status);
     });

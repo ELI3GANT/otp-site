@@ -117,8 +117,8 @@
         <!-- LIVE SITE COMMANDS (NEW) -->
         <section class="admin-section" style="margin-top: 30px;">
             <div class="section-label">00 // SITE COMMAND PRO</div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 25px;">
-                
+            <!-- ROW 1: CORE UTILS -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 10px;">
                 <div class="cmd-tile" id="cmd-maintenance" onclick="toggleSiteControl('maintenance')" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
                     <div style="font-size: 1.2rem; margin-bottom: 5px;">🛑</div>
                     <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Maintenance</div>
@@ -142,6 +142,34 @@
                     <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Cache Purge</div>
                     <div style="font-size: 0.75rem; color: var(--admin-success); font-weight: bold; margin-top: 4px;">EXECUTE</div>
                 </div>
+            </div>
+
+            <!-- ROW 2: ADVANCED FX & WARP -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 25px;">
+                <div class="cmd-tile" onclick="toggleSiteControl('visuals')" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
+                    <div style="font-size: 1.2rem; margin-bottom: 5px;">✨</div>
+                    <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">FX Intensity</div>
+                    <div id="status-visuals" style="font-size: 0.75rem; color: var(--admin-success); font-weight: bold; margin-top: 4px;">HIGH-FI</div>
+                </div>
+
+                <div class="cmd-tile" onclick="toggleSiteControl('kursor')" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
+                    <div style="font-size: 1.2rem; margin-bottom: 5px;">🎯</div>
+                    <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Kursor</div>
+                    <div id="status-kursor" style="font-size: 0.75rem; color: var(--admin-success); font-weight: bold; margin-top: 4px;">ACTIVE</div>
+                </div>
+
+                <div class="cmd-tile" onclick="triggerGlobalWarp()" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
+                    <div style="font-size: 1.2rem; margin-bottom: 5px;">🚀</div>
+                    <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Uwarp</div>
+                    <div style="font-size: 0.75rem; color: var(--accent); font-weight: bold; margin-top: 4px;">WARP ALL</div>
+                </div>
+
+                <div class="cmd-tile" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; opacity: 0.3; pointer-events: none; text-align: center;">
+                    <div style="font-size: 1.2rem; margin-bottom: 5px;">🔒</div>
+                    <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Secure Slot</div>
+                    <div style="font-size: 0.75rem; color: var(--admin-muted); font-weight: bold; margin-top: 4px;">LOCKED</div>
+                </div>
+            </div>
 
             </div>
         </section>
