@@ -437,7 +437,21 @@ button {
 .toast.show { transform: translateX(-50%) translateY(0); }
 
 @media (max-width: 768px) {
-    .toast { top: auto; bottom: 85px; font-size: 0.8rem; }
+    .toast { 
+        top: auto; 
+        bottom: 40px; 
+        font-size: 0.8rem;
+        /* Start pushed DOWN below screen */
+        transform: translateX(-50%) translateY(150%);
+        opacity: 0;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    }
+    
+    .toast.show {
+        /* Slide UP to position */
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
 }
 
 /* ACCESSIBILITY & PERFORMANCE */
