@@ -43,6 +43,14 @@ BEGIN
     END IF;
 END $$;
 
+-- 5.1 ENSURE POSTS HAS ARCHETYPE_SLUG
+DO $$ 
+BEGIN 
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='posts' AND column_name='archetype_slug') THEN
+        ALTER TABLE posts ADD COLUMN archetype_slug text;
+    END IF;
+END $$;
+
 -- 6. MIGRATE CATEGORIES & ARCHETYPES (FROM V1.2)
 -- 6.1 Categories Table
 CREATE TABLE IF NOT EXISTS categories (
