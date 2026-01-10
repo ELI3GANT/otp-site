@@ -1328,6 +1328,24 @@
         showToast("NETWORK REFRESH COMMAND SENT");
     };
 
+    window.viewSqlSchema = async function() {
+        const modal = document.getElementById('sqlModal');
+        const content = document.getElementById('sqlContent');
+        if(!modal || !content) return;
+        
+        modal.style.display = 'flex';
+        content.textContent = "FETCHING SCHEMA...";
+
+        try {
+            const res = await fetch('/DEPLOY_V1.sql');
+            if(!res.ok) throw new Error("Failed to load schema file.");
+            const text = await res.text();
+            content.textContent = text;
+        } catch(e) {
+            content.textContent = "ERROR: " + e.message;
+        }
+    };
+
     // Presence Sync for Dashboard
     function initDashboardPresence() {
         if(!state.client) return;

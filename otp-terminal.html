@@ -353,7 +353,10 @@
                             <div style="display: flex; gap: 8px;">
                                 <input type="text" id="satelliteUrl" placeholder="https://your-api.vercel.app" onchange="localStorage.setItem('otp_api_base', this.value)" style="font-size: 0.7rem; padding: 8px; flex: 1; color: var(--admin-success); font-family: monospace;">
                             </div>
-                            <p style="font-size: 0.55rem; color: #555; margin-top: 4px;">Link your Vercel/Node backend to exit Legacy Mode on mobile.</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                                <p style="font-size: 0.55rem; color: #555; margin: 0;">Link your Vercel/Node backend to exit Legacy Mode on mobile.</p>
+                                <button type="button" onclick="viewSqlSchema()" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.6rem; padding: 4px 8px; cursor: pointer;">VIEW SCHEMA SQL</button>
+                            </div>
                         </div>
 
                         <p style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 8px;">DIRECT NEURAL CLOUD (If server is offline)</p>
@@ -530,6 +533,22 @@
             <div style="display: flex; gap: 12px; justify-content: center;">
                 <button onclick="document.getElementById('deleteModal').style.display='none'" style="background: transparent; border: 1px solid #444; color: #fff; flex: 1;">CANCEL</button>
                 <button id="confirmDeleteBtn" style="background: #ff4444; color: #fff; border: none; flex: 1; box-shadow: 0 5px 20px rgba(255, 68, 68, 0.25);">DELETE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SQL SCHEMA MODAL -->
+    <div id="sqlModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20002; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div style="background: #111; border: 1px solid var(--admin-border); width: 90%; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column; border-radius: 16px; box-shadow: 0 0 60px rgba(112, 0, 255, 0.15);">
+            <div style="padding: 20px; border-bottom: 1px solid var(--admin-border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="color: #fff; margin: 0; font-family: 'Space Grotesk', sans-serif;">DATABASE SCHEMA (DEPLOY_V1.sql)</h3>
+                <button onclick="document.getElementById('sqlModal').style.display='none'" style="background: transparent; border: none; color: var(--admin-muted); font-size: 1.5rem; cursor: pointer;">×</button>
+            </div>
+            <div style="padding: 0; overflow: hidden; flex: 1; background: #0a0a0a;">
+                <pre id="sqlContent" style="width: 100%; height: 100%; padding: 20px; overflow-y: auto; color: var(--admin-success); font-family: 'Courier New', monospace; font-size: 0.8rem; margin: 0; white-space: pre-wrap;"></pre>
+            </div>
+            <div style="padding: 15px; border-top: 1px solid var(--admin-border); text-align: right; background: #111; border-radius: 0 0 16px 16px;">
+                <button onclick="navigator.clipboard.writeText(document.getElementById('sqlContent').textContent); showToast('SQL COPIED');" style="background: var(--admin-accent); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">COPY SQL</button>
             </div>
         </div>
     </div>
