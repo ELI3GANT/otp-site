@@ -179,6 +179,10 @@ window.OTP.initTheme();
 
 // 8. REALTIME SITE STATE (Sync Dashboard Controls)
 window.OTP.initRealtimeState = function() {
+    // SAFETY: Never sync on Admin/Portal (they handle their own state)
+    if (window.location.pathname.includes('otp-terminal') || 
+        window.location.pathname.includes('portal')) return;
+
     if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
     const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
     
@@ -841,5 +845,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+    }
+
+    // 10. BOOTSTRAP REALTIME & DYNAMIC CONTENT
+    if (window.OTP && window.OTP.initRealtimeState) {
+        window.OTP.initRealtimeState();
+    }
+    if (window.OTP && window.OTP.initLiveEditor) {
+        window.OTP.initLiveEditor();
     }
 });
