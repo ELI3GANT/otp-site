@@ -150,6 +150,36 @@ window.OTP.initTheme = function() {
 // Run init immediately
 window.OTP.initTheme();
 
+// 8. REALTIME PRESENCE (Track Active Users)
+window.OTP.initPresence = function() {
+    // Only run if Supabase is available and config is loaded
+    if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
+    
+    // Create a client for presence tracking (separate or reuse if available)
+    // We create new here safely since it's light
+    const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+    
+    const room = client.channel('system', {
+        config: {
+            presence: {
+                key: 'user-' + Math.random().toString(36).substring(7),
+            },
+        },
+    });
+
+    room.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+            await room.track({ 
+                online_at: new Date().toISOString(),
+                page: window.location.pathname
+            });
+        }
+    });
+};
+
+// Init Realtime (Non-blocking)
+setTimeout(window.OTP.initPresence, 2000);
+
 // --- VIEW TRACKING LOGIC ---
 window.OTP.trackView = async function(slug) {
     if (!slug) return;

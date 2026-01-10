@@ -264,17 +264,28 @@
         if(statPosts) statPosts.textContent = posts.length;
         if(statViews) statViews.textContent = totalViews.toLocaleString();
         
-        // Simulated/Derived Real-time Metrics
-        if(statLive) {
-            const baseLive = Math.floor(Math.random() * 8) + 2; 
-            statLive.textContent = baseLive;
+        // REAL-TIME PRESENCE (No Fake Shit)
+        // Check if we are already subscribed
+        if (state.client && !state.presenceChannel) {
+             state.presenceChannel = state.client.channel('system', {
+                config: { presence: { key: 'admin' } }
+             });
+             
+             state.presenceChannel.on('presence', { event: 'sync' }, () => {
+                 const newState = state.presenceChannel.presenceState();
+                 const count = Object.keys(newState).length;
+                 // Subtract 1 if we don't want to count the admin themselves, but seeing "1" (yourself) is good proof it works.
+                 if(statLive) statLive.textContent = count;
+             }).subscribe();
         }
+        
+        // Use Real Max Views
         if(statPeak) {
             const maxView = Math.max(...posts.map(p => p.views || 0), 0);
-            statPeak.textContent = Math.floor(maxView * 0.45).toLocaleString();
+            statPeak.textContent = maxView.toLocaleString();
         }
         if(statDuration) {
-            statDuration.textContent = "2m 41s"; 
+            statDuration.textContent = "N/A"; // Cannot track without session logs
         }
     }
 
