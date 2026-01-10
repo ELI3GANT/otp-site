@@ -174,6 +174,41 @@ window.OTP.trackView = async function(slug) {
     }
 };
 
+// 7.5 Premium Broadcast UI
+window.OTP.showBroadcast = function(message) {
+    const existing = document.getElementById('otp-broadcast-overlay');
+    if (existing) existing.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'otp-broadcast-overlay';
+    overlay.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 1000000; color: #fff; text-align: center; font-family: 'Space Grotesk', sans-serif;
+        padding: 40px; animation: broadcast-fade-in 0.5s ease;
+    `;
+
+    overlay.innerHTML = `
+        <div style="font-size: 0.8rem; letter-spacing: 4px; color: var(--accent2); margin-bottom: 20px; font-weight: 700;">📡 EMERGENCY BROADCAST</div>
+        <div style="font-size: clamp(1.5rem, 5vw, 3rem); font-weight: 800; max-width: 800px; line-height: 1.2;">${message.toUpperCase()}</div>
+        <div style="margin-top: 40px; font-size: 0.7rem; color: #666; letter-spacing: 2px;">DISMISSING IN 5 SECONDS...</div>
+        <style>
+            @keyframes broadcast-fade-in { from { opacity: 0; transform: scale(1.1); } to { opacity: 1; transform: scale(1); } }
+        </style>
+    `;
+
+    document.body.appendChild(overlay);
+    
+    // Auto Dismiss
+    setTimeout(() => {
+        overlay.style.transition = 'opacity 1s ease, transform 1s ease';
+        overlay.style.opacity = '0';
+        overlay.style.transform = 'scale(0.9)';
+        setTimeout(() => overlay.remove(), 1000);
+    }, 5000);
+};
+
 // Run init immediately
 window.OTP.initTheme();
 
@@ -413,7 +448,21 @@ window.OTP.initLiveEditor = async function() {
                 
                 btn.textContent = "SAVED!";
                 setTimeout(() => btn.textContent = "SAVE CHANGES", 2000);
+                
+                // 1. Local Feedback
                 window.OTP.showBroadcast("SITE CONTENT UPDATED");
+
+                // 2. Network Broadcast (Vice-Versa Sync)
+                const channel = client.channel('site_state');
+                channel.subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        channel.send({
+                            type: 'broadcast',
+                            event: 'command',
+                            payload: { type: 'alert', value: 'Global Site Content Updated' }
+                        });
+                    }
+                });
             } catch(e) {
                 console.error(e);
                 alert("Save Failed: " + e.message);

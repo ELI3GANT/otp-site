@@ -152,8 +152,29 @@
                 });
             }
 
-            // 6. SITE COMMAND UPLINK (Realtime)
+            // 6. SITE COMMAND UPLINK (Realtime & Vice-Versa Sync)
             state.siteChannel = state.client.channel('site_state');
+            
+            state.siteChannel.on('broadcast', { event: 'command' }, (message) => {
+                console.log("📡 REMOTE COMMAND RECEIVED:", message);
+                const { type, value } = message.payload || {};
+                
+                // 1. Show Broadcast Alerts (Cinematic Sync)
+                if (type === 'alert') {
+                    if (window.OTP && window.OTP.showBroadcast) {
+                        window.OTP.showBroadcast(value);
+                    } else {
+                        showToast(`BROADCAST: ${value}`);
+                    }
+                }
+                
+                // 2. Sync Dashboard UI Buttons
+                if (['maintenance', 'visuals', 'kursor', 'theme'].includes(type)) {
+                    syncDashboardElement(type, value);
+                    showToast(`CONTROL SYNCED: ${type.toUpperCase()}`);
+                }
+            });
+
             state.siteChannel.subscribe((status) => {
                 console.log("📡 SITE COMMAND UPLINK:", status);
                 if(status === 'SUBSCRIBED') {
@@ -172,6 +193,29 @@
     }
 
     // --- SYSTEM STATE SYNC ---
+    function syncDashboardElement(type, value) {
+        const el = document.getElementById(`status-${type}`);
+        if (!el || !value) return;
+
+        if (type === 'maintenance') {
+            const isOn = value === 'on';
+            el.textContent = isOn ? 'ACTIVE' : 'OFFLINE';
+            el.style.color = isOn ? 'var(--admin-success)' : 'var(--admin-danger)';
+        } else if (type === 'visuals') {
+            const isHi = value === 'high';
+            el.textContent = isHi ? 'HIGH-FI' : 'PERF-MODE';
+            el.style.color = isHi ? 'var(--admin-success)' : 'var(--accent2)';
+        } else if (type === 'kursor') {
+            const isOn = value === 'on';
+            el.textContent = isOn ? 'ACTIVE' : 'DISABLED';
+            el.style.color = isOn ? 'var(--admin-success)' : 'var(--admin-muted)';
+        } else if (type === 'theme') {
+            const isDay = value === 'light';
+            el.textContent = isDay ? 'DAY-MODE' : 'NIGHT-MODE';
+            el.style.color = isDay ? '#ffaa00' : 'var(--accent2)';
+        }
+    }
+
     async function fetchSystemState() {
         try {
             const { data, error } = await state.client
@@ -185,44 +229,19 @@
             const config = JSON.parse(data.content);
             console.log("📡 DASHBOARD SYNC:", config);
 
-            // Sync Maintenance
-            const maintEl = document.getElementById('status-maintenance');
-            if (maintEl && config.maintenance) {
-                const isOn = config.maintenance === 'on';
-                maintEl.textContent = isOn ? 'ACTIVE' : 'OFFLINE';
-                maintEl.style.color = isOn ? 'var(--admin-success)' : 'var(--admin-danger)';
-            }
+            syncDashboardElement('maintenance', config.maintenance);
+            syncDashboardElement('visuals', config.visuals);
+            syncDashboardElement('kursor', config.kursor);
+            syncDashboardElement('theme', config.theme);
 
-            // Sync Visuals
-            const visEl = document.getElementById('status-visuals');
-            if (visEl && config.visuals) {
-                const isHi = config.visuals === 'high';
-                visEl.textContent = isHi ? 'HIGH-FI' : 'PERF-MODE';
-                visEl.style.color = isHi ? 'var(--admin-success)' : 'var(--accent2)';
-            }
-
-            // Sync Kursor
-            const kurEl = document.getElementById('status-kursor');
-            if (kurEl && config.kursor) {
-                const isOn = config.kursor === 'on';
-                kurEl.textContent = isOn ? 'ACTIVE' : 'DISABLED';
-                kurEl.style.color = isOn ? 'var(--admin-success)' : 'var(--admin-muted)';
-            }
-
-            // Sync Theme (Optional - Admin has local toggle, but Live Site follows this)
-            const themeEl = document.getElementById('status-theme');
-            if (themeEl && config.theme) {
-                const isLight = config.theme === 'light';
-                themeEl.textContent = isLight ? 'DAY-MODE' : 'NIGHT-MODE';
-                themeEl.style.color = isLight ? '#ffaa00' : 'var(--accent2)';
-            }
-
-            // Sync Satellite URL
+            // Sync Satellite URL (API Base)
             if (config.api_base) {
                 localStorage.setItem('otp_api_base', config.api_base);
                 const satUrl = document.getElementById('satelliteUrl');
                 if (satUrl) satUrl.value = config.api_base;
             }
+        } catch (e) { console.error("Config Fetch Error:", e); }
+    }
 
         } catch (e) {
             console.warn("State Sync Failed:", e);
@@ -1380,7 +1399,15 @@
     window.openBroadcastPrompt = async function() {
         const msg = prompt("ENTER EMERGENCY BROADCAST MESSAGE:");
         if(!msg || !state.siteChannel) return;
+        
+        // 1. Send to Network
         await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'alert', value: msg } });
+        
+        // 2. Show Locally (Confirmation)
+        if (window.OTP && window.OTP.showBroadcast) {
+            window.OTP.showBroadcast(msg);
+        }
+        
         showToast("EMERGENCY BROADCAST SENT");
     };
 
