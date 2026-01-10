@@ -80,14 +80,7 @@ h1, h2, h3, h4 {
     .admin-header h1 { font-size: 1rem; letter-spacing: 1px; }
 }
 
-.admin-header h1::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    background: var(--admin-success);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--admin-success);
-}
+
 
 /* DASHBOARD STATS */
 .stats-grid, .dashboard-grid {
@@ -614,12 +607,24 @@ input, textarea, select {
 }
 
 /* SYSTEM STATUS ANIMATION */
+/* SYSTEM STATUS ANIMATION */
 @keyframes pulse-green {
-    0% { box-shadow: 0 0 0 0 rgba(0, 255, 170, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(0, 255, 170, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(0, 255, 170, 0); }
+    0% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px var(--admin-success); }
+    50% { opacity: 0.5; transform: scale(0.9); box-shadow: 0 0 2px var(--admin-success); }
+    100% { opacity: 1; transform: scale(1); box-shadow: 0 0 10px var(--admin-success); }
 }
 
 .admin-header h1::before {
-    animation: pulse-green 2s infinite;
+    /* Enforce visibility */
+    content: "";
+    display: inline-block; 
+    min-width: 8px;
+    min-height: 8px;
+    background: var(--admin-success);
+    border-radius: 50%;
+    margin-right: 8px;
+    
+    /* Animation */
+    animation: pulse-green 2s ease-in-out infinite;
+    will-change: opacity, transform;
 }
