@@ -1,5 +1,6 @@
 /* ADMIN COMMAND CENTER STYLES - V3.7 MOBILE-FIRST */
 
+/* DEFAULT DARK MODE */
 :root {
     --admin-bg: #050508;
     --admin-panel: #0a0a10;
@@ -13,7 +14,8 @@
     --radius: 12px;
 }
 
-[data-theme="light"] {
+/* LIGHT MODE OVERRIDE (Specific HTML selector needed for mobile) */
+html[data-theme="light"] {
     --admin-bg: #f2f2f7;
     --admin-panel: #ffffff;
     --admin-border: #d1d1d6;
