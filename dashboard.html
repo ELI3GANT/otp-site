@@ -306,12 +306,25 @@
                     <label for="seoDesc">SEO Meta Description</label>
                     <textarea name="seo_desc" id="seoDesc" style="height: 80px;" placeholder="Snippet for search results..."></textarea>
                 </div>
+
+                <!-- SOCIAL PREVIEW TOOL -->
+                <div class="social-preview-tool" style="margin-top: 20px; padding: 15px; border: 1px dashed var(--admin-border); border-radius: 8px;">
+                    <div style="font-size: 0.75rem; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Social Share Preview</div>
+                    <div class="preview-card" style="background: #000; border: 1px solid #333; border-radius: 12px; overflow: hidden; max-width: 320px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                        <div id="socialPreviewCtx" style="background: #222; height: 160px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.8rem; background-size: cover; background-position: center;">
+                            Preview Image
+                        </div>
+                        <div style="padding: 12px;">
+                            <div style="font-size: 0.75rem; color: #888; margin-bottom: 4px;">ONLYTRUEPERSPECTIVE.TECH</div>
+                            <div id="socialPreviewTitle" style="color: #fff; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; line-height: 1.3;">Headline Appears Here</div>
+                            <div id="socialPreviewDesc" style="color: #888; font-size: 0.8rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Description appears here...</div>
+                        </div>
+                    </div>
+                </div>
     
                 <div class="row">
-                   <div class="input-group">
-                       <label for="viewsInput">Initial Views</label>
-                       <input type="number" name="views" id="viewsInput" value="0" placeholder="0">
-                   </div>
+                   <!-- Views Removed (Organic Only) -->
+                   <input type="hidden" name="views_unused" id="viewsInput">
                    <div class="toggle-wrap">
                        <span class="toggle-label">Live Status</span>
                        <label class="switch">

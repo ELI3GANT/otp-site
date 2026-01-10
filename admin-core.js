@@ -177,7 +177,7 @@
             // SEO
             document.getElementById('seoTitle').value = post.seo_title || '';
             document.getElementById('seoDesc').value = post.seo_desc || '';
-            document.getElementById('viewsInput').value = post.views || 0;
+            // Views handled strictly by DB now
             document.getElementById('pubToggle').checked = post.published;
 
             // Update UI State
@@ -220,6 +220,19 @@
     async function fetchPosts(force = false) {
         const list = document.getElementById('postManager');
         if(!list) return;
+
+        // One-time Realtime Subscription for DB Changes (Views, etc)
+        if (state.client && !state.dbSubscription) {
+             state.dbSubscription = state.client
+                .channel('posts-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
+                    // console.log("DB Update Detected:", payload);
+                    // Debounce refresh to prevent flickering on high traffic
+                    if(window.refreshTimeout) clearTimeout(window.refreshTimeout);
+                    window.refreshTimeout = setTimeout(() => fetchPosts(true), 2000); 
+                })
+                .subscribe();
+        }
 
         // Cache Check
         const now = Date.now();
@@ -443,8 +456,8 @@
                     category: formData.get('category'),
                     author: formData.get('author'),
                     seo_title: formData.get('seo_title'),
-                    seo_desc: formData.get('seo_desc'),
-                    views: parseInt(formData.get('views') || 0)
+                    seo_desc: formData.get('seo_desc')
+                    // Views handled by DB organically
                 };
                 
                 // If NEW post, add created_at
@@ -649,6 +662,36 @@
             toast.classList.remove('show');
         }, 4000);
     };
+
+    // SOCIAL PREVIEW UPDATER
+    window.updateSocialPreview = function() {
+        const title = document.getElementById('titleInput').value || "Headline Appears Here";
+        const desc = document.getElementById('seoDesc').value || document.getElementById('excerptInput').value || "Description appears here...";
+        const img = document.getElementById('imageUrl').value || document.getElementById('urlInput').value;
+        
+        const prevTitle = document.getElementById('socialPreviewTitle');
+        const prevDesc = document.getElementById('socialPreviewDesc');
+        const prevImg = document.getElementById('socialPreviewCtx');
+        
+        if(prevTitle) prevTitle.textContent = title;
+        if(prevDesc) prevDesc.textContent = desc;
+        if(prevImg) {
+            if(img) {
+                prevImg.style.backgroundImage = `url('${img}')`;
+                prevImg.textContent = '';
+            } else {
+                prevImg.style.backgroundImage = 'none';
+                prevImg.textContent = 'Preview Image';
+            }
+        }
+    };
+    
+    // Attach listeners
+    document.addEventListener('input', (e) => {
+        if(['titleInput', 'seoDesc', 'excerptInput', 'imageUrl', 'urlInput'].includes(e.target.id)) {
+            window.updateSocialPreview();
+        }
+    });
 
     // ... (rest of init) ...
 
