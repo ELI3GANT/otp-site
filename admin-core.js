@@ -561,10 +561,17 @@
                     ${post.published ? 'LIVE' : 'DRAFT'}
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    ${post.published && post.slug ? `
-                        <a href="/insight.html?slug=${post.slug}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>
-                        <button onclick="copyPostLink('${post.slug}')" title="Copy Link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
-                    ` : ''}
+                    ${post.published && post.slug ? (() => {
+                        // Static Override Logic
+                        let postUrl = `/insight.html?slug=${post.slug}`;
+                        if (post.slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
+                        if (post.slug.startsWith('insight-post-')) postUrl = `/${post.slug}.html`;
+                        
+                        return `
+                            <a href="${postUrl}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>
+                            <button onclick="copyPostLink('${post.slug}')" title="Copy Link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
+                        `;
+                    })() : ''}
                     <button onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
                 </div>
             </div>
@@ -1174,7 +1181,11 @@
 
     window.copyPostLink = function(slug) {
         if(!slug) return;
-        const url = window.location.origin + '/insight.html?slug=' + slug;
+        let postUrl = '/insight.html?slug=' + slug;
+        if (slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
+        if (slug.startsWith('insight-post-')) postUrl = `/${slug}.html`;
+
+        const url = window.location.origin + postUrl;
         navigator.clipboard.writeText(url);
         showToast("LINK COPIED TO CLIPBOARD");
     };
@@ -1275,7 +1286,12 @@
     window.copyShareLink = function() {
         const slug = document.getElementById('slugInput').value;
         if(!slug) return;
-        const url = `https://onlytrueperspective.tech/insight.html?slug=${slug}`;
+        
+        let postUrl = '/insight.html?slug=' + slug;
+        if (slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
+        if (slug.startsWith('insight-post-')) postUrl = `/${slug}.html`;
+
+        const url = `https://onlytrueperspective.tech${postUrl}`;
         navigator.clipboard.writeText(url);
         
         const btn = document.querySelector('.share-btn-mini');
