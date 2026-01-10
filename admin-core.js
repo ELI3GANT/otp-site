@@ -1328,23 +1328,75 @@
         showToast("NETWORK REFRESH COMMAND SENT");
     };
 
+    // SQL Schema Cache
+    let cachedSqlSchema = null;
+
     window.viewSqlSchema = async function() {
         const modal = document.getElementById('sqlModal');
         const content = document.getElementById('sqlContent');
         if(!modal || !content) return;
         
         modal.style.display = 'flex';
+        
+        if (cachedSqlSchema) {
+            content.textContent = cachedSqlSchema;
+            return;
+        }
+
         content.textContent = "FETCHING SCHEMA...";
 
         try {
             const res = await fetch('/DEPLOY_V1.sql');
             if(!res.ok) throw new Error("Failed to load schema file.");
-            const text = await res.text();
-            content.textContent = text;
+            cachedSqlSchema = await res.text();
+            content.textContent = cachedSqlSchema;
         } catch(e) {
             content.textContent = "ERROR: " + e.message;
         }
     };
+
+    window.copySqlToClipboard = function() {
+        const content = document.getElementById('sqlContent');
+        if(!content) return;
+        
+        const text = content.textContent;
+        
+        // 1. Try Modern API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("SQL COPIED (CLIPBOARD API)");
+            }).catch(err => {
+                console.warn("Clipboard API failed, trying fallback...", err);
+                fallbackCopyText(text);
+            });
+        } else {
+            fallbackCopyText(text);
+        }
+    };
+
+    function fallbackCopyText(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        
+        // Ensure it's not visible but part of DOM
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if(successful) showToast("SQL COPIED (LEGACY)");
+            else showToast("COPY FAILED");
+        } catch (err) {
+            showToast("COPY FAILED: " + err);
+        }
+        
+        document.body.removeChild(textArea);
+    }
 
     // Presence Sync for Dashboard
     function initDashboardPresence() {

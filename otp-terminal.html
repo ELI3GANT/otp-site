@@ -548,7 +548,7 @@
                 <pre id="sqlContent" style="width: 100%; height: 100%; padding: 20px; overflow-y: auto; color: var(--admin-success); font-family: 'Courier New', monospace; font-size: 0.8rem; margin: 0; white-space: pre-wrap;"></pre>
             </div>
             <div style="padding: 15px; border-top: 1px solid var(--admin-border); text-align: right; background: #111; border-radius: 0 0 16px 16px;">
-                <button onclick="navigator.clipboard.writeText(document.getElementById('sqlContent').textContent); showToast('SQL COPIED');" style="background: var(--admin-accent); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">COPY SQL</button>
+                <button onclick="copySqlToClipboard()" style="background: var(--admin-accent); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">COPY SQL</button>
             </div>
         </div>
     </div>
