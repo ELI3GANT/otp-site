@@ -1424,35 +1424,59 @@
         
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for mobile
 
             const start = Date.now();
-            const res = await fetch(healthUrl, { 
-                method: 'GET', 
-                cache: 'no-cache',
-                signal: controller.signal 
-            });
-            clearTimeout(timeoutId);
             
-            const latency = Date.now() - start;
-            
-            if (res.ok) {
-                const data = await res.json();
-                if (data.success) {
-                    showToast(`SATELLITE ONLINE (${latency}ms)`);
-                    if(input) input.style.borderColor = 'var(--admin-success)';
-                } else {
-                    showToast(`SATELLITE ERROR: ${data.status}`);
-                }
-            } else {
+            // 1. Try Standard Check
+            try {
+                const res = await fetch(healthUrl, { 
+                    method: 'GET', 
+                    cache: 'no-cache',
+                    signal: controller.signal 
+                });
+                
+                clearTimeout(timeoutId);
+                const latency = Date.now() - start;
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        showToast(`SATELLITE ONLINE (${latency}ms)`);
+                        if(input) input.style.borderColor = 'var(--admin-success)';
+                        return;
+                    } 
+                } 
+                
+                // If we get here, response wasn't 'success' but we did connect
                 showToast(`SATELLITE REACHABLE (HTTP ${res.status})`);
+                
+            } catch (networkErr) {
+                // 2. Fallback: Try NO-CORS (Opaque check)
+                // This handles cases where server is up but CORS blocks the specific health check from this client origin
+                console.warn("Standard probe failed, attempting opaque probe...", networkErr);
+                
+                try {
+                    const modeRes = await fetch(healthUrl, { 
+                        method: 'GET', 
+                        mode: 'no-cors',
+                        cache: 'no-cache',
+                        signal: controller.signal 
+                    });
+                     clearTimeout(timeoutId);
+                     showToast("LINK ESTABLISHED (OPAQUE)");
+                     if(input) input.style.borderColor = 'var(--admin-success)';
+                     return;
+                } catch (opaqueErr) {
+                    throw opaqueErr; // Real network failure
+                }
             }
         } catch(e) {
             console.error("Link Test Failed:", e);
             if (e.name === 'AbortError') {
-                showToast("PROBE TIMEOUT (10s)");
+                showToast("PROBE TIMEOUT (15s) - CHECK SIGNAL");
             } else {
-                showToast("LINK OFFLINE / DNS ERROR");
+                showToast("LINK FAILED: CHECK URL / WIFI");
             }
             if(input) input.style.borderColor = 'var(--admin-danger)';
         }
