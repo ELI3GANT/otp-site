@@ -92,12 +92,11 @@
                     const isRemote = currentBase.startsWith('http') && !currentBase.includes('localhost');
                     
                     let statusTag = '<span style="color:var(--admin-success)">[NODE:LIVE]</span>';
+                    
                     if (isStatic) {
-                        statusTag = isRemote 
-                            ? '<span style="color:#00ffaa; filter: drop-shadow(0 0 5px #00ffaa);">[SATELLITE:LINKED]</span>' 
-                            : '<span style="color:#ff8800">[LEGACY]</span>';
+                        statusTag = '<span style="color:#ff8800">[NODE:LEGACY]</span>';
                     } else if (isRemote) {
-                        statusTag = '<span style="color:#00ffaa; font-weight: bold; text-shadow: 0 0 10px #00ffaa;">[SATELLITE:SECURE]</span>';
+                        statusTag = '<span style="color:#00ffaa; filter: drop-shadow(0 0 5px #00ffaa); font-weight:bold;">[NODE:SECURE]</span>';
                     }
 
                     const now = new Date();
