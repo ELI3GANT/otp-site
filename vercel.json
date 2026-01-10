@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "admin.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "styles.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "admin-styles.css",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "admin-core.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "site-config.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "site-init.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "stars-v2.js",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/server.js" }
+  ]
+}
