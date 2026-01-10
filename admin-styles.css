@@ -248,18 +248,63 @@ button {
     margin-top: 20px;
 }
 
+/* ACTION BUTTONS (Broadcast & Preview) */
+.action-row-stack {
+    display: flex;
+    gap: 15px; /* More breathing room */
+    margin-bottom: 30px;
+}
+
+.btn-broadcast {
+    flex: 2;
+    height: 70px;
+    font-size: 1.2rem;
+    background: var(--admin-success);
+    color: #000;
+    border-radius: var(--radius);
+    text-shadow: 0 0 20px rgba(0,255,170,0.4);
+    box-shadow: 0 0 20px rgba(0, 255, 170, 0.2);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.btn-broadcast:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(0, 255, 170, 0.4);
+}
+
+.btn-preview {
+    flex: 1;
+    height: 70px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--admin-border);
+    color: var(--admin-muted);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-preview:hover {
+    border-color: var(--admin-text);
+    color: var(--admin-text);
+    background: rgba(255,255,255,0.08);
+}
+
 /* MOBILE ACTION STACK */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
     .action-row-stack {
         flex-direction: column !important;
         height: auto !important;
+        gap: 12px;
     }
     
-    .action-row-stack button {
+    .btn-broadcast, .btn-preview {
         height: 60px !important;
         width: 100% !important;
         flex: none !important;
     }
+    
+    /* Order change: Broadcast on top (default), but maybe user wants preview first? 
+       Usually primary action on top is better. */
 }
 
 @media (max-width: 768px) {

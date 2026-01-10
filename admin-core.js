@@ -1307,6 +1307,7 @@
         const providerSel = document.getElementById('aiProvider');
         const promptInput = document.getElementById('aiPrompt');
         const titleInput = document.getElementById('titleInput');
+        const tagsInput = document.getElementById('tagsInput');
         const archetypeInput = document.getElementById('archetype');
         const modelSel = document.getElementById('geminiModel');
         const status = document.getElementById('aiStatus');
@@ -1319,13 +1320,8 @@
         }
 
         const prompt = promptInput.value.trim();
-        const title = titleInput.value.trim();
+        const currentTitle = titleInput.value.trim();
         
-        if(!title) { 
-            if(status) { status.textContent = "ERROR: Please enter a Headline first."; status.style.color = "#ff4444"; }
-            titleInput.focus();
-            return; 
-        }
         if(!prompt) { 
             if(status) { status.textContent = "ERROR: Please enter a Concept / Prompt."; status.style.color = "#ff4444"; }
             promptInput.focus();
@@ -1357,8 +1353,20 @@
             const archetype = state.archetypes.find(a => a.slug === selectedArchSlug);
             const baseSystemPrompt = archetype ? archetype.system_prompt : 'You are a professional blog writer.';
 
-            const sysPrompt = `${baseSystemPrompt} Output RAW JSON ONLY. No markdown blocks. Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "...", "image_prompt": "A descriptive prompt for DALL-E 3 visual synthesis" }`;
-            const userPrompt = `Generate post titled "${title}" based on: ${prompt}.`;
+            const sysPrompt = `${baseSystemPrompt} 
+            CRITICAL INSTRUCTION: Output RAW JSON ONLY. No markdown blocks. 
+            Return format: { 
+                "title": "A compelling headline...", 
+                "tags": ["tag1", "tag2"], 
+                "content": "# Markdown Header\\n\\nBody content...", 
+                "excerpt": "Short summary...", 
+                "seo_title": "SEO Title...", 
+                "seo_desc": "SEO Description...", 
+                "image_prompt": "A descriptive prompt for DALL-E 3 visual synthesis" 
+            }
+            If the user provides a title, use it as a base but feel free to improve it. Generate relevant tags.`;
+
+            const userPrompt = `Context/Prompt: ${prompt}. ${currentTitle ? `Current Title: "${currentTitle}"` : ''}`;
 
             // --- STRATEGY: TRY SERVER PROXY FIRST (PREFER SECURE HUB) ---
             let aiResult = null;
@@ -1371,7 +1379,7 @@
                     const res = await fetch(base + '/api/ai/generate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title, systemPrompt: sysPrompt })
+                        body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title: currentTitle, systemPrompt: sysPrompt })
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
@@ -1474,23 +1482,38 @@
             }
 
             if (aiResult) {
+                // 1. Populate Text Fields
                 if(aiResult.content) document.getElementById('contentArea').value = aiResult.content;
                 if(aiResult.excerpt) document.getElementById('excerptInput').value = aiResult.excerpt;
                 if(aiResult.seo_title) document.getElementById('seoTitle').value = aiResult.seo_title;
                 if(aiResult.seo_desc) document.getElementById('seoDesc').value = aiResult.seo_desc;
                 
+                // 2. Populate NEW Fields (Title & Tags)
+                if(aiResult.title) {
+                    titleInput.value = aiResult.title;
+                    // Trigger input event to update slug
+                    titleInput.dispatchEvent(new Event('input'));
+                }
+                if(aiResult.tags && Array.isArray(aiResult.tags)) {
+                    tagsInput.value = aiResult.tags.join(', ');
+                }
+
                 showToast(usedDirect ? "NEURAL BRIDGE: DIRECT CLOUD" : "NEURAL BRIDGE: SECURE HUB");
                 if(status) { status.textContent = "CONTENT COMPLETE. SYNTHESIZING VISUALS..."; status.style.color = "var(--admin-cyan)"; }
 
                 // --- CHAIN IMAGE GENERATION ---
+                // Only generate if we have a prompt AND logic dictates (e.g. if we want to change it)
                 if (aiResult.image_prompt) {
-                    await triggerImageGenerator(aiResult.image_prompt, title);
+                    await triggerImageGenerator(aiResult.image_prompt, aiResult.title || currentTitle);
                 }
 
                 // --- TRACK USAGE ---
                 incrementArchetypeUsage(selectedArchSlug);
 
                 if(status) { status.textContent = "GENERATION COMPLETE"; status.style.color = "var(--success)"; }
+                
+                // Update Word Count UI
+                if(window.updateWordCount) window.updateWordCount(document.getElementById('contentArea'));
             }
 
         } catch (err) {
@@ -1619,11 +1642,39 @@
 
     window.openDraftPreview = function() {
         const title = document.getElementById('titleInput').value || "UNTITLED BROADCAST";
-        const content = document.getElementById('contentArea').value || "_No content captured._";
+        let content = document.getElementById('contentArea').value || "_No content captured._";
+        const image = document.getElementById('imageUrl').value;
         
-        document.getElementById('previewTitleDisplay').textContent = title;
-        // Simple display (could add markdown parser later if needed)
-        document.getElementById('previewBodyDisplay').innerHTML = content.replace(/\n/g, '<br>');
+        // --- 1. Basic Markdown Parsing ---
+        // Headers
+        content = content.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+        content = content.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+        content = content.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+        // Bold/Italic
+        content = content.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
+        content = content.replace(/\*(.*)\*/gim, '<i>$1</i>');
+        // Lists
+        content = content.replace(/^\s*-\s+(.*)/gm, '<li>$1</li>');
+        content = content.replace(/^\s*\d+\.\s+(.*)/gm, '<li>$1</li>'); // Numbered handled locally
+        // Wrap lists (Simplistic)
+        content = content.replace(/(<li>.*<\/li>)/gsm, '<ul>$1</ul>');
+        // Links
+        content = content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+        // Line Breaks
+        content = content.replace(/\n/g, '<br>');
+
+        // --- 2. Construct Preview HTML ---
+        const imageHtml = image ? `<img src="${image}" style="width:100%; border-radius:12px; margin-bottom:20px; border:1px solid #333;" />` : '';
+        const html = `
+            <div style="max-width: 680px; margin: 0 auto; font-family: 'Georgia', serif; font-size: 1.1rem; line-height: 1.8;">
+                ${imageHtml}
+                <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; line-height: 1.1; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px;">${title}</h1>
+                <div class="otp-content">${content}</div>
+            </div>
+        `;
+
+        document.getElementById('previewTitleDisplay').textContent = "DEEP PREVIEW // " + title;
+        document.getElementById('previewBodyDisplay').innerHTML = html;
         document.getElementById('previewModal').style.display = 'flex';
     };
 
