@@ -211,14 +211,15 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
 
 // 3. Admin Deletion Endpoint (Bypasses RLS)
 app.post('/api/admin/delete-post', verifyToken, async (req, res) => {
-    const { id, slug } = req.body;
+    const { id, slug, table } = req.body;
+    const targetTable = table || 'posts'; // Default to posts
     
     if (!supabaseAdmin) {
         return res.status(500).json({ success: false, message: "Server misconfiguration: Missing Supabase Service Key" });
     }
 
     try {
-        let query = supabaseAdmin.from('posts').delete();
+        let query = supabaseAdmin.from(targetTable).delete();
         
         if (id) query = query.eq('id', id);
         else if (slug) query = query.eq('slug', slug);

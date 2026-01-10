@@ -338,12 +338,12 @@
     
     // 4.7 EDIT POST LOGIC
     window.loadPostForEdit = async function(id) {
-        showToast("FETCHING POST DATA...");
+        showToast("FETCHING BROADCAST DATA...");
         
         try {
-            // Fetch FULL data for this specific post
+            // Fetch FULL data for this specific broadcast
             const { data: post, error } = await state.client
-                .from('posts')
+                .from('broadcasts')
                 .select('*')
                 .eq('id', id)
                 .single();
@@ -421,46 +421,50 @@
         const list = document.getElementById('postManager');
         if(!list) return;
 
-        // One-time Realtime Subscription for DB Changes (Views, etc)
+        // One-time Realtime Subscription for Broadcasts (Views, Status, etc)
         if (state.client && !state.dbSubscription) {
              state.dbSubscription = state.client
-                .channel('posts-changes')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
-                    // console.log("DB Update Detected:", payload);
-                    // Debounce refresh to prevent flickering on high traffic
+                .channel('broadcasts-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'broadcasts' }, (payload) => {
                     if(window.refreshTimeout) clearTimeout(window.refreshTimeout);
                     window.refreshTimeout = setTimeout(() => fetchPosts(true), 500); 
                 })
                 .subscribe();
         }
 
-        // Cache Check
+        // Cache Check (Reduced TTL for active broadcasts)
         const now = Date.now();
-        if (!force && postsCache && (now - lastFetchTime < CACHE_TTL)) {
+        if (!force && postsCache && (now - lastFetchTime < 2000)) {
             renderPosts(postsCache);
             updateStats(postsCache);
             return;
         }
 
         try {
-            const { data: posts, error } = await state.client
-                .from('posts')
-                .select('id, title, created_at, published, views, slug')
+            // Filters: Active and from last 3 days
+            const threeDaysAgo = new Date();
+            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+            
+            const { data: broadcasts, error } = await state.client
+                .from('broadcasts')
+                .select('id, title, created_at, status, views, slug')
+                .eq('status', 'active')
+                .gte('created_at', threeDaysAgo.toISOString())
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
             
             // Update Cache
-            postsCache = posts;
+            postsCache = broadcasts;
             lastFetchTime = now;
 
-            renderPosts(posts);
-            updateStats(posts);
+            renderPosts(broadcasts);
+            updateStats(broadcasts);
 
         } catch (err) {
-            console.error("FETCH ERROR:", err);
+            console.error("BROADCAST FETCH ERROR:", err);
             if (list.children.length === 0) {
-                 list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">ERROR LOADING: ${err.message}</div>`;
+                 list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">BROADCAST LINK ERROR: ${err.message}</div>`;
             }
         }
     }
@@ -565,11 +569,11 @@
                     <div class="post-title">${post.title || 'Untitled'} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
                     <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span class="theme-active" style="color:var(--admin-success); font-weight:bold;">${post.views || 0}</span> Views</div>
                 </div>
-                <div class="status-badge ${post.published ? 'status-live' : 'status-draft'}">
-                    ${post.published ? 'LIVE' : 'DRAFT'}
+                <div class="status-badge ${post.status === 'active' ? 'status-live' : 'status-draft'}">
+                    ${(post.status || 'ACTIVE').toUpperCase()}
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    ${post.published && post.slug ? (() => {
+                    ${post.status === 'active' && post.slug ? (() => {
                         // Static Override Logic
                         let postUrl = `/insight.html?slug=${post.slug}`;
                         if (post.slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
@@ -627,7 +631,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${state.token}`
                     },
-                    body: JSON.stringify({ id: targetId })
+                    body: JSON.stringify({ id: targetId, table: 'broadcasts' }) // Explicitly tell server to use broadcasts
                 });
                 
                 if (res.ok) {
@@ -643,8 +647,7 @@
             }
 
             // 2. Static Fallback (Client-Side)
-            // Warning: RLS must allow this for authenticated users
-            const { error } = await state.client.from('posts').delete().eq('id', targetId);
+            const { error } = await state.client.from('broadcasts').delete().eq('id', targetId);
             if (error) throw error;
             
             showToast("BROADCAST TERMINATED (CLIENT)");
@@ -719,25 +722,24 @@
                     image_url: document.getElementById('imageUrl').value || document.getElementById('urlInput').value,
                     excerpt: formData.get('excerpt'),
                     content: formData.get('content'),
-                    published: document.getElementById('pubToggle').checked,
+                    status: document.getElementById('pubToggle').checked ? 'active' : 'archived',
                     category: formData.get('category'),
                     author: formData.get('author'),
                     seo_title: formData.get('seo_title'),
                     seo_desc: formData.get('seo_desc')
-                    // Views handled by DB organically
                 };
                 
-                // If NEW post, add created_at
+                // If NEW, add created_at
                 if(!postId) postData.created_at = new Date().toISOString();
 
                 try {
                     let result;
                     if (postId) {
                         // UPDATE
-                        result = await state.client.from('posts').update(postData).eq('id', postId);
+                        result = await state.client.from('broadcasts').update(postData).eq('id', postId);
                     } else {
                         // INSERT
-                        result = await state.client.from('posts').insert([postData]);
+                        result = await state.client.from('broadcasts').insert([postData]);
                     }
 
                     if(result.error) throw result.error;
