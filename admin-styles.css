@@ -530,6 +530,7 @@ button:focus-visible, a:focus-visible {
     flex-direction: column;
     overflow: hidden;
     box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+    position: relative;
 }
 
 .media-header {
@@ -539,6 +540,18 @@ button:focus-visible, a:focus-visible {
     justify-content: space-between;
     align-items: center;
 }
+
+.close-icon {
+    background: transparent;
+    border: none;
+    color: var(--admin-muted);
+    font-size: 1.5rem;
+    padding: 10px;
+    margin-right: -10px; /* Align to edge */
+    cursor: pointer;
+    line-height: 1;
+}
+.close-icon:hover { color: var(--admin-danger); }
 
 .media-grid {
     flex: 1; /* Takes remaining space */
