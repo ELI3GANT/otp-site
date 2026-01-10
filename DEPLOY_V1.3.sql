@@ -38,5 +38,57 @@ BEGIN
     END IF;
 END $$;
 
--- 6. REFRESH SCHEMA
+-- 6. MIGRATE CATEGORIES & ARCHETYPES (FROM V1.2)
+-- 6.1 Categories Table
+CREATE TABLE IF NOT EXISTS categories (
+    id SERIAL PRIMARY KEY,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    name text UNIQUE NOT NULL,
+    slug text UNIQUE NOT NULL,
+    description text,
+    post_count int8 DEFAULT 0
+);
+
+-- 6.2 Archetypes Table
+CREATE TABLE IF NOT EXISTS ai_archetypes (
+    id SERIAL PRIMARY KEY,
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now(),
+    category_id integer REFERENCES categories(id) ON DELETE SET NULL,
+    name text UNIQUE NOT NULL,
+    slug text UNIQUE NOT NULL,
+    system_prompt text NOT NULL,
+    description text,
+    model_config jsonb DEFAULT '{}',
+    tags text[],
+    usage_count int8 DEFAULT 0
+);
+
+-- 6.3 Enable Realtime & RLS
+ALTER PUBLICATION supabase_realtime ADD TABLE categories;
+ALTER PUBLICATION supabase_realtime ADD TABLE ai_archetypes;
+
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow All" ON categories;
+CREATE POLICY "Allow All" ON categories FOR ALL USING (true) WITH CHECK (true);
+
+ALTER TABLE ai_archetypes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow All" ON ai_archetypes;
+CREATE POLICY "Allow All" ON ai_archetypes FOR ALL USING (true) WITH CHECK (true);
+
+-- 6.4 Seed Default Data (If Empty)
+INSERT INTO categories (name, slug, description)
+SELECT 'Strategy', 'strategy', 'Business and growth strategies'
+WHERE NOT EXISTS (SELECT 1 FROM categories WHERE slug = 'strategy');
+
+INSERT INTO categories (name, slug, description)
+SELECT 'Tech', 'tech', 'Technical breakdowns and innovation'
+WHERE NOT EXISTS (SELECT 1 FROM categories WHERE slug = 'tech');
+
+INSERT INTO categories (name, slug, description)
+SELECT 'Production', 'production', 'Visual and media production'
+WHERE NOT EXISTS (SELECT 1 FROM categories WHERE slug = 'production');
+
+-- 7. REFRESH SCHEMA
 NOTIFY pgrst, 'reload schema';
