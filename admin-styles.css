@@ -731,3 +731,16 @@ input, textarea, select {
         bottom: 90px !important; 
     }
 }
+
+/* DESKTOP POSITIONING */
+@media (min-width: 769px) {
+    .theme-btn {
+        position: fixed;
+        top: 20px;
+        right: 120px; /* Left of Logout */
+        width: 40px;
+        height: 40px;
+        z-index: 10000;
+        background: var(--admin-panel);
+    }
+}

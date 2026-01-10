@@ -81,12 +81,14 @@
         <h1><div class="status-dot"></div> OTP COMMAND <span style="font-size: 0.5em; opacity: 0.5; margin-left: 10px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px;">SECURE</span></h1>
         
         <div class="admin-nav-actions" style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
-            <button onclick="toggleAdminTheme()" class="theme-btn" aria-label="Toggle Theme">
-                🌗
-            </button>
             <button onclick="logout()" aria-label="Logout" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.7rem; padding: 8px 12px; width: auto;">LOGOUT</button>
         </div>
     </header>
+
+    <!-- FLOATING THEME TOGGLE (MOVED OUTSIDE HEADER) -->
+    <button onclick="toggleAdminTheme()" class="theme-btn" aria-label="Toggle Theme">
+        🌗
+    </button>
   
     <main class="admin-wrap">
 
