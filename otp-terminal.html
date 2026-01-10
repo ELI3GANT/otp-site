@@ -12,6 +12,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=5.0" />
   <link rel="stylesheet" href="./admin-styles.css?v=5.0" />
+  <script>
+    // IMMEDIATE LOCK CHECK & THEME LOAD
+    (function() {
+        // 1. Check Auth
+        const token = localStorage.getItem('otp_admin_token');
+        if(!token) {
+            window.location.href = 'portal-gate.html';
+        }
+        
+        if(token === 'static-bypass-token') {
+             // Will handle UI updates in body
+        }
+
+        // 2. Load Theme Immediately (Prevents FOUC)
+        const savedTheme = localStorage.getItem('theme');
+        if(savedTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    })();
+  </script>
 </head>
 <body class="">
     <!-- SYSTEM STATUS BAR -->
@@ -507,15 +527,9 @@
 
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
-      // IMMEDIATE LOCK CHECK & THEME LOAD
+      // UI Updates based on Auth (Post-Load)
       (function() {
-          // 1. Check Auth
           const token = localStorage.getItem('otp_admin_token');
-          if(!token) {
-              window.location.href = 'portal-gate.html';
-              return;
-          }
-          
           if(token === 'static-bypass-token') {
               const dot = document.querySelector('.status-dot-mini');
               if(dot) {
@@ -524,12 +538,6 @@
                   // Change text node next to dot
                   if(dot.nextSibling) dot.nextSibling.textContent = ' NODE: LOCAL (BYPASS)';
               }
-          }
-
-          // 2. Load Theme Immediately (Prevents FOUC)
-          const savedTheme = localStorage.getItem('theme');
-          if(savedTheme === 'light') {
-              document.documentElement.setAttribute('data-theme', 'light');
           }
       })();
 
@@ -560,6 +568,7 @@
       }
 
       // THEME CONTROL
+      // THEME CONTROL
       window.toggleAdminTheme = function() {
           const html = document.documentElement;
           const current = html.getAttribute('data-theme');
@@ -569,7 +578,22 @@
           else html.removeAttribute('data-theme');
           
           localStorage.setItem('theme', next);
+
+          // Update Icon
+          const btns = document.querySelectorAll('.theme-btn');
+          btns.forEach(btn => {
+              btn.textContent = next === 'light' ? '☀️' : '🌗';
+          });
       };
+
+      // Init Theme Icon on Load
+      (function() {
+          const theme = localStorage.getItem('theme');
+          if(theme === 'light') {
+             const btns = document.querySelectorAll('.theme-btn');
+             btns.forEach(btn => btn.textContent = '☀️');
+          }
+      })();
     </script>
 </body>
 </html>
