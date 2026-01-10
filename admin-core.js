@@ -73,6 +73,8 @@
 
             // Load Posts for Manager & Stats
             fetchPosts();
+            // Real-time update interval: 500ms
+            setInterval(() => fetchPosts(true), 500);
 
             // Live Clock System
             const clockEl = document.getElementById('liveClock');
@@ -553,7 +555,7 @@
             <div class="post-row">
                 <div style="cursor: pointer; flex: 1;" onclick="loadPostForEdit(${post.id})">
                     <div class="post-title">${post.title || 'Untitled'} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
-                    <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span style="color:var(--admin-success); font-weight:bold;">${post.views || 0}</span> Views</div>
+                    <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span class="theme-active" style="color:var(--admin-success); font-weight:bold;">${post.views || 0}</span> Views</div>
                 </div>
                 <div class="status-badge ${post.published ? 'status-live' : 'status-draft'}">
                     ${post.published ? 'LIVE' : 'DRAFT'}
