@@ -248,8 +248,14 @@
                 throw new Error("Server Reject");
 
             } catch (e) {
-                if(pass === FALLBACK_PASS) saveAndRedirect('static-bypass-token');
-                else showError();
+                console.warn("Satellite Down:", e);
+                // IF SERVER FAILS, ALLOW LOCAL OVERRIDE IF CODE MATCHES
+                if(pass === FALLBACK_PASS) {
+                    console.log("Engaging Local Bypass...");
+                    saveAndRedirect('static-bypass-token');
+                    return;
+                }
+                showError();
             }
         }
 

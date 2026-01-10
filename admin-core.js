@@ -1110,4 +1110,14 @@
     // Call presence init after a small delay
     setTimeout(initDashboardPresence, 3000);
 
+    // GLOBAL LOGOUT
+    window.logout = function() {
+        if(confirm("TERMINATE SESSION?")) {
+            localStorage.removeItem('otp_admin_token');
+            // Optional: Clear cache to force clean reload next time
+            localStorage.removeItem('otp_insights_cache');
+            window.location.href = 'portal-gate.html';
+        }
+    };
+
 })();
