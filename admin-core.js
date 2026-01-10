@@ -103,7 +103,7 @@
     
     window.logout = function() {
         localStorage.removeItem('otp_admin_token');
-        location.reload();
+        window.location.href = 'admin.html';
     };
 
     // --- POST MANAGER & STATS LOGIC ---
