@@ -155,7 +155,7 @@
              </div>
              <div class="stat-card">
                  <h3>SYSTEM</h3>
-                 <p class="stat-num" style="color:var(--success)">ONLINE</p>
+                 <p class="stat-num" style="color:var(--admin-success)">ONLINE</p>
                  <span class="stat-change">V3.6</span>
              </div>
         </section>
@@ -323,7 +323,7 @@
   
             <div style="height: 30px;"></div>
             
-            <button type="submit" id="submitBtn" style="height: 70px; font-size: 1.2rem; margin-bottom: 20px; background: var(--success); color: #000;" aria-label="Publish post to the live network">COMMENCE BROADCAST</button>
+            <button type="submit" id="submitBtn" style="height: 70px; font-size: 1.2rem; margin-bottom: 20px; background: var(--admin-success); color: #000;" aria-label="Publish post to the live network">COMMENCE BROADCAST</button>
             
             <!-- SECTION: MANAGE -->
             <section class="input-section">
@@ -369,14 +369,20 @@
 
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
-      // IMMEDIATE UNLOCK CHECK
-      // Runs before admin-core.js to ensure fast dashboard access
+      // IMMEDIATE LOCK CHECK & THEME LOAD
       (function() {
+          // 1. Check Auth
           const token = localStorage.getItem('otp_admin_token');
-          if(token) {
-              console.log("🔓 Valid Token Found. UI Unlocked.");
-          } else {
+          if(!token) {
               window.location.href = 'admin.html';
+              return;
+          }
+          console.log("🔓 Valid Token Found.");
+
+          // 2. Load Theme Immediately (Prevents FOUC)
+          const savedTheme = localStorage.getItem('theme');
+          if(savedTheme === 'light') {
+              document.documentElement.setAttribute('data-theme', 'light');
           }
       })();
 
