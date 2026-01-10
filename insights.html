@@ -16,7 +16,44 @@
   <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="./styles.css?v=2.6" />
-  <style>body { margin: 0 !important; }</style>
+  <style>
+    body { margin: 0 !important; }
+    .filter-btn {
+        background: transparent;
+        border: 1px solid var(--stroke);
+        color: var(--muted);
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .filter-btn:hover {
+        border-color: var(--accent2);
+        color: var(--text);
+        transform: translateY(-2px);
+    }
+    .filter-btn.active {
+        background: var(--accent2);
+        border-color: var(--accent2);
+        color: #000;
+        font-weight: 700;
+        box-shadow: 0 0 20px rgba(0, 255, 170, 0.2);
+    }
+    .post-tag {
+        font-size: 0.65rem;
+        color: var(--accent2);
+        background: rgba(0, 255, 170, 0.05);
+        padding: 4px 10px;
+        border-radius: 4px;
+        border: 1px solid rgba(0, 255, 170, 0.1);
+        font-family: monospace;
+        letter-spacing: 0.5px;
+    }
+  </style>
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -97,6 +134,16 @@
 
 
 
+      <div class="insights-header">
+        <h1 class="syne-extra-bold" style="font-size: clamp(3rem, 10vw, 6rem); margin-bottom: 10px;">INSIGHTS</h1>
+        <p class="muted" style="max-width: 600px; margin: 0 auto 40px; font-size: 1.1rem;">Decentralized updates from the Only True Perspective network.</p>
+      </div>
+
+      <!-- TAG FILTER -->
+      <div id="filter-wrap" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 40px; opacity: 0; transform: translateY(10px); transition: 0.5s;">
+          <!-- Tags injected here -->
+      </div>
+
       <div class="insights-grid">
         <!-- Content populated dynamically from Supabase -->
         <div class="loader" style="grid-column: 1/-1; text-align: center; color: var(--muted);">LOADING SIGNAL...</div>
@@ -169,69 +216,91 @@
             }
         };
 
+        let allPosts = [];
+        let activeTag = 'ALL';
+
         try {
             // 0. LOAD FROM CACHE FIRST (Instant UI)
             const cachedData = localStorage.getItem('otp_insights_cache');
             if (cachedData) {
                 try {
-                    const posts = JSON.parse(cachedData);
-                    renderPosts(posts, true); // Render with "cached" flag
+                    allPosts = JSON.parse(cachedData);
+                    renderPosts(allPosts); 
+                    renderFilters(allPosts);
                     console.log("💾 Loaded from Persistence Cache");
                 } catch(e) { console.error("Cache corrupt", e); }
             }
 
-            // Check if library is loaded
-            if (typeof window.supabase === 'undefined') {
-                if (!cachedData) setStatus("SIGNAL INTERRUPTED: Database Library Offline.", true);
-                return;
-            }
-
-            if (!SUPABASE_URL || !SUPABASE_KEY) {
-                if (!cachedData) setStatus("CONFIGURATION ERROR: Missing credentials.", true);
-                return;
-            }
+            // ... check supabase ...
+            if (typeof window.supabase === 'undefined' || !SUPABASE_URL || !SUPABASE_KEY) return;
 
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            
-            const fetchPromise = supabase
+            const { data: posts, error } = await supabase
                 .from('posts')
                 .select('*')
                 .eq('published', true)
                 .order('created_at', { ascending: false });
 
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("Connection Timeout")), 5000)
-            );
-
-            const { data: posts, error } = await Promise.race([fetchPromise, timeoutPromise]);
-
             if (error) throw error;
 
             if (posts && posts.length > 0) {
-                // 1. Update Cache
+                allPosts = posts;
                 localStorage.setItem('otp_insights_cache', JSON.stringify(posts));
-                
-                // 2. Render Fresh Data
-                renderPosts(posts, false);
+                renderPosts(posts);
+                renderFilters(posts);
             } else if (!cachedData) {
                 setStatus("NO SIGNALS DETECTED. STATION IS SILENT.");
             }
         } catch (e) {
             console.error("Error fetching insights:", e);
-            if (!localStorage.getItem('otp_insights_cache')) {
-                setStatus(`SIGNAL LOSS: ${e.message === 'Connection Timeout' ? 'Timed out. Check network.' : 'Failed to sync.'}`, true);
-            }
+            if (!allPosts.length) setStatus(`SIGNAL LOSS: ${e.message}`, true);
         }
 
-        function renderPosts(posts, isCached) {
-            if (!grid) return;
-            grid.innerHTML = ''; // Clear
-            
-            const seenSlugs = new Set();
-            posts.forEach(post => {
-                if (seenSlugs.has(post.slug)) return;
-                seenSlugs.add(post.slug);
+        function renderFilters(posts) {
+            const wrap = document.getElementById('filter-wrap');
+            if (!wrap) return;
 
+            // Extract unique tags
+            const tags = new Set();
+            posts.forEach(p => {
+                if (p.tags && Array.isArray(p.tags)) {
+                    p.tags.forEach(t => tags.add(t.toUpperCase()));
+                }
+            });
+
+            const uniqueTags = ['ALL', ...Array.from(tags).sort()];
+            
+            wrap.innerHTML = uniqueTags.map(tag => `
+                <button class="filter-btn ${activeTag === tag ? 'active' : ''}" onclick="window.filterByTag('${tag}')">
+                    ${tag}
+                </button>
+            `).join('');
+            
+            wrap.style.opacity = '1';
+            wrap.style.transform = 'translateY(0)';
+        }
+
+        window.filterByTag = (tag) => {
+            activeTag = tag;
+            renderPosts(allPosts);
+            renderFilters(allPosts);
+        };
+
+        function renderPosts(posts) {
+            if (!grid) return;
+            
+            const filtered = activeTag === 'ALL' 
+                ? posts 
+                : posts.filter(p => p.tags && p.tags.map(t => t.toUpperCase()).includes(activeTag));
+
+            grid.innerHTML = ''; 
+            
+            if (filtered.length === 0) {
+                setStatus(`No insights found for tag: ${activeTag}`);
+                return;
+            }
+
+            filtered.forEach(post => {
                 const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 let link = `insight.html?slug=${post.slug}`;
                 if (post.slug === 'spooky-luh-ooky') link = 'spooky-luh-ooky.html';
@@ -244,6 +313,11 @@
                         <div class="insight-date">${date} • ${post.category || 'Insight'}</div>
                         <h2>${post.title}</h2>
                         <p>${post.excerpt || (post.content ? post.content.substring(0, 100).replace(/<[^>]*>/g, '') + '...' : '')}</p>
+                        
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;">
+                            ${(post.tags || []).map(t => `<span class="post-tag">#${t.toUpperCase()}</span>`).join('')}
+                        </div>
+
                         <div class="insight-footer">
                             <a href="${link}" class="read-more">Read Insight</a>
                         </div>
@@ -251,38 +325,6 @@
                 `;
                 grid.appendChild(card);
             });
-
-            // Re-bind effects
-            const cards = document.querySelectorAll('.insight-card');
-            cards.forEach(card => {
-                card.addEventListener('mousemove', e => {
-                    const rect = card.getBoundingClientRect();
-                    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-                    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-                });
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', (e) => {
-                    const link = card.querySelector('a.read-more');
-                    if (link && e.target !== link) { link.click(); }
-                });
-            });
-
-            if (typeof gsap !== 'undefined' && !isCached) {
-                // Snappier, more consistent animation
-                gsap.from(cards, { 
-                    opacity: 0, 
-                    y: 20, 
-                    stagger: 0.05, 
-                    duration: 0.5, 
-                    ease: "power2.out",
-                    clearProps: "all" // Ensure it finishes with clean styles
-                });
-            } else {
-                cards.forEach(c => {
-                    c.style.opacity = '1';
-                    c.style.transform = 'none';
-                });
-            }
         }
     });
   </script>

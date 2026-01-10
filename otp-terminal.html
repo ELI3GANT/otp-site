@@ -274,6 +274,10 @@
                         <label for="authorInput">Author</label>
                         <input type="text" name="author" id="authorInput" value="OTP Admin">
                     </div>
+                    <div class="input-group">
+                        <label for="tagsInput">Tags (comma separated)</label>
+                        <input type="text" name="tags" id="tagsInput" placeholder="innovation, design, future">
+                    </div>
                 </div>
 
                 <div class="wrap" style="padding: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
@@ -626,6 +630,16 @@
                     <div class="input-group">
                         <label>Slug</label>
                         <input type="text" id="archSlug" placeholder="technical" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Parent Category</label>
+                        <select id="archCategory" style="font-size: 0.75rem;">
+                            <option value="">No Category</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Model Config (JSON)</label>
+                        <textarea id="archConfig" style="height: 60px; font-size: 0.7rem; font-family: monospace;" placeholder='{"temperature": 0.7}'></textarea>
                     </div>
                     <div class="input-group">
                         <label>System Prompt</label>

@@ -410,6 +410,7 @@
 
             document.getElementById('catInput').value = post.category || 'Strategy';
             document.getElementById('authorInput').value = post.author || 'OTP Admin';
+            document.getElementById('tagsInput').value = (post.tags || []).join(', ');
             document.getElementById('excerptInput').value = post.excerpt || '';
             document.getElementById('contentArea').value = post.content || '';
             
@@ -477,12 +478,16 @@
     }
 
     function syncCategoryDropdowns() {
-        const selects = ['catInput']; // Main post category
+        const selects = ['catInput', 'archCategory']; // Main post category and archetype parent
         selects.forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
             const current = el.value;
-            el.innerHTML = state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            if (id === 'archCategory') {
+                el.innerHTML = '<option value="">No Category</option>' + state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            } else {
+                el.innerHTML = state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            }
             if (current) el.value = current;
         });
     }
@@ -595,17 +600,26 @@
         const id = document.getElementById('archId').value;
         const name = document.getElementById('archName').value.trim();
         const slug = document.getElementById('archSlug').value.trim();
+        const category_id = document.getElementById('archCategory').value || null;
+        const configRaw = document.getElementById('archConfig').value.trim();
         const system_prompt = document.getElementById('archPrompt').value.trim();
         const tags = document.getElementById('archTags').value.split(',').map(t => t.trim()).filter(t => t);
 
         if (!name || !slug || !system_prompt) return;
 
+        let model_config = {};
+        if (configRaw) {
+            try { model_config = JSON.parse(configRaw); }
+            catch (e) { alert("Invalid JSON in Model Config"); return; }
+        }
+
         try {
             let error;
+            const payload = { name, slug, system_prompt, tags, category_id, model_config };
             if (id) {
-                ({ error } = await state.client.from('ai_archetypes').update({ name, slug, system_prompt, tags }).eq('id', id));
+                ({ error } = await state.client.from('ai_archetypes').update(payload).eq('id', id));
             } else {
-                ({ error } = await state.client.from('ai_archetypes').insert([{ name, slug, system_prompt, tags }]));
+                ({ error } = await state.client.from('ai_archetypes').insert([payload]));
             }
 
             if (error) throw error;
@@ -618,11 +632,13 @@
     };
 
     window.editArchetype = function(id) {
-        const a = state.archetypes.find(arch => arch.id === id);
+        const a = state.archetypes.find(arch => arch.id == id);
         if (!a) return;
         document.getElementById('archId').value = a.id;
         document.getElementById('archName').value = a.name;
         document.getElementById('archSlug').value = a.slug;
+        document.getElementById('archCategory').value = a.category_id || '';
+        document.getElementById('archConfig').value = a.model_config ? JSON.stringify(a.model_config) : '';
         document.getElementById('archPrompt').value = a.system_prompt;
         document.getElementById('archTags').value = (a.tags || []).join(', ');
     };
@@ -816,6 +832,9 @@
                 <div style="cursor: pointer; flex: 1;" onclick="loadPostForEdit(${post.id})">
                     <div class="post-title">${post.title || 'Untitled'} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
                     <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span class="theme-active" style="color:var(--admin-success); font-weight:bold;">${post.views || 0}</span> Views</div>
+                    <div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;">
+                        ${(post.tags || []).map(t => `<span style="font-size: 0.55rem; color: var(--admin-cyan); background: rgba(0, 195, 255, 0.05); padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(0, 195, 255, 0.1);">#${t}</span>`).join('')}
+                    </div>
                 </div>
                 <div class="status-badge ${isLive ? 'status-live' : 'status-draft'}">
                     ${isLive ? 'LIVE' : 'DRAFT'}
@@ -981,6 +1000,7 @@
                     published: document.getElementById('pubToggle').checked, // Map to boolean
                     category: formData.get('category'),
                     author: formData.get('author'),
+                    tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim()).filter(t => t) : [],
                     seo_title: formData.get('seo_title'),
                     seo_desc: formData.get('seo_desc'),
                     archetype_slug: document.getElementById('archetype').value
