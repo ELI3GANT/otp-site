@@ -42,8 +42,7 @@
         // Auto-login check
         if (state.token) {
              console.log("🔄 Found existing session token.");
-             // Ideally verify token validity here, but for now we assume valid until 401
-             unlockUI(); 
+             updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
         }
 
         // Check for Supabase Library
@@ -81,26 +80,7 @@
         }
     }
 
-    // --- AUTHENTICATION (SERVER SIDE) ---
-    // --- AUTHENTICATION (SERVER SIDE) ---
-    // Note: unlockChannel is now defined in admin.html to ensure early loading and hybrid fallback support.
-    // We rely on the global window.unlockChannel there.
-    // Only unlockUI is needed here for state management.
-
-    function unlockUI() {
-        state.isUnlocked = true;
-        const gate = document.getElementById('gate');
-        const status = document.querySelector('.status-readout');
-        
-        if(status) status.innerHTML = `<p style="color: var(--success)">> SESSION TOKEN VALID.</p><p style="color: var(--success)">> DECRYPTING DASHBOARD...</p>`;
-        
-        setTimeout(() => {
-            if(gate) gate.classList.add('unlocked');
-            document.body.classList.remove('locked');
-            updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
-        }, 800);
-    }
-    
+    // --- AUTH UTILS ---
     window.logout = function() {
         localStorage.removeItem('otp_admin_token');
         window.location.href = 'admin.html';
@@ -387,7 +367,7 @@
         });
 
         const fileInput = document.getElementById('fileInput');
-        if(fileInput) fileInput.addEventListener('change', handleFileUpload);
+        if(fileInput) fileInput.addEventListener('change', window.handleFileUpload);
         
         const postForm = document.getElementById('postForm');
         if(postForm) {
@@ -600,58 +580,66 @@
     }
 
     // 7. SECURE AI NEURAL GENERATOR
+    // 3. UTILITIES
+    window.showToast = function(msg) {
+        const toast = document.getElementById('toast');
+        if(!toast) return;
+        
+        // Reset
+        toast.classList.remove('show');
+        void toast.offsetWidth; // Force reflow
+        
+        toast.querySelector('span').textContent = msg;
+        toast.classList.add('show');
+        
+        // Auto hide after 3s
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    };
+
+    // ... (rest of init) ...
+
+    // 7. SECURE AI NEURAL GENERATOR
     async function triggerAIGenerator() {
-        const provider = document.getElementById('aiProvider').value;
-        const promptContext = document.getElementById('aiPrompt').value.trim();
-        const title = document.getElementById('titleInput').value.trim();
-        const archetype = document.getElementById('archetype').value;
-        const btn = document.getElementById('magicBtn');
+        const providerSel = document.getElementById('aiProvider');
+        const promptInput = document.getElementById('aiPrompt');
+        const titleInput = document.getElementById('titleInput');
+        const archetypeInput = document.getElementById('archetype');
+        const modelSel = document.getElementById('geminiModel');
         const status = document.getElementById('aiStatus');
-        const model = document.getElementById('geminiModel') ? document.getElementById('geminiModel').value : null;
+        const btn = document.getElementById('magicBtn');
 
         if(!state.token) {
             if(status) { status.textContent = "SESSION EXPIRED. REFRESH."; status.style.color = "#ff4444"; }
             return;
         }
-        if(!title) { 
-            if(status) { status.textContent = "ERROR: Please enter a Headline first."; status.style.color = "#ff4444"; }
-            document.getElementById('titleInput').focus();
-            return; 
-        }
-        if(!promptContext) { 
-            if(status) { status.textContent = "ERROR: Please enter a Concept / Prompt."; status.style.color = "#ff4444"; }
-            document.getElementById('aiPrompt').focus();
-            return; 
-        }
-
-        btn.textContent = "SYNTHESIZING (SECURE)...";
-        btn.disabled = true;
-        if(status) { status.textContent = `TRANSMITTING TO ${provider.toUpperCase()} VIA PROXY...`; status.style.color = "var(--accent2)"; }
-        
-        const styleContext = {
-            technical: "Cinematic Tech. Focus on the feeling of using the gear, not just specs. High-energy, visual language. Think MKBHD meets Blade Runner.",
-            launch: "Hype & Drop. Short, punchy, exclusive. The vibe is 'if you know, you know'. Fast-paced.",
-            strategy: "Street-Smart Business. No corporate jargon. Real talk about ROI and leverage. Direct and confident.",
-            'case-study': "The War Room. Behind the scenes. Gritty details of how we pulled it off. Show, don't just tell."
-        };
-
-        const systemPrompt = `You are the Lead Creative Director and Head of Strategy for OTP (Only True Perspective). 
-        
-        **TONE MANDATE:**
-        - Voice: Modern, accessible, "dope", confident.
-        - Ban: "Delve", "Showcase", "In the realm of", academic fluff, corporate jargon.
-        - Style: Short paragraphs. Active voice. Punchy sentences.
-        - Goal: Make the reader feel like an insider.
-
-        **VISUAL LAYOUT INSTRUCTIONS (USE THESE HTML CLASSES):**
 
         const prompt = promptInput.value.trim();
-        const archetype = document.getElementById('archetype').value;
-        const provider = providerSel.value; 
-        const model = (provider === 'gemini') ? modelSel.value : null;
-
-        if(aiStatus) aiStatus.innerHTML = `<span class="blink">⚡ TRANSMITTING TO ${provider.toUpperCase()} PROXY...</span>`;
+        const title = titleInput.value.trim();
         
+        if(!title) { 
+            if(status) { status.textContent = "ERROR: Please enter a Headline first."; status.style.color = "#ff4444"; }
+            titleInput.focus();
+            return; 
+        }
+        if(!prompt) { 
+            if(status) { status.textContent = "ERROR: Please enter a Concept / Prompt."; status.style.color = "#ff4444"; }
+            promptInput.focus();
+            return; 
+        }
+
+        const provider = providerSel.value;
+        const model = (provider === 'gemini' && modelSel) ? modelSel.value : null;
+
+        // UI Feedback
+        btn.textContent = "SYNTHESIZING (SECURE)...";
+        btn.disabled = true;
+        if(status) { 
+            status.innerHTML = `<span class="blink">⚡ TRANSMITTING TO ${provider.toUpperCase()} PROXY...</span>`; 
+            status.style.color = "var(--accent2)"; 
+        }
+
         try {
             // Secure Server Call
             const res = await fetch('/api/ai/generate', {
@@ -662,68 +650,40 @@
                 },
                 body: JSON.stringify({ 
                     prompt, 
-                    archetype, 
+                    archetype: archetypeInput.value, 
                     provider, 
                     model,
-                    title: document.getElementById('titleInput').value || "New Post"
+                    title
                 })
             });
 
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.message || `Server Error ${res.status}`);
+            if (!data.success) throw new Error(data.message || "Generation Failed");
+
+            // Populate Fields
+            if (data.data) {
+                if(data.data.content) document.getElementById('contentArea').value = data.data.content;
+                if(data.data.excerpt) document.getElementById('excerptInput').value = data.data.excerpt;
+                if(data.data.seo_title) document.getElementById('seoTitle').value = data.data.seo_title;
+                if(data.data.seo_desc) document.getElementById('seoDesc').value = data.data.seo_desc;
+            }
+
+            showToast("NEURAL CONTENT RECEIVED");
+            if(status) { status.textContent = "GENERATION COMPLETE"; status.style.color = "var(--success)"; }
+
+        } catch (err) {
+            console.error("AI ERROR:", err);
+            if(status) { status.textContent = "ERROR: " + err.message; status.style.color = "#ff4444"; }
+            alert("AI Generation Failed: " + err.message);
+        } finally {
+            btn.textContent = "⚡ TRANSMIT TO AI";
             btn.disabled = false;
         }
     }
 
-    // --- MEDIA UPLOADS ---
-    async function handleFileUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
 
-        const detailsDiv = document.getElementById('fileDetails');
-        const fileNameDisplay = document.getElementById('fileNameDisplay');
-        const fileSizeDisplay = document.getElementById('fileSizeDisplay');
-        const previewDiv = document.getElementById('imagePreview');
-        
-        if(detailsDiv) {
-            detailsDiv.style.display = 'block';
-            fileNameDisplay.textContent = `UPLOADING: ${file.name}`;
-            fileSizeDisplay.textContent = `(${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-        }
-
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-            const filePath = `blog/${fileName}`;
-
-            let { error: uploadError, data } = await state.client.storage
-                .from('uploads')
-                .upload(filePath, file);
-
-            if (uploadError) throw uploadError;
-
-            const { data: { publicUrl } } = state.client.storage
-                .from('uploads')
-                .getPublicUrl(filePath);
-
-            document.getElementById('imageUrl').value = publicUrl;
-            
-            if(previewDiv) {
-                if(file.type.startsWith('video/')) {
-                    previewDiv.innerHTML = `<video src="${publicUrl}" controls style="width: 100%; height: auto; max-height: 400px; display: block; border-radius: 12px;"></video>`;
-                } else {
-                    previewDiv.innerHTML = `<img src="${publicUrl}" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">`;
-                }
-                previewDiv.style.display = 'block';
-            }
-
-            if(fileNameDisplay) fileNameDisplay.textContent = `READY: ${file.name}`;
-            showToast("MEDIA UPLOADED SUCCESSFULLY");
-
-        } catch (err) {
-            console.error("Upload Error:", err);
-            showToast("UPLOAD FAILED");
-            if(fileNameDisplay) fileNameDisplay.textContent = "UPLOAD ERROR";
-        }
-    }
 
     // 8. EVENT LISTENERS
     window.switchProvider = function(val) {
