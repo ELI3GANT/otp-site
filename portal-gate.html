@@ -3,100 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OTP // SECURE GATEWAY</title>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="admin-styles.css?v=4.0">
+    <title>OTP // SYSTEM TERMINAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
-        /* Specific Gatekeeper Overrides */
-        body { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            overflow: hidden; 
-            background: var(--admin-bg);
+        :root {
+            --term-green: #33ff33;
+            --term-dim: #1a5c1a;
+            --term-bg: #0a0e0a;
+            --term-glow: 0 0 10px rgba(51, 255, 51, 0.4);
         }
-        
-        .gatekeeper-wrapper {
-            position: relative;
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--term-bg);
+            color: var(--term-green);
+            font-family: 'VT323', monospace;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            text-shadow: var(--term-glow);
+        }
+
+        /* CRT SCANLINES EFFECT */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 1000;
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* FLICKER ANIMATION */
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            5% { opacity: 0.85; }
+            10% { opacity: 0.95; }
+            15% { opacity: 0.9; }
+            25% { opacity: 0.98; }
+            30% { opacity: 0.8; }
+            50% { opacity: 0.96; }
+            100% { opacity: 0.99; }
+        }
+
+        .terminal-container {
+            animation: flicker 0.15s infinite;
             width: 100%;
-            max-width: 400px;
-            padding: 20px;
+            max-width: 450px;
+            padding: 30px;
+            border: 2px solid var(--term-green);
+            background: rgba(10, 20, 10, 0.8);
+            box-shadow: inset 0 0 20px rgba(51, 255, 51, 0.2), 0 0 15px rgba(51, 255, 51, 0.1);
+            position: relative;
             z-index: 10;
         }
 
-        /* Use shared styles, but add specific noise for valid login visuals */
-        .bg-noise {
-            position: fixed; inset: 0; opacity: 0.05; pointer-events: none; z-index: 1;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        .term-header {
+            border-bottom: 2px solid var(--term-green);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+
+        .term-title {
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .status-table {
+            width: 100%;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            color: var(--term-dim);
+        }
+
+        .status-table td:last-child {
+            text-align: right;
+            color: var(--term-green);
+        }
+
+        .auth-prompt {
+            margin-top: 10px;
+            font-size: 1.2rem;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2rem;
+            background: var(--term-green);
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .gate-input {
+            background: transparent;
+            border: none;
+            color: var(--term-green);
+            font-family: 'VT323', monospace;
+            font-size: 1.5rem;
+            width: 100%;
+            outline: none;
+            margin-top: 5px;
+            caret-color: transparent; /* custom cursor */
+        }
+
+        .login-btn {
+            background: var(--term-green);
+            color: var(--term-bg);
+            border: none;
+            font-family: 'VT323', monospace;
+            font-size: 1.3rem;
+            margin-top: 25px;
+            width: 100%;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .login-btn:hover {
+            box-shadow: 0 0 20px var(--term-green);
+        }
+
+        .login-btn:disabled {
+            background: var(--term-dim);
+            cursor: not-allowed;
+        }
+
+        #errorMsg {
+            margin-top: 15px;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 480px) {
+            .terminal-container { border: none; height: 100vh; max-width: 100%; background: var(--term-bg); }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-noise"></div>
-
-    <div class="gatekeeper-wrapper">
-        <div class="terminal-window">
-            <div class="terminal-body" style="text-align: center;">
-                <img src="assets/otp_v2.png" class="logo" alt="OTP" style="width: 60px; height: 60px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(112,0,255,0.4));">
-                <h1>SECURE UPLINK</h1>
-                <div style="font-size: 0.75rem; color: var(--admin-muted); margin-bottom: 30px; letter-spacing: 1px;">V3.7 PROXY <span class="blink">_</span></div>
-
-                <form class="auth-box" onsubmit="event.preventDefault(); attemptLogin();">
-                    <div class="input-group">
-                        <input type="password" id="passcode" class="gate-input" placeholder="••••" maxlength="10" autocomplete="off" autofocus>
-                    </div>
-                    <button type="submit" id="loginBtn" style="width: 100%;">AUTHENTICATE</button>
-                </form>
-
-                <div id="errorMsg" class="error" style="color: var(--admin-danger); font-size: 0.8rem; margin-top: 15px; display: none;">ACCESS DENIED</div>
-            </div>
+    <div class="terminal-container">
+        <div class="term-header">
+            <div class="term-title">ROBCO INDUSTRIES (TM)</div>
+            <div style="font-size: 0.8rem; color: var(--term-dim);">UNIFIED OPERATING SYSTEM v3.7</div>
         </div>
+
+        <table class="status-table">
+            <tr><td>UPLINK STATUS:</td><td>CONNECTED</td></tr>
+            <tr><td>CORE FREQ:</td><td>2.4 GHZ</td></tr>
+            <tr><td>ENCRYPTION:</td><td>BIT-SHIFTER v9</td></tr>
+        </table>
+
+        <div class="auth-prompt">
+            > ENTER SECURITY PASSCODE:
+            <form onsubmit="event.preventDefault(); attemptLogin();">
+                <div style="display: flex; align-items: center;">
+                    <span style="color: var(--term-green); margin-right: 5px;">></span>
+                    <input type="password" id="passcode" class="gate-input" maxlength="10" autocomplete="off" autofocus oninput="updateCursor()">
+                    <span id="fake-cursor" class="cursor"></span>
+                </div>
+                <button type="submit" id="loginBtn" class="login-btn">INITIATE UPLINK</button>
+            </form>
+        </div>
+
+        <div id="errorMsg" style="display: none; color: #ff0000; text-shadow: 0 0 5px #ff0000;">ACCESS DENIED // INTRUSION DETECTED</div>
     </div>
 
     <script>
-        // 1. THEME INIT
-        (function() {
-            const saved = localStorage.getItem('theme');
-            if(saved === 'light') {
-                document.documentElement.setAttribute('data-theme', 'light');
-            }
-        })();
-
-        function toggleTheme() {
-            const html = document.documentElement;
-            const current = html.getAttribute('data-theme');
-            const next = current === 'light' ? 'dark' : 'light';
-            
-            if(next === 'light') html.setAttribute('data-theme', 'light');
-            else html.removeAttribute('data-theme');
-            
-            localStorage.setItem('theme', next);
+        function updateCursor() {
+            const input = document.getElementById('passcode');
+            const cursor = document.getElementById('fake-cursor');
+            if (input.value.length > 0) cursor.style.display = 'inline-block';
+            else cursor.style.display = 'inline-block';
         }
 
-        // 2. API DISCOVERY & LOGIN
         async function getBaseApiUrl() {
-            // Priority 1: Current Origin
             const current = window.location.origin;
             try {
                 const check = await fetch(current + '/api/auth/login', { method: 'OPTIONS' }).catch(() => null);
                 if (check) return current;
             } catch(e) {}
-
-            // Priority 2: Common Development Ports
-            const ports = [8080, 3000];
-            for (const p of ports) {
-                const url = `http://localhost:${p}`;
-                try {
-                    const check = await fetch(url + '/api/auth/login', { method: 'OPTIONS' }).catch(() => null);
-                    if (check) {
-                        console.log(`🔌 DISCOVERED BACKEND AT: ${url}`);
-                        return url;
-                    }
-                } catch(e) {}
-            }
-            return current; // Fallback to current
+            return current;
         }
 
         async function attemptLogin() {
@@ -105,7 +205,6 @@
             const err = document.getElementById('errorMsg');
             const pass = input.value;
 
-            // Reset UI
             err.style.display = 'none';
             btn.textContent = "VERIFYING...";
             btn.disabled = true;
@@ -116,62 +215,39 @@
                 const baseUrl = await getBaseApiUrl();
                 localStorage.setItem('otp_api_base', baseUrl);
 
-                // A. SERVER CHECK (Preferred)
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000);
-
                 const res = await fetch(baseUrl + '/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ passcode: pass }),
-                    signal: controller.signal
+                    body: JSON.stringify({ passcode: pass })
                 });
-                clearTimeout(timeoutId);
 
                 if(res.ok) {
                     const data = await res.json();
-                    if(data.success && data.token) {
-                        saveAndRedirect(data.token);
-                        return;
-                    }
+                    if(data.success && data.token) { saveAndRedirect(data.token); return; }
                 }
-                
                 throw new Error("Server Reject");
 
             } catch (e) {
-                console.log("Server auth failed, trying static fallback...");
-                
-                // B. STATIC FALLBACK (Universal Login)
-                if(pass === FALLBACK_PASS) {
-                    saveAndRedirect('static-bypass-token');
-                } else {
-                    showError("INVALID PASSCODE");
-                }
+                if(pass === FALLBACK_PASS) saveAndRedirect('static-bypass-token');
+                else showError();
             }
         }
 
         function saveAndRedirect(token) {
             localStorage.setItem('otp_admin_token', token);
             const btn = document.getElementById('loginBtn');
-            btn.style.background = '#00ffaa';
-            btn.style.color = '#000';
+            btn.style.background = '#00ff00';
             btn.textContent = "ACCESS GRANTED";
-            setTimeout(() => {
-                window.location.href = 'otp-terminal.html';
-            }, 500);
+            setTimeout(() => { window.location.href = 'otp-terminal.html'; }, 800);
         }
 
-        function showError(msg) {
+        function showError() {
             const err = document.getElementById('errorMsg');
             const btn = document.getElementById('loginBtn');
             const input = document.getElementById('passcode');
-            
-            err.textContent = `[!] ${msg}`;
             err.style.display = 'block';
-            
             btn.disabled = false;
-            btn.textContent = "AUTHENTICATE";
-            
+            btn.textContent = "IDENTIFICATION REQUIRED";
             input.value = '';
             input.focus();
         }
