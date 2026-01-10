@@ -33,7 +33,7 @@ app.use(helmet({
             connectSrc: ["'self'", "https://*.supabase.co", "https://api.openai.com", "https://generativelanguage.googleapis.com"],
             mediaSrc: ["'self'", "https:"],
             objectSrc: ["'none'"],
-            upgradeInsecureRequests: null,
+            upgradeInsecureRequests: [],
         },
     },
 }));
