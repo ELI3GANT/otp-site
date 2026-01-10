@@ -188,18 +188,20 @@
   color: var(--accent);
 }
 
-/* How We Work Cards Fix */
+/* How We Work Cards Contrast Fix */
 [data-theme="light"] .process-card {
-  background: #f0f0f0 !important;
+  background: #f5f5f7 !important;
   border-color: #d1d1d6;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Softer shadow */
 }
 [data-theme="light"] .process-card h4 {
-  color: #111;
-  font-weight: 700;
+  color: #000;
+  font-weight: 800; /* Extra bold for readability */
 }
 [data-theme="light"] .process-card p {
   color: #333;
-  font-weight: 600;
+  font-weight: 500;
+  opacity: 1; /* Force opacity */
 }
 
 [data-theme="light"] .card:hover, 
