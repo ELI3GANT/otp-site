@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
     
-    // --- ACTIVE LINK LOGIC ---
+    // --- ACTIVE LINK LOGIC & SMOOTH SCROLL ---
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.nav-links a, .nav-drawer a');
     
@@ -483,18 +483,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
-        // Simple exact match logic for static pages
+        
+        // Initial Active State
         if (normalize(href) === effectivePath || (effectivePath === 'index.html' && href === 'index.html')) {
-             // For anchors on index (e.g. #work), this might clash if we want scroll spy. 
-             // But request just wants "subtle active-page indicator".
-             // We'll trust the hardcoded HTML .active for index.html anchors for now, 
-             // but ensure cross-page navigation sets it correctly.
-             // Actually, if we are on archive.html, we want "Archive" active.
              if (!href.startsWith('#')) {
                  navLinks.forEach(l => l.classList.remove('active'));
                  link.classList.add('active');
              }
         }
+
+        // Click Handler for Smooth Scroll & Active State
+        link.addEventListener('click', (e) => {
+            if (href.startsWith('#')) {
+                const targetId = href.substring(1);
+                const targetEl = document.getElementById(targetId);
+                
+                if (targetEl) {
+                    e.preventDefault();
+                    
+                    // Smooth Scroll
+                    const offset = 80; // Nav height offset
+                    const elementPosition = targetEl.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+                    window.scrollTo({
+                        top: offsetPosition,
+                        behavior: 'smooth'
+                    });
+
+                    // Update Active State
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+
+                    // If in mobile drawer, it will be closed by the drawer listener below
+                }
+            }
+        });
     });
 
     // --- IDENTITY CARD & PHYSICS ---
