@@ -1358,15 +1358,31 @@
     let cachedSqlSchema = null;
 
     window.testSatelliteConnection = async function() {
-        const url = document.getElementById('satelliteUrl').value.trim();
+        let url = document.getElementById('satelliteUrl').value.trim();
         if(!url) { showToast("ENTER URL FIRST"); return; }
         
-        showToast("TESTING LINK...");
+        // Auto-fix URL for test
+        if (!url.startsWith('http')) url = 'https://' + url;
+        if (url.endsWith('/')) url = url.slice(0, -1);
+        
+        const healthUrl = url + '/api/health';
+        showToast("PROBING SATELLITE...");
+        
         try {
             const start = Date.now();
-            const res = await fetch(url, { mode: 'no-cors' }); // Simple ping
+            const res = await fetch(healthUrl, { method: 'GET', cache: 'no-cache' });
             const latency = Date.now() - start;
-            showToast(`LINK ACTIVE (${latency}ms)`);
+            
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`SATELLITE ONLINE (${latency}ms)`);
+                } else {
+                    showToast(`SATELLITE ERROR: ${data.status}`);
+                }
+            } else {
+                showToast(`SATELLITE REACHABLE (HTTP ${res.status})`);
+            }
         } catch(e) {
             console.error("Link Test Failed:", e);
             showToast("LINK OFFLINE / TIMEOUT");

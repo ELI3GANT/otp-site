@@ -60,6 +60,10 @@ app.use(bodyParser.json());
 // Defined BEFORE static files to ensure they take precedence
 
 // 1. Auth Route
+app.get('/api/health', (req, res) => {
+    res.json({ success: true, status: 'ONLINE', timestamp: new Date().toISOString() });
+});
+
 app.post('/api/auth/login', (req, res) => {
     const { passcode } = req.body;
     
