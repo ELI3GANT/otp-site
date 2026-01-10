@@ -271,81 +271,129 @@ window.OTP.initRealtimeState = function() {
     });
 };
 
-// 8.1 CUSTOM BROADCAST UI
-window.OTP.showBroadcast = function(message) {
-    // Remove existing if any
-    const old = document.querySelector('.otp-broadcast-toast');
-    if (old) old.remove();
+// 9. LIVE SITE EDITOR (Admin Only)
+window.OTP.initLiveEditor = async function() {
+    if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
+    
+    const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+    const params = new URLSearchParams(window.location.search);
+    const isEditMode = params.get('mode') === 'edit';
+    const token = localStorage.getItem('otp_admin_token');
 
-    const toast = document.createElement('div');
-    toast.className = 'otp-broadcast-toast';
-    toast.innerHTML = `
-        <button class="otp-broadcast-close" onclick="this.parentElement.classList.remove('show'); setTimeout(()=>this.parentElement.remove(), 600)">&times;</button>
-        <div class="otp-broadcast-header">
-            <div class="otp-broadcast-dot"></div>
-            <span>Transmission Received</span>
-        </div>
-        <div class="otp-broadcast-body">${message}</div>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Animate in
-    setTimeout(() => toast.classList.add('show'), 100);
-    
-    // Auto-remove after 8 seconds
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 600);
+    // 9.1 Fetch & Apply Content (Always run)
+    try {
+        const { data: contentRows, error } = await client.from('site_content').select('*');
+        if (!error && contentRows) {
+            contentRows.forEach(row => {
+                const el = document.getElementById(row.key);
+                if (el) el.innerHTML = row.content;
+            });
+            console.log(`[OTP] Loaded ${contentRows.length} dynamic content blocks.`);
         }
-    }, 8000);
-};
-
-// Init Realtime (Non-blocking)
-setTimeout(window.OTP.initRealtimeState, 1000);
-
-// --- VIEW TRACKING LOGIC ---
-window.OTP.trackView = async function(slug) {
-    if (!slug) return;
-    
-    // 1. Check LocalStorage (Session Deduping)
-    const storageKey = `otp_view_${slug}`;
-    const lastView = localStorage.getItem(storageKey);
-    const now = Date.now();
-    const isDebug = window.location.search.includes('debug=true');
-    
-    // Only count if never viewed or viewed > 30 minutes ago (Session-ish)
-    if (!isDebug && lastView && (now - parseInt(lastView)) < 30 * 60 * 1000) {
-        console.log(`[OTP] View deduped for: ${slug}`);
-        return;
+    } catch (e) {
+        console.warn("[OTP] Content Load Error:", e);
     }
 
-    // 2. Call Supabase RPC
-    if (window.supabase) {
-        const CONFIG = window.OTP_CONFIG || {}; // Ensure config is available
-        const client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
-        
-        try {
-            console.log(`[OTP] Incrementing view for: ${slug}`);
-            const { error } = await client.rpc('increment_view_count', { post_slug: slug });
+    // 9.2 Init Editor UI (Only if authorized & mode=edit)
+    if (isEditMode && token) {
+        console.log("📝 LIVE EDITOR ACTIVE");
+        document.body.classList.add('otp-edit-mode');
+
+        // Inject Styles
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .otp-edit-mode [data-editable] {
+                outline: 2px dashed rgba(0, 255, 170, 0.3);
+                cursor: text;
+                transition: outline 0.2s;
+            }
+            .otp-edit-mode [data-editable]:hover,
+            .otp-edit-mode [data-editable]:focus {
+                outline: 2px solid #00ffaa;
+                background: rgba(0, 255, 170, 0.05);
+            }
+            .otp-editor-toolbar {
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #111;
+                border: 1px solid #333;
+                padding: 10px 20px;
+                border-radius: 50px;
+                display: flex;
+                gap: 15px;
+                z-index: 99999;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                align-items: center;
+            }
+            .otp-editor-btn {
+                background: transparent;
+                color: #fff;
+                border: 1px solid #444;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 0.8rem;
+                cursor: pointer;
+                transition: 0.2s;
+            }
+            .otp-editor-btn.save { background: #00ffaa; color: #000; border: none; font-weight: bold; }
+            .otp-editor-btn:hover { transform: translateY(-2px); }
+        `;
+        document.head.appendChild(style);
+
+        // Make Editable
+        const editables = document.querySelectorAll('[data-editable]');
+        editables.forEach(el => {
+            el.contentEditable = "true";
+        });
+
+        // Toolbar
+        const toolbar = document.createElement('div');
+        toolbar.className = 'otp-editor-toolbar';
+        toolbar.innerHTML = `
+            <span style="color:#666; font-size:0.75rem; font-family:monospace;">LIVE EDITOR</span>
+            <button class="otp-editor-btn save" onclick="window.OTP.saveContent()">SAVE CHANGES</button>
+            <button class="otp-editor-btn" onclick="window.location.search=''">EXIT</button>
+        `;
+        document.body.appendChild(toolbar);
+
+        // Save Function
+        window.OTP.saveContent = async function() {
+            const btn = document.querySelector('.otp-editor-btn.save');
+            btn.textContent = "SAVING...";
             
-            if (error) throw error;
-            
-            // 3. Mark as viewed
-            localStorage.setItem(storageKey, now.toString());
-            
-        } catch(e) {
-            console.warn("[OTP] Analytics Error:", e);
-        }
-    } else {
-        console.warn("[OTP] Analytics Skipped: Supabase not loaded.");
+            const updates = [];
+            document.querySelectorAll('[data-editable]').forEach(el => {
+                if(el.id) {
+                    updates.push({
+                        key: el.id,
+                        content: el.innerHTML.trim(),
+                        updated_by: 'admin'
+                    });
+                }
+            });
+
+            try {
+                const { error } = await client.from('site_content').upsert(updates);
+                if(error) throw error;
+                
+                btn.textContent = "SAVED!";
+                setTimeout(() => btn.textContent = "SAVE CHANGES", 2000);
+                window.OTP.showBroadcast("SITE CONTENT UPDATED");
+            } catch(e) {
+                console.error(e);
+                alert("Save Failed: " + e.message);
+                btn.textContent = "RETRY";
+            }
+        };
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize Live Editor
+setTimeout(window.OTP.initLiveEditor, 500);
 
-    // --- THEME TOGGLE UI ---
     (function injectThemeToggle() {
         if (window.OTP_THEME_TOGGLE_INJECTED) return;
         // Don't inject on Admin/Dashboard (they handle it manually)

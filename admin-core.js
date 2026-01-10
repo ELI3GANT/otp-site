@@ -145,22 +145,71 @@
     const CACHE_TTL = 60000; // 60s Cache
 
     // 4.6 FILE UPLOAD LOGIC
+    async function optimizeImage(file) {
+        return new Promise((resolve) => {
+            if (!file.type.startsWith('image/')) return resolve(file); // Don't optimize non-images
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1920;
+                    const MAX_HEIGHT = 1080;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        const optimizedFile = new File([blob], file.name, {
+                            type: 'image/jpeg',
+                            lastModified: Date.now(),
+                        });
+                        resolve(optimizedFile);
+                    }, 'image/jpeg', 0.8);
+                };
+            };
+        });
+    }
+
     window.handleFileUpload = async function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
         const btn = document.querySelector('button[onclick="document.getElementById(\'fileInput\').click()"]');
-        if(btn) btn.textContent = "UPLOADING...";
+        if(btn) btn.textContent = "OPTIMIZING...";
 
         try {
-            const fileExt = file.name.split('.').pop();
+            // 1. Client-Side Optimization
+            const optimizedFile = await optimizeImage(file);
+            if(btn) btn.textContent = "UPLOADING...";
+
+            const fileExt = optimizedFile.name.split('.').pop();
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
             const filePath = `blog/${fileName}`;
 
-            // Upload using standard client (requires bucket permissions)
+            // 2. Upload to Storage
             const { error: uploadError } = await state.client.storage
                 .from('uploads')
-                .upload(filePath, file);
+                .upload(filePath, optimizedFile);
 
             if (uploadError) throw uploadError;
 
@@ -170,8 +219,11 @@
 
             document.getElementById('imageUrl').value = publicUrl;
             document.getElementById('fileDetails').style.display = 'block';
-            document.getElementById('fileNameDisplay').textContent = file.name;
-            document.getElementById('fileSizeDisplay').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            document.getElementById('fileNameDisplay').textContent = optimizedFile.name;
+            
+            const originalSize = (file.size / 1024 / 1024).toFixed(2);
+            const optimizedSize = (optimizedFile.size / 1024 / 1024).toFixed(2);
+            document.getElementById('fileSizeDisplay').textContent = `${optimizedSize} MB (Saved ${((1 - optimizedFile.size/file.size)*100).toFixed(0)}%)`;
             
             const prevImg = document.getElementById('previewImg');
             if(prevImg) {
@@ -179,7 +231,7 @@
                 document.getElementById('imagePreview').style.display = 'block';
             }
             
-            showToast("FILE UPLOADED SUCCESSFULLY");
+            showToast("MEDIA OPTIMIZED & UPLOADED");
 
         } catch (err) {
             console.error("Upload Failed:", err);
@@ -549,6 +601,15 @@
 
                 const formData = new FormData(postForm);
                 const postId = document.getElementById('postIdInput').value; // Check for ID
+                
+                // VALIDATE SLUG
+                const rawSlug = formData.get('slug');
+                if (!/^[a-z0-9-]+$/.test(rawSlug)) {
+                    showToast("INVALID SLUG: Use a-z, 0-9, - only.");
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
 
                 const postData = {
                     title: formData.get('title'),
