@@ -146,6 +146,7 @@
                     
                     e.target.value = val;
                     localStorage.setItem('otp_api_base', val);
+                    persistSystemState('api_base', val); // PERSIST TO DB
                     showToast("SATELLITE LINK UPDATED");
                 });
             }
@@ -213,6 +214,13 @@
                 const isLight = config.theme === 'light';
                 themeEl.textContent = isLight ? 'DAY-MODE' : 'NIGHT-MODE';
                 themeEl.style.color = isLight ? '#ffaa00' : 'var(--accent2)';
+            }
+
+            // Sync Satellite URL
+            if (config.api_base) {
+                localStorage.setItem('otp_api_base', config.api_base);
+                const satUrl = document.getElementById('satelliteUrl');
+                if (satUrl) satUrl.value = config.api_base;
             }
 
         } catch (e) {
@@ -1348,6 +1356,22 @@
 
     // SQL Schema Cache
     let cachedSqlSchema = null;
+
+    window.testSatelliteConnection = async function() {
+        const url = document.getElementById('satelliteUrl').value.trim();
+        if(!url) { showToast("ENTER URL FIRST"); return; }
+        
+        showToast("TESTING LINK...");
+        try {
+            const start = Date.now();
+            const res = await fetch(url, { mode: 'no-cors' }); // Simple ping
+            const latency = Date.now() - start;
+            showToast(`LINK ACTIVE (${latency}ms)`);
+        } catch(e) {
+            console.error("Link Test Failed:", e);
+            showToast("LINK OFFLINE / TIMEOUT");
+        }
+    };
 
     window.viewSqlSchema = async function() {
         const modal = document.getElementById('sqlModal');

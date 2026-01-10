@@ -353,8 +353,9 @@
                             <div style="display: flex; gap: 8px;">
                                 <input type="text" id="satelliteUrl" placeholder="https://your-api.vercel.app" onchange="localStorage.setItem('otp_api_base', this.value)" style="font-size: 0.7rem; padding: 8px; flex: 1; color: var(--admin-success); font-family: monospace;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-                                <p style="font-size: 0.55rem; color: #555; margin: 0;">Link your Vercel/Node backend to exit Legacy Mode on mobile.</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 5px;">
+                                <p style="font-size: 0.55rem; color: #555; margin: 0; flex: 1;">Link your Vercel/Node backend to exit Legacy Mode on mobile.</p>
+                                <button type="button" onclick="testSatelliteConnection()" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-success); font-size: 0.6rem; padding: 4px 8px; cursor: pointer;">TEST LINK</button>
                                 <button type="button" onclick="viewSqlSchema()" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.6rem; padding: 4px 8px; cursor: pointer;">VIEW SCHEMA SQL</button>
                             </div>
                         </div>
