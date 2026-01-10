@@ -340,17 +340,53 @@
                     <textarea name="seo_desc" id="seoDesc" style="height: 80px;" placeholder="Snippet for search results..."></textarea>
                 </div>
 
-                <!-- SOCIAL PREVIEW TOOL -->
-                <div class="social-preview-tool" style="margin-top: 20px; padding: 15px; border: 1px dashed var(--admin-border); border-radius: 8px;">
-                    <div style="font-size: 0.75rem; color: var(--admin-muted); margin-bottom: 10px; text-transform: uppercase;">Social Share Preview</div>
-                    <div class="preview-card" style="background: #000; border: 1px solid #333; border-radius: 12px; overflow: hidden; max-width: 320px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                        <div id="socialPreviewCtx" style="background: #222; height: 160px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.8rem; background-size: cover; background-position: center;">
-                            Preview Image
+                <!-- MULTI-PLATFORM SOCIAL PREVIEW TOOL -->
+                <div class="social-preview-tool" style="margin-top: 25px; padding: 15px; border: 1px solid var(--admin-border); border-radius: 12px; background: rgba(255,255,255,0.02);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div style="font-size: 0.7rem; color: var(--admin-muted); text-transform: uppercase; letter-spacing: 1px;">Network Node Previews</div>
+                        <div class="preview-tabs" style="display: flex; gap: 5px;">
+                            <button type="button" onclick="switchPreviewTab('x')" id="tab-x" class="prev-tab active" style="font-size: 0.6rem; padding: 4px 8px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer;">X.COM</button>
+                            <button type="button" onclick="switchPreviewTab('ios')" id="tab-ios" class="prev-tab" style="font-size: 0.6rem; padding: 4px 8px; background: transparent; color: var(--admin-muted); border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer;">iMESSAGE</button>
+                            <button type="button" onclick="switchPreviewTab('search')" id="tab-search" class="prev-tab" style="font-size: 0.6rem; padding: 4px 8px; background: transparent; color: var(--admin-muted); border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer;">SEARCH</button>
                         </div>
-                        <div style="padding: 12px;">
-                            <div style="font-size: 0.75rem; color: #888; margin-bottom: 4px;">ONLYTRUEPERSPECTIVE.TECH</div>
-                            <div id="socialPreviewTitle" style="color: #fff; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; line-height: 1.3;">Headline Appears Here</div>
-                            <div id="socialPreviewDesc" style="color: #888; font-size: 0.8rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Description appears here...</div>
+                    </div>
+
+                    <!-- X PREVIEW -->
+                    <div id="preview-x" class="prev-content" style="display: block;">
+                        <div class="preview-card" style="background: #000; border: 1px solid #333; border-radius: 12px; overflow: hidden; max-width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+                            <div id="socialPreviewCtx-x" style="background: #222; height: 160px; display: flex; align-items: center; justify-content: center; color: #555; font-size: 0.8rem; background-size: cover; background-position: center;">Preview Image</div>
+                            <div style="padding: 12px;">
+                                <div style="font-size: 0.75rem; color: #888; margin-bottom: 4px;">ONLYTRUEPERSPECTIVE.TECH</div>
+                                <div id="socialPreviewTitle-x" style="color: #fff; font-weight: bold; font-size: 0.9rem; margin-bottom: 4px; line-height: 1.3;">Headline Appears Here</div>
+                                <div id="socialPreviewDesc-x" style="color: #888; font-size: 0.8rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal;">Description appears here...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- iMESSAGE PREVIEW -->
+                    <div id="preview-ios" class="prev-content" style="display: none;">
+                        <div style="background: #1c1c1e; border-radius: 18px; padding: 12px; max-width: 100%; display: flex; flex-direction: column; gap: 4px; border: 1px solid #333;">
+                            <div id="socialPreviewCtx-ios" style="height: 140px; background: #333; border-radius: 12px; background-size: cover; background-position: center;"></div>
+                            <div style="padding: 4px 8px;">
+                                <div id="socialPreviewTitle-ios" style="color: #fff; font-weight: 500; font-size: 0.9rem; margin-bottom: 2px;">Headline...</div>
+                                <div id="socialPreviewDesc-ios" style="color: #888; font-size: 0.75rem; line-height: 1.2;">Description...</div>
+                                <div style="color: #555; font-size: 0.65rem; margin-top: 4px; text-transform: uppercase;">onlytrueperspective.tech</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEARCH PREVIEW -->
+                    <div id="preview-search" class="prev-content" style="display: none;">
+                        <div style="background: #202124; padding: 15px; border-radius: 8px; border: 1px solid #3c4043;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <div style="width: 18px; height: 18px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #000;">O</div>
+                                <div>
+                                    <div style="color: #dadce0; font-size: 0.75rem;">Only True Perspective</div>
+                                    <div style="color: #9aa0a6; font-size: 0.65rem;">https://onlytrueperspective.tech › journal</div>
+                                </div>
+                            </div>
+                            <div id="socialPreviewTitle-search" style="color: #8ab4f8; font-size: 1rem; margin-bottom: 4px; cursor: pointer;">Headline Appears Here</div>
+                            <div id="socialPreviewDesc-search" style="color: #bdc1c6; font-size: 0.75rem; line-height: 1.4;">Description appears here...</div>
                         </div>
                     </div>
                 </div>

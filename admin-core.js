@@ -675,27 +675,49 @@
         }, 4000);
     };
 
-    // SOCIAL PREVIEW UPDATER
+    // SOCIAL PREVIEW UPDATER (Multi-Platform)
+    window.switchPreviewTab = function(platform) {
+        document.querySelectorAll('.prev-tab').forEach(t => {
+            t.style.background = 'transparent';
+            t.style.color = 'var(--admin-muted)';
+            t.style.border = '1px solid var(--admin-border)';
+        });
+        document.querySelectorAll('.prev-content').forEach(c => c.style.display = 'none');
+        
+        const btn = document.getElementById('tab-' + platform);
+        if(btn) {
+            btn.style.background = platform === 'x' ? '#333' : 'var(--admin-accent)';
+            btn.style.color = '#fff';
+            btn.style.border = 'none';
+        }
+        const content = document.getElementById('preview-' + platform);
+        if(content) content.style.display = 'block';
+    };
+
     window.updateSocialPreview = function() {
         const title = document.getElementById('titleInput').value || "Headline Appears Here";
         const desc = document.getElementById('seoDesc').value || document.getElementById('excerptInput').value || "Description appears here...";
         const img = document.getElementById('imageUrl').value || document.getElementById('urlInput').value;
         
-        const prevTitle = document.getElementById('socialPreviewTitle');
-        const prevDesc = document.getElementById('socialPreviewDesc');
-        const prevImg = document.getElementById('socialPreviewCtx');
-        
-        if(prevTitle) prevTitle.textContent = title;
-        if(prevDesc) prevDesc.textContent = desc;
-        if(prevImg) {
-            if(img) {
-                prevImg.style.backgroundImage = `url('${img}')`;
-                prevImg.textContent = '';
-            } else {
-                prevImg.style.backgroundImage = 'none';
-                prevImg.textContent = 'Preview Image';
+        // Update All Platforms
+        const platforms = ['x', 'ios', 'search'];
+        platforms.forEach(p => {
+            const pTitle = document.getElementById(`socialPreviewTitle-${p}`);
+            const pDesc = document.getElementById(`socialPreviewDesc-${p}`);
+            const pCtx = document.getElementById(`socialPreviewCtx-${p}`);
+            
+            if(pTitle) pTitle.textContent = title;
+            if(pDesc) pDesc.textContent = desc;
+            if(pCtx) {
+                if(img) {
+                    pCtx.style.backgroundImage = `url('${img}')`;
+                    pCtx.textContent = '';
+                } else {
+                    pCtx.style.backgroundImage = 'none';
+                    pCtx.textContent = 'Preview Image';
+                }
             }
-        }
+        });
     };
     
     // Attach listeners
@@ -717,8 +739,9 @@
         const status = document.getElementById('aiStatus');
         const btn = document.getElementById('magicBtn');
 
-        if(!state.token) {
-            if(status) { status.textContent = "SESSION EXPIRED. REFRESH."; status.style.color = "#ff4444"; }
+        if(!state.token || state.token === "null") {
+            if(status) { status.textContent = "SESSION EXPIRED. PLEASE RE-LOGIN."; status.style.color = "#ff4444"; }
+            showToast("SESSION EXPIRED");
             return;
         }
 
@@ -736,15 +759,15 @@
             return; 
         }
 
-        const provider = providerSel.value;
+        const provider = providerSel ? providerSel.value : 'openai';
         const model = (provider === 'gemini' && modelSel) ? modelSel.value : null;
 
         // UI Feedback
-        btn.textContent = "SYNTHESIZING (SECURE)...";
+        btn.textContent = "SYNTHESIZING...";
         btn.disabled = true;
         if(status) { 
-            status.innerHTML = `<span class="blink">⚡ TRANSMITTING TO ${provider.toUpperCase()} PROXY...</span>`; 
-            status.style.color = "var(--accent2)"; 
+            status.innerHTML = `<span class="blink">⚡ TRANSMITTING TO ${provider.toUpperCase()}...</span>`; 
+            status.style.color = "var(--admin-cyan)"; 
         }
 
         try {
@@ -753,16 +776,23 @@
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${state.token}` // Send Admin Token
+                    'Authorization': `Bearer ${state.token}`
                 },
                 body: JSON.stringify({ 
                     prompt, 
-                    archetype: archetypeInput.value, 
+                    archetype: archetypeInput ? archetypeInput.value : 'technical', 
                     provider, 
                     model,
                     title
                 })
             });
+
+            // Handle potential non-JSON response (like 404/500 HTML)
+            const contentType = res.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                const text = await res.text();
+                throw new Error("Server returned non-JSON response. Check if server.js is running.");
+            }
 
             const data = await res.json();
 
