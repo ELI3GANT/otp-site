@@ -1,7 +1,6 @@
 /**
- * site-init.js
+ * site-init.js [SIG:2026-01-10-04-58]
  * Centralized initialization for Kursor, Year, and Scroll Progress.
- * Ensures consistent behavior and "dope" connectivity across all pages.
  */
 
 (function() {

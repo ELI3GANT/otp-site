@@ -212,8 +212,10 @@
             const FALLBACK_PASS = 'otp2026';
 
             try {
-                const baseUrl = await getBaseApiUrl();
-                localStorage.setItem('otp_api_base', baseUrl);
+                // Try Saved Satellite first, then current origin
+                const savedBase = localStorage.getItem('otp_api_base');
+                const baseUrl = savedBase || await getBaseApiUrl();
+                if (!savedBase) localStorage.setItem('otp_api_base', baseUrl);
 
                 const res = await fetch(baseUrl + '/api/auth/login', {
                     method: 'POST',
