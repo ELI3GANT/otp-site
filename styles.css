@@ -791,9 +791,11 @@ h1, h2, h3 {
   border-color: #ff3c00;
   box-shadow: 0 0 40px rgba(255, 60, 0, 0.4);
 }
+[data-theme="light"] .cool-work-link.is-black-hole .link-text,
 [data-theme="light"] .cool-work-link:hover .link-text {
   color: #fff;
 }
+[data-theme="light"] .cool-work-link.is-black-hole .link-sub,
 [data-theme="light"] .cool-work-link:hover .link-sub {
   color: #bbb;
 }
@@ -3579,12 +3581,18 @@ input:focus, select:focus, textarea:focus {
     inset 0 0 60px rgba(0, 0, 0, 1); /* Infinite Depth */
 }
 
+.cool-work-link.is-black-hole .link-text,
 .cool-work-link:hover .link-text,
 .cool-work-link:active .link-text {
   text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+  color: #fff;
 }
 
-.link-text {
+.cool-work-link.is-black-hole .link-sub,
+.cool-work-link:hover .link-sub {
+  color: var(--accent2);
+  opacity: 1;
+}
   position: relative;
   z-index: 2;
   font-family: 'Syne', sans-serif;
