@@ -705,19 +705,29 @@ input, textarea, select {
     will-change: opacity, transform;
 }
 
-/* Cleanup old pseudo if present matches */
-.admin-header h1::before {
-    display: none !important;
-    content: none !important;
-}
-
-/* UTILITY */
-.desktop-only {
-    display: none;
-}
-
-@media (min-width: 768px) {
-    .desktop-only {
-        display: inline-block;
+/* FLOATING MOBILE THEME TOGGLE */
+@media (max-width: 768px) {
+    .theme-btn {
+        position: fixed !important;
+        bottom: 25px;
+        right: 25px;
+        top: auto;
+        width: 50px;
+        height: 50px;
+        background: var(--admin-panel);
+        border: 2px solid var(--admin-border);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        z-index: 200000 !important; /* Highest layer */
+        font-size: 1.4rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+    }
+    
+    /* Push toast up so it doesn't overlap new button */
+    .toast {
+        bottom: 90px !important; 
     }
 }
