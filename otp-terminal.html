@@ -12,6 +12,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=5.0" />
   <link rel="stylesheet" href="./admin-styles.css?v=5.0" />
+  <!-- CHART.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     // IMMEDIATE LOCK CHECK & THEME LOAD
     (function() {
@@ -134,6 +136,16 @@
                  <p class="stat-num" style="color:var(--admin-muted)">V4.1</p>
                  <span class="stat-change">STABLE</span>
              </div>
+        </section>
+
+        <!-- VISUAL ANALYTICS CHART -->
+        <section class="admin-section" style="margin-bottom: 25px;">
+            <div style="background: var(--admin-panel); border: 1px solid var(--admin-border); border-radius: 12px; padding: 20px;">
+                <h3 style="font-size: 0.8rem; color: var(--admin-muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">TRAFFIC VISUALIZATION</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
         </section>
 
         <!-- LIVE SITE COMMANDS (NEW) -->
@@ -593,6 +605,9 @@
               if(next === 'light') btn.classList.add('theme-active');
               else btn.classList.remove('theme-active');
           });
+
+          // Refresh Chart Theme
+          if(window.refreshDashboardChart) window.refreshDashboardChart();
       };
 
       // Init Theme Icon on Load

@@ -324,6 +324,83 @@
         if(statViews) statViews.textContent = totalViews.toLocaleString();
         
         // Presence is now handled by initDashboardPresence()
+        
+        // Render Chart
+        renderChart(posts);
+    }
+
+    // Expose for Theme Toggle
+    window.refreshDashboardChart = function() {
+        if(postsCache) renderChart(postsCache);
+    };
+
+    let activityChartInstance = null;
+    function renderChart(posts) {
+        const ctx = document.getElementById('activityChart');
+        if(!ctx) return;
+        
+        // Prepare Data: Top 10 Posts by Views
+        const sorted = [...posts].sort((a,b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
+        const labels = sorted.map(p => p.title.substring(0, 15) + (p.title.length > 15 ? '...' : ''));
+        const data = sorted.map(p => p.views || 0);
+
+        if(activityChartInstance) {
+            activityChartInstance.destroy();
+        }
+
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const colorText = isLight ? '#000' : '#888';
+        const colorBar = isLight ? '#5856d6' : '#7000ff';
+        const colorGrid = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+
+        activityChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Views',
+                    data: data,
+                    backgroundColor: colorBar,
+                    borderRadius: 4,
+                    barThickness: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { 
+                        backgroundColor: '#000', 
+                        titleColor: '#fff', 
+                        bodyColor: '#ccc',
+                        borderColor: '#333',
+                        borderWidth: 1,
+                        padding: 10,
+                        callbacks: {
+                            title: (items) => {
+                                const idx = items[0].dataIndex;
+                                return sorted[idx].title; // Full title on hover
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: colorGrid },
+                        ticks: { color: colorText, font: { family: 'monospace' } },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: colorText, font: { family: 'monospace', size: 10 } },
+                        border: { display: false }
+                    }
+                },
+                animation: { duration: 800, easing: 'easeOutQuart' }
+            }
+        });
     }
 
     function renderPosts(posts) {
