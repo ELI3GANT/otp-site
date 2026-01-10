@@ -238,12 +238,19 @@ button {
 }
 
 @media (max-width: 768px) {
+    .admin-header {
+        padding: 10px 15px;
+        flex-wrap: wrap; /* Allow wrapping if needed */
+        gap: 10px;
+    }
+
     #submitBtn {
-        /* Revert to natural flow */
-        position: static;
+        position: relative; /* Ensure it flows */
+        z-index: 10;
+        margin-top: 30px;
+        margin-bottom: 30px; /* Extra space at bottom */
         width: 100%;
-        margin-top: 20px;
-        box-shadow: none;
+        box-shadow: 0 5px 15px rgba(0, 255, 170, 0.2);
     }
 }
 

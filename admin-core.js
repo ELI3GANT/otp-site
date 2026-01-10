@@ -316,23 +316,37 @@
         }
 
         try {
-            // Use Server-Side Proxy for Deletion (Bypasses RLS if using Service Key)
-            const res = await fetch('/api/admin/delete-post', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${state.token}`
-                },
-                body: JSON.stringify({ id: targetId })
-            });
+            // 1. Try Secure Server Delete
+            try {
+                const res = await fetch('/api/admin/delete-post', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify({ id: targetId })
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                         showToast("BROADCAST TERMINATED (SECURE)");
+                         finishDelete();
+                         return;
+                    }
+                }
+            } catch(serverErr) {
+                console.warn("Server delete failed, trying client-side fallback...");
+            }
+
+            // 2. Static Fallback (Client-Side)
+            // Warning: RLS must allow this for authenticated users
+            const { error } = await state.client.from('posts').delete().eq('id', targetId);
+            if (error) throw error;
             
-            const data = await res.json();
-            
-            if (!data.success) throw new Error(data.message);
-            
-            showToast("BROADCAST TERMINATED");
-            document.getElementById('deleteModal').style.display = 'none';
-            fetchPosts(true); 
+            showToast("BROADCAST TERMINATED (CLIENT)");
+            finishDelete();
+
         } catch (err) {
             console.error("❌ DELETION FAILED:", err);
             alert("DELETION FAILED: " + err.message);
@@ -343,6 +357,11 @@
             }
             pendingDeleteId = null;
         }
+    }
+
+    function finishDelete() {
+        document.getElementById('deleteModal').style.display = 'none';
+        fetchPosts(true); 
     }
 
     // ... (keep surrounding functions) ...
