@@ -34,7 +34,7 @@
                      <p>> WAITING FOR AUTH TOKEN... <span class="blink">_</span></p>
                  </div>
                  
-                 <form class="auth-box" onsubmit="event.preventDefault(); window.unlockChannel();">
+                 <form class="auth-box" onsubmit="event.preventDefault(); window.unlockChannel(); return false;" action="#">
                      <label for="gatePass">ENTER ADMIN PASSCODE</label>
                      <div class="input-wrapper">
                          <span class="prompt">></span>
@@ -42,6 +42,88 @@
                      </div>
                      <button type="submit" class="gate-btn">EXECUTE</button>
                  </form>
+
+                 <div id="gateError" class="error-msg" style="display:none;">
+                     [!] ACCESS DENIED: INVALID CREDENTIALS
+                 </div>
+             </div>
+        </div>
+        <div class="bg-noise"></div>
+    </div>
+
+    <!-- MEDIA LIBRARY MODAL -->
+    <!-- ... (rest of modal code) -->
+
+    <!-- ... -->
+    <script>
+      // ... (existing script) ...
+      window.unlockChannel = async function() {
+          // console.log("🔓 Bootstrap Login Initiated...");
+          
+          const input = document.getElementById('gatePass');
+          const btn = document.querySelector('.gate-btn');
+          const errorMsg = document.getElementById('gateError');
+
+          if (!input) return;
+          const passcode = input.value;
+          
+          if(btn) {
+              btn.textContent = "VERIFYING...";
+              btn.disabled = true;
+          }
+
+          try {
+              const res = await fetch('/api/auth/login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ passcode })
+              });
+
+              if (!res.ok) {
+                   if(res.status === 429) {
+                        alert("FAILED: Server says Rate Limited (429). Please wait 1 min.");
+                        throw new Error("RATE LIMIT (429)");
+                   }
+                   if(res.status === 405) {
+                        alert("ERROR (405): Backend Not Reachable. \nIf testing live, ensure your host supports Node.js (server.js).");
+                        throw new Error("BACKEND OFFLINE (405)");
+                   }
+                   if(res.status === 401) {
+                        // alert("FAILED: Server says Wrong Password.");
+                        throw new Error("ACCESS DENIED (Wrong Passcode)");
+                   }
+                   throw new Error(`Server Error (${res.status})`);
+              }
+              
+              const data = await res.json();
+              
+              if (data.success && data.token) {
+                  console.log("🔓 TOKEN ACQUIRED. RELOADING...");
+                  localStorage.setItem('otp_admin_token', data.token);
+                  window.location.reload();
+              } else {
+                  throw new Error("INVALID CREDENTIALS");
+              }
+          } catch (e) {
+              console.warn("🔒 LOGIN FAILED:", e.message);
+              
+              if(errorMsg) {
+                  errorMsg.style.display = 'block';
+                  errorMsg.textContent = `[!] ${e.message}`;
+                  errorMsg.style.animation = 'none';
+                  errorMsg.offsetHeight; 
+                  errorMsg.style.animation = 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both';
+              }
+              input.value = '';
+              input.focus();
+          } finally {
+              if(btn) {
+                  btn.textContent = "EXECUTE";
+                  btn.disabled = false;
+              }
+          }
+      };
+    </script>
 
                  <div id="gateError" class="error-msg" style="display:none;">
                      [!] ACCESS DENIED: INVALID CREDENTIALS
@@ -340,72 +422,7 @@
           });
       }
 
-      // CRITICAL: Standalone Login Logic (Bootstrap)
-      // This ensures we can login even if admin-core.js is slow or failing
-      // CRITICAL: Standalone Login Logic (Bootstrap)
-      // This ensures we can login even if admin-core.js is slow or failing
-      window.unlockChannel = async function() {
-          // console.log("🔓 Bootstrap Login Initiated...");
-          
-          const input = document.getElementById('gatePass');
-          const btn = document.querySelector('.gate-btn');
-          const errorMsg = document.getElementById('gateError');
 
-          if (!input) return;
-          const passcode = input.value;
-          
-          if(btn) {
-              btn.textContent = "VERIFYING...";
-              btn.disabled = true;
-          }
-
-          try {
-              const res = await fetch('/api/auth/login', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ passcode })
-              });
-
-              if (!res.ok) {
-                   if(res.status === 429) {
-                        alert("FAILED: Server says Rate Limited (429). Please wait 1 min.");
-                        throw new Error("RATE LIMIT (429)");
-                   }
-                   if(res.status === 401) {
-                        // alert("FAILED: Server says Wrong Password.");
-                        throw new Error("ACCESS DENIED (Wrong Passcode)");
-                   }
-                   throw new Error(`Server Error (${res.status})`);
-              }
-              
-              const data = await res.json();
-              
-              if (data.success && data.token) {
-                  console.log("🔓 TOKEN ACQUIRED. RELOADING...");
-                  localStorage.setItem('otp_admin_token', data.token);
-                  window.location.reload();
-              } else {
-                  throw new Error("INVALID CREDENTIALS");
-              }
-          } catch (e) {
-              console.warn("🔒 LOGIN FAILED:", e.message);
-              
-              if(errorMsg) {
-                  errorMsg.style.display = 'block';
-                  errorMsg.textContent = `[!] ${e.message}`;
-                  errorMsg.style.animation = 'none';
-                  errorMsg.offsetHeight; 
-                  errorMsg.style.animation = 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both';
-              }
-              input.value = '';
-              input.focus();
-          } finally {
-              if(btn) {
-                  btn.textContent = "EXECUTE";
-                  btn.disabled = false;
-              }
-          }
-      };
     </script>
 </body>
 </html>

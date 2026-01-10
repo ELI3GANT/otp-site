@@ -55,27 +55,8 @@ const limiter = rateLimit({
 // 5. Body Parsing
 app.use(bodyParser.json());
 
-// --- CACHE CONTROL FOR STATIC ASSETS ---
-const staticOptions = {
-    dotfiles: 'ignore',
-    etag: true,
-    extensions: ['html', 'js', 'css', 'png', 'jpg', 'gif', 'svg'],
-    index: 'index.html',
-    maxAge: '1d', // Cache for 1 day
-    redirect: false,
-    setHeaders: function (res, path, stat) {
-        if (path.endsWith('.html')) {
-            // Never cache HTML files to ensure updates are seen immediately
-            res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        } else {
-            res.set('x-timestamp', Date.now());
-        }
-    }
-};
-
-app.use(express.static(__dirname, staticOptions));
-
 // --- API ROUTES ---
+// Defined BEFORE static files to ensure they take precedence
 
 // 1. Auth Route
 app.post('/api/auth/login', (req, res) => {
@@ -205,6 +186,27 @@ app.post('/api/admin/delete-post', verifyToken, async (req, res) => {
     }
 });
 
+// --- CACHE CONTROL & STATIC ASSETS ---
+// Served AFTER API to avoid conflict (e.g. 405 on POST to static)
+const staticOptions = {
+    dotfiles: 'ignore',
+    etag: true,
+    extensions: ['html', 'js', 'css', 'png', 'jpg', 'gif', 'svg'],
+    index: 'index.html',
+    maxAge: '1d', // Cache for 1 day
+    redirect: false,
+    setHeaders: function (res, path, stat) {
+        if (path.endsWith('.html')) {
+            // Never cache HTML files to ensure updates are seen immediately
+            res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        } else {
+            res.set('x-timestamp', Date.now());
+        }
+    }
+};
+
+app.use(express.static(__dirname, staticOptions));
+
 // --- FALLBACK ROUTE ---
 // Serve 404 for any unknown API routes specifically
 app.use('/api', (req, res) => {
@@ -218,7 +220,7 @@ app.use((req, res) => {
 
 // --- START SERVER ---
 const server = app.listen(port, () => {
-    console.log(`\n🚀 OTP SECURE SERVER V3.2 ONLINE`);
+    console.log(`\n🚀 OTP SECURE SERVER V3.2.1 ONLINE`);
     console.log(`🔒 Security Headers: ENABLED`);
     console.log(`📦 Compression: ENABLED`);
     console.log(`🔑 Auth System: JWT ENABLED`);
