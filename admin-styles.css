@@ -405,31 +405,34 @@ button {
 
 /* --- PREMIUM POST LIST (Revamped) --- */
 /* --- PREMIUM POST LIST (High-Tech Log Style) --- */
+/* --- PREMIUM POST LIST (High-Tech Log Style) --- */
 .post-row {
     background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-left: 2px solid transparent; /* Default hidden */
-    border-radius: 8px; /* Sharper corners for tech feel */
-    padding: 14px 20px;
+    border-left: 3px solid transparent; /* Thickened for visibility */
+    border-radius: 6px; 
+    padding: 16px 20px;
     margin-bottom: 8px;
     align-items: center;
-    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: all 0.3s ease;
     position: relative;
     display: grid; 
-    grid-template-columns: 1fr auto auto;
-    gap: 20px;
+    grid-template-columns: minmax(200px, 1fr) auto auto; /* More robust space allocation */
+    gap: 24px;
 }
 
 .post-row:hover {
     background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
     border-color: rgba(255, 255, 255, 0.2);
-    transform: translateX(4px);
+    transform: translateX(2px);
 }
 
-/* Specific Style for LIVE posts */
+/* Specific Style for LIVE posts - Using safer selector strategy */
+.post-row.live-row, 
 .post-row:has(.status-live) {
     border-left-color: #00ffaa;
-    box-shadow: -5px 0 15px -5px rgba(0, 255, 170, 0.1);
+    box-shadow: -8px 0 20px -8px rgba(0, 255, 170, 0.15);
+    background: linear-gradient(90deg, rgba(0,255,170,0.02) 0%, rgba(255,255,255,0.01) 100%);
 }
 
 .post-title { 
