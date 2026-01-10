@@ -158,9 +158,12 @@
 
     <header class="admin-header" id="adminHeader">
         <h1>OTP COMMAND <span style="font-size: 0.5em; opacity: 0.5; margin-left: 10px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px;">SECURE</span></h1>
-        <div style="font-size: 0.7rem; color: #666; font-family: monospace;">V3.6 PROXY ACTIVE</div>
-        <div class="nav-links" style="margin-left: auto;">
-            <button onclick="logout()" aria-label="Logout from admin panel" style="background: transparent; border: 1px solid #333; color: #666; font-size: 0.7rem; padding: 8px 12px; width: auto;">LOGOUT</button>
+        
+        <div class="nav-links" style="margin-left: auto; display: flex; gap: 10px;">
+            <button onclick="toggleAdminTheme()" aria-label="Toggle Theme" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 1.2rem; padding: 6px 10px; width: auto; line-height: 1;">
+                🌗
+            </button>
+            <button onclick="logout()" aria-label="Logout" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.7rem; padding: 8px 12px; width: auto;">LOGOUT</button>
         </div>
     </header>
   
@@ -421,6 +424,18 @@
                if(slugInput) slugInput.value = slug;
           });
       }
+
+      // THEME CONTROL
+      window.toggleAdminTheme = function() {
+          const html = document.documentElement;
+          const current = html.getAttribute('data-theme');
+          const next = current === 'light' ? 'dark' : 'light';
+          
+          if(next === 'light') html.setAttribute('data-theme', 'light');
+          else html.removeAttribute('data-theme');
+          
+          localStorage.setItem('theme', next);
+      };
 
       // CRITICAL: HYBRID LOGIN LOGIC
       // Tries Server First (Secure) -> Falls back to Local (Static)
