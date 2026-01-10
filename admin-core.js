@@ -78,8 +78,13 @@
             const clockEl = document.getElementById('liveClock');
             if (clockEl) {
                 const isStatic = state.token === 'static-bypass-token';
-                const statusTag = isStatic ? '<span style="color:#ff8800">[LEGACY]</span>' : '<span style="color:var(--admin-success)">[NODE:LIVE]</span>';
+                const apiBase = localStorage.getItem('otp_api_base') || '';
+                const isRemote = apiBase.startsWith('http') && !apiBase.includes('localhost');
                 
+                let statusTag = '<span style="color:var(--admin-success)">[NODE:LIVE]</span>';
+                if (isStatic) statusTag = '<span style="color:#ff8800">[LEGACY]</span>';
+                else if (isRemote) statusTag = '<span style="color:#00ffaa">[SATELLITE]</span>';
+
                 setInterval(() => {
                     const now = new Date();
                     const timeStr = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
@@ -92,10 +97,12 @@
             const cloudG = document.getElementById('cloudGemini');
             const cloudC = document.getElementById('cloudClaude');
             const cloudGr = document.getElementById('cloudGroq');
+            const satUrl = document.getElementById('satelliteUrl');
             if(cloudOA) cloudOA.value = localStorage.getItem('cloud_openai') || '';
             if(cloudG) cloudG.value = localStorage.getItem('cloud_gemini') || '';
             if(cloudC) cloudC.value = localStorage.getItem('cloud_claude') || '';
             if(cloudGr) cloudGr.value = localStorage.getItem('cloud_groq') || '';
+            if(satUrl) satUrl.value = localStorage.getItem('otp_api_base') || '';
 
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);

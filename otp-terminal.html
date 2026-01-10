@@ -273,11 +273,21 @@
   
                 <div id="aiStatus" role="status" aria-live="polite" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px;"></div>
 
-                <!-- CLOUD OVERRIDE (For Mobile/Legacy) -->
+                <!-- SYSTEM & NEURAL SETTINGS (For Mobile/Live) -->
                 <div style="margin-top: 15px; border-top: 1px dashed #333; padding-top: 15px;">
-                    <button type="button" onclick="document.getElementById('cloudSettings').style.display = document.getElementById('cloudSettings').style.display==='none'?'block':'none'" style="background: transparent; border: 1px solid #333; color: #555; font-size: 0.6rem; padding: 4px 8px; width: auto;">☁️ NEURAL API SETTINGS (MOBILE)</button>
+                    <button type="button" onclick="document.getElementById('cloudSettings').style.display = document.getElementById('cloudSettings').style.display==='none'?'block':'none'" style="background: transparent; border: 1px solid #333; color: #555; font-size: 0.6rem; padding: 4px 8px; width: auto;">🛰️ SYSTEM & NEURAL SETTINGS</button>
                     <div id="cloudSettings" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-                        <p style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 8px;">Enable AI on mobile by pasting your keys here.</p>
+                        
+                        <!-- NEW: SATELLITE SERVER LINK -->
+                        <div style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px;">
+                            <label style="font-size: 0.65rem; color: var(--accent); display: block; margin-bottom: 4px;">SECURE SATELLITE URL (REMOTE BACKEND)</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="satelliteUrl" placeholder="https://your-api.vercel.app" onchange="localStorage.setItem('otp_api_base', this.value)" style="font-size: 0.7rem; padding: 8px; flex: 1; color: var(--admin-success); font-family: monospace;">
+                            </div>
+                            <p style="font-size: 0.55rem; color: #555; margin-top: 4px;">Link your Vercel/Node backend to exit Legacy Mode on mobile.</p>
+                        </div>
+
+                        <p style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 8px;">DIRECT NEURAL CLOUD (If server is offline)</p>
                         <div class="row" style="gap: 10px;">
                             <div class="input-group" style="flex: 1;">
                                 <label style="font-size: 0.6rem;">OPENAI KEY</label>
