@@ -289,7 +289,7 @@ app.use((req, res) => {
 
 // --- START SERVER ---
 const server = app.listen(port, () => {
-    console.log(`\n🚀 OTP SECURE SERVER V1.0.0 ONLINE`);
+    console.log(`\n🚀 OTP SECURE SERVER V1.2.0 ONLINE`);
     console.log(`🔒 Security Headers: ENABLED`);
     console.log(`📦 Compression: ENABLED`);
     console.log(`🔑 Auth System: JWT ENABLED`);

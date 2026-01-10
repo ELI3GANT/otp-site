@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V1.0.0 (RELEASE)
+ * ADMIN CORE V1.2.0 (RELEASE)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Server-side Auth, Secure API Proxy, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V1.0.0 RELEASE: Boot sequence initiated...");
+    console.log("🚀 ADMIN CORE V1.2.0 RELEASE: Boot sequence initiated...");
 
     // 0. CONFIGURATION
     const CONFIG = {
