@@ -127,9 +127,63 @@
                 }
             });
 
+            // 7. SYNC SYSTEM STATE (Persistence)
+            fetchSystemState();
+
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
             updateDiagnostics('db', 'CONNECTION FAILED', '#ff4444');
+        }
+    }
+
+    // --- SYSTEM STATE SYNC ---
+    async function fetchSystemState() {
+        try {
+            const { data, error } = await state.client
+                .from('posts')
+                .select('content')
+                .eq('slug', 'system-global-state')
+                .single();
+
+            if (error || !data) return;
+
+            const config = JSON.parse(data.content);
+            console.log("📡 DASHBOARD SYNC:", config);
+
+            // Sync Maintenance
+            const maintEl = document.getElementById('status-maintenance');
+            if (maintEl && config.maintenance) {
+                const isOn = config.maintenance === 'on';
+                maintEl.textContent = isOn ? 'ACTIVE' : 'OFFLINE';
+                maintEl.style.color = isOn ? 'var(--admin-success)' : 'var(--admin-danger)';
+            }
+
+            // Sync Visuals
+            const visEl = document.getElementById('status-visuals');
+            if (visEl && config.visuals) {
+                const isHi = config.visuals === 'high';
+                visEl.textContent = isHi ? 'HIGH-FI' : 'PERF-MODE';
+                visEl.style.color = isHi ? 'var(--admin-success)' : 'var(--accent2)';
+            }
+
+            // Sync Kursor
+            const kurEl = document.getElementById('status-kursor');
+            if (kurEl && config.kursor) {
+                const isOn = config.kursor === 'on';
+                kurEl.textContent = isOn ? 'ACTIVE' : 'DISABLED';
+                kurEl.style.color = isOn ? 'var(--admin-success)' : 'var(--admin-muted)';
+            }
+
+            // Sync Theme (Optional - Admin has local toggle, but Live Site follows this)
+            const themeEl = document.getElementById('status-theme');
+            if (themeEl && config.theme) {
+                const isLight = config.theme === 'light';
+                themeEl.textContent = isLight ? 'DAY-MODE' : 'NIGHT-MODE';
+                themeEl.style.color = isLight ? '#ffaa00' : 'var(--accent2)';
+            }
+
+        } catch (e) {
+            console.warn("State Sync Failed:", e);
         }
     }
 
