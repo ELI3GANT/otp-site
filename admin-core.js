@@ -115,7 +115,22 @@
             if(cloudG) cloudG.value = localStorage.getItem('cloud_gemini') || '';
             if(cloudC) cloudC.value = localStorage.getItem('cloud_claude') || '';
             if(cloudGr) cloudGr.value = localStorage.getItem('cloud_groq') || '';
-            if(satUrl) satUrl.value = localStorage.getItem('otp_api_base') || '';
+            
+            // Satellite URL: Load & Validate
+            if(satUrl) {
+                const storedUrl = localStorage.getItem('otp_api_base') || '';
+                satUrl.value = storedUrl;
+                
+                satUrl.addEventListener('change', (e) => {
+                    let val = e.target.value.trim();
+                    if (val && !val.startsWith('http')) val = 'https://' + val;
+                    if (val.endsWith('/')) val = val.slice(0, -1);
+                    
+                    e.target.value = val;
+                    localStorage.setItem('otp_api_base', val);
+                    showToast("SATELLITE LINK UPDATED");
+                });
+            }
 
             // 6. SITE COMMAND UPLINK (Realtime)
             state.siteChannel = state.client.channel('site_state');
@@ -1066,18 +1081,27 @@
                 }
                 else if (provider === 'gemini') {
                     const gemModel = model || 'gemini-2.5-flash';
-                    const endpoints = ['v1', 'v1beta'];
+                    const endpoints = ['v1beta', 'v1'];
                     let gemSuccess = false;
                     for (const v of endpoints) {
                         try {
-                            const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudKey}`, {
+                            const payload = { 
+                                contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }] 
+                            };
+                            // Add Native JSON Mode for v1beta
+                            if (v === 'v1beta') {
+                                payload.generationConfig = { response_mime_type: "application/json" };
+                            }
+
+                            const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${geminiModel}:generateContent?key=${cloudKey}`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }] })
+                                body: JSON.stringify(payload)
                             });
                             const raw = await res.json();
                             if(!raw.error) {
-                                aiResult = JSON.parse(raw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim());
+                                const text = raw.candidates[0].content.parts[0].text;
+                                aiResult = JSON.parse(text.replace(/```json|```/g, '').trim());
                                 gemSuccess = true; break;
                             }
                         } catch(e) {}

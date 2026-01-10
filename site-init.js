@@ -590,7 +590,7 @@ setTimeout(window.OTP.initLiveEditor, 500);
         navToggle.addEventListener('click', () => {
             const isOpen = navDrawer.classList.contains('open');
             navDrawer.classList.toggle('open');
-            navToggle.setAttribute('aria-expanded', !isOpen);
+            navToggle.setAttribute('aria-expanded', (!isOpen).toString());
         });
         drawerLinks.forEach(link => {
             link.addEventListener('click', () => {

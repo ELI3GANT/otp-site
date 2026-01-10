@@ -124,10 +124,12 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             
             const geminiModel = model || 'gemini-2.5-flash';
             const payload = {
-                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nUSER INSTRUCTION: Output RAW JSON ONLY. No markdown blocks. Generate post titled "${title}" based on prompt: "${prompt}". Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }]
+                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nGenerate post titled "${title}" based on prompt: "${prompt}". Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }],
+                generationConfig: { response_mime_type: "application/json" }
             };
 
-            const endpoints = ['v1', 'v1beta'];
+            // JSON Mode is best supported on v1beta
+            const endpoints = ['v1beta', 'v1'];
             let lastErr = "";
             let success = false;
 
@@ -142,6 +144,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                     const data = await apiRes.json();
                     if (!data.error) {
                         const text = data.candidates[0].content.parts[0].text;
+                        // With native JSON mode, we shouldn't need regex replacement, but keeping it for safety
                         result = JSON.parse(text.replace(/```json|```/g, '').trim());
                         success = true;
                     } else { lastErr = data.error.message; }
