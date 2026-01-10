@@ -1887,7 +1887,7 @@
         content.textContent = "FETCHING SCHEMA...";
 
         try {
-            const res = await fetch('/DEPLOY_V1.sql');
+            const res = await fetch('/DEPLOY_V1.3.sql');
             if(!res.ok) throw new Error("Failed to load schema file.");
             cachedSqlSchema = await res.text();
             content.textContent = cachedSqlSchema;

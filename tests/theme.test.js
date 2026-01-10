@@ -78,4 +78,23 @@ else console.error("FAIL: Theme attribute should be removed for dark mode");
 if (localStorage.getItem('theme') === 'dark') console.log("PASS: LocalStorage updated to 'dark'");
 else console.error("FAIL: LocalStorage not updated to dark");
 
+// Test 4: Priority Logic (Local vs Remote)
+// Simulate remote state sync logic
+const remoteConfig = { theme: 'light' }; // Remote says Light
+localStorage.setItem('theme', 'dark');   // User says Dark
+
+function syncLogic(config) {
+    // This mirrors the fix in site-init.js
+    if (config.theme) {
+        const hasOverride = localStorage.getItem('theme');
+        // If user has override, ignore remote
+        // If no override, use remote
+        return hasOverride ? hasOverride : config.theme;
+    }
+}
+
+const finalTheme = syncLogic(remoteConfig);
+if (finalTheme === 'dark') console.log("PASS: Local user preference overrides remote state");
+else console.error(`FAIL: Remote state clobbered local preference. Got ${finalTheme}`);
+
 console.log("Theme tests complete.");

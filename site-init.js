@@ -344,7 +344,10 @@ window.OTP.initRealtimeState = function() {
                 
                 // Apply Theme
                 if (config.theme) {
-                    window.OTP.setTheme(config.theme);
+                    const hasOverride = localStorage.getItem('theme');
+                    if (!hasOverride) {
+                        window.OTP.setTheme(config.theme);
+                    }
                     localStorage.setItem('last_global_theme', config.theme);
                 }
             }
