@@ -957,6 +957,46 @@
     };
 
     // --- SITE COMMAND PRO LOGIC ---
+    // 4.8 PERSIST STATE HELPER
+    async function persistSystemState(key, value) {
+        try {
+            // Fetch current state object first
+            let { data: current } = await state.client
+                .from('posts')
+                .select('content')
+                .eq('slug', 'system-global-state')
+                .single();
+
+            let config = {};
+            if (current && current.content) {
+                try { config = JSON.parse(current.content); } catch (e) {}
+            } else {
+                // If it doesn't exist, we must create it (first time run)
+                // We'll handle creation via upsert logic below if needed, 
+                // but for now let's assume we just need to get the object to update it.
+            }
+
+            config[key] = value;
+
+            // Updated Upsert logic specifically for the config post
+            const { error } = await state.client
+                .from('posts')
+                .upsert({ 
+                    slug: 'system-global-state',
+                    title: 'SYSTEM CONFIG [DO NOT DELETE]',
+                    excerpt: 'Global persistent state for OTP Site Command Pro.',
+                    content: JSON.stringify(config),
+                    published: false, // Keep hidden from blog feed
+                    category: 'System'
+                }, { onConflict: 'slug' });
+
+            if (error) console.error("Persist Error:", error);
+
+        } catch (e) {
+            console.error("State Persistence Failed:", e);
+        }
+    }
+
     window.toggleSiteControl = async function(type) {
         if(!state.siteChannel) return;
         const statusEl = document.getElementById(`status-${type}`);
@@ -966,6 +1006,8 @@
         if (type === 'maintenance') {
             const newState = statusEl.textContent === 'OFFLINE' ? 'on' : 'off';
             await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'maintenance', value: newState } });
+            persistSystemState('maintenance', newState); // PERSIST
+            
             statusEl.textContent = newState === 'on' ? 'ACTIVE' : 'OFFLINE';
             statusEl.style.color = newState === 'on' ? 'var(--admin-success)' : 'var(--admin-danger)';
             showToast(`MAINTENANCE ${newState.toUpperCase()} SENT`);
@@ -976,6 +1018,8 @@
             const isHiFi = statusEl.textContent === 'HIGH-FI';
             const next = isHiFi ? 'low' : 'high';
             await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'visuals', value: next } });
+            persistSystemState('visuals', next); // PERSIST
+
             statusEl.textContent = next === 'high' ? 'HIGH-FI' : 'PERF-MODE';
             statusEl.style.color = next === 'high' ? 'var(--admin-success)' : 'var(--accent2)';
             showToast(`VISUAL QUALITY: ${next.toUpperCase()}`);
@@ -986,6 +1030,8 @@
             const isActive = statusEl.textContent === 'ACTIVE';
             const next = isActive ? 'off' : 'on';
             await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'kursor', value: next } });
+            persistSystemState('kursor', next); // PERSIST
+
             statusEl.textContent = next === 'on' ? 'ACTIVE' : 'DISABLED';
             statusEl.style.color = next === 'on' ? 'var(--admin-success)' : 'var(--admin-muted)';
             showToast(`CURSOR SYSTEM: ${next.toUpperCase()}`);

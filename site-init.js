@@ -154,6 +154,48 @@ window.OTP.initRealtimeState = function() {
     if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
     const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
     
+    // 8.1 Fetch Remote State on Load (Sticky Config)
+    (async function() {
+        try {
+            const { data, error } = await client
+                .from('posts')
+                .select('content')
+                .eq('slug', 'system-global-state')
+                .single();
+            
+            if (data && data.content) {
+                const config = JSON.parse(data.content);
+                console.log("📡 REMOTE STATE SYNC:", config);
+                
+                // Apply Maintenance
+                if (config.maintenance === 'on') {
+                    document.body.innerHTML = `
+                        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; font-family: 'Space Grotesk', sans-serif; text-align: center; padding: 20px;">
+                            <h1 style="font-size: 3rem; margin-bottom: 10px;">SYSTEM MAINTENANCE</h1>
+                            <p style="opacity: 0.5; letter-spacing: 2px;">WE ARE CURRENTLY CALIBRATING THE FEED. STANDBY.</p>
+                            <div style="margin-top: 30px; width: 40px; height: 1px; background: #333;"></div>
+                        </div>
+                    `;
+                    return; // Stop further init
+                }
+
+                // Apply Visuals
+                if (config.visuals) {
+                    document.documentElement.setAttribute('data-fx-intensity', config.visuals);
+                    window.FX_INTENSITY = config.visuals;
+                    const canvas = document.getElementById('cursor-canvas');
+                    if(canvas) canvas.style.display = config.visuals === 'high' ? 'block' : 'none';
+                }
+                
+                 // Apply Kursor
+                if (config.kursor) {
+                    const kNodes = document.querySelectorAll('.kursor, .kursor-child');
+                    kNodes.forEach(n => n.style.opacity = config.kursor === 'on' ? '1' : '0');
+                }
+            }
+        } catch(e) { console.error("Config Sync Error:", e); }
+    })();
+
     // Listen for Site Commands (Broadcast/Maintenance/Theme)
     const channel = client.channel('site_state');
     
