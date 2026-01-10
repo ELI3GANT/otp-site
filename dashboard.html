@@ -15,6 +15,18 @@
 </head>
 
 <body class="">
+    <!-- SYSTEM STATUS BAR -->
+    <div class="system-status-bar" style="background: #000; border-bottom: 1px solid var(--admin-border); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 0.7rem; color: #666; position: sticky; top: 0; z-index: 2000;">
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <span style="display: flex; align-items: center; gap: 5px;"><span class="status-dot-mini" style="width: 6px; height: 6px; background: var(--admin-success); border-radius: 50%; box-shadow: 0 0 5px var(--admin-success);"></span> NODE: SECURE</span>
+            <span style="opacity: 0.5;">|</span>
+            <span id="liveClock">00:00:00 UTC</span>
+        </div>
+        <div style="display: flex; gap: 15px; filter: grayscale(1);">
+            <span>LATENCY: 14MS</span>
+            <span class="desktop-only">ENCRYPTION: AES-256</span>
+        </div>
+    </div>
 
     <!-- AUTH CHECK: Redirect if no token -->
     <script>

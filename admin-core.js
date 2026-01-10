@@ -74,6 +74,15 @@
             // Load Posts for Manager & Stats
             fetchPosts();
 
+            // Live Clock Service (Dashboard Edition)
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) {
+                setInterval(() => {
+                    const now = new Date();
+                    clockEl.textContent = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
+                }, 1000);
+            }
+
         } catch (e) {
             console.error("🔥 CONNECTION FAILED:", e);
             updateDiagnostics('db', 'CONNECTION FAILED', '#ff4444');
