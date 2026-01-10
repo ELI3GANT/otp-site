@@ -138,41 +138,70 @@
     
     // 4.7 EDIT POST LOGIC
     window.loadPostForEdit = async function(id) {
-        let post = postsCache ? postsCache.find(p => p.id === id) : null;
-        if(!post) return;
-
-        document.getElementById('postIdInput').value = post.id;
-        document.getElementById('titleInput').value = post.title;
-        document.getElementById('slugInput').value = post.slug;
-        document.getElementById('imageUrl').value = post.image_url || '';
-        document.getElementById('urlInput').value = post.image_url || '';
-        document.getElementById('catInput').value = post.category || 'Strategy';
-        document.getElementById('authorInput').value = post.author || 'OTP Admin';
-        document.getElementById('excerptInput').value = post.excerpt || '';
-        document.getElementById('contentArea').value = post.content || '';
-        document.getElementById('seoTitle').value = post.seo_title || '';
-        document.getElementById('seoDesc').value = post.seo_desc || '';
-        document.getElementById('viewsInput').value = post.views || 0;
-        document.getElementById('pubToggle').checked = post.published;
-
-        const submitBtn = document.getElementById('submitBtn');
-        if(submitBtn) {
-            submitBtn.textContent = "UPDATE BROADCAST";
-            submitBtn.style.background = "var(--accent)"; 
-            submitBtn.style.color = "#fff";
-        }
+        showToast("FETCHING POST DATA...");
         
-        document.getElementById('postForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        
-        // Update Word Count (New Feature)
-        const content = document.getElementById('contentArea');
-        if(content) {
-             content.dispatchEvent(new Event('input')); // Trigger counter update
-             // Optional: Focus explicitly if needed
-             // content.focus(); 
-        }
+        try {
+            // Fetch FULL data for this specific post
+            const { data: post, error } = await state.client
+                .from('posts')
+                .select('*')
+                .eq('id', id)
+                .single();
 
-        showToast("POST LOADED FOR EDITING");
+            if(error) throw error;
+            if(!post) throw new Error("Post not found");
+
+            // Populate Form
+            document.getElementById('postIdInput').value = post.id;
+            document.getElementById('titleInput').value = post.title || '';
+            document.getElementById('slugInput').value = post.slug || '';
+            
+            // Handle Image - Populate both fields for flexibility
+            const img = post.image_url || '';
+            document.getElementById('imageUrl').value = img;
+            document.getElementById('urlInput').value = img;
+            
+            // Show Preview if image exists
+            const prevImg = document.getElementById('previewImg');
+            const prevDiv = document.getElementById('imagePreview');
+            if(img && prevImg && prevDiv) {
+                 prevImg.src = img;
+                 prevDiv.style.display = 'block';
+            }
+
+            document.getElementById('catInput').value = post.category || 'Strategy';
+            document.getElementById('authorInput').value = post.author || 'OTP Admin';
+            document.getElementById('excerptInput').value = post.excerpt || '';
+            document.getElementById('contentArea').value = post.content || '';
+            
+            // SEO
+            document.getElementById('seoTitle').value = post.seo_title || '';
+            document.getElementById('seoDesc').value = post.seo_desc || '';
+            document.getElementById('viewsInput').value = post.views || 0;
+            document.getElementById('pubToggle').checked = post.published;
+
+            // Update UI State
+            const submitBtn = document.getElementById('submitBtn');
+            if(submitBtn) {
+                submitBtn.textContent = "UPDATE BROADCAST";
+                submitBtn.style.background = "var(--accent)"; 
+                submitBtn.style.color = "#fff";
+            }
+            
+            document.getElementById('postForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Update Word Count
+            const content = document.getElementById('contentArea');
+            if(content) {
+                 content.dispatchEvent(new Event('input')); 
+            }
+
+            showToast("DATA LOADED");
+
+        } catch(err) {
+            console.error("Edit Load Error:", err);
+            showToast("LOAD FAILED: " + err.message);
+        }
     };
 
     window.resetForm = function() {
