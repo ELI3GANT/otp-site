@@ -92,7 +92,7 @@
     // --- AUTH UTILS ---
     window.logout = function() {
         localStorage.removeItem('otp_admin_token');
-        window.location.href = 'admin.html';
+        window.location.href = 'portal-gate.html';
     };
 
     // --- POST MANAGER & STATS LOGIC ---
@@ -771,16 +771,17 @@
         }
 
         try {
-            // Absolute URL to avoid 'string pattern' errors in some environments
             const apiUrl = window.location.origin + '/api/ai/generate';
+            const authToken = (state.token || '').trim();
             
-            console.log(`📡 Transmitting AI Request to: ${apiUrl}`);
+            console.log("AI DEBUG: URL=" + apiUrl);
+            console.log("AI DEBUG: Token Length=" + authToken.length);
 
             const res = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${state.token}`
+                    'Authorization': 'Bearer ' + authToken
                 },
                 body: JSON.stringify({ 
                     prompt, 

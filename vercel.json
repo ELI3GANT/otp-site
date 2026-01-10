@@ -6,7 +6,7 @@
       "use": "@vercel/node"
     },
     {
-      "src": "admin.html",
+      "src": "portal-gate.html",
       "use": "@vercel/static"
     },
     {

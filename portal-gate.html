@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OTP // SECURE GATEWAY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="admin-styles.css?v=4.0">
+    <style>
+        /* Specific Gatekeeper Overrides */
+        body { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden; 
+            background: var(--admin-bg);
+        }
+        
+        .gatekeeper-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        /* Use shared styles, but add specific noise for valid login visuals */
+        .bg-noise {
+            position: fixed; inset: 0; opacity: 0.05; pointer-events: none; z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-noise"></div>
+
+    <div class="gatekeeper-wrapper">
+        <div class="terminal-window">
+            <div class="terminal-body" style="text-align: center;">
+                <img src="assets/otp_v2.png" class="logo" alt="OTP" style="width: 60px; height: 60px; object-fit: contain; margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(112,0,255,0.4));">
+                <h1>SECURE UPLINK</h1>
+                <div style="font-size: 0.75rem; color: var(--admin-muted); margin-bottom: 30px; letter-spacing: 1px;">V3.7 PROXY <span class="blink">_</span></div>
+
+                <form class="auth-box" onsubmit="event.preventDefault(); attemptLogin();">
+                    <div class="input-group">
+                        <input type="password" id="passcode" class="gate-input" placeholder="••••" maxlength="10" autocomplete="off" autofocus>
+                    </div>
+                    <button type="submit" id="loginBtn" style="width: 100%;">AUTHENTICATE</button>
+                </form>
+
+                <div id="errorMsg" class="error" style="color: var(--admin-danger); font-size: 0.8rem; margin-top: 15px; display: none;">ACCESS DENIED</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. THEME INIT
+        (function() {
+            const saved = localStorage.getItem('theme');
+            if(saved === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            
+            if(next === 'light') html.setAttribute('data-theme', 'light');
+            else html.removeAttribute('data-theme');
+            
+            localStorage.setItem('theme', next);
+        }
+
+        // 2. AUTO-REDIRECT IF ALREADY LOGGED IN
+        if(localStorage.getItem('otp_admin_token')) {
+            window.location.href = 'otp-terminal.html';
+        }
+
+        async function attemptLogin() {
+            const input = document.getElementById('passcode');
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('errorMsg');
+            const pass = input.value;
+
+            // Reset UI
+            err.style.display = 'none';
+            btn.textContent = "VERIFYING...";
+            btn.disabled = true;
+
+            const FALLBACK_PASS = 'otp2026';
+
+            try {
+                // A. SERVER CHECK (Preferred)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s Timeout
+
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ passcode: pass }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if(res.ok) {
+                    const data = await res.json();
+                    if(data.success && data.token) {
+                        saveAndRedirect(data.token);
+                        return;
+                    }
+                }
+                
+                throw new Error("Server Reject");
+
+            } catch (e) {
+                console.log("Server auth failed, trying static fallback...");
+                
+                // B. STATIC FALLBACK (Universal Login)
+                if(pass === FALLBACK_PASS) {
+                    saveAndRedirect('static-bypass-token');
+                } else {
+                    showError("INVALID PASSCODE");
+                }
+            }
+        }
+
+        function saveAndRedirect(token) {
+            localStorage.setItem('otp_admin_token', token);
+            const btn = document.getElementById('loginBtn');
+            btn.style.background = '#00ffaa';
+            btn.style.color = '#000';
+            btn.textContent = "ACCESS GRANTED";
+            setTimeout(() => {
+                window.location.href = 'otp-terminal.html';
+            }, 500);
+        }
+
+        function showError(msg) {
+            const err = document.getElementById('errorMsg');
+            const btn = document.getElementById('loginBtn');
+            const input = document.getElementById('passcode');
+            
+            err.textContent = `[!] ${msg}`;
+            err.style.display = 'block';
+            
+            btn.disabled = false;
+            btn.textContent = "AUTHENTICATE";
+            
+            input.value = '';
+            input.focus();
+        }
+    </script>
+</body>
+</html>

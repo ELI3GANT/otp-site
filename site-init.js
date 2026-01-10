@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     (function injectThemeToggle() {
         if (window.OTP_THEME_TOGGLE_INJECTED) return;
         // Don't inject on Admin/Dashboard (they handle it manually)
-        if (window.location.pathname.includes('dashboard.html') || window.location.pathname.includes('admin.html')) return;
+        if (window.location.pathname.includes('otp-terminal.html') || window.location.pathname.includes('portal-gate.html')) return;
         
         window.OTP_THEME_TOGGLE_INJECTED = true;
 
