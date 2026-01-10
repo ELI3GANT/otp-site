@@ -544,6 +544,19 @@ button:focus-visible, a:focus-visible {
     padding: 15px; /* Safety padding */
 }
 
+.modal-content {
+    background: var(--admin-panel);
+    border: 1px solid var(--admin-border);
+    border-radius: 16px;
+    width: 95%; /* Mobile default */
+    max-width: 800px;
+    box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+    position: relative;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
 /* MEDIA LIBRARY MODAL */
 .media-browser {
     width: 100%;

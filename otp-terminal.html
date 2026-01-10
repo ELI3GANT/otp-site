@@ -550,6 +550,8 @@
                    if(slug && bar) {
                        bar.style.display = 'flex';
                        disp.textContent = `https://onlytrueperspective.tech/journal/${slug}`;
+                   } else if (bar) {
+                       bar.style.display = 'none';
                    }
                }
           });
