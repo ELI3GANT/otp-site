@@ -191,6 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- THEME TOGGLE UI ---
     (function injectThemeToggle() {
         if (window.OTP_THEME_TOGGLE_INJECTED) return;
+        // Don't inject on Admin/Dashboard (they handle it manually)
+        if (window.location.pathname.includes('dashboard.html') || window.location.pathname.includes('admin.html')) return;
+        
         window.OTP_THEME_TOGGLE_INJECTED = true;
 
         const isLight = document.documentElement.getAttribute('data-theme') === 'light';
