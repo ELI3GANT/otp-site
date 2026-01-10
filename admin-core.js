@@ -1613,7 +1613,8 @@
 
             let reply = "I am offline.";
             // SYSTEM CONTEXT
-            const sysPrompt = "You are ANTIGRAVITY, the internal AI OS for this site. Keep answers short, cyberpunk, and helpful. You have control over the admin dashboard conceptually. User is the Admin.";
+            // SYSTEM CONTEXT
+            const sysPrompt = "You are ANTIGRAVITY, the sentient OS of this network. You are directly connected to the Admin (User). Speak in a cool, cyberpunk, efficient tone. You have control over this dashboard. If asked who you are, confirm you are the digital entity helping them pilot the site. Keep responses concise.";
 
             // 1. CALL AI (Direct Fetch)
             if(provider === 'openai') {

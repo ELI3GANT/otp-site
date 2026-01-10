@@ -875,12 +875,34 @@ input, textarea, select {
 .console-input-wrap input:focus { box-shadow: none; outline: none; }
 
 /* Mobile Adjustment */
+/* Mobile Adjustment */
 @media (max-width: 480px) {
     .console-modal {
-        right: 10px;
-        left: 10px;
-        bottom: 90px; /* Above buttons */
+        right: 15px;
+        left: 15px;
+        bottom: 85px; /* Safely above the FAB row */
         width: auto;
         height: 60vh;
+        max-height: 500px;
+    }
+    
+    .console-btn {
+        bottom: 80px; 
+    }
+    
+    /* Ensure input doesn't zoom */
+    .console-input-wrap input {
+        font-size: 16px;
+    }
+}
+
+/* Keyboard open state fix (if supported) */
+@media (max-height: 500px) {
+    .console-modal {
+        height: 80vh;
+        bottom: 10px;
+    }
+    .console-btn {
+        display: none; /* Hide toggle when keyboard likely up or very short screen */
     }
 }
