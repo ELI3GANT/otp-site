@@ -1,3 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /otp-terminal.html
+Disallow: /portal-gate.html
+Disallow: /admin-core.js
+Disallow: /admin-styles.css
 Sitemap: https://onlytrueperspective.tech/sitemap.xml
