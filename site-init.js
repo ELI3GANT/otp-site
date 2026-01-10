@@ -377,6 +377,12 @@ window.OTP.initRealtimeState = function() {
         if (type === 'theme') {
             window.OTP.setTheme(value);
             localStorage.setItem('last_global_theme', value);
+            
+            // Sync Toggle Icons
+            if (typeof window.OTP.updateAllToggles === 'function') {
+                window.OTP.updateAllToggles(value);
+            }
+
             // Visual transition
             if (typeof gsap !== 'undefined') {
                 gsap.fromTo('body', { opacity: 0.5, scale: 0.98 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" });
@@ -575,7 +581,7 @@ function initSite() {
         const currentTheme = isLight ? 'light' : 'dark';
         
         // Helper: Update all toggle buttons on page
-        const updateAllToggles = (theme) => {
+        window.OTP.updateAllToggles = (theme) => {
             const icon = window.OTP.getThemeIcon(theme);
             document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
                 // Determine if it's the mobile one (has text) or desktop (icon only) based on class
@@ -586,6 +592,7 @@ function initSite() {
                 setTimeout(() => {
                     if (isMobileBtn) {
                         btn.innerHTML = icon + '<span style="margin-left:10px; font-weight:600; font-size: 0.9rem;">Switch Theme</span>';
+                        btn.style.background = theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
                     } else {
                         btn.innerHTML = icon;
                     }
@@ -601,7 +608,7 @@ function initSite() {
             
             window.OTP.setTheme(newTheme);
             localStorage.setItem('theme', newTheme);
-            updateAllToggles(newTheme);
+            window.OTP.updateAllToggles(newTheme);
         };
 
         // Create Main Toggle (Desktop)
@@ -633,7 +640,7 @@ function initSite() {
             mobileToggle.style.width = '100%';
             mobileToggle.style.borderRadius = '12px';
             mobileToggle.style.justifyContent = 'center';
-            mobileToggle.style.background = 'rgba(255,255,255,0.05)';
+            mobileToggle.style.background = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
             mobileToggle.innerHTML = window.OTP.getThemeIcon(currentTheme) + '<span style="margin-left:10px; font-weight:600; font-size: 0.9rem;">Switch Theme</span>';
             
             mobileToggle.addEventListener('click', handleToggle);
