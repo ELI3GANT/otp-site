@@ -123,11 +123,12 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             
             const geminiModel = model || 'gemini-1.5-flash';
             const payload = {
-                contents: [{ parts: [{ text: `${systemPrompt}\n\nUser Input: Generate post titled "${title}" based on prompt: "${prompt}"` }] }],
+                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nUser Input: Generate post titled "${title}" based on prompt: "${prompt}"` }] }],
                 generationConfig: { response_mime_type: "application/json" }
             };
 
-            let apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+            // Using v1 stable for better compatibility across keys
+            let apiRes = await fetch(`https://generativelanguage.googleapis.com/v1/models/${geminiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)

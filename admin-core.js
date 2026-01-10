@@ -810,7 +810,8 @@
                     handleAIResponse(JSON.parse(raw.choices[0].message.content));
                 } else {
                     const gemModel = model || 'gemini-1.5-flash';
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${gemModel}:generateContent?key=${cloudGemini}`, {
+                    // Use v1 for stable production keys
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${gemModel}:generateContent?key=${cloudGemini}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
