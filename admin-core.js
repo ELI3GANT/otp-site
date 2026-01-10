@@ -815,8 +815,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: `You are a professional blog writer. Return JSON ONLY. Generate post titled "${title}" based on: ${prompt}. Archetype: ${archetypeInput ? archetypeInput.value : 'technical'}. Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }],
-                            generationConfig: { response_mime_type: "application/json" }
+                            contents: [{ parts: [{ text: `You are a professional blog writer. Return RAW JSON ONLY. No markdown wrappers. Generate post titled "${title}" based on: ${prompt}. Archetype: ${archetypeInput ? archetypeInput.value : 'technical'}. Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }]
                         })
                     });
                     const raw = await res.json();

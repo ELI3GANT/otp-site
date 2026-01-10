@@ -122,9 +122,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             if (!process.env.GEMINI_API_KEY) throw new Error("Gemini Key not configured on server.");
             
             const geminiModel = model || 'gemini-1.5-flash';
-            const payload = {
-                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nUser Input: Generate post titled "${title}" based on prompt: "${prompt}"` }] }],
-                generationConfig: { response_mime_type: "application/json" }
+                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nUSER INSTRUCTION: Output RAW JSON ONLY. No markdown blocks. Generate post titled "${title}" based on prompt: "${prompt}". Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }]
             };
 
             // Using v1 stable for better compatibility across keys
