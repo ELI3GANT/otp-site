@@ -111,6 +111,11 @@ h1, h2, h3, h4 {
     overflow: hidden;
 }
 
+html[data-theme="light"] .stat-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f2f2f7 100%);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
 .stat-card:hover {
     transform: translateY(-2px);
     border-color: var(--admin-accent);
