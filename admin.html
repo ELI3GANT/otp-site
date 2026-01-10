@@ -422,7 +422,77 @@
           });
       }
 
+      // CRITICAL: HYBRID LOGIN LOGIC
+      // Tries Server First (Secure) -> Falls back to Local (Static)
+      window.unlockChannel = async function() {
+          const input = document.getElementById('gatePass');
+          const btn = document.querySelector('.gate-btn');
+          const errorMsg = document.getElementById('gateError');
 
+          if (!input) return;
+          const passcode = input.value;
+          
+          if(btn) {
+              btn.textContent = "VERIFYING...";
+              btn.disabled = true;
+          }
+
+          // 1. LOCAL CHECK (Instant Access for Static Hosts)
+          const LOCAL_PASS = 'otp2026';
+          
+          try {
+              // Try Server First with short timeout
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+
+              const res = await fetch('/api/auth/login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ passcode }),
+                  signal: controller.signal
+              });
+              clearTimeout(timeoutId);
+
+              if (!res.ok) {
+                   if(res.status === 401) throw new Error("ACCESS DENIED");
+                   throw new Error("SERVER_OFFLINE");
+              }
+              
+              const data = await res.json();
+              if (data.success && data.token) {
+                  console.log("🔓 SERVER TOKEN ACQUIRED");
+                  localStorage.setItem('otp_admin_token', data.token);
+                  window.location.reload();
+                  return;
+              }
+
+          } catch (e) {
+              console.warn("🔐 Server Auth Failed / Offline:", e.message);
+              
+              // 2. STATIC FALLBACK
+              if (passcode === LOCAL_PASS) {
+                  console.log("🔓 STATIC BACKUP UNLOCK");
+                  localStorage.setItem('otp_admin_token', 'static-bypass-token');
+                  if(btn) btn.textContent = "ACCESS GRANTED";
+                  setTimeout(() => window.location.reload(), 500);
+                  return;
+              }
+              
+              if(errorMsg) {
+                  errorMsg.style.display = 'block';
+                  errorMsg.textContent = `[!] INVALID PASSCODE`;
+                  errorMsg.style.animation = 'none';
+                  errorMsg.offsetHeight; 
+                  errorMsg.style.animation = 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both';
+              }
+              input.value = '';
+              input.focus();
+              if(btn) {
+                  btn.textContent = "EXECUTE";
+                  btn.disabled = false;
+              }
+          }
+      };
     </script>
 </body>
 </html>
