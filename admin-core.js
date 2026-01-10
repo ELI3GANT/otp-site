@@ -786,27 +786,52 @@
 
         try {
             const authToken = (state.token || '').trim();
-            const cloudOpenAI = localStorage.getItem('cloud_openai');
-            const cloudGemini = localStorage.getItem('cloud_gemini');
-            const cloudClaude = localStorage.getItem('cloud_claude');
-            const cloudGroq = localStorage.getItem('cloud_groq');
+            const personalKeys = {
+                openai: localStorage.getItem('cloud_openai'),
+                gemini: localStorage.getItem('cloud_gemini'),
+                anthropic: localStorage.getItem('cloud_claude'),
+                groq: localStorage.getItem('cloud_groq')
+            };
             
             const sysPrompt = `You are a professional blog writer for a high-tech media brand. Output RAW JSON ONLY. No markdown blocks. Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }`;
             const userPrompt = `Generate post titled "${title}" based on: ${prompt}. Archetype: ${archetypeInput ? archetypeInput.value : 'technical'}.`;
 
-            // --- MODE SELECTION: PROXY VS DIRECT ---
-            if (authToken === 'static-bypass-token') {
-                if (provider === 'openai' && !cloudOpenAI) throw new Error("LEGACY MODE: OpenAI key missing.");
-                if (provider === 'gemini' && !cloudGemini) throw new Error("LEGACY MODE: Gemini key missing.");
-                if (provider === 'anthropic' && !cloudClaude) throw new Error("LEGACY MODE: Anthropic key missing.");
-                if (provider === 'groq' && !cloudGroq) throw new Error("LEGACY MODE: Groq key missing.");
+            // --- STRATEGY: TRY SERVER PROXY FIRST (PREFER SECURE HUB) ---
+            let aiResult = null;
+            let usedDirect = false;
+
+            if (authToken !== 'static-bypass-token') {
+                try {
+                    if(status) { status.innerHTML = `<span class="blink">📡 CONTACTING SECURE HUB...</span>`; }
+                    const base = localStorage.getItem('otp_api_base') || window.location.origin;
+                    const res = await fetch(base + '/api/ai/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
+                        body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        aiResult = data.data;
+                    } else {
+                        console.warn("Secure Hub Failed/Unauthorized. Checking Cloud Failover.");
+                    }
+                } catch (e) {
+                    console.warn("Secure Hub Offline. Checking Cloud Failover.");
+                }
+            }
+
+            // --- FAILOVER: TRY DIRECT CLOUD LINK ---
+            if (!aiResult) {
+                usedDirect = true;
+                const cloudKey = personalKeys[provider];
+                if (!cloudKey) throw new Error(`Neural Link Blocked: Server Hub is offline and no personal key found for ${provider.toUpperCase()} in Cloud Settings.`);
                 
                 if(status) { status.innerHTML = `<span class="blink">🚀 DIRECT CLOUD LINK ACTIVE...</span>`; }
 
                 if (provider === 'openai') {
                     const res = await fetch('https://api.openai.com/v1/chat/completions', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudOpenAI}` },
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
                         body: JSON.stringify({
                             model: 'gpt-4o',
                             messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }],
@@ -815,12 +840,12 @@
                     });
                     const raw = await res.json();
                     if(raw.error) throw new Error(raw.error.message);
-                    handleAIResponse(JSON.parse(raw.choices[0].message.content));
+                    aiResult = JSON.parse(raw.choices[0].message.content);
                 } 
                 else if (provider === 'anthropic') {
                     const res = await fetch('https://api.anthropic.com/v1/messages', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'x-api-key': cloudClaude, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+                        headers: { 'Content-Type': 'application/json', 'x-api-key': cloudKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
                         body: JSON.stringify({
                             model: 'claude-3-5-sonnet-20240620',
                             max_tokens: 4000,
@@ -829,12 +854,12 @@
                     });
                     const raw = await res.json();
                     if(raw.error) throw new Error(raw.error.message);
-                    handleAIResponse(JSON.parse(raw.content[0].text));
+                    aiResult = JSON.parse(raw.content[0].text);
                 }
                 else if (provider === 'groq') {
                     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudGroq}` },
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
                         body: JSON.stringify({
                             model: 'llama-3.1-70b-versatile',
                             messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }],
@@ -843,61 +868,37 @@
                     });
                     const raw = await res.json();
                     if(raw.error) throw new Error(raw.error.message);
-                    handleAIResponse(JSON.parse(raw.choices[0].message.content));
+                    aiResult = JSON.parse(raw.choices[0].message.content);
                 }
                 else if (provider === 'gemini') {
-                    // SMART PROBE LOGIC (2026 CALIBRATED)
                     const gemModel = model || 'gemini-2.5-flash';
                     const endpoints = ['v1', 'v1beta'];
-                    let success = false;
-                    let lastErr = "";
-
+                    let gemSuccess = false;
                     for (const v of endpoints) {
-                        if (success) break;
                         try {
-                            if(status) { status.innerHTML = `<span class="blink">📡 PROBING GEMINI (${v})...</span>`; }
-                            const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudGemini}`, {
+                            const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudKey}`, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }] })
                             });
                             const raw = await res.json();
                             if(!raw.error) {
-                                handleAIResponse(JSON.parse(raw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim()));
-                                success = true;
-                            } else { lastErr = `${v}: ${raw.error.message}`; }
-                        } catch(e) { lastErr = `${v}: ${e.message}`; }
+                                aiResult = JSON.parse(raw.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim());
+                                gemSuccess = true; break;
+                            }
+                        } catch(e) {}
                     }
-
-                    if(!success) throw new Error(`Neural Bridge Failed. Final Report: ${lastErr}. Tip: Check if your key supports the ${gemModel} series.`);
+                    if(!gemSuccess) throw new Error("Gemini Neural Bridge Failed. Check key permissions.");
                 }
-            } else {
-                // SERVER PROXY MODE
-                const base = localStorage.getItem('otp_api_base') || window.location.origin;
-                const apiUrl = base + '/api/ai/generate';
-                
-                const res = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                    body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title })
-                });
-
-                const contentType = res.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) throw new Error("Server returned non-JSON. System might be in Legacy Mode.");
-
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || `Server Error ${res.status}`);
-                handleAIResponse(data.data);
             }
 
-            function handleAIResponse(data) {
-                if (!data) return;
-                if(data.content) document.getElementById('contentArea').value = data.content;
-                if(data.excerpt) document.getElementById('excerptInput').value = data.excerpt;
-                if(data.seo_title) document.getElementById('seoTitle').value = data.seo_title;
-                if(data.seo_desc) document.getElementById('seoDesc').value = data.seo_desc;
+            if (aiResult) {
+                if(aiResult.content) document.getElementById('contentArea').value = aiResult.content;
+                if(aiResult.excerpt) document.getElementById('excerptInput').value = aiResult.excerpt;
+                if(aiResult.seo_title) document.getElementById('seoTitle').value = aiResult.seo_title;
+                if(aiResult.seo_desc) document.getElementById('seoDesc').value = aiResult.seo_desc;
                 
-                showToast("NEURAL CONTENT RECEIVED");
+                showToast(usedDirect ? "NEURAL BRIDGE: DIRECT CLOUD" : "NEURAL BRIDGE: SECURE HUB");
                 if(status) { status.textContent = "GENERATION COMPLETE"; status.style.color = "var(--success)"; }
             }
 

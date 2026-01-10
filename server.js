@@ -148,10 +148,45 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             }
             if(!success) throw new Error(`Gemini Probe Failed: ${lastErr}`);
 
-        } else if (provider === 'groq' || provider === 'anthropic') {
-            throw new Error(`Cloud Only Provider: Please enter your key in 'Neural Cloud Settings' on the dashboard to use ${provider}. Server-side proxy for this provider is coming soon.`);
+        } else if (provider === 'anthropic') {
+            if (!process.env.ANTHROPIC_API_KEY) throw new Error("Claude Key not configured on server.");
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'x-api-key': process.env.ANTHROPIC_API_KEY,
+                    'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify({
+                    model: model || 'claude-3-5-sonnet-20240620',
+                    max_tokens: 4000,
+                    messages: [{ role: 'user', content: `${systemPrompt}\n\n${title}: ${prompt}` }]
+                })
+            });
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+            result = JSON.parse(data.content[0].text);
+
+        } else if (provider === 'groq') {
+            if (!process.env.GROQ_API_KEY) throw new Error("Groq Key not configured on server.");
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+                body: JSON.stringify({
+                    model: model || 'llama-3.1-70b-versatile',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: "user", content: `Generate post: "${title}". ${prompt}` }
+                    ],
+                    response_format: { type: "json_object" }
+                })
+            });
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+            result = JSON.parse(data.choices[0].message.content);
+
         } else {
-            throw new Error("Invalid provider");
+            throw new Error("Invalid provider requested.");
         }
 
         res.json({ success: true, data: result });
