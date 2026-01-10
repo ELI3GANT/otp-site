@@ -11,9 +11,8 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css?v=3.0" />
-  <link rel="stylesheet" href="./admin-styles.css?v=4.1" />
+  <link rel="stylesheet" href="./admin-styles.css?v=4.2" />
 </head>
-
 <body class="">
     <!-- SYSTEM STATUS BAR -->
     <div class="system-status-bar" style="background: #000; border-bottom: 1px solid var(--admin-border); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 0.7rem; color: #666; position: sticky; top: 0; z-index: 2000;">
@@ -25,9 +24,8 @@
         <div style="display: flex; gap: 15px; filter: grayscale(1);">
             <span>LATENCY: 14MS</span>
             <span class="desktop-only">ENCRYPTION: AES-256</span>
-        </div>
     </div>
-
+    
     <!-- AUTH CHECK: Redirect if no token -->
     <script>
         if(!localStorage.getItem('otp_admin_token')) {
@@ -39,82 +37,8 @@
     <!-- ... (rest of modal code) -->
 
     <!-- ... -->
-    <script>
-      // ... (existing script) ...
-      window.unlockChannel = async function() {
-          // console.log("🔓 Bootstrap Login Initiated...");
-          
-          const input = document.getElementById('gatePass');
-          const btn = document.querySelector('.gate-btn');
-          const errorMsg = document.getElementById('gateError');
-
-          if (!input) return;
-          const passcode = input.value;
-          
-          if(btn) {
-              btn.textContent = "VERIFYING...";
-              btn.disabled = true;
-          }
-
-          try {
-              const res = await fetch('/api/auth/login', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ passcode })
-              });
-
-              if (!res.ok) {
-                   if(res.status === 429) {
-                        alert("FAILED: Server says Rate Limited (429). Please wait 1 min.");
-                        throw new Error("RATE LIMIT (429)");
-                   }
-                   if(res.status === 405) {
-                        alert("ERROR (405): Backend Not Reachable. \nIf testing live, ensure your host supports Node.js (server.js).");
-                        throw new Error("BACKEND OFFLINE (405)");
-                   }
-                   if(res.status === 401) {
-                        // alert("FAILED: Server says Wrong Password.");
-                        throw new Error("ACCESS DENIED (Wrong Passcode)");
-                   }
-                   throw new Error(`Server Error (${res.status})`);
-              }
-              
-              const data = await res.json();
-              
-              if (data.success && data.token) {
-                  console.log("🔓 TOKEN ACQUIRED. RELOADING...");
-                  localStorage.setItem('otp_admin_token', data.token);
-                  window.location.reload();
-              } else {
-                  throw new Error("INVALID CREDENTIALS");
-              }
-          } catch (e) {
-              console.warn("🔒 LOGIN FAILED:", e.message);
-              
-              if(errorMsg) {
-                  errorMsg.style.display = 'block';
-                  errorMsg.textContent = `[!] ${e.message}`;
-                  errorMsg.style.animation = 'none';
-                  errorMsg.offsetHeight; 
-                  errorMsg.style.animation = 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both';
-              }
-              input.value = '';
-              input.focus();
-          } finally {
-              if(btn) {
-                  btn.textContent = "EXECUTE";
-                  btn.disabled = false;
-              }
-          }
-      };
-    </script>
-
-                 <div id="gateError" class="error-msg" style="display:none;">
-                     [!] ACCESS DENIED: INVALID CREDENTIALS
-                 </div>
-             </div>
-        </div>
-        <div class="bg-noise"></div>
+    <!-- CORE DASHBOARD -->
+    <div class="bg-noise"></div>
     </div>
 
     <!-- MEDIA LIBRARY MODAL -->
@@ -188,6 +112,38 @@
                  <p class="stat-num" style="color:var(--admin-muted)">V4.1</p>
                  <span class="stat-change">STABLE</span>
              </div>
+        </section>
+
+        <!-- LIVE SITE COMMANDS (NEW) -->
+        <section class="admin-section" style="margin-top: 30px;">
+            <div class="section-label">00 // SITE COMMAND PRO</div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 25px;">
+                
+                <div class="cmd-tile" id="cmd-maintenance" onclick="toggleSiteControl('maintenance')" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
+                    <div style="font-size: 1.2rem; margin-bottom: 5px;">🛑</div>
+                    <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Maintenance</div>
+                    <div id="status-maintenance" style="font-size: 0.75rem; color: var(--admin-danger); font-weight: bold; margin-top: 4px;">OFFLINE</div>
+                </div>
+
+                <div class="cmd-tile" id="cmd-broadcast" onclick="openBroadcastPrompt()" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
+                    <div style="font-size: 1.2rem; margin-bottom: 5px;">📡</div>
+                    <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Broadcast</div>
+                    <div id="status-broadcast" style="font-size: 0.75rem; color: var(--admin-muted); font-weight: bold; margin-top: 4px;">STANDBY</div>
+                </div>
+
+                <div class="cmd-tile" id="cmd-theme" onclick="toggleLiveTheme()" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
+                    <div style="font-size: 1.2rem; margin-bottom: 5px;">🌑</div>
+                    <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Site Theme</div>
+                    <div id="status-theme" style="font-size: 0.75rem; color: var(--accent2); font-weight: bold; margin-top: 4px;">NIGHT-MODE</div>
+                </div>
+
+                <div class="cmd-tile" onclick="refreshLiveSite()" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
+                    <div style="font-size: 1.2rem; margin-bottom: 5px;">🔄</div>
+                    <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Cache Purge</div>
+                    <div style="font-size: 0.75rem; color: var(--admin-success); font-weight: bold; margin-top: 4px;">EXECUTE</div>
+                </div>
+
+            </div>
         </section>
         
         <form id="postForm" aria-label="Create or edit a broadcast">
@@ -499,7 +455,7 @@
     <script src="site-init.js" defer></script>
 
     <!-- 3. ADMIN CORE (Defer for perf) -->
-    <script src="admin-core.js?v=4.0"></script>
+    <script src="admin-core.js?v=4.2"></script>
 
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>

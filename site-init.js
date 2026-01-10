@@ -150,35 +150,48 @@ window.OTP.initTheme = function() {
 // Run init immediately
 window.OTP.initTheme();
 
-// 8. REALTIME PRESENCE (Track Active Users)
-window.OTP.initPresence = function() {
-    // Only run if Supabase is available and config is loaded
+// 8. REALTIME SITE STATE (Sync Dashboard Controls)
+window.OTP.initRealtimeState = function() {
     if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
-    
-    // Create a client for presence tracking (separate or reuse if available)
-    // We create new here safely since it's light
     const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
     
-    const room = client.channel('system', {
-        config: {
-            presence: {
-                key: 'user-' + Math.random().toString(36).substring(7),
-            },
-        },
-    });
+    // Listen for Site Commands (Broadcast/Maintenance/Theme)
+    const channel = client.channel('site_state');
+    
+    channel.on('broadcast', { event: 'command' }, (payload) => {
+        console.log("📡 INCOMING COMMAND:", payload);
+        const { type, value } = payload;
+        
+        if (type === 'maintenance') {
+            if (value === 'on') {
+                document.body.innerHTML = `
+                    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; font-family: 'Space Grotesk', sans-serif; text-align: center; padding: 20px;">
+                        <h1 style="font-size: 3rem; margin-bottom: 10px;">SYSTEM MAINTENANCE</h1>
+                        <p style="opacity: 0.5; letter-spacing: 2px;">WE ARE CURRENTLY CALIBRATING THE FEED. STANDBY.</p>
+                        <div style="margin-top: 30px; width: 40px; height: 1px; background: #333;"></div>
+                    </div>
+                `;
+            } else { location.reload(); }
+        }
 
+        if (type === 'theme') window.OTP.setTheme(value);
+        if (type === 'refresh') location.reload();
+        if (type === 'alert') alert("BROADCAST: " + value);
+    }).subscribe();
+
+    // Init Presence
+    const room = client.channel('system', {
+        config: { presence: { key: 'user-' + Math.random().toString(36).substring(7) } }
+    });
     room.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-            await room.track({ 
-                online_at: new Date().toISOString(),
-                page: window.location.pathname
-            });
+            await room.track({ online_at: new Date().toISOString(), page: window.location.pathname });
         }
     });
 };
 
 // Init Realtime (Non-blocking)
-setTimeout(window.OTP.initPresence, 2000);
+setTimeout(window.OTP.initRealtimeState, 1000);
 
 // --- VIEW TRACKING LOGIC ---
 window.OTP.trackView = async function(slug) {
