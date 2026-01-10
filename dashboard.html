@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="description" content="OTP Secure Admin Console" />
+  <title>OTP Pocket Command (Secure)</title>
+  
+  <!-- Critical CSS -->
+  <style>body { margin: 0 !important; font-family: 'Space Grotesk', sans-serif; background: var(--bg, #030305); color: var(--text, #fff); }</style>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=3.0" />
+  <link rel="stylesheet" href="./admin-styles.css?v=3.7" />
+</head>
+
+<body class="">
+
+    <!-- AUTH CHECK: Redirect if no token -->
+    <script>
+        if(!localStorage.getItem('otp_admin_token')) {
+            window.location.href = 'admin.html';
+        }
+    </script>
+
+    <!-- MEDIA LIBRARY MODAL -->
+    <!-- ... (rest of modal code) -->
+
+    <!-- ... -->
+    <script>
+      // ... (existing script) ...
+      window.unlockChannel = async function() {
+          // console.log("🔓 Bootstrap Login Initiated...");
+          
+          const input = document.getElementById('gatePass');
+          const btn = document.querySelector('.gate-btn');
+          const errorMsg = document.getElementById('gateError');
+
+          if (!input) return;
+          const passcode = input.value;
+          
+          if(btn) {
+              btn.textContent = "VERIFYING...";
+              btn.disabled = true;
+          }
+
+          try {
+              const res = await fetch('/api/auth/login', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ passcode })
+              });
+
+              if (!res.ok) {
+                   if(res.status === 429) {
+                        alert("FAILED: Server says Rate Limited (429). Please wait 1 min.");
+                        throw new Error("RATE LIMIT (429)");
+                   }
+                   if(res.status === 405) {
+                        alert("ERROR (405): Backend Not Reachable. \nIf testing live, ensure your host supports Node.js (server.js).");
+                        throw new Error("BACKEND OFFLINE (405)");
+                   }
+                   if(res.status === 401) {
+                        // alert("FAILED: Server says Wrong Password.");
+                        throw new Error("ACCESS DENIED (Wrong Passcode)");
+                   }
+                   throw new Error(`Server Error (${res.status})`);
+              }
+              
+              const data = await res.json();
+              
+              if (data.success && data.token) {
+                  console.log("🔓 TOKEN ACQUIRED. RELOADING...");
+                  localStorage.setItem('otp_admin_token', data.token);
+                  window.location.reload();
+              } else {
+                  throw new Error("INVALID CREDENTIALS");
+              }
+          } catch (e) {
+              console.warn("🔒 LOGIN FAILED:", e.message);
+              
+              if(errorMsg) {
+                  errorMsg.style.display = 'block';
+                  errorMsg.textContent = `[!] ${e.message}`;
+                  errorMsg.style.animation = 'none';
+                  errorMsg.offsetHeight; 
+                  errorMsg.style.animation = 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both';
+              }
+              input.value = '';
+              input.focus();
+          } finally {
+              if(btn) {
+                  btn.textContent = "EXECUTE";
+                  btn.disabled = false;
+              }
+          }
+      };
+    </script>
+
+                 <div id="gateError" class="error-msg" style="display:none;">
+                     [!] ACCESS DENIED: INVALID CREDENTIALS
+                 </div>
+             </div>
+        </div>
+        <div class="bg-noise"></div>
+    </div>
+
+    <!-- MEDIA LIBRARY MODAL -->
+    <div id="mediaModal" class="modal-overlay" style="display: none;">
+        <div class="media-browser">
+            <div class="media-header">
+                <h3>// ASSET_LIBRARY <span id="mediaCount" style="opacity: 0.5;">(0)</span></h3>
+                <button onclick="closeMediaLibrary()" class="close-icon">✕</button>
+            </div>
+            <div class="media-grid" id="mediaGrid">
+                <!-- Content injected via JS -->
+                <div class="loader">LOADING ASSETS...</div>
+            </div>
+            <div class="media-footer">
+                <button class="btn-secondary" onclick="closeMediaLibrary()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast">
+        <div class="checkmark-circle">✓</div>
+        <span>ACTION COMPLETE</span>
+    </div>
+
+    <header class="admin-header" id="adminHeader">
+        <h1>OTP COMMAND <span style="font-size: 0.5em; opacity: 0.5; margin-left: 10px; border: 1px solid #333; padding: 2px 6px; border-radius: 4px;">SECURE</span></h1>
+        
+        <div class="nav-links" style="margin-left: auto; display: flex; gap: 10px;">
+            <button onclick="toggleAdminTheme()" aria-label="Toggle Theme" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 1.2rem; padding: 6px 10px; width: auto; line-height: 1;">
+                🌗
+            </button>
+            <button onclick="logout()" aria-label="Logout" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.7rem; padding: 8px 12px; width: auto;">LOGOUT</button>
+        </div>
+    </header>
+  
+    <main class="admin-wrap">
+
+        <!-- DASHBOARD STATS -->
+        <section class="stats-grid" aria-label="Dashboard Statistics">
+             <div class="stat-card">
+                 <h3>VIEWS (24H)</h3>
+                 <p class="stat-num" id="statViews">--</p>
+                 <span class="stat-change positive">SYNCED</span>
+             </div>
+             <div class="stat-card">
+                 <h3>ACTIVE NOW</h3>
+                 <p class="stat-num" id="statLive">--</p>
+                 <span class="stat-pulse" aria-hidden="true"></span>
+             </div>
+             <div class="stat-card">
+                 <h3>SYSTEM</h3>
+                 <p class="stat-num" style="color:var(--success)">ONLINE</p>
+                 <span class="stat-change">V3.6</span>
+             </div>
+        </section>
+        
+        <form id="postForm" aria-label="Create or edit a broadcast">
+  
+            <!-- SECTION: MEDIA -->
+            <section class="input-section">
+                <div class="section-label">01 // Visual Intelligence</div>
+    
+                <div class="input-group">
+                    <div id="imagePreview" style="display:none; border-radius: 12px; overflow: hidden; border: 1px solid var(--stroke); margin-bottom: 15px;">
+                        <img id="previewImg" src="" alt="Post visual preview" loading="lazy" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">
+                    </div>
+                    <div id="fileDetails" style="display: none; padding: 10px; border: 1px dashed var(--stroke); border-radius: 8px; margin-bottom: 10px; font-size: 0.8rem; color: #888;">
+                        <span id="fileNameDisplay"></span> <span id="fileSizeDisplay" style="color: var(--accent);"></span>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="btn-secondary" onclick="document.getElementById('fileInput').click()" style="flex: 1;" aria-label="Upload image or video">Upload Media</button>
+                        <button type="button" class="btn-secondary" onclick="openMediaLibrary()" style="flex: 1;" aria-label="Select from media library">Library</button>
+                        <input type="file" id="fileInput" accept="image/*,video/*" style="display: none">
+                    </div>
+                    <label for="urlInput" class="sr-only">External Media URL</label>
+                    <input type="text" id="urlInput" placeholder="Or Paste URL..." style="border: 1px solid var(--stroke); background: transparent; margin-top: 10px;">
+                    <input type="hidden" name="image_url" id="imageUrl">
+                </div>
+            </section>
+  
+            <!-- SECTION: CORE DATA -->
+            <section class="input-section">
+                <div class="section-label">02 // Core Data</div>
+    
+                <div class="input-group">
+                    <label for="titleInput">Headline</label>
+                    <input type="text" name="title" id="titleInput" placeholder="The Death of 1080p" required>
+                </div>
+    
+                <div class="row">
+                    <div class="input-group">
+                        <label for="slugInput">Slug</label>
+                        <input type="text" name="slug" id="slugInput" placeholder="auto-generated" style="color: var(--accent2);">
+                        <input type="hidden" name="post_id" id="postIdInput"> <!-- Hidden ID for Edits -->
+                    </div>
+                    <div class="input-group">
+                        <label for="catInput">Category</label>
+                        <select name="category" id="catInput">
+                            <option value="Strategy">Strategy</option>
+                            <option value="Tech">Tech</option>
+                            <option value="Production">Production</option>
+                            <option value="Case Study">Case Study</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="input-group">
+                        <label for="authorInput">Author</label>
+                        <input type="text" name="author" id="authorInput" value="OTP Admin">
+                    </div>
+                </div>
+
+                <div class="wrap" style="padding: 10px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                   <div class="status-pill k-hover"><div class="status-dot" id="dbStatusDot"></div> DB LINKED</div>
+                   <div class="status-pill k-hover"><div class="status-dot" id="aiStatusDot"></div> PROXY ACTIVE</div>
+                </div>
+
+                <div id="diagnosticsPanel" style="background: rgba(0,0,0,0.3); border: 1px solid var(--stroke); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #888; font-size: 0.75rem; text-transform: uppercase;">System Diagnostics</h4>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 0.8rem; font-family: monospace;">
+                        <div id="diagDB" style="display: flex; justify-content: space-between;"><span>DATABASE:</span> <span style="color: yellow;">CONNECTING...</span></div>
+                        <div id="diagAuth" style="display: flex; justify-content: space-between;"><span>GATEKEEPER:</span> <span style="color: #ff4444;">LOCKED</span></div>
+                    </div>
+                </div>
+            </section>
+  
+            <!-- AI BRAIN (SECURE) -->
+            <section class="ai-tips">
+                <h4>🤖 SECURE NEURAL GENERATOR</h4>
+                <p style="font-size: 0.8rem; color: #aaa; margin-bottom: 15px;">Powered by Server-Side Proxy. Keys are hidden.</p>
+  
+                <div class="row" style="gap: 12px; margin-bottom: 12px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="aiProvider">AI Provider</label>
+                        <select id="aiProvider" onchange="window.switchProvider(this.value);" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
+                            <option value="openai">OpenAI (GPT-4o)</option>
+                            <option value="gemini">Google Gemini</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="geminiModelGroup" style="display: none; margin-bottom: 12px;">
+                    <div class="input-group">
+                        <label for="geminiModel">Gemini Model Variant</label>
+                        <select id="geminiModel" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
+                            <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                        </select>
+                    </div>
+                </div>
+  
+                <div class="input-group">
+                     <label for="archetype">Post Archetype</label>
+                     <select id="archetype" style="background: rgba(0,0,0,0.2); font-weight: bold; color: var(--accent2);">
+                         <option value="technical">Technical Breakdown</option>
+                         <option value="launch">Visual Launch</option>
+                         <option value="strategy">Business Strategy</option>
+                         <option value="case-study">Case Study</option>
+                     </select>
+                </div>
+
+                <div class="row">
+                    <div class="input-group">
+                         <label for="aiPrompt">Core Concept / Prompt</label>
+                         <textarea id="aiPrompt" placeholder="What is this about? (e.g. Testing the Sony A7SIII in low light)" style="height: 60px;"></textarea>
+                    </div>
+                    <button type="button" id="magicBtn" style="height: 100%; margin-top: 23px; background: linear-gradient(135deg, #7000ff, #ff00ff); color: white;" aria-label="Generate content using AI">⚡ TRANSMIT TO AI</button>
+                </div>
+  
+                <div id="aiStatus" role="status" aria-live="polite" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px;"></div>
+            </section>
+  
+            <!-- SECTION: CONTENT -->
+            <section class="input-section">
+                <div class="section-label">03 // The Meat</div>
+    
+                <div class="input-group">
+                    <label for="excerptInput">Excerpt (Card Summary)</label>
+                    <textarea name="excerpt" id="excerptInput" style="height: 80px;" required placeholder="The short sequence that appears on the feed grid..."></textarea>
+                </div>
+    
+                <div class="input-group">
+                    <label for="contentArea">Full Content (Markdown/HTML)</label>
+                    <textarea name="content" id="contentArea" style="height: 400px; font-family: monospace; font-size: 0.9rem;" required placeholder="Paste your article here or use the generator above..."></textarea>
+                </div>
+            </section>
+  
+            <!-- SECTION: SEO & ANALYTICS -->
+            <section class="input-section">
+                <div class="section-label">04 // Visibility Controls</div>
+                
+                <div class="input-group">
+                    <label for="seoTitle">SEO Meta Title</label>
+                    <input type="text" name="seo_title" id="seoTitle" placeholder="Google optimized title">
+                </div>
+                
+                <div class="input-group">
+                    <label for="seoDesc">SEO Meta Description</label>
+                    <textarea name="seo_desc" id="seoDesc" style="height: 80px;" placeholder="Snippet for search results..."></textarea>
+                </div>
+    
+                <div class="row">
+                   <div class="input-group">
+                       <label for="viewsInput">Initial Views</label>
+                       <input type="number" name="views" id="viewsInput" value="0" placeholder="0">
+                   </div>
+                   <div class="toggle-wrap">
+                       <span class="toggle-label">Live Status</span>
+                       <label class="switch">
+                         <input type="checkbox" name="published" id="pubToggle" checked aria-label="Publish status">
+                         <span class="slider"></span>
+                       </label>
+                   </div>
+                </div>
+            </section>
+  
+            <div style="height: 30px;"></div>
+            
+            <button type="submit" id="submitBtn" style="height: 70px; font-size: 1.2rem; margin-bottom: 20px; background: var(--success); color: #000;" aria-label="Publish post to the live network">COMMENCE BROADCAST</button>
+            
+            <!-- SECTION: MANAGE -->
+            <section class="input-section">
+                <div class="section-label">05 // Active Broadcasts</div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <label for="manualDeleteSlug" class="sr-only">Slug to delete</label>
+                    <input type="text" id="manualDeleteSlug" placeholder="Paste slug to remove (e.g. whats-so-elegant...)" style="flex: 1; padding: 10px; font-size: 0.8rem;">
+                    <button type="button" onclick="deleteBySlug()" style="width: auto; background: var(--admin-danger); color: #fff; padding: 0 20px; font-size: 0.8rem;" aria-label="Delete post by slug">KILL SLUG</button>
+                </div>
+    
+                <div id="postManager" role="region" aria-label="Existing posts" style="background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--stroke); padding: 15px; max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; color: #666; font-size: 0.8rem; padding: 20px;">LOADING TRANSMISSIONS...</div>
+                </div>
+            </section>
+  
+        </form>
+    </main>
+
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div id="deleteModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 20001; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div style="background: #111; border: 1px solid #ff4444; width: 90%; max-width: 400px; padding: 30px; border-radius: 16px; text-align: center; box-shadow: 0 0 60px rgba(255, 68, 68, 0.15);">
+            <div style="font-size: 3rem; margin-bottom: 10px;">⚠️</div>
+            <h3 style="color: #fff; margin: 0 0 10px 0; font-family: 'Space Grotesk', sans-serif; letter-spacing: 1px;">TERMINATE BROADCAST?</h3>
+            <p style="color: #888; font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5;">This action is permanent.<br>The data cannot be recovered.</p>
+            
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button onclick="document.getElementById('deleteModal').style.display='none'" style="background: transparent; border: 1px solid #444; color: #fff; flex: 1;">CANCEL</button>
+                <button id="confirmDeleteBtn" style="background: #ff4444; color: #fff; border: none; flex: 1; box-shadow: 0 5px 20px rgba(255, 68, 68, 0.25);">DELETE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. SUPABASE LIBRARY -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- 2. SITE CONFIG & INIT -->
+    <script src="site-config.js"></script>
+    <script src="site-init.js" defer></script>
+
+    <!-- 3. ADMIN CORE (Defer for perf) -->
+    <script src="admin-core.js?v=3.7"></script>
+
+    <!-- 4. Slug Auto-Gen (Inline for speed) -->
+    <script>
+      // IMMEDIATE UNLOCK CHECK
+      // Runs before admin-core.js to ensure fast dashboard access
+      (function() {
+          const token = localStorage.getItem('otp_admin_token');
+          if(token) {
+              console.log("🔓 Valid Token Found. UI Unlocked.");
+          } else {
+              window.location.href = 'admin.html';
+          }
+      })();
+
+      const titleInput = document.getElementById('titleInput');
+      const slugInput = document.getElementById('slugInput');
+      
+      if(titleInput) {
+          titleInput.addEventListener('input', (e) => {
+               const slug = e.target.value.toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .trim()
+                  .replace(/\s+/g, '-')
+                  .replace(/-+/g, '-');
+               if(slugInput) slugInput.value = slug;
+          });
+      }
+
+      // THEME CONTROL
+      window.toggleAdminTheme = function() {
+          const html = document.documentElement;
+          const current = html.getAttribute('data-theme');
+          const next = current === 'light' ? 'dark' : 'light';
+          
+          if(next === 'light') html.setAttribute('data-theme', 'light');
+          else html.removeAttribute('data-theme');
+          
+          localStorage.setItem('theme', next);
+      };
+    </script>
+</body>
+</html>
