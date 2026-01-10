@@ -449,9 +449,17 @@
           
 
           if(btn) {
-              if(btn.disabled) return; // Prevent double tap
+              if(btn.disabled) return; 
               btn.textContent = "VERIFYING...";
               btn.disabled = true;
+              
+              // Safety Reset: Re-enable after 8s if stuck
+              setTimeout(() => {
+                  if(btn && btn.disabled && btn.textContent === "VERIFYING...") {
+                      btn.disabled = false;
+                      btn.textContent = "EXECUTE";
+                  }
+              }, 8000);
           }
 
           // 1. LOCAL CHECK (Instant Access for Static Hosts)

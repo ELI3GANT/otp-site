@@ -82,67 +82,10 @@
     }
 
     // --- AUTHENTICATION (SERVER SIDE) ---
-    window.unlockChannel = async function() {
-        console.log("🔓 Attempting to unlock channel...");
-        const input = document.getElementById('gatePass');
-        const errorMsg = document.getElementById('gateError');
-        const btn = document.querySelector('.gate-btn');
-
-        if (!input) return;
-        const passcode = input.value;
-        
-        if(btn) {
-            if(btn.disabled) return;
-            btn.textContent = "VERIFYING...";
-            btn.disabled = true;
-        }
-
-        try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ passcode })
-            });
-
-            // Check for HTTP errors first
-            if (!res.ok) {
-                if(res.status === 429) throw new Error("Rate Limited (429). Wait a moment.");
-                if(res.status === 401) throw new Error("Wrong Passcode");
-                throw new Error(`Server Error (${res.status})`);
-            }
-            
-            const data = await res.json();
-            
-            if (data.success && data.token) {
-                console.log("🔓 ACCESS GRANTED");
-                state.token = data.token;
-                localStorage.setItem('otp_admin_token', data.token);
-                unlockUI();
-            } else {
-                throw new Error("Invalid Credentials");
-            }
-        } catch (e) {
-            console.warn("🔒 ACCESS DENIED:", e.message);
-            
-            // Show specific error if possible
-            if(errorMsg) {
-                errorMsg.style.display = 'block';
-                errorMsg.textContent = `[!] DENIED: ${e.message.toUpperCase()}`;
-                
-                errorMsg.style.animation = 'none';
-                errorMsg.offsetHeight; /* trigger reflow */
-                errorMsg.style.animation = 'shake 0.4s cubic-bezier(.36,.07,.19,.97) both';
-            }
-            // alert(e.message); // Too intrusive?
-            input.value = '';
-            input.focus();
-        } finally {
-            if(btn) {
-                btn.textContent = "EXECUTE";
-                btn.disabled = false;
-            }
-        }
-    };
+    // --- AUTHENTICATION (SERVER SIDE) ---
+    // Note: unlockChannel is now defined in admin.html to ensure early loading and hybrid fallback support.
+    // We rely on the global window.unlockChannel there.
+    // Only unlockUI is needed here for state management.
 
     function unlockUI() {
         state.isUnlocked = true;

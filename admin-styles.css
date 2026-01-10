@@ -260,13 +260,25 @@ button {
 .gatekeeper {
     position: fixed;
     inset: 0;
-    background: var(--admin-bg); /* Use Theme BG */
+    background: var(--admin-bg);
     z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 20px;
     transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+    /* Mobile scrolling fix */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto; /* Allow scroll if keyboard covers it */
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure it doesn't get cut off on short screens (keyboard open) */
+@media (max-height: 600px) {
+    .gatekeeper {
+        align-items: flex-start; /* Align top so we can scroll down */
+        padding-top: 40px;
+    }
 }
 
 .terminal-window {
