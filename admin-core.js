@@ -341,9 +341,9 @@
         showToast("FETCHING BROADCAST DATA...");
         
         try {
-            // Fetch FULL data for this specific broadcast
+            // Fetch FULL data for this specific post
             const { data: post, error } = await state.client
-                .from('broadcasts')
+                .from('posts')
                 .select('*')
                 .eq('id', id)
                 .single();
@@ -421,18 +421,18 @@
         const list = document.getElementById('postManager');
         if(!list) return;
 
-        // One-time Realtime Subscription for Broadcasts (Views, Status, etc)
+        // One-time Realtime Subscription for Posts (Views, Status, etc)
         if (state.client && !state.dbSubscription) {
              state.dbSubscription = state.client
-                .channel('broadcasts-changes')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'broadcasts' }, (payload) => {
+                .channel('posts-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
                     if(window.refreshTimeout) clearTimeout(window.refreshTimeout);
                     window.refreshTimeout = setTimeout(() => fetchPosts(true), 500); 
                 })
                 .subscribe();
         }
 
-        // Cache Check (Reduced TTL for active broadcasts)
+        // Cache Check (Reduced TTL for active posts)
         const now = Date.now();
         if (!force && postsCache && (now - lastFetchTime < 2000)) {
             renderPosts(postsCache);
@@ -441,45 +441,46 @@
         }
 
         try {
-            // Filters: Active and from last 3 days
-            const threeDaysAgo = new Date();
-            threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-            
-            const { data: broadcasts, error } = await state.client
-                .from('broadcasts')
-                .select('id, title, created_at, status, views, slug')
-                .eq('status', 'active')
-                .gte('created_at', threeDaysAgo.toISOString())
+            // Fetch ALL posts (no date filter, no status filter so we see drafts too)
+            const { data: posts, error } = await state.client
+                .from('posts')
+                .select('id, title, created_at, published, views, slug')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
             
             // Update Cache
-            postsCache = broadcasts;
+            postsCache = posts;
             lastFetchTime = now;
 
-            renderPosts(broadcasts);
-            updateStats(broadcasts);
+            renderPosts(posts);
+            updateStats(posts);
 
         } catch (err) {
-            console.error("BROADCAST FETCH ERROR:", err);
+            console.error("POST FETCH ERROR:", err);
             if (list.children.length === 0) {
-                 list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">BROADCAST LINK ERROR: ${err.message}</div>`;
+                 list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">LINK ERROR: ${err.message}</div>`;
             }
         }
     }
 
     function updateStats(posts) {
         const statViews = document.getElementById('statViews');
+        // Calculate total views
         const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
         if(statViews) statViews.textContent = totalViews.toLocaleString();
         
-        // Presence is now handled by initDashboardPresence()
-        
+        // Count published
+        const statPublished = document.getElementById('statPublished'); 
+        if(statPublished) {
+            const pubCount = posts.filter(p => p.published).length;
+            statPublished.textContent = pubCount;
+        }
+
         // Render Chart
         renderChart(posts);
     }
-
+    
     // Expose for Theme Toggle
     window.refreshDashboardChart = function() {
         if(postsCache) renderChart(postsCache);
@@ -492,7 +493,7 @@
         
         // Prepare Data: Top 10 Posts by Views
         const sorted = [...posts].sort((a,b) => (b.views || 0) - (a.views || 0)).slice(0, 10);
-        const labels = sorted.map(p => p.title.substring(0, 15) + (p.title.length > 15 ? '...' : ''));
+        const labels = sorted.map(p => (p.title || 'Untitled').substring(0, 15) + ((p.title && p.title.length > 15) ? '...' : ''));
         const data = sorted.map(p => p.views || 0);
 
         if(activityChartInstance) {
@@ -531,7 +532,7 @@
                         callbacks: {
                             title: (items) => {
                                 const idx = items[0].dataIndex;
-                                return sorted[idx].title; // Full title on hover
+                                return sorted[idx].title; 
                             }
                         }
                     }
@@ -559,26 +560,25 @@
         if(!list) return;
 
         if (posts.length === 0) {
-            list.innerHTML = `<div style="text-align: center; color: #666; font-size: 0.8rem; padding: 20px;">NO ACTIVE BROADCASTS</div>`;
+            list.innerHTML = `<div style="text-align: center; color: #666; font-size: 0.8rem; padding: 20px;">NO POSTS FOUND</div>`;
             return;
         }
 
-        list.innerHTML = posts.map(post => `
+        list.innerHTML = posts.map(post => {
+            const isLive = post.published === true;
+            return `
             <div class="post-row">
                 <div style="cursor: pointer; flex: 1;" onclick="loadPostForEdit(${post.id})">
                     <div class="post-title">${post.title || 'Untitled'} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
                     <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span class="theme-active" style="color:var(--admin-success); font-weight:bold;">${post.views || 0}</span> Views</div>
                 </div>
-                <div class="status-badge ${post.status === 'active' ? 'status-live' : 'status-draft'}">
-                    ${(post.status || 'ACTIVE').toUpperCase()}
+                <div class="status-badge ${isLive ? 'status-live' : 'status-draft'}">
+                    ${isLive ? 'LIVE' : 'DRAFT'}
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    ${post.status === 'active' && post.slug ? (() => {
-                        // Static Override Logic
+                    ${isLive && post.slug ? (() => {
                         let postUrl = `/insight.html?slug=${post.slug}`;
                         if (post.slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
-                        if (post.slug.startsWith('insight-post-')) postUrl = `/${post.slug}.html`;
-                        
                         return `
                             <a href="${postUrl}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>
                             <button onclick="copyPostLink('${post.slug}')" title="Copy Link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
@@ -587,7 +587,8 @@
                     <button onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
     
     // Modified Delete to prevent bubble up
@@ -631,13 +632,13 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${state.token}`
                     },
-                    body: JSON.stringify({ id: targetId, table: 'broadcasts' }) // Explicitly tell server to use broadcasts
+                    body: JSON.stringify({ id: targetId, table: 'posts' }) // Explicitly tell server to use posts
                 });
                 
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success) {
-                         showToast("BROADCAST TERMINATED (SECURE)");
+                         showToast("POST TERMINATED (SECURE)");
                          finishDelete();
                          return;
                     }
@@ -647,10 +648,10 @@
             }
 
             // 2. Static Fallback (Client-Side)
-            const { error } = await state.client.from('broadcasts').delete().eq('id', targetId);
+            const { error } = await state.client.from('posts').delete().eq('id', targetId);
             if (error) throw error;
             
-            showToast("BROADCAST TERMINATED (CLIENT)");
+            showToast("POST TERMINATED (CLIENT)");
             finishDelete();
 
         } catch (err) {
@@ -722,7 +723,7 @@
                     image_url: document.getElementById('imageUrl').value || document.getElementById('urlInput').value,
                     excerpt: formData.get('excerpt'),
                     content: formData.get('content'),
-                    status: document.getElementById('pubToggle').checked ? 'active' : 'archived',
+                    published: document.getElementById('pubToggle').checked, // Map to boolean
                     category: formData.get('category'),
                     author: formData.get('author'),
                     seo_title: formData.get('seo_title'),
@@ -736,10 +737,10 @@
                     let result;
                     if (postId) {
                         // UPDATE
-                        result = await state.client.from('broadcasts').update(postData).eq('id', postId);
+                        result = await state.client.from('posts').update(postData).eq('id', postId);
                     } else {
                         // INSERT
-                        result = await state.client.from('broadcasts').insert([postData]);
+                        result = await state.client.from('posts').insert([postData]);
                     }
 
                     if(result.error) throw result.error;
