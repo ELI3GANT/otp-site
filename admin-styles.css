@@ -730,3 +730,10 @@ input, textarea, select {
 .theme-btn:active { transform: scale(0.9); }
 .theme-btn:hover { border-color: var(--admin-accent); }
 
+/* Active State Visual Highlight */
+.theme-btn.theme-active {
+    border-color: #ffaa00;
+    box-shadow: 0 0 15px rgba(255, 170, 0, 0.4);
+    color: #ffaa00;
+}
+

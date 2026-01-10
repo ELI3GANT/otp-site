@@ -568,8 +568,15 @@
       }
 
       // THEME CONTROL
-      // THEME CONTROL
+      window.themeDebounceTimer = null;
+
       window.toggleAdminTheme = function() {
+          if(window.themeDebounceTimer) return;
+          
+          window.themeDebounceTimer = setTimeout(() => {
+              window.themeDebounceTimer = null;
+          }, 500);
+
           const html = document.documentElement;
           const current = html.getAttribute('data-theme');
           const next = current === 'light' ? 'dark' : 'light';
@@ -579,10 +586,12 @@
           
           localStorage.setItem('theme', next);
 
-          // Update Icon
+          // Update Icon & Style
           const btns = document.querySelectorAll('.theme-btn');
           btns.forEach(btn => {
               btn.textContent = next === 'light' ? '☀️' : '🌗';
+              if(next === 'light') btn.classList.add('theme-active');
+              else btn.classList.remove('theme-active');
           });
       };
 
@@ -591,7 +600,10 @@
           const theme = localStorage.getItem('theme');
           if(theme === 'light') {
              const btns = document.querySelectorAll('.theme-btn');
-             btns.forEach(btn => btn.textContent = '☀️');
+             btns.forEach(btn => {
+                 btn.textContent = '☀️';
+                 btn.classList.add('theme-active');
+             });
           }
       })();
     </script>
