@@ -291,6 +291,13 @@
                         <div id="diagAuth" style="display: flex; justify-content: space-between;"><span>GATEKEEPER:</span> <span style="color: var(--admin-danger);">LOCKED</span></div>
                     </div>
                 </div>
+
+                <!-- SECTION: SYSTEM MANAGEMENT (NEW) -->
+                <div class="section-label">03 // System Config</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px;">
+                    <button type="button" onclick="openCategoryManager()" class="btn-secondary" style="font-size: 0.65rem; padding: 10px;">MANAGE CATEGORIES</button>
+                    <button type="button" onclick="openArchetypeManager()" class="btn-secondary" style="font-size: 0.65rem; padding: 10px;">MANAGE ARCHETYPES</button>
+                </div>
             </section>
   
             <!-- AI BRAIN (SECURE) -->
@@ -574,6 +581,82 @@
             </div>
             <div style="padding: 15px; border-top: 1px solid var(--admin-border); text-align: right; background: #111; border-radius: 0 0 16px 16px;">
                 <button onclick="copySqlToClipboard()" style="background: var(--admin-accent); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">COPY SQL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CATEGORY MANAGER MODAL -->
+    <div id="categoryModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>// CATEGORY_MANAGER</h3>
+                <button onclick="document.getElementById('categoryModal').style.display='none'" class="close-icon">✕</button>
+            </div>
+            <div style="padding: 20px;">
+                <form id="categoryForm" onsubmit="event.preventDefault(); saveCategory();" style="margin-bottom: 20px; border-bottom: 1px solid var(--admin-border); padding-bottom: 20px;">
+                    <input type="hidden" id="catId">
+                    <div class="row">
+                        <div class="input-group">
+                            <label>Category Name</label>
+                            <input type="text" id="catName" placeholder="e.g. Innovation" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Slug</label>
+                            <input type="text" id="catSlug" placeholder="innovation" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-secondary" style="width: 100%; background: var(--admin-cyan); color: #000; border: none;">SAVE CATEGORY</button>
+                </form>
+                <div id="categoryList" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Categories injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ARCHETYPE MANAGER MODAL -->
+    <div id="archetypeModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>// ARCHETYPE_MANAGER</h3>
+                <button onclick="document.getElementById('archetypeModal').style.display='none'" class="close-icon">✕</button>
+            </div>
+            <div style="padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Form Side -->
+                <form id="archetypeForm" onsubmit="event.preventDefault(); saveArchetype();">
+                    <input type="hidden" id="archId">
+                    <div class="input-group">
+                        <label>Archetype Name</label>
+                        <input type="text" id="archName" placeholder="Technical Specialist" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Slug</label>
+                        <input type="text" id="archSlug" placeholder="technical" required>
+                    </div>
+                    <div class="input-group">
+                        <label>System Prompt</label>
+                        <textarea id="archPrompt" style="height: 100px; font-size: 0.75rem;" placeholder="You are a..." required></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Tags (comma separated)</label>
+                        <input type="text" id="archTags" placeholder="code, architecture">
+                    </div>
+                    <button type="submit" class="btn-secondary" style="width: 100%; background: var(--admin-accent); color: #fff; border: none;">SAVE ARCHETYPE</button>
+                </form>
+                
+                <!-- List Side -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="archSearch" placeholder="Search archetypes..." oninput="renderArchetypeList()" style="padding: 8px; font-size: 0.75rem;">
+                        <select id="archSort" onchange="renderArchetypeList()" style="width: auto; padding: 8px; font-size: 0.75rem;">
+                            <option value="name">Name</option>
+                            <option value="usage">Usage</option>
+                        </select>
+                    </div>
+                    <div id="archetypeList" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--admin-border); border-radius: 8px;">
+                        <!-- Archetypes injected here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>

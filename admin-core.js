@@ -18,7 +18,9 @@
         client: null,
         isConnected: false,
         isUnlocked: false,
-        token: localStorage.getItem('otp_admin_token') || null // Persist session
+        token: localStorage.getItem('otp_admin_token') || null, // Persist session
+        categories: [],
+        archetypes: []
     };
     window.state = state; // Expose to window for inline scripts
 
@@ -74,6 +76,8 @@
 
             // Load Posts for Manager & Stats
             fetchPosts();
+            fetchCategories();
+            fetchArchetypes();
             
             // Backup Polling (30s) - Realtime handles immediate updates
             setInterval(() => fetchPosts(false), 30000);
@@ -452,6 +456,179 @@
         }
     };
 
+    // --- CATEGORY & ARCHETYPE MANAGEMENT ---
+    
+    async function fetchCategories() {
+        try {
+            const { data, error } = await state.client.from('categories').select('*').order('name');
+            if (error) throw error;
+            state.categories = data;
+            syncCategoryDropdowns();
+        } catch (e) { console.error("Fetch Categories Error:", e); }
+    }
+
+    async function fetchArchetypes() {
+        try {
+            const { data, error } = await state.client.from('ai_archetypes').select('*').order('name');
+            if (error) throw error;
+            state.archetypes = data;
+            syncArchetypeDropdowns();
+        } catch (e) { console.error("Fetch Archetypes Error:", e); }
+    }
+
+    function syncCategoryDropdowns() {
+        const selects = ['catInput']; // Main post category
+        selects.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const current = el.value;
+            el.innerHTML = state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            if (current) el.value = current;
+        });
+    }
+
+    function syncArchetypeDropdowns() {
+        const el = document.getElementById('archetype');
+        if (!el) return;
+        const current = el.value;
+        el.innerHTML = state.archetypes.map(a => `<option value="${a.slug}">${a.name}</option>`).join('');
+        if (current) el.value = current;
+    }
+
+    window.openCategoryManager = function() {
+        document.getElementById('categoryModal').style.display = 'flex';
+        renderCategoryList();
+    };
+
+    window.renderCategoryList = function() {
+        const list = document.getElementById('categoryList');
+        if (!list) return;
+        list.innerHTML = state.categories.map(c => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--admin-border);">
+                <div>
+                    <span style="font-weight: bold; color: var(--admin-cyan);">${c.name}</span>
+                    <span style="font-size: 0.7rem; color: var(--admin-muted); margin-left: 10px;">/${c.slug}</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="editCategory('${c.id}')" style="background: transparent; border: 1px solid var(--admin-muted); color: var(--admin-muted); font-size: 0.6rem; padding: 4px 8px;">EDIT</button>
+                    <button onclick="deleteCategory('${c.id}')" style="background: transparent; border: 1px solid var(--admin-danger); color: var(--admin-danger); font-size: 0.6rem; padding: 4px 8px;">DEL</button>
+                </div>
+            </div>
+        `).join('') || '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">No categories found.</div>';
+    };
+
+    window.saveCategory = async function() {
+        const id = document.getElementById('catId').value;
+        const name = document.getElementById('catName').value.trim();
+        const slug = document.getElementById('catSlug').value.trim();
+
+        if (!name || !slug) return;
+
+        try {
+            let error;
+            if (id) {
+                ({ error } = await state.client.from('categories').update({ name, slug }).eq('id', id));
+            } else {
+                ({ error } = await state.client.from('categories').insert([{ name, slug }]));
+            }
+
+            if (error) throw error;
+            showToast("CATEGORY SAVED");
+            document.getElementById('categoryForm').reset();
+            document.getElementById('catId').value = '';
+            await fetchCategories();
+            renderCategoryList();
+        } catch (e) { showToast("SAVE FAILED: " + e.message); }
+    };
+
+    window.editCategory = function(id) {
+        const c = state.categories.find(cat => cat.id === id);
+        if (!c) return;
+        document.getElementById('catId').value = c.id;
+        document.getElementById('catName').value = c.name;
+        document.getElementById('catSlug').value = c.slug;
+    };
+
+    window.deleteCategory = async function(id) {
+        if (!confirm("Delete this category?")) return;
+        try {
+            const { error } = await state.client.from('categories').delete().eq('id', id);
+            if (error) throw error;
+            showToast("CATEGORY DELETED");
+            await fetchCategories();
+            renderCategoryList();
+        } catch (e) { showToast("DELETE FAILED: " + e.message); }
+    };
+
+    // ARCHETYPE LOGIC
+    window.openArchetypeManager = function() {
+        document.getElementById('archetypeModal').style.display = 'flex';
+        renderArchetypeList();
+    };
+
+    window.renderArchetypeList = function() {
+        const list = document.getElementById('archetypeList');
+        const search = document.getElementById('archSearch').value.toLowerCase();
+        const sort = document.getElementById('archSort').value;
+        if (!list) return;
+
+        let filtered = state.archetypes.filter(a => a.name.toLowerCase().includes(search) || a.slug.toLowerCase().includes(search));
+        
+        if (sort === 'usage') filtered.sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0));
+        else filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+        list.innerHTML = filtered.map(a => `
+            <div style="padding: 12px; border-bottom: 1px solid var(--admin-border); cursor: pointer;" onclick="editArchetype('${a.id}')">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-weight: bold; color: var(--admin-accent);">${a.name}</span>
+                    <span style="font-size: 0.65rem; color: var(--admin-muted);">USES: ${a.usage_count || 0}</span>
+                </div>
+                <div style="font-size: 0.7rem; color: var(--admin-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${a.system_prompt}</div>
+                <div style="display: flex; gap: 4px; margin-top: 6px;">
+                    ${(a.tags || []).map(t => `<span style="font-size: 0.55rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">#${t}</span>`).join('')}
+                </div>
+            </div>
+        `).join('') || '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">No archetypes found.</div>';
+    };
+
+    window.saveArchetype = async function() {
+        const id = document.getElementById('archId').value;
+        const name = document.getElementById('archName').value.trim();
+        const slug = document.getElementById('archSlug').value.trim();
+        const system_prompt = document.getElementById('archPrompt').value.trim();
+        const tags = document.getElementById('archTags').value.split(',').map(t => t.trim()).filter(t => t);
+
+        if (!name || !slug || !system_prompt) return;
+
+        try {
+            let error;
+            if (id) {
+                ({ error } = await state.client.from('ai_archetypes').update({ name, slug, system_prompt, tags }).eq('id', id));
+            } else {
+                ({ error } = await state.client.from('ai_archetypes').insert([{ name, slug, system_prompt, tags }]));
+            }
+
+            if (error) throw error;
+            showToast("ARCHETYPE SAVED");
+            document.getElementById('archetypeForm').reset();
+            document.getElementById('archId').value = '';
+            await fetchArchetypes();
+            renderArchetypeList();
+        } catch (e) { showToast("SAVE FAILED: " + e.message); }
+    };
+
+    window.editArchetype = function(id) {
+        const a = state.archetypes.find(arch => arch.id === id);
+        if (!a) return;
+        document.getElementById('archId').value = a.id;
+        document.getElementById('archName').value = a.name;
+        document.getElementById('archSlug').value = a.slug;
+        document.getElementById('archPrompt').value = a.system_prompt;
+        document.getElementById('archTags').value = (a.tags || []).join(', ');
+    };
+
+    // --- END CATEGORY & ARCHETYPE MANAGEMENT ---
+
     async function fetchPosts(force = false) {
         const list = document.getElementById('postManager');
         if(!list) return;
@@ -741,6 +918,16 @@
 
     // ... (keep surrounding functions) ...
 
+    async function incrementArchetypeUsage(slug) {
+        try {
+            const arch = state.archetypes.find(a => a.slug === slug);
+            if (!arch) return;
+            const newCount = (arch.usage_count || 0) + 1;
+            await state.client.from('ai_archetypes').update({ usage_count: newCount }).eq('slug', slug);
+            await fetchArchetypes(); // Refresh local state
+        } catch (e) { console.error("Track Usage Error:", e); }
+    }
+
     // STARTUP
     function bootstrap() {
         init();
@@ -795,7 +982,8 @@
                     category: formData.get('category'),
                     author: formData.get('author'),
                     seo_title: formData.get('seo_title'),
-                    seo_desc: formData.get('seo_desc')
+                    seo_desc: formData.get('seo_desc'),
+                    archetype_slug: document.getElementById('archetype').value
                 };
                 
                 // If NEW, add created_at
@@ -1144,8 +1332,13 @@
                 groq: localStorage.getItem('cloud_groq')
             };
             
-            const sysPrompt = `You are a professional blog writer for a high-tech media brand. Output RAW JSON ONLY. No markdown blocks. Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }`;
-            const userPrompt = `Generate post titled "${title}" based on: ${prompt}. Archetype: ${archetypeInput ? archetypeInput.value : 'technical'}.`;
+            // DYNAMIC ARCHETYPE SYSTEM
+            const selectedArchSlug = archetypeInput ? archetypeInput.value : 'technical';
+            const archetype = state.archetypes.find(a => a.slug === selectedArchSlug);
+            const baseSystemPrompt = archetype ? archetype.system_prompt : 'You are a professional blog writer.';
+
+            const sysPrompt = `${baseSystemPrompt} Output RAW JSON ONLY. No markdown blocks. Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "...", "image_prompt": "A descriptive prompt for DALL-E 3 visual synthesis" }`;
+            const userPrompt = `Generate post titled "${title}" based on: ${prompt}.`;
 
             // --- STRATEGY: TRY SERVER PROXY FIRST (PREFER SECURE HUB) ---
             let aiResult = null;
@@ -1267,6 +1460,16 @@
                 if(aiResult.seo_desc) document.getElementById('seoDesc').value = aiResult.seo_desc;
                 
                 showToast(usedDirect ? "NEURAL BRIDGE: DIRECT CLOUD" : "NEURAL BRIDGE: SECURE HUB");
+                if(status) { status.textContent = "CONTENT COMPLETE. SYNTHESIZING VISUALS..."; status.style.color = "var(--admin-cyan)"; }
+
+                // --- CHAIN IMAGE GENERATION ---
+                if (aiResult.image_prompt) {
+                    await triggerImageGenerator(aiResult.image_prompt, title);
+                }
+
+                // --- TRACK USAGE ---
+                incrementArchetypeUsage(selectedArchSlug);
+
                 if(status) { status.textContent = "GENERATION COMPLETE"; status.style.color = "var(--success)"; }
             }
 
@@ -1277,6 +1480,46 @@
         } finally {
             btn.textContent = "⚡ TRANSMIT";
             btn.disabled = false;
+        }
+    }
+
+    async function triggerImageGenerator(prompt, title) {
+        try {
+            const base = localStorage.getItem('otp_api_base') || window.location.origin;
+            const res = await fetch(base + '/api/ai/generate-image', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + state.token
+                },
+                body: JSON.stringify({ prompt, title, aspect_ratio: 'landscape' })
+            });
+
+            const data = await res.json();
+            if (data.success && data.url) {
+                document.getElementById('imageUrl').value = data.url;
+                document.getElementById('urlInput').value = data.url;
+                
+                const prevImg = document.getElementById('previewImg');
+                const prevDiv = document.getElementById('imagePreview');
+                if (prevImg && prevDiv) {
+                    prevImg.src = data.url;
+                    prevDiv.style.display = 'block';
+                }
+                
+                // Track DALL-E 3 Cost (Fixed at $0.04 per HD image for this impl)
+                trackAICost('openai', 2000); // Approximation for tracking
+                showToast("VISUAL SYNTHESIS COMPLETE");
+            } else {
+                throw new Error(data.message || "Image Gen Failed");
+            }
+        } catch (e) {
+            console.warn("Image Synthesis Failed, using fallback visual.", e);
+            // Fallback to a nice generic tech image
+            const fallback = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920&auto=format&fit=crop";
+            document.getElementById('imageUrl').value = fallback;
+            document.getElementById('urlInput').value = fallback;
+            showToast("IMAGE GEN FAILED: USING FALLBACK");
         }
     }
 

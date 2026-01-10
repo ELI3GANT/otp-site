@@ -255,6 +255,55 @@ app.post('/api/admin/delete-post', verifyToken, async (req, res) => {
     }
 });
 
+// 4. Secure Image Generation (DALL-E 3 + Supabase Storage)
+app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
+    const { prompt, title, aspect_ratio } = req.body;
+    
+    try {
+        if (!process.env.OPENAI_API_KEY) throw new Error("OpenAI Key missing on server.");
+        if (!supabaseAdmin) throw new Error("Supabase Admin key missing.");
+
+        // 1. Generate via DALL-E 3
+        const aiRes = await fetch('https://api.openai.com/v1/images/generations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` },
+            body: JSON.stringify({
+                model: "dall-e-3",
+                prompt: `High-tech, cinematic, professional photography/render for a brand called 'Only True Perspective'. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. High resolution, 4k. Title reference: ${title}`,
+                n: 1,
+                size: aspect_ratio === 'landscape' ? "1792x1024" : "1024x1024",
+                quality: "hd"
+            })
+        });
+
+        const aiData = await aiRes.json();
+        if (aiData.error) throw new Error(aiData.error.message);
+        const tempUrl = aiData.data[0].url;
+
+        // 2. Fetch image buffer
+        const imgRes = await fetch(tempUrl);
+        const buffer = await imgRes.arrayBuffer();
+
+        // 3. Upload to Supabase Storage (Permanent)
+        const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+        const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+            .from('uploads')
+            .upload(fileName, buffer, { contentType: 'image/png' });
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabaseAdmin.storage
+            .from('uploads')
+            .getPublicUrl(fileName);
+
+        res.json({ success: true, url: publicUrl });
+
+    } catch (error) {
+        console.error("Image Gen Error:", error.stack);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // --- CACHE CONTROL & STATIC ASSETS ---
 // Served AFTER API to avoid conflict (e.g. 405 on POST to static)
 const staticOptions = {
