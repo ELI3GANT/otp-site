@@ -230,6 +230,20 @@ button {
     margin-top: 20px;
 }
 
+/* MOBILE ACTION STACK */
+@media (max-width: 480px) {
+    .action-row-stack {
+        flex-direction: column !important;
+        height: auto !important;
+    }
+    
+    .action-row-stack button {
+        height: 60px !important;
+        width: 100% !important;
+        flex: none !important;
+    }
+}
+
 @media (max-width: 768px) {
     .admin-header {
         padding: 10px 15px;
@@ -645,4 +659,15 @@ input, textarea, select {
 .admin-header h1::before {
     display: none !important;
     content: none !important;
+}
+
+/* UTILITY */
+.desktop-only {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .desktop-only {
+        display: inline-block;
+    }
 }

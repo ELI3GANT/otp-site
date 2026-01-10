@@ -111,12 +111,14 @@
             border: none;
             color: var(--term-green);
             font-family: 'VT323', monospace;
-            font-size: 1.5rem;
+            font-size: 16px; /* Prevents iOS Zoom */
             width: 100%;
             outline: none;
             margin-top: 5px;
             caret-color: transparent; /* custom cursor */
-        }
+        }    
+        
+        input { font-size: 16px !important; }
 
         .login-btn {
             background: var(--term-green);
