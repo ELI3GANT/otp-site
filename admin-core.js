@@ -703,6 +703,7 @@
             btn.style.background = platform === 'x' ? '#333' : 'var(--admin-accent)';
             btn.style.color = '#fff';
             btn.style.border = 'none';
+            btn.style.display = 'flex'; // Preserve flex for icons
         }
         const content = document.getElementById('preview-' + platform);
         if(content) content.style.display = 'block';

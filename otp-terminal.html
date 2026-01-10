@@ -384,9 +384,18 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <div style="font-size: 0.7rem; color: var(--admin-muted); text-transform: uppercase; letter-spacing: 1px;">Network Node Previews</div>
                         <div class="preview-tabs" style="display: flex; gap: 8px;">
-                            <button type="button" onclick="switchPreviewTab('x')" id="tab-x" class="prev-tab active" style="font-size: 0.65rem; padding: 6px 12px; background: #333; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s;">X.COM</button>
-                            <button type="button" onclick="switchPreviewTab('ios')" id="tab-ios" class="prev-tab" style="font-size: 0.65rem; padding: 6px 12px; background: transparent; color: var(--admin-muted); border: 1px solid var(--admin-border); border-radius: 6px; cursor: pointer; transition: 0.2s;">iMESSAGE</button>
-                            <button type="button" onclick="switchPreviewTab('search')" id="tab-search" class="prev-tab" style="font-size: 0.65rem; padding: 6px 12px; background: transparent; color: var(--admin-muted); border: 1px solid var(--admin-border); border-radius: 6px; cursor: pointer; transition: 0.2s;">SEARCH</button>
+                            <button type="button" onclick="switchPreviewTab('x')" id="tab-x" class="prev-tab active" title="X.com Preview" style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; padding: 6px 12px; background: #333; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s;">
+                                <svg viewBox="0 0 24 24" style="width: 12px; height: 12px; fill: currentColor;"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
+                                X.COM
+                            </button>
+                            <button type="button" onclick="switchPreviewTab('ios')" id="tab-ios" class="prev-tab" title="iMessage Preview" style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; padding: 6px 12px; background: transparent; color: var(--admin-muted); border: 1px solid var(--admin-border); border-radius: 6px; cursor: pointer; transition: 0.2s;">
+                                <svg viewBox="0 0 24 24" style="width: 12px; height: 12px; fill: currentColor;"><path d="M12 2C6.477 2 2 6.045 2 11c0 2.224 1.107 4.258 2.943 5.75L4 21l4.89-2.352c.983.23 2.02.352 3.11.352 5.523 0 10-4.045 10-9s-4.477-9-10-9z"></path></svg>
+                                iMESSAGE
+                            </button>
+                            <button type="button" onclick="switchPreviewTab('search')" id="tab-search" class="prev-tab" title="Google Search Preview" style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; padding: 6px 12px; background: transparent; color: var(--admin-muted); border: 1px solid var(--admin-border); border-radius: 6px; cursor: pointer; transition: 0.2s;">
+                                <svg viewBox="0 0 24 24" style="width: 12px; height: 12px; fill: currentColor;"><path d="M12.48 10.92v3.28h4.76c-.2 1.08-1.22 3.16-4.76 3.16-3.08 0-5.58-2.52-5.58-5.64s2.5-5.64 5.58-5.64c1.76 0 2.94.76 3.6 1.4l2.58-2.52C17.02 3.5 14.96 2.48 12.48 2.48 7.24 2.48 3 6.72 3 11.96s4.24 9.48 9.48 9.48c5.48 0 9.12-3.84 9.12-9.28 0-.6-.08-1.04-.16-1.52h-8.96z"></path></svg>
+                                SEARCH
+                            </button>
                         </div>
                     </div>
 
