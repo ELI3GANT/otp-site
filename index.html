@@ -692,10 +692,23 @@
             <label for="service">Interested In</label>
             <select id="service" name="service" required>
               <option value="" disabled selected>Select a service</option>
-              <option value="The Base">The Base (Music / Single Release)</option>
-              <option value="The Stack">The Stack (Strategic Content / Business)</option>
-              <option value="The Partner">The Partner (Full Retainer / All Access)</option>
-              <option value="Web & Digital">Web & Digital</option>
+              <optgroup label="Music & Video">
+                <option value="The Visualizer">The Visualizer</option>
+                <option value="The Official Video">The Official Video</option>
+                <option value="The Rollout">The Rollout</option>
+              </optgroup>
+              <optgroup label="Brand & Business">
+                <option value="The Identity">The Identity</option>
+                <option value="The Digital HQ">The Digital HQ</option>
+                <option value="The Rebrand">The Rebrand</option>
+              </optgroup>
+              <optgroup label="Content & Growth">
+                <option value="The Drop">The Drop</option>
+                <option value="The Stack">The Stack</option>
+              </optgroup>
+              <optgroup label="Network">
+                <option value="The Partner">The Partner (Retainer)</option>
+              </optgroup>
               <option value="Custom">Custom / Other</option>
             </select>
           </div>

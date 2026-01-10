@@ -111,5 +111,22 @@ INSERT INTO categories (name, slug, description)
 SELECT 'Production', 'production', 'Visual and media production'
 WHERE NOT EXISTS (SELECT 1 FROM categories WHERE slug = 'production');
 
+-- 6.5 Contacts Table (For Live Site Form)
+CREATE TABLE IF NOT EXISTS contacts (
+    id SERIAL PRIMARY KEY,
+    created_at timestamptz DEFAULT now(),
+    name text,
+    email text,
+    service text,
+    message text,
+    budget text,
+    timeline text,
+    status text DEFAULT 'new'
+);
+
+ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Insert" ON contacts;
+CREATE POLICY "Public Insert" ON contacts FOR INSERT WITH CHECK (true);
+
 -- 7. REFRESH SCHEMA
 NOTIFY pgrst, 'reload schema';
