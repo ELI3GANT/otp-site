@@ -513,7 +513,16 @@
               window.location.href = 'portal-gate.html';
               return;
           }
-          console.log("🔓 Valid Token Found.");
+          
+          if(token === 'static-bypass-token') {
+              const dot = document.querySelector('.status-dot-mini');
+              if(dot) {
+                  dot.style.background = '#ffaa00'; // Orange/Yellow
+                  dot.style.boxShadow = '0 0 5px #ffaa00';
+                  // Change text node next to dot
+                  if(dot.nextSibling) dot.nextSibling.textContent = ' NODE: LOCAL (BYPASS)';
+              }
+          }
 
           // 2. Load Theme Immediately (Prevents FOUC)
           const savedTheme = localStorage.getItem('theme');
