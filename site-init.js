@@ -158,9 +158,9 @@ window.OTP.initRealtimeState = function() {
     // Listen for Site Commands (Broadcast/Maintenance/Theme)
     const channel = client.channel('site_state');
     
-    channel.on('broadcast', { event: 'command' }, (payload) => {
-        console.log("📡 INCOMING COMMAND:", payload);
-        const { type, value } = payload;
+    channel.on('broadcast', { event: 'command' }, (message) => {
+        console.log("📡 INCOMING COMMAND:", message);
+        const { type, value } = message.payload || {};
         
         if (type === 'maintenance') {
             if (value === 'on') {
