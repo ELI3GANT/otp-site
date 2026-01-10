@@ -56,10 +56,12 @@
         document.body.style.setProperty('--scroll', `${scrollPercent}%`);
     }, { passive: true });
 
-    // 4. Force Scroll Top handling (if history restoration is an issue)
+    // 4. Force Scroll To Top on Refresh (Fix for Mobile jumping to Services)
     if (history.scrollRestoration) {
-        history.scrollRestoration = 'manual';
+        history.scrollRestoration = 'manual'; // Keep manual to avoid browser fighting
     }
+    window.scrollTo(0, 0); // Explicitly warp to top
+    setTimeout(() => window.scrollTo(0, 0), 10); // Double-tap for race conditions
 
     // 5. Black Hole Effect for "Enter Archive"
     const warpBtn = document.querySelector('.cool-work-link');
