@@ -25,6 +25,7 @@
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
+    "jsdom": "^27.4.0",
     "nodemon": "^3.1.11"
   }
 }
