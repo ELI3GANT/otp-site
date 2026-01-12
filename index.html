@@ -29,13 +29,12 @@
   <!-- Font (optional but makes it instantly cleaner) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://assets.calendly.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
   
   <!-- Styles -->
   <link rel="stylesheet" href="./styles.css?v=4.0" />
-  <!-- Calendly Widget -->
-  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+  <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
 
@@ -898,21 +897,57 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
 
+    // --- CALENDLY OPTIMIZED LOADER ---
+    function loadCalendlyResources() {
+        if (document.getElementById('calendly-css')) return; // Already loaded
+
+        const head = document.getElementsByTagName('head')[0];
+        
+        // Load CSS
+        const link = document.createElement('link');
+        link.id = 'calendly-css';
+        link.rel = 'stylesheet';
+        link.href = 'https://assets.calendly.com/assets/external/widget.css';
+        head.appendChild(link);
+
+        // Load JS
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'https://assets.calendly.com/assets/external/widget.js';
+        script.async = true;
+        head.appendChild(script);
+    }
+
+    // Lazy load on idle or interaction
+    window.addEventListener('load', () => {
+        // Delay slightly to prioritize critical visuals
+        setTimeout(loadCalendlyResources, 2000);
+    });
+
     // --- CALENDLY CUSTOM HANDLER ---
     window.openBooking = function() {
       // MOBILE FALLBACK: In-app browsers (IG/TikTok) often break popups.
-      // We force a direct redirection on mobile for a 100% reliable experience.
       if (window.innerWidth < 768) {
          window.location.href = 'https://calendly.com/onlytrueperspective/30min';
          return;
       }
 
-      // DESKTOP: Premium Popup
+      // Ensure loaded if user clicks early
+      loadCalendlyResources();
+
+      // Check for library (might need 100ms if just clicked)
       if (typeof Calendly === 'undefined') {
-          console.warn("Calendly not loaded, falling back to direct link.");
-          window.location.href = 'https://calendly.com/onlytrueperspective/30min';
+          // Retry once after short delay
+          setTimeout(() => {
+              if (typeof Calendly !== 'undefined') {
+                  Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});
+              } else {
+                  window.location.href = 'https://calendly.com/onlytrueperspective/30min';
+              }
+          }, 500);
           return;
       }
+
       Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});
       
       // Inject SAFETY EXIT BUTTON (Manual Override for large tablets/desktop)
