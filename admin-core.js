@@ -1018,7 +1018,7 @@
                     published: document.getElementById('pubToggle').checked, // Map to boolean
                     category: formData.get('category'),
                     author: formData.get('author'),
-                    tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim()).filter(t => t) : [],
+                    tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim().toLowerCase()).filter(t => t) : [],
                     seo_title: formData.get('seo_title'),
                     seo_desc: formData.get('seo_desc'),
                     archetype_slug: document.getElementById('archetype').value
@@ -1576,8 +1576,15 @@
             }
         } catch (e) {
             console.warn("Image Synthesis Failed, using fallback visual.", e);
-            // Fallback to a nice generic tech image
-            const fallback = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920&auto=format&fit=crop";
+            // Fallback to rotator of nice tech images
+            const fallbacks = [
+                "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920&auto=format&fit=crop", // Space
+                "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1920&auto=format&fit=crop", // Chip
+                "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1920&auto=format&fit=crop", // Cyberpunk City
+                "https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?q=80&w=1920&auto=format&fit=crop"  // Nebula
+            ];
+            const fallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            
             document.getElementById('imageUrl').value = fallback;
             document.getElementById('urlInput').value = fallback;
             showToast("IMAGE GEN FAILED: USING FALLBACK");
