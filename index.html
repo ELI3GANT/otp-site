@@ -908,6 +908,11 @@
       }
 
       // DESKTOP: Premium Popup
+      if (typeof Calendly === 'undefined') {
+          console.warn("Calendly not loaded, falling back to direct link.");
+          window.location.href = 'https://calendly.com/onlytrueperspective/30min';
+          return;
+      }
       Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});
       
       // Inject SAFETY EXIT BUTTON (Manual Override for large tablets/desktop)
