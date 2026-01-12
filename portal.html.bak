@@ -285,7 +285,7 @@
     </div>
   </main>
 
-  <script src="site-init.js"></script>
+  <script src="site-init.js?v=7.0"></script>
   <script>
     const portalForm = document.getElementById('portalForm');
     const loginView = document.getElementById('loginView');
