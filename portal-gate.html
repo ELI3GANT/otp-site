@@ -202,10 +202,13 @@
 
         <!-- QUICK ACCESS ADMIN FUNCTIONS -->
         <div id="quickAdmin" style="display: none; margin-top: 20px; border-top: 2px solid var(--term-green); padding-top: 15px;">
-             <div style="font-size: 0.8rem; color: var(--term-dim); margin-bottom: 10px;">// AUTH_BYPASS_DETECTED: QUICK_ACCESS_ENABLED</div>
+             <div style="font-size: 0.8rem; color: var(--term-dim); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                 <span>// QUICK_ACCESS_ENABLED</span>
+                 <button onclick="logout()" style="background: transparent; border: 1px solid var(--term-dim); color: var(--term-dim); font-family: 'VT323', monospace; font-size: 0.8rem; cursor: pointer; padding: 2px 6px;">DISCONNECT</button>
+             </div>
              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                 <button onclick="window.location.href='index.html'" class="login-btn" style="margin-top: 0; font-size: 0.8rem; padding: 6px;">VIEW LIVE SITE</button>
-                 <button onclick="window.location.href='insights.html'" class="login-btn" style="margin-top: 0; font-size: 0.8rem; padding: 6px;">VIEW INSIGHTS</button>
+                 <button onclick="window.location.href='otp-terminal.html'" class="login-btn" style="margin-top: 0; font-size: 0.9rem; padding: 8px; background: var(--term-dim); color: #fff;">OPEN TERMINAL</button>
+                 <button onclick="window.location.href='index.html'" class="login-btn" style="margin-top: 0; font-size: 0.9rem; padding: 8px; background: transparent; border: 1px solid var(--term-green);">VIEW LIVE SITE</button>
              </div>
         </div>
 
@@ -279,6 +282,18 @@
 
         // Check for Quick Access (If token exists)
         (function() {
+            // Check for Logout Reason
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('reason') === 'logout') {
+                const err = document.getElementById('errorMsg');
+                err.style.display = 'block';
+                err.textContent = "SESSION TERMINATED // LOGOUT COMPLETE";
+                err.style.color = "var(--term-green)";
+                err.style.textShadow = "0 0 5px var(--term-green)";
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
             if (localStorage.getItem('otp_admin_token')) {
                 document.getElementById('quickAdmin').style.display = 'block';
             }
@@ -346,6 +361,13 @@
                 }
                 showError();
             }
+        }
+
+        function logout() {
+            localStorage.removeItem('otp_admin_token');
+            document.getElementById('quickAdmin').style.display = 'none';
+            document.getElementById('passcode').value = '';
+            document.getElementById('passcode').focus();
         }
 
         function saveAndRedirect(token) {

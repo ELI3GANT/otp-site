@@ -292,7 +292,7 @@
     // --- AUTH UTILS ---
     window.logout = function() {
         localStorage.removeItem('otp_admin_token');
-        window.location.href = 'portal-gate.html';
+        window.location.href = 'portal-gate.html?reason=logout';
     };
 
     // --- POST MANAGER & STATS LOGIC ---
