@@ -1786,7 +1786,24 @@
             showToast(`VISUAL QUALITY: ${next.toUpperCase()}`);
         }
 
-        // 3. Kursor
+        // 3. Theme (Light/Dark Mode)
+        if (type === 'theme') {
+            const isLight = statusEl.textContent === 'DAY-MODE';
+            const nextTheme = isLight ? 'dark' : 'light';
+            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'theme', value: nextTheme } });
+            persistSystemState('theme', nextTheme); // PERSIST
+
+            // Local Admin Persistence
+            localStorage.setItem('theme', nextTheme);
+            if (nextTheme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+            else document.documentElement.removeAttribute('data-theme');
+
+            statusEl.textContent = nextTheme === 'light' ? 'DAY-MODE' : 'NIGHT-MODE';
+            statusEl.style.color = nextTheme === 'light' ? '#ffaa00' : 'var(--accent2)';
+            showToast("THEME SYNCED TO NETWORK");
+        }
+
+        // 4. Kursor
         if (type === 'kursor') {
             const isActive = statusEl.textContent === 'ACTIVE';
             const next = isActive ? 'off' : 'on';
@@ -1845,7 +1862,9 @@
         );
     };
     
-    // ... toggleLiveTheme is fine ...
+    window.toggleLiveTheme = function() {
+        toggleSiteControl('theme');
+    };
 
     window.openBroadcastPrompt = async function() {
         promptAction(
