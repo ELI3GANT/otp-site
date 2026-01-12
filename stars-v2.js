@@ -60,6 +60,23 @@ window.setAttractor = (x, y) => {
     attractor.repel = false;
 };
 
+// GLOBAL THEME RESET HANDLER
+// Allows site-init.js to force a starfield reset when theme toggles
+window.resetStars = () => {
+    stars.forEach(s => s.reset());
+    console.log('[Stars] Force Reset for Theme Sync');
+};
+
+// Watch for theme attribute changes directly for robust sync
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+            window.resetStars();
+        }
+    });
+});
+observer.observe(document.documentElement, { attributes: true });
+
 window.clearAttractor = () => {
     attractor.active = false;
     attractor.repel = true;
