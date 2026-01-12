@@ -968,15 +968,12 @@ function initSite() {
                 e.preventDefault();
                 const pkgName = btn.getAttribute('data-package');
                 
-                let category = 'Custom';
-                if (pkgName.includes('Visualizer') || pkgName.includes('Video') || pkgName.includes('Rollout')) category = 'Music Video';
-                if (pkgName.includes('Identity') || pkgName.includes('Rebrand')) category = 'Brand Identity';
-                if (pkgName.includes('Digital HQ')) category = 'Web & Digital';
-                if (pkgName.includes('Drop') || pkgName.includes('Stack')) category = 'Content & Growth';
-                if (pkgName.includes('Partner')) category = 'Full Retainer';
-
-                const optionExists = Array.from(serviceSelect.options).some(o => o.value === category);
-                serviceSelect.value = optionExists ? category : 'Custom';
+                // Direct Mapping (Options now match Package Names)
+                const targetValue = pkgName; 
+                
+                // Fallback check
+                const optionExists = Array.from(serviceSelect.options).some(o => o.value === targetValue);
+                serviceSelect.value = optionExists ? targetValue : 'Custom';
 
                 messageInput.value = `I'm interested in the "${pkgName}" package. \n\nHere are some details about my project:`;
 
