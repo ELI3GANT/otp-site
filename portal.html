@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Portal | Only True Perspective</title>
+  <link rel="stylesheet" href="./styles.css?v=2.6" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    .portal-main {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 20px 60px;
+    }
+    .portal-container {
+      width: 100%;
+      max-width: 500px;
+      perspective: 1000px;
+    }
+    .portal-card {
+      background: rgba(20, 20, 30, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 30px;
+      padding: 40px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+      text-align: center;
+    }
+    .portal-header {
+      margin-bottom: 30px;
+    }
+    .portal-header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      background: linear-gradient(to right, #fff, var(--accent2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .portal-header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .portal-form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .portal-form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .portal-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 14px;
+      color: #fff;
+      font-family: inherit;
+      transition: border-color 0.3s ease;
+    }
+    .portal-input:focus {
+      outline: none;
+      border-color: var(--accent2);
+    }
+    .portal-submit {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+    .portal-submit:hover {
+      background: var(--accent2);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 195, 255, 0.3);
+    }
+
+    /* Dashboard View */
+    #dashboardView {
+      display: none;
+      max-width: 1000px;
+      text-align: left;
+    }
+    .db-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+    .db-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+    .db-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 24px;
+    }
+    .db-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      color: var(--accent2);
+    }
+    .invoice-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .invoice-item:last-child {
+      border: none;
+    }
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-paid { background: rgba(0, 255, 170, 0.1); color: #00ffaa; }
+    .status-pending { background: rgba(255, 212, 0, 0.1); color: #ffd400; }
+    
+    .logout-btn {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Social Buttons */
+    .social-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .social-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="portal-page">
+  <div class="bg-fixed"></div>
+
+  <header class="nav nav-split">
+    <a href="index.html" class="nav-logo" aria-label="OTP">
+      <img src="assets/otp_v2.png" alt="OTP" class="otp-mark logo-pulse" />
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html" class="k-hover">Work</a>
+      <a href="archive.html" class="k-hover">Archive</a>
+      <a href="insights.html" class="k-hover">Insights</a>
+      <a href="index.html#services" class="k-hover">Services</a>
+      <a href="index.html#contact" class="k-hover">Contact</a>
+    </nav>
+  </header>
+
+  <main class="portal-main">
+    <!-- Login View -->
+    <div class="portal-container" id="loginView">
+      <div class="portal-card">
+        <div class="portal-header">
+          <h1 id="portalTitle">Client Access</h1>
+          <p id="portalSub">Enter your project code to access invoices and assets.</p>
+        </div>
+
+        <!-- Social Auth -->
+        <div class="social-auth" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+          <button class="social-btn k-hover" onclick="mockSocialLogin('Google')">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.66l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+          <button class="social-btn k-hover" onclick="mockSocialLogin('Apple')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.96.95-2.06 1.72-3.3 1.72s-1.57-.75-3.13-.75-1.89.75-3.1.75c-1.25 0-2.45-.85-3.41-1.82-1.97-1.98-3.43-5.59-3.43-8.8 0-5.24 3.21-8 6.27-8 1.57 0 2.89.96 3.9 1s2.51-.9 4.31-.9c1.92 0 3.4.67 4.4 1.95-3.6 2.15-3.03 6.78.6 8.32-1.21 2.37-3.14 4.53-3.14 4.53zM12.03 4.72c-.03-2.6 1.96-4.72 4.41-4.72.03 2.72-2.3 4.88-4.41 4.72z"/></svg>
+            Continue with Apple
+          </button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 24px;">
+          <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+          <span style="font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Or</span>
+          <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+        </div>
+
+        <form id="portalForm">
+          <div class="portal-form-group">
+            <label id="emailLabel">Project Email</label>
+            <input type="email" class="portal-input" placeholder="client@example.com" required />
+          </div>
+          <div class="portal-form-group" id="codeGroup">
+            <label>Access Code</label>
+            <input type="password" class="portal-input" placeholder="OTP-XXXX" id="accessCode" />
+          </div>
+          <button type="submit" class="portal-submit" id="submitBtn">Access Hub</button>
+        </form>
+        
+        <p class="muted" style="margin-top: 24px; font-size: 0.85rem;">
+          <span id="toggleText">Already have a project?</span> 
+          <a href="#" onclick="toggleSignup()" id="toggleLink" style="color: var(--accent2); text-decoration: none; font-weight: 700; margin-left: 5px;">Sign Up</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div class="portal-container" id="dashboardView">
+      <div class="db-header">
+        <div>
+          <h2 class="syne-bold" style="font-size: 2rem;">Welcome Back, <span id="clientName">Client</span></h2>
+          <p class="muted">Project: Cinematic Brand Rollout</p>
+        </div>
+        <button class="logout-btn" onclick="logout()">Log Out</button>
+      </div>
+
+      <div class="db-grid">
+        <!-- Invoices -->
+        <div class="db-card">
+          <h3>Invoices</h3>
+          <div class="invoice-item">
+            <span>#OTP-2024-01</span>
+            <span class="status-badge status-paid">Paid</span>
+          </div>
+          <div class="invoice-item">
+            <span>#OTP-2024-02</span>
+            <span class="status-badge status-pending">Pending</span>
+          </div>
+          <div class="invoice-item">
+             <span class="muted">Balance Due: $1,250.00</span>
+          </div>
+        </div>
+
+        <!-- Project Status -->
+        <div class="db-card">
+          <h3>Project Status</h3>
+          <p style="margin-bottom: 10px;">Phase: **Production & Polish**</p>
+          <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-bottom: 20px;">
+            <div style="width: 75%; height: 100%; background: var(--accent2);"></div>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="#" class="portal-submit" style="text-align: center; text-decoration: none; background: #00ffaa; color: #000;">Pay Latest Invoice</a>
+            <a href="mailto:support@onlytrueperspective.com" class="portal-submit" style="text-align: center; text-decoration: none; border: 1px solid var(--accent2); background: transparent; color: var(--accent2);">Open Support Ticket</a>
+          </div>
+        </div>
+
+        <!-- Assets -->
+        <div class="db-card">
+          <h3>Ready Assets</h3>
+          <div class="invoice-item">
+            <span>Teaser_01_v2.mp4</span>
+            <a href="#" style="color: var(--accent2);">Download</a>
+          </div>
+          <div class="invoice-item">
+            <span>Brand_Kit_Final.zip</span>
+            <a href="#" style="color: var(--accent2);">Download</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="site-init.js?v=7.0"></script>
+  <script>
+    const portalForm = document.getElementById('portalForm');
+    const loginView = document.getElementById('loginView');
+    const dashboardView = document.getElementById('dashboardView');
+    const accessCodeInput = document.getElementById('accessCode');
+    const portalTitle = document.getElementById('portalTitle');
+    const portalSub = document.getElementById('portalSub');
+    const toggleLink = document.getElementById('toggleLink');
+    const toggleText = document.getElementById('toggleText');
+    const codeGroup = document.getElementById('codeGroup');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let isSignup = false;
+
+    function toggleSignup() {
+      isSignup = !isSignup;
+      if (isSignup) {
+        portalTitle.innerText = "Create Account";
+        portalSub.innerText = "Sign up to start your journey with OTP.";
+        toggleText.innerText = "Already have an account?";
+        toggleLink.innerText = "Log In";
+        codeGroup.style.display = "none";
+        submitBtn.innerText = "Create Account";
+      } else {
+        portalTitle.innerText = "Client Access";
+        portalSub.innerText = "Enter your project code to access invoices and assets.";
+        toggleText.innerText = "Don't have a project?";
+        toggleLink.innerText = "Sign Up";
+        codeGroup.style.display = "block";
+        submitBtn.innerText = "Access Hub";
+      }
+    }
+
+    portalForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (isSignup) {
+        alert("Account processing... Redirecting to dashboard.");
+        loginView.style.display = 'none';
+        dashboardView.style.display = 'block';
+        localStorage.setItem('otp_logged_in', 'true');
+        return;
+      }
+
+      // MOCK AUTH: Any code starting with OTP- works
+      if (accessCodeInput.value.startsWith('OTP-') || accessCodeInput.value === '1234') {
+        loginView.style.display = 'none';
+        dashboardView.style.display = 'block';
+        localStorage.setItem('otp_logged_in', 'true');
+      } else {
+        alert('Invalid access code. Please try OTP-2024');
+      }
+    });
+
+    function mockSocialLogin(provider) {
+      alert(`Connecting to ${provider}...`);
+      setTimeout(() => {
+        loginView.style.display = 'none';
+        dashboardView.style.display = 'block';
+        localStorage.setItem('otp_logged_in', 'true');
+      }, 1500);
+    }
+
+    function logout() {
+      localStorage.removeItem('otp_logged_in');
+      loginView.style.display = 'block';
+      dashboardView.style.display = 'none';
+    }
+
+    // Check persistent login
+    if (localStorage.getItem('otp_logged_in')) {
+      loginView.style.display = 'none';
+      dashboardView.style.display = 'block';
+    }
+
+    // mode check
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    if (mode === 'signup' && !localStorage.getItem('otp_logged_in')) {
+      isSignup = false; // reset
+      toggleSignup(); // switch to signup
+    }
+  </script>
+</body>
+</html>
