@@ -32,7 +32,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=3.0" />
+  <link rel="stylesheet" href="./styles.css?v=4.0" />
   <!-- Calendly Widget -->
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
   <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
@@ -900,10 +900,17 @@
 
     // --- CALENDLY CUSTOM HANDLER ---
     window.openBooking = function() {
-      // 1. Trigger Calendly
+      // MOBILE FALLBACK: In-app browsers (IG/TikTok) often break popups.
+      // We force a direct redirection on mobile for a 100% reliable experience.
+      if (window.innerWidth < 768) {
+         window.location.href = 'https://calendly.com/onlytrueperspective/30min';
+         return;
+      }
+
+      // DESKTOP: Premium Popup
       Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});
       
-      // 2. Inject SAFETY EXIT BUTTON (Manual Override)
+      // Inject SAFETY EXIT BUTTON (Manual Override for large tablets/desktop)
       // Check if exists first
       if (document.getElementById('custom-calendly-close')) return;
 
@@ -911,10 +918,8 @@
       btn.id = 'custom-calendly-close';
       btn.innerHTML = '&times;';
       btn.onclick = function() {
-         // Try standard close
          const overlay = document.querySelector('.calendly-overlay');
          if (overlay) overlay.remove(); 
-         // Close self
          btn.remove();
       };
       document.body.appendChild(btn);
