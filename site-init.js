@@ -388,7 +388,7 @@ window.OTP.initRealtimeState = function() {
 
             // Visual transition
             if (typeof gsap !== 'undefined') {
-                gsap.fromTo('body', { opacity: 0.5, scale: 0.98 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" });
+                gsap.fromTo('body', { opacity: 0.5 }, { opacity: 1, duration: 0.6, ease: "power2.out" });
             }
         }
         if (type === 'refresh') location.reload();
