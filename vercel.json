@@ -11,5 +11,25 @@
     { "src": "/api/(.*)", "dest": "/server.js" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/server.js" }
+  ],
+  "headers": [
+    {
+      "source": "**/*.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/(site-config.js|site-init.js|admin-core.js|styles.css)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "**/*.{jpg,jpeg,png,gif,svg,ico,webp}",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
   ]
 }
