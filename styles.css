@@ -5663,3 +5663,8 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 30px rgba(0, 195, 255, 0.4);
     transform: scale(1.02);
 }
+
+/* CALENDLY FIX */
+.calendly-overlay {
+  z-index: 999999 !important;
+}
