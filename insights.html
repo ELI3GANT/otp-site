@@ -243,13 +243,15 @@
 
             if (error) throw error;
 
-            if (posts && posts.length > 0) {
+            if (posts) {
                 allPosts = posts;
                 localStorage.setItem('otp_insights_cache', JSON.stringify(posts));
-                renderPosts(posts);
-                renderFilters(posts);
-            } else if (!cachedData) {
-                setStatus("NO SIGNALS DETECTED. STATION IS SILENT.");
+                if (posts.length > 0) {
+                    renderPosts(posts);
+                    renderFilters(posts);
+                } else {
+                    setStatus("NO SIGNALS DETECTED. STATION IS SILENT.");
+                }
             }
         } catch (e) {
             console.error("Error fetching insights:", e);
