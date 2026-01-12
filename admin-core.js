@@ -44,8 +44,23 @@
     async function init() {
         // Auto-login check
         if (state.token) {
-             console.log("🔄 Found existing session token.");
-             updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
+             // Simple JWT Expiry Check
+             try {
+                 if (state.token !== 'static-bypass-token') {
+                     const payload = JSON.parse(atob(state.token.split('.')[1]));
+                     const now = Math.floor(Date.now() / 1000);
+                     if (payload.exp && payload.exp < now) {
+                         console.warn("Session Expired");
+                         window.logout();
+                         return;
+                     }
+                 }
+                 console.log("🔄 Found existing session token.");
+                 updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
+             } catch(e) {
+                 console.warn("Token Parse Error:", e);
+                 // Don't logout immediately on parse error to allow legacy tokens, but warn
+             }
         }
 
         // Check for Supabase Library
@@ -857,10 +872,10 @@
             return `
             <div class="post-row ${isLive ? 'row-active-live' : ''}">
                 <div style="cursor: pointer; flex: 1;" onclick="loadPostForEdit(${post.id})">
-                    <div class="post-title">${post.title || 'Untitled'} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
+                    <div class="post-title">${window.escapeHtml(post.title || 'Untitled')} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
                     <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span class="theme-active" style="color:var(--admin-success); font-weight:bold;">${post.views || 0}</span> Views</div>
                     <div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;">
-                        ${(post.tags || []).map(t => `<span style="font-size: 0.55rem; color: var(--admin-cyan); background: rgba(0, 195, 255, 0.05); padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(0, 195, 255, 0.1);">#${t}</span>`).join('')}
+                        ${(post.tags || []).map(t => `<span style="font-size: 0.55rem; color: var(--admin-cyan); background: rgba(0, 195, 255, 0.05); padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(0, 195, 255, 0.1);">#${window.escapeHtml(t)}</span>`).join('')}
                     </div>
                 </div>
                 <div class="status-badge ${isLive ? 'status-live' : 'status-draft'}">
@@ -1234,6 +1249,16 @@
 
     // 7. SECURE AI NEURAL GENERATOR
     // 3. UTILITIES
+    window.escapeHtml = function(unsafe) {
+        if (typeof unsafe !== 'string') return unsafe;
+        return unsafe
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    };
+
     window.showToast = function(msg) {
         const toast = document.getElementById('toast');
         if(!toast) return;

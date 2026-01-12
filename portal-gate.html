@@ -228,6 +228,11 @@
     <script src="site-config.js"></script>
 
     <script>
+        // Force HTTPS
+        if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1' && location.protocol !== 'https:') {
+            location.replace(`https:${location.href.substring(location.protocol.length)}`);
+        }
+
         function updateCursor() {
             const input = document.getElementById('passcode');
             const cursor = document.getElementById('fake-cursor');
