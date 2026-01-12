@@ -1850,24 +1850,44 @@
         showToast("EMERGENCY BROADCAST SENT");
     };
 
-    window.confirmAction = function(title, text, callback) {
+    // Unified Modal System
+    window.confirmAction = function(title, text, callback, inputMode = false, inputPlaceholder = "") {
         const modal = document.getElementById('actionModal');
+        const inputContainer = document.getElementById('actionModalInputVars');
+        const inputField = document.getElementById('actionModalInput');
         if(!modal) return;
         
         document.getElementById('actionModalTitle').textContent = title;
         document.getElementById('actionModalText').textContent = text;
         
+        if (inputMode) {
+            inputContainer.style.display = 'block';
+            inputField.placeholder = inputPlaceholder;
+            inputField.value = '';
+            setTimeout(() => inputField.focus(), 100);
+        } else {
+            inputContainer.style.display = 'none';
+        }
+
         const btn = document.getElementById('confirmActionBtn');
-        // Clone to remove old listeners
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
         
         newBtn.onclick = async () => {
+            const val = inputField.value;
+            if (inputMode && !val) {
+                inputField.style.borderColor = 'red';
+                return;
+            }
             modal.style.display = 'none';
-            await callback();
+            await callback(val);
         };
         
         modal.style.display = 'flex';
+    };
+
+    window.promptAction = function(title, text, placeholder, callback) {
+        confirmAction(title, text, callback, true, placeholder);
     };
 
     window.refreshLiveSite = function() {
@@ -1878,6 +1898,44 @@
                 if(!state.siteChannel) return;
                 await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh' } });
                 showToast("NETWORK CACHE PURGED");
+            }
+        );
+    };
+
+    window.triggerGlobalWarp = function() {
+        promptAction(
+            "GLOBAL WARP OVERRIDE",
+            "Enter the target destination URL. All active users will be instantly redirected.",
+            "e.g. google.com",
+            async (target) => {
+                if(!state.siteChannel) return;
+                
+                let url = target.trim();
+                if (!url.startsWith('http')) url = 'https://' + url;
+                
+                await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'warp', value: url } });
+                showToast("GLOBAL WARP INITIATED");
+            }
+        );
+    };
+
+    window.openBroadcastPrompt = function() {
+        promptAction(
+            "EMERGENCY BROADCAST",
+            "Send a high-priority overlay message to all active users.",
+            "e.g. SYSTEM MAINTENANCE IN 5 MIN",
+            async (msg) => {
+                if(!state.siteChannel) return;
+        
+                // 1. Send to Network
+                await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'alert', value: msg } });
+                
+                // 2. Show Locally (Confirmation)
+                if (window.OTP && window.OTP.showBroadcast) {
+                    window.OTP.showBroadcast(msg);
+                }
+                
+                showToast("EMERGENCY BROADCAST SENT");
             }
         );
     };
