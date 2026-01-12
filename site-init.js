@@ -379,6 +379,7 @@ window.OTP.initRealtimeState = function() {
 
         if (type === 'theme') {
             window.OTP.setTheme(value);
+            localStorage.setItem('theme', value); // Force overwrite user pref
             localStorage.setItem('last_global_theme', value);
             
             // Sync Toggle Icons
