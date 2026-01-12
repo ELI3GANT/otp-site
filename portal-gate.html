@@ -143,6 +143,21 @@
             cursor: not-allowed;
         }
 
+        .disconnect-btn {
+            background: transparent;
+            border: 1px solid var(--term-dim);
+            color: var(--term-dim);
+            font-family: 'VT323', monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 2px 6px;
+        }
+        
+        .disconnect-btn:hover {
+            color: var(--term-green);
+            border-color: var(--term-green);
+        }
+
         #errorMsg {
             margin-top: 15px;
             font-size: 1rem;
@@ -204,7 +219,7 @@
         <div id="quickAdmin" style="display: none; margin-top: 20px; border-top: 2px solid var(--term-green); padding-top: 15px;">
              <div style="font-size: 0.8rem; color: var(--term-dim); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                  <span>// QUICK_ACCESS_ENABLED</span>
-                 <button onclick="logout()" style="background: transparent; border: 1px solid var(--term-dim); color: var(--term-dim); font-family: 'VT323', monospace; font-size: 0.8rem; cursor: pointer; padding: 2px 6px;">DISCONNECT</button>
+                 <button onclick="logout()" class="disconnect-btn">DISCONNECT</button>
              </div>
              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                  <button onclick="window.location.href='otp-terminal.html'" class="login-btn" style="margin-top: 0; font-size: 0.9rem; padding: 8px; background: var(--term-dim); color: #fff;">OPEN TERMINAL</button>

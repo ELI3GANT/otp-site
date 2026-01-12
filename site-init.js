@@ -41,18 +41,25 @@
     }
 
     // 3. Scroll Progress Logic (Moved from inline)
-    // 3. Scroll Progress Logic (Moved from inline)
+    // 3. Scroll Progress Logic (Optimized)
+    let isScrolling = false;
     window.addEventListener('scroll', () => {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const docHeight = Math.max(
-            document.body.scrollHeight, document.documentElement.scrollHeight,
-            document.body.offsetHeight, document.documentElement.offsetHeight,
-            document.body.clientHeight, document.documentElement.clientHeight
-        );
-        const winHeight = window.innerHeight || document.documentElement.clientHeight;
-        const max = docHeight - winHeight;
-        const scrollPercent = max > 0 ? (scrollTop / max) * 100 : 0;
-        document.body.style.setProperty('--scroll', `${scrollPercent}%`);
+        if (!isScrolling) {
+            window.requestAnimationFrame(() => {
+                const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                const docHeight = Math.max(
+                    document.body.scrollHeight, document.documentElement.scrollHeight,
+                    document.body.offsetHeight, document.documentElement.offsetHeight,
+                    document.body.clientHeight, document.documentElement.clientHeight
+                );
+                const winHeight = window.innerHeight || document.documentElement.clientHeight;
+                const max = docHeight - winHeight;
+                const scrollPercent = max > 0 ? (scrollTop / max) * 100 : 0;
+                document.body.style.setProperty('--scroll', `${scrollPercent}%`);
+                isScrolling = false;
+            });
+            isScrolling = true;
+        }
     }, { passive: true });
 
     // 4. Force Scroll To Top on Refresh (Fix for Mobile jumping to Services)

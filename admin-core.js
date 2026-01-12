@@ -7,6 +7,14 @@
 (function() {
     console.log("🚀 ADMIN CORE V1.2.0 RELEASE: Boot sequence initiated...");
 
+    // GLOBAL ERROR TRAP
+    window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled Rejection:', event.reason);
+        if (window.showToast) {
+            window.showToast("SYSTEM ERROR: " + (event.reason ? event.reason.message : "Unknown"));
+        }
+    });
+
     // 0. CONFIGURATION
     const CONFIG = {
         supabaseUrl: window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : '',
