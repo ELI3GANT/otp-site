@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V1.2.0 (RELEASE)
+ * ADMIN CORE V10.5 (RELEASE)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Server-side Auth, Secure API Proxy, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V1.2.0 RELEASE: Boot sequence initiated...");
+    console.log("🚀 ADMIN CORE V10.5 RELEASE: Boot sequence initiated...");
 
     // GLOBAL ERROR TRAP
     window.addEventListener('unhandledrejection', function(event) {
@@ -101,6 +101,7 @@
             fetchPosts();
             fetchCategories();
             fetchArchetypes();
+            fetchInbox();
             
             // Backup Polling (30s) - Realtime handles immediate updates
             setInterval(() => fetchPosts(false), 30000);
@@ -546,7 +547,16 @@
     }
 
     window.openCategoryManager = function() {
-        document.getElementById('categoryModal').style.display = 'flex';
+        const el = document.getElementById('categoryModal');
+        if(!el) return;
+        el.style.display = 'flex';
+        // Enforce robust fixed centering
+        el.style.position = 'fixed';
+        el.style.inset = '0';
+        el.style.zIndex = '10000';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        
         renderCategoryList();
     };
 
@@ -617,7 +627,16 @@
 
     // ARCHETYPE LOGIC
     window.openArchetypeManager = function() {
-        document.getElementById('archetypeModal').style.display = 'flex';
+        const el = document.getElementById('archetypeModal');
+        if(!el) return;
+        el.style.display = 'flex';
+        // Enforce robust fixed centering
+        el.style.position = 'fixed';
+        el.style.inset = '0';
+        el.style.zIndex = '10000';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+
         renderArchetypeList();
     };
 
@@ -741,6 +760,417 @@
             }
         }
     }
+
+    // --- INBOX / AGENT LOGIC ---
+    window.fetchInbox = async function() {
+        const inbox = document.getElementById('inboxManager');
+        const filterEl = document.getElementById('inboxFilter');
+        const filter = filterEl ? filterEl.value : 'all'; // default to all if not found, though html sets active
+        
+        if(!inbox) return;
+
+        inbox.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">SYNCING SECURE COMMS...</div>';
+
+        try {
+            let query = state.client
+                .from('contacts')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(50); // Performance cap
+
+            // Apply Filters
+            if (filter === 'active') {
+                // 'new', 'processing', 'drafted', 'pending' - basically anything not completed/archived
+                 query = query.not('ai_status', 'in', '("completed","archived")');
+            } else if (filter === 'completed') {
+                query = query.eq('ai_status', 'completed');
+            } else if (filter === 'archived') {
+                query = query.eq('ai_status', 'archived');
+            }
+            
+            const { data, error } = await query;
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                inbox.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO COMMS FOUND IN THIS CHANNEL</div>';
+                return;
+            }
+
+            inbox.innerHTML = data.map(c => {
+                const isDrafted = c.draft_reply && c.draft_reply.length > 0;
+                let statusColor = '#ffaa00';
+                let statusText = 'PENDING';
+                
+                if (c.ai_status === 'completed') { statusColor = 'var(--admin-success)'; statusText = 'COMPLETED'; }
+                else if (c.ai_status === 'archived') { statusColor = '#666'; statusText = 'ARCHIVED'; }
+                else if (isDrafted) { statusColor = 'var(--admin-cyan)'; statusText = 'DRAFT READY'; }
+
+                return `
+                <div class="post-row" style="display: block; padding: 15px; margin-bottom: 10px; cursor: default; border-left: 2px solid ${statusColor};">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div>
+                             <span style="font-weight: bold; color: var(--admin-accent); font-size: 0.9rem;">${c.name}</span>
+                             <span style="color: var(--admin-muted); font-size: 0.8rem;"> &lt;${c.email}&gt;</span>
+                             <span style="font-size: 0.65rem; color: var(--admin-muted); margin-left: 10px;">${new Date(c.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div style="display:flex; gap: 8px; align-items:center;">
+                            <div style="font-size: 0.7rem; font-family: monospace; color: ${statusColor}; border: 1px solid ${statusColor}; padding: 2px 6px; border-radius: 4px;">${statusText}</div>
+                            <button type="button" onclick="return archiveContact('${c.id}', event)" title="Archive" style="background:transparent; border:none; color:var(--admin-muted); cursor:pointer;">📦</button>
+                            <button type="button" onclick="return deleteContact('${c.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer;">✖</button>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; margin-bottom: 10px; color: var(--admin-text);">
+                        <div><span style="color: var(--admin-muted);">SERVICE:</span> ${c.service || 'N/A'}</div>
+                        <div><span style="color: var(--admin-muted);">BUDGET:</span> ${c.budget || 'N/A'}</div>
+                        <div style="grid-column: span 2;"><span style="color: var(--admin-muted);">MSG:</span> ${c.message || ''}</div>
+                    </div>
+
+                    ${isDrafted ? `
+                    <div style="background: rgba(0,0,0,0.3); border-left: 2px solid var(--admin-cyan); padding: 10px; margin-top: 10px;">
+                        <div style="font-size: 0.65rem; color: var(--admin-cyan); margin-bottom: 5px; text-transform: uppercase;">// AI GENERATED RESPONSE</div>
+                        <div style="font-size: 0.8rem; color: var(--admin-muted); white-space: pre-wrap; margin-bottom: 10px;">${c.draft_reply.substring(0, 150)}...</div>
+                        <div style="display:flex; gap:10px;">
+                            <button type="button" onclick="copyDraft('${c.id}')" style="background: var(--admin-cyan); color: #000; border: none; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold;">COPY DRAFT</button>
+                            <button type="button" onclick="openReplyManager('${c.id}')" style="background: transparent; border: 1px solid var(--admin-cyan); color: var(--admin-cyan); padding: 5px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold;">REVIEW & SEND</button>
+                        </div>
+                    </div>` : ''}
+                </div>
+                `;
+            }).join('');
+            
+            // Store cache
+            window.inboxCache = data;
+
+        } catch(e) {
+            inbox.innerHTML = `<div style="text-align: center; color: #ff4444; padding: 20px;">ERROR: ${e.message}</div>`;
+        }
+    };
+    
+    // Helper to capture focus after list updates
+    window.refocusInbox = function() {
+        setTimeout(() => {
+            const inbox = document.getElementById('inboxManager');
+            if(inbox) {
+                inbox.focus();
+                // Optional: ensure it's scrolled to top or kept at position
+            }
+        }, 50);
+    };
+
+    window.copyDraft = function(id) {
+        const contact = window.inboxCache.find(c => c.id == id);
+        if(contact && contact.draft_reply) {
+            navigator.clipboard.writeText(contact.draft_reply);
+            showToast("DRAFT COPIED TO CLIPBOARD");
+        }
+    };
+
+    // --- REPLY MANAGER LOGIC ---
+    window.closeReplyManager = function() {
+        const modal = document.getElementById('replyModal');
+        modal.style.display = 'none';
+        // Focus back to inbox container to prevent jump
+        window.refocusInbox();
+    };
+
+    window.openReplyManager = function(id) {
+        const c = window.inboxCache.find(x => x.id == id);
+        if(!c) return;
+        
+        document.getElementById('replyContactId').value = c.id;
+        document.getElementById('replyContactEmail').value = c.email;
+        document.getElementById('replyContactName').value = c.name;
+        document.getElementById('replyIncomingMsg').textContent = c.message;
+        document.getElementById('replyDraftContent').value = c.draft_reply || '';
+        
+        // Render Analysis if present
+        const analysisDiv = document.getElementById('replyAnalysis');
+        if(c.ai_analysis) {
+             analysisDiv.innerHTML = '<pre style="white-space:pre-wrap; font-family:monospace; font-size:0.7em;">' + JSON.stringify(c.ai_analysis, null, 2) + '</pre>';
+        } else {
+             analysisDiv.textContent = "No analysis data.";
+        }
+        
+        const modal = document.getElementById('replyModal');
+        modal.style.display = 'flex'; 
+        // Enforce fixed centering alignment
+        modal.style.position = 'fixed';
+        modal.style.inset = '0';
+        modal.style.zIndex = '10000';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.background = 'rgba(0,0,0,0.85)';
+        modal.style.backdropFilter = 'blur(5px)';
+
+    // Focus the first actionable button or input
+        setTimeout(() => document.getElementById('replyDraftContent').focus(), 100);
+    };
+
+    // NEW: Generate AI Reply for Lead
+    window.generateReplyForLead = async function() {
+        const msg = document.getElementById('replyIncomingMsg').textContent;
+        const name = document.getElementById('replyContactName').value;
+        const email = document.getElementById('replyContactEmail').value;
+        const draftBox = document.getElementById('replyDraftContent');
+        
+        if(!msg) { showToast("NO MESSAGE CONTEXT FOUND"); return; }
+        
+        const btn = document.querySelector('button[onclick="generateReplyForLead()"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "<span>⏳</span> THINKING...";
+        btn.disabled = true;
+
+        try {
+            // Get Config
+            const providerSel = document.getElementById('aiProvider'); // Use global selector
+            const provider = providerSel ? providerSel.value : 'openai';
+            const personalKeys = {
+                openai: localStorage.getItem('cloud_openai'),
+                gemini: localStorage.getItem('cloud_gemini'),
+                anthropic: localStorage.getItem('cloud_claude'),
+                groq: localStorage.getItem('cloud_groq')
+            };
+
+            const systemPrompt = `You are an elite business consultant and executive assistant. 
+            Your task is to draft a professional, warm, and high-conversion reply to a potential lead.
+            
+            Lead Name: ${name}
+            Lead Email: ${email}
+            Incoming Message: "${msg}"
+            
+            Guidelines:
+            - Tone: Professional, Confident, Welcoming, Premium.
+            - Focus: Acknowledge their specific request, offer to schedule a discovery call, and express excitement about potentially working together.
+            - Format: Plain text email body. Do not include subject line unless asked. Do not include placeholders like "[Your Name]" - sign off as "The Team" or just "Best,".
+            `;
+
+            let replyText = "";
+            let usedDirect = false;
+
+            // 1. Try Server Proxy (if available) - Reusing /api/ai/generate endpoint logic if it supports generic completion?
+            // Actually, /api/ai/generate is strictly JSON for posts. Let's use direct keys for Speed/Reliability on this specific tool or a simple chat completion.
+            // For now, let's implement the DIRECT CLOUD LINK primarily for this "Quick Action" to avoid schema validation issues with the blog generator.
+            
+            const cloudKey = personalKeys[provider];
+            if (!cloudKey && provider !== 'groq') throw new Error(`NO API KEY FOUND FOR ${provider.toUpperCase()}`);
+
+            if (provider === 'openai') {
+                const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
+                    body: JSON.stringify({
+                        model: 'gpt-4o',
+                        messages: [{ role: 'system', content: "You represent a high-end agency." }, { role: 'user', content: systemPrompt }]
+                    })
+                });
+                const data = await res.json();
+                if(data.error) throw new Error(data.error.message);
+                replyText = data.choices[0].message.content;
+            } 
+            else if (provider === 'gemini') {
+                 // Google Gen AI REST
+                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cloudKey}`;
+                 const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: systemPrompt }] }]
+                    })
+                });
+                const data = await res.json();
+                if(data.error) throw new Error(data.error.message);
+                replyText = data.candidates[0].content.parts[0].text;
+            }
+            else {
+                // Fallback / Groq / Anthropic (Simple impl)
+                throw new Error("Only OpenAI / Gemini supported for Quick Reply currently.");
+            }
+
+            // Stream simulation or just paste
+             draftBox.value = replyText.trim();
+             showToast("REPLY GENERATED");
+
+        } catch(e) {
+            console.error("GEN ERROR:", e);
+            showToast("GEN FAILED: " + e.message);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    };
+
+    window.saveDraftUpdate = async function() {
+        const id = document.getElementById('replyContactId').value;
+        const content = document.getElementById('replyDraftContent').value;
+        
+        try {
+            const { error } = await state.client.from('contacts').update({ draft_reply: content }).eq('id', id);
+            if(error) throw error;
+            showToast("DRAFT UPDATED");
+            // Update cache locally to reflect change immediately without refetch
+            const c = window.inboxCache.find(x => x.id == id);
+            if(c) c.draft_reply = content;
+            await fetchInbox(); 
+        } catch(e) { showToast("SAVE FAILED: " + e.message); }
+    };
+
+    window.launchMailClient = function() {
+    const email = document.getElementById('replyContactEmail').value;
+    const name = document.getElementById('replyContactName').value;
+    const content = document.getElementById('replyDraftContent').value;
+    
+    // Clean and Professional Subject
+    const subjectName = name ? ` // ${name}` : '';
+    const subject = `Inquiry Reply: Only True Perspective${subjectName}`;
+    
+    // Ensure content is safe for URL
+    const safeSubject = encodeURIComponent(subject);
+    const safeBody = encodeURIComponent(content);
+    
+    const mailto = `mailto:${email}?subject=${safeSubject}&body=${safeBody}`;
+    
+    // Use window.location for better protocol handling in some browsers, fallback to window.open
+    try {
+        window.location.href = mailto;
+    } catch(e) {
+        window.open(mailto, '_blank');
+    }
+};
+
+    window.markAsReplied = async function() {
+        const id = document.getElementById('replyContactId').value;
+        if(!confirm("Confirm you have sent the reply? This will mark the thread as completed.")) return;
+         
+        try {
+            const { error } = await state.client.from('contacts').update({ ai_status: 'completed' }).eq('id', id);
+            if(error) throw error;
+            showToast("MARKED AS COMPLETED");
+            document.getElementById('replyModal').style.display = 'none';
+            await fetchInbox();
+        } catch(e) { showToast("UPDATE FAILED: " + e.message); }
+    };
+    
+    // NEW: Archive Contact (Using Custom Modal)
+    window.archiveContact = function(id, event) {
+        if(event) { event.preventDefault(); event.stopPropagation(); }
+        
+        const modal = document.getElementById('actionModal');
+        const title = document.getElementById('actionModalTitle');
+        const text = document.getElementById('actionModalText');
+        const btn = document.getElementById('confirmActionBtn');
+        const inputContainer = document.getElementById('actionModalInputVars');
+        
+        if(modal && title && btn) {
+            title.textContent = "ARCHIVE THREAD?";
+            text.textContent = "This will move the conversation to the archive.";
+            inputContainer.style.display = 'none';
+            
+            // Set up one-time click handler
+            btn.onclick = async () => {
+                btn.onclick = null; // Prevent double trigger
+                btn.textContent = "ARCHIVING...";
+                try {
+                     const { error } = await state.client.from('contacts').update({ ai_status: 'archived' }).eq('id', id);
+                     if(error) throw error;
+                     showToast("ARCHIVED");
+                     modal.style.display = 'none';
+                     await fetchInbox();
+                     window.refocusInbox();
+                } catch(e) { 
+                    showToast("FAILED: "+e.message);
+                    btn.textContent = "EXECUTE";
+                }
+            };
+            
+            btn.textContent = "ARCHIVE";
+            // Repurpose Exec button style for archive (neutral/success)
+            btn.style.background = "var(--admin-cyan)";
+            
+            modal.style.display = 'flex';
+            // Enforce proper centering
+            modal.style.position = 'fixed';
+            modal.style.inset = '0';
+            modal.style.zIndex = '10000';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.backdropFilter = 'blur(5px)';
+        }
+        return false;
+    };
+
+    // NEW: Delete Contact (Using Custom Delete Modal)
+    window.deleteContact = function(id, event) {
+        if(event) { event.preventDefault(); event.stopPropagation(); }
+
+        const modal = document.getElementById('deleteModal');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        
+        // Dynamically update text for Lead context
+        const titleEl = modal.querySelector('h3');
+        const descEl = modal.querySelector('p');
+        
+        if(titleEl) titleEl.textContent = "DELETE LEAD?";
+        if(descEl) descEl.innerHTML = "This will permanently remove the contact.<br>This cannot be undone.";
+
+        if(modal && confirmBtn) {
+            // Remove old listeners by cloning
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+            
+            newBtn.onclick = async () => {
+                newBtn.textContent = "DELETING...";
+                newBtn.disabled = true;
+                
+                try {
+                     // Try Server Delete first
+                     const res = await fetch('/api/admin/delete-post', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${state.token}`
+                        },
+                        body: JSON.stringify({ id: id, table: 'contacts' }) 
+                    });
+                    const data = await res.json();
+                    
+                    if(data.success) {
+                         showToast("CONTACT DELETED");
+                         modal.style.display = 'none';
+                         await fetchInbox();
+                         window.refocusInbox();
+                    } else {
+                         throw new Error(data.message);
+                    }
+                } catch(e) {
+                     console.warn("Server delete failed, trying direct...", e);
+                     const { error } = await state.client.from('contacts').delete().eq('id', id);
+                     if(error) { showToast("DELETE FAILED: " + error.message); }
+                     else { 
+                         showToast("CONTACT DELETED");
+                         modal.style.display = 'none';
+                         await fetchInbox();
+                         window.refocusInbox();
+                     }
+                } finally {
+                    newBtn.textContent = "DELETE";
+                    newBtn.disabled = false;
+                }
+            };
+            
+            modal.style.display = 'flex';
+            // Enforce proper centering
+            modal.style.position = 'fixed';
+            modal.style.inset = '0';
+            modal.style.zIndex = '10000';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.backdropFilter = 'blur(5px)';
+        }
+        return false;
+    };
 
     function updateStats(posts) {
         const statViews = document.getElementById('statViews');
@@ -895,10 +1325,10 @@
                         if (post.slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
                         return `
                             <a href="${postUrl}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>
-                            <button onclick="copyPostLink('${post.slug}')" title="Copy Link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
+                            <button type="button" onclick="copyPostLink('${post.slug}')" title="Copy Link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
                         `;
                     })() : ''}
-                    <button onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
+                    <button type="button" onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
                 </div>
             </div>
             `;
@@ -911,6 +1341,15 @@
         const modal = document.getElementById('deleteModal');
         if(modal) {
             modal.style.display = 'flex';
+            // Enforce proper centering for posts as well
+            modal.style.position = 'fixed';
+            modal.style.inset = '0';
+            modal.style.zIndex = '10000';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.backdropFilter = 'blur(5px)';
+
             const confirmBtn = document.getElementById('confirmDeleteBtn');
             // Remove old listeners to prevent stacking
             const newBtn = confirmBtn.cloneNode(true);
@@ -1020,71 +1459,6 @@
         const fileInput = document.getElementById('fileInput');
         if(fileInput) fileInput.addEventListener('change', window.handleFileUpload);
         
-        const postForm = document.getElementById('postForm');
-        if(postForm) {
-            postForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const submitBtn = document.getElementById('submitBtn');
-                const originalText = submitBtn.textContent;
-                submitBtn.textContent = "PROCESSING...";
-                submitBtn.disabled = true;
-
-                const formData = new FormData(postForm);
-                const postId = document.getElementById('postIdInput').value; // Check for ID
-                
-                // VALIDATE SLUG
-                const rawSlug = formData.get('slug');
-                if (!/^[a-z0-9-]+$/.test(rawSlug)) {
-                    showToast("INVALID SLUG: Use a-z, 0-9, - only.");
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                    return;
-                }
-
-                const postData = {
-                    title: formData.get('title'),
-                    slug: formData.get('slug'),
-                    image_url: document.getElementById('imageUrl').value || document.getElementById('urlInput').value,
-                    excerpt: formData.get('excerpt'),
-                    content: formData.get('content'),
-                    published: document.getElementById('pubToggle').checked, // Map to boolean
-                    category: formData.get('category'),
-                    author: formData.get('author'),
-                    tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim().toLowerCase()).filter(t => t) : [],
-                    seo_title: formData.get('seo_title'),
-                    seo_desc: formData.get('seo_desc'),
-                    archetype_slug: document.getElementById('archetype').value
-                };
-                
-                // If NEW, add created_at
-                if(!postId) postData.created_at = new Date().toISOString();
-
-                try {
-                    let result;
-                    if (postId) {
-                        // UPDATE
-                        result = await state.client.from('posts').update(postData).eq('id', postId);
-                    } else {
-                        // INSERT
-                        result = await state.client.from('posts').insert([postData]);
-                    }
-
-                    if(result.error) throw result.error;
-                    
-                    showToast(postId ? "UPDATED SUCCESSFULLY" : "BROADCAST LIVE");
-                    resetForm(); // Clear form after success
-                    await fetchPosts(true); 
-                    
-                } catch(err) {
-                    console.error("BROADCAST ERROR:", err);
-                    showToast("FAILED: " + err.message);
-                    submitBtn.textContent = originalText;
-                } finally {
-                    submitBtn.disabled = false;
-                    if(!postId) submitBtn.textContent = "COMMENCE BROADCAST"; 
-                }
-            });
-        }
     }
 
     if (document.readyState === 'loading') {
@@ -1128,6 +1502,92 @@
                 }
             }
         );
+    };
+
+    // NEW: Manual Form Submission Handler (since form is now a div)
+    // --- POST MANAGEMENT ---
+    window.managePost = async function() {
+        const id = document.getElementById('postIdInput')?.value;
+        const title = document.getElementById('titleInput')?.value.trim();
+        const content = document.getElementById('descInput')?.value.trim();
+        const slugRaw = document.getElementById('slugInput')?.value.trim();
+        const tagsRaw = document.getElementById('tagsInput')?.value.trim();
+        const imageUrl = document.getElementById('imageUrl')?.value;
+
+        if (!title) throw new Error("HEADLINE REQUIRED");
+
+        // Auto-Generate Slug if empty
+        let slug = slugRaw;
+        if (!slug) {
+            slug = title.toLowerCase()
+                .replace(/[^\w\s-]/g, '') // Remove non-word chars
+                .replace(/\s+/g, '-')     // Replace spaces with -
+                .replace(/--+/g, '-')     // Replace multiple - with single
+                .trim();
+        }
+
+        const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(t => t) : [];
+
+        const payload = {
+            title,
+            content,
+            slug,
+            tags,
+            image_url: imageUrl,
+            published: true, // "Commence Broadcast" = Live
+            updated_at: new Date().toISOString()
+        };
+
+        if (id) {
+            // UPDATE
+            console.log("📝 UPDATING POST:", id);
+            const { error } = await state.client.from('posts').update(payload).eq('id', id);
+            if (error) throw error;
+        } else {
+            // INSERT
+            console.log("📝 CREATING POST");
+            payload.created_at = new Date().toISOString();
+            const { error } = await state.client.from('posts').insert([payload]);
+            if (error) throw error;
+        }
+        
+        resetForm();
+        await fetchPosts(true); // Force refresh
+    };
+
+    window.handlePostSubmit = async function(event) {
+        if(event) { event.preventDefault(); event.stopPropagation(); }
+        
+        // Manual Validation
+        const title = document.getElementById('titleInput')?.value.trim();
+        const desc = document.getElementById('descInput')?.value.trim();
+        
+        if (!title) {
+            showToast("ERROR: HEADLINE REQUIRED");
+            document.getElementById('titleInput')?.focus();
+            return;
+        }
+        if (!desc) {
+             showToast("ERROR: BRIEFING REQUIRED");
+             document.getElementById('descInput')?.focus();
+             return;
+        }
+
+        // Show loading state
+        const btn = document.getElementById('submitBtn');
+        const ogText = btn.textContent;
+        btn.textContent = "TRANSMITTING...";
+        btn.disabled = true;
+
+        try {
+            await window.managePost();
+            showToast("TRANSMISSION SUCCESSFUL");
+        } catch (e) {
+            showToast("TRANSMISSION ERROR: " + e.message);
+        } finally {
+            btn.textContent = ogText;
+            btn.disabled = false;
+        }
     };
 
 

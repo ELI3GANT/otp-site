@@ -28,6 +28,7 @@ app.use(helmet({
         directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
+            scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
@@ -302,6 +303,90 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
     } catch (error) {
         console.error("Image Gen Error:", error.stack);
         res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 5. CONTACT AGENT (AI Auto-Draft)
+app.post('/api/contact/submit', async (req, res) => {
+    const { name, email, service, message, budget, timeline } = req.body;
+    
+    // 1. Basic Validation
+    if (!name || !email) {
+        return res.status(400).json({ success: false, message: "Name and Email are required." });
+    }
+
+    try {
+        const adminClient = supabaseAdmin; 
+        if (!adminClient) throw new Error("Server missing Supabase Admin Key");
+
+        // 2. Save Contact to DB
+        const { data: contactData, error: dbError } = await adminClient
+            .from('contacts')
+            .insert([{ 
+                name, email, service, message, budget, timeline, 
+                ai_status: 'processing' 
+            }])
+            .select()
+            .single();
+
+        if (dbError) throw dbError;
+
+        // 3. Trigger AI Agent (Fire and Forget or Await?)
+        // We will await it to ensure it's done for the demo, but usually this is a background job.
+        
+        const systemPrompt = `You are the Studio Manager for 'Only True Perspective' (OTP), a high-end creative agency.
+        Your goal represents the agency to a potential client.
+        Tone: Professional, high-status, concise, slightly futuristic ("dope").
+        Action: Draft a reply email acknowledging their inquiry and proposing a time to talk.
+        Context: 
+        - If budget is low (<$500), allow them to down gently or suggest "The Visualizer" package.
+        - If budget is high ($3000+), give them VIP treatment.
+        - Sign off with "OTP // Visual Division".`;
+
+        const userPrompt = `Client: ${name}
+        Service: ${service}
+        Budget: ${budget}
+        Message: ${message}
+        
+        Task: Write the email draft (Subject + Body).`;
+
+        // Use the same AI logic as /generate, but simplified inline here for speed or reuse function.
+        // For simplicity, we'll try Gemini first as it's free/fast, fallback to OpenAI.
+        
+        let draftReply = "";
+        let analysis = {};
+
+        if (process.env.GEMINI_API_KEY) {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }]
+                })
+            });
+            const data = await response.json();
+            if (data.candidates) {
+                draftReply = data.candidates[0].content.parts[0].text;
+            }
+        } 
+        
+        // 4. Update Contact with Draft
+        if (draftReply) {
+            await adminClient
+                .from('contacts')
+                .update({ 
+                    draft_reply: draftReply,
+                    ai_status: 'drafted',
+                    ai_analysis: { generated_at: new Date().toISOString() }
+                })
+                .eq('id', contactData.id);
+        }
+
+        res.json({ success: true, message: "Contact received and agent activated." });
+
+    } catch (error) {
+        console.error("Agent Error:", error);
+        res.status(500).json({ success: false, message: "Server error processing contact." });
     }
 });
 

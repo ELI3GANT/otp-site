@@ -998,6 +998,61 @@ function initSite() {
         });
     }
 
+    // --- CONTACT FORM SUBMISSION (AI AGENT) ---
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = contactForm.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.innerText = "SENDING...";
+            btn.disabled = true;
+
+            const formData = new FormData(contactForm);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const res = await fetch('/api/contact/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                
+                if (result.success) {
+                    // Hide Form, Show Success
+                    contactForm.style.display = 'none';
+                    const successDiv = document.getElementById('successState');
+                    if (successDiv) {
+                        successDiv.style.display = 'block';
+                        // Animate if GSAP available
+                        if (typeof gsap !== 'undefined') {
+                            gsap.to(successDiv.querySelector('.success-icon'), { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" });
+                            gsap.to(successDiv.querySelector('h3'), { opacity: 1, y: 0, delay: 0.2, duration: 0.5 });
+                            gsap.to(successDiv.querySelector('p'), { opacity: 1, y: 0, delay: 0.3, duration: 0.5 });
+                        } else {
+                            // Fallback simple fade
+                            successDiv.style.opacity = 1; 
+                        }
+                    }
+                } else {
+                    throw new Error(result.message);
+                }
+
+            } catch (err) {
+                console.error(err);
+                btn.innerText = "ERROR - TRY AGAIN";
+                btn.disabled = false;
+                setTimeout(() => btn.innerText = originalText, 3000);
+                
+                const statusDiv = document.getElementById('formStatus');
+                if (statusDiv) statusDiv.textContent = "Error: " + err.message;
+            }
+        });
+    }
+
     // 10. BOOTSTRAP REALTIME & DYNAMIC CONTENT
     if (window.OTP && window.OTP.initRealtimeState) {
         window.OTP.initRealtimeState();
