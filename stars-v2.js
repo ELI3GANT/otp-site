@@ -67,10 +67,14 @@ window.resetStars = () => {
     console.log('[Stars] Force Reset for Theme Sync');
 };
 
+// Theme State Cache (Performance Optimization)
+let isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+
 // Watch for theme attribute changes directly for robust sync
 const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+            isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
             window.resetStars();
         }
     });
@@ -226,13 +230,12 @@ class Star {
     }
 
     draw() {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         ctx.beginPath();
         
         if (attractor.active && this.hue != null) {
             // WARP STREAKS (Vibrant HSL)
             // Use Hue for color, Alpha for fade
-            const lightness = isLight ? '30%' : '70%'; // Darker in light mode
+            const lightness = isLightMode ? '30%' : '70%'; // Darker in light mode
             ctx.strokeStyle = `hsla(${this.hue}, 100%, ${lightness}, ${this.alpha})`;
             ctx.lineWidth = Math.max(1, this.size * this.z); 
             ctx.moveTo(this.x, this.y);
@@ -243,7 +246,7 @@ class Star {
             // STANDARD STAR (RGB)
             let drawColor = this.baseColor;
             
-            if (isLight) {
+            if (isLightMode) {
                 // PREMIUM DAY MODE PALETTE: Using deep space variations instead of pure black
                 if (this.baseColor === '255, 255, 255') drawColor = '20, 20, 45'; // Deep Midnight
                 else if (this.baseColor === '0, 195, 255') drawColor = '0, 110, 220'; // Vivid Blue
@@ -275,14 +278,13 @@ class ShootingStar {
     }
 
     draw() {
-        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
         ctx.beginPath();
         const endX = this.x + this.length * Math.cos(this.angle); 
         const endY = this.y - this.length * Math.sin(this.angle);
         
         // Adjust color for light mode visibility
         let drawColor = this.color;
-        if (isLight) {
+        if (isLightMode) {
             if (this.color === '255, 255, 255') drawColor = '20, 20, 45'; // Matching Deep Midnight
             else if (this.color === '0, 195, 255') drawColor = '0, 80, 200';
         }
@@ -306,7 +308,6 @@ for (let i = 0; i < STAR_COUNT; i++) {
 
 function animate() {
     ctx.clearRect(0, 0, width, height);
-    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
 
     // Check for Archive Page (No Motion Request)
     const isArchive = document.body.classList.contains('archive-page');
@@ -330,8 +331,8 @@ function animate() {
                 ctx.beginPath();
                 
                 // Theme-aware connections: Richer violet in Day Mode
-                let connColor = isLight ? '112, 0, 255' : '112, 0, 255';
-                let opacity = (1 - distance / CONNECTION_DIST) * (isLight ? 0.35 : 0.8);
+                let connColor = isLightMode ? '112, 0, 255' : '112, 0, 255';
+                let opacity = (1 - distance / CONNECTION_DIST) * (isLightMode ? 0.35 : 0.8);
                 
                 ctx.strokeStyle = `rgba(${connColor}, ${opacity})`; 
                 ctx.lineWidth = 0.5;
@@ -340,13 +341,6 @@ function animate() {
                 ctx.stroke();
                 
                  // Gentle mouse attraction
-                 // Disable attraction movement on archive to keep them strictly static?
-                 // Summary said: "stars are static... though mouse interaction for connections remains"
-                 // usually "interaction" implies some movement, but "static" implies position doesn't change.
-                 // I will keep the movement for interaction unless strictly asked not to, 
-                 // but typically "autoplay motion removal" refers to the constant drift.
-                 // However, to be "truly static" usually means they don't move at all.
-                 // Let's allow interaction movement if user touches them, but no ambient drift.
                  if (!isArchive) {
                      star.x += dx * 0.005; 
                      star.y += dy * 0.005;
