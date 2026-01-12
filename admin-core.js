@@ -1850,14 +1850,36 @@
         showToast("EMERGENCY BROADCAST SENT");
     };
 
-    window.refreshLiveSite = async function() {
-        // Wrap in timeout to detach from click event loop
-        setTimeout(async () => {
-            if(!confirm("THIS WILL REFRESH ALL ACTIVE VISITOR SESSIONS. PROCEED?")) return;
-            if(!state.siteChannel) return;
-            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh' } });
-            showToast("NETWORK REFRESH COMMAND SENT");
-        }, 50);
+    window.confirmAction = function(title, text, callback) {
+        const modal = document.getElementById('actionModal');
+        if(!modal) return;
+        
+        document.getElementById('actionModalTitle').textContent = title;
+        document.getElementById('actionModalText').textContent = text;
+        
+        const btn = document.getElementById('confirmActionBtn');
+        // Clone to remove old listeners
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        
+        newBtn.onclick = async () => {
+            modal.style.display = 'none';
+            await callback();
+        };
+        
+        modal.style.display = 'flex';
+    };
+
+    window.refreshLiveSite = function() {
+        confirmAction(
+            "PURGE NETWORK CACHE?", 
+            "This will force a reload for all active visitors to ensure they see the latest updates. Proceed?",
+            async () => {
+                if(!state.siteChannel) return;
+                await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh' } });
+                showToast("NETWORK CACHE PURGED");
+            }
+        );
     };
 
     // SQL Schema Cache
