@@ -5668,3 +5668,17 @@ input:focus, select:focus, textarea:focus {
 .calendly-overlay {
   z-index: 999999 !important;
 }
+
+/* Force Calendly Close Button Visibility */
+.calendly-close-overlay {
+  z-index: 1000000 !important;
+  display: block !important;
+  opacity: 1 !important;
+  cursor: pointer;
+}
+
+.calendly-popup-close {
+  z-index: 1000001 !important;
+  display: block !important;
+  color: #fff !important; 
+}
