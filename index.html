@@ -852,7 +852,7 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS (Moved to bottom for reliable loading) -->
-  <script src="site-config.js"></script>
+  <script src="site-config.js?v=1.0"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/kursor"></script>
 
@@ -903,15 +903,20 @@
   <script>
     document.addEventListener('DOMContentLoaded', () => {
         // SUPABASE INIT (Using centralized config)
-        const SUPABASE_URL = window.OTP_CONFIG.supabaseUrl;
-        const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
-        
         let supabase;
         try {
-            if (window.supabase \u0026\u0026 SUPABASE_URL) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            if (window.OTP_CONFIG) {
+                const SUPABASE_URL = window.OTP_CONFIG.supabaseUrl;
+                const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
+                
+                if (window.supabase && SUPABASE_URL) {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    console.log('✅ Supabase Initialized');
+                } else {
+                    console.error("❌ Supabase library not loaded or URL missing");
+                }
             } else {
-                console.error("Supabase library not loaded");
+                console.error("❌ OTP_CONFIG not found in window");
             }
         } catch(e) { console.error("Supabase Init Error", e); }
 
@@ -942,7 +947,8 @@
         const formStatus = document.getElementById('formStatus');
         
         if (contactForm) {
-      contactForm.addEventListener('submit', async (e) => {
+          console.log('✅ Contact Form Handler Attached');
+          contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const submitBtn = contactForm.querySelector('button[type="submit"]');
