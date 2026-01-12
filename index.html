@@ -126,7 +126,7 @@
       <p class="hero-value" id="hero-value" data-editable="true">Growth, clarity, and results.</p>
       
       <div class="hero-cta">
-        <a href="" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});return false;" class="book-btn">Secure a Vision Session</a>
+        <a href="" onclick="openBooking();return false;" class="book-btn">Secure a Vision Session</a>
       </div>
 
       <div class="hero-micro">
@@ -762,7 +762,7 @@
             <button type="submit" class="k-hover k-hover-primary book-btn">Send Details</button>
             <div style="margin-top: 15px; text-align: center;">
               <span class="muted" style="font-size: 0.9rem;">Prefer a call?</span>
-              <a href="" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});return false;" style="color: var(--accent2); text-decoration: none; font-weight: 700; margin-left: 5px;">Book a Strategy Call</a>
+      <a href="" onclick="openBooking();return false;" style="color: var(--accent2); text-decoration: none; font-weight: 700; margin-left: 5px;">Book a Strategy Call</a>
             </div>
           </div>
           
@@ -897,6 +897,29 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
+
+    // --- CALENDLY CUSTOM HANDLER ---
+    window.openBooking = function() {
+      // 1. Trigger Calendly
+      Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});
+      
+      // 2. Inject SAFETY EXIT BUTTON (Manual Override)
+      // Check if exists first
+      if (document.getElementById('custom-calendly-close')) return;
+
+      const btn = document.createElement('div');
+      btn.id = 'custom-calendly-close';
+      btn.innerHTML = '&times;';
+      btn.onclick = function() {
+         // Try standard close
+         const overlay = document.querySelector('.calendly-overlay');
+         if (overlay) overlay.remove(); 
+         // Close self
+         btn.remove();
+      };
+      document.body.appendChild(btn);
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         // SUPABASE INIT (Using centralized config)
         let supabase;

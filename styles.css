@@ -5682,3 +5682,28 @@ input:focus, select:focus, textarea:focus {
   display: block !important;
   color: #fff !important; 
 }
+/* Custom Calendly Close Button (Mobile Safety) */
+#custom-calendly-close {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2147483647; /* MAXIMUM INT */
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+#custom-calendly-close:active {
+  transform: scale(0.9);
+  background: #ff0000;
+}
