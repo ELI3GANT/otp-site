@@ -691,8 +691,8 @@
           <div class="form-group">
             <label for="service">Interested In</label>
             <select id="service" name="service" required>
-              <option value="" disabled selected>Select a service</option>
-              <optgroup label="Music & Video">
+              <option value="" disabled selected>Select a package or service</option>
+              <optgroup label="Music & Visuals">
                 <option value="The Visualizer">The Visualizer</option>
                 <option value="The Official Video">The Official Video</option>
                 <option value="The Rollout">The Rollout</option>
@@ -947,6 +947,11 @@
           contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        if (!supabase) {
+             alert("Error: Database connection not established. Please reload or contact directly via email.");
+             return;
+        }
+
         const submitBtn = contactForm.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.textContent;
         submitBtn.disabled = true;
