@@ -11,6 +11,7 @@ const { createClient } = require('@supabase/supabase-js');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const app = express();
+app.disable('x-powered-by'); // Hide stack details
 const port = process.env.PORT || 3000;
 
 // Initialize Supabase Admin Client (Service Role)
