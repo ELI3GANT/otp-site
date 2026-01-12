@@ -187,11 +187,11 @@
                     <div id="status-theme" style="font-size: 0.75rem; color: var(--accent2); font-weight: bold; margin-top: 4px;">NIGHT-MODE</div>
                 </div>
 
-                <div class="cmd-tile" onclick="refreshLiveSite()" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
+                <button type="button" class="cmd-tile" onclick="refreshLiveSite()" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s; color: inherit; font-family: inherit;">
                     <div style="font-size: 1.2rem; margin-bottom: 5px;">🔄</div>
                     <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Cache Purge</div>
                     <div style="font-size: 0.75rem; color: var(--admin-success); font-weight: bold; margin-top: 4px;">EXECUTE</div>
-                </div>
+                </button>
             </div>
 
             <!-- ROW 2: ADVANCED FX & WARP -->
@@ -530,7 +530,10 @@
             
             <div class="action-row-stack">
                 <button type="submit" id="submitBtn" class="btn-broadcast" aria-label="Publish post to the live network">COMMENCE BROADCAST</button>
-                <button type="button" onclick="openDraftPreview()" class="btn-preview">DEEP PREVIEW</button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" onclick="openDraftPreview()" class="btn-preview" style="flex: 1;">PREVIEW</button>
+                    <button type="button" onclick="resetForm()" class="btn-secondary" style="width: auto; background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted);">RESET</button>
+                </div>
             </div>
             
             <!-- SECTION: MANAGE -->

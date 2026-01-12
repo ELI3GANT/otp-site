@@ -1851,10 +1851,13 @@
     };
 
     window.refreshLiveSite = async function() {
-        if(!confirm("THIS WILL REFRESH ALL ACTIVE VISITOR SESSIONS. PROCEED?")) return;
-        if(!state.siteChannel) return;
-        await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh' } });
-        showToast("NETWORK REFRESH COMMAND SENT");
+        // Wrap in timeout to detach from click event loop
+        setTimeout(async () => {
+            if(!confirm("THIS WILL REFRESH ALL ACTIVE VISITOR SESSIONS. PROCEED?")) return;
+            if(!state.siteChannel) return;
+            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh' } });
+            showToast("NETWORK REFRESH COMMAND SENT");
+        }, 50);
     };
 
     // SQL Schema Cache
