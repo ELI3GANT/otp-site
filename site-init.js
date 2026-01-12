@@ -998,6 +998,37 @@ function initSite() {
     if (window.OTP && window.OTP.initLiveEditor) {
         window.OTP.initLiveEditor();
     }
+    
+    // 11. INIT SITE STATUS (PROACTIVE ALERTS)
+    (async function initSiteStatus() {
+        const statusEl = document.getElementById('siteStatus');
+        if (!statusEl || typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
+        
+        const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+        
+        try {
+            const { data } = await client.from('posts').select('content').eq('slug', 'system-global-state').single();
+            if (data && data.content) {
+                const config = JSON.parse(data.content);
+                if (config.status) {
+                    const textEl = statusEl.querySelector('.status-text');
+                    if (textEl) textEl.textContent = `SYSTEM: ${config.status.toUpperCase()}`;
+                }
+            }
+        } catch(e) {}
+
+        // Listen for Realtime Updates
+        const channel = client.channel('site_status_sync');
+        channel.on('broadcast', { event: 'command' }, (msg) => {
+            if (msg.payload && msg.payload.type === 'status') {
+                const textEl = statusEl.querySelector('.status-text');
+                if (textEl) textEl.textContent = `SYSTEM: ${msg.payload.value.toUpperCase()}`;
+                
+                // Visual Flash for New Update
+                gsap.fromTo(statusEl, { opacity: 0.3 }, { opacity: 1, duration: 0.5, repeat: 3, yoyo: true });
+            }
+        }).subscribe();
+    })();
 }
 
 if (document.readyState === 'loading') {

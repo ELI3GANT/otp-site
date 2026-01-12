@@ -187,6 +187,12 @@
                     <div id="status-theme" style="font-size: 0.75rem; color: var(--accent2); font-weight: bold; margin-top: 4px;">NIGHT-MODE</div>
                 </div>
 
+                <div class="cmd-tile" onclick="openStatusPrompt()" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s;">
+                    <div style="font-size: 1.2rem; margin-bottom: 5px;">📢</div>
+                    <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Global Status</div>
+                    <div id="status-message" style="font-size: 0.7rem; color: var(--admin-success); font-weight: bold; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">OPERATIONAL</div>
+                </div>
+
                 <button type="button" class="cmd-tile" onclick="refreshLiveSite()" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; cursor: pointer; text-align: center; transition: 0.2s; color: inherit; font-family: inherit;">
                     <div style="font-size: 1.2rem; margin-bottom: 5px;">🔄</div>
                     <div style="font-size: 0.65rem; color: var(--admin-muted); text-transform: uppercase;">Cache Purge</div>

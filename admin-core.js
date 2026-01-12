@@ -255,6 +255,9 @@
             const isDay = value === 'light';
             el.textContent = isDay ? 'DAY-MODE' : 'NIGHT-MODE';
             el.style.color = isDay ? '#ffaa00' : 'var(--accent2)';
+        } else if (type === 'status') {
+            el.textContent = value.toUpperCase();
+            el.style.color = 'var(--admin-success)';
         }
     }
 
@@ -275,6 +278,7 @@
             syncDashboardElement('visuals', config.visuals);
             syncDashboardElement('kursor', config.kursor);
             syncDashboardElement('theme', config.theme);
+            syncDashboardElement('status', config.status || 'OPERATIONAL');
 
             // Sync Satellite URL (API Base)
             if (config.api_base) {
@@ -1970,6 +1974,28 @@
                 }
                 
                 showToast("EMERGENCY BROADCAST SENT");
+            }
+        );
+    };
+
+    window.openStatusPrompt = function() {
+        promptAction(
+            "UPDATE GLOBAL SITE STATUS",
+            "Set the message displayed in the site footer.",
+            "e.g. OPERATIONAL, NEW INSIGHT LIVE, etc.",
+            async (msg) => {
+                if(!state.siteChannel || !msg) return;
+                
+                // 1. Broadcast to Network
+                await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'status', value: msg } });
+                
+                // 2. Persist to DB
+                persistSystemState('status', msg);
+                
+                // 3. Update Admin UI
+                syncDashboardElement('status', msg);
+                
+                showToast("SITE STATUS UPDATED");
             }
         );
     };
