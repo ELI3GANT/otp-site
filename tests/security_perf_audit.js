@@ -3,7 +3,8 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 
 async function runSecurityPerfAudit() {
     console.log("🛡️ STARTING SECURITY & PERFORMANCE AUDIT...");
-    const url = "http://localhost:8080";
+    const PORT = process.env.PORT || 3000;
+    const url = `http://localhost:${PORT}`;
     
     try {
         const start = Date.now();

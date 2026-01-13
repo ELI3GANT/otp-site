@@ -4,7 +4,8 @@
  */
 const autocannon = require('autocannon');
 
-const TARGET_URL = process.env.TARGET_URL || 'http://localhost:3000';
+const PORT = process.env.PORT || 3000;
+const TARGET_URL = process.env.TARGET_URL || `http://localhost:${PORT}`;
 const DURATION = parseInt(process.env.DURATION) || 30; // 30 seconds for quick report
 
 async function runStressTest() {
