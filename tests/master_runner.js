@@ -18,7 +18,9 @@ const tests = [
     { name: 'User Flow Validation', path: 'tests/user_flow_validation.js' },
     { name: 'Authentication Logic', path: 'tests/auth_flow_test.js' },
     { name: 'Post Management Logic', path: 'tests/manage_post_test.js' },
-    { name: 'Email Link Logic', path: 'tests/email_link_test.js' }
+    { name: 'Email Link Logic', path: 'tests/email_link_test.js' },
+    { name: 'Theme Logic', path: 'tests/theme.test.js' },
+    { name: 'Menu Logic', path: 'tests/menu_logic_test.js' }
 ];
 
 async function runAll() {
