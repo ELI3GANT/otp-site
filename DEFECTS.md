@@ -28,3 +28,22 @@
 - **Location:** System/Shell
 - **Description:** `timeout` command missing on macOS environment.
 - **Recommendation:** Use native node scripts or `perl` for timeouts.
+
+## 4. Resolved - Perspective Audit Cycle (2026-01-14)
+### [C-02] Admin Sync Crash (FIXED)
+- **Location:** `admin-core.js`
+- **Description:** Admin terminal crashed ("Syncing Error") when Supabase returned `answers` as a string instead of JSON.
+- **Resolution:** Added `JSON.parse` safety check in `fetchLeads`.
+- **Status:** Verified.
+
+### [M-03] Missing Goal in Audit Data (FIXED)
+- **Location:** `audit-engine.js`, `server.js`, `admin-core.js`
+- **Description:** User's specific "Growth Goal" (Step 5) was not being captured or displayed.
+- **Resolution:** Added `q5_goal` to capture flow, server prompt, and admin UI.
+- **Status:** Verified.
+
+### [M-04] Gemini Rate Limits (FIXED)
+- **Location:** `server.js`
+- **Description:** Frequent 429 errors from Gemini API caused audit generation to fail.
+- **Resolution:** Implemented exponential backoff retry logic for 429 responses.
+- **Status:** Verified.
