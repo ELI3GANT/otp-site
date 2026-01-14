@@ -1,0 +1,30 @@
+# Defect Log - Live Site Debugging
+**Date:** 2026-01-13
+**Environment:** Localhost / Static Analysis
+**Tester:** Gemini CLI
+
+## 1. Critical Defects
+### [C-01] Mobile Menu Closes on Scroll (FIXED)
+- **Location:** `site-init.js` (Line ~950)
+- **Description:** The mobile menu (`.nav-drawer`) has a scroll listener on `window` that forces it to close.
+- **Resolution:** Added a 50px threshold check and ensured `nav-open` class is removed from body. Added `body.nav-open { overflow: hidden }` to CSS.
+- **Status:** Verified.
+
+## 2. Major Defects
+### [M-01] Server Startup Reliability (FIXED)
+- **Location:** `server.js`
+- **Description:** Server failed to bind to port 8080 reliably (IPv6 vs IPv4 conflict).
+- **Resolution:** Modified `server.js` to explicitly listen on `0.0.0.0`.
+- **Status:** Verified.
+
+### [M-02] Admin Toast Dependency (FIXED)
+- **Location:** `admin-core.js`
+- **Description:** Global error handler uses `window.showToast` which might not be defined if the error occurs during early initialization.
+- **Resolution:** Hoisted `showToast` definition to the top of the file.
+- **Status:** Verified.
+
+## 3. Minor Defects
+### [m-01] Missing Timeout Command
+- **Location:** System/Shell
+- **Description:** `timeout` command missing on macOS environment.
+- **Recommendation:** Use native node scripts or `perl` for timeouts.

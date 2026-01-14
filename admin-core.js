@@ -15,6 +15,27 @@
         }
     });
 
+    /**
+     * Centralized Toast System
+     * Defined early for use in initialization error traps.
+     */
+    window.showToast = function(msg) {
+        const toast = document.getElementById('toast');
+        if(!toast) return;
+        
+        // Reset
+        toast.classList.remove('show');
+        void toast.offsetWidth; // Force reflow
+        
+        toast.querySelector('span').textContent = msg;
+        toast.classList.add('show');
+        
+        // Auto hide after 4s
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
+    };
+
     // 0. CONFIGURATION
     const CONFIG = {
         supabaseUrl: window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : '',
@@ -102,6 +123,7 @@
             fetchCategories();
             fetchArchetypes();
             fetchInbox();
+            fetchLeads();
             
             // Backup Polling (30s) - Realtime handles immediate updates
             setInterval(() => fetchPosts(false), 30000);
@@ -844,6 +866,72 @@
 
         } catch(e) {
             inbox.innerHTML = `<div style="text-align: center; color: #ff4444; padding: 20px;">ERROR: ${e.message}</div>`;
+        }
+    };
+    
+    // --- PERSPECTIVE AUDIT LEADS ---
+    window.fetchLeads = async function() {
+        const leads = document.getElementById('leadsManager');
+        if(!leads) return;
+
+        try {
+            const { data, error } = await state.client
+                .from('leads')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(100);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                leads.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO LEADS CAPTURED YET</div>';
+                return;
+            }
+
+            leads.innerHTML = data.map(l => {
+                const answers = l.answers || {};
+                return `
+                <div class="post-row" style="display: block; padding: 15px; margin-bottom: 10px; cursor: default; border-left: 2px solid var(--admin-cyan);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <div>
+                             <span style="font-weight: bold; color: var(--admin-accent); font-size: 0.9rem;">${l.email}</span>
+                             <span style="font-size: 0.65rem; color: var(--admin-muted); margin-left: 10px;">${new Date(l.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div style="display:flex; gap: 8px; align-items:center;">
+                            <div style="font-size: 0.7rem; font-family: monospace; color: var(--admin-cyan); border: 1px solid var(--admin-cyan); padding: 2px 6px; border-radius: 4px;">AUDIT</div>
+                            <button type="button" onclick="return deleteLead('${l.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer;">✖</button>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; margin-bottom: 15px; color: var(--admin-text); background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px;">
+                        <div><span style="color: var(--admin-muted);">GOAL:</span> ${answers.q1 || 'N/A'}</div>
+                        <div><span style="color: var(--admin-muted);">HURDLE:</span> ${answers.q2 || 'N/A'}</div>
+                        <div><span style="color: var(--admin-muted);">PLATFORM:</span> ${answers.q3 || 'N/A'}</div>
+                        <div><span style="color: var(--admin-muted);">VIBE:</span> ${answers.q4 || 'N/A'}</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); border-left: 2px solid var(--admin-accent); padding: 15px; border-radius: 4px; font-size: 0.85rem; line-height: 1.6;">
+                        <div style="font-size: 0.6rem; color: var(--admin-accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">TACTICAL RESPONSE</div>
+                        <div style="color: #ddd;">${(l.advice || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+        } catch(e) {
+            leads.innerHTML = `<div style="text-align: center; color: #ff4444; padding: 20px;">ERROR SYNCING LEADS: ${e.message}</div>`;
+        }
+    };
+
+    window.deleteLead = async function(id, event) {
+        if(event) { event.preventDefault(); event.stopPropagation(); }
+        if(!confirm("Are you sure you want to delete this lead?")) return;
+
+        try {
+            const { error } = await state.client.from('leads').delete().eq('id', id);
+            if(error) throw error;
+            showToast("LEAD DELETED");
+            await fetchLeads();
+        } catch(e) {
+            showToast("DELETE FAILED: " + e.message);
         }
     };
     
@@ -1725,23 +1813,6 @@
              .replace(/>/g, "&gt;")
              .replace(/"/g, "&quot;")
              .replace(/'/g, "&#039;");
-    };
-
-    window.showToast = function(msg) {
-        const toast = document.getElementById('toast');
-        if(!toast) return;
-        
-        // Reset
-        toast.classList.remove('show');
-        void toast.offsetWidth; // Force reflow
-        
-        toast.querySelector('span').textContent = msg;
-        toast.classList.add('show');
-        
-        // Auto hide after 4s (longer for errors)
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 4000);
     };
 
     // SOCIAL PREVIEW UPDATER (Multi-Platform)

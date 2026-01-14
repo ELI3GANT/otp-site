@@ -8,15 +8,15 @@ my# Admin Portal Roadmap
 
 ## Phase 2: Content & editing (Next Up)
 ### 1. Live Site Editor
-**Goal**: Allow editing text and swapping images directly from the site frontend when logged as admin.
-- **Tech**: `contenteditable` attributes toggled by Admin Mode.
-- **Backend**: Supabase Table `site_content` to store key-value pairs for headings, hero text, etc.
-- **UI**: A floating sidebar on the main site (visible only to Admin) to "Save Changes".
+- [x] **Goal**: Allow editing text and swapping images directly from the site frontend when logged as admin.
+- [x] **Tech**: `contenteditable` attributes toggled by Admin Mode.
+- [x] **Backend**: Supabase Table `site_content` to store key-value pairs for headings, hero text, etc.
+- [x] **UI**: A floating sidebar on the main site (visible only to Admin) to "Save Changes".
 
 ### 2. Media Manager V2
-**Goal**: A visual grid of all uploaded assets to easily reuse content.
-- **Feature**: "Select from Library" button in the Admin Post Creator.
-- **Optimization**: Auto-compress images on upload using a server function or client-side canvas compression.
+- [x] **Goal**: A visual grid of all uploaded assets to easily reuse content.
+- [x] **Feature**: "Select from Library" button in the Admin Post Creator.
+- [x] **Optimization**: Auto-compress images on upload using a server function or client-side canvas compression.
 
 ## Phase 3: Business & Growth (Future)
 ### 3. Advanced Analytics Dashboard

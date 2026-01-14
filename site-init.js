@@ -802,19 +802,27 @@ function initSite() {
         navToggle.addEventListener('click', () => {
             const isOpen = navDrawer.classList.contains('open');
             navDrawer.classList.toggle('open');
+            document.body.classList.toggle('nav-open', !isOpen);
             navToggle.setAttribute('aria-expanded', (!isOpen).toString());
         });
         drawerLinks.forEach(link => {
             link.addEventListener('click', () => {
                 navDrawer.classList.remove('open');
+                document.body.classList.remove('nav-open');
                 navToggle.setAttribute('aria-expanded', 'false');
             });
         });
+        let lastScrollY = window.scrollY;
         window.addEventListener('scroll', () => {
             if (navDrawer.classList.contains('open')) {
-                navDrawer.classList.remove('open');
-                navToggle.setAttribute('aria-expanded', 'false');
+                const diff = Math.abs(window.scrollY - lastScrollY);
+                if (diff > 50) { // Only close on significant body scroll
+                    navDrawer.classList.remove('open');
+                    document.body.classList.remove('nav-open');
+                    navToggle.setAttribute('aria-expanded', 'false');
+                }
             }
+            lastScrollY = window.scrollY;
         }, { passive: true });
     }
 

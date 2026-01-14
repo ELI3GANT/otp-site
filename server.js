@@ -1,4 +1,24 @@
-require('dotenv').config();
+const fs = require('fs');
+// CRASH DEBUGGING
+process.on('uncaughtException', (err) => {
+    fs.writeFileSync('crash.log', `CRASH (Uncaught): ${err.stack}\n`, { flag: 'a' });
+    console.error('CRASH:', err);
+    process.exit(1);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    fs.writeFileSync('crash.log', `CRASH (Unhandled Rejection): ${reason}\n`, { flag: 'a' });
+    console.error('Unhandled Rejection:', reason);
+});
+process.on('exit', (code) => {
+    fs.writeFileSync('crash.log', `EXIT CODE: ${code}\n`, { flag: 'a' });
+});
+
+// Load environment variables
+if (fs.existsSync('my.env')) {
+    require('dotenv').config({ path: 'my.env' });
+} else {
+    require('dotenv').config();
+}
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
@@ -19,6 +39,18 @@ const port = process.env.PORT || 3000;
 const supabaseAdmin = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY 
     ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY) 
     : null;
+
+if (supabaseAdmin) {
+    console.log("✅ Supabase Admin Initialized");
+} else {
+    console.warn("⚠️ Supabase Admin NOT Initialized (Check SUPABASE_URL and SUPABASE_SERVICE_KEY)");
+}
+
+if (process.env.GEMINI_API_KEY) {
+    console.log("✅ Gemini API Key found");
+} else {
+    console.warn("⚠️ Gemini API Key NOT found");
+}
 
 // --- SECURITY & OPTIMIZATION MIDDLEWARE ---
 
@@ -58,6 +90,14 @@ app.use('/api/', limiter);
 
 // 5. Body Parsing
 app.use(bodyParser.json());
+
+// --- VERBOSE REQUEST LOGGING ---
+app.use((req, res, next) => {
+    const log = `[${new Date().toISOString()}] ${req.method} ${req.url} - IP: ${req.ip}\n`;
+    fs.appendFileSync('server_debug.log', log);
+    console.log(log.trim());
+    next();
+});
 
 // --- CACHE CONTROL HELPER ---
 app.use((req, res, next) => {
@@ -391,6 +431,127 @@ app.post('/api/contact/submit', async (req, res) => {
     }
 });
 
+// 6. PERSPECTIVE AUDIT ENGINE (AI Strategy Generator)
+app.post('/api/audit/submit', async (req, res) => {
+    const { email, answers } = req.body;
+    
+    if (!email || !answers) {
+        return res.status(400).json({ success: false, message: "Email and answers are required." });
+    }
+
+    try {
+        const adminClient = supabaseAdmin;
+        
+        // 1. Construct the Strategic Prompt
+        const goal = answers.q1 || 'Unknown';
+        const hurdle = answers.q2 || 'Unknown';
+        const platform = answers.q3 || 'Unknown';
+        const vibe = answers.q4 || 'Unknown';
+        const specificGoal = answers.q5_goal || 'Not specified';
+
+        const systemPrompt = `You are the Studio Lead at 'Only True Perspective' (OTP). 
+        You are giving a "Perspective Audit" to a creator.
+        Tone: Direct, honest, visionary, and high-energy. 
+        Style: Simple language, plain English, no "nerdy" corporate or marketing jargon. 
+        Goal: Give them a wakeup call and a clear path forward.
+        MANDATORY: Use bolding with ** for the most important advice. No AI fluff or formal greetings.`;
+
+        const userPrompt = `CREATOR INFO:
+        - Goal: ${goal}
+        - Problem: ${hurdle}
+        - Main App/Site: ${platform}
+        - Vibe They Want: ${vibe}
+        - SPECIFIC TARGET: "${specificGoal}"
+        
+        TASK: Give three simple, punchy paragraphs. Use layman's terms. Speak like a friend who knows their stuff. Address their SPECIFIC TARGET directly in the advice.
+        
+        TASK: Give three simple, punchy paragraphs. Use layman's terms. Speak like a friend who knows their stuff.
+        
+        Paragraph 1: THE TRUTH. Tell them why ${hurdle} is killing their growth on ${platform} right now. Keep it simple.
+        Paragraph 2: THE NEW LOOK. Explain how they can get that ${vibe} aesthetic and actually hit ${goal}. No technical talk, just visual advice.
+        Paragraph 3: THE NEXT STEP. Give them one specific thing they can do tonight to win.
+        
+        Keep it under 250 words. Avoid big words where simple ones work. Start with the truth immediately.`;
+
+        let advice = "";
+
+        // 2. Call Gemini (With Auto-Fallback Logic)
+        if (process.env.GEMINI_API_KEY) {
+            const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'];
+            let success = false;
+
+            for (const modelName of modelsToTry) {
+                if (success) break;
+                try {
+                    console.log(`🤖 Attempting Audit Generation with ${modelName}...`);
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ 
+                                parts: [{ 
+                                    text: systemPrompt + "\n\n" + userPrompt 
+                                }] 
+                            }],
+                            generationConfig: {
+                                temperature: 0.7,
+                                topK: 40,
+                                topP: 0.95,
+                                maxOutputTokens: 1024,
+                            }
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.candidates && data.candidates[0].content) {
+                        advice = data.candidates[0].content.parts[0].text;
+                        success = true;
+                        console.log(`✅ Audit Generated successfully via ${modelName}`);
+                    } else {
+                        console.warn(`⚠️ Model ${modelName} failed or returned no content.`, data.error || data);
+                    }
+                } catch (fetchError) {
+                    console.error(`❌ Error calling ${modelName}:`, fetchError.message);
+                }
+            }
+
+            if (!success) {
+                advice = "SYSTEM CALIBRATION ERROR: Our strategy cores are currently under heavy load. Please try again in 5 minutes or contact support.";
+            }
+        } else {
+            advice = "DEMO MODE: High-end strategy would be generated here using Gemini 1.5 Pro. (GEMINI_API_KEY missing on server)";
+        }
+
+        // 3. Save Lead to DB (For 'Deals' & Admin Review - No Spam)
+        if (adminClient) {
+            try {
+                const { error: dbError } = await adminClient
+                    .from('leads')
+                    .insert([{ 
+                        email, 
+                        answers, 
+                        advice,
+                        status: 'pending',
+                        type: 'perspective_audit'
+                    }]);
+
+                if (dbError) console.error("DB Error saving lead:", dbError);
+            } catch (dbEx) {
+                console.error("DB Exception saving lead:", dbEx);
+            }
+        } else {
+            console.warn("Skipping DB Save: Supabase Admin not configured.");
+        }
+        
+        res.json({ success: true, advice });
+
+    } catch (error) {
+        console.error("Audit Engine Critical Error:", error);
+        res.status(500).json({ success: false, message: "Server error during audit analysis." });
+    }
+});
+
 // --- CACHE CONTROL & STATIC ASSETS ---
 // Served AFTER API to avoid conflict (e.g. 405 on POST to static)
 const staticOptions = {
@@ -423,8 +584,16 @@ app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, '404.html'));
 });
 
+// --- GLOBAL ERROR HANDLER ---
+app.use((err, req, res, next) => {
+    const errorLog = `[${new Date().toISOString()}] ERROR: ${err.message}\nStack: ${err.stack}\n`;
+    fs.appendFileSync('server_debug.log', errorLog);
+    console.error(errorLog);
+    res.status(500).json({ success: false, message: "Internal Server Error", error: err.message });
+});
+
 // --- START SERVER ---
-const server = app.listen(port, () => {
+const server = app.listen(port, '0.0.0.0', () => {
     console.log(`\n🚀 OTP SECURE SERVER V1.2.0 ONLINE`);
     console.log(`🔒 Security Headers: ENABLED`);
     console.log(`📦 Compression: ENABLED`);

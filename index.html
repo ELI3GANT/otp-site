@@ -225,6 +225,118 @@
     </div>
   </section>
 
+  <!-- PERSPECTIVE AUDIT (The Audit Engine) -->
+  <section id="audit" class="section section-audit">
+    <div class="wrap">
+      <div class="audit-card glass-panel" id="audit-container">
+        <!-- Intro State -->
+        <div id="audit-intro" class="audit-step active">
+          <div class="audit-badge">BETA ACCESS</div>
+          <h2 class="syne-bold">The Perspective Audit<sup>™</sup></h2>
+          <p>Get a high-end tactical strategy for your brand identity. AI-powered. Human-calibrated.</p>
+          <div class="audit-visual-decor">
+            <div class="decor-circle"></div>
+            <div class="decor-line"></div>
+          </div>
+          <button onclick="window.AuditEngine.nextStep()" class="book-btn k-hover">Initiate Audit</button>
+        </div>
+
+        <!-- Quiz Step 1 -->
+        <div id="audit-step-1" class="audit-step">
+          <span class="step-indicator">01 / 05</span>
+          <h3>What is your primary objective?</h3>
+          <div class="audit-options">
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(1, 'Brand Identity')">Brand Identity</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(1, 'Content Growth')">Content Growth</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(1, 'Video Production')">Video Production</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(1, 'High-End Strategy')">High-End Strategy</button>
+          </div>
+        </div>
+
+        <!-- Quiz Step 2 -->
+        <div id="audit-step-2" class="audit-step">
+          <span class="step-indicator">02 / 05</span>
+          <h3>Your biggest hurdle right now?</h3>
+          <div class="audit-options">
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(2, 'Low Engagement')">Low Engagement</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(2, 'Inconsistency')">Inconsistency</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(2, 'Technical Quality')">Technical Quality</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(2, 'No Clear Vision')">No Clear Vision</button>
+          </div>
+        </div>
+
+        <!-- Quiz Step 3 -->
+        <div id="audit-step-3" class="audit-step">
+          <span class="step-indicator">03 / 05</span>
+          <h3>Your primary platform?</h3>
+          <div class="audit-options">
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(3, 'Reels / TikTok')">Reels / TikTok</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(3, 'YouTube')">YouTube</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(3, 'Personal Site')">Personal Site</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(3, 'Private / Portfolio')">Private / Portfolio</button>
+          </div>
+        </div>
+
+        <!-- Quiz Step 4 -->
+        <div id="audit-step-4" class="audit-step">
+          <span class="step-indicator">04 / 05</span>
+          <h3>Desired Vibe?</h3>
+          <div class="audit-options">
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(4, 'Minimal / Clean')">Minimal / Clean</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(4, 'Dark / Futuristic')">Dark / Futuristic</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(4, 'High-Energy / VFX')">High-Energy / VFX</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(4, 'Classic / Professional')">Classic / Professional</button>
+          </div>
+        </div>
+
+        <!-- Quiz Step 5 (NEW) -->
+        <div id="audit-step-5" class="audit-step">
+          <span class="step-indicator">05 / 05</span>
+          <h3>What is your definitive growth goal?</h3>
+          <div class="audit-input-wrap">
+            <textarea id="audit-goal-input" class="audit-textarea" placeholder="e.g. Hit 100k subscribers, Launch my mentorship, Rebrand for high-ticket clients..."></textarea>
+          </div>
+          <button class="book-btn k-hover" onclick="window.AuditEngine.submitGoal()" style="margin-top: 20px; width: 100%;">Confirm Objective</button>
+        </div>
+
+        <div id="audit-capture" class="audit-step">
+          <div class="decryption-status">
+            <div class="status-text">Decrypting Strategy...</div>
+            <div class="decryption-bar">
+              <div class="decryption-progress" id="audit-progress-bar"></div>
+            </div>
+          </div>
+          <div class="processing-glow"></div>
+          <div class="capture-inner">
+
+            <h3>Access Tactical Response</h3>
+            <p>Enter your authorization email to decrypt the perspective analysis.</p>
+            <div class="audit-form">
+              <input type="email" id="audit-email" placeholder="ACCESS_CODE@CLIENT.OTP" class="audit-input" autocomplete="off" />
+              <button onclick="window.AuditEngine.submit()" id="audit-submit-btn" class="book-btn k-hover">Reveal Strategy</button>
+              <div id="audit-error-msg" style="opacity:0; transition: opacity 0.3s; color:#ff4444; font-size:0.75rem; margin-top:8px; font-weight:700;"></div>
+              <p class="audit-privacy-text">
+                <span class="privacy-icon">🔒</span> <strong>Access Key:</strong> Unlocks your strategy and exclusive deals. Your data is secure. No spam, ever.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result State -->
+        <div id="audit-result" class="audit-step">
+          <div class="result-header">
+            <span class="eyebrow-mini">TACTICAL RESPONSE</span>
+            <h3 id="audit-result-title">Strategy Decrypted</h3>
+          </div>
+          <div id="audit-advice-content" class="advice-text">
+            <!-- AI Content Injected Here -->
+          </div>
+          <button onclick="window.AuditEngine.reset()" class="audit-reset-btn">Run Another Audit</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- STUDIO / PHILOSOPHY -->
   <section id="studio" class="section-studio">
     <div class="wrap">
@@ -893,6 +1005,7 @@
   </script>
   <script src="stars-v2.js"></script>
   <script src="site-init.js?v=7.0"></script>
+  <script src="audit-engine.js?v=1.0"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
