@@ -293,23 +293,33 @@ The "${hurdle}" is just fear disguised as logic. You are stalling instead of shi
     formatAdvice: function(text) {
         if (!text) return '';
         
-        let html = text.trim();
+        const lines = text.split('\n');
+        let html = '';
 
-        // 1. Remove markdown code blocks if any
-        html = html.replace(/`/g, '');
-        
-        // 2. Bold tags
-        html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent2);">$1</strong>');
-        
-        // 3. Highlight Section Headers (The Diagnosis, etc)
-        // We look for lines that start with strong tags or caps text
-        html = html.replace(/(THE DIAGNOSIS\.|THE PLAN\.|THE FORTUNE\.)/g, '<div style="margin-top:24px; margin-bottom:10px; font-family:\'Space Grotesk\'; font-weight:700; font-size:1.1em; color:#fff; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px; display:inline-block;">$1</div>');
+        lines.forEach(line => {
+            let cleanLine = line.trim();
+            if (!cleanLine) return; // Skip empty lines
 
-        // 4. Style List Items (1. , 2. ) to be block elements
-        html = html.replace(/(\d+\.\s+.*)/g, '<div style="margin-top:8px; margin-bottom:8px; padding-left:10px; border-left:2px solid rgba(0,195,255,0.3);">$1</div>');
+            // Remove markdown syntax
+            cleanLine = cleanLine.replace(/`/g, '');
+            // Bold
+            cleanLine = cleanLine.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent2);">$1</strong>');
 
-        // 5. Convert remaining newlines to breaks
-        html = html.replace(/\n/g, '<br>');
+            const upper = cleanLine.toUpperCase();
+
+            // Headers
+            if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE FORTUNE')) {
+                html += `<div style="margin-top:24px; margin-bottom:12px; font-family:'Space Grotesk'; font-weight:700; font-size:1em; color:#fff; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px; display:inline-block;">${cleanLine}</div>`;
+            } 
+            // List Items
+            else if (cleanLine.match(/^(\d+\.|-)/)) {
+                html += `<div style="margin-top:4px; margin-bottom:4px; padding-left:12px; border-left:2px solid rgba(0,195,255,0.3); font-size:0.95rem; line-height:1.5;">${cleanLine}</div>`;
+            } 
+            // Standard Text
+            else {
+                html += `<div style="margin-bottom:12px; font-size:0.95rem; line-height:1.6;">${cleanLine}</div>`;
+            }
+        });
 
         // Add a tactical header badge
         const bonusBadge = `
@@ -319,7 +329,7 @@ The "${hurdle}" is just fear disguised as logic. You are stalling instead of shi
             </div>
         `;
         
-        return bonusBadge + `<div style="line-height:1.6; font-size:0.95rem;">${html}</div>`;
+        return bonusBadge + html;
     },
 
     reset: function() {
