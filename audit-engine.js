@@ -368,6 +368,10 @@ The "${hurdle}" is just fear disguised as logic. You are stalling instead of shi
             btn.style.borderColor = '';
             btn.style.background = '';
         });
+
+        // Ensure back tokens are effectively reset
+        const backBtns = document.querySelectorAll('.audit-back-btn');
+        backBtns.forEach(b => b.style.display = '');
         
         // Smooth scroll back to top of audit card
         const card = document.querySelector('.audit-card');
