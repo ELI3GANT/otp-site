@@ -88,7 +88,28 @@ window.AuditEngine = {
                 })
             });
 
-            const result = await response.json();
+            let result;
+            try {
+                // check for HTTP errors first
+                if (!response.ok) {
+                    // Try to parse JSON error message if possible
+                    let errorMsg = `HTTP Error ${response.status}`;
+                    try {
+                        const errData = await response.json();
+                        if (errData.message) errorMsg = errData.message;
+                    } catch (parseErr) {
+                         // Fallback if response is not JSON (e.g. HTML 404/500)
+                         errorMsg = `Server Error: ${response.status} ${response.statusText}`;
+                    }
+                    throw new Error(errorMsg);
+                }
+                
+                result = await response.json();
+            } catch (jsonErr) {
+                 if (!response.ok) throw jsonErr; // Already handled above
+                 // Valid 200 OK but invalid JSON?
+                 throw new Error("Invalid Server Response (JSON Parse Failed)");
+            }
 
             if (result.success) {
                 // Start Decryption Sequence
