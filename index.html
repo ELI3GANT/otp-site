@@ -1131,12 +1131,23 @@
                        boxShadow: '0 0 10px rgba(0,0,0,0.5)'
                    });
                    
+                   // HIDE HEADER CONTROLS TO PREVENT OVERLAP
+                   const navToggle = document.querySelector('.nav-toggle');
+                   const themeToggle = document.querySelector('.theme-toggle-btn');
+                   if(navToggle) { navToggle.style.opacity = '0'; navToggle.style.pointerEvents = 'none'; }
+                   if(themeToggle) { themeToggle.style.opacity = '0'; themeToggle.style.pointerEvents = 'none'; }
+
                    btn.onclick = function() {
                        const o = document.querySelector('.calendly-overlay');
                        if (o) o.remove(); 
                        const p = document.querySelector('.calendly-popup-close');
-                       if (p) p.click(); // Try triggering native close if hidden
+                       if (p) p.click(); // Try native close
                        document.documentElement.style.overflow = ''; 
+                       
+                       // RESTORE HEADER CONTROLS
+                       if(navToggle) { navToggle.style.opacity = ''; navToggle.style.pointerEvents = ''; }
+                       if(themeToggle) { themeToggle.style.opacity = ''; themeToggle.style.pointerEvents = ''; }
+
                        btn.remove();
                    };
                    
