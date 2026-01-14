@@ -2049,8 +2049,11 @@ html {
 
 @media (max-width: 768px) {
   .hero-eye-3d {
-    /* Animation re-enabled for mobile */
+    /* OPTIMIZATION: Keep 3D spin (GPU) but disable heavy filter animation (CPU) */
+    animation: visionSpin 15s ease-in-out infinite;
     max-height: 40vh;
+    /* Static, lighter filter for mobile */
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8)) drop-shadow(0 5px 0px rgba(112, 0, 255, 0.6));
   }
 }
 
