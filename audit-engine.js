@@ -103,13 +103,15 @@ window.AuditEngine = {
             RESPONSE FORMAT (Strictly follow this):
             
             **THE DIAGNOSIS.**
-            (Write 2-3 sentences elaborating on why "${hurdle}" is preventing "${goal}" on "${platform}". Be insightful but simple.)
+            (Write 2-3 sentences elaborating on exactly how "${hurdle}" is sabotaging "${goal}". Be deeply informative but easy to understand.)
             
-            **THE TACTIC.**
-            (Give one specific, finalized instruction to achieve the "${vibe}" aesthetic. Tell them exactly what to do.)
+            **THE PLAN.**
+            1. **Immediate Shift**: (One tactical change they can make right now on ${platform}.)
+            2. **Visual Pivot**: (How to specifically adjust their content to hit the "${vibe}" aesthetic.)
+            3. **The Habit**: (One daily action to ensure they hit the target: "${specificGoal}".)
             
             **THE FORTUNE.**
-            (A single, fortune-cookie style quote. Cryptic, powerful, and memorable. e.g. "The obstacle is the path," but original and specific to them.)`;
+            (A single, fortune-cookie style quote. Cryptic, powerful, and memorable.)`;
 
             // 2. Call Gemini API Directly (Client-Side)
             // SECURITY NOTE: We split the key to prevent simple git-scraping bots from revoking it.
@@ -154,8 +156,10 @@ window.AuditEngine = {
                 advice = `**THE DIAGNOSIS.**
 You are overthinking the process. The "${hurdle}" you fear is just a shadow preventing you from seeing the clear path to ${goal}. You are waiting for permission when you should be taking territory.
 
-**THE TACTIC.**
-Simplify everything to the "${vibe}" core. Post one piece of content today that is raw, honest, and unpolished. That is your new baseline.
+**THE PLAN.**
+1. **Immediate Shift**: Stop planning and post one raw, unedited piece of content today.
+2. **Visual Pivot**: Strip away all the clutter. If it doesn't scream "${vibe}", delete it.
+3. **The Habit**: Spend 15 minutes every morning engaging with the people who are already where you want to be.
 
 **THE FORTUNE.**
 "He who watches the wind will never plant; he who looks at the clouds will never reap."`;
