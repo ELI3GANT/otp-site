@@ -292,24 +292,30 @@ The "${hurdle}" is just fear disguised as logic. You are stalling instead of shi
 
     formatAdvice: function(text) {
         if (!text) return '';
-        const paragraphs = text.split(/\n\s*\n/);
         
-        let formattedHtml = paragraphs.map(p => {
+        // Split by double newlines or major section headers
+        const sections = text.split(/\n\s*\n|(?=\*\*THE)/); 
+        
+        let formattedHtml = sections.map(p => {
             let cleaned = p.trim().replace(/`/g, '');
             // Bold formatting
             cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             
-            // Should this be a list?
-            if (cleaned.match(/^\d+\./m)) {
-                // It's a list item or contains list items. 
-                // Let's ensure newlines are respected for the list.
+            // Check for list items (1., 2., 3. or - )
+            if (cleaned.match(/^\s*(\d+\.|-)/m)) {
+                // Ensure list items are on new lines
                 cleaned = cleaned.replace(/\n/g, '<br>');
-                return `<div style="margin-bottom: 24px; line-height: 1.6;">${cleaned}</div>`;
+                return `<div style="margin-bottom: 20px; line-height: 1.5; padding-left: 10px; border-left: 2px solid rgba(0, 195, 255, 0.2);">${cleaned}</div>`;
             }
 
-            // Standard paragraph
+            // Headers (The Diagnosis, etc) - make them distinct
+            if (cleaned.includes('THE DIAGNOSIS') || cleaned.includes('THE PLAN') || cleaned.includes('THE FORTUNE')) {
+                return `<div style="margin-bottom: 15px; margin-top: 25px;">${cleaned}</div>`;
+            }
+
+            // Standard text
             cleaned = cleaned.replace(/\n/g, '<br>');
-            return `<p>${cleaned}</p>`;
+            return `<div style="margin-bottom: 15px;">${cleaned}</div>`;
         }).join('');
 
         // Add a tactical header badge
