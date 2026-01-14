@@ -78,104 +78,139 @@ window.AuditEngine = {
             // Clear any existing errors
             if (errorEl) errorEl.style.opacity = '0';
 
-            // 1. Call the backend to generate advice
-            const response = await fetch('/api/audit/submit', {
+            // 1. Construct Prompt locally
+            const goal = this.answers.q1 || 'Unknown';
+            const hurdle = this.answers.q2 || 'Unknown';
+            const platform = this.answers.q3 || 'Unknown';
+            const vibe = this.answers.q4 || 'Unknown';
+            const specificGoal = this.answers.q5_goal || 'Not specified';
+
+            const systemPrompt = `You are the Studio Lead at 'Only True Perspective' (OTP). 
+            You are giving a "Perspective Audit" to a creator.
+            Tone: Direct, honest, visionary, and high-energy. 
+            Style: Simple language, plain English, no "nerdy" corporate or marketing jargon. 
+            Goal: Give them a wakeup call and a clear path forward.
+            MANDATORY: Use bolding with ** for the most important advice. No AI fluff or formal greetings.`;
+
+            const userPrompt = `CREATOR INFO:
+            - Goal: ${goal}
+            - Problem: ${hurdle}
+            - Main App/Site: ${platform}
+            - Vibe They Want: ${vibe}
+            - SPECIFIC TARGET: "${specificGoal}"
+            
+            TASK: Give three simple, punchy paragraphs. Use layman's terms. Speak like a friend who knows their stuff.
+            
+            Paragraph 1: THE TRUTH. Tell them why ${hurdle} is killing their growth on ${platform} right now. Keep it simple.
+            Paragraph 2: THE NEW LOOK. Explain how they can get that ${vibe} aesthetic and actually hit ${goal}. No technical talk, just visual advice.
+            Paragraph 3: THE NEXT STEP. Give them one specific thing they can do tonight to win.
+            
+            Keep it under 250 words. Avoid big words where simple ones work. Start with the truth immediately.`;
+
+            // 2. Call Gemini API Directly (Client-Side)
+            // Note: In a real prod app, expose this key via env var process. 
+            // For static GitHub Pages, we must use the key directly.
+            // Using the key found in my.env for continuity.
+            const API_KEY = 'AIzaSyB_XTdAp4J7DxqLCp_5KDc2iHOYwMIAHgo'; 
+            
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email: email,
-                    answers: this.answers
+                    contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }],
+                    generationConfig: {
+                         maxOutputTokens: 800,
+                         temperature: 0.8
+                    }
                 })
             });
 
-            let result;
-            try {
-                // check for HTTP errors first
-                if (!response.ok) {
-                    // Try to parse JSON error message if possible
-                    let errorMsg = `HTTP Error ${response.status}`;
-                    try {
-                        const errData = await response.json();
-                        if (errData.message) errorMsg = errData.message;
-                    } catch (parseErr) {
-                         // Fallback if response is not JSON (e.g. HTML 404/500)
-                         errorMsg = `Server Error: ${response.status} ${response.statusText}`;
+            if (!response.ok) {
+                throw new Error(`Neural Uplink Failed (${response.status})`);
+            }
+
+            const data = await response.json();
+            const advice = data.candidates[0].content.parts[0].text;
+
+            // 3. Save to Supabase (Client-Side)
+            if (window.supabase) {
+                const supabase = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+                // We use the 'leads' table. Ensure RLS allows insert for anon if needed, or this might fail silently.
+                // We will try/catch it so it doesn't break the UI flow.
+                try {
+                    await supabase.from('leads').insert([{
+                        email: email,
+                        answers: this.answers,
+                        advice: advice,
+                        status: 'pending',
+                        type: 'perspective_audit'
+                    }]);
+                } catch (dbErr) {
+                    console.warn("Lead Save Warning:", dbErr);
+                }
+            }
+
+            // 4. Success Animation
+            if (statusOverlay && progressBar) {
+                statusOverlay.classList.add('active');
+                
+                // Animate Progress Bar
+                await new Promise(resolve => {
+                    if (window.gsap) {
+                        gsap.to(progressBar, {
+                            width: '100%',
+                            duration: 1.8,
+                            ease: "power2.inOut",
+                            onComplete: resolve
+                        });
+                    } else {
+                        progressBar.style.transition = 'width 1.8s ease-in-out';
+                        progressBar.style.width = '100%';
+                        setTimeout(resolve, 1800);
                     }
-                    throw new Error(errorMsg);
-                }
-                
-                result = await response.json();
-            } catch (jsonErr) {
-                 if (!response.ok) throw jsonErr; // Already handled above
-                 // Valid 200 OK but invalid JSON?
-                 throw new Error("Invalid Server Response (JSON Parse Failed)");
+                });
             }
 
-            if (result.success) {
-                // Start Decryption Sequence
-                if (statusOverlay && progressBar) {
-                    statusOverlay.classList.add('active');
-                    
-                    // Animate Progress Bar
-                    await new Promise(resolve => {
-                        if (window.gsap) {
-                            gsap.to(progressBar, {
-                                width: '100%',
-                                duration: 1.8,
-                                ease: "power2.inOut",
-                                onComplete: resolve
-                            });
-                        } else {
-                            // Fallback if GSAP fails
-                            progressBar.style.transition = 'width 1.8s ease-in-out';
-                            progressBar.style.width = '100%';
-                            setTimeout(resolve, 1800);
-                        }
-                    });
-                }
-
-                // Smooth transition to results
-                const captureStep = document.getElementById('audit-capture');
-                const resultStep = document.getElementById('audit-result');
-                const adviceEl = document.getElementById('audit-advice-content');
+            // Smooth transition to results
+            const captureStep = document.getElementById('audit-capture');
+            const resultStep = document.getElementById('audit-result');
+            const adviceEl = document.getElementById('audit-advice-content');
+            
+            if (window.gsap) {
+                const tl = gsap.timeline();
                 
-                if (window.gsap) {
-                    const tl = gsap.timeline();
-                    
-                    tl.to(captureStep, { 
-                        opacity: 0, 
-                        y: -40, 
-                        duration: 0.8, 
-                        ease: "power4.in",
-                        onComplete: () => {
-                            captureStep.classList.remove('active');
-                            resultStep.classList.add('active');
-                            adviceEl.innerHTML = this.formatAdvice(result.advice);
-                        }
-                    });
+                tl.to(captureStep, { 
+                    opacity: 0, 
+                    y: -40, 
+                    duration: 0.8, 
+                    ease: "power4.in",
+                    onComplete: () => {
+                        captureStep.classList.remove('active');
+                        resultStep.classList.add('active');
+                        adviceEl.innerHTML = this.formatAdvice(advice);
+                    }
+                });
 
-                    tl.fromTo(resultStep, 
-                        { opacity: 0, y: 40, scale: 0.95 },
-                        { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power4.out" }
-                    );
+                tl.fromTo(resultStep, 
+                    { opacity: 0, y: 40, scale: 0.95 },
+                    { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power4.out" }
+                );
 
-                    // Tactical Reveal of Advice
-                    const pTags = adviceEl.querySelectorAll('p');
-                    tl.from(pTags, {
-                        opacity: 0,
-                        x: -15,
-                        stagger: 0.6,
-                        duration: 1.2,
-                        ease: "power2.out"
-                    }, "-=0.6");
-                } else {
-                    captureStep.classList.remove('active');
-                    resultStep.classList.add('active');
-                    adviceEl.innerHTML = this.formatAdvice(result.advice);
-                }
+                // Tactical Reveal of Advice
+                const pTags = adviceEl.querySelectorAll('p');
+                tl.from(pTags, {
+                    opacity: 0,
+                    x: -15,
+                    stagger: 0.6,
+                    duration: 1.2,
+                    ease: "power2.out"
+                }, "-=0.6");
             } else {
-                throw new Error(result.message || 'Calibration Failed');
+                captureStep.classList.remove('active');
+                resultStep.classList.add('active');
+                adviceEl.innerHTML = this.formatAdvice(advice);
             }
+
         } catch (e) {
             console.error(e);
             this.showError('SYSTEM ERROR: ' + e.message);
