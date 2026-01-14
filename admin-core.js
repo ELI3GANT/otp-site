@@ -889,7 +889,10 @@
             }
 
             leads.innerHTML = data.map(l => {
-                const answers = l.answers || {};
+                let answers = l.answers || {};
+                if (typeof answers === 'string') {
+                    try { answers = JSON.parse(answers); } catch(e) { answers = {}; }
+                }
                 return `
                 <div class="post-row" style="display: block; padding: 15px; margin-bottom: 10px; cursor: default; border-left: 2px solid var(--admin-cyan);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
@@ -907,6 +910,7 @@
                         <div><span style="color: var(--admin-muted);">HURDLE:</span> ${answers.q2 || 'N/A'}</div>
                         <div><span style="color: var(--admin-muted);">PLATFORM:</span> ${answers.q3 || 'N/A'}</div>
                         <div><span style="color: var(--admin-muted);">VIBE:</span> ${answers.q4 || 'N/A'}</div>
+                        <div style="grid-column: 1 / -1; margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.1);"><span style="color: var(--accent2); font-weight:700;">TARGET:</span> ${answers.q5_goal || 'Not specified'}</div>
                     </div>
                     <div style="background: rgba(0,0,0,0.2); border-left: 2px solid var(--admin-accent); padding: 15px; border-radius: 4px; font-size: 0.85rem; line-height: 1.6;">
                         <div style="font-size: 0.6rem; color: var(--admin-accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">TACTICAL RESPONSE</div>
