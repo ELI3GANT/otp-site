@@ -143,7 +143,7 @@ window.AuditEngine = {
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }],
                         generationConfig: {
-                             maxOutputTokens: 800,
+                             maxOutputTokens: 1500,
                              temperature: 0.8
                         }
                     })
