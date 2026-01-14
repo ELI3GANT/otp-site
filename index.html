@@ -1052,12 +1052,6 @@
 
     // --- CALENDLY CUSTOM HANDLER ---
     window.openBooking = function() {
-      // MOBILE FALLBACK: In-app browsers (IG/TikTok) often break popups.
-      if (window.innerWidth < 768) {
-         window.location.href = 'https://calendly.com/onlytrueperspective/30min';
-         return;
-      }
-
       // 1. Ensure assets are loading
       loadCalendlyResources();
 
