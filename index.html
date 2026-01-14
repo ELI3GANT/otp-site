@@ -1079,16 +1079,36 @@
     };
 
     function injectCloseButton() {
-       if (document.getElementById('custom-calendly-close')) return;
-       const btn = document.createElement('div');
-       btn.id = 'custom-calendly-close';
-       btn.innerHTML = '&times;';
-       btn.onclick = function() {
+       // Allow a moment for Calendly to render
+       setTimeout(() => {
+           // 1. Custom Close Button
+           if (!document.getElementById('custom-calendly-close')) {
+               const btn = document.createElement('div');
+               btn.id = 'custom-calendly-close';
+               btn.innerHTML = '&times;';
+               btn.onclick = function() {
+                   const overlay = document.querySelector('.calendly-overlay');
+                   if (overlay) overlay.remove(); 
+                   document.documentElement.style.overflow = ''; // Restore webflow/body scroll just in case
+                   btn.remove();
+               };
+               document.body.appendChild(btn);
+           }
+
+           // 2. Prevent Accidental Close (Lock Overlay)
            const overlay = document.querySelector('.calendly-overlay');
-           if (overlay) overlay.remove(); 
-           btn.remove();
-       };
-       document.body.appendChild(btn);
+           if (overlay) {
+               overlay.addEventListener('click', (e) => {
+                   // If clicking the background, STOP EVERYTHING. User must use the X button.
+                   if (e.target === overlay) {
+                       e.preventDefault();
+                       e.stopPropagation();
+                       e.stopImmediatePropagation();
+                       console.log("Overlay click intercepted - keeping widget open.");
+                   }
+               }, true); // Capture phase to run before Calendly's handlers
+           }
+       }, 100);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
