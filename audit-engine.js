@@ -412,6 +412,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Goal Input Enter Key
     const goalInput = document.getElementById('audit-goal-input');
     if (goalInput) {
+        goalInput.addEventListener('input', () => {
+             goalInput.style.borderColor = '';
+        });
         goalInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) { // Allow shift+enter for new lines
                 e.preventDefault();
