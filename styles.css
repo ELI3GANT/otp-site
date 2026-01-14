@@ -6281,3 +6281,7 @@ input:focus, select:focus, textarea:focus {
   background: #ff0000;
 }
 
+/* Hide native calendly close button to avoid duplicates */
+.calendly-popup-close {
+  display: none !important;
+}
