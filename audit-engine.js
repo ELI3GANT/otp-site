@@ -58,7 +58,10 @@ window.AuditEngine = {
         const statusOverlay = document.querySelector('.decryption-status');
         const progressBar = document.getElementById('audit-progress-bar');
 
-        if (!email || !email.includes('@')) {
+        // Strict Email Validation Regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!email || !emailRegex.test(email)) {
             this.showError('PROTOCOL ERROR: Invalid Email Signal');
             return;
         }
