@@ -1372,7 +1372,7 @@ html {
   left: 30px;
   background: transparent;
   border: none;
-  color: var(--muted);
+  color: var(--muted) !important;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -1380,7 +1380,7 @@ html {
   cursor: pointer;
   padding: 10px;
   transition: all 0.3s ease;
-  z-index: 10;
+  z-index: 200; /* Ensure above all layers */
   display: flex;
   align-items: center;
   gap: 5px;
