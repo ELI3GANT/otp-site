@@ -88,7 +88,6 @@ window.AuditEngine = {
             // Clear any existing errors
             if (errorEl) errorEl.style.opacity = '0';
 
-            // 1. Construct Prompt locally
             const goal = this.answers.q1 || 'Unknown';
             const hurdle = this.answers.q2 || 'Unknown';
             const platform = this.answers.q3 || 'Unknown';
@@ -96,12 +95,12 @@ window.AuditEngine = {
             const specificGoal = this.answers.q5_goal || 'Not specified';
 
             const systemPrompt = `You are the 'OTP Oracle'. 
-            Your job is to analyze the user's creative blockage and give them a finalized, polished, and simple tactical response.
+            Your job is to analyze the user's creative blockage and give them a finalized, polished, and VERY CONCISE tactical response.
             
             STYLE GUIDELINES:
-            1. **Simple & Elaborate**: Explain *why* they are stuck using plain English, but show deep understanding of their specific inputs.
-            2. **Finalized Tone**: Speak with absolute certainty. No "try this" or "maybe". 
-            3. **Fortune Cookie**: End with a short, mystical, punchy quote that summarizes their path.`;
+            1. **Ultra-Concise**: No fluff. Every word must pay rent. Keep the total word count under 100 words.
+            2. **Finalized Tone**: Speak with absolute certainty.
+            3. **Fortune Cookie**: End with a short, mystical, punchy quote.`;
 
             const userPrompt = `USER DATA:
             - GOAL: ${goal}
@@ -113,15 +112,15 @@ window.AuditEngine = {
             RESPONSE FORMAT (Strictly follow this):
             
             **THE DIAGNOSIS.**
-            (Write 2-3 sentences elaborating on exactly how "${hurdle}" is sabotaging "${goal}". Be deeply informative but easy to understand.)
+            (1-2 short sentences on why "${hurdle}" stops "${goal}".)
             
             **THE PLAN.**
-            1. **Immediate Shift**: (One tactical change they can make right now on ${platform}.)
-            2. **Visual Pivot**: (How to specifically adjust their content to hit the "${vibe}" aesthetic.)
-            3. **The Habit**: (One daily action to ensure they hit the target: "${specificGoal}".)
+            1. **Immediate Shift**: (Max 10 words on what to change now.)
+            2. **Visual Pivot**: (Max 10 words on hitting the "${vibe}" look.)
+            3. **The Habit**: (Max 10 words on the daily action.)
             
             **THE FORTUNE.**
-            (A single, fortune-cookie style quote. Cryptic, powerful, and memorable.)`;
+            (A single, short, powerful quote.)`;
 
             // 2. Call Gemini API Directly (Client-Side)
             // SECURITY NOTE: We split the key to prevent simple git-scraping bots from revoking it.
@@ -143,8 +142,8 @@ window.AuditEngine = {
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }],
                         generationConfig: {
-                             maxOutputTokens: 1500,
-                             temperature: 0.8
+                             maxOutputTokens: 500,
+                             temperature: 0.7
                         }
                     })
                 });
@@ -164,15 +163,15 @@ window.AuditEngine = {
                 console.warn("Falling back to local simulation:", apiErr);
                 // Fallback: Generate a generic but useful response so the user isn't left hanging.
                 advice = `**THE DIAGNOSIS.**
-You are overthinking the process. The "${hurdle}" you fear is just a shadow preventing you from seeing the clear path to ${goal}. You are waiting for permission when you should be taking territory.
+The "${hurdle}" is just fear disguised as logic. You are stalling instead of shipping.
 
 **THE PLAN.**
-1. **Immediate Shift**: Stop planning and post one raw, unedited piece of content today.
-2. **Visual Pivot**: Strip away all the clutter. If it doesn't scream "${vibe}", delete it.
-3. **The Habit**: Spend 15 minutes every morning engaging with the people who are already where you want to be.
+1. **Immediate Shift**: Post one raw, unedited video today.
+2. **Visual Pivot**: Delete everything that isn't "${vibe}".
+3. **The Habit**: Engage for 15 minutes before scrolling.
 
 **THE FORTUNE.**
-"He who watches the wind will never plant; he who looks at the clouds will never reap."`;
+"He who watches the wind will never plant."`;
             }
 
             // 3. Save to Supabase (Client-Side)
