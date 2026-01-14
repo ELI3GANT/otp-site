@@ -17,6 +17,16 @@ window.AuditEngine = {
         }
     },
 
+    prevStep: function() {
+        if (this.currentStep <= 0) return;
+        const steps = document.querySelectorAll('.audit-step');
+        steps[this.currentStep].classList.remove('active');
+        this.currentStep--;
+        if (steps[this.currentStep]) {
+            steps[this.currentStep].classList.add('active');
+        }
+    },
+
     select: function(step, value) {
         this.answers[`q${step}`] = value;
         
