@@ -476,11 +476,16 @@ app.post('/api/audit/submit', async (req, res) => {
         let advice = "";
 
         // 2. Call Gemini (With Auto-Fallback Logic)
+        // 2. Call Gemini (With Robust Logic)
         if (process.env.GEMINI_API_KEY) {
             const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'];
             let success = false;
+            
+            // Helper for backoff
+            const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-            for (const modelName of modelsToTry) {
+            for (let i = 0; i < modelsToTry.length; i++) {
+                const modelName = modelsToTry[i];
                 if (success) break;
                 try {
                     console.log(`🤖 Attempting Audit Generation with ${modelName}...`);
@@ -502,6 +507,18 @@ app.post('/api/audit/submit', async (req, res) => {
                         })
                     });
 
+                    // Check for 429 specifically on the response status *before* parsing JSON if possible,
+                    // or parse and check error code.
+                    if (response.status === 429) {
+                        console.warn(`⚠️ Rate Limit (429) Hit on ${modelName}.`);
+                        if (i < modelsToTry.length - 1) {
+                            const waitTime = 1000 * Math.pow(2, i + 1); // 2s, 4s...
+                            console.log(`⏳ Waiting ${waitTime}ms before trying next model...`);
+                            await delay(waitTime);
+                        }
+                        continue; // Try next model
+                    }
+
                     const data = await response.json();
                     
                     if (data.candidates && data.candidates[0].content) {
@@ -509,19 +526,24 @@ app.post('/api/audit/submit', async (req, res) => {
                         success = true;
                         console.log(`✅ Audit Generated successfully via ${modelName}`);
                     } else {
-                        console.warn(`⚠️ Model ${modelName} failed or returned no content.`, data.error || data);
+                        console.warn(`⚠️ Model ${modelName} returned valid JSON but no content.`, data.error || data);
+                        // If it's a content filtering issue or other non-retriable error, we might stop?
+                        // But for now, let's treat it as a failure and try next.
                     }
                 } catch (fetchError) {
                     console.error(`❌ Error calling ${modelName}:`, fetchError.message);
+                    // Wait a bit before next retry on network error
+                    await delay(1000); 
                 }
             }
 
             if (!success) {
-                advice = "SYSTEM CALIBRATION ERROR: Our strategy cores are currently under heavy load. Please try again in 5 minutes or contact support.";
+                advice = "SYSTEM CALIBRATION ERROR: Our strategy cores are currently under heavy load (Rate Limit). Please try again in 5 minutes or contact support.";
             }
         } else {
             advice = "DEMO MODE: High-end strategy would be generated here using Gemini 1.5 Pro. (GEMINI_API_KEY missing on server)";
         }
+
 
         // 3. Save Lead to DB (For 'Deals' & Admin Review - No Spam)
         if (adminClient) {
