@@ -85,27 +85,31 @@ window.AuditEngine = {
             const vibe = this.answers.q4 || 'Unknown';
             const specificGoal = this.answers.q5_goal || 'Not specified';
 
-            const systemPrompt = `You are the Studio Lead at 'Only True Perspective' (OTP). 
-            You are giving a "Perspective Audit" to a creator.
-            Tone: Direct, honest, visionary, and high-energy. 
-            Style: Simple language, plain English, no "nerdy" corporate or marketing jargon. 
-            Goal: Give them a wakeup call and a clear path forward.
-            MANDATORY: Use bolding with ** for the most important advice. No AI fluff or formal greetings.`;
+            const systemPrompt = `You are the 'OTP Oracle'. 
+            Your job is to analyze the user's creative blockage and give them a finalized, polished, and simple tactical response.
+            
+            STYLE GUIDELINES:
+            1. **Simple & Elaborate**: Explain *why* they are stuck using plain English, but show deep understanding of their specific inputs.
+            2. **Finalized Tone**: Speak with absolute certainty. No "try this" or "maybe". 
+            3. **Fortune Cookie**: End with a short, mystical, punchy quote that summarizes their path.`;
 
-            const userPrompt = `CREATOR INFO:
-            - Goal: ${goal}
-            - Problem: ${hurdle}
-            - Main App/Site: ${platform}
-            - Vibe They Want: ${vibe}
+            const userPrompt = `USER DATA:
+            - GOAL: ${goal}
+            - BLOCKAGE: ${hurdle}
+            - PLATFORM: ${platform}
+            - DESIRED VIBE: ${vibe}
             - SPECIFIC TARGET: "${specificGoal}"
+             
+            RESPONSE FORMAT (Strictly follow this):
             
-            TASK: Give three simple, punchy paragraphs. Use layman's terms. Speak like a friend who knows their stuff.
+            **THE DIAGNOSIS.**
+            (Write 2-3 sentences elaborating on why "${hurdle}" is preventing "${goal}" on "${platform}". Be insightful but simple.)
             
-            Paragraph 1: THE TRUTH. Tell them why ${hurdle} is killing their growth on ${platform} right now. Keep it simple.
-            Paragraph 2: THE NEW LOOK. Explain how they can get that ${vibe} aesthetic and actually hit ${goal}. No technical talk, just visual advice.
-            Paragraph 3: THE NEXT STEP. Give them one specific thing they can do tonight to win.
+            **THE TACTIC.**
+            (Give one specific, finalized instruction to achieve the "${vibe}" aesthetic. Tell them exactly what to do.)
             
-            Keep it under 250 words. Avoid big words where simple ones work. Start with the truth immediately.`;
+            **THE FORTUNE.**
+            (A single, fortune-cookie style quote. Cryptic, powerful, and memorable. e.g. "The obstacle is the path," but original and specific to them.)`;
 
             // 2. Call Gemini API Directly (Client-Side)
             // SECURITY NOTE: We split the key to prevent simple git-scraping bots from revoking it.
@@ -147,11 +151,14 @@ window.AuditEngine = {
             } catch (apiErr) {
                 console.warn("Falling back to local simulation:", apiErr);
                 // Fallback: Generate a generic but useful response so the user isn't left hanging.
-                advice = `**THE TRUTH.** Growth is stalled because you're playing it too safe. You're waiting for permission effectively. The market doesn't reward "good enough," it rewards the bold.
+                advice = `**THE DIAGNOSIS.**
+You are overthinking the process. The "${hurdle}" you fear is just a shadow preventing you from seeing the clear path to ${goal}. You are waiting for permission when you should be taking territory.
 
-**THE NEW LOOK.** You need to simplify. Cut the noise. Focus entirely on the specific vibe you described: ${vibe}. If it doesn't fit that aesthetic, kill it. Make your visuals do the talking.
+**THE TACTIC.**
+Simplify everything to the "${vibe}" core. Post one piece of content today that is raw, honest, and unpolished. That is your new baseline.
 
-**THE NEXT STEP.** Post one piece of content tonight that is 100% honest and raw. No filters, no over-editing. Just the truth. That is how you break through.`;
+**THE FORTUNE.**
+"He who watches the wind will never plant; he who looks at the clouds will never reap."`;
             }
 
             // 3. Save to Supabase (Client-Side)
