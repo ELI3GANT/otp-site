@@ -222,6 +222,10 @@ You are overthinking the process. The "${hurdle}" you fear is just a shadow prev
             if (window.gsap) {
                 const tl = gsap.timeline();
                 
+                // Hide back button on result
+                const backBtn = captureStep.querySelector('.audit-back-btn');
+                if(backBtn) backBtn.style.display = 'none';
+
                 tl.to(captureStep, { 
                     opacity: 0, 
                     y: -40, 
@@ -293,7 +297,18 @@ You are overthinking the process. The "${hurdle}" you fear is just a shadow prev
         
         let formattedHtml = paragraphs.map(p => {
             let cleaned = p.trim().replace(/`/g, '');
+            // Bold formatting
             cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Should this be a list?
+            if (cleaned.match(/^\d+\./m)) {
+                // It's a list item or contains list items. 
+                // Let's ensure newlines are respected for the list.
+                cleaned = cleaned.replace(/\n/g, '<br>');
+                return `<div style="margin-bottom: 24px; line-height: 1.6;">${cleaned}</div>`;
+            }
+
+            // Standard paragraph
             cleaned = cleaned.replace(/\n/g, '<br>');
             return `<p>${cleaned}</p>`;
         }).join('');
