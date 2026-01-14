@@ -1085,36 +1085,69 @@
     };
 
     function injectCloseButton() {
-       // Allow a moment for Calendly to render
-       setTimeout(() => {
-           // 1. Custom Close Button
-           if (!document.getElementById('custom-calendly-close')) {
-               const btn = document.createElement('div');
-               btn.id = 'custom-calendly-close';
-               btn.innerHTML = '&times;';
-               btn.onclick = function() {
-                   const overlay = document.querySelector('.calendly-overlay');
-                   if (overlay) overlay.remove(); 
-                   document.documentElement.style.overflow = ''; // Restore webflow/body scroll just in case
-                   btn.remove();
-               };
-               document.body.appendChild(btn);
-           }
-
-           // 2. Prevent Accidental Close (Lock Overlay)
+       // Poll for the overlay to ensure it exists before we try to attach listeners
+       let attempts = 0;
+       const checkOverlay = setInterval(() => {
+           attempts++;
            const overlay = document.querySelector('.calendly-overlay');
+           
            if (overlay) {
+               clearInterval(checkOverlay);
+               
+               // 1. Prevent Accidental Close (Lock Overlay)
+               // We clone the element to strip existing listeners if necessary, 
+               // but Calendly might rely on React/bound events, so purely stripping might break verify.
+               // Instead, we use aggressive event interception.
                overlay.addEventListener('click', (e) => {
-                   // If clicking the background, STOP EVERYTHING. User must use the X button.
                    if (e.target === overlay) {
                        e.preventDefault();
                        e.stopPropagation();
                        e.stopImmediatePropagation();
-                       console.log("Overlay click intercepted - keeping widget open.");
+                       console.log("Strict Mode: Overlay click blocked.");
                    }
-               }, true); // Capture phase to run before Calendly's handlers
+               }, true); // Capture phase is critical here
+
+               // 2. Custom Close Button
+               if (!document.getElementById('custom-calendly-close')) {
+                   const btn = document.createElement('div');
+                   btn.id = 'custom-calendly-close';
+                   btn.innerHTML = '&times;';
+                   Object.assign(btn.style, {
+                       position: 'fixed',
+                       top: '20px',
+                       right: '20px',
+                       width: '40px',
+                       height: '40px',
+                       background: '#000',
+                       color: '#fff',
+                       borderRadius: '50%',
+                       display: 'flex',
+                       alignItems: 'center',
+                       justifyContent: 'center',
+                       fontSize: '24px',
+                       cursor: 'pointer',
+                       zIndex: '10000', // Ensure it's on top of Calendly's 9999
+                       border: '1px solid #333',
+                       boxShadow: '0 0 10px rgba(0,0,0,0.5)'
+                   });
+                   
+                   btn.onclick = function() {
+                       const o = document.querySelector('.calendly-overlay');
+                       if (o) o.remove(); 
+                       const p = document.querySelector('.calendly-popup-close');
+                       if (p) p.click(); // Try triggering native close if hidden
+                       document.documentElement.style.overflow = ''; 
+                       btn.remove();
+                   };
+                   
+                   // Append to body to ensure it's not trapped in the overlay relative stacking
+                   document.body.appendChild(btn);
+               }
+
+           } else if (attempts > 60) { // 3 seconds timeout
+               clearInterval(checkOverlay);
            }
-       }, 100);
+       }, 50);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
