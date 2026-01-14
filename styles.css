@@ -1392,6 +1392,10 @@ html {
   transform: translateX(-3px);
 }
 
+#audit-step-1 .audit-back-btn {
+  display: none !important;
+}
+
 .audit-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

@@ -8,23 +8,34 @@ window.AuditEngine = {
     answers: {},
     isSubmitting: false,
 
+    isNavigating: false,
+
     nextStep: function() {
+        if (this.isNavigating) return;
+        this.isNavigating = true;
+
         const steps = document.querySelectorAll('.audit-step');
         steps[this.currentStep].classList.remove('active');
         this.currentStep++;
         if (steps[this.currentStep]) {
             steps[this.currentStep].classList.add('active');
         }
+
+        setTimeout(() => this.isNavigating = false, 600);
     },
 
     prevStep: function() {
-        if (this.currentStep <= 0) return;
+        if (this.isNavigating || this.currentStep <= 0) return;
+        this.isNavigating = true;
+
         const steps = document.querySelectorAll('.audit-step');
         steps[this.currentStep].classList.remove('active');
         this.currentStep--;
         if (steps[this.currentStep]) {
             steps[this.currentStep].classList.add('active');
         }
+
+        setTimeout(() => this.isNavigating = false, 600);
     },
 
     select: function(step, value) {
@@ -175,7 +186,7 @@ The "${hurdle}" is just fear disguised as logic. You are stalling instead of shi
             }
 
             // 3. Save to Supabase (Client-Side)
-            if (window.supabase) {
+            if (window.supabase && window.OTP_CONFIG && window.OTP_CONFIG.supabaseUrl) {
                 const supabase = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
                 // We use the 'leads' table. Ensure RLS allows insert for anon if needed, or this might fail silently.
                 // We will try/catch it so it doesn't break the UI flow.
