@@ -293,30 +293,23 @@ The "${hurdle}" is just fear disguised as logic. You are stalling instead of shi
     formatAdvice: function(text) {
         if (!text) return '';
         
-        // Split by double newlines or major section headers
-        const sections = text.split(/\n\s*\n|(?=\*\*THE)/); 
+        let html = text.trim();
+
+        // 1. Remove markdown code blocks if any
+        html = html.replace(/`/g, '');
         
-        let formattedHtml = sections.map(p => {
-            let cleaned = p.trim().replace(/`/g, '');
-            // Bold formatting
-            cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            
-            // Check for list items (1., 2., 3. or - )
-            if (cleaned.match(/^\s*(\d+\.|-)/m)) {
-                // Ensure list items are on new lines
-                cleaned = cleaned.replace(/\n/g, '<br>');
-                return `<div style="margin-bottom: 20px; line-height: 1.5; padding-left: 10px; border-left: 2px solid rgba(0, 195, 255, 0.2);">${cleaned}</div>`;
-            }
+        // 2. Bold tags
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent2);">$1</strong>');
+        
+        // 3. Highlight Section Headers (The Diagnosis, etc)
+        // We look for lines that start with strong tags or caps text
+        html = html.replace(/(THE DIAGNOSIS\.|THE PLAN\.|THE FORTUNE\.)/g, '<div style="margin-top:24px; margin-bottom:10px; font-family:\'Space Grotesk\'; font-weight:700; font-size:1.1em; color:#fff; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px; display:inline-block;">$1</div>');
 
-            // Headers (The Diagnosis, etc) - make them distinct
-            if (cleaned.includes('THE DIAGNOSIS') || cleaned.includes('THE PLAN') || cleaned.includes('THE FORTUNE')) {
-                return `<div style="margin-bottom: 15px; margin-top: 25px;">${cleaned}</div>`;
-            }
+        // 4. Style List Items (1. , 2. ) to be block elements
+        html = html.replace(/(\d+\.\s+.*)/g, '<div style="margin-top:8px; margin-bottom:8px; padding-left:10px; border-left:2px solid rgba(0,195,255,0.3);">$1</div>');
 
-            // Standard text
-            cleaned = cleaned.replace(/\n/g, '<br>');
-            return `<div style="margin-bottom: 15px;">${cleaned}</div>`;
-        }).join('');
+        // 5. Convert remaining newlines to breaks
+        html = html.replace(/\n/g, '<br>');
 
         // Add a tactical header badge
         const bonusBadge = `
@@ -326,7 +319,7 @@ The "${hurdle}" is just fear disguised as logic. You are stalling instead of shi
             </div>
         `;
         
-        return bonusBadge + formattedHtml;
+        return bonusBadge + `<div style="line-height:1.6; font-size:0.95rem;">${html}</div>`;
     },
 
     reset: function() {
