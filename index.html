@@ -127,7 +127,7 @@
       <p class="hero-value" id="hero-value" data-editable="true">Growth, clarity, and results.</p>
       
       <div class="hero-cta">
-        <a href="" onclick="openBooking();return false;" class="book-btn">Secure a Vision Session</a>
+        <a href="javascript:void(0)" onclick="openBooking()" class="book-btn">Secure a Vision Session</a>
       </div>
 
       <div class="hero-micro">
@@ -1126,21 +1126,24 @@
                    });
                    
                    // HIDE HEADER CONTROLS TO PREVENT OVERLAP
-                   const navToggle = document.querySelector('.nav-toggle');
-                   const themeToggle = document.querySelector('.theme-toggle-btn');
-                   if(navToggle) { navToggle.style.opacity = '0'; navToggle.style.pointerEvents = 'none'; }
-                   if(themeToggle) { themeToggle.style.opacity = '0'; themeToggle.style.pointerEvents = 'none'; }
+                   const toggles = document.querySelectorAll('.nav-toggle, .theme-toggle-btn');
+                   toggles.forEach(t => { t.style.opacity = '0'; t.style.pointerEvents = 'none'; });
+
+                   // Force Hide Native Close Button (Double Check)
+                   const nativeClose = document.querySelector('.calendly-popup-close');
+                   if(nativeClose) nativeClose.style.display = 'none';
 
                    btn.onclick = function() {
                        const o = document.querySelector('.calendly-overlay');
                        if (o) o.remove(); 
+                       
                        const p = document.querySelector('.calendly-popup-close');
-                       if (p) p.click(); // Try native close
+                       if (p) p.click(); // Try native close logic
+                       
                        document.documentElement.style.overflow = ''; 
                        
                        // RESTORE HEADER CONTROLS
-                       if(navToggle) { navToggle.style.opacity = ''; navToggle.style.pointerEvents = ''; }
-                       if(themeToggle) { themeToggle.style.opacity = ''; themeToggle.style.pointerEvents = ''; }
+                       toggles.forEach(t => { t.style.opacity = ''; t.style.pointerEvents = ''; });
 
                        btn.remove();
                    };
