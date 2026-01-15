@@ -1051,7 +1051,14 @@
     });
 
     // --- CALENDLY CUSTOM HANDLER ---
+    window.isBookingOpening = false;
     window.openBooking = function() {
+      // Prevent double-clicks or re-opening while active
+      if (window.isBookingOpening) return;
+      if (document.querySelector('.calendly-overlay')) return;
+
+      window.isBookingOpening = true;
+
       // 1. Ensure assets are loading
       loadCalendlyResources();
 
@@ -1059,7 +1066,6 @@
       let attempts = 0;
       const maxAttempts = 30; // 30 * 100ms = 3 seconds
       
-      // Visual Feedback (Optional, but good UX)
       document.body.style.cursor = 'wait';
 
       const poll = setInterval(() => {
@@ -1067,11 +1073,20 @@
           if (typeof Calendly !== 'undefined') {
               clearInterval(poll);
               document.body.style.cursor = 'default';
-              Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});
-              injectCloseButton(); 
+              
+              // Double check we didn't spawn one in the meantime by some other means
+              if (!document.querySelector('.calendly-overlay')) {
+                  Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});
+                  injectCloseButton(); 
+              }
+              
+              // Reset lock after a safe delay
+              setTimeout(() => { window.isBookingOpening = false; }, 1000);
+
           } else if (attempts >= maxAttempts) {
               clearInterval(poll);
               document.body.style.cursor = 'default';
+              window.isBookingOpening = false;
               console.warn("Calendly widget timeout. Redirecting to external site.");
               window.location.href = 'https://calendly.com/onlytrueperspective/30min';
           }
