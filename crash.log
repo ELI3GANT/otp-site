@@ -2,3 +2,5 @@ EXIT CODE: 0
 EXIT CODE: 0
 EXIT CODE: 0
 EXIT CODE: 0
+EXIT CODE: 0
+CRASH (Unhandled Rejection): TypeError: Cannot destructure property 'email' of 'req.body' as it is undefined.

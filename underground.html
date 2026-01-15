@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Underground | OTP Culture</title>
+  <meta name="description" content="Rhode Island's Underground. Featured artists, unreleased tracks, and the culture behind the scenes." />
+
+  <!-- SEO / Social -->
+  <meta property="og:title" content="The Underground | OTP" />
+  <meta property="og:description" content="Inside the RI Underground. Profiles, Music, and Culture." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://onlytrueperspective.tech/underground.html" />
+  <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
+
+  <!-- Fonts & Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css?v=2.6" />
+  <style>
+    /* UNDERGROUND SPECIFIC STYLES */
+    body.underground-page {
+        background: #000;
+        --accent: #ff003c; /* Cyberpunk Red */
+        --accent2: #9d00ff; /* Deep Purple */
+    }
+    
+    .ug-header {
+        padding: 120px 0 60px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ug-title {
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: clamp(3rem, 10vw, 6rem);
+        text-transform: uppercase;
+        line-height: 0.9;
+        color: transparent;
+        -webkit-text-stroke: 1px rgba(255,255,255,0.8);
+        position: relative;
+        z-index: 2;
+    }
+
+    .ug-title span {
+        display: block;
+        color: #fff;
+        text-shadow: 0 0 20px rgba(255, 0, 60, 0.5);
+    }
+
+    .ug-subtitle {
+        font-family: 'Space Grotesk', sans-serif;
+        color: #888;
+        letter-spacing: 0.2em;
+        margin-top: 20px;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+
+    /* ARTIST GRID */
+    .artist-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 40px 0 120px; /* Bottom padding for player */
+    }
+
+    .artist-card {
+        background: rgba(20, 20, 20, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+
+    .artist-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent);
+        box-shadow: 0 10px 40px rgba(255, 0, 60, 0.2);
+    }
+
+    .artist-img-wrap {
+        height: 350px;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .artist-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+        filter: grayscale(100%);
+    }
+
+    .artist-card:hover .artist-img {
+        transform: scale(1.05);
+        filter: grayscale(0%);
+    }
+
+    .artist-info {
+        padding: 20px;
+        background: linear-gradient(to top, #000 0%, transparent 100%);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+    }
+
+    .artist-name {
+        font-family: 'Syne', sans-serif;
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: #fff;
+        margin-bottom: 5px;
+    }
+
+    .artist-role {
+        color: var(--accent);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 10px;
+    }
+
+    .artist-bio {
+        font-size: 0.9rem;
+        color: #aaa;
+        line-height: 1.4;
+        margin-bottom: 15px;
+        display: none; /* Hidden by default, reveal on click/hover? or just keep clean */
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+    }
+
+    .artist-card:hover .artist-bio {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .artist-play-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: none;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .artist-card:hover .artist-play-btn {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    /* GLOBAL AUDIO PLAYER */
+    .audio-dock {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px); /* Hidden initially */
+        width: 90%;
+        max-width: 800px;
+        background: rgba(10, 10, 10, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 15px 25px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        z-index: 1000;
+        transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    .audio-dock.active {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .dock-art {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        background: #333;
+        overflow: hidden;
+    }
+
+    .dock-art img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .dock-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .dock-title {
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .dock-artist {
+        color: #888;
+        font-size: 0.8rem;
+    }
+
+    .dock-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .ctrl-btn {
+        background: none;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    .ctrl-btn:hover { opacity: 1; }
+
+    .play-pause-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #fff;
+        color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+        box-shadow: 0 0 15px rgba(255,255,255,0.3);
+    }
+
+    /* CANVAS VISUALIZER */
+    .waveform-container {
+        flex: 2;
+        height: 40px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.05);
+        display: none; /* Hidden on mobile */
+    }
+
+    @media(min-width: 768px) {
+        .waveform-container { display: block; }
+    }
+
+    #wave-canvas {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* SCROLL TEXTURE */
+    .noise-overlay {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.05;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+  </style>
+</head>
+<body class="underground-page">
+  <div class="noise-overlay"></div>
+
+  <!-- NAV (Simplified) -->
+  <header class="nav nav-split" style="background: rgba(0,0,0,0.5);">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/otp_v2.png" alt="OTP" class="otp-mark" style="filter: brightness(0) invert(1);" />
+    </a>
+    <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="archive.html">Archive</a>
+        <a href="underground.html" class="active" style="color: var(--accent);">Underground</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    
+    <header class="ug-header">
+      <div class="ug-title">
+        RHODE ISLAND
+        <span>UNDERGROUND</span>
+      </div>
+      <p class="ug-subtitle">The Culture • The Sound • The Unseen</p>
+    </header>
+
+    <div class="artist-grid">
+        
+
+        
+        <!-- Artist 4 (The User) -->
+        <article class="artist-card" id="eli3gant-card">
+            <div class="artist-img-wrap">
+                <img src="https://images.unsplash.com/photo-1598550476439-6847785fcea6?q=80&w=1000&auto=format&fit=crop" class="artist-img" alt="ELI3GANT">
+                <!-- Direct Play Button (For Visualizer) -->
+                <button class="artist-play-btn" onclick="playTrack('ELI3GANT', 'Visionary Flow', 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3', this)">
+                    ▶
+                </button>
+            </div>
+            <div class="artist-info">
+                <div class="artist-role">Visionary / Founder</div>
+                <h3 class="artist-name">ELI3GANT</h3>
+                <p class="artist-bio">The architect of the new perspective. Blending technical precision with raw creative output.</p>
+                
+                <!-- Streaming Embeds -->
+                <div class="streaming-links" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+                    <p style="font-size: 0.75rem; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Latest Releases</p>
+                    
+                    <!-- Spotify Embed -->
+                    <div style="margin-bottom: 15px;">
+                        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/artist/5jKrZlegX8oUiSXfuuNsKI?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
+
+                    <!-- Apple Music Embed -->
+                    <div>
+                        <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="450" style="width:100%;max-width:660px;overflow:hidden;background:transparent;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.music.apple.com/us/artist/eli3gant/1615820336"></iframe>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Add more artists here -->
+
+    </div>
+
+  </main>
+
+  <!-- PLAYER DOCK -->
+  <div class="audio-dock" id="player-dock">
+    <div class="dock-art">
+        <img src="assets/otp_v2.png" id="p-art" alt="Art">
+    </div>
+    <div class="dock-info">
+        <div class="dock-title" id="p-title">Select a Track</div>
+        <div class="dock-artist" id="p-artist">OTP Underground</div>
+    </div>
+    
+    <div class="waveform-container">
+        <canvas id="wave-canvas"></canvas>
+    </div>
+
+    <div class="dock-controls">
+        <button class="ctrl-btn" onclick="prevTrack()">⏮</button>
+        <button class="play-pause-btn" id="play-btn" onclick="togglePlay()">▶</button>
+        <button class="ctrl-btn" onclick="nextTrack()">⏭</button>
+    </div>
+    
+    <!-- Hidden Audio Element -->
+    <audio id="main-audio" crossorigin="anonymous"></audio>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script>
+    // --- AUDIO PLAYER LOGIC ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    let analyser;
+    let source;
+    let animationId;
+    
+    const audioEl = document.getElementById('main-audio');
+    const playBtn = document.getElementById('play-btn');
+    const playerDock = document.getElementById('player-dock');
+    const pTitle = document.getElementById('p-title');
+    const pArtist = document.getElementById('p-artist');
+    const canvas = document.getElementById('wave-canvas');
+    const canvasCtx = canvas.getContext('2d');
+
+    let isPlaying = false;
+
+    // Initialize Audio Context on first user interaction (browser policy)
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new AudioContext();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 64; // Low resolution for chunky bars
+            
+            // Connect audio element to analyser
+            source = audioCtx.createMediaElementSource(audioEl);
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            
+            drawVisualizer();
+        }
+    }
+
+    function playTrack(artist, title, url, btnEl) {
+        initAudio(); // Ensure context is ready
+        
+        // Update UI
+        pTitle.textContent = title;
+        pArtist.textContent = artist;
+        playerDock.classList.add('active');
+        
+        audioEl.src = url;
+        audioEl.play();
+        isPlaying = true;
+        updatePlayBtn();
+        
+        // Optional: Highlight the card that is playing
+    }
+
+    function togglePlay() {
+        if (isPlaying) {
+            audioEl.pause();
+        } else {
+            audioEl.play();
+            initAudio(); // Just in case
+        }
+        isPlaying = !isPlaying;
+        updatePlayBtn();
+    }
+
+    function updatePlayBtn() {
+        playBtn.textContent = isPlaying ? '⏸' : '▶';
+    }
+
+    // --- VISUALIZER ---
+    function drawVisualizer() {
+        if (!analyser) return;
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        
+        // Set canvas size
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        const draw = () => {
+            animationId = requestAnimationFrame(draw);
+            analyser.getByteFrequencyData(dataArray);
+
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                barHeight = dataArray[i] / 2; // Scale down
+                
+                // Color based on height/intensity
+                canvasCtx.fillStyle = `rgba(255, 0, 60, ${barHeight / 100})`; // Pink/Red tint
+                if (barHeight > 50) {
+                     canvasCtx.fillStyle = `rgb(${barHeight + 100}, 0, 150)`; // Purple/Pink
+                }
+
+                // Draw rounded bar
+                canvasCtx.fillRect(x, (canvas.height - barHeight) / 2, barWidth, barHeight);
+
+                x += barWidth + 2; // Gap
+            }
+        };
+
+        draw();
+    }
+
+    // GSAP Intro
+    // GSAP Intro
+    gsap.fromTo('.ug-title span', 
+        { y: 100, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.5, ease: 'power4.out', delay: 0.2 }
+    );
+    
+    // Use fromTo for better reliability
+    gsap.fromTo('.artist-card', 
+        { y: 50, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, stagger: 0.1, delay: 0.5 }
+    );
+
+  </script>
+</body>
+</html>
