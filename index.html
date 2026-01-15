@@ -127,7 +127,7 @@
       <p class="hero-value" id="hero-value" data-editable="true">Growth, clarity, and results.</p>
       
       <div class="hero-cta">
-        <a href="javascript:void(0)" onclick="openBooking()" class="book-btn">Secure a Vision Session</a>
+        <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" rel="noopener noreferrer" class="book-btn">Secure a Vision Session</a>
       </div>
 
       <div class="hero-micro">
@@ -1018,78 +1018,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <script>
 
-    // --- CALENDLY OPTIMIZED LOADER ---
-    function loadCalendlyResources() {
-        if (document.getElementById('calendly-css')) return; // Already loaded
 
-        const head = document.getElementsByTagName('head')[0];
-        
-        // Load CSS
-        const link = document.createElement('link');
-        link.id = 'calendly-css';
-        link.rel = 'stylesheet';
-        link.href = 'https://assets.calendly.com/assets/external/widget.css';
-        head.appendChild(link);
-
-        // Load JS
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'https://assets.calendly.com/assets/external/widget.js';
-        script.async = true;
-        head.appendChild(script);
-    }
-
-    // Lazy load on idle
-    window.addEventListener('load', () => {
-        setTimeout(loadCalendlyResources, 2000);
-    });
-    
-    // Pre-load on hover for faster response
-    document.addEventListener('DOMContentLoaded', () => {
-        const btn = document.querySelector('.book-btn');
-        if(btn) btn.addEventListener('mouseover', loadCalendlyResources);
-    });
-
-    // --- CALENDLY CUSTOM HANDLER (CLEAN RESET) ---
-    window.isBookingOpening = false;
-    window.openBooking = function() {
-      if (window.isBookingOpening) return;
-      window.isBookingOpening = true;
-
-      // 1. Ensure assets are loading
-      loadCalendlyResources();
-
-      // 2. Wait for library then open
-      const poll = setInterval(() => {
-          if (typeof Calendly !== 'undefined') {
-              clearInterval(poll);
-              
-              // Hide conflicting header controls to prevent visual overlap with close button
-              const toggles = document.querySelectorAll('.nav-toggle, .theme-toggle-btn');
-              toggles.forEach(t => { t.style.opacity = '0'; t.style.pointerEvents = 'none'; });
-
-              Calendly.initPopupWidget({
-                  url: 'https://calendly.com/onlytrueperspective/30min'
-              });
-
-              window.isBookingOpening = false;
-
-              // Watch for closure to restore controls
-              const restorePoll = setInterval(() => {
-                  if (!document.querySelector('.calendly-overlay')) {
-                      toggles.forEach(t => { t.style.opacity = ''; t.style.pointerEvents = ''; });
-                      clearInterval(restorePoll);
-                  }
-              }, 500);
-          }
-      }, 100);
-      
-      // Safety timeout
-      setTimeout(() => { 
-          clearInterval(poll); 
-          window.isBookingOpening = false; 
-      }, 4000);
-    };
 
     document.addEventListener('DOMContentLoaded', () => {
         // SUPABASE INIT (Using centralized config)
