@@ -1050,128 +1050,34 @@
         if(btn) btn.addEventListener('mouseover', loadCalendlyResources);
     });
 
-    // --- CALENDLY CUSTOM HANDLER ---
+    // --- CALENDLY CUSTOM HANDLER (CLEAN RESET) ---
     window.isBookingOpening = false;
     window.openBooking = function() {
-      // Prevent double-clicks or re-opening while active
       if (window.isBookingOpening) return;
-      if (document.querySelector('.calendly-overlay')) return;
-
       window.isBookingOpening = true;
 
       // 1. Ensure assets are loading
       loadCalendlyResources();
 
-      // 2. Poll for library availability (Max 3s)
-      let attempts = 0;
-      const maxAttempts = 30; // 30 * 100ms = 3 seconds
-      
-      document.body.style.cursor = 'wait';
-
+      // 2. Wait for library then open
       const poll = setInterval(() => {
-          attempts++;
           if (typeof Calendly !== 'undefined') {
               clearInterval(poll);
-              document.body.style.cursor = 'default';
               
-              // Double check we didn't spawn one in the meantime by some other means
-              if (!document.querySelector('.calendly-overlay')) {
-                  Calendly.initPopupWidget({url: 'https://calendly.com/onlytrueperspective/30min'});
-                  injectCloseButton(); 
-              }
-              
-              // Reset lock after a safe delay
-              setTimeout(() => { window.isBookingOpening = false; }, 1000);
+              Calendly.initPopupWidget({
+                  url: 'https://calendly.com/onlytrueperspective/30min'
+              });
 
-          } else if (attempts >= maxAttempts) {
-              clearInterval(poll);
-              document.body.style.cursor = 'default';
               window.isBookingOpening = false;
-              console.warn("Calendly widget timeout. Redirecting to external site.");
-              window.location.href = 'https://calendly.com/onlytrueperspective/30min';
           }
       }, 100);
+      
+      // Safety timeout
+      setTimeout(() => { 
+          clearInterval(poll); 
+          window.isBookingOpening = false; 
+      }, 4000);
     };
-
-    function injectCloseButton() {
-       // Poll for the overlay to ensure it exists before we try to attach listeners
-       let attempts = 0;
-       const checkOverlay = setInterval(() => {
-           attempts++;
-           const overlay = document.querySelector('.calendly-overlay');
-           
-           if (overlay) {
-               clearInterval(checkOverlay);
-               
-               // 1. Prevent Accidental Close (Lock Overlay)
-               // We clone the element to strip existing listeners if necessary, 
-               // but Calendly might rely on React/bound events, so purely stripping might break verify.
-               // Instead, we use aggressive event interception.
-               overlay.addEventListener('click', (e) => {
-                   if (e.target === overlay) {
-                       e.preventDefault();
-                       e.stopPropagation();
-                       e.stopImmediatePropagation();
-                       console.log("Strict Mode: Overlay click blocked.");
-                   }
-               }, true); // Capture phase is critical here
-
-               // 2. Custom Close Button
-               if (!document.getElementById('custom-calendly-close')) {
-                   const btn = document.createElement('div');
-                   btn.id = 'custom-calendly-close';
-                   btn.innerHTML = '&times;';
-                   Object.assign(btn.style, {
-                       position: 'fixed',
-                       top: '20px',
-                       right: '20px',
-                       width: '40px',
-                       height: '40px',
-                       background: '#000',
-                       color: '#fff',
-                       borderRadius: '50%',
-                       display: 'flex',
-                       alignItems: 'center',
-                       justifyContent: 'center',
-                       fontSize: '24px',
-                       cursor: 'pointer',
-                       zIndex: '10000', // Ensure it's on top of Calendly's 9999
-                       border: '1px solid #333',
-                       boxShadow: '0 0 10px rgba(0,0,0,0.5)'
-                   });
-                   
-                   // HIDE HEADER CONTROLS TO PREVENT OVERLAP
-                   const toggles = document.querySelectorAll('.nav-toggle, .theme-toggle-btn');
-                   toggles.forEach(t => { t.style.opacity = '0'; t.style.pointerEvents = 'none'; });
-
-                   // Force Hide Native Close Button (Double Check)
-                   const nativeClose = document.querySelector('.calendly-popup-close');
-                   if(nativeClose) nativeClose.style.display = 'none';
-
-                   btn.onclick = function() {
-                       const o = document.querySelector('.calendly-overlay');
-                       if (o) o.remove(); 
-                       
-                       const p = document.querySelector('.calendly-popup-close');
-                       if (p) p.click(); // Try native close logic
-                       
-                       document.documentElement.style.overflow = ''; 
-                       
-                       // RESTORE HEADER CONTROLS
-                       toggles.forEach(t => { t.style.opacity = ''; t.style.pointerEvents = ''; });
-
-                       btn.remove();
-                   };
-                   
-                   // Append to body to ensure it's not trapped in the overlay relative stacking
-                   document.body.appendChild(btn);
-               }
-
-           } else if (attempts > 60) { // 3 seconds timeout
-               clearInterval(checkOverlay);
-           }
-       }, 50);
-    }
 
     document.addEventListener('DOMContentLoaded', () => {
         // SUPABASE INIT (Using centralized config)
