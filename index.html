@@ -1064,11 +1064,23 @@
           if (typeof Calendly !== 'undefined') {
               clearInterval(poll);
               
+              // Hide conflicting header controls to prevent visual overlap with close button
+              const toggles = document.querySelectorAll('.nav-toggle, .theme-toggle-btn');
+              toggles.forEach(t => { t.style.opacity = '0'; t.style.pointerEvents = 'none'; });
+
               Calendly.initPopupWidget({
                   url: 'https://calendly.com/onlytrueperspective/30min'
               });
 
               window.isBookingOpening = false;
+
+              // Watch for closure to restore controls
+              const restorePoll = setInterval(() => {
+                  if (!document.querySelector('.calendly-overlay')) {
+                      toggles.forEach(t => { t.style.opacity = ''; t.style.pointerEvents = ''; });
+                      clearInterval(restorePoll);
+                  }
+              }, 500);
           }
       }, 100);
       
