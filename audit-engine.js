@@ -99,10 +99,6 @@ window.AuditEngine = {
             // Clear any existing errors
             if (errorEl) errorEl.style.opacity = '0';
 
-        try {
-            // Clear any existing errors
-            if (errorEl) errorEl.style.opacity = '0';
-
             const goal = this.answers.q1 || 'Progress';
             const hurdle = this.answers.q2 || 'The Unknown';
             const platform = this.answers.q3 || 'The Web';
@@ -128,7 +124,6 @@ window.AuditEngine = {
                     }
                 }
             } catch (e) { console.warn("Backend link severed, pivoting to direct oracle..."); }
-
             // 2. Direct Oracle Link (Client-side Fallback if backend is static/405/404)
             if (!success) {
                 try {
@@ -155,6 +150,19 @@ window.AuditEngine = {
                         const directData = await directRes.json();
                         advice = directData.candidates[0].content.parts[0].text;
                         success = true;
+
+                        // PUSH LEAD TO SUPABASE (Direct Client-Side Attempt)
+                        if (window.supabase && window.OTP_CONFIG) {
+                            try {
+                                const sb = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+                                await sb.from('leads').insert([{ 
+                                    email, 
+                                    answers: this.answers, 
+                                    advice, 
+                                    type: 'perspective_audit_bypass' 
+                                }]);
+                            } catch (sbErr) { console.warn("Direct DB save failed."); }
+                        }
                     }
                 } catch (apiErr) { console.warn("Direct Oracle link jammed."); }
             }
@@ -287,16 +295,16 @@ window.AuditEngine = {
             const upper = cleanLine.toUpperCase();
 
             // Headers
-            if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE FORTUNE')) {
-                html += `<div style="margin-top:24px; margin-bottom:12px; font-family:'Space Grotesk'; font-weight:700; font-size:1em; color:#fff; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:5px; display:inline-block;">${cleanLine}</div>`;
+            if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE FORTUNE') || upper.includes('THE TRUTH') || upper.includes('THE NEXT STEP') || upper.includes('THE MISSION')) {
+                html += `<div style="margin-top:28px; margin-bottom:14px; font-family:'Space Grotesk'; font-weight:700; font-size:1.15em; color:#fff; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; display:block; width: 100%;">${cleanLine}</div>`;
             } 
             // List Items
-            else if (cleanLine.match(/^(\d+\.|-)/)) {
-                html += `<div style="margin-top:4px; margin-bottom:4px; padding-left:12px; border-left:2px solid rgba(0,195,255,0.3); font-size:0.95rem; line-height:1.5;">${cleanLine}</div>`;
+            else if (cleanLine.match(/^(\d+\.|-|\*)/)) {
+                html += `<div style="margin-top:10px; margin-bottom:10px; padding-left:16px; border-left:2px solid rgba(0,195,255,0.4); font-size:0.95rem; line-height:1.6; color: rgba(255,255,255,0.95);">${cleanLine}</div>`;
             } 
             // Standard Text
             else {
-                html += `<div style="margin-bottom:12px; font-size:0.95rem; line-height:1.6;">${cleanLine}</div>`;
+                html += `<div style="margin-bottom:16px; font-size:0.95rem; line-height:1.7; color: rgba(255,255,255,0.85);">${cleanLine}</div>`;
             }
         });
 
@@ -348,9 +356,12 @@ window.AuditEngine = {
             btn.style.background = '';
         });
 
-        // Ensure back tokens are effectively reset
+        // Ensure back buttons are effectively reset
         const backBtns = document.querySelectorAll('.audit-back-btn');
-        backBtns.forEach(b => b.style.display = '');
+        backBtns.forEach(b => {
+             b.style.display = '';
+             b.style.opacity = '1';
+        });
         
         // Smooth scroll back to top of audit card
         const card = document.querySelector('.audit-card');
