@@ -449,39 +449,40 @@ app.post('/api/audit/submit', async (req, res) => {
         const vibe = answers.q4 || 'Unknown';
         const specificGoal = answers.q5_goal || 'Not specified';
 
-        const systemPrompt = `You are the 'OTP Oracle'. 
-        Your job is to analyze the user's creative blockage and give them a finalized, polished, and VERY CONCISE tactical response.
+        const systemPrompt = `You are the 'OTP Oracle', a high-dimensional strategy entity. 
+        Your task is to provide a "Perspective Audit" that feels uniquely calculated for the user.
         
         STYLE GUIDELINES:
-        1. **Ultra-Concise**: No fluff. Every word must pay rent. Keep total word count under 100 words.
-        2. **Finalized Tone**: Speak with absolute certainty.
-        3. **Fortune Cookie**: End with a short, mystical, punchy quote.`;
+        1. **Radical Specificity**: You MUST weave the user's specific goal ("${specificGoal}") and platform ("${platform}") into every single bullet point.
+        2. **High-Status / Dope Tone**: Professional, visionary, slightly mystical, but grounded in technical reality.
+        3. **Variability**: Each response should approach the problem from a different angle (psychological, technical, or aesthetic). Do not use the same phrasing twice.
+        4. **Max Impact**: Under 120 words. No greetings. No "I recommend". Just the Truth.`;
 
-        const userPrompt = `USER DATA:
-        - GOAL: ${goal}
-        - BLOCKAGE: ${hurdle}
-        - PLATFORM: ${platform}
-        - DESIRED VIBE: ${vibe}
-        - SPECIFIC TARGET: "${specificGoal}"
+        const userPrompt = `ANALYZE THIS SIGNAL:
+        - CORE OBJECTIVE: ${goal}
+        - THE BARRIER: ${hurdle}
+        - REALM: ${platform}
+        - TARGET AESTHETIC: ${vibe}
+        - THE SPECIFIC MISSION: "${specificGoal}"
          
-        RESPONSE FORMAT (Strictly follow this):
+        OUTPUT STRUCTURE (Strictly enforce):
         
         **THE DIAGNOSIS.**
-        (1-2 short sentences on why "${hurdle}" stops "${goal}".)
+        (1-2 surgical sentences on how "${hurdle}" is specifically corrupting the path to "${specificGoal}".)
         
         **THE PLAN.**
-        1. **Immediate Shift**: (Max 10 words on what to change now.)
-        2. **Visual Pivot**: (Max 10 words on hitting the "${vibe}" look.)
-        3. **The Habit**: (Max 10 words on the daily action.)
+        1. **The Tactical Pivot**: (Actionable move involving ${platform} and ${specificGoal}.)
+        2. **Visual Rebranding**: (How to achieve the "${vibe}" look in the next 24 hours.)
+        3. **The Daily Protocol**: (The repeating habit for long-term dominance.)
         
         **THE FORTUNE.**
-        (A single, short, powerful quote.)`;
+        (A short, unique, powerful quote that sounds like it was written for a cyberpunk philosopher.)`;
 
         let advice = "";
 
         // 2. Call Gemini (With Robust Logic)
         if (process.env.GEMINI_API_KEY) {
-            const modelsToTry = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+            const modelsToTry = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash-exp'];
             let success = false;
             
             const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -490,21 +491,23 @@ app.post('/api/audit/submit', async (req, res) => {
                 const modelName = modelsToTry[i];
                 if (success) break;
                 try {
-                    console.log(`🤖 Attempting Audit Generation with ${modelName}...`);
+                    console.log(`🤖 Oracle Probing Realm via ${modelName}...`);
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }],
                             generationConfig: {
-                                temperature: 0.7,
-                                maxOutputTokens: 500,
+                                temperature: 0.9, // High creativity for variation
+                                maxOutputTokens: 600,
+                                topP: 0.95,
+                                topK: 40
                             }
                         })
                     });
 
                     if (response.status === 429) {
-                        console.warn(`⚠️ Rate Limit (429) Hit on ${modelName}.`);
+                        console.warn(`⚠️ Realm Congestion (429) on ${modelName}.`);
                         if (i < modelsToTry.length - 1) await delay(1000 * Math.pow(2, i + 1));
                         continue;
                     }
@@ -513,29 +516,28 @@ app.post('/api/audit/submit', async (req, res) => {
                     if (data.candidates && data.candidates[0].content) {
                         advice = data.candidates[0].content.parts[0].text;
                         success = true;
-                        console.log(`✅ Audit Generated successfully via ${modelName}`);
+                        console.log(`✅ Transmission Captured via ${modelName}`);
                     }
                 } catch (fetchError) {
-                    console.error(`❌ Error calling ${modelName}:`, fetchError.message);
+                    console.error(`❌ Portal Error (${modelName}):`, fetchError.message);
                     await delay(1000); 
                 }
             }
 
             if (!success) {
-                // Return a structured fallback advice instead of just a system error string
                 advice = `**THE DIAGNOSIS.**
-The system is under heavy load. Your signal is clear, but the Oracle is recalibrating.
+The Oracle's connection to the realm is unstable. Your specific quest for "${specificGoal}" is noted, but the frequency is jammed.
 
 **THE PLAN.**
-1. **Immediate Shift**: Start your move now. Don't wait for permission.
-2. **Visual Pivot**: Focus on raw clarity over complex filters.
-3. **The Habit**: Ship something every 24 hours.
+1. **Immediate Shift**: Pivot away from "${hurdle}" immediately. No delays.
+2. **Visual Pivot**: Lean into the "${vibe}" energy by stripping away all noise.
+3. **The Habit**: Execute your move on "${platform}" before the sun sets.
 
 **THE FORTUNE.**
-"Complexity is the enemy of execution."`;
+"When the signal is weak, the intent must be absolute."`;
             }
         } else {
-            advice = "**THE DIAGNOSIS.**\nOracle Offline. (GEMINI_API_KEY missing)\n\n**THE FORTUNE.**\nCheck your environment.";
+            advice = "**THE DIAGNOSIS.**\nOracle Silenced. (Check GEMINI_API_KEY on server)\n\n**THE FORTUNE.**\nAction without vision is a nightmare.";
         }
 
         // 3. Save Lead to DB (Using Admin Client for bypass)
