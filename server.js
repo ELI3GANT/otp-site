@@ -66,7 +66,7 @@ app.use(helmet({
             imgSrc: ["'self'", "data:", "https:", "blob:"],
             connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://api.openai.com", "https://generativelanguage.googleapis.com", "https://calendly.com"],
             mediaSrc: ["'self'", "https:"],
-            frameSrc: ["'self'", "https://calendly.com"],
+            frameSrc: ["'self'", "https://calendly.com", "https://open.spotify.com", "https://embed.music.apple.com", "https://music.apple.com", "https://www.youtube.com", "https://w.soundcloud.com"],
             objectSrc: ["'none'"],
             upgradeInsecureRequests: [],
         },
