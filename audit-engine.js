@@ -100,7 +100,9 @@ window.AuditEngine = {
             if (errorEl) errorEl.style.opacity = '0';
 
             // 1. Call OTP Backend Securely
-            // This replaces the client-side Gemini call and direct Supabase insertion
+            const hurdle = this.answers.q2 || 'Unknown';
+            const vibe = this.answers.q4 || 'Unknown';
+            
             let advice = "";
             let success = false;
 
