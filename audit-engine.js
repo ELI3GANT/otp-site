@@ -128,42 +128,10 @@ window.AuditEngine = {
             // 2. [REMOVED] Direct Oracle Link (Security: Never expose keys client-side)
             // Fallback immediately to Local Simulation if server fails.
 
-            // 3. Dynamic Local Simulation (Ultra-Dynamic even if offline)
-            if (!success) {
-                const blueprints = [
-                    {
-                        diag: `The frequency shift to **${vibe}** is being jammed by **${hurdle}**. This isn't a technical error; it's a structural one.`,
-                        plan: [
-                            `Pivot your ${platform} strategy to prioritize **${specificGoal}** immediately.`,
-                            `Adopt the **${vibe}** aesthetic today—strip away everything that doesn't serve the vision.`,
-                            `Daily Protocol: Commit 30 minutes to ${specificGoal} before checking any metrics.`
-                        ],
-                        fortune: `"The clearest vision is the one you execute with."`
-                    },
-                    {
-                        diag: `You are aiming for **${specificGoal}**, but your reliance on **${hurdle}** is a tether to the ground. You cannot fly with an anchor.`,
-                        plan: [
-                            `Identify the specific loop where **${hurdle}** starts and kill it at the source.`,
-                            `Your presence on ${platform} must scream **${vibe}**. No half-measures.`,
-                            `The Fix: Upload one raw progress signal towards **${specificGoal}** every 24 hours.`
-                        ],
-                        fortune: `"Complexity is the enemy of the elite."`
-                    },
-                    {
-                        diag: `Signal Analysis: **${goal}** is the objective, but **${hurdle}** is the static. Your ${platform} presence is currently out of phase.`,
-                        plan: [
-                            `Merge your ${vibe} desires with the technical reality of ${platform}.`,
-                            `Stop negotiating with **${hurdle}**. It is a ghost. Ignore it and ship.`,
-                            `Final Move: Align your next 3 posts with the specific mission of **${specificGoal}**.`
-                        ],
-                        fortune: `"He who watches the wind will never plant."`
-                    }
-                ];
-
-                const blueprint = blueprints[Math.floor(Math.random() * blueprints.length)];
-                
-                advice = `**THE DIAGNOSIS.**\n${blueprint.diag}\n\n**THE PLAN.**\n1. ${blueprint.plan[0]}\n2. ${blueprint.plan[1]}\n3. ${blueprint.plan[2]}\n\n**THE FORTUNE.**\n${blueprint.fortune}`;
-            }
+            // 2. Local Simulation Removed (Strict Real-Time Only)
+             if (!success) {
+                 throw new Error("Neural Link Offline. Server or AI Provider unavailable.");
+             }
 
             // 4. Success Animation
             if (statusOverlay && progressBar) {
