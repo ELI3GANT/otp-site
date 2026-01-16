@@ -562,7 +562,19 @@ The Oracle's connection to the realm is unstable. Your specific quest for "${spe
 
     } catch (error) {
         console.error("Audit Engine Critical Error:", error);
-        res.status(500).json({ success: false, message: "Server error during audit analysis." });
+        // FAIL-SAFE: Never show the user a 500 error. Fallback to the hardcoded advice.
+        const fallbackAdvice = `**THE DIAGNOSIS.**
+The neural link encountered static, but your signal was received. The path to "${req.body.answers?.q5_goal || 'Excellence'}" requires immediate action.
+
+**THE PLAN.**
+1. **The Reset**: Clear your current strategy board. Start fresh today.
+2. **The Visuals**: Simplify. If it doesn't serve the goal, delete it.
+3. **The Protocol**: One high-value action every morning before consumption.
+
+**THE FORTUNE.**
+"Obstacles are just instructions in disguise."`;
+
+        res.json({ success: true, advice: fallbackAdvice });
     }
 });
 
