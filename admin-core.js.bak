@@ -36,20 +36,6 @@
         }, 4000);
     };
 
-    /**
-     * Security Utility: Escape HTML
-     * Prevents XSS in innerHTML injections
-     */
-    window.escapeHtml = function(text) {
-        if (!text) return '';
-        return text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    };
-
     // 0. CONFIGURATION
     const CONFIG = {
         supabaseUrl: window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : '',
@@ -418,8 +404,7 @@
             const optimizedFile = await optimizeImage(file);
             if(btn) btn.textContent = "UPLOADING...";
 
-            // Ensure extension matches MIME type (jpeg)
-            const fileExt = "jpg"; // optimizedImage returns image/jpeg
+            const fileExt = optimizedFile.name.split('.').pop();
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
             const filePath = `blog/${fileName}`;
 
@@ -847,8 +832,8 @@
                 <div class="post-row" style="display: block; padding: 15px; margin-bottom: 10px; cursor: default; border-left: 2px solid ${statusColor};">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <div>
-                             <span style="font-weight: bold; color: var(--admin-accent); font-size: 0.9rem;">${window.escapeHtml(c.name)}</span>
-                             <span style="color: var(--admin-muted); font-size: 0.8rem;"> &lt;${window.escapeHtml(c.email)}&gt;</span>
+                             <span style="font-weight: bold; color: var(--admin-accent); font-size: 0.9rem;">${c.name}</span>
+                             <span style="color: var(--admin-muted); font-size: 0.8rem;"> &lt;${c.email}&gt;</span>
                              <span style="font-size: 0.65rem; color: var(--admin-muted); margin-left: 10px;">${new Date(c.created_at).toLocaleDateString()}</span>
                         </div>
                         <div style="display:flex; gap: 8px; align-items:center;">
@@ -858,9 +843,9 @@
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; margin-bottom: 10px; color: var(--admin-text);">
-                        <div><span style="color: var(--admin-muted);">SERVICE:</span> ${window.escapeHtml(c.service || 'N/A')}</div>
-                        <div><span style="color: var(--admin-muted);">BUDGET:</span> ${window.escapeHtml(c.budget || 'N/A')}</div>
-                        <div style="grid-column: span 2;"><span style="color: var(--admin-muted);">MSG:</span> ${window.escapeHtml(c.message || '')}</div>
+                        <div><span style="color: var(--admin-muted);">SERVICE:</span> ${c.service || 'N/A'}</div>
+                        <div><span style="color: var(--admin-muted);">BUDGET:</span> ${c.budget || 'N/A'}</div>
+                        <div style="grid-column: span 2;"><span style="color: var(--admin-muted);">MSG:</span> ${c.message || ''}</div>
                     </div>
 
                     ${isDrafted ? `

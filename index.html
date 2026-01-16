@@ -1058,83 +1058,10 @@
             });
         }
 
-        // FORM HANDLING
-        const contactForm = document.getElementById('contactForm');
-        const formStatus = document.getElementById('formStatus');
-        
-        if (contactForm) {
-          contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        if (!supabase) {
-             alert("Error: Database connection not established. Please reload or contact directly via email.");
-             return;
-        }
-
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.textContent;
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
-        submitBtn.style.opacity = '0.7';
-
-        const formData = new FormData(contactForm);
-        const data = Object.fromEntries(formData.entries());
-        
-        const successState = document.getElementById('successState');
-
-        // Unconditionally remove Formspree-specific fields
-        delete data._gotcha; 
-        
-        // Show loading state
-        formStatus.textContent = 'Locking the vision...';
-        formStatus.style.color = 'var(--accent2)';
-        
-        try {
-          const { error } = await supabase
-            .from('contacts')
-            .insert([ data ]);
-
-          if (error) throw error;
-
-          // SUCCESS ANIMATION
-          if (typeof gsap !== 'undefined') {
-              // Fade out form
-              gsap.to(contactForm, { 
-                  opacity: 0, 
-                  y: -20, 
-                  duration: 0.5, 
-                  onComplete: () => {
-                      contactForm.style.display = 'none';
-                      successState.style.display = 'block';
-                      
-                      // Animate Success State
-                      gsap.to('.success-icon', { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' });
-                      gsap.to('#successState h3', { opacity: 1, y: 0, duration: 0.6, delay: 0.2 });
-                      gsap.to('#successState p', { opacity: 1, y: 0, duration: 0.6, delay: 0.3 });
-                  }
-              });
-          } else {
-             // Fallback if GSAP fails
-             contactForm.style.display = 'none';
-             successState.style.display = 'block';
-             successState.querySelector('h3').style.opacity = 1;
-             successState.querySelector('p').style.opacity = 1;
-             successState.querySelector('.success-icon').style.opacity = 1;
-             successState.querySelector('.success-icon').style.transform = 'scale(1)';
-          }
-
-        } catch (error) {
-          console.error("Full Error:", error);
-          formStatus.textContent = 'Error: ' + (error.message || JSON.stringify(error));
-          formStatus.style.color = '#ff4444';
-          
-          // Re-enable button
-          submitBtn.disabled = false;
-          submitBtn.textContent = originalBtnText;
-          submitBtn.style.opacity = '1';
-        }
-      });
-    }
+    /* 
+       FORM HANDLING MOVED TO: site-init.js 
+       (Prevents double submission & enables AI Agent Logic via /api)
+    */
 
     // SCROLL REVEALS
     if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {

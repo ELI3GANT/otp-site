@@ -47,6 +47,7 @@ async function runSecurityPerfAudit() {
 
     } catch (e) {
         console.error("Audit failed: Server likely offline.", e.message);
+        process.exit(1);
     }
 }
 

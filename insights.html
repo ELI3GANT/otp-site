@@ -260,6 +260,16 @@
             if (!allPosts.length) setStatus(`SIGNAL LOSS: ${e.message}`, true);
         }
 
+        // Helper: Escape HTML to prevent XSS
+        const escapeHtml = (str) => {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        };
+
         function renderFilters(posts) {
             const wrap = document.getElementById('filter-wrap');
             if (!wrap) return;
@@ -275,8 +285,8 @@
             const uniqueTags = ['ALL', ...Array.from(tags).sort()];
             
             wrap.innerHTML = uniqueTags.map(tag => `
-                <button class="filter-btn ${activeTag === tag ? 'active' : ''}" onclick="window.filterByTag('${tag}')">
-                    ${tag}
+                <button class="filter-btn ${activeTag === tag ? 'active' : ''}" onclick="window.filterByTag('${escapeHtml(tag)}')">
+                    ${escapeHtml(tag)}
                 </button>
             `).join('');
             
@@ -312,14 +322,18 @@
                 const card = document.createElement('article');
                 card.className = 'insight-card k-hover';
 
+                // Safe content extraction (strip tags)
+                let rawBody = post.excerpt || post.content || '';
+                let safeBody = rawBody.replace(/<[^>]*>/g, '').substring(0, 100) + (rawBody.length > 100 ? '...' : '');
+
                 card.innerHTML = `
                     <div class="insight-card-inner">
-                        <div class="insight-date">${date} • ${post.category || 'Insight'}</div>
-                        <h2>${post.title}</h2>
-                        <p>${post.excerpt || (post.content ? post.content.substring(0, 100).replace(/<[^>]*>/g, '') + '...' : '')}</p>
+                        <div class="insight-date">${date} • ${escapeHtml(post.category || 'Insight')}</div>
+                        <h2>${escapeHtml(post.title)}</h2>
+                        <p>${escapeHtml(safeBody)}</p>
                         
                         <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;">
-                            ${(post.tags || []).map(t => `<span class="post-tag">#${t.toUpperCase()}</span>`).join('')}
+                            ${(post.tags || []).map(t => `<span class="post-tag">#${escapeHtml(t.toUpperCase())}</span>`).join('')}
                         </div>
 
                         <div class="insight-footer">

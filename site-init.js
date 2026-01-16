@@ -812,18 +812,10 @@ function initSite() {
                 navToggle.setAttribute('aria-expanded', 'false');
             });
         });
-        let lastScrollY = window.scrollY;
-        window.addEventListener('scroll', () => {
-            if (navDrawer.classList.contains('open')) {
-                const diff = Math.abs(window.scrollY - lastScrollY);
-                if (diff > 50) { // Only close on significant body scroll
-                    navDrawer.classList.remove('open');
-                    document.body.classList.remove('nav-open');
-                    navToggle.setAttribute('aria-expanded', 'false');
-                }
-            }
-            lastScrollY = window.scrollY;
-        }, { passive: true });
+        // REMOVED: Scroll-to-close logic.
+        // Reason: The body is locked (overflow:hidden) when nav is open.
+        // Trying to detect scroll delta is flaky on iOS bouncing.
+        // Users should click outside or toggle button to close.
     }
 
     // --- BEFORE/AFTER SLIDER ---
@@ -889,23 +881,30 @@ function initSite() {
     const isMobileHero = window.matchMedia("(max-width: 768px)").matches;
     
     if (heroEye && !isMobileHero) {
+        let eyeTicking = false;
         window.addEventListener('mousemove', (e) => {
-            const rect = heroEye.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
-            
-            // Calculate distance and angle
-            const deltaX = (mouseX - centerX) / window.innerWidth;
-            const deltaY = (mouseY - centerY) / window.innerHeight;
-            
-            // Apply subtle tilt and rotation
-            const rotateX = deltaY * 30; 
-            const rotateY = deltaX * 30; 
-            
-            heroEye.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`;
+            if (!eyeTicking) {
+                window.requestAnimationFrame(() => {
+                    const rect = heroEye.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    
+                    const mouseX = e.clientX;
+                    const mouseY = e.clientY;
+                    
+                    // Calculate distance and angle
+                    const deltaX = (mouseX - centerX) / window.innerWidth;
+                    const deltaY = (mouseY - centerY) / window.innerHeight;
+                    
+                    // Apply subtle tilt and rotation
+                    const rotateX = deltaY * 30; 
+                    const rotateY = deltaX * 30; 
+                    
+                    heroEye.style.transform = `rotateX(${-rotateX}deg) rotateY(${rotateY}deg)`;
+                    eyeTicking = false;
+                });
+                eyeTicking = true;
+            }
         });
         
         window.addEventListener('mouseleave', () => {
