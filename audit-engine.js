@@ -123,49 +123,10 @@ window.AuditEngine = {
                         success = true;
                     }
                 }
-            } catch (e) { console.warn("Backend link severed, pivoting to direct oracle..."); }
-            // 2. Direct Oracle Link (Client-side Fallback if backend is static/405/404)
-            if (!success) {
-                try {
-                    const _p1 = "AIzaSyDVmad"; 
-                    const _p2 = "_vCfefp7YnjX4gDAUH03L7rqTPA0";
-                    const API_KEY = _p1 + _p2; 
-                    const MODEL = "gemini-1.5-flash"; 
-                    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
-                    
-                    const systemPrompt = `You are the OTP Oracle. Analyze: ${goal}, ${hurdle}, ${platform}, ${vibe}, Target: ${specificGoal}. 
-                    Provide concise advice in Paragraph format with **Bolded Truths**. No greetings. Focus on hitting the goal of ${specificGoal}. 
-                    Structure: **THE DIAGNOSIS.** (1 sentence), **THE PLAN.** (3 bullet points), **THE FORTUNE.** (1 short quote).`;
+            } catch (e) { console.warn("Backend link severed, pivoting to simulation..."); }
 
-                    const directRes = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: systemPrompt }] }],
-                            generationConfig: { temperature: 0.9, maxOutputTokens: 400 }
-                        })
-                    });
-
-                    if (directRes.ok) {
-                        const directData = await directRes.json();
-                        advice = directData.candidates[0].content.parts[0].text;
-                        success = true;
-
-                        // PUSH LEAD TO SUPABASE (Direct Client-Side Attempt)
-                        if (window.supabase && window.OTP_CONFIG) {
-                            try {
-                                const sb = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
-                                await sb.from('leads').insert([{ 
-                                    email, 
-                                    answers: this.answers, 
-                                    advice, 
-                                    type: 'perspective_audit_bypass' 
-                                }]);
-                            } catch (sbErr) { console.warn("Direct DB save failed."); }
-                        }
-                    }
-                } catch (apiErr) { console.warn("Direct Oracle link jammed."); }
-            }
+            // 2. [REMOVED] Direct Oracle Link (Security: Never expose keys client-side)
+            // Fallback immediately to Local Simulation if server fails.
 
             // 3. Dynamic Local Simulation (Ultra-Dynamic even if offline)
             if (!success) {
@@ -305,6 +266,9 @@ window.AuditEngine = {
     formatAdvice: function(text) {
         if (!text) return '';
         
+        // Local Escape
+        const escape = (str) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
         const lines = text.split('\n');
         let html = '';
 
@@ -314,22 +278,25 @@ window.AuditEngine = {
 
             // Remove markdown syntax
             cleanLine = cleanLine.replace(/`/g, '');
-            // Bold
-            cleanLine = cleanLine.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent2);">$1</strong>');
+            
+            // Handle Bold (**text**) - We escape FIRST, then restore bold tags
+            // This is safer than naive replace
+            let safeLine = escape(cleanLine);
+            safeLine = safeLine.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent2);">$1</strong>');
 
-            const upper = cleanLine.toUpperCase();
+            const upper = safeLine.toUpperCase();
 
             // Headers
             if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE FORTUNE') || upper.includes('THE TRUTH') || upper.includes('THE NEXT STEP') || upper.includes('THE MISSION')) {
-                html += `<div class="advice-header">${cleanLine}</div>`;
+                html += `<div class="advice-header">${safeLine}</div>`;
             } 
             // List Items
             else if (cleanLine.match(/^(\d+\.|-|\*)/)) {
-                html += `<div class="advice-list-item">${cleanLine}</div>`;
+                html += `<div class="advice-list-item">${safeLine}</div>`;
             } 
             // Standard Text
             else {
-                html += `<div class="advice-row">${cleanLine}</div>`;
+                html += `<div class="advice-row">${safeLine}</div>`;
             }
         });
 

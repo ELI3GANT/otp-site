@@ -31,6 +31,7 @@ FILES_TO_UPDATE.forEach(file => {
     content = content.replace(/site-init.js?v=[0-9.]+/g, `site-init.js?v=${NEW_VERSION}`);
     content = content.replace(/admin-core.js?v=[0-9.]+/g, `admin-core.js?v=${NEW_VERSION}`);
     content = content.replace(/admin-init.js?v=[0-9.]+/g, `admin-init.js?v=${NEW_VERSION}`);
+    content = content.replace(/audit-engine.js?v=[0-9.]+/g, `audit-engine.js?v=${NEW_VERSION}`);
 
     // 3. Update Footer Year
     const year = new Date().getFullYear();
