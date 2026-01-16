@@ -6366,3 +6366,75 @@ input:focus, select:focus, textarea:focus {
 }
 
 
+
+/* AUDIT RESULT TERMINAL STYLES */
+.audit-terminal {
+  font-family: 'Space Mono', 'Courier New', monospace;
+  color: #00ffaa;
+  text-shadow: 0 0 5px rgba(0, 255, 170, 0.4);
+  line-height: 1.6;
+}
+
+.advice-header {
+  color: #fff;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 5px;
+  display: inline-block;
+}
+
+.advice-list-item {
+  margin-bottom: 12px;
+  padding-left: 20px;
+  position: relative;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.advice-list-item::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--accent2);
+  font-weight: bold;
+}
+
+.advice-row {
+  margin-bottom: 15px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.typewriter-cursor::after {
+  content: '█';
+  animation: blink 1s step-end infinite;
+  color: var(--accent2);
+  margin-left: 4px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.audit-badge-transmission {
+    margin-bottom: 20px; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 8px; 
+    background: rgba(0, 195, 255, 0.05); 
+    border: 1px solid rgba(0, 195, 255, 0.2); 
+    padding: 6px 14px; 
+    border-radius: 4px; 
+    font-family: 'Space Grotesk', sans-serif; 
+    font-size: 0.75rem; 
+    color: #00c3ff; 
+    letter-spacing: 1px; 
+    font-weight: 700; 
+    text-transform: uppercase;
+    box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
+}

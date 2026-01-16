@@ -174,7 +174,8 @@ window.AuditEngine = {
                     onComplete: () => {
                         captureStep.classList.remove('active');
                         resultStep.classList.add('active');
-                        adviceEl.innerHTML = this.formatAdvice(advice);
+                        // Trigger Typewriter instead of instant HTML
+                        this.typewrite(adviceEl, this.formatAdvice(advice));
                     }
                 });
 
@@ -183,19 +184,11 @@ window.AuditEngine = {
                     { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power4.out" }
                 );
 
-                // Tactical Reveal of Advice
-                const pTags = adviceEl.querySelectorAll('p');
-                tl.from(pTags, {
-                    opacity: 0,
-                    x: -15,
-                    stagger: 0.6,
-                    duration: 1.2,
-                    ease: "power2.out"
-                }, "-=0.6");
+                // No staggers needed for typewriter, it handles its own timing
             } else {
                 captureStep.classList.remove('active');
                 resultStep.classList.add('active');
-                adviceEl.innerHTML = this.formatAdvice(advice);
+                this.typewrite(adviceEl, this.formatAdvice(advice));
             }
 
         } catch (e) {
@@ -231,6 +224,51 @@ window.AuditEngine = {
         }
     },
 
+    // TYPEWRITER ENGINE
+    typewrite: async function(targetEl, htmlContent) {
+        targetEl.innerHTML = ''; // Clear
+        targetEl.classList.add('audit-terminal');
+        
+        // Create a temporary container to parse the HTML
+        const parser = document.createElement('div');
+        parser.innerHTML = htmlContent;
+
+        // Cursor Element
+        const cursor = document.createElement('span');
+        cursor.className = 'typewriter-cursor';
+        targetEl.appendChild(cursor);
+
+        const typeNode = async (node, parent) => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent;
+                for (let i = 0; i < text.length; i++) {
+                    parent.insertBefore(document.createTextNode(text[i]), cursor);
+                    // Randomize typing speed slightly for realism
+                    await new Promise(r => setTimeout(r, Math.random() * 20 + 10));
+                }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const el = document.createElement(node.tagName);
+                // Copy attributes
+                Array.from(node.attributes).forEach(attr => {
+                    el.setAttribute(attr.name, attr.value);
+                });
+                
+                // Insert before cursor
+                parent.insertBefore(el, cursor);
+                
+                // Recurse for children
+                for (const child of Array.from(node.childNodes)) {
+                    await typeNode(child, el);
+                }
+            }
+        };
+
+        // Start Typing Process
+        for (const child of Array.from(parser.childNodes)) {
+            await typeNode(child, targetEl);
+        }
+    },
+
     formatAdvice: function(text) {
         if (!text) return '';
         
@@ -244,18 +282,17 @@ window.AuditEngine = {
             let cleanLine = line.trim();
             if (!cleanLine) return; // Skip empty lines
 
-            // Remove markdown syntax
+            // Remove markdown
             cleanLine = cleanLine.replace(/`/g, '');
             
-            // Handle Bold (**text**) - We escape FIRST, then restore bold tags
-            // This is safer than naive replace
+            // Bold (**text**)
             let safeLine = escape(cleanLine);
             safeLine = safeLine.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent2);">$1</strong>');
 
             const upper = safeLine.toUpperCase();
 
             // Headers
-            if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE FORTUNE') || upper.includes('THE TRUTH') || upper.includes('THE NEXT STEP') || upper.includes('THE MISSION')) {
+            if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE FORTUNE') || upper.includes('THE TRUTH')) {
                 html += `<div class="advice-header">${safeLine}</div>`;
             } 
             // List Items
@@ -268,9 +305,9 @@ window.AuditEngine = {
             }
         });
 
-        // Add a tactical header badge
+        // Tactical Badge
         const bonusBadge = `
-            <div style="margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 195, 255, 0.1); border: 1px solid rgba(0, 195, 255, 0.3); padding: 5px 12px; border-radius: 4px; font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; color: #00c3ff; letter-spacing: 1px; font-weight: 700; text-transform: uppercase;">
+            <div class="audit-badge-transmission">
                 <span style="width: 6px; height: 6px; background: #00c3ff; border-radius: 50%; box-shadow: 0 0 5px #00c3ff;"></span>
                 Start Transmission
             </div>
@@ -293,7 +330,10 @@ window.AuditEngine = {
         steps[0].classList.add('active');
         
         const adviceEl = document.getElementById('audit-advice-content');
-        if (adviceEl) adviceEl.innerHTML = '';
+        if (adviceEl) {
+            adviceEl.innerHTML = '';
+            adviceEl.classList.remove('audit-terminal');
+        }
         
         const emailInput = document.getElementById('audit-email');
         if (emailInput) emailInput.value = '';
