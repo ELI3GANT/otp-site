@@ -99,63 +99,18 @@ window.AuditEngine = {
             // Clear any existing errors
             if (errorEl) errorEl.style.opacity = '0';
 
-            const goal = this.answers.q1 || 'Unknown';
-            const hurdle = this.answers.q2 || 'Unknown';
-            const platform = this.answers.q3 || 'Unknown';
-            const vibe = this.answers.q4 || 'Unknown';
-            const specificGoal = this.answers.q5_goal || 'Not specified';
-
-            const systemPrompt = `You are the 'OTP Oracle'. 
-            Your job is to analyze the user's creative blockage and give them a finalized, polished, and VERY CONCISE tactical response.
-            
-            STYLE GUIDELINES:
-            1. **Ultra-Concise**: No fluff. Every word must pay rent. Keep the total word count under 100 words.
-            2. **Finalized Tone**: Speak with absolute certainty.
-            3. **Fortune Cookie**: End with a short, mystical, punchy quote.`;
-
-            const userPrompt = `USER DATA:
-            - GOAL: ${goal}
-            - BLOCKAGE: ${hurdle}
-            - PLATFORM: ${platform}
-            - DESIRED VIBE: ${vibe}
-            - SPECIFIC TARGET: "${specificGoal}"
-             
-            RESPONSE FORMAT (Strictly follow this):
-            
-            **THE DIAGNOSIS.**
-            (1-2 short sentences on why "${hurdle}" stops "${goal}".)
-            
-            **THE PLAN.**
-            1. **Immediate Shift**: (Max 10 words on what to change now.)
-            2. **Visual Pivot**: (Max 10 words on hitting the "${vibe}" look.)
-            3. **The Habit**: (Max 10 words on the daily action.)
-            
-            **THE FORTUNE.**
-            (A single, short, powerful quote.)`;
-
-            // 2. Call Gemini API Directly (Client-Side)
-            // SECURITY NOTE: We split the key to prevent simple git-scraping bots from revoking it.
-            // In a full production app, this should be server-side.
-            const _p1 = "AIzaSyDVmad"; 
-            const _p2 = "_vCfefp7YnjX4gDAUH03L7rqTPA0";
-            const API_KEY = _p1 + _p2; 
-            
-            // Using the newer 2.5 Flash model
-            const MODEL = "gemini-2.5-flash";
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
-            
+            // 1. Call OTP Backend Securely
+            // This replaces the client-side Gemini call and direct Supabase insertion
             let advice = "";
+            let success = false;
 
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch('/api/audit/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }],
-                        generationConfig: {
-                             maxOutputTokens: 500,
-                             temperature: 0.7
-                        }
+                        email: email,
+                        answers: this.answers
                     })
                 });
 
@@ -164,10 +119,11 @@ window.AuditEngine = {
                 }
 
                 const data = await response.json();
-                if(data.candidates && data.candidates[0] && data.candidates[0].content) {
-                    advice = data.candidates[0].content.parts[0].text;
+                if (data.success && data.advice) {
+                    advice = data.advice;
+                    success = true;
                 } else {
-                     throw new Error("Neural Empty Response");
+                    throw new Error(data.message || "Neural Empty Response");
                 }
 
             } catch (apiErr) {
@@ -183,24 +139,6 @@ The "${hurdle}" is just fear disguised as logic. You are stalling instead of shi
 
 **THE FORTUNE.**
 "He who watches the wind will never plant."`;
-            }
-
-            // 3. Save to Supabase (Client-Side)
-            if (window.supabase && window.OTP_CONFIG && window.OTP_CONFIG.supabaseUrl) {
-                const supabase = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
-                // We use the 'leads' table. Ensure RLS allows insert for anon if needed, or this might fail silently.
-                // We will try/catch it so it doesn't break the UI flow.
-                try {
-                    await supabase.from('leads').insert([{
-                        email: email,
-                        answers: this.answers,
-                        advice: advice,
-                        status: 'pending',
-                        type: 'perspective_audit'
-                    }]);
-                } catch (dbErr) {
-                    console.warn("Lead Save Warning:", dbErr);
-                }
             }
 
             // 4. Success Animation

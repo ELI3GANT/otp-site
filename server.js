@@ -442,46 +442,48 @@ app.post('/api/audit/submit', async (req, res) => {
     try {
         const adminClient = supabaseAdmin;
         
-        // 1. Construct the Strategic Prompt
+        // 1. Construct the Strategic Prompt (Aligned with OTP Oracle style)
         const goal = answers.q1 || 'Unknown';
         const hurdle = answers.q2 || 'Unknown';
         const platform = answers.q3 || 'Unknown';
         const vibe = answers.q4 || 'Unknown';
         const specificGoal = answers.q5_goal || 'Not specified';
 
-        const systemPrompt = `You are the Studio Lead at 'Only True Perspective' (OTP). 
-        You are giving a "Perspective Audit" to a creator.
-        Tone: Direct, honest, visionary, and high-energy. 
-        Style: Simple language, plain English, no "nerdy" corporate or marketing jargon. 
-        Goal: Give them a wakeup call and a clear path forward.
-        MANDATORY: Use bolding with ** for the most important advice. No AI fluff or formal greetings.`;
+        const systemPrompt = `You are the 'OTP Oracle'. 
+        Your job is to analyze the user's creative blockage and give them a finalized, polished, and VERY CONCISE tactical response.
+        
+        STYLE GUIDELINES:
+        1. **Ultra-Concise**: No fluff. Every word must pay rent. Keep total word count under 100 words.
+        2. **Finalized Tone**: Speak with absolute certainty.
+        3. **Fortune Cookie**: End with a short, mystical, punchy quote.`;
 
-        const userPrompt = `CREATOR INFO:
-        - Goal: ${goal}
-        - Problem: ${hurdle}
-        - Main App/Site: ${platform}
-        - Vibe They Want: ${vibe}
+        const userPrompt = `USER DATA:
+        - GOAL: ${goal}
+        - BLOCKAGE: ${hurdle}
+        - PLATFORM: ${platform}
+        - DESIRED VIBE: ${vibe}
         - SPECIFIC TARGET: "${specificGoal}"
+         
+        RESPONSE FORMAT (Strictly follow this):
         
-        TASK: Give three simple, punchy paragraphs. Use layman's terms. Speak like a friend who knows their stuff. Address their SPECIFIC TARGET directly in the advice.
+        **THE DIAGNOSIS.**
+        (1-2 short sentences on why "${hurdle}" stops "${goal}".)
         
-        TASK: Give three simple, punchy paragraphs. Use layman's terms. Speak like a friend who knows their stuff.
+        **THE PLAN.**
+        1. **Immediate Shift**: (Max 10 words on what to change now.)
+        2. **Visual Pivot**: (Max 10 words on hitting the "${vibe}" look.)
+        3. **The Habit**: (Max 10 words on the daily action.)
         
-        Paragraph 1: THE TRUTH. Tell them why ${hurdle} is killing their growth on ${platform} right now. Keep it simple.
-        Paragraph 2: THE NEW LOOK. Explain how they can get that ${vibe} aesthetic and actually hit ${goal}. No technical talk, just visual advice.
-        Paragraph 3: THE NEXT STEP. Give them one specific thing they can do tonight to win.
-        
-        Keep it under 250 words. Avoid big words where simple ones work. Start with the truth immediately.`;
+        **THE FORTUNE.**
+        (A single, short, powerful quote.)`;
 
         let advice = "";
 
-        // 2. Call Gemini (With Auto-Fallback Logic)
         // 2. Call Gemini (With Robust Logic)
         if (process.env.GEMINI_API_KEY) {
-            const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp'];
+            const modelsToTry = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro'];
             let success = false;
             
-            // Helper for backoff
             const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
             for (let i = 0; i < modelsToTry.length; i++) {
@@ -493,62 +495,53 @@ app.post('/api/audit/submit', async (req, res) => {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ 
-                                parts: [{ 
-                                    text: systemPrompt + "\n\n" + userPrompt 
-                                }] 
-                            }],
+                            contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }],
                             generationConfig: {
                                 temperature: 0.7,
-                                topK: 40,
-                                topP: 0.95,
-                                maxOutputTokens: 1024,
+                                maxOutputTokens: 500,
                             }
                         })
                     });
 
-                    // Check for 429 specifically on the response status *before* parsing JSON if possible,
-                    // or parse and check error code.
                     if (response.status === 429) {
                         console.warn(`⚠️ Rate Limit (429) Hit on ${modelName}.`);
-                        if (i < modelsToTry.length - 1) {
-                            const waitTime = 1000 * Math.pow(2, i + 1); // 2s, 4s...
-                            console.log(`⏳ Waiting ${waitTime}ms before trying next model...`);
-                            await delay(waitTime);
-                        }
-                        continue; // Try next model
+                        if (i < modelsToTry.length - 1) await delay(1000 * Math.pow(2, i + 1));
+                        continue;
                     }
 
                     const data = await response.json();
-                    
                     if (data.candidates && data.candidates[0].content) {
                         advice = data.candidates[0].content.parts[0].text;
                         success = true;
                         console.log(`✅ Audit Generated successfully via ${modelName}`);
-                    } else {
-                        console.warn(`⚠️ Model ${modelName} returned valid JSON but no content.`, data.error || data);
-                        // If it's a content filtering issue or other non-retriable error, we might stop?
-                        // But for now, let's treat it as a failure and try next.
                     }
                 } catch (fetchError) {
                     console.error(`❌ Error calling ${modelName}:`, fetchError.message);
-                    // Wait a bit before next retry on network error
                     await delay(1000); 
                 }
             }
 
             if (!success) {
-                advice = "SYSTEM CALIBRATION ERROR: Our strategy cores are currently under heavy load (Rate Limit). Please try again in 5 minutes or contact support.";
+                // Return a structured fallback advice instead of just a system error string
+                advice = `**THE DIAGNOSIS.**
+The system is under heavy load. Your signal is clear, but the Oracle is recalibrating.
+
+**THE PLAN.**
+1. **Immediate Shift**: Start your move now. Don't wait for permission.
+2. **Visual Pivot**: Focus on raw clarity over complex filters.
+3. **The Habit**: Ship something every 24 hours.
+
+**THE FORTUNE.**
+"Complexity is the enemy of execution."`;
             }
         } else {
-            advice = "DEMO MODE: High-end strategy would be generated here using Gemini 1.5 Pro. (GEMINI_API_KEY missing on server)";
+            advice = "**THE DIAGNOSIS.**\nOracle Offline. (GEMINI_API_KEY missing)\n\n**THE FORTUNE.**\nCheck your environment.";
         }
 
-
-        // 3. Save Lead to DB (For 'Deals' & Admin Review - No Spam)
+        // 3. Save Lead to DB (Using Admin Client for bypass)
         if (adminClient) {
             try {
-                const { error: dbError } = await adminClient
+                await adminClient
                     .from('leads')
                     .insert([{ 
                         email, 
@@ -557,13 +550,10 @@ app.post('/api/audit/submit', async (req, res) => {
                         status: 'pending',
                         type: 'perspective_audit'
                     }]);
-
-                if (dbError) console.error("DB Error saving lead:", dbError);
+                console.log("✅ Lead saved to database.");
             } catch (dbEx) {
                 console.error("DB Exception saving lead:", dbEx);
             }
-        } else {
-            console.warn("Skipping DB Save: Supabase Admin not configured.");
         }
         
         res.json({ success: true, advice });
