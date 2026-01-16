@@ -296,15 +296,15 @@ window.AuditEngine = {
 
             // Headers
             if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE FORTUNE') || upper.includes('THE TRUTH') || upper.includes('THE NEXT STEP') || upper.includes('THE MISSION')) {
-                html += `<div style="margin-top:28px; margin-bottom:14px; font-family:'Space Grotesk'; font-weight:700; font-size:1.15em; color:#fff; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px; display:block; width: 100%;">${cleanLine}</div>`;
+                html += `<div class="advice-header">${cleanLine}</div>`;
             } 
             // List Items
             else if (cleanLine.match(/^(\d+\.|-|\*)/)) {
-                html += `<div style="margin-top:10px; margin-bottom:10px; padding-left:16px; border-left:2px solid rgba(0,195,255,0.4); font-size:0.95rem; line-height:1.6; color: rgba(255,255,255,0.95);">${cleanLine}</div>`;
+                html += `<div class="advice-list-item">${cleanLine}</div>`;
             } 
             // Standard Text
             else {
-                html += `<div style="margin-bottom:16px; font-size:0.95rem; line-height:1.7; color: rgba(255,255,255,0.85);">${cleanLine}</div>`;
+                html += `<div class="advice-row">${cleanLine}</div>`;
             }
         });
 
@@ -322,6 +322,8 @@ window.AuditEngine = {
     reset: function() {
         this.currentStep = 0;
         this.answers = {};
+        this.isSubmitting = false;
+        this.isNavigating = false;
         const steps = document.querySelectorAll('.audit-step');
         steps.forEach(s => {
             s.classList.remove('active');
