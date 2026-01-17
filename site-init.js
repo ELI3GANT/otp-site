@@ -709,6 +709,15 @@ function initSite() {
             const isHome = currentPath === '/' || currentPath.endsWith('index.html');
             let targetId = null;
 
+            // GLOBAL MOBILE FIX: Always unlock body on any drawer link click
+            if (document.body.classList.contains('nav-open')) {
+                 document.body.classList.remove('nav-open');
+                 const drawer = document.querySelector('.nav-drawer');
+                 if (drawer) drawer.classList.remove('open');
+                 const btn = document.querySelector('.nav-toggle');
+                 if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
+
             if (href.startsWith('#')) {
                 targetId = href.substring(1);
             } else if (isHome && href.includes('index.html#')) {
@@ -721,15 +730,6 @@ function initSite() {
                 if (targetEl) {
                     e.preventDefault();
                     
-                    // CRITICAL MOBILE FIX: Unlock body BEFORE scrolling
-                    if (document.body.classList.contains('nav-open')) {
-                         document.body.classList.remove('nav-open');
-                         const drawer = document.querySelector('.nav-drawer');
-                         if (drawer) drawer.classList.remove('open');
-                         const btn = document.querySelector('.nav-toggle');
-                         if (btn) btn.setAttribute('aria-expanded', 'false');
-                    }
-
                     // Smooth Scroll
                     const offset = 80; // Nav height offset
                     const elementPosition = targetEl.getBoundingClientRect().top;
