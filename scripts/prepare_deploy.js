@@ -23,15 +23,15 @@ FILES_TO_UPDATE.forEach(file => {
     let content = fs.readFileSync(filePath, 'utf8');
     
     // 1. Update CSS Versions
-    content = content.replace(/styles.css?v=[0-9.]+/g, `styles.css?v=${NEW_VERSION}`);
-    content = content.replace(/admin-styles.css?v=[0-9.]+/g, `admin-styles.css?v=${NEW_VERSION}`);
-    content = content.replace(/blog-enhancements.css?v=[0-9.]+/g, `blog-enhancements.css?v=${NEW_VERSION}`);
+    content = content.replace(/styles\.css\?v=[0-9.]+/g, `styles.css?v=${NEW_VERSION}`);
+    content = content.replace(/admin-styles\.css\?v=[0-9.]+/g, `admin-styles.css?v=${NEW_VERSION}`);
+    content = content.replace(/blog-enhancements\.css\?v=[0-9.]+/g, `blog-enhancements.css?v=${NEW_VERSION}`);
 
     // 2. Update JS Versions
-    content = content.replace(/site-init.js?v=[0-9.]+/g, `site-init.js?v=${NEW_VERSION}`);
-    content = content.replace(/admin-core.js?v=[0-9.]+/g, `admin-core.js?v=${NEW_VERSION}`);
-    content = content.replace(/admin-init.js?v=[0-9.]+/g, `admin-init.js?v=${NEW_VERSION}`);
-    content = content.replace(/audit-engine.js?v=[0-9.]+/g, `audit-engine.js?v=${NEW_VERSION}`);
+    content = content.replace(/site-init\.js\?v=[0-9.]+/g, `site-init.js?v=${NEW_VERSION}`);
+    content = content.replace(/admin-core\.js\?v=[0-9.]+/g, `admin-core.js?v=${NEW_VERSION}`);
+    content = content.replace(/admin-init\.js\?v=[0-9.]+/g, `admin-init.js?v=${NEW_VERSION}`);
+    content = content.replace(/audit-engine\.js\?v=[0-9.]+/g, `audit-engine.js?v=${NEW_VERSION}`);
 
     // 3. Update Footer Year
     const year = new Date().getFullYear();
