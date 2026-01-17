@@ -227,11 +227,14 @@
             
             // ... check supabase ...
             if (typeof window.supabase === 'undefined' || !SUPABASE_URL || !SUPABASE_KEY) {
-                console.error("Supabase not configured");
+                setStatus("CONFIGURATION ERROR: MISSING CREDENTIALS", true);
                 return;
             }
 
+            setStatus("CONNECTING TO DATABASE...");
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            setStatus("SCANNING FOR SIGNALS...");
             const { data: posts, error } = await supabase
                 .from('posts')
                 .select('*')
@@ -241,6 +244,7 @@
             if (error) throw error;
 
             console.log("Fetched posts:", posts);
+            setStatus(`FOUND ${posts ? posts.length : 0} SIGNALS. DECODING...`);
 
             if (posts) {
                 allPosts = posts;
