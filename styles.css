@@ -17,6 +17,8 @@ body {
     color: var(--text, #fff);
     transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
     will-change: background-color, color; /* GPU Hint */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 body.nav-open {
     overflow: hidden !important;
@@ -2840,9 +2842,22 @@ html {
   outline: none;
 }
 
-.form-group select option {
   background: #0b0b10;
   color: #fff;
+}
+
+/* Prevent zooming on inputs on iPhone */
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* Mobile Overscroll Polish */
+@media (max-width: 768px) {
+    body {
+        overscroll-behavior-y: none;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
