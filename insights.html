@@ -183,7 +183,6 @@
         
         <!-- BAKED_DATA_END -->
     </div>
-      </div>
 
       <!-- Subscribe / Connect Section -->
       <section class="subscribe-section center-text">
@@ -349,12 +348,20 @@
                 ? posts 
                 : posts.filter(p => p.tags && p.tags.map(t => t.toUpperCase()).includes(activeTag));
 
-            grid.innerHTML = ''; 
-            
             if (filtered.length === 0) {
+                // Only show "No insights" if we aren't protecting baked content
+                // Or if the user explicitly filtered to a tag with no results
+                // If tag is ALL and we have no results, but we have baked content, we should probably stick with baked content?
+                // But if the server says "0 posts", maybe we *should* show 0 posts?
+                // Let's assume server > baked.
+                grid.innerHTML = '';
                 setStatus(`No insights found for tag: ${activeTag}`);
                 return;
             }
+
+            // Buffer - Don't wipe grid until we have valid HTML
+            const fragment = document.createDocumentFragment();
+            let validCount = 0;
 
             filtered.forEach(post => {
                 try {
@@ -384,11 +391,21 @@
                             </div>
                         </div>
                     `;
-                    grid.appendChild(card);
+                    fragment.appendChild(card);
+                    validCount++;
                 } catch (err) {
-                    console.error("Skipping malformed post:", post, err);
+                    console.warn("Skipping malformed post:", post.title, err);
                 }
             });
+
+            // Only swap if we actually have content to show
+            if (validCount > 0) {
+                grid.innerHTML = '';
+                grid.appendChild(fragment);
+                console.log(`[Hydration] Updated grid with ${validCount} posts.`);
+            } else {
+                console.warn("[Hydration] No valid posts generated. Keeping baked content.");
+            }
         }
     });
   </script>
