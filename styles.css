@@ -4165,6 +4165,11 @@ input:focus, select:focus, textarea:focus {
   filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6));
 }
 
+.pkg-neon-icon.icon-photo {
+  stroke: #ff0099; /* Hot Pink */
+  filter: drop-shadow(0 0 5px rgba(255, 0, 153, 0.6));
+}
+
 .package-static:hover .pkg-neon-icon {
   transform: scale(1.1);
   filter: drop-shadow(0 0 8px currentColor);
@@ -4194,6 +4199,11 @@ input:focus, select:focus, textarea:focus {
 
 [data-theme="light"] .pkg-neon-icon.icon-partner {
   stroke: #b8860b; /* Dark Goldenrod */
+  filter: none;
+}
+
+[data-theme="light"] .pkg-neon-icon.icon-photo {
+  stroke: #c71585; /* Medium Violet Red */
   filter: none;
 }
 
