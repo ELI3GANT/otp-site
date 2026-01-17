@@ -62,44 +62,67 @@
         }
     }, { passive: true });
 
-    // 4. Force Scroll To Top on Refresh (Fix for Mobile jumping to Services)
-    if (history.scrollRestoration) {
-        history.scrollRestoration = 'manual'; // Keep manual to avoid browser fighting
+    // 4. Force Scroll To Top on Refresh (HomePage Only)
+    // Prevents mobile jumping on index, but allows reading continuity on blogs.
+    const currentPath = window.location.pathname;
+    const isHome = currentPath === '/' || currentPath.endsWith('index.html');
+    
+    if (isHome) {
+        if (history.scrollRestoration) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+        setTimeout(() => window.scrollTo(0, 0), 10);
     }
-    window.scrollTo(0, 0); // Explicitly warp to top
-    setTimeout(() => window.scrollTo(0, 0), 10); // Double-tap for race conditions
 
     // 5. Black Hole Effect for "Enter Archive"
-    const warpBtn = document.querySelector('.cool-work-link');
-    if (warpBtn && typeof window.setAttractor === 'function') {
-        const getCenter = (el) => {
-            const rect = el.getBoundingClientRect();
-            return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-        };
+    // RACE CONDITION FIX: Retry binding if stars-v2.js hasn't loaded yet.
+    const bindBlackHole = (attempts = 0) => {
+        const warpBtn = document.querySelector('.cool-work-link');
+        
+        if (!warpBtn) return; // No button on this page
 
-        // Desktop Hover
-        warpBtn.addEventListener('mouseenter', () => {
-            warpBtn.classList.add('is-black-hole');
-            const c = getCenter(warpBtn);
-            window.setAttractor(c.x, c.y);
-        });
+        if (typeof window.setAttractor === 'function') {
+            const getCenter = (el) => {
+                const rect = el.getBoundingClientRect();
+                return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            };
 
-        warpBtn.addEventListener('mouseleave', () => {
-             warpBtn.classList.remove('is-black-hole');
-             window.clearAttractor();
-        });
+            // Desktop Hover
+            warpBtn.addEventListener('mouseenter', () => {
+                warpBtn.classList.add('is-black-hole');
+                const c = getCenter(warpBtn);
+                window.setAttractor(c.x, c.y);
+            });
 
-        // Mobile Touch
-        warpBtn.addEventListener('touchstart', () => {
-             warpBtn.classList.add('is-black-hole');
-             const c = getCenter(warpBtn);
-             window.setAttractor(c.x, c.y);
-        }, { passive: true });
+            warpBtn.addEventListener('mouseleave', () => {
+                 warpBtn.classList.remove('is-black-hole');
+                 window.clearAttractor();
+            });
 
-        warpBtn.addEventListener('touchend', () => {
-            setTimeout(() => window.clearAttractor(), 600);
-        });
-    }
+            // Mobile Touch
+            warpBtn.addEventListener('touchstart', () => {
+                 warpBtn.classList.add('is-black-hole');
+                 const c = getCenter(warpBtn);
+                 window.setAttractor(c.x, c.y);
+            }, { passive: true });
+
+            warpBtn.addEventListener('touchend', () => {
+                setTimeout(() => window.clearAttractor(), 600); 
+            });
+            
+            console.log('[OTP] Black Hole Effect Bound Successfully');
+        } else {
+            if (attempts < 10) {
+                setTimeout(() => bindBlackHole(attempts + 1), 200);
+            } else {
+                console.warn('[OTP] Failed to bind Black Hole: Stars system missing.');
+            }
+        }
+    };
+    
+    // Start binding process
+    bindBlackHole();
 
     // 6. Portal Dropdown Logic (Removed)
 
