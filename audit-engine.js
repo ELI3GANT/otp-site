@@ -253,9 +253,17 @@ The Neural Link is currently jammed by high-traffic interference. However, your 
             if (node.nodeType === Node.TEXT_NODE) {
                 const text = node.textContent;
                 for (let i = 0; i < text.length; i++) {
-                    parent.insertBefore(document.createTextNode(text[i]), cursor);
+                    const charNode = document.createTextNode(text[i]);
+                    // If we are at root, insert before cursor. If nested, just append (parent is already before cursor)
+                    if (parent === targetEl) {
+                        parent.insertBefore(charNode, cursor);
+                    } else {
+                        parent.appendChild(charNode);
+                    }
+                    
                     // Randomize typing speed slightly for realism
-                    await new Promise(r => setTimeout(r, Math.random() * 20 + 10));
+                    // Faster typing (5-15ms) to prevent boredom
+                    await new Promise(r => setTimeout(r, Math.random() * 10 + 5));
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 const el = document.createElement(node.tagName);
@@ -264,8 +272,12 @@ The Neural Link is currently jammed by high-traffic interference. However, your 
                     el.setAttribute(attr.name, attr.value);
                 });
                 
-                // Insert before cursor
-                parent.insertBefore(el, cursor);
+                // Insert element
+                if (parent === targetEl) {
+                    parent.insertBefore(el, cursor);
+                } else {
+                    parent.appendChild(el);
+                }
                 
                 // Recurse for children
                 for (const child of Array.from(node.childNodes)) {
