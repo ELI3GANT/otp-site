@@ -492,25 +492,34 @@ app.post('/api/audit/submit', async (req, res) => {
                 if (success) break;
                 try {
                     console.log(`🤖 Oracle Probing Realm via ${modelName}...`);
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                    
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s Hard Timeout
+
+                    const fetchPromise = fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }],
                             generationConfig: {
-                                temperature: 0.9, // High creativity for variation
+                                temperature: 0.9,
                                 maxOutputTokens: 600,
                                 topP: 0.95,
                                 topK: 40
                             }
-                        })
+                        }),
+                        signal: controller.signal
                     });
+
+                    const response = await fetchPromise.finally(() => clearTimeout(timeoutId));
 
                     if (response.status === 429) {
                         console.warn(`⚠️ Realm Congestion (429) on ${modelName}.`);
                         if (i < modelsToTry.length - 1) await delay(1000 * Math.pow(2, i + 1));
                         continue;
                     }
+
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
 
                     const data = await response.json();
                     if (data.candidates && data.candidates[0].content) {
@@ -519,8 +528,9 @@ app.post('/api/audit/submit', async (req, res) => {
                         console.log(`✅ Transmission Captured via ${modelName}`);
                     }
                 } catch (fetchError) {
-                    console.error(`❌ Portal Error (${modelName}):`, fetchError.message);
-                    await delay(1000); 
+                    const isTimeout = fetchError.name === 'AbortError';
+                    console.error(`❌ Portal Error (${modelName}):`, isTimeout ? 'TIMEOUT (8s)' : fetchError.message);
+                    if (!isTimeout) await delay(1000); 
                 }
             }
 
