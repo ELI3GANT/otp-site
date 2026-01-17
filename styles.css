@@ -123,9 +123,9 @@ body.nav-open {
 
 /* Apply the box container to the parent link instead */
 [data-theme="light"] .nav-logo {
-  background: #111111 !important;
-  border: 1px solid #000000 !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15) !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e0e5 !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
   border-radius: 10px;
   display: inline-flex !important;
   align-items: center;
