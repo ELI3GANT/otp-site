@@ -592,18 +592,18 @@ The neural link encountered static, but your signal was received. The path to "$
 app.post('/api/admin/purge-leads', async (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
     // Allow static bypass for local dev ease if needed, or stick to strict auth
-    if (!token || !supabaseAdmin) return res.status(401).json({ error: 'Unauthorized or Server Config Missing' });
+    if (!token || !supabaseAdmin) return res.status(500).json({ error: 'Server Audit Config Missing (SUPABASE_SERVICE_KEY)' });
 
     try {
         // 1. Verify User (Authentication)
         const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-        if (authError || !user) return res.status(403).json({ error: 'Invalid Session' });
+        if (authError || !user) return res.status(403).json({ error: 'Access Denied: Invalid Session' });
 
         // 2. Perform Delete (Bypassing RLS with Service Key)
         console.log(`🗑️ PURGE LEADS initiated by ${user.email}`);
         
-        // Use the robust "date > 1970" filter which selects all rows
-        const { error } = await supabaseAdmin.from('leads').delete().gt('created_at', '1970-01-01');
+        // Use the absolute "Delete Everything" filter for UUIDs
+        const { error } = await supabaseAdmin.from('leads').delete().not('id', 'is', null);
 
         if (error) throw error;
         
