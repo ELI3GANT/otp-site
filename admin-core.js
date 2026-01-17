@@ -947,12 +947,30 @@
         showToast("INITIATING SYSTEM PURGE...");
         
         try {
-            // Delete all rows (Using date filter > 1970 covers all records and satisfies "WHERE" requirement)
-            const { error } = await state.client.from('leads').delete().gt('created_at', '1970-01-01');
+            // Delete all rows safely using not-null check on ID
+            const { error } = await state.client.from('leads').delete().not('id', 'is', null);
             if(error) throw error;
             
             showToast("✅ SYSTEM PURGE COMPLETE. ALL LEADS DELETED.");
             await fetchLeads();
+        } catch(e) {
+            console.error("Purge Error:", e);
+            showToast("PURGE FAILED: " + e.message);
+        }
+    };
+
+    window.confirmPurgeInbox = async function() {
+        if(!confirm("⚠️ WARNING: PURGE ALL INBOX MESSAGES?\n\nThis will delete every contact message permanently.")) return;
+        if(!confirm("⛔ FINAL CONFIRMATION: This action is irreversible. Proceed?")) return;
+
+        showToast("WIPING SECURE COMMS...");
+        
+        try {
+            const { error } = await state.client.from('contacts').delete().not('id', 'is', null);
+            if(error) throw error;
+            
+            showToast("✅ INBOX WIPED CLEAN.");
+            await fetchInbox();
         } catch(e) {
             console.error("Purge Error:", e);
             showToast("PURGE FAILED: " + e.message);
