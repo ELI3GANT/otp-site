@@ -222,19 +222,14 @@
         let activeTag = 'ALL';
 
         try {
-            // 0. LOAD FROM CACHE FIRST (Instant UI)
-            const cachedData = localStorage.getItem('otp_insights_cache');
-            if (cachedData) {
-                try {
-                    allPosts = JSON.parse(cachedData);
-                    renderPosts(allPosts); 
-                    renderFilters(allPosts);
-                    console.log("💾 Loaded from Persistence Cache");
-                } catch(e) { console.error("Cache corrupt", e); }
-            }
-
+            // 0. CACHE DISABLED FOR DEBUGGING/FRESHNESS
+            // const cachedData = localStorage.getItem('otp_insights_cache');
+            
             // ... check supabase ...
-            if (typeof window.supabase === 'undefined' || !SUPABASE_URL || !SUPABASE_KEY) return;
+            if (typeof window.supabase === 'undefined' || !SUPABASE_URL || !SUPABASE_KEY) {
+                console.error("Supabase not configured");
+                return;
+            }
 
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             const { data: posts, error } = await supabase
@@ -245,9 +240,11 @@
 
             if (error) throw error;
 
+            console.log("Fetched posts:", posts);
+
             if (posts) {
                 allPosts = posts;
-                localStorage.setItem('otp_insights_cache', JSON.stringify(posts));
+                // localStorage.setItem('otp_insights_cache', JSON.stringify(posts)); 
                 if (posts.length > 0) {
                     renderPosts(posts);
                     renderFilters(posts);
@@ -315,33 +312,37 @@
             }
 
             filtered.forEach(post => {
-                const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                let link = `insight.html?slug=${post.slug}`;
-                if (post.slug === 'spooky-luh-ooky') link = 'spooky-luh-ooky.html';
-                
-                const card = document.createElement('article');
-                card.className = 'insight-card k-hover';
+                try {
+                    const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    let link = `insight.html?slug=${post.slug}`;
+                    if (post.slug === 'spooky-luh-ooky') link = 'spooky-luh-ooky.html';
+                    
+                    const card = document.createElement('article');
+                    card.className = 'insight-card k-hover';
 
-                // Safe content extraction (strip tags)
-                let rawBody = post.excerpt || post.content || '';
-                let safeBody = rawBody.replace(/<[^>]*>/g, '').substring(0, 100) + (rawBody.length > 100 ? '...' : '');
+                    // Safe content extraction (strip tags)
+                    let rawBody = post.excerpt || post.content || '';
+                    let safeBody = rawBody.replace(/<[^>]*>/g, '').substring(0, 100) + (rawBody.length > 100 ? '...' : '');
 
-                card.innerHTML = `
-                    <div class="insight-card-inner">
-                        <div class="insight-date">${date} • ${escapeHtml(post.category || 'Insight')}</div>
-                        <h2>${escapeHtml(post.title)}</h2>
-                        <p>${escapeHtml(safeBody)}</p>
-                        
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;">
-                            ${(post.tags || []).map(t => `<span class="post-tag">#${escapeHtml(t.toUpperCase())}</span>`).join('')}
+                    card.innerHTML = `
+                        <div class="insight-card-inner">
+                            <div class="insight-date">${date} • ${escapeHtml(post.category || 'Insight')}</div>
+                            <h2>${escapeHtml(post.title)}</h2>
+                            <p>${escapeHtml(safeBody)}</p>
+                            
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;">
+                                ${(post.tags || []).map(t => `<span class="post-tag">#${escapeHtml(t.toUpperCase())}</span>`).join('')}
+                            </div>
+
+                            <div class="insight-footer">
+                                <a href="${link}" class="read-more">Read Insight</a>
+                            </div>
                         </div>
-
-                        <div class="insight-footer">
-                            <a href="${link}" class="read-more">Read Insight</a>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
+                    `;
+                    grid.appendChild(card);
+                } catch (err) {
+                    console.error("Skipping malformed post:", post, err);
+                }
             });
         }
     });
