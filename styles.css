@@ -2451,7 +2451,7 @@ html {
   gap: 5px;
   transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  z-index: 10001; /* Above drawer */
+  z-index: 11005; /* Above drawer (11000) */
   pointer-events: auto; /* Ensure clickable */
 }
 
