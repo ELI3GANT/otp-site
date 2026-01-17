@@ -6031,7 +6031,7 @@ input:focus, select:focus, textarea:focus {
     opacity: 1 !important; 
     display: block !important;
     pointer-events: none !important;
-    z-index: -1 !important;
+    /* z-index: -1 !important; Removed to ensure visibility */
   }
 }
 
