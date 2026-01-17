@@ -11,11 +11,12 @@ const ctx = canvas.getContext('2d');
 let width, height;
 let stars = [];
 let shootingStars = [];
-// Responsive Star Count: Less on mobile for performance
+// Responsive Star Count: Extreme optimization for mobile
 const IS_MOBILE = window.innerWidth < 768;
-const STAR_COUNT = IS_MOBILE ? 60 : 180; 
-const CONNECTION_DIST = 120;
-const SHOOTING_STAR_CHANCE = 0.005; // 0.5% chance per frame
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const STAR_COUNT = REDUCED_MOTION ? 0 : (IS_MOBILE ? 40 : 180); 
+const CONNECTION_DIST = IS_MOBILE ? 80 : 120; // Shorter connections on mobile
+const SHOOTING_STAR_CHANCE = IS_MOBILE ? 0.002 : 0.005; // Less frequent on mobile
 
 // Mouse tracking
 let mouse = { x: null, y: null };
