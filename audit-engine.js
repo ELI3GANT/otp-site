@@ -166,7 +166,43 @@ Live link severed. Retrieving 'Master Strategy' from deep storage. This advice i
 3. **The Rule**: Do the thing you are avoiding. That is where the growth is hidden.
 
 **THE FORTUNE.**
-"The obstacle is the way."`
+"The obstacle is the way."`,
+
+                    // VARIANT 4: THE SIGNAL GLITCH
+                    `**THE DIAGNOSIS.**
+Detecting heavy signal fragmentation. The noise-to-signal ratio in your secor is too high. Initiating 'Clear Signal' protocol.
+
+**THE PLAN.**
+1. **The Filter**: Unfollow 50% of the accounts you watch daily. They are polluting your creative well.
+2. **The Output**: Release one piece of content today that is "raw" and "unedited". Perfection is the blockage.
+3. **The Focus**: Ignore the analytics for 72 hours. Create for the user, not the algorithm.
+
+**THE FORTUNE.**
+"Perfection is just fear in a fancy suit."`,
+
+                    // VARIANT 5: THE COLD STORAGE
+                    `**THE DIAGNOSIS.**
+Connecting to the 'Cold Storage' mainframe. Accessing the fundamental truths of growth that never change, regardless of the era.
+
+**THE PLAN.**
+1. **The Core**: Value provides leverage. Solve a real, expensive problem for a specific person.
+2. **The method**: Documentation over Creation. Show your process. It builds trust faster than polish.
+3. **The Shift**: Move from "Seeking Attention" to "Commanding Respect".
+
+**THE FORTUNE.**
+"Build in the dark so they fear the light."`,
+
+                    // VARIANT 6: THE OVERRIDE
+                    `**THE DIAGNOSIS.**
+System Override engaged. Bypassing standard filters to deliver a direct, unfiltered directive.
+
+**THE PLAN.**
+1. **The Audit**: Look at your last 3 posts. If they look like everyone else, delete them.
+2. **The Risk**: Take a stance on a controversial topic in your industry today. Polarization creates gravity.
+3. **The Lock**: 90 minutes of deep work. Phone in another room. No exceptions.
+
+**THE FORTUNE.**
+"Comfort is the enemy of greatness."`
                 ];
 
                 advice = fallbacks[Math.floor(Math.random() * fallbacks.length)];
