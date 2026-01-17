@@ -721,21 +721,30 @@ function initSite() {
                 if (targetEl) {
                     e.preventDefault();
                     
+                    // CRITICAL MOBILE FIX: Unlock body BEFORE scrolling
+                    if (document.body.classList.contains('nav-open')) {
+                         document.body.classList.remove('nav-open');
+                         const drawer = document.querySelector('.nav-drawer');
+                         if (drawer) drawer.classList.remove('open');
+                         const btn = document.querySelector('.nav-toggle');
+                         if (btn) btn.setAttribute('aria-expanded', 'false');
+                    }
+
                     // Smooth Scroll
                     const offset = 80; // Nav height offset
                     const elementPosition = targetEl.getBoundingClientRect().top;
                     const offsetPosition = elementPosition + window.pageYOffset - offset;
 
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: 'smooth'
-                    });
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }, 10); // Tiny delay to ensure layout unlocks
 
                     // Update Active State
                     navLinks.forEach(l => l.classList.remove('active'));
                     link.classList.add('active');
-
-                    // If in mobile drawer, it will be closed by the drawer delegation
                 }
             }
         });
