@@ -658,8 +658,33 @@ function initSite() {
             navDrawer.appendChild(mobileToggle);
         }
     })();
+
+    // --- SCROLL SPY (Active Link on Scroll) ---
+    const sectionIds = ['work', 'services', 'contact'];
+    const sections = sectionIds.map(id => document.getElementById(id)).filter(el => el);
+    const navLinks = document.querySelectorAll('.nav-links a, .nav-drawer a');
     
-    // --- ACTIVE LINK LOGIC & SMOOTH SCROLL ---
+    if (sections.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    navLinks.forEach(link => {
+                        const href = link.getAttribute('href');
+                        // Match either '#id' or 'index.html#id'
+                        if (href === `#${id}` || href === `index.html#${id}`) {
+                            navLinks.forEach(l => l.classList.remove('active'));
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 }); // Trigger when section is in middle
+        
+        sections.forEach(s => observer.observe(s));
+    }
+    
+    // --- ACTIVE LINK LOGIC & CLICK SCROLL ---
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.nav-links a, .nav-drawer a');
     

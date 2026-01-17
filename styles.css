@@ -4,6 +4,10 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+html {
+  scroll-behavior: smooth;
+}
 /* GLOBAL POLISH [SIG:V3.0-FORCE-SYNC] */
 body { 
     margin: 0 !important; 
