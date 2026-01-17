@@ -940,6 +940,25 @@
         }
     };
 
+    window.confirmPurgeLeads = async function() {
+        if(!confirm("⚠️ WARNING: PURGE ALL AUDIT DATA?\n\nThis will delete every single lead entry permanently.")) return;
+        if(!confirm("⛔ FINAL CONFIRMATION: Are you absolutely sure? This cannot be undone.")) return;
+
+        showToast("INITIATING SYSTEM PURGE...");
+        
+        try {
+            // Delete all rows where ID is distinct from 0 (effectively all)
+            const { error } = await state.client.from('leads').delete().neq('id', 0);
+            if(error) throw error;
+            
+            showToast("✅ SYSTEM PURGE COMPLETE. ALL LEADS DELETED.");
+            await fetchLeads();
+        } catch(e) {
+            console.error("Purge Error:", e);
+            showToast("PURGE FAILED: " + e.message);
+        }
+    };
+
     window.deleteLead = async function(id, event) {
         if(event) { event.preventDefault(); event.stopPropagation(); }
         if(!confirm("Are you sure you want to delete this lead?")) return;
