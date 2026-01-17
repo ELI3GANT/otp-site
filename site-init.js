@@ -820,28 +820,39 @@ function initSite() {
     }
 
     // --- MOBILE MENU ---
-    const navToggle = document.querySelector('.nav-toggle');
-    const navDrawer = document.querySelector('.nav-drawer');
-    const drawerLinks = document.querySelectorAll('.nav-drawer a');
-    if (navToggle && navDrawer) {
-        navToggle.addEventListener('click', () => {
-            const isOpen = navDrawer.classList.contains('open');
-            navDrawer.classList.toggle('open');
-            document.body.classList.toggle('nav-open', !isOpen);
-            navToggle.setAttribute('aria-expanded', (!isOpen).toString());
-        });
-        drawerLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                navDrawer.classList.remove('open');
+    // --- MOBILE MENU (DELEGATION & ROBUSTNESS) ---
+    // Using delegation to handle any rendering timing issues
+    document.body.addEventListener('click', (e) => {
+        const toggle = e.target.closest('.nav-toggle');
+        const link = e.target.closest('.nav-drawer a');
+        const drawer = document.querySelector('.nav-drawer');
+        const btn = document.querySelector('.nav-toggle'); // The main button
+
+        if (toggle && drawer) {
+            e.preventDefault();
+            e.stopPropagation(); // Stop bubbling
+            const isOpen = drawer.classList.contains('open');
+            
+            // Toggle Logic
+            if (isOpen) {
+                drawer.classList.remove('open');
                 document.body.classList.remove('nav-open');
-                navToggle.setAttribute('aria-expanded', 'false');
-            });
-        });
-        // REMOVED: Scroll-to-close logic.
-        // Reason: The body is locked (overflow:hidden) when nav is open.
-        // Trying to detect scroll delta is flaky on iOS bouncing.
-        // Users should click outside or toggle button to close.
-    }
+                btn.setAttribute('aria-expanded', 'false');
+            } else {
+                drawer.classList.add('open');
+                document.body.classList.add('nav-open');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+            console.log('[OTP] Mobile Menu Toggled:', !isOpen);
+        }
+
+        if (link && drawer && drawer.classList.contains('open')) {
+            // Close on link click
+            drawer.classList.remove('open');
+            document.body.classList.remove('nav-open');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+    });
 
     // --- BEFORE/AFTER SLIDER ---
     const slider = document.getElementById('baSlider');
