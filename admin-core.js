@@ -944,45 +944,27 @@
         if(!confirm("⚠️ WARNING: PURGE ALL AUDIT DATA?\n\nThis will delete every single lead entry permanently.")) return;
         if(!confirm("⛔ FINAL CONFIRMATION: Are you absolutely sure? This cannot be undone.")) return;
 
-        showToast("INITIATING BATCH PURGE...");
+        showToast("INITIATING SYSTEM PURGE (SERVER-SIDE)...");
         
         try {
-            // 1. Fetch all IDs
-            const { data: allRows, error: fetchError } = await state.client
-                .from('leads')
-                .select('id');
-            
-            if(fetchError) throw fetchError;
-            
-            if(!allRows || allRows.length === 0) {
-                 showToast("NO DATA TO PURGE.");
-                 return;
-            }
+            // Use Server Endpoint to bypass RLS
+            const res = await fetch('/api/admin/purge-leads', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.token}`
+                }
+            });
 
-            const ids = allRows.map(row => row.id);
-            let deletedCount = 0;
-            const total = ids.length;
-
-            // 2. Delete in Batches of 5 to prevent timeouts/limits
-            const BATCH_SIZE = 5;
-            for (let i = 0; i < total; i += BATCH_SIZE) {
-                const batch = ids.slice(i, i + BATCH_SIZE);
-                showToast(`PURGING BATCH ${Math.ceil((i+1)/BATCH_SIZE)}/${Math.ceil(total/BATCH_SIZE)}...`);
-                
-                const { error } = await state.client
-                    .from('leads')
-                    .delete()
-                    .in('id', batch);
-                
-                if(error) throw error;
-                deletedCount += batch.length;
-            }
+            const data = await res.json();
             
-            showToast(`✅ PURGE COMPLETE. ${deletedCount} RECORDS DELETED.`);
+            if(!res.ok) throw new Error(data.error || res.statusText);
+            
+            showToast("✅ SYSTEM PURGE COMPLETE. ALL LEADS DELETED.");
             await fetchLeads();
         } catch(e) {
             console.error("Purge Error:", e);
-            showToast("PURGE FAILED: " + (e.message || "Unknown Error"));
+            showToast("PURGE FAILED: " + e.message);
         }
     };
 

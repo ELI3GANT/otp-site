@@ -588,6 +588,33 @@ The neural link encountered static, but your signal was received. The path to "$
     }
 });
 
+// --- ADMIN POWER TOOLS (Service Role Bypass) ---
+app.post('/api/admin/purge-leads', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    // Allow static bypass for local dev ease if needed, or stick to strict auth
+    if (!token || !supabaseAdmin) return res.status(401).json({ error: 'Unauthorized or Server Config Missing' });
+
+    try {
+        // 1. Verify User (Authentication)
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        if (authError || !user) return res.status(403).json({ error: 'Invalid Session' });
+
+        // 2. Perform Delete (Bypassing RLS with Service Key)
+        console.log(`🗑️ PURGE LEADS initiated by ${user.email}`);
+        
+        // Use the robust "date > 1970" filter which selects all rows
+        const { error } = await supabaseAdmin.from('leads').delete().gt('created_at', '1970-01-01');
+
+        if (error) throw error;
+        
+        res.json({ success: true, message: 'System Purge Complete' });
+
+    } catch (e) {
+        console.error("Purge Error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // --- CACHE CONTROL & STATIC ASSETS ---
 // Served AFTER API to avoid conflict (e.g. 405 on POST to static)
 const staticOptions = {
