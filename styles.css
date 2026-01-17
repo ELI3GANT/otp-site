@@ -6436,5 +6436,30 @@ input:focus, select:focus, textarea:focus {
     letter-spacing: 1px; 
     font-weight: 700; 
     text-transform: uppercase;
-    box-shadow: 0 0 15px rgba(0, 195, 255, 0.1);
+/* LIGHT MODE TERMINAL OVERRIDES */
+[data-theme="light"] .audit-terminal {
+  color: #1a1a1a;
+  text-shadow: none;
+}
+
+[data-theme="light"] .advice-header {
+  color: #000;
+  border-bottom-color: rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .advice-list-item,
+[data-theme="light"] .advice-row {
+  color: rgba(0,0,0,0.85);
+}
+
+[data-theme="light"] .advice-list-item::before {
+  color: var(--accent2); /* Keep accent color */
+}
+
+/* Ensure strong tags inside advice are visible */
+[data-theme="light"] .audit-terminal strong {
+    color: #000 !important; /* Force distinction */
+    background: rgba(0, 195, 255, 0.1);
+    padding: 0 4px;
+    border-radius: 2px;
 }
