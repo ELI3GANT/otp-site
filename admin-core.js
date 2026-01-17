@@ -940,29 +940,38 @@
         }
     };
 
+    // GLOBAL SESSION KEY FOR ADMIN ACTIONS
+    window.otpServiceKey = null;
+
     window.confirmPurgeLeads = async function() {
         if(!confirm("⚠️ WARNING: PURGE ALL AUDIT DATA?\n\nThis will delete every single lead entry permanently.")) return;
         
-        // Request Service Key to bypass RLS (since client-side delete is failing)
-        const serviceKey = prompt("🔒 SECURITY LOCK: To bypass database restrictions, please enter your SUPABASE_SERVICE_KEY (starts with eyJ...):");
-        if(!serviceKey) return showToast("PURGE CANCELLED");
+        // Use cached key if available, otherwise prompt
+        let serviceKey = window.otpServiceKey;
+        if (!serviceKey) {
+            serviceKey = prompt("🔒 SECURITY LOCK: Enter SUPABASE_SERVICE_KEY (starts with eyJ...) to bypass database locks:");
+            if(!serviceKey) return showToast("PURGE CANCELLED");
+            window.otpServiceKey = serviceKey; // Cache for session
+        }
 
         showToast("INITIATING ADMIN FORCE PURGE...");
         
         try {
-            // Create temporary Admin Client
             const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, serviceKey);
-            
-            // Delete Everything using robust filter
             const { error } = await adminClient.from('leads').delete().gt('created_at', '1970-01-01');
 
             if(error) throw error;
             
-            showToast("✅ SYSTEM PURGE COMPLETE. ALL LEADS DELETED.");
+            showToast("✅ SYSTEM PURGE COMPLETE. LEADS WIPED.");
             await fetchLeads();
         } catch(e) {
             console.error("Purge Error:", e);
-            alert("❌ ADMIN PURGE FAILED:\n" + e.message);
+            if(e.message.includes('JWT')) {
+                 window.otpServiceKey = null; // Clear invalid key
+                 alert("❌ KEY INVALID. PLEASE TRY AGAIN.");
+            } else {
+                 alert("❌ ADMIN PURGE FAILED:\n" + e.message);
+            }
             showToast("PURGE FAILED");
         }
     };
@@ -985,17 +994,53 @@
         }
     };
 
+    // Cache Purge / Refresh Command
+    window.refreshLiveSite = async function() {
+        if(!state.siteChannel) return showToast("OFFLINE: CANNOT SYNC");
+        
+        await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh', value: Date.now() } });
+        showToast("🔄 CACHE PURGE COMMAND SENT");
+    };
+
     window.deleteLead = async function(id, event) {
         if(event) { event.preventDefault(); event.stopPropagation(); }
         if(!confirm("Are you sure you want to delete this lead?")) return;
 
         try {
+            // 1. Try Standard Delete first
             const { error } = await state.client.from('leads').delete().eq('id', id);
             if(error) throw error;
             showToast("LEAD DELETED");
             await fetchLeads();
+
         } catch(e) {
-            showToast("DELETE FAILED: " + e.message);
+            console.warn("Standard delete failed, attempting Admin Override...", e);
+            
+            // 2. Fallback to Service Key logic
+            let serviceKey = window.otpServiceKey;
+            
+            // If no key cached, prompt (UX: only if specific RLS error?)
+            // We'll prompt to be safe since standard failed
+            if (!serviceKey) {
+                serviceKey = prompt("⚠️ PERMISSION DENIED. Enter SUPABASE_SERVICE_KEY to force delete:");
+                if(!serviceKey) return showToast("DELETE CANCELLED");
+                window.otpServiceKey = serviceKey;
+            }
+
+            try {
+                const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, serviceKey);
+                const { error: adminError } = await adminClient.from('leads').delete().eq('id', id);
+                
+                if(adminError) throw adminError;
+                
+                showToast("LEAD DELETED (ADMIN OVERRIDE)");
+                await fetchLeads();
+
+            } catch (finalErr) {
+                 console.error("Force Delete Failed:", finalErr);
+                 if(finalErr.message.includes('JWT')) window.otpServiceKey = null;
+                 showToast("DELETE FAILED: " + finalErr.message);
+            }
         }
     };
     
