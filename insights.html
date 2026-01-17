@@ -276,6 +276,7 @@
             const fetchPosts = supabase
                 .from('posts')
                 .select('*')
+                .eq('published', true)
                 .order('created_at', { ascending: false });
 
             // Race against time
