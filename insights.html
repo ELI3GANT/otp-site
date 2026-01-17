@@ -215,11 +215,19 @@
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             
             setStatus("SCANNING FOR SIGNALS...");
-            const { data: posts, error } = await supabase
+            
+            // Timeout Wrapper
+            const timeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("CONNECTION TIMED OUT (FIREWALL?)")), 5000)
+            );
+            
+            const fetchPosts = supabase
                 .from('posts')
                 .select('*')
-                // .eq('published', true) // TEMPORARY DEBUG: Show all posts to rule out filter issues
                 .order('created_at', { ascending: false });
+
+            // Race against time
+            const { data: posts, error } = await Promise.race([fetchPosts, timeout]);
 
             if (error) throw error;
 
