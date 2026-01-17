@@ -947,8 +947,8 @@
         showToast("INITIATING SYSTEM PURGE...");
         
         try {
-            // Delete all rows where ID is distinct from 0 (effectively all)
-            const { error } = await state.client.from('leads').delete().neq('id', 0);
+            // Delete all rows (Using date filter > 1970 covers all records and satisfies "WHERE" requirement)
+            const { error } = await state.client.from('leads').delete().gt('created_at', '1970-01-01');
             if(error) throw error;
             
             showToast("✅ SYSTEM PURGE COMPLETE. ALL LEADS DELETED.");
