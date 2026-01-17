@@ -260,7 +260,29 @@
                 heroWrap.style.display = 'block';
             }
             
-            // 4. RENDER BODY
+            // 4. RENDER BODY (Secure)
+            const sanitize = (html) => {
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                
+                // Remove scripts
+                const scripts = temp.querySelectorAll('script');
+                scripts.forEach(s => s.remove());
+                
+                // Remove event handlers
+                const elements = temp.querySelectorAll('*');
+                elements.forEach(el => {
+                    const attrs = el.attributes;
+                    for (let i = attrs.length - 1; i >= 0; i--) {
+                        if (attrs[i].name.startsWith('on') || attrs[i].value.startsWith('javascript:')) {
+                            el.removeAttribute(attrs[i].name);
+                        }
+                    }
+                });
+                
+                return temp.innerHTML;
+            };
+
             const isHTML = data.content.trim().startsWith('<');
             let formattedContent = data.content;
             
@@ -272,7 +294,7 @@
                     .replace(/\n/g, '<br/>');
             }
 
-            document.getElementById('postBody').innerHTML = formattedContent;
+            document.getElementById('postBody').innerHTML = sanitize(formattedContent);
 
             // 5. Reveal
             if (loader) loader.style.display = 'none';
