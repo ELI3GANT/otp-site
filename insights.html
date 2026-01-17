@@ -147,8 +147,42 @@
       </div>
 
       <div class="insights-grid">
-        <!-- Content populated dynamically from Supabase -->
-        <div class="loader" style="grid-column: 1/-1; text-align: center; color: var(--muted); letter-spacing: 2px;">SCANNING FREQUENCIES...</div>
+        
+            <article class="insight-card k-hover">
+                <div class="insight-card-inner">
+                    <div class="insight-date">Jan 8, 2026 • Music Video</div>
+                    <h2>Spooky: Luh Ooky</h2>
+                    <p>Visuals from the Morbid Musik project.</p>
+                    
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;">
+                        
+                    </div>
+
+                    <div class="insight-footer">
+                        <a href="spooky-luh-ooky.html" class="read-more">Read Insight</a>
+                    </div>
+                </div>
+            </article>
+        
+
+            <article class="insight-card k-hover">
+                <div class="insight-card-inner">
+                    <div class="insight-date">Jan 8, 2026 • Insight</div>
+                    <h2>whats elegant about eli3gant?</h2>
+                    <p>eli3gant isn&#039;t just making music; he&#039;s rewriting the damn rulebook.</p>
+                    
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;">
+                        
+                    </div>
+
+                    <div class="insight-footer">
+                        <a href="insight.html?slug=whats-elegant-about-eli3gant" class="read-more">Read Insight</a>
+                    </div>
+                </div>
+            </article>
+        
+        <!-- BAKED_DATA_END -->
+    </div>
       </div>
 
       <!-- Subscribe / Connect Section -->
@@ -206,19 +240,38 @@
     // Page-specific: Fetch Insights & Spotlight Effect
     document.addEventListener("DOMContentLoaded", async () => {
         const grid = document.querySelector('.insights-grid');
-        const loader = document.querySelector('.loader');
+        const hasBakedContent = grid && grid.querySelectorAll('.insight-card').length > 0;
 
-        // ...
-// (Skipping down to fetch logic)
+        // 1. SUPABASE FETCH (Using centralized config)
+        const SUPABASE_URL = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : null;
+        const SUPABASE_KEY = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseKey : null;
+        
+        const setStatus = (msg, isError = false) => {
+            if (grid && !hasBakedContent) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: ${isError ? '#ff4444' : 'var(--muted)'}; opacity: 0.8;">${msg}</div>`;
+            } else {
+                console.log(`[Status]: ${msg}`);
+            }
+        };
 
-            setStatus("CONNECTING TO DATABASE...");
+        let allPosts = [];
+        let activeTag = 'ALL';
+
+        try {
+            if (!hasBakedContent) setStatus("CONNECTING TO DATABASE...");
+
+            if (typeof window.supabase === 'undefined' || !SUPABASE_URL || !SUPABASE_KEY) {
+                setStatus("CONFIGURATION ERROR: MISSING CREDENTIALS", true);
+                return;
+            }
+
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             
-            setStatus("SCANNING FOR SIGNALS...");
+            if (!hasBakedContent) setStatus("SCANNING FOR SIGNALS...");
             
             // Timeout Wrapper
             const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("CONNECTION TIMED OUT (FIREWALL?)")), 5000)
+                setTimeout(() => reject(new Error("CONNECTION TIMED OUT")), 5000)
             );
             
             const fetchPosts = supabase
