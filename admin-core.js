@@ -944,27 +944,47 @@
         if(!confirm("⚠️ WARNING: PURGE ALL AUDIT DATA?\n\nThis will delete every single lead entry permanently.")) return;
         if(!confirm("⛔ FINAL CONFIRMATION: Are you absolutely sure? This cannot be undone.")) return;
 
-        showToast("INITIATING SYSTEM PURGE (SERVER-SIDE)...");
+        showToast("INITIATING SEQUENTIAL PURGE...");
         
         try {
-            // Use Server Endpoint to bypass RLS
-            const res = await fetch('/api/admin/purge-leads', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${state.token}`
-                }
-            });
+            // 1. Fetch all IDs
+            const { data: allRows, error: fetchError } = await state.client
+                .from('leads')
+                .select('id');
+            
+            if(fetchError) throw fetchError;
+            
+            if(!allRows || allRows.length === 0) {
+                 showToast("NO DATA TO PURGE.");
+                 return;
+            }
 
-            const data = await res.json();
+            const total = allRows.length;
+            let deleted = 0;
+
+            // 2. Delete One-by-One (Using the logic that we know works)
+            // We use a harmless "dummy event" for the second arg of deleteLead
+            for (const row of allRows) {
+                try {
+                    // Call the known-working single delete function
+                    // We manually replicate the delete logic here to avoid the confirm() popup in deleteLead
+                    const { error } = await state.client.from('leads').delete().eq('id', row.id);
+                    if (error) throw error;
+                    deleted++;
+                    
+                    // Show progress every 5 items
+                    if(deleted % 5 === 0) showToast(`PURGED ${deleted}/${total}...`);
+                    
+                } catch(err) {
+                    console.error(`Failed to delete ${row.id}:`, err);
+                }
+            }
             
-            if(!res.ok) throw new Error(data.error || "Server Error: " + res.status);
-            
-            showToast("✅ SYSTEM PURGE COMPLETE. ALL LEADS DELETED.");
+            showToast(`✅ PURGE COMPLETE. ${deleted}/${total} DELETED.`);
             await fetchLeads();
         } catch(e) {
             console.error("Purge Error:", e);
-            alert("❌ PURGE FAILED:\n" + e.message + "\n\n(Check console/logs for details)");
+            alert("❌ FATAL ERROR:\n" + e.message);
             showToast("PURGE FAILED");
         }
     };
