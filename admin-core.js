@@ -947,9 +947,27 @@
         showToast("INITIATING SYSTEM PURGE...");
         
         try {
-            // Delete all rows safely using not-null check on ID
-            const { error } = await state.client.from('leads').delete().not('id', 'is', null);
-            if(error) throw error;
+            // 1. Fetch all IDs first (Fail-safe method)
+            const { data: allRows, error: fetchError } = await state.client
+                .from('leads')
+                .select('id');
+            
+            if(fetchError) throw fetchError;
+            
+            if(!allRows || allRows.length === 0) {
+                 showToast("NO DATA TO PURGE.");
+                 return;
+            }
+
+            const ids = allRows.map(row => row.id);
+
+            // 2. Delete by ID list
+            const { error: deleteError } = await state.client
+                .from('leads')
+                .delete()
+                .in('id', ids);
+
+            if(deleteError) throw deleteError;
             
             showToast("✅ SYSTEM PURGE COMPLETE. ALL LEADS DELETED.");
             await fetchLeads();
