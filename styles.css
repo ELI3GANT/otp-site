@@ -6069,19 +6069,21 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 4px 15px rgba(112, 0, 255, 0.3);
 }
 
-/* Package Grid Dynamic */
+/* Package Grid Dynamic - Refactored for Center Alignment */
 .pkg-grid-dynamic {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Default 3 columns */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 24px;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1150px; /* Slightly wider to accommodate gaps */
   margin: 0 auto;
 }
 
 /* Package Group Headers */
 .pkg-group-header {
-  grid-column: 1 / -1;
+  width: 100%;
+  flex-basis: 100%;
   font-family: 'Syne', sans-serif;
   font-size: 1.25rem;
   font-weight: 800;
@@ -6107,16 +6109,14 @@ input:focus, select:focus, textarea:focus {
   display: none !important;
 }
 
-@media (max-width: 900px) {
-  .pkg-grid-dynamic {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* Base Card Sizing for Flex */
+.package-static {
+  flex: 1 1 300px;
+  max-width: 360px;
+  width: 100%; /* For mobile fallback */
 }
 
 @media (max-width: 600px) {
-  .pkg-grid-dynamic {
-    grid-template-columns: 1fr;
-  }
   .pkg-group-header {
     font-size: 1rem;
     margin-top: 30px;
