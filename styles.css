@@ -6446,7 +6446,9 @@ input:focus, select:focus, textarea:focus {
     color: #00c3ff; 
     letter-spacing: 1px; 
     font-weight: 700; 
+    font-weight: 700; 
     text-transform: uppercase;
+}
 /* LIGHT MODE TERMINAL OVERRIDES */
 /* Force Dark Terminal Aesthetics even in Light Mode for high contrast */
 [data-theme="light"] .audit-terminal {
