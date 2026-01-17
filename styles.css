@@ -113,8 +113,6 @@ body.nav-open {
 [data-theme="light"] .nav-logo img {
   filter: brightness(0); /* Black logo for light mode */
   mix-blend-mode: normal !important;
-}
-
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
