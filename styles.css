@@ -11,6 +11,7 @@ body {
     background: var(--bg, #030305); 
     color: var(--text, #fff);
     transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
+    will-change: background-color, color; /* GPU Hint */
 }
 body.nav-open {
     overflow: hidden !important;
@@ -119,6 +120,8 @@ body.nav-open {
   width: 32px; /* Ensure strictly sized for spin */
   height: 32px;
   animation: spin-slow 8s linear infinite !important; /* Slightly faster spin for logo */
+  transform: translateZ(0); /* Force GPU */
+  backface-visibility: hidden;
 }
 
 /* Apply the box container to the parent link instead */
