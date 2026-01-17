@@ -822,18 +822,24 @@ function initSite() {
     // --- MOBILE MENU ---
     // --- MOBILE MENU (DELEGATION & ROBUSTNESS) ---
     // Using delegation to handle any rendering timing issues
-    document.body.addEventListener('click', (e) => {
+    // --- MOBILE MENU (DELEGATION & ROBUSTNESS) ---
+    // Handle both Click and Touch to ensure responsiveness
+    const handleMenuToggle = (e) => {
         const toggle = e.target.closest('.nav-toggle');
         const link = e.target.closest('.nav-drawer a');
         const drawer = document.querySelector('.nav-drawer');
-        const btn = document.querySelector('.nav-toggle'); // The main button
+        const btn = document.querySelector('.nav-toggle'); 
 
         if (toggle && drawer) {
             e.preventDefault();
-            e.stopPropagation(); // Stop bubbling
-            const isOpen = drawer.classList.contains('open');
+            e.stopPropagation();
             
-            // Toggle Logic
+            // Debounce check (prevent double firing from touch+click)
+            if (toggle.dataset.processing) return;
+            toggle.dataset.processing = "true";
+            setTimeout(() => delete toggle.dataset.processing, 500);
+
+            const isOpen = drawer.classList.contains('open');
             if (isOpen) {
                 drawer.classList.remove('open');
                 document.body.classList.remove('nav-open');
@@ -847,12 +853,18 @@ function initSite() {
         }
 
         if (link && drawer && drawer.classList.contains('open')) {
-            // Close on link click
             drawer.classList.remove('open');
             document.body.classList.remove('nav-open');
             if (btn) btn.setAttribute('aria-expanded', 'false');
         }
-    });
+    };
+
+    document.body.addEventListener('click', handleMenuToggle);
+    document.body.addEventListener('touchstart', (e) => {
+        if(e.target.closest('.nav-toggle') || (e.target.closest('.nav-drawer a') && document.querySelector('.nav-drawer.open'))) {
+            handleMenuToggle(e);
+        }
+    }, { passive: false });
 
     // --- BEFORE/AFTER SLIDER ---
     const slider = document.getElementById('baSlider');
