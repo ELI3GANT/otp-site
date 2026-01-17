@@ -128,10 +128,12 @@ window.AuditEngine = {
             }
 
             // 2. Client-Side Fallback (Ultimate Fail-Safe)
-            // If the server didn't respond or returned an error, we MUST provide value.
             if (!success) {
                 console.log("⚠️ Activating Local Emergency Protocol.");
-                advice = `**THE DIAGNOSIS.**
+                
+                const fallbacks = [
+                    // VARIANT 1: TRAFFIC JAM
+                    `**THE DIAGNOSIS.**
 The Neural Link is currently jammed by high-traffic interference. However, your intent signal was strong enough to trigger this local cache.
 
 **THE PLAN.**
@@ -140,7 +142,34 @@ The Neural Link is currently jammed by high-traffic interference. However, your 
 3. **The Protocol**: Commit to the "Drafting Phase" for 60 minutes uninterrupted.
 
 **THE FORTUNE.**
-"True signal is found in the silence of action."`;
+"True signal is found in the silence of action."`,
+
+                    // VARIANT 2: ENCRYPTION LOCK
+                    `**THE DIAGNOSIS.**
+Secure channel established. The Oracle is operating in 'Ghost Mode' due to atmospheric static. We are proceeding with the Standard Protocol.
+
+**THE PLAN.**
+1. **The Strategy**: Simplification is your weapon. Cut your current project scope by 50% to increase velocity.
+2. **The Aesthetic**: Use negative space. If it doesn't add value, burn it.
+3. **The Habit**: Publish transmission before 10 AM. Consistency breaches the algorithm.
+
+**THE FORTUNE.**
+"You do not need more information. You need more courage."`,
+
+                    // VARIANT 3: ARCHIVE RETRIEVAL
+                    `**THE DIAGNOSIS.**
+Live link severed. Retrieving 'Master Strategy' from deep storage. This advice is timeless and applies to your current signature.
+
+**THE PLAN.**
+1. **The Pivot**: Stop consuming content. Start producing. The ratio must be 1:10.
+2. **The Look**: 'Cyber-Minimalism'. Clean lines, bold typography, zero fluff.
+3. **The Rule**: Do the thing you are avoiding. That is where the growth is hidden.
+
+**THE FORTUNE.**
+"The obstacle is the way."`
+                ];
+
+                advice = fallbacks[Math.floor(Math.random() * fallbacks.length)];
                 success = true; // Force success
             }
 
