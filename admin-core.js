@@ -958,13 +958,14 @@
 
             const data = await res.json();
             
-            if(!res.ok) throw new Error(data.error || res.statusText);
+            if(!res.ok) throw new Error(data.error || "Server Error: " + res.status);
             
             showToast("✅ SYSTEM PURGE COMPLETE. ALL LEADS DELETED.");
             await fetchLeads();
         } catch(e) {
             console.error("Purge Error:", e);
-            showToast("PURGE FAILED: " + e.message);
+            alert("❌ PURGE FAILED:\n" + e.message + "\n\n(Check console/logs for details)");
+            showToast("PURGE FAILED");
         }
     };
 
