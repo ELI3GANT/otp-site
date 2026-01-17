@@ -705,8 +705,17 @@ function initSite() {
 
         // Click Handler for Smooth Scroll & Active State
         link.addEventListener('click', (e) => {
+            const currentPath = window.location.pathname;
+            const isHome = currentPath === '/' || currentPath.endsWith('index.html');
+            let targetId = null;
+
             if (href.startsWith('#')) {
-                const targetId = href.substring(1);
+                targetId = href.substring(1);
+            } else if (isHome && href.includes('index.html#')) {
+                targetId = href.split('#')[1];
+            }
+
+            if (targetId) {
                 const targetEl = document.getElementById(targetId);
                 
                 if (targetEl) {
@@ -726,7 +735,7 @@ function initSite() {
                     navLinks.forEach(l => l.classList.remove('active'));
                     link.classList.add('active');
 
-                    // If in mobile drawer, it will be closed by the drawer listener below
+                    // If in mobile drawer, it will be closed by the drawer delegation
                 }
             }
         });
