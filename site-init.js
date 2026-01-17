@@ -879,7 +879,9 @@ function initSite() {
 
     document.body.addEventListener('click', handleMenuToggle);
     document.body.addEventListener('touchstart', (e) => {
-        if(e.target.closest('.nav-toggle') || (e.target.closest('.nav-drawer a') && document.querySelector('.nav-drawer.open'))) {
+        // Only handle TOGGLE on touchstart to ensure responsiveness. 
+        // Links should rely on 'click' to allow scrolling to trigger correctly.
+        if(e.target.closest('.nav-toggle')) {
             handleMenuToggle(e);
         }
     }, { passive: false });
