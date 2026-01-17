@@ -662,18 +662,18 @@ function initSite() {
     // --- SCROLL SPY (Active Link on Scroll) ---
     const sectionIds = ['work', 'services', 'contact'];
     const sections = sectionIds.map(id => document.getElementById(id)).filter(el => el);
-    const navLinks = document.querySelectorAll('.nav-links a, .nav-drawer a');
+    const spyLinks = document.querySelectorAll('.nav-links a, .nav-drawer a');
     
     if (sections.length > 0) {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     const id = entry.target.id;
-                    navLinks.forEach(link => {
+                    spyLinks.forEach(link => {
                         const href = link.getAttribute('href');
                         // Match either '#id' or 'index.html#id'
                         if (href === `#${id}` || href === `index.html#${id}`) {
-                            navLinks.forEach(l => l.classList.remove('active'));
+                            spyLinks.forEach(l => l.classList.remove('active'));
                             link.classList.add('active');
                         }
                     });

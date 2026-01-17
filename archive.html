@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="./styles.css?v=1768682328" />
+  <link rel="stylesheet" href="./styles.css?v=1768682479" />
   <style>body { margin: 0 !important; }</style>
   
   <!-- FAVICON -->
@@ -28,7 +28,7 @@
   <script>
     (function() {
         const t = localStorage.getItem('theme') || localStorage.getItem('last_global_theme');
-        if (t === 'light' || (!t \u0026\u0026 new Date().getHours() \u003e= 6 \u0026\u0026 new Date().getHours() \u003c 18)) {
+        if (t === 'light' || (!t && new Date().getHours() >= 6 && new Date().getHours() < 18)) {
             document.documentElement.setAttribute('data-theme', 'light');
         }
     })();
@@ -329,6 +329,6 @@
         });
     });
   </script>
-  <script src="site-init.js?v=1768682328"></script>
+  <script src="site-init.js?v=1768682479"></script>
 </body>
 </html>
