@@ -197,7 +197,7 @@
   <canvas id="cursor-canvas"></canvas>
 
   <script src="site-config.js"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/kursor"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -208,28 +208,8 @@
         const grid = document.querySelector('.insights-grid');
         const loader = document.querySelector('.loader');
 
-        // 1. SUPABASE FETCH (Using centralized config)
-        const SUPABASE_URL = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : null;
-        const SUPABASE_KEY = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseKey : null;
-        
-        const setStatus = (msg, isError = false) => {
-            if (grid) {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: ${isError ? '#ff4444' : 'var(--muted)'}; opacity: 0.8;">${msg}</div>`;
-            }
-        };
-
-        let allPosts = [];
-        let activeTag = 'ALL';
-
-        try {
-            // 0. CACHE DISABLED FOR DEBUGGING/FRESHNESS
-            // const cachedData = localStorage.getItem('otp_insights_cache');
-            
-            // ... check supabase ...
-            if (typeof window.supabase === 'undefined' || !SUPABASE_URL || !SUPABASE_KEY) {
-                setStatus("CONFIGURATION ERROR: MISSING CREDENTIALS", true);
-                return;
-            }
+        // ...
+// (Skipping down to fetch logic)
 
             setStatus("CONNECTING TO DATABASE...");
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -238,7 +218,7 @@
             const { data: posts, error } = await supabase
                 .from('posts')
                 .select('*')
-                .eq('published', true)
+                // .eq('published', true) // TEMPORARY DEBUG: Show all posts to rule out filter issues
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
