@@ -1,35 +1,38 @@
 {
   "version": 2,
   "builds": [
-    { "src": "server.js", "use": "@vercel/node" },
-    { "src": "**/*.html", "use": "@vercel/static" },
-    { "src": "**/*.css", "use": "@vercel/static" },
-    { "src": "**/*.js", "use": "@vercel/static" },
-    { "src": "**/*.{png,jpg,jpeg,gif,svg,ico,webp}", "use": "@vercel/static" }
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "pay_v2.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "payment_success.html",
+      "use": "@vercel/static"
+    }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/server.js" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/server.js" }
-  ],
-  "headers": [
     {
-      "source": "**/*.html",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
-      ]
+      "src": "/pay_v2.js",
+      "dest": "/pay_v2.js"
     },
     {
-      "source": "/(site-config.js|site-init.js|admin-core.js|styles.css)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
-      ]
+      "src": "/payment_success.html",
+      "dest": "/payment_success.html"
     },
     {
-      "source": "**/*.{jpg,jpeg,png,gif,svg,ico,webp}",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/server.js"
     }
   ]
 }
