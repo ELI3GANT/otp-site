@@ -27,12 +27,23 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const stripe = process.env.STRIPE_SECRET_KEY ? require('stripe')(process.env.STRIPE_SECRET_KEY) : null;
+
+// Safe Stripe Init
+let stripe = null;
+try {
+    if (process.env.STRIPE_SECRET_KEY) {
+        // Trim to remove accidental whitespace/newlines from copy-paste
+        stripe = require('stripe')(process.env.STRIPE_SECRET_KEY.trim());
+    }
+} catch (err) {
+    console.warn("⚠️ Stripe Init Failed (Check ENV Key format):", err.message);
+}
+
 const { createClient } = require('@supabase/supabase-js');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 if (!stripe) {
-    console.warn("⚠️ Stripe Payment System OFFLINE: Key missing.");
+    console.warn("⚠️ Stripe Payment System OFFLINE: Key missing or invalid.");
 }
 
 const app = express();
