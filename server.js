@@ -740,22 +740,30 @@ app.use((req, res) => {
 });
 
 // --- GLOBAL ERROR HANDLER ---
+// --- GLOBAL ERROR HANDLER ---
 app.use((err, req, res, next) => {
     const errorLog = `[${new Date().toISOString()}] ERROR: ${err.message}\nStack: ${err.stack}\n`;
-    fs.appendFileSync('server_debug.log', errorLog);
+    // Console only for Vercel
     console.error(errorLog);
     res.status(500).json({ success: false, message: "Internal Server Error", error: err.message });
 });
 
 // --- START SERVER ---
-const server = app.listen(port, '0.0.0.0', () => {
-    console.log(`\n🚀 OTP SECURE SERVER V1.2.0 ONLINE`);
-    console.log(`🔒 Security Headers: ENABLED`);
-    console.log(`📦 Compression: ENABLED`);
-    console.log(`🔑 Auth System: JWT ENABLED`);
-    console.log(`📡 Local: http://localhost:${port}\n`);
-});
+// --- START SERVER ---
+// Only listen if running locally (not imported as a module)
+if (require.main === module) {
+    const server = app.listen(port, '0.0.0.0', () => {
+        console.log(`\n🚀 OTP SECURE SERVER V1.3.1 ONLINE`);
+        console.log(`🔒 Security Headers: ENABLED`);
+        console.log(`📦 Compression: ENABLED`);
+        console.log(`🔑 Auth System: JWT ENABLED`);
+        console.log(`📡 Local: http://localhost:${port}\n`);
+    });
 
-server.on('error', (e) => {
-    console.error("SERVER STARTUP ERROR:", e);
-});
+    server.on('error', (e) => {
+        console.error("SERVER STARTUP ERROR:", e);
+    });
+}
+
+// Export for Vercel Serverless Function
+module.exports = app;
