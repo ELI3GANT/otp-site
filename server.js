@@ -628,9 +628,15 @@ app.post('/api/admin/purge-leads', async (req, res) => {
 app.post('/api/create-checkout-session', async (req, res) => {
     const { packageName, customerEmail } = req.body;
     
-    if (!process.env.STRIPE_SECRET_KEY) {
-        return res.status(500).json({ error: "PAYMENT SYSTEM OFFLINE (Key Missing)" });
+    // Check if Stripe is actually ready (Key might be invalid or missing)
+    if (!stripe) {
+        return res.status(500).json({ error: "PAYMENT SYSTEM OFFLINE (Stripe Config Error)" });
     }
+
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.get('host');
+    const origin = req.headers.origin || `${protocol}://${host}`;
+
 
     // Pricing Map (In cents) - Customize these values
     // Using lowercase keys for robust matching
@@ -672,8 +678,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${req.headers.origin}/payment_success.html?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${req.headers.origin}/index.html#packages`,
+            success_url: `${origin}/payment_success.html?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/index.html#packages`,
         };
 
         // Pre-fill email if provided from contact form
