@@ -194,7 +194,7 @@ async function handleDirectPay(e, title, stripe, btn) {
         const session = await response.json();
 
         if (session.error) {
-            alert('⚠️ Payment System Offline: ' + (session.error.message || session.error));
+            alert('Server Error (Backend): ' + (session.error.message || session.error));
             console.error(session.error);
             btn.innerHTML = "ERROR";
         } else {

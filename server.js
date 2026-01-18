@@ -120,6 +120,10 @@ app.get('/api/health', (req, res) => {
     res.json({ success: true, status: 'ONLINE', timestamp: new Date().toISOString() });
 });
 
+app.get('/api/status', (req, res) => {
+    res.json({ version: 'v1.3.1', env: process.env.NODE_ENV, stripe: !!process.env.STRIPE_SECRET_KEY });
+});
+
 app.post('/api/auth/login', (req, res) => {
     const { passcode } = req.body;
     
@@ -668,7 +672,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${req.headers.origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${req.headers.origin}/payment_success.html?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.origin}/index.html#packages`,
         };
 

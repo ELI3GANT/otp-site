@@ -10,3 +10,4 @@ CRASH (Uncaught): Error: write EPIPE
     at console.log (node:internal/console/constructor:378:26)
     at /Users/elijah/otp-site-1/server.js:98:13
 EXIT CODE: 1
+EXIT CODE: 0
