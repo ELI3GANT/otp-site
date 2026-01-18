@@ -27,9 +27,13 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY ? require('stripe')(process.env.STRIPE_SECRET_KEY) : null;
 const { createClient } = require('@supabase/supabase-js');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+
+if (!stripe) {
+    console.warn("⚠️ Stripe Payment System OFFLINE: Key missing.");
+}
 
 const app = express();
 app.disable('x-powered-by'); // Hide stack details
