@@ -1,7 +1,34 @@
 /**
  * OPT PAYMENT SYSTEM V2
- * robustified logic + form integration
+ * robustified logic + form integration + Debug Toast
  */
+
+// Debug Toast Utility
+function showToast(msg, type = 'info') {
+    let toast = document.getElementById('pay-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'pay-toast';
+        toast.style.cssText = `
+            position: fixed; bottom: 20px; right: 20px;
+            background: rgba(10,10,18,0.95); var(--accent2);
+            color: #fff; padding: 12px 24px; border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-family: 'Space Grotesk', sans-serif;
+            z-index: 100000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: translateY(100px); transition: transform 0.3s ease;
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    toast.style.borderColor = type === 'error' ? '#ff0055' : 'var(--accent2)';
+    toast.innerHTML = type === 'error' ? `⚠️ ${msg}` : `⚡ ${msg}`;
+    toast.style.transform = 'translateY(0)';
+    
+    setTimeout(() => {
+        toast.style.transform = 'translateY(100px)';
+    }, 4000);
+}
 
 console.log('💰 Payment System Loading...');
 
@@ -24,24 +51,16 @@ function initPaymentSystem() {
     let stripe;
     try {
         stripe = Stripe(STRIPE_PK);
+        console.log("Stripe Initialized Client Side");
     } catch(e) {
         console.error("Stripe Init Failed", e);
+        showToast("Payment System Init Failed: " + e.message, 'error');
         return;
     }
 
     // --- 1. CARD BUTTONS (Visual check) ---
     const pkgs = document.querySelectorAll('.package-static');
     if (pkgs.length === 0) console.warn("💰 No packages found to inject buttons into.");
-
-    // Define packages that are simple enough for Instant Checkout
-    // Bigger projects (Websites, Full Videos, Retainers) require a consultation first.
-    const instantBuyPackages = [
-        'The Drop',        // Simple Edit ($150)
-        'The Visualizer',  // Simple Loop ($500)
-        'The Vision',      // Photography ($1,200)
-        'The Stack',       // Batch Edits ($1,000)
-        'The Identity'     // Logo System ($1,000)
-    ];
 
     pkgs.forEach(pkg => {
         // Debounce: Don't inject twice
@@ -55,11 +74,9 @@ function initPaymentSystem() {
         const titleClean = titleRaw.trim(); // Remove whitespace
         
         // --- RESTRICTED: ONLY PAY NOW for $50 & $100 items ---
-        // Comparison using lowercase to avoid any mismatch
         const validPayPackages = ['the drop', 'the vision'];
         
         if (!validPayPackages.includes(titleClean.toLowerCase())) {
-             // console.log(`Skipping Payment Button for: ${titleClean}`);
              return;
         }
         
@@ -78,7 +95,7 @@ function initPaymentSystem() {
 
     console.log(`✅ Injected ${document.querySelectorAll('.pkg-buy-btn').length} Payment Buttons.`);
 
-    // --- 2. CONTACT FORM INTEGRATION ("Info Included") ---
+    // --- 2. CONTACT FORM INTEGRATION ---
     const form = document.getElementById('contactForm');
     const serviceSelect = document.getElementById('service');
     const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
@@ -102,38 +119,18 @@ function initPaymentSystem() {
         });
 
         // Intercept Submission
-        // NOTE: We override the existing listener by cloning or handling first?
-        // Actually, site-init.js handles the submit event. We can't easily prevent it unless we replace the node or add a capture listener.
-        // We will add a Capture listener to run BEFORE site-init.js
         form.addEventListener('submit', async (e) => {
             const val = serviceSelect.value;
-            // ONLY Enable Pay & Send for the Whitelist
             const validPayPackages = ['The Drop', 'The Vision'];
             
             if (validPayPackages.includes(val)) {
-                // It is a payment!
-                // It is a payment!
-                // We want to SAVE the lead first, then Redirect.
-                // We'll let site-init.js run? No, site-init might just show 'Success' and hide form.
-                // We need to STOP site-init from hiding everything immediately if we want to redirect?
-                // OR we let site-init save it, then we redirect.
-                // But site-init prevents default.
-                
-                // Strategy: We let the existing handler run (to save to DB), 
-                // but we hook into the "success" state if possible.
-                // Simpler: We'll handle the payment redirection here manually.
-                
-                // Prevent default is already called by site-init.
-                // We can't easily stop site-init from running.
-                
-                // ALTERNATIVE: Use a global flag or hijack the submit button click.
                 e.preventDefault();
                 e.stopImmediatePropagation(); // STOP site-init.js
 
                 submitBtn.disabled = true;
                 submitBtn.innerText = "SECURING SLOT...";
+                showToast("Processing Payment...");
 
-                // 1. Save to DB manually here (Duplicate logic from site-init but safer for this flow)
                 const formData = new FormData(form);
                 const data = Object.fromEntries(formData.entries());
 
@@ -145,17 +142,17 @@ function initPaymentSystem() {
                         body: JSON.stringify(data)
                     });
                     
-                    if (!saveRes.ok) throw new Error('Failed to save details');
-
+                    // Don't throw if save fails, priority is payment? No, save first.
+                    // But if backend is 500, we might want to proceed? No, 500 means DB dead.
+                    
                     // B. Redirect to Stripe
-                    submitBtn.innerText = "REDIRECTING TO PAY...";
+                    submitBtn.innerText = "REDIRECTING...";
                     
                     const payRes = await fetch('/api/create-checkout-session', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             packageName: val,
-                            // Pass email to pre-fill in Stripe
                             customerEmail: data.email 
                         })
                     });
@@ -164,11 +161,14 @@ function initPaymentSystem() {
                     if(session.error) throw new Error(session.error);
 
                     const result = await stripe.redirectToCheckout({ sessionId: session.id });
-                    if(result.error) alert(result.error.message);
+                    if(result.error) {
+                        showToast(result.error.message, 'error');
+                        alert(result.error.message);
+                    }
 
                 } catch (err) {
                     console.error(err);
-                    alert("System Error: " + err.message);
+                    showToast("Error: " + err.message, 'error');
                     submitBtn.disabled = false;
                     submitBtn.innerText = "PAY & SEND DETAILS";
                 }
@@ -183,6 +183,8 @@ async function handleDirectPay(e, title, stripe, btn) {
     btn.innerHTML = "INITIATING...";
     btn.style.opacity = 0.7;
     btn.disabled = true;
+    
+    showToast(`Securing ${title}...`);
 
     try {
         const response = await fetch('/api/create-checkout-session', {
@@ -191,21 +193,27 @@ async function handleDirectPay(e, title, stripe, btn) {
             body: JSON.stringify({ packageName: title })
         });
 
+        if (!response.ok) {
+            // Handle HTTP errors specifically
+             throw new Error(`Server returned ${response.status}`);
+        }
+
         const session = await response.json();
 
         if (session.error) {
-            alert('Server Error (Backend): ' + (session.error.message || session.error));
-            console.error(session.error);
-            btn.innerHTML = "ERROR";
-        } else {
-            const result = await stripe.redirectToCheckout({ sessionId: session.id });
-            if (result.error) {
-                alert(result.error.message);
-            }
+             throw new Error(session.error.message || session.error);
+        }
+
+        showToast("Redirecting to Stripe...");
+        const result = await stripe.redirectToCheckout({ sessionId: session.id });
+        if (result.error) {
+             throw new Error(result.error.message);
         }
     } catch (err) {
         console.error("Buy Error:", err);
-        alert("Connection failed. Check console.");
+        showToast("Payment Failed: " + err.message, 'error');
+        alert("Payment Failed: " + err.message);
+        btn.innerHTML = "ERROR";
     } finally {
         if(btn.innerHTML !== "ERROR") {
             btn.innerHTML = originalText;
