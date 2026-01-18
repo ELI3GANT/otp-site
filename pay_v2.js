@@ -135,20 +135,20 @@ function initPaymentSystem() {
                 const data = Object.fromEntries(formData.entries());
 
                 try {
+                    // API BASE (Hardcoded to Vercel to support cross-origin usage if DNS is stale)
+                    const API_BASE = 'https://otp-site.vercel.app';
+
                     // A. Save Lead
-                    const saveRes = await fetch('/api/contact/submit', {
+                    const saveRes = await fetch(`${API_BASE}/api/contact/submit`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
                     
-                    // Don't throw if save fails, priority is payment? No, save first.
-                    // But if backend is 500, we might want to proceed? No, 500 means DB dead.
-                    
                     // B. Redirect to Stripe
                     submitBtn.innerText = "REDIRECTING...";
                     
-                    const payRes = await fetch('/api/create-checkout-session', {
+                    const payRes = await fetch(`${API_BASE}/api/create-checkout-session`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
@@ -185,9 +185,10 @@ async function handleDirectPay(e, title, stripe, btn) {
     btn.disabled = true;
     
     showToast(`Securing ${title}...`);
+    const API_BASE = 'https://otp-site.vercel.app';
 
     try {
-        const response = await fetch('/api/create-checkout-session', {
+        const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ packageName: title })
