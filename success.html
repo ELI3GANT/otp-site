@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Activation | Only True Perspective</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #050505;
+            color: #fff;
+            text-align: center;
+            font-family: 'Syne', sans-serif;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .success-card {
+            padding: 50px;
+            border: 1px solid var(--accent2);
+            background: rgba(0,20,40,0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 0 100px rgba(0,195,255,0.15);
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        .success-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            background: var(--accent2);
+            box-shadow: 0 0 20px var(--accent2);
+        }
+        h1 { font-size: 3.5rem; margin-bottom: 10px; color: var(--accent2); text-transform: uppercase; line-height: 1; text-shadow: 0 0 30px rgba(0,195,255,0.5); }
+        h2 { font-size: 1.5rem; margin-bottom: 30px; font-weight: 400; opacity: 0.8; }
+        p { font-family: 'Space Grotesk', sans-serif; opacity: 0.7; line-height: 1.6; font-size: 1.1rem; }
+        
+        .upload-zone {
+            margin-top: 30px;
+            padding: 30px;
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.02);
+            transition: 0.3s;
+        }
+        .upload-zone:hover {
+            border-color: var(--accent2);
+            background: rgba(0,195,255,0.05);
+        }
+
+        .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 16px 40px;
+            background: var(--accent2);
+            color: #000;
+            text-decoration: none;
+            font-weight: 800;
+            border-radius: 5px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .btn:hover { box-shadow: 0 0 30px var(--accent2); transform: translateY(-3px); }
+
+        .steps {
+            text-align: left;
+            margin: 30px 0;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: slideUp 0.5s ease forwards;
+        }
+        .step:nth-child(1) { animation-delay: 0.3s; }
+        .step:nth-child(2) { animation-delay: 0.6s; }
+        
+        .step-num {
+            font-weight: 700;
+            color: var(--accent2);
+            margin-right: 15px;
+            font-size: 1.2rem;
+            min-width: 30px;
+        }
+        .step-content strong { color: #fff; display: block; margin-bottom: 4px; }
+        .step-content span { font-size: 0.95rem; color: #aaa; }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-card">
+        <h1>LOCKED IN.</h1>
+        <h2>PRIORITY STATUS: ACTIVE</h2>
+        
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">01</div>
+                <div class="step-content">
+                    <strong>Payment Secured</strong>
+                    <span>Your slot is confirmed on the production calendar.</span>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">02</div>
+                <div class="step-content">
+                    <strong>Send Your Assets</strong>
+                    <span>Upload your footage, stems, or brand files to verify the project.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="upload-zone" id="uploadArea">
+            <p style="margin-bottom: 15px;">Paste your project link (Dropbox, WeTransfer, Drive) or Email directly.</p>
+            <input type="text" id="projectLink" placeholder="Paste link here..." style="width: 100%; padding: 15px; background: #000; border: 1px solid #333; color: #fff; border-radius: 5px; font-family: 'Space Grotesk'; margin-bottom: 10px;">
+            <button class="btn" onclick="submitAssets()">CONFIRM ASSETS</button>
+            <div style="margin-top: 15px; font-size: 0.85rem; color: #666;">
+                 Or email files to <a href="mailto:priority@onlytrueperspective.com" style="color:#fff;">priority@onlytrueperspective.com</a>
+            </div>
+        </div>
+
+        <div id="finalMsg" style="display:none;">
+            <h3 style="color:var(--accent2); margin-bottom: 15px;">ASSETS RECEIVED.</h3>
+            <p>Our team is reviewing the files. You will receive a production timeline within 24 hours.</p>
+            <a href="index.html" class="btn" style="background: transparent; border: 1px solid #333; color: #fff; margin-top: 20px;">RETURN TO BASE</a>
+        </div>
+    </div>
+    
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('session_id'); // useful for backend tracking if we implemented it
+
+        function submitAssets() {
+            const link = document.getElementById('projectLink').value;
+            const btn = document.querySelector('.btn');
+            
+            if(!link) {
+                alert("Please paste your Dropbox/Drive link first.");
+                return;
+            }
+
+            btn.innerText = "OPENING MAIL CLIENT...";
+            
+            // Construct secure mailto
+            const subject = `OTP PRIORITY ASSETS: ${sessionId || 'New Order'}`;
+            const body = `Here are the assets for my project:\n\nLINK: ${link}\n\n(Please attach any other relevant files)`;
+            
+            window.location.href = `mailto:priority@onlytrueperspective.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+            // Simulate UI success after a moment
+            setTimeout(() => {
+                document.getElementById('uploadArea').style.display = 'none';
+                document.getElementById('finalMsg').style.display = 'block';
+                document.querySelector('.steps').style.opacity = '0.5';
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

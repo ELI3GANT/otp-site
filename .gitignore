@@ -3,3 +3,4 @@ node_modules
 
 startup.log
 .DS_Store
+my.env

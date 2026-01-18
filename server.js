@@ -27,6 +27,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { createClient } = require('@supabase/supabase-js');
 const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
@@ -59,14 +60,14 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://assets.calendly.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://assets.calendly.com", "https://js.stripe.com"],
             scriptSrcAttr: ["'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://assets.calendly.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://api.openai.com", "https://generativelanguage.googleapis.com", "https://calendly.com"],
+            connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://api.openai.com", "https://generativelanguage.googleapis.com", "https://calendly.com", "https://api.stripe.com"],
             mediaSrc: ["'self'", "https:"],
-            frameSrc: ["'self'", "https://calendly.com", "https://open.spotify.com", "https://embed.music.apple.com", "https://music.apple.com", "https://www.youtube.com", "https://w.soundcloud.com"],
+            frameSrc: ["'self'", "https://calendly.com", "https://open.spotify.com", "https://embed.music.apple.com", "https://music.apple.com", "https://www.youtube.com", "https://w.soundcloud.com", "https://js.stripe.com", "https://hooks.stripe.com"],
             objectSrc: ["'none'"],
             upgradeInsecureRequests: [],
         },
@@ -614,6 +615,73 @@ app.post('/api/admin/purge-leads', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+
+// 7. STRIPE CHECKOUT SESSION (ADDED FOR PAYMENTS)
+app.post('/api/create-checkout-session', async (req, res) => {
+    const { packageName, customerEmail } = req.body;
+    
+    if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ error: "PAYMENT SYSTEM OFFLINE (Key Missing)" });
+    }
+
+    // Pricing Map (In cents) - Customize these values
+    // Using lowercase keys for robust matching
+    const prices = {
+        'the drop': 5000, // $50.00 (Simple editing)
+        'the visualizer': 50000, 
+        'the official video': 150000, 
+        'the rollout': 100000,
+        'the identity': 100000,
+        'the digital hq': 200000,
+        'the rebrand': 350000,
+        'the stack': 100000,
+        'the vision': 10000, // $100.00 (In-person photo)
+        'the partner': 500000
+    };
+
+    // Normalize input to lowercase to avoid case-mismatch fallbacks
+    const normalizedName = packageName ? packageName.toLowerCase().trim() : '';
+    const amount = prices[normalizedName] || 10000; // Default $100 if no match
+
+    try {
+        const sessionConfig = {
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: `OTP PACKAGE: ${packageName}`,
+                        // Dynamic Description based on package
+                        description: normalizedName === 'the drop' ? '1 High-End Vertical Edit (Algorithm Friendly)' :
+                                     normalizedName === 'the vision' ? '1 Hour In-Person Photography Session (10 Edits)' :
+                                     'Secure Payment for Creative Services',
+                        metadata: {
+                            package: packageName
+                        }
+                    },
+                    unit_amount: amount,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: `${req.headers.origin}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${req.headers.origin}/index.html#packages`,
+        };
+
+        // Pre-fill email if provided from contact form
+        if (customerEmail) {
+            sessionConfig.customer_email = customerEmail;
+        }
+
+        const session = await stripe.checkout.sessions.create(sessionConfig);
+
+        res.json({ id: session.id });
+    } catch (e) {
+        console.error("Stripe Error:", e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 // --- CACHE CONTROL & STATIC ASSETS ---
 // Served AFTER API to avoid conflict (e.g. 405 on POST to static)
