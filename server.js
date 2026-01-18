@@ -103,9 +103,10 @@ app.use('/api/', limiter);
 app.use(bodyParser.json());
 
 // --- VERBOSE REQUEST LOGGING ---
+// --- VERBOSE REQUEST LOGGING ---
 app.use((req, res, next) => {
     const log = `[${new Date().toISOString()}] ${req.method} ${req.url} - IP: ${req.ip}\n`;
-    fs.appendFileSync('server_debug.log', log);
+    // fs.appendFile removed for Vercel
     console.log(log.trim());
     next();
 });
@@ -131,7 +132,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
-    res.json({ version: 'v1.3.1', env: process.env.NODE_ENV, stripe: !!process.env.STRIPE_SECRET_KEY });
+    res.json({ version: 'v1.3.2', env: process.env.NODE_ENV, stripe: !!stripe });
 });
 
 app.post('/api/auth/login', (req, res) => {
