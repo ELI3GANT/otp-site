@@ -946,54 +946,130 @@
     // GLOBAL SESSION KEY FOR ADMIN ACTIONS
     window.otpServiceKey = null;
 
-    window.confirmPurgeLeads = async function() {
-        if(!confirm("⚠️ WARNING: PURGE ALL AUDIT DATA?\n\nThis will delete every single lead entry permanently.")) return;
+    window.confirmPurgeLeads = function() {
+        const modal = document.getElementById('deleteModal');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
         
-        // Use cached key if available, otherwise prompt
-        let serviceKey = window.otpServiceKey;
-        if (!serviceKey) {
-            serviceKey = prompt("🔒 SECURITY LOCK: Enter SUPABASE_SERVICE_KEY (starts with eyJ...) to bypass database locks:");
-            if(!serviceKey) return showToast("PURGE CANCELLED");
-            window.otpServiceKey = serviceKey; // Cache for session
-        }
-
-        showToast("INITIATING ADMIN FORCE PURGE...");
+        // Dynamically update text for Purge context
+        const titleEl = modal.querySelector('h3');
+        const descEl = modal.querySelector('p');
         
-        try {
-            const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, serviceKey);
-            const { error } = await adminClient.from('leads').delete().gt('created_at', '1970-01-01');
+        if(titleEl) titleEl.textContent = "PURGE ALL LEADS?";
+        if(descEl) descEl.innerHTML = "<span style='color:var(--admin-danger)'>⚠️ WARNING: IRREVERSIBLE ACTION</span><br>This will permanently delete every single lead entry.";
 
-            if(error) throw error;
+        if(modal && confirmBtn) {
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
             
-            showToast("✅ SYSTEM PURGE COMPLETE. LEADS WIPED.");
-            await fetchLeads();
-        } catch(e) {
-            console.error("Purge Error:", e);
-            if(e.message.includes('JWT')) {
-                 window.otpServiceKey = null; // Clear invalid key
-                 alert("❌ KEY INVALID. PLEASE TRY AGAIN.");
-            } else {
-                 alert("❌ ADMIN PURGE FAILED:\n" + e.message);
-            }
-            showToast("PURGE FAILED");
+            newBtn.textContent = "PURGE EVERYTHING";
+            newBtn.style.background = "var(--admin-danger)";
+            newBtn.style.color = "#fff";
+            
+            newBtn.onclick = async () => {
+                newBtn.textContent = "WIPING DATA...";
+                newBtn.disabled = true;
+
+                // Use cached key if available, otherwise prompt
+                let serviceKey = window.otpServiceKey;
+                if (!serviceKey) {
+                    // We still use prompt for the key for now as it's a security bypass
+                    serviceKey = prompt("🔒 SECURITY LOCK: Enter SUPABASE_SERVICE_KEY (starts with eyJ...) to bypass database locks:");
+                    if(!serviceKey) {
+                        showToast("PURGE CANCELLED");
+                        modal.style.display = 'none';
+                         // Reset button state
+                        newBtn.textContent = "DELETE";
+                        newBtn.disabled = false;
+                        return;
+                    }
+                    window.otpServiceKey = serviceKey; 
+                }
+                
+                showToast("INITIATING ADMIN FORCE PURGE...");
+
+                try {
+                     const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, serviceKey);
+                     const { error } = await adminClient.from('leads').delete().gt('created_at', '1970-01-01');
+
+                     if(error) throw error;
+            
+                     showToast("✅ SYSTEM PURGE COMPLETE. LEADS WIPED.");
+                     await fetchLeads();
+                     modal.style.display = 'none';
+
+                } catch(e) {
+                    console.error("Purge Error:", e);
+                    if(e.message.includes('JWT')) {
+                        window.otpServiceKey = null; 
+                        alert("❌ KEY INVALID. PLEASE TRY AGAIN.");
+                    } else {
+                        alert("❌ ADMIN PURGE FAILED:\n" + e.message);
+                    }
+                    showToast("PURGE FAILED");
+                    modal.style.display = 'none';
+                }
+            };
+            
+            modal.style.display = 'flex';
+            // Enforce proper centering
+            modal.style.position = 'fixed';
+            modal.style.inset = '0';
+            modal.style.zIndex = '10000';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.backdropFilter = 'blur(5px)';
         }
     };
 
-    window.confirmPurgeInbox = async function() {
-        if(!confirm("⚠️ WARNING: PURGE ALL INBOX MESSAGES?\n\nThis will delete every contact message permanently.")) return;
-        if(!confirm("⛔ FINAL CONFIRMATION: This action is irreversible. Proceed?")) return;
-
-        showToast("WIPING SECURE COMMS...");
+    window.confirmPurgeInbox = function() {
+        const modal = document.getElementById('deleteModal');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
         
-        try {
-            const { error } = await state.client.from('contacts').delete().not('id', 'is', null);
-            if(error) throw error;
+        // Dynamically update text for Purge context
+        const titleEl = modal.querySelector('h3');
+        const descEl = modal.querySelector('p');
+        
+        if(titleEl) titleEl.textContent = "PURGE INBOX?";
+        if(descEl) descEl.innerHTML = "<span style='color:var(--admin-danger)'>⚠️ WARNING: IRREVERSIBLE ACTION</span><br>This will permanently delete every message.";
+
+        if(modal && confirmBtn) {
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
             
-            showToast("✅ INBOX WIPED CLEAN.");
-            await fetchInbox();
-        } catch(e) {
-            console.error("Purge Error:", e);
-            showToast("PURGE FAILED: " + e.message);
+            newBtn.textContent = "PURGE MESSAGES";
+            newBtn.style.background = "var(--admin-danger)";
+            newBtn.style.color = "#fff";
+            
+            newBtn.onclick = async () => {
+                newBtn.textContent = "WIPING...";
+                newBtn.disabled = true;
+                
+                showToast("WIPING SECURE COMMS...");
+        
+                try {
+                    const { error } = await state.client.from('contacts').delete().not('id', 'is', null);
+                    if(error) throw error;
+                    
+                    showToast("✅ INBOX WIPED CLEAN.");
+                    await fetchInbox();
+                    modal.style.display = 'none';
+                } catch(e) {
+                    console.error("Purge Error:", e);
+                    showToast("PURGE FAILED: " + e.message);
+                    modal.style.display = 'none';
+                }
+            };
+            
+            modal.style.display = 'flex';
+             // Enforce proper centering
+            modal.style.position = 'fixed';
+            modal.style.inset = '0';
+            modal.style.zIndex = '10000';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.backdropFilter = 'blur(5px)';
         }
     };
 
