@@ -15,7 +15,7 @@
   <link rel="canonical" href="https://onlytrueperspective.tech/insights.html" />
   <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="stylesheet" href="./styles.css?v=1768710330" />
+  <link rel="stylesheet" href="./styles.css?v=1768710998" />
   <style>
     body { margin: 0 !important; }
     .filter-btn {
@@ -241,6 +241,16 @@
         const grid = document.querySelector('.insights-grid');
         const hasBakedContent = grid && grid.querySelectorAll('.insight-card').length > 0;
 
+        // Helper: Escape HTML to prevent XSS (Moved up for scope safety)
+        const escapeHtml = (str) => {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        };
+
         // 1. SUPABASE FETCH (Using centralized config)
         const SUPABASE_URL = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : null;
         const SUPABASE_KEY = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseKey : null;
@@ -302,15 +312,7 @@
             if (!allPosts.length) setStatus(`SIGNAL LOSS: ${e.message}`, true);
         }
 
-        // Helper: Escape HTML to prevent XSS
-        const escapeHtml = (str) => {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;")
-                      .replace(/"/g, "&quot;")
-                      .replace(/'/g, "&#039;");
-        };
+
 
         function renderFilters(posts) {
             const wrap = document.getElementById('filter-wrap');
@@ -412,6 +414,6 @@
   </script>
 
   <script src="stars-v2.js"></script>
-  <script src="site-init.js?v=1768710330"></script>
+  <script src="site-init.js?v=1768710998"></script>
 </body>
 </html>
