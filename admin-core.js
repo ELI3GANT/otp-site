@@ -1005,46 +1005,84 @@
         showToast("🔄 CACHE PURGE COMMAND SENT");
     };
 
-    window.deleteLead = async function(id, event) {
+    window.deleteLead = function(id, event) {
         if(event) { event.preventDefault(); event.stopPropagation(); }
-        if(!confirm("Are you sure you want to delete this lead?")) return;
+        
+        const modal = document.getElementById('deleteModal');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        
+        // Dynamically update text for Lead context
+        const titleEl = modal.querySelector('h3');
+        const descEl = modal.querySelector('p');
+        
+        if(titleEl) titleEl.textContent = "DELETE LEAD?";
+        if(descEl) descEl.innerHTML = "This will permanently remove the audit data.<br>This cannot be undone.";
 
-        try {
-            // 1. Try Standard Delete first
-            const { error } = await state.client.from('leads').delete().eq('id', id);
-            if(error) throw error;
-            showToast("LEAD DELETED");
-            await fetchLeads();
-
-        } catch(e) {
-            console.warn("Standard delete failed, attempting Admin Override...", e);
+        if(modal && confirmBtn) {
+            // Remove old listeners by cloning
+            const newBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
             
-            // 2. Fallback to Service Key logic
-            let serviceKey = window.otpServiceKey;
+            newBtn.onclick = async () => {
+                newBtn.textContent = "DELETING...";
+                newBtn.disabled = true;
+                
+                try {
+                     // 1. Try Standard Delete first
+                     const { error } = await state.client.from('leads').delete().eq('id', id);
+                     if(error) throw error;
+                     showToast("LEAD DELETED");
+                     await fetchLeads();
+                     modal.style.display = 'none';
+
+                } catch(e) {
+                    console.warn("Standard delete failed, attempting Admin Override...", e);
+                    
+                    // 2. Fallback to Service Key logic
+                    let serviceKey = window.otpServiceKey;
+                    
+                    if (!serviceKey) {
+                        serviceKey = prompt("⚠️ PERMISSION DENIED. Enter SUPABASE_SERVICE_KEY to force delete:");
+                        if(!serviceKey) {
+                            showToast("DELETE CANCELLED");
+                            modal.style.display = 'none';
+                            return;
+                        }
+                        window.otpServiceKey = serviceKey;
+                    }
+
+                    try {
+                        const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, serviceKey);
+                        const { error: adminError } = await adminClient.from('leads').delete().eq('id', id);
+                        
+                        if(adminError) throw adminError;
+                        
+                        showToast("LEAD DELETED (ADMIN OVERRIDE)");
+                        await fetchLeads();
+                        modal.style.display = 'none';
+
+                    } catch (finalErr) {
+                         console.error("Force Delete Failed:", finalErr);
+                         if(finalErr.message.includes('JWT')) window.otpServiceKey = null;
+                         showToast("DELETE FAILED: " + finalErr.message);
+                    }
+                } finally {
+                    newBtn.textContent = "DELETE";
+                    newBtn.disabled = false;
+                }
+            };
             
-            // If no key cached, prompt (UX: only if specific RLS error?)
-            // We'll prompt to be safe since standard failed
-            if (!serviceKey) {
-                serviceKey = prompt("⚠️ PERMISSION DENIED. Enter SUPABASE_SERVICE_KEY to force delete:");
-                if(!serviceKey) return showToast("DELETE CANCELLED");
-                window.otpServiceKey = serviceKey;
-            }
-
-            try {
-                const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, serviceKey);
-                const { error: adminError } = await adminClient.from('leads').delete().eq('id', id);
-                
-                if(adminError) throw adminError;
-                
-                showToast("LEAD DELETED (ADMIN OVERRIDE)");
-                await fetchLeads();
-
-            } catch (finalErr) {
-                 console.error("Force Delete Failed:", finalErr);
-                 if(finalErr.message.includes('JWT')) window.otpServiceKey = null;
-                 showToast("DELETE FAILED: " + finalErr.message);
-            }
+            modal.style.display = 'flex';
+            // Enforce proper centering
+            modal.style.position = 'fixed';
+            modal.style.inset = '0';
+            modal.style.zIndex = '10000';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.backdropFilter = 'blur(5px)';
         }
+        return false;
     };
     
     // Helper to capture focus after list updates
