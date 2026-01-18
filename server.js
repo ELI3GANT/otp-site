@@ -1,16 +1,15 @@
 const fs = require('fs');
 // CRASH DEBUGGING
+// CRASH DEBUGGING (Console Only for Vercel/ReadOnly FS)
 process.on('uncaughtException', (err) => {
-    fs.writeFileSync('crash.log', `CRASH (Uncaught): ${err.stack}\n`, { flag: 'a' });
-    console.error('CRASH:', err);
+    console.error('CRASH (Uncaught):', err);
     process.exit(1);
 });
 process.on('unhandledRejection', (reason, promise) => {
-    fs.writeFileSync('crash.log', `CRASH (Unhandled Rejection): ${reason}\n`, { flag: 'a' });
-    console.error('Unhandled Rejection:', reason);
+    console.error('CRASH (Unhandled Rejection):', reason);
 });
 process.on('exit', (code) => {
-    fs.writeFileSync('crash.log', `EXIT CODE: ${code}\n`, { flag: 'a' });
+    console.log(`EXIT CODE: ${code}`);
 });
 
 // Load environment variables
