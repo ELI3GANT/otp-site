@@ -716,7 +716,7 @@
         let model_config = {};
         if (configRaw) {
             try { model_config = JSON.parse(configRaw); }
-            catch (e) { alert("Invalid JSON in Model Config"); return; }
+            catch (e) { showToast("ERROR: Invalid JSON in Model Config"); return; }
         }
 
         try {
@@ -966,47 +966,53 @@
             newBtn.style.color = "#fff";
             
             newBtn.onclick = async () => {
-                newBtn.textContent = "WIPING DATA...";
-                newBtn.disabled = true;
+                // Define execution logic
+                const executePurge = async (key) => {
+                     showToast("INITIATING ADMIN FORCE PURGE...");
+                     try {
+                         const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, key);
+                         const { error } = await adminClient.from('leads').delete().gt('created_at', '1970-01-01');
 
-                // Use cached key if available, otherwise prompt
-                let serviceKey = window.otpServiceKey;
-                if (!serviceKey) {
-                    // We still use prompt for the key for now as it's a security bypass
-                    serviceKey = prompt("🔒 SECURITY LOCK: Enter SUPABASE_SERVICE_KEY (starts with eyJ...) to bypass database locks:");
-                    if(!serviceKey) {
-                        showToast("PURGE CANCELLED");
-                        modal.style.display = 'none';
-                         // Reset button state
-                        newBtn.textContent = "DELETE";
-                        newBtn.disabled = false;
-                        return;
-                    }
-                    window.otpServiceKey = serviceKey; 
-                }
+                         if(error) throw error;
                 
-                showToast("INITIATING ADMIN FORCE PURGE...");
+                         showToast("✅ SYSTEM PURGE COMPLETE. LEADS WIPED.");
+                         await fetchLeads();
+                         // Close modal if still open (cached key case)
+                         modal.style.display = 'none';
 
-                try {
-                     const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, serviceKey);
-                     const { error } = await adminClient.from('leads').delete().gt('created_at', '1970-01-01');
+                     } catch(e) {
+                        console.error("Purge Error:", e);
+                        if(e.message.includes('JWT')) {
+                            window.otpServiceKey = null; 
+                            showToast("ERROR: KEY INVALID");
+                        } else {
+                            showToast("PURGE FAILED: " + e.message);
+                        }
+                        // Reset button if modal still open
+                        if(modal.style.display === 'flex') {
+                            newBtn.textContent = "PURGE EVERYTHING";
+                            newBtn.disabled = false;
+                        }
+                     }
+                };
 
-                     if(error) throw error;
-            
-                     showToast("✅ SYSTEM PURGE COMPLETE. LEADS WIPED.");
-                     await fetchLeads();
-                     modal.style.display = 'none';
-
-                } catch(e) {
-                    console.error("Purge Error:", e);
-                    if(e.message.includes('JWT')) {
-                        window.otpServiceKey = null; 
-                        alert("❌ KEY INVALID. PLEASE TRY AGAIN.");
-                    } else {
-                        alert("❌ ADMIN PURGE FAILED:\n" + e.message);
-                    }
-                    showToast("PURGE FAILED");
-                    modal.style.display = 'none';
+                // Logic Flow
+                if (!window.otpServiceKey) {
+                    modal.style.display = 'none'; // Close primary modal to show prompt
+                    promptAction(
+                        "SECURITY LOCK",
+                        "Enter SUPABASE_SERVICE_KEY (starts with eyJ...) to bypass database locks:",
+                        "eyJ...",
+                        async (key) => {
+                            if(!key) { showToast("PURGE CANCELLED"); return; }
+                            window.otpServiceKey = key;
+                            await executePurge(key);
+                        }
+                    );
+                } else {
+                    newBtn.textContent = "WIPING DATA...";
+                    newBtn.disabled = true;
+                    await executePurge(window.otpServiceKey);
                 }
             };
             
@@ -1352,17 +1358,17 @@
     }
 };
 
-    window.markAsReplied = async function() {
+    window.markAsReplied = function() {
         const id = document.getElementById('replyContactId').value;
-        if(!confirm("Confirm you have sent the reply? This will mark the thread as completed.")) return;
-         
-        try {
-            const { error } = await state.client.from('contacts').update({ ai_status: 'completed' }).eq('id', id);
-            if(error) throw error;
-            showToast("MARKED AS COMPLETED");
-            document.getElementById('replyModal').style.display = 'none';
-            await fetchInbox();
-        } catch(e) { showToast("UPDATE FAILED: " + e.message); }
+        confirmAction("SENT REPLY?", "Confirm you have sent the reply. This will mark the thread as completed.", async () => {
+            try {
+                const { error } = await state.client.from('contacts').update({ ai_status: 'completed' }).eq('id', id);
+                if(error) throw error;
+                showToast("MARKED AS COMPLETED");
+                document.getElementById('replyModal').style.display = 'none';
+                await fetchInbox();
+            } catch(e) { showToast("UPDATE FAILED: " + e.message); }
+        });
     };
     
     // NEW: Archive Contact (Using Custom Modal)
@@ -2964,12 +2970,11 @@
 
     // GLOBAL LOGOUT
     window.logout = function() {
-        if(confirm("TERMINATE SESSION?")) {
+        confirmAction("TERMINATE SESSION?", "Are you sure you want to log out of the secure terminal?", () => {
             localStorage.removeItem('otp_admin_token');
-            // Optional: Clear cache to force clean reload next time
             localStorage.removeItem('otp_insights_cache');
             window.location.href = 'portal-gate.html';
-        }
+        });
     };
 
 })();

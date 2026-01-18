@@ -379,3 +379,10 @@
 [2026-01-18T05:28:15.348Z] GET /favicon.ico - IP: 127.0.0.1
 [2026-01-18T05:29:49.996Z] GET /otp-terminal.html - IP: 127.0.0.1
 [2026-01-18T05:32:02.099Z] GET /otp-terminal.html - IP: 127.0.0.1
+[2026-01-18T05:33:09.300Z] GET /otp-terminal.html - IP: 127.0.0.1
+[2026-01-18T05:33:09.329Z] GET /styles.css?v=1768714352 - IP: 127.0.0.1
+[2026-01-18T05:33:09.330Z] GET /admin-styles.css?v=1768714352 - IP: 127.0.0.1
+[2026-01-18T05:33:09.331Z] GET /site-config.js - IP: 127.0.0.1
+[2026-01-18T05:33:09.511Z] GET /site-init.js?v=1768714352 - IP: 127.0.0.1
+[2026-01-18T05:33:09.512Z] GET /admin-core.js?v=1768714352 - IP: 127.0.0.1
+[2026-01-18T05:33:09.626Z] GET /favicon.ico - IP: 127.0.0.1
