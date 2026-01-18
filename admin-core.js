@@ -889,6 +889,9 @@
         const leads = document.getElementById('leadsManager');
         if(!leads) return;
 
+        // Visual Feedback
+        leads.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">SYNCING LEAD DATA...</div>';
+
         try {
             const { data, error } = await state.client
                 .from('leads')
