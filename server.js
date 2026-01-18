@@ -12,12 +12,8 @@ process.on('exit', (code) => {
     console.log(`EXIT CODE: ${code}`);
 });
 
-// Load environment variables
-if (fs.existsSync('my.env')) {
-    require('dotenv').config({ path: 'my.env' });
-} else {
-    require('dotenv').config();
-}
+// Load environment variables (Standard)
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
@@ -126,6 +122,10 @@ app.use((req, res, next) => {
 // Defined BEFORE static files to ensure they take precedence
 
 // 1. Auth Route
+app.get('/api', (req, res) => {
+    res.send("OTP API SERVICE RUNNING");
+});
+
 app.get('/api/health', (req, res) => {
     res.json({ success: true, status: 'ONLINE', timestamp: new Date().toISOString() });
 });
