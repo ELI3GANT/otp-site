@@ -20,6 +20,10 @@ window.AuditEngine = {
         if (steps[this.currentStep]) {
             steps[this.currentStep].classList.add('active');
         }
+        
+        // Mobile Back Button Logic
+        const backBtns = document.querySelectorAll('.audit-back-btn');
+        backBtns.forEach(btn => btn.style.display = 'flex');
 
         setTimeout(() => this.isNavigating = false, 600);
     },
@@ -449,11 +453,10 @@ System Override engaged. Bypassing standard filters to deliver a direct, unfilte
             btn.style.background = '';
         });
 
-        // Ensure back buttons are effectively reset
+        // Ensure back buttons are hidden initially
         const backBtns = document.querySelectorAll('.audit-back-btn');
         backBtns.forEach(b => {
-             b.style.display = '';
-             b.style.opacity = '1';
+             b.style.display = 'none';
         });
         
         // Smooth scroll back to top of audit card

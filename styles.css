@@ -1409,6 +1409,8 @@ html {
   align-items: center;
   gap: 5px;
   font-weight: 700;
+  /* Ensure it has space on mobile */
+  margin-bottom: 15px;
 }
 
 .audit-back-btn:hover {
@@ -1416,8 +1418,11 @@ html {
   transform: translateX(-3px);
 }
 
-#audit-step-1 .audit-back-btn {
-  display: none !important;
+/* Logic is handled in JS (display: block/none), 
+   but we ensure it's hidden by default on step 1 via JS logic primarily. 
+   Removing the rigid CSS override to allow JS to control it better. */
+.audit-back-btn[style*="display: none"] {
+    display: none !important;
 }
 
 .audit-options {
