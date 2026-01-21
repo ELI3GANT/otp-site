@@ -199,34 +199,39 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
         } else if (provider === 'gemini') {
             if (!process.env.GEMINI_API_KEY) throw new Error("Gemini Key not configured on server.");
             
-            const geminiModel = model || 'gemini-2.5-flash';
+            const candidates = model ? [model] : ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-flash-001', 'gemini-1.5-pro'];
             const payload = {
-                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nGenerate post titled "${title}" based on prompt: "${prompt}". Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }],
-                generationConfig: { response_mime_type: "application/json" }
+                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nGenerate post titled "${title}" based on prompt: "${prompt}". Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }]
             };
 
-            // JSON Mode is best supported on v1beta
-            const endpoints = ['v1beta', 'v1'];
             let lastErr = "";
             let success = false;
 
-            for (const v of endpoints) {
+            for (const m of candidates) {
                 if(success) break;
                 try {
-                    const apiRes = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${geminiModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                    // JSON Mode is best supported on v1beta
+                    console.log(`🤖 Gemini Probing Model: ${m}...`);
+                    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
+                    
                     const data = await apiRes.json();
                     if (!data.error) {
                         const text = data.candidates[0].content.parts[0].text;
-                        // With native JSON mode, we shouldn't need regex replacement, but keeping it for safety
                         result = JSON.parse(text.replace(/```json|```/g, '').trim());
                         usage = data.usageMetadata ? { total_tokens: data.usageMetadata.totalTokenCount } : null;
                         success = true;
-                    } else { lastErr = data.error.message; }
-                } catch (e) { lastErr = e.message; }
+                        console.log(`✅ Success via ${m}`);
+                    } else { 
+                        lastErr = `${m}: ${data.error.message}`; 
+                        console.warn(`⚠️ ${m} Failed: ${data.error.message}`);
+                    }
+                } catch (e) { 
+                    lastErr = `${m}: ${e.message}`; 
+                }
             }
             if(!success) throw new Error(`Gemini Probe Failed: ${lastErr}`);
 
@@ -631,6 +636,84 @@ app.post('/api/admin/purge-leads', async (req, res) => {
 
     } catch (e) {
         console.error("Purge Error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- NEW SECURE PROXIES (Relay Client Actions to Service Role) ---
+
+// 6.1 Secure Analytics Tracking
+app.post('/api/analytics/view', async (req, res) => {
+    const { slug } = req.body;
+    if (!slug) return res.status(400).json({ success: false, message: "Missing Slug" });
+
+    // Prevent direct spamming by checking simple rate limit (already applied globally, but logic here helps too)
+    // We strictly use the Service Key here to bypass "Anonymous" RLS restrictions on UPDATES.
+    if (!supabaseAdmin) return res.status(500).json({ success: false, message: "Server Analytics Config Missing" });
+
+    try {
+        // 1. Try Posts Table
+        // We use the RPC if possible, otherwise manual select+update
+        // RPC is preferred for atomicity: create function increment_view_count(post_slug text) ...
+        
+        let handled = false;
+
+        // Try RPC first (Atomic)
+        const { error: rpcError } = await supabaseAdmin.rpc('increment_view_count', { post_slug: slug });
+        if (!rpcError) {
+            handled = true;
+        } else {
+            // Fallback: Manual Update (Race conditions possible but rare for this scale)
+            // Check Posts
+            const { data: pData } = await supabaseAdmin.from('posts').select('views, id').eq('slug', slug).single();
+            if (pData) {
+                await supabaseAdmin.from('posts').update({ views: (pData.views || 0) + 1 }).eq('id', pData.id);
+                handled = true;
+            } else {
+                // Check Broadcasts
+                const { data: bData } = await supabaseAdmin.from('broadcasts').select('views, id').eq('slug', slug).single();
+                if (bData) {
+                    await supabaseAdmin.from('broadcasts').update({ views: (parseInt(bData.views) || 0) + 1 }).eq('id', bData.id);
+                    handled = true;
+                }
+            }
+        }
+
+        if (handled) res.json({ success: true });
+        else res.json({ success: false, message: "Slug not found in valid tables" });
+
+    } catch (e) {
+        console.error("Analytics Error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 6.2 Secure Live Editor Update
+app.post('/api/content/update', verifyToken, async (req, res) => {
+    const { updates } = req.body; // Array of { key, content }
+    
+    if (!updates || !Array.isArray(updates)) {
+        return res.status(400).json({ success: false, message: "Invalid payload" });
+    }
+
+    if (!supabaseAdmin) return res.status(500).json({ success: false, message: "Server DB Config Missing" });
+
+    try {
+        console.log(`📝 Secure Content Update: ${updates.length} items from ${req.auth?.role || 'admin'}`);
+        
+        const { error } = await supabaseAdmin.from('site_content').upsert(updates.map(u => ({
+            key: u.key,
+            content: u.content,
+            updated_by: 'admin-proxy',
+            updated_at: new Date().toISOString()
+        })));
+
+        if (error) throw error;
+        
+        res.json({ success: true, message: "Content Updated Securely" });
+
+    } catch (e) {
+        console.error("Content Update Error:", e);
         res.status(500).json({ error: e.message });
     }
 });

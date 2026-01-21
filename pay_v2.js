@@ -135,8 +135,8 @@ function initPaymentSystem() {
                 const data = Object.fromEntries(formData.entries());
 
                 try {
-                    // API BASE (Hardcoded to Vercel to support cross-origin usage if DNS is stale)
-                    const API_BASE = 'https://otp-site.vercel.app';
+                    // API BASE (Relative for automatic local/prod support)
+                    const API_BASE = '';
 
                     // A. Save Lead
                     const saveRes = await fetch(`${API_BASE}/api/contact/submit`, {
@@ -185,7 +185,7 @@ async function handleDirectPay(e, title, stripe, btn) {
     btn.disabled = true;
     
     showToast(`Securing ${title}...`);
-    const API_BASE = 'https://otp-site.vercel.app';
+    const API_BASE = '';
 
     try {
         const response = await fetch(`${API_BASE}/api/create-checkout-session`, {

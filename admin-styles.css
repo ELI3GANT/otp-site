@@ -462,9 +462,11 @@ button {
     transition: all 0.3s ease;
     position: relative;
     display: grid; 
-    grid-template-columns: minmax(200px, 1fr) auto auto; /* More robust space allocation */
-    gap: 24px;
+    grid-template-columns: minmax(140px, 1fr) auto auto; /* More robust space allocation */
+    gap: 15px;
 }
+
+
 
 .post-row:hover {
     background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);

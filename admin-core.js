@@ -89,11 +89,19 @@
         if (state.token) {
              // Simple JWT Expiry Check
              try {
+
                  if (state.token !== 'static-bypass-token') {
                      const payload = JSON.parse(atob(state.token.split('.')[1]));
                      const now = Math.floor(Date.now() / 1000);
                      if (payload.exp && payload.exp < now) {
                          console.warn("Session Expired");
+                         window.logout();
+                         return;
+                     }
+                 } else {
+                     // SECURITY: Only allow static bypass on localhost
+                     if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+                         console.warn("⚠️ STATIC TOKEN INVALID IN PRODUCTION");
                          window.logout();
                          return;
                      }
@@ -145,28 +153,17 @@
             // Live Clock System
             const clockEl = document.getElementById('liveClock');
             if (clockEl) {
-                const isStatic = state.token === 'static-bypass-token';
                 const apiBase = localStorage.getItem('otp_api_base') || '';
+                const token = localStorage.getItem('otp_admin_token') || '';
+                const isStatic = token === 'static-bypass-token';
                 const isRemote = apiBase.startsWith('http') && !apiBase.includes('localhost');
                 
                 let statusTag = '<span style="color:var(--admin-success)">[NODE:LIVE]</span>';
-                if (isStatic) statusTag = '<span style="color:#ff8800">[LEGACY]</span>';
-                else if (isRemote) statusTag = '<span style="color:#00ffaa">[SATELLITE]</span>';
+                if (isStatic) statusTag = '<span style="color:#ff8800">[NODE:LEGACY]</span>';
+                else if (isRemote) statusTag = '<span style="color:#00ffaa; filter: drop-shadow(0 0 5px #00ffaa); font-weight:bold;">[NODE:SECURE]</span>';
 
+                // Update only time every second, not status checks
                 setInterval(() => {
-                    const currentBase = localStorage.getItem('otp_api_base') || '';
-                    const currentToken = localStorage.getItem('otp_admin_token') || '';
-                    const isStatic = currentToken === 'static-bypass-token';
-                    const isRemote = currentBase.startsWith('http') && !currentBase.includes('localhost');
-                    
-                    let statusTag = '<span style="color:var(--admin-success)">[NODE:LIVE]</span>';
-                    
-                    if (isStatic) {
-                        statusTag = '<span style="color:#ff8800">[NODE:LEGACY]</span>';
-                    } else if (isRemote) {
-                        statusTag = '<span style="color:#00ffaa; filter: drop-shadow(0 0 5px #00ffaa); font-weight:bold;">[NODE:SECURE]</span>';
-                    }
-
                     const now = new Date();
                     const timeStr = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
                     clockEl.innerHTML = `${statusTag} ${timeStr}`;
@@ -562,14 +559,15 @@
 
     function syncCategoryDropdowns() {
         const selects = ['catInput', 'archCategory']; // Main post category and archetype parent
+        const escape = window.escapeHtml || (s => s);
         selects.forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
             const current = el.value;
             if (id === 'archCategory') {
-                el.innerHTML = '<option value="">No Category</option>' + state.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                el.innerHTML = '<option value="">No Category</option>' + state.categories.map(c => `<option value="${escape(c.id)}">${escape(c.name)}</option>`).join('');
             } else {
-                el.innerHTML = state.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+                el.innerHTML = state.categories.map(c => `<option value="${escape(c.name)}">${escape(c.name)}</option>`).join('');
             }
             if (current) el.value = current;
         });
@@ -579,7 +577,8 @@
         const el = document.getElementById('archetype');
         if (!el) return;
         const current = el.value;
-        el.innerHTML = state.archetypes.map(a => `<option value="${a.slug}">${a.name}</option>`).join('');
+        const escape = window.escapeHtml || (s => s);
+        el.innerHTML = state.archetypes.map(a => `<option value="${escape(a.slug)}">${escape(a.name)}</option>`).join('');
         if (current) el.value = current;
     }
 
@@ -2359,6 +2358,58 @@
     }
 
     async function triggerImageGenerator(prompt, title) {
+        // VERCEL HOBBY FIX: Prioritize Client-Side Generation if Key Exists
+        // This bypasses the 10s Serverless Function Timeout limit on free tiers.
+        const localKey = localStorage.getItem('cloud_openai');
+        
+        if (localKey) {
+            try {
+                console.log("🚀 USING CLIENT-SIDE GENERATION (BYPASS SERVER TIME LIMIT)...");
+                const res = await fetch('https://api.openai.com/v1/images/generations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "dall-e-3",
+                        prompt: `High-tech, cinematic, professional photography/render for a brand called 'Only True Perspective'. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. High resolution, 4k. Title reference: ${title}`,
+                        n: 1,
+                        size: "1024x1024",
+                        quality: "hd"
+                    })
+                });
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error.message);
+                
+                // Success - Use the URL directly (Note: OpenAI URLs expire, but for instant preview/upload it works)
+                // ideally we would upload this to Supabase here, but for now we just show it.
+                // To make it permanent, we trigger an upload from URL if possible, or just let the user save it.
+                // BETTER: We can download the blob client side and use handleFileUpload logic!
+                
+                const tempUrl = data.data[0].url;
+                
+                // Auto-Upload to preserve it (since we have the URL)
+                // We'll reuse the handleFileUpload logic by fetching the blob
+                const imgRes = await fetch(tempUrl);
+                const blob = await imgRes.blob();
+                const file = new File([blob], `gen-${Date.now()}.png`, { type: 'image/png' });
+                
+                // Mock an event for handleFileUpload
+                handleFileUpload({ target: { files: [file] } });
+                
+                trackAICost('openai', 2000);
+                showToast("CLIENT-SIDE SYNTHESIS COMPLETE");
+                return; // Exit, don't try server
+
+            } catch (clientErr) {
+                console.warn("Client Gen Failed:", clientErr);
+                showToast("CLIENT GEN FAILED: " + clientErr.message);
+                // Fallthrough to server attempt just in case
+            }
+        }
+
         try {
             const base = localStorage.getItem('otp_api_base') || window.location.origin;
             const res = await fetch(base + '/api/ai/generate-image', {
@@ -2382,8 +2433,7 @@
                     prevDiv.style.display = 'block';
                 }
                 
-                // Track DALL-E 3 Cost (Fixed at $0.04 per HD image for this impl)
-                trackAICost('openai', 2000); // Approximation for tracking
+                trackAICost('openai', 2000); 
                 showToast("VISUAL SYNTHESIS COMPLETE");
             } else {
                 throw new Error(data.message || "Image Gen Failed");

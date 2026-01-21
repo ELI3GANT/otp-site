@@ -111,7 +111,7 @@ window.AuditEngine = {
 
             try {
                 // Hardcoded to Vercel to ensure connectivity from custom domain
-                const API_BASE = 'https://otp-site.vercel.app';
+                const API_BASE = '';
                 
                 const response = await fetch(`${API_BASE}/api/audit/submit`, {
                     method: 'POST',

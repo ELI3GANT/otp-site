@@ -183,27 +183,14 @@ window.OTP.initTheme = function() {
 
 window.OTP.trackView = async function(slug) {
     if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
-    const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
     
+    // SECURE UPDATE: Use Server Backend (Bypasses RLS)
     try {
-        // 1. Check if it's a Post (Primary)
-        // We check existence first because the RPC generally returns void/success even on 0 updates.
-        const { count } = await client.from('posts').select('*', { count: 'exact', head: true }).eq('slug', slug);
-        
-        if (count && count > 0) {
-            // It exists in Posts, call the RPC
-            const { error } = await client.rpc('increment_view_count', { post_slug: slug });
-            if (error) console.warn('[OTP] RPC Error:', error);
-        } else {
-            // 2. Fallback to Broadcasts Table
-            // Fetch current count to increment (Native RPC for broadcasts pending)
-            const { data: bData } = await client.from('broadcasts').select('views').eq('slug', slug).single();
-            
-            if (bData) {
-                const currentViews = parseInt(bData.views) || 0;
-                await client.from('broadcasts').update({ views: currentViews + 1 }).eq('slug', slug);
-            }
-        }
+        await fetch('/api/analytics/view', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug })
+        });
     } catch (e) {
         console.warn("[OTP] Analytics Tracking Offline", e);
     }
@@ -553,7 +540,7 @@ window.OTP.initLiveEditor = async function() {
         `;
         document.body.appendChild(toolbar);
 
-        // Save Function
+        // Save Function (SECURE PROXY)
         window.OTP.saveContent = async function() {
             const btn = document.querySelector('.otp-editor-btn.save');
             btn.textContent = "SAVING...";
@@ -563,15 +550,30 @@ window.OTP.initLiveEditor = async function() {
                 if(el.id) {
                     updates.push({
                         key: el.id,
-                        content: el.innerHTML.trim(),
-                        updated_by: 'admin'
+                        content: el.innerHTML.trim()
                     });
                 }
             });
 
+            const token = localStorage.getItem('otp_admin_token');
+            if (!token) {
+                alert("Session Expired. Please login via Terminal.");
+                return;
+            }
+
             try {
-                const { error } = await client.from('site_content').upsert(updates);
-                if(error) throw error;
+                // Use Secure Backend Proxy
+                const res = await fetch('/api/content/update', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ updates })
+                });
+
+                const result = await res.json();
+                if(!result.success) throw new Error(result.message);
                 
                 btn.textContent = "SAVED!";
                 setTimeout(() => btn.textContent = "SAVE CHANGES", 2000);
@@ -580,6 +582,7 @@ window.OTP.initLiveEditor = async function() {
                 window.OTP.showBroadcast("SITE CONTENT UPDATED");
 
                 // 2. Network Broadcast (Vice-Versa Sync)
+                // We still use the client channel for realtime NOTIFICATION, just not storage
                 const channel = client.channel('site_state');
                 channel.subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
