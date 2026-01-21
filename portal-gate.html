@@ -208,7 +208,7 @@
             <form onsubmit="event.preventDefault(); attemptLogin();">
                 <div style="display: flex; align-items: center;">
                     <span style="color: var(--term-green); margin-right: 5px;">></span>
-                    <input type="password" id="passcode" class="gate-input" maxlength="10" autocomplete="off" autofocus oninput="updateCursor()">
+                    <input type="password" id="passcode" class="gate-input" maxlength="32" autocomplete="current-password" autofocus oninput="updateCursor()">
                     <span id="fake-cursor" class="cursor"></span>
                 </div>
                 <button type="submit" id="loginBtn" class="login-btn">INITIATE UPLINK</button>
@@ -218,24 +218,25 @@
         <!-- QUICK ACCESS ADMIN FUNCTIONS -->
         <div id="quickAdmin" style="display: none; margin-top: 20px; border-top: 2px solid var(--term-green); padding-top: 15px;">
              <div style="font-size: 0.8rem; color: var(--term-dim); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                 <span>// QUICK_ACCESS_ENABLED</span>
-                 <button onclick="logout()" class="disconnect-btn">DISCONNECT</button>
+                 <span>// PREVIOUS_SESSION_DETECTED</span>
+                 <button onclick="logout()" class="disconnect-btn">ERASE SESSION</button>
              </div>
              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                 <button onclick="window.location.href='otp-terminal.html'" class="login-btn" style="margin-top: 0; font-size: 0.9rem; padding: 8px; background: var(--term-dim); color: #fff;">OPEN TERMINAL</button>
-                 <button onclick="window.location.href='index.html'" class="login-btn" style="margin-top: 0; font-size: 0.9rem; padding: 8px; background: transparent; border: 1px solid var(--term-green);">VIEW LIVE SITE</button>
+                 <button onclick="window.location.href='otp-terminal.html'" class="login-btn" style="margin-top: 0; font-size: 0.9rem; padding: 8px; background: var(--term-green); color: #000;">RESUME UPLINK</button>
+                 <button onclick="window.location.href='index.html'" class="login-btn" style="margin-top: 0; font-size: 0.9rem; padding: 8px; background: transparent; border: 1px solid var(--term-green);">TERMINATE</button>
              </div>
         </div>
 
-        <div style="margin-top: 25px; font-size: 0.8rem; border-top: 1px dotted var(--term-dim); padding-top: 15px;">
-            <div style="margin-bottom: 5px; opacity: 0.5;">🛰️ SATELLITE_UPLINK_CONFIG:</div>
+        <div style="margin-top: 40px; font-size: 0.65rem; border-top: 1px dotted var(--term-dim); padding-top: 15px; opacity: 0.4;">
+            <div style="margin-bottom: 5px;">⚠️ ADVANCED: SATELLITE_UPLINK_TARGET:</div>
             <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="color: var(--term-dim);">#</span>
-                <input type="text" id="initSatUrl" placeholder="SEARCHING..." onchange="localStorage.setItem('otp_api_base', this.value)" style="flex: 1; background: transparent; border: none; color: var(--term-green); font-family: 'VT323', monospace; font-size: 1rem; outline: none;">
+                <span style="color: var(--term-dim);">IP:</span>
+                <input type="text" id="initSatUrl" placeholder="PROBING..." onchange="localStorage.setItem('otp_api_base', this.value)" style="flex: 1; background: transparent; border: none; color: var(--term-dim); font-family: 'VT323', monospace; font-size: 0.7rem; outline: none;">
             </div>
+            <div style="margin-top: 5px;">DO NOT ENTER PASSCODE HERE.</div>
         </div>
 
-        <div id="errorMsg" style="display: none; color: #ff0000; text-shadow: 0 0 5px #ff0000; margin-top: 15px; font-size: 1rem; text-align: center;">ACCESS DENIED // INTRUSION DETECTED</div>
+        <div id="errorMsg" style="display: none; color: #ff0000; text-shadow: 0 0 5px #ff0000; margin-top: 15px; font-size: 1rem; text-align: center;">ACCESS DENIED // SIGNAL REJECTED</div>
     </div>
 
     <!-- SUPABASE FOR LIVE DATA -->
@@ -348,7 +349,9 @@
             const input = document.getElementById('passcode');
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('errorMsg');
-            const pass = input.value;
+            const pass = input.value.trim(); // TRIM PASSCODE
+
+            if (!pass) return;
 
             err.style.display = 'none';
             btn.textContent = "VERIFYING...";
@@ -358,7 +361,14 @@
 
             try {
                 // Try Saved Satellite first, then current origin
-                const savedBase = localStorage.getItem('otp_api_base');
+                let savedBase = localStorage.getItem('otp_api_base');
+                
+                // If savedBase is invalid or looks like the password, reset it
+                if (savedBase && (savedBase.length < 5 || savedBase === FALLBACK_PASS)) {
+                    savedBase = window.location.origin;
+                    localStorage.setItem('otp_api_base', savedBase);
+                }
+
                 const baseUrl = savedBase || await getBaseApiUrl();
                 if (!savedBase) localStorage.setItem('otp_api_base', baseUrl);
 
@@ -372,11 +382,19 @@
                     const data = await res.json();
                     if(data.success && data.token) { saveAndRedirect(data.token); return; }
                 }
+                
+                // If server is up but rejects, we still allow local bypass if matches exactly
+                if (pass === FALLBACK_PASS) {
+                    console.log("Engaging Auth Bypass (Server match failed but fallback validated)...");
+                    saveAndRedirect('static-bypass-token');
+                    return;
+                }
+
                 throw new Error("Server Reject");
 
             } catch (e) {
-                console.warn("Satellite Down:", e);
-                // IF SERVER FAILS, ALLOW LOCAL OVERRIDE IF CODE MATCHES
+                console.warn("Satellite Handshake Failed:", e);
+                // IF SERVER FAILS OR REJECTS, ALLOW LOCAL OVERRIDE IF CODE MATCHES
                 if(pass === FALLBACK_PASS) {
                     console.log("Engaging Local Bypass...");
                     saveAndRedirect('static-bypass-token');

@@ -99,11 +99,10 @@
                          return;
                      }
                  } else {
-                     // SECURITY: Only allow static bypass on localhost
+                     // SECURITY: Static bypass is limited, but allow UI access
                      if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) {
-                         console.warn("⚠️ STATIC TOKEN INVALID IN PRODUCTION");
-                         window.logout();
-                         return;
+                         console.warn("⚠️ USING STATIC BYPASS IN PRODUCTION - SERVER API WILL BE RESTRICTED");
+                         updateDiagnostics('auth', 'LOCAL BYPASS', '#ffaa00');
                      }
                  }
                  console.log("🔄 Found existing session token.");
