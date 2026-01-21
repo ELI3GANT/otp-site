@@ -39,6 +39,12 @@ window.AuditEngine = {
             steps[this.currentStep].classList.add('active');
         }
 
+        // Hide back buttons if we returned to first step
+        if (this.currentStep === 0) {
+            const backBtns = document.querySelectorAll('.audit-back-btn');
+            backBtns.forEach(btn => btn.style.display = 'none');
+        }
+
         setTimeout(() => this.isNavigating = false, 600);
     },
 
