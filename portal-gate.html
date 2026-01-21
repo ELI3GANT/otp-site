@@ -233,7 +233,10 @@
                 <span style="color: var(--term-dim);">IP:</span>
                 <input type="text" id="initSatUrl" placeholder="PROBING..." onchange="localStorage.setItem('otp_api_base', this.value)" style="flex: 1; background: transparent; border: none; color: var(--term-dim); font-family: 'VT323', monospace; font-size: 0.7rem; outline: none;">
             </div>
-            <div style="margin-top: 5px;">DO NOT ENTER PASSCODE HERE.</div>
+            <div style="margin-top: 5px; display: flex; justify-content: space-between;">
+                <span>DO NOT ENTER PASSCODE HERE.</span>
+                <button onclick="localStorage.removeItem('otp_api_base'); location.reload();" style="background:none; border:none; color:#ff4444; font-family:inherit; font-size:inherit; cursor:pointer; padding:0;">[FORCE RESET]</button>
+            </div>
         </div>
 
         <div id="errorMsg" style="display: none; color: #ff0000; text-shadow: 0 0 5px #ff0000; margin-top: 15px; font-size: 1rem; text-align: center;">ACCESS DENIED // SIGNAL REJECTED</div>
@@ -321,21 +324,21 @@
             initRealtimeData();
         })();
 
-        // Init Satellite Display
+        // Initialize Satellite URL display
         (function() {
             let saved = localStorage.getItem('otp_api_base');
             const origin = window.location.origin;
+            const input = document.getElementById('initSatUrl');
             
-            // If nothing saved, default to current origin (works for localhost and prod)
             if(!saved) {
                 saved = origin;
                 localStorage.setItem('otp_api_base', saved);
             }
             
-            const el = document.getElementById('initSatUrl');
-            if(el) el.value = saved;
+            if(input) input.value = saved;
         })();
 
+        // Auth Logic
         async function getBaseApiUrl() {
             const current = window.location.origin;
             try {

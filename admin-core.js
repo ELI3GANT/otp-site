@@ -1077,13 +1077,7 @@
         }
     };
 
-    // Cache Purge / Refresh Command
-    window.refreshLiveSite = async function() {
-        if(!state.siteChannel) return showToast("OFFLINE: CANNOT SYNC");
-        
-        await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh', value: Date.now() } });
-        showToast("🔄 CACHE PURGE COMMAND SENT");
-    };
+
 
     window.deleteLead = function(id, event) {
         if(event) { event.preventDefault(); event.stopPropagation(); }
@@ -1822,17 +1816,18 @@
         );
     };
 
-    // NEW: Manual Form Submission Handler (since form is now a div)
     // --- POST MANAGEMENT ---
     window.managePost = async function() {
         const id = document.getElementById('postIdInput')?.value;
         const title = document.getElementById('titleInput')?.value.trim();
-        const content = document.getElementById('descInput')?.value.trim();
+        const excerpt = document.getElementById('excerptInput')?.value.trim();
+        const content = document.getElementById('contentArea')?.value.trim();
         const slugRaw = document.getElementById('slugInput')?.value.trim();
         const tagsRaw = document.getElementById('tagsInput')?.value.trim();
         const imageUrl = document.getElementById('imageUrl')?.value;
 
         if (!title) throw new Error("HEADLINE REQUIRED");
+        if (!content) throw new Error("CONTENT REQUIRED");
 
         // Auto-Generate Slug if empty
         let slug = slugRaw;
@@ -1848,11 +1843,13 @@
 
         const payload = {
             title,
+            author: document.getElementById('authorInput')?.value || 'OTP Admin',
+            excerpt: excerpt || content.substring(0, 150) + '...',
             content,
             slug,
             tags,
             image_url: imageUrl,
-            published: true, // "Commence Broadcast" = Live
+            published: document.getElementById('pubToggle')?.checked ?? true,
             updated_at: new Date().toISOString()
         };
 
@@ -1876,22 +1873,20 @@
     window.handlePostSubmit = async function(event) {
         if(event) { event.preventDefault(); event.stopPropagation(); }
         
-        // Manual Validation
         const title = document.getElementById('titleInput')?.value.trim();
-        const desc = document.getElementById('descInput')?.value.trim();
+        const content = document.getElementById('contentArea')?.value.trim();
         
         if (!title) {
             showToast("ERROR: HEADLINE REQUIRED");
             document.getElementById('titleInput')?.focus();
             return;
         }
-        if (!desc) {
-             showToast("ERROR: BRIEFING REQUIRED");
-             document.getElementById('descInput')?.focus();
+        if (!content) {
+             showToast("ERROR: CONTENT REQUIRED");
+             document.getElementById('contentArea')?.focus();
              return;
         }
 
-        // Show loading state
         const btn = document.getElementById('submitBtn');
         const ogText = btn.textContent;
         btn.textContent = "TRANSMITTING...";
@@ -1901,6 +1896,7 @@
             await window.managePost();
             showToast("TRANSMISSION SUCCESSFUL");
         } catch (e) {
+            console.error("Transmission Error:", e);
             showToast("TRANSMISSION ERROR: " + e.message);
         } finally {
             btn.textContent = ogText;
@@ -2048,6 +2044,7 @@
     // SOCIAL PREVIEW UPDATER (Multi-Platform)
     window.switchPreviewTab = function(platform) {
         document.querySelectorAll('.prev-tab').forEach(t => {
+            t.classList.remove('active');
             t.style.background = 'transparent';
             t.style.color = 'var(--admin-muted)';
             t.style.border = '1px solid var(--admin-border)';
@@ -2056,10 +2053,10 @@
         
         const btn = document.getElementById('tab-' + platform);
         if(btn) {
-            btn.style.background = platform === 'x' ? '#333' : 'var(--admin-accent)';
+            btn.classList.add('active');
+            btn.style.background = (platform === 'search' || platform === 'ios') ? 'var(--admin-accent)' : '#333';
             btn.style.color = '#fff';
             btn.style.border = 'none';
-            btn.style.display = 'flex'; // Preserve flex for icons
         }
         const content = document.getElementById('preview-' + platform);
         if(content) content.style.display = 'block';
@@ -2687,50 +2684,8 @@
         }, 2000);
     };
 
-    window.triggerGlobalWarp = async function() {
-        promptAction(
-            "INITIATE GLOBAL WARP",
-            "ENTER TARGET URL (e.g. google.com):",
-            "https://",
-            (target) => {
-                if(!target) return;
-                // Auto-fix URL
-                target = target.trim();
-                if (!target.startsWith('http')) target = 'https://' + target;
-
-                confirmAction(
-                    "CONFIRM WARP JUMP",
-                    `REDIRECT ALL ACTIVE VISITORS TO: ${target}?`,
-                    async () => {
-                         if(!state.siteChannel) return;
-                         await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'warp', value: target } });
-                         showToast("GLOBAL WARP INITIATED");
-                    }
-                );
-            }
-        );
-    };
-    
     window.toggleLiveTheme = function() {
         toggleSiteControl('theme');
-    };
-
-    window.openBroadcastPrompt = async function() {
-        promptAction(
-            "EMERGENCY BROADCAST",
-            "ENTER MESSAGE TO TRANSMIT:",
-            "SYSTEM ALERT: ...",
-            async (msg) => {
-                if(!msg || !state.siteChannel) return;
-                
-                await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'alert', value: msg } });
-                
-                if (window.OTP && window.OTP.showBroadcast) {
-                    window.OTP.showBroadcast(msg);
-                }
-                showToast("EMERGENCY BROADCAST SENT");
-            }
-        );
     };
 
     // Unified Modal System
