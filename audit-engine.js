@@ -114,8 +114,8 @@ window.AuditEngine = {
             let success = false;
 
             try {
-                // Hardcoded to Vercel to ensure connectivity from custom domain
-                const API_BASE = '';
+                // SECURE BACKEND BRIDGE: Point to verified Vercel endpoint
+                const API_BASE = 'https://otp-site.vercel.app';
                 
                 const response = await fetch(`${API_BASE}/api/audit/submit`, {
                     method: 'POST',
