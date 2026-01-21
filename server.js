@@ -88,7 +88,14 @@ app.use(helmet({
 app.use(compression());
 
 // 3. CORS: Allow same-origin (adjust if frontend is separate)
-app.use(cors());
+app.use(cors({
+    origin: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
+app.options('*', cors());
 
 // 4. Rate Limiting: Prevent abuse
 app.set('trust proxy', 1); // Trust Vercel Proxy

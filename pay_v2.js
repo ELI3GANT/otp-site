@@ -136,7 +136,7 @@ function initPaymentSystem() {
 
                 try {
                     // API BASE (Relative for automatic local/prod support)
-                    const API_BASE = '';
+                    const API_BASE = window.location.origin;
 
                     // A. Save Lead
                     const saveRes = await fetch(`${API_BASE}/api/contact/submit`, {
@@ -185,7 +185,7 @@ async function handleDirectPay(e, title, stripe, btn) {
     btn.disabled = true;
     
     showToast(`Securing ${title}...`);
-    const API_BASE = '';
+    const API_BASE = window.location.origin;
 
     try {
         const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
