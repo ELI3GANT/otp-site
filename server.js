@@ -147,7 +147,11 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
-    res.json({ version: 'v1.3.2', env: process.env.NODE_ENV, stripe: !!stripe });
+    res.json({ version: 'v1.3.3', env: process.env.NODE_ENV, stripe: !!stripe });
+});
+
+app.all('/api/diag', (req, res) => {
+    res.json({ method: req.method, path: req.path, headers: req.headers });
 });
 
 app.post('/api/auth/login', (req, res) => {
