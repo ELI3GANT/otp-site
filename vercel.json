@@ -4,25 +4,9 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "pay_v2.js",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "payment_success.html",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
-    {
-      "src": "/pay_v2.js",
-      "dest": "/pay_v2.js"
-    },
-    {
-      "src": "/payment_success.html",
-      "dest": "/payment_success.html"
-    },
     {
       "src": "/api/(.*)",
       "dest": "/server.js"

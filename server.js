@@ -89,13 +89,21 @@ app.use(compression());
 
 // 3. CORS: Allow same-origin (adjust if frontend is separate)
 app.use(cors({
-    origin: true,
+    origin: true, // Allow all origins (simpler for now to rule out Origin mismatch)
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     credentials: true,
     optionsSuccessStatus: 200
 }));
-app.options('*', cors());
+app.options('*', cors()); // Enable pre-flight for all routes
+
+// LOG OPTIONS REQUESTS (DEBUGGING 405)
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        console.log(`📡 OPTIONS PREFLIGHT: ${req.url} | Origin: ${req.headers.origin}`);
+    }
+    next();
+});
 
 // 4. Rate Limiting: Prevent abuse
 app.set('trust proxy', 1); // Trust Vercel Proxy
