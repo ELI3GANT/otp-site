@@ -909,24 +909,26 @@
                 if (typeof answers === 'string') {
                     try { answers = JSON.parse(answers); } catch(e) { answers = {}; }
                 }
+                const escape = window.escapeHtml;
                 return `
                 <div class="post-row" style="display: block; padding: 15px; margin-bottom: 10px; cursor: default; border-left: 2px solid var(--admin-cyan);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                         <div>
-                             <span style="font-weight: bold; color: var(--admin-accent); font-size: 0.9rem;">${l.email}</span>
+                             <span style="font-weight: bold; color: var(--admin-accent); font-size: 0.9rem;">${escape(l.email)}</span>
                              <span style="font-size: 0.65rem; color: var(--admin-muted); margin-left: 10px;">${new Date(l.created_at).toLocaleDateString()}</span>
                         </div>
                         <div style="display:flex; gap: 8px; align-items:center;">
                             <div style="font-size: 0.7rem; font-family: monospace; color: var(--admin-cyan); border: 1px solid var(--admin-cyan); padding: 2px 6px; border-radius: 4px;">AUDIT</div>
+                            <button type="button" onclick="openReplyManager('${l.id}', 'leads')" title="Reply" style="background:transparent; border:none; color:var(--admin-cyan); cursor:pointer; font-size: 0.8rem;">📩</button>
                             <button type="button" onclick="return deleteLead('${l.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer;">✖</button>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; margin-bottom: 15px; color: var(--admin-text); background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px;">
-                        <div><span style="color: var(--admin-muted);">GOAL:</span> ${answers.q1 || 'N/A'}</div>
-                        <div><span style="color: var(--admin-muted);">HURDLE:</span> ${answers.q2 || 'N/A'}</div>
-                        <div><span style="color: var(--admin-muted);">PLATFORM:</span> ${answers.q3 || 'N/A'}</div>
-                        <div><span style="color: var(--admin-muted);">VIBE:</span> ${answers.q4 || 'N/A'}</div>
-                        <div style="grid-column: 1 / -1; margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.1);"><span style="color: var(--accent2); font-weight:700;">TARGET:</span> ${answers.q5_goal || 'Not specified'}</div>
+                        <div><span style="color: var(--admin-muted);">GOAL:</span> ${escape(answers.q1 || 'N/A')}</div>
+                        <div><span style="color: var(--admin-muted);">HURDLE:</span> ${escape(answers.q2 || 'N/A')}</div>
+                        <div><span style="color: var(--admin-muted);">PLATFORM:</span> ${escape(answers.q3 || 'N/A')}</div>
+                        <div><span style="color: var(--admin-muted);">VIBE:</span> ${escape(answers.q4 || 'N/A')}</div>
+                        <div style="grid-column: 1 / -1; margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.1);"><span style="color: var(--accent2); font-weight:700;">TARGET:</span> ${escape(answers.q5_goal || 'Not specified')}</div>
                     </div>
                     <div style="background: rgba(0,0,0,0.6); border-left: 2px solid var(--admin-accent); padding: 15px; border-radius: 4px; font-size: 0.85rem; line-height: 1.6;">
                         <div style="font-size: 0.6rem; color: var(--admin-accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">TACTICAL RESPONSE</div>
@@ -935,6 +937,8 @@
                 </div>
                 `;
             }).join('');
+
+            window.leadsCache = data;
 
         } catch(e) {
             leads.innerHTML = `<div style="text-align: center; color: #ff4444; padding: 20px;">ERROR SYNCING LEADS: ${e.message}</div>`;
@@ -1186,20 +1190,31 @@
         window.refocusInbox();
     };
 
-    window.openReplyManager = function(id) {
-        const c = window.inboxCache.find(x => x.id == id);
+    window.openReplyManager = function(id, source = 'contacts') {
+        const cache = source === 'leads' ? (window.leadsCache || []) : (window.inboxCache || []);
+        const c = cache.find(x => x.id == id);
         if(!c) return;
         
         document.getElementById('replyContactId').value = c.id;
-        document.getElementById('replyContactEmail').value = c.email;
-        document.getElementById('replyContactName').value = c.name;
-        document.getElementById('replyIncomingMsg').textContent = c.message;
+        document.getElementById('replyContactEmail').value = c.email || '';
+        document.getElementById('replyContactName').value = c.name || (source === 'leads' ? 'Valued Lead' : 'Client');
+        
+        // Context formatting
+        let messageContext = c.message || '';
+        if (source === 'leads' && c.answers) {
+            let answers = c.answers;
+            if (typeof answers === 'string') try { answers = JSON.parse(answers); } catch(e) {}
+            messageContext = `AUDIT GOAL: ${answers.q1}\nHURDLE: ${answers.q2}\nPLATFORM: ${answers.q3}\nVIBE: ${answers.q4}\nTARGET: ${answers.q5_goal}`;
+        }
+        
+        document.getElementById('replyIncomingMsg').textContent = messageContext;
         document.getElementById('replyDraftContent').value = c.draft_reply || '';
         
         // Render Analysis if present
         const analysisDiv = document.getElementById('replyAnalysis');
-        if(c.ai_analysis) {
-             analysisDiv.innerHTML = '<pre style="white-space:pre-wrap; font-family:monospace; font-size:0.7em;">' + JSON.stringify(c.ai_analysis, null, 2) + '</pre>';
+        if(c.ai_analysis || c.advice) {
+             const analysisData = c.ai_analysis || { tactical_advice: c.advice };
+             analysisDiv.innerHTML = '<pre style="white-space:pre-wrap; font-family:monospace; font-size:0.75em; color:var(--admin-cyan);">' + (typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2)) + '</pre>';
         } else {
              analysisDiv.textContent = "No analysis data.";
         }
@@ -1294,9 +1309,21 @@
                 if(data.error) throw new Error(data.error.message);
                 replyText = data.candidates[0].content.parts[0].text;
             }
+            else if (provider === 'groq') {
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
+                    body: JSON.stringify({
+                        model: 'llama-3.1-70b-versatile',
+                        messages: [{ role: 'system', content: "You are a professional assistant." }, { role: 'user', content: systemPrompt }]
+                    })
+                });
+                const data = await res.json();
+                if(data.error) throw new Error(data.error.message);
+                replyText = data.choices[0].message.content;
+            }
             else {
-                // Fallback / Groq / Anthropic (Simple impl)
-                throw new Error("Only OpenAI / Gemini supported for Quick Reply currently.");
+                throw new Error(`Cloud Provider ${provider.toUpperCase()} not yet bridged for Quick Reply.`);
             }
 
             // Stream simulation or just paste
@@ -1635,6 +1662,7 @@
                     ${isLive && post.slug ? (() => {
                         let postUrl = `/insight.html?slug=${post.slug}`;
                         if (post.slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
+                        if (post.slug.startsWith('insight-post-')) postUrl = `/${post.slug}.html`;
                         return `
                             <a href="${postUrl}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>
                             <button type="button" onclick="copyPostLink('${post.slug}')" title="Copy Link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
