@@ -144,81 +144,51 @@ window.AuditEngine = {
             if (!success) {
                 console.log("⚠️ Activating Local Emergency Protocol.");
                 
-                const fallbacks = [
-                    // VARIANT 1: TRAFFIC JAM
+                const obj = this.answers.q1 || 'Growth';
+                const hurdle = this.answers.q2 || 'The Unknown';
+                const platform = this.answers.q3 || 'The Network';
+                const vibe = this.answers.q4 || 'Cinematic';
+                const goalText = this.answers.q5_goal || 'Excellence';
+
+                const templates = [
+                    // VARIANT 1: THE TACTICAL DECONSTRUCTION
                     `**THE DIAGNOSIS.**
-The Neural Link is currently jammed by high-traffic interference. However, your intent signal was strong enough to trigger this local cache.
+Your mission for **${obj}** is currently being throttled by **${hurdle}**. To reach the objective of "${goalText}", we must optimize your presence on **${platform}** using a **${vibe}** aesthetic.
 
 **THE PLAN.**
-1. **The Immediate Pivot**: Whatever you were hesitating on, execute it now. Do not wait for a perfect signal.
-2. **The Visuals**: Strip away the noise. Go dark mode. High contrast.
-3. **The Protocol**: Commit to the "Drafting Phase" for 60 minutes uninterrupted.
+1. **The Signal**: Focus exclusively on **${platform}**. It is the highest leverage point for your current status.
+2. **The Visuals**: Double down on the **${vibe}** vibe. It cuts through the noise of your competitors who are stuck in "Standard" mode.
+3. **The Solve**: To bypass **${hurdle}**, you must simplify your production workflow. Quality is non-negotiable, but velocity is your primary weapon.
 
 **THE FORTUNE.**
-"True signal is found in the silence of action."`,
+"Tactics without strategy is the noise before defeat. Your strategy is now clear."`,
 
-                    // VARIANT 2: ENCRYPTION LOCK
+                    // VARIANT 2: THE NEURAL ROADMAP
                     `**THE DIAGNOSIS.**
-Secure channel established. The Oracle is operating in 'Ghost Mode' due to atmospheric static. We are proceeding with the Standard Protocol.
+Neural analysis complete. Your struggle with **${hurdle}** is a symptom of fragmented focus. Your true path to "${goalText}" requires a hard pivot toward **${obj}**.
 
 **THE PLAN.**
-1. **The Strategy**: Simplification is your weapon. Cut your current project scope by 50% to increase velocity.
-2. **The Aesthetic**: Use negative space. If it doesn't add value, burn it.
-3. **The Habit**: Publish transmission before 10 AM. Consistency breaches the algorithm.
+1. **The Platform**: Stop treating **${platform}** as an afterthought. It is your primary base of operations.
+2. **The Style**: The **${vibe}** direction isn't just a look; it's a statement of authority. Own it.
+3. **The Action**: Dedicate the next 14 days to solving **${hurdle}** through aggressive content testing.
 
 **THE FORTUNE.**
-"You do not need more information. You need more courage."`,
+"The secret of getting ahead is getting started. The secret of getting started is breaking your complex overwhelming tasks into small manageable tasks."`,
 
-                    // VARIANT 3: ARCHIVE RETRIEVAL
+                    // VARIANT 3: THE STRATEGIC OVERRIDE
                     `**THE DIAGNOSIS.**
-Live link severed. Retrieving 'Master Strategy' from deep storage. This advice is timeless and applies to your current signature.
+System override engaged. Standard advice for **${obj}** is insufficient for your specific hurdle: **${hurdle}**. We are initiating a high-intensity protocol to hit "${goalText}".
 
 **THE PLAN.**
-1. **The Pivot**: Stop consuming content. Start producing. The ratio must be 1:10.
-2. **The Look**: 'Cyber-Minimalism'. Clean lines, bold typography, zero fluff.
-3. **The Rule**: Do the thing you are avoiding. That is where the growth is hidden.
+1. **The Core**: Your **${vibe}** vision is the differentiator. Don't water it down for **${platform}**.
+2. **The Method**: Address **${hurdle}** by documenting the process, not just the result. 
+3. **The Lockdown**: Focus 90% of your creative energy on achieving "${goalText}" through the lens of **${obj}**.
 
 **THE FORTUNE.**
-"The obstacle is the way."`,
-
-                    // VARIANT 4: THE SIGNAL GLITCH
-                    `**THE DIAGNOSIS.**
-Detecting heavy signal fragmentation. The noise-to-signal ratio in your secor is too high. Initiating 'Clear Signal' protocol.
-
-**THE PLAN.**
-1. **The Filter**: Unfollow 50% of the accounts you watch daily. They are polluting your creative well.
-2. **The Output**: Release one piece of content today that is "raw" and "unedited". Perfection is the blockage.
-3. **The Focus**: Ignore the analytics for 72 hours. Create for the user, not the algorithm.
-
-**THE FORTUNE.**
-"Perfection is just fear in a fancy suit."`,
-
-                    // VARIANT 5: THE COLD STORAGE
-                    `**THE DIAGNOSIS.**
-Connecting to the 'Cold Storage' mainframe. Accessing the fundamental truths of growth that never change, regardless of the era.
-
-**THE PLAN.**
-1. **The Core**: Value provides leverage. Solve a real, expensive problem for a specific person.
-2. **The method**: Documentation over Creation. Show your process. It builds trust faster than polish.
-3. **The Shift**: Move from "Seeking Attention" to "Commanding Respect".
-
-**THE FORTUNE.**
-"Build in the dark so they fear the light."`,
-
-                    // VARIANT 6: THE OVERRIDE
-                    `**THE DIAGNOSIS.**
-System Override engaged. Bypassing standard filters to deliver a direct, unfiltered directive.
-
-**THE PLAN.**
-1. **The Audit**: Look at your last 3 posts. If they look like everyone else, delete them.
-2. **The Risk**: Take a stance on a controversial topic in your industry today. Polarization creates gravity.
-3. **The Lock**: 90 minutes of deep work. Phone in another room. No exceptions.
-
-**THE FORTUNE.**
-"Comfort is the enemy of greatness."`
+"Precision is the difference between a signal and noise."`
                 ];
 
-                advice = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+                advice = templates[Math.floor(Math.random() * templates.length)];
                 success = true; // Force success
             }
 
