@@ -88,32 +88,22 @@ async function bakeInsights() {
     
     // We'll replace everything between <div class="insights-grid"> and </div> with the new cards + a hidden data island for JS to hydrate if needed.
     
-    const gridStart = '<div class="insights-grid">';
-    const gridEnd = '</div>';
+    const bakedStartMarker = '<!-- BAKED_DATA_START -->';
+    const bakedEndMarker = '<!-- BAKED_DATA_END -->';
     
-    const startIdx = html.indexOf(gridStart);
-    if (startIdx === -1) {
-        console.error("❌ Could not find .insights-grid in HTML");
+    const startIdx = html.indexOf(bakedStartMarker);
+    const endIdx = html.indexOf(bakedEndMarker);
+    
+    if (startIdx === -1 || endIdx === -1) {
+        console.error("❌ Could not find BAKED_DATA markers in HTML");
+        // Fallback to previous logic if markers missing, but warn
         process.exit(1);
     }
     
-    // Find the closing div for the grid. 
-    // Since we know the current content is just a loader comment, we can scan for the next </div>
-    const contentStartIdx = startIdx + gridStart.length;
-    let contentEndIdx = html.indexOf(gridEnd, contentStartIdx);
-    
-    // verify it's not too far (simple heuristic)
-    if (contentEndIdx === -1) {
-         console.error("❌ Could not find closing div for .insights-grid");
-         process.exit(1);
-    }
+    const contentStartIdx = startIdx + bakedStartMarker.length;
+    const newContent = `\n        ${cardsHtml}\n        `;
 
-    const newContent = `
-        ${cardsHtml}
-        <!-- BAKED_DATA_END -->
-    `;
-
-    const newHtml = html.substring(0, contentStartIdx) + newContent + html.substring(contentEndIdx);
+    const newHtml = html.substring(0, contentStartIdx) + newContent + html.substring(endIdx);
     
     fs.writeFileSync(htmlPath, newHtml, 'utf8');
     console.log("✅ HTML Updated with Baked Posts.");
