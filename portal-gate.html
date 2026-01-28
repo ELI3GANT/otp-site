@@ -365,17 +365,18 @@
             const FALLBACK_PASS = 'otp2026';
 
             try {
-                // Try Saved Satellite first, then current origin
+                // Try Config, then Saved Satellite, then current origin
+                let configBase = window.OTP_CONFIG?.apiBase;
                 let savedBase = localStorage.getItem('otp_api_base');
                 
                 // If savedBase is invalid or looks like the password, reset it
                 if (savedBase && (savedBase.length < 5 || savedBase === FALLBACK_PASS)) {
-                    savedBase = window.location.origin;
-                    localStorage.setItem('otp_api_base', savedBase);
+                    savedBase = null;
+                    localStorage.removeItem('otp_api_base');
                 }
 
-                const baseUrl = savedBase || await getBaseApiUrl();
-                if (!savedBase) localStorage.setItem('otp_api_base', baseUrl);
+                const baseUrl = configBase || savedBase || await getBaseApiUrl();
+                if (!savedBase && !configBase) localStorage.setItem('otp_api_base', baseUrl);
 
                 const res = await fetch(baseUrl + '/api/auth/login', {
                     method: 'POST',

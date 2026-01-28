@@ -1464,7 +1464,8 @@
                 
                 try {
                      // Try Server Delete first
-                     const res = await fetch('/api/admin/delete-post', {
+                     const apiBase = window.OTP_CONFIG?.apiBase || '';
+                     const res = await fetch(`${apiBase}/api/admin/delete-post`, {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
@@ -1719,7 +1720,8 @@
         try {
             // 1. Try Secure Server Delete
             try {
-                const res = await fetch('/api/admin/delete-post', {
+                const apiBase = window.OTP_CONFIG?.apiBase || '';
+                const res = await fetch(`${apiBase}/api/admin/delete-post`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -1818,7 +1820,8 @@
             `PERMANENTLY DELETE: ${slug}?`,
             async () => {
                 try {
-                    const res = await fetch('/api/admin/delete-post', {
+                    const apiBase = window.OTP_CONFIG?.apiBase || '';
+                    const res = await fetch(`${apiBase}/api/admin/delete-post`, {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
@@ -2230,7 +2233,7 @@
             if (authToken !== 'static-bypass-token') {
                 try {
                     if(status) { status.innerHTML = `<span class="blink">📡 CONTACTING SECURE HUB...</span>`; }
-                    const base = localStorage.getItem('otp_api_base') || window.location.origin;
+                    const base = window.OTP_CONFIG?.apiBase || localStorage.getItem('otp_api_base') || window.location.origin;
                     const res = await fetch(base + '/api/ai/generate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
@@ -2435,7 +2438,7 @@
         }
 
         try {
-            const base = localStorage.getItem('otp_api_base') || window.location.origin;
+            const base = window.OTP_CONFIG?.apiBase || localStorage.getItem('otp_api_base') || window.location.origin;
             const res = await fetch(base + '/api/ai/generate-image', {
                 method: 'POST',
                 headers: { 

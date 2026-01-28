@@ -186,7 +186,8 @@ window.OTP.trackView = async function(slug) {
     
     // SECURE UPDATE: Use Server Backend (Bypasses RLS)
     try {
-        await fetch('/api/analytics/view', {
+        const apiBase = window.OTP_CONFIG?.apiBase || '';
+        await fetch(`${apiBase}/api/analytics/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ slug })
@@ -563,7 +564,8 @@ window.OTP.initLiveEditor = async function() {
 
             try {
                 // Use Secure Backend Proxy
-                const res = await fetch('/api/content/update', {
+                const apiBase = window.OTP_CONFIG?.apiBase || '';
+                const res = await fetch(`${apiBase}/api/content/update`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -1113,8 +1115,9 @@ function initSite() {
             const formData = new FormData(contactForm);
             const data = Object.fromEntries(formData.entries());
 
+            const apiBase = window.OTP_CONFIG?.apiBase || '';
             try {
-                const res = await fetch('/api/contact/submit', {
+                const res = await fetch(`${apiBase}/api/contact/submit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
