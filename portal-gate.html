@@ -371,6 +371,7 @@
                 // 3. Otherwise use savedBase or relative.
                 const currentOrigin = window.location.origin;
                 const isLocal = currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1');
+                const savedBase = localStorage.getItem('otp_api_base');
                 
                 let baseUrl = '';
                 if (isLocal) {
