@@ -11,6 +11,29 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <!-- THEME GUARD -->
+  <script>
+    (function() {
+        const savedTheme = localStorage.getItem('theme');
+        const isManual = localStorage.getItem('theme_manual') === 'true';
+        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+        const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+        
+        let theme;
+        if (isManual && !isExpired) {
+            theme = savedTheme;
+        } else {
+            const hour = new Date().getHours();
+            theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+        }
+
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+    })();
+  </script>
 </head>
 <body class="archive-page">
   <div class="bg-fixed"></div>

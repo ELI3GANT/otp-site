@@ -143,42 +143,80 @@ window.OTP.getThemeIcon = function(theme) {
     }
 };
 
-window.OTP.setTheme = function(theme) {
+window.OTP.setTheme = function(theme, isManual = false) {
     const html = document.documentElement;
     if (theme === 'light') {
         html.setAttribute('data-theme', 'light');
     } else {
         html.removeAttribute('data-theme');
     }
-    // Only save if it's an explicit user action? 
-    // Usually standard practice is to save any state the user is currently "in" if they toggle.
-    // But for auto-switch, we don't save to LS so it can auto-switch next time.
-    // We'll handle LS saving in the toggle event listener, not here.
+    
+    // Save to local storage
+    localStorage.setItem('theme', theme);
+    if (isManual) {
+        localStorage.setItem('theme_manual', 'true');
+        localStorage.setItem('theme_manual_time', Date.now().toString());
+    }
+    
+    // Globally update any toggles on the page
+    if (typeof window.OTP.updateAllToggles === 'function') {
+        window.OTP.updateAllToggles(theme);
+    }
 };
 
 window.OTP.initTheme = function() {
     const savedTheme = localStorage.getItem('theme');
-    const lastGlobal = localStorage.getItem('last_global_theme');
+    const isManual = localStorage.getItem('theme_manual') === 'true';
+    const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+    
+    // If manual override is older than 12 hours, expire it to allow auto-chrono again
+    const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+    
     let targetTheme;
 
-    if (savedTheme) {
-        // User Explicit Preference
+    // 1. Check for manual user preference that hasn't expired
+    if (isManual && !isExpired) {
         targetTheme = savedTheme;
-        console.log(`[OTP] Theme initialized: ${targetTheme} (User Override)`);
-    } else if (lastGlobal) {
-        // Last Known Global State
-        targetTheme = lastGlobal;
-        console.log(`[OTP] Theme initialized: ${targetTheme} (Last Global Sync)`);
+        console.log(`[OTP] Theme: ${targetTheme} (Manual Override Active)`);
     } else {
-        // Chrono-Logic (Local Time)
-        const hour = new Date().getHours();
-        const isDaytime = hour >= 6 && hour < 18; 
-        targetTheme = isDaytime ? 'light' : 'dark';
-        console.log(`[OTP] Theme initialized: ${targetTheme} (Auto-Chrono: ${hour}:00)`);
+        // 2. Chrono-Logic (World Time Sync)
+        targetTheme = window.OTP.calculateChronoTheme();
+        console.log(`[OTP] Theme: ${targetTheme} (World Timing Sync)`);
     }
     
     window.OTP.setTheme(targetTheme);
+
+    // 3. Start Live Sync (Check every 5 minutes)
+    setInterval(() => {
+        const isManual = localStorage.getItem('theme_manual') === 'true';
+        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+        const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+
+        if (!isManual || (isManual && isExpired)) {
+            // Clear expired flag if needed
+            if (isManual && isExpired) {
+                localStorage.removeItem('theme_manual');
+                localStorage.removeItem('theme_manual_time');
+            }
+
+            const nextTheme = window.OTP.calculateChronoTheme();
+            const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+            if (nextTheme !== currentTheme) {
+                console.log(`[OTP] World Timing Sync: Auto-Switching to ${nextTheme}`);
+                window.OTP.setTheme(nextTheme);
+            }
+        }
+    }, 5 * 60 * 1000);
+
     return targetTheme;
+};
+
+window.OTP.calculateChronoTheme = function() {
+    // We use local hours but refer to it as "World Timing" logic. 
+    const hour = new Date().getHours();
+    // 6 AM to 6 PM is Daytime
+    const isDaytime = hour >= 6 && hour < 18; 
+    return isDaytime ? 'light' : 'dark';
 };
 
 window.OTP.trackView = async function(slug) {
@@ -396,7 +434,7 @@ window.OTP.initRealtimeState = function() {
         }
 
         if (type === 'theme') {
-            window.OTP.setTheme(value);
+            window.OTP.setTheme(value, true);
             localStorage.setItem('theme', value); // Force overwrite user pref
             localStorage.setItem('last_global_theme', value);
             
@@ -563,8 +601,8 @@ window.OTP.initLiveEditor = async function() {
             }
 
             try {
-                // Use Secure Backend Proxy
-                const apiBase = window.OTP_CONFIG?.apiBase || '';
+                // Use Secure Backend Proxy (Respecting local override)
+                const apiBase = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || '';
                 const res = await fetch(`${apiBase}/api/content/update`, {
                     method: 'POST',
                     headers: { 
@@ -645,9 +683,8 @@ function initSite() {
             const wasLight = document.documentElement.getAttribute('data-theme') === 'light';
             const newTheme = wasLight ? 'dark' : 'light';
             
-            window.OTP.setTheme(newTheme);
-            localStorage.setItem('theme', newTheme);
-            window.OTP.updateAllToggles(newTheme);
+            // Passing true for isManual
+            window.OTP.setTheme(newTheme, true);
         };
 
         // Create Main Toggle (Desktop)
@@ -899,6 +936,13 @@ function initSite() {
         }
 
         if (link && drawer && drawer.classList.contains('open')) {
+            drawer.classList.remove('open');
+            document.body.classList.remove('nav-open');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+
+        // --- NEW: CLOSE ON CLICK OUTSIDE ---
+        if (drawer && drawer.classList.contains('open') && !drawer.contains(e.target) && !toggle) {
             drawer.classList.remove('open');
             document.body.classList.remove('nav-open');
             if (btn) btn.setAttribute('aria-expanded', 'false');

@@ -63,6 +63,14 @@ if (process.env.GEMINI_API_KEY) {
     console.warn("⚠️ Gemini API Key NOT found");
 }
 
+// CRITICAL AUTH CHECKS
+if (!process.env.ADMIN_PASSCODE) {
+    console.error("❌ CRITICAL: ADMIN_PASSCODE not found in .env. Admin login will be disabled.");
+}
+if (!process.env.JWT_SECRET) {
+    console.error("❌ CRITICAL: JWT_SECRET not found in .env. Authentication will fail.");
+}
+
 // --- SECURITY & OPTIMIZATION MIDDLEWARE ---
 
 // 1. Helmet: Sets various HTTP headers for security
@@ -88,8 +96,22 @@ app.use(helmet({
 app.use(compression());
 
 // 3. CORS: Allow same-origin (adjust if frontend is separate)
+// 3. CORS: Restrict to main domain and known satellites
+const allowedOrigins = [
+    'https://onlytrueperspective.tech',
+    'https://www.onlytrueperspective.tech',
+    'https://otp-site.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5500' // Local dev
+];
 app.use(cors({
-    origin: true, // Allow all origins (simpler for now to rule out Origin mismatch)
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('CORS Not Allowed'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     credentials: true,
@@ -321,6 +343,11 @@ app.post('/api/admin/delete-post', verifyToken, async (req, res) => {
         return res.status(500).json({ success: false, message: "Server misconfiguration: Missing Supabase Service Key" });
     }
 
+    const allowedTables = ['posts', 'broadcasts', 'leads', 'contacts', 'categories', 'ai_archetypes'];
+    if (!allowedTables.includes(targetTable)) {
+        return res.status(403).json({ success: false, message: "Restricted table access denied" });
+    }
+
     try {
         let query = supabaseAdmin.from(targetTable).delete();
         
@@ -341,6 +368,41 @@ app.post('/api/admin/delete-post', verifyToken, async (req, res) => {
 
     } catch (error) {
         console.error("Delete Error:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 3.5 Admin Write Endpoint (Bypasses RLS for secure writing)
+app.post('/api/admin/write-data', verifyToken, async (req, res) => {
+    const { id, payload, table } = req.body;
+    const targetTable = table || 'posts';
+    
+    if (!supabaseAdmin) {
+        return res.status(500).json({ success: false, message: "Server misconfiguration: Missing Supabase Service Key" });
+    }
+
+    const allowedTables = ['posts', 'broadcasts', 'leads', 'contacts', 'site_content', 'categories', 'ai_archetypes'];
+    if (!allowedTables.includes(targetTable)) {
+        return res.status(403).json({ success: false, message: "Restricted table access denied" });
+    }
+
+    try {
+        let query;
+        if (id) {
+            // UPDATE
+            query = supabaseAdmin.from(targetTable).update(payload).eq('id', id);
+        } else {
+            // INSERT
+            query = supabaseAdmin.from(targetTable).insert([payload]);
+        }
+
+        const { data, error } = await query.select();
+        if (error) throw error;
+
+        res.json({ success: true, message: id ? "Updated" : "Created", data });
+
+    } catch (error) {
+        console.error("Save Error:", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -490,11 +552,14 @@ app.post('/api/audit/submit', async (req, res) => {
         const adminClient = supabaseAdmin;
         
         // 1. Construct the Strategic Prompt (Aligned with OTP Oracle style)
-        const goal = answers.q1 || 'Unknown';
-        const hurdle = answers.q2 || 'Unknown';
-        const platform = answers.q3 || 'Unknown';
-        const vibe = answers.q4 || 'Unknown';
-        const specificGoal = answers.q5_goal || 'Not specified';
+        // Sanitization with safe limits
+        const sanitize = (s, len) => (typeof s === 'string' ? s.replace(/[<>"{}$[\]\\]/g, '') : '').substring(0, len);
+        
+        const goal = sanitize(answers.q1, 50) || 'Unknown';
+        const hurdle = sanitize(answers.q2, 50) || 'Unknown';
+        const platform = sanitize(answers.q3, 50) || 'Unknown';
+        const vibe = sanitize(answers.q4, 50) || 'Unknown';
+        const specificGoal = sanitize(answers.q5_goal, 200) || 'Not specified';
 
         const systemPrompt = `You are the 'OTP Oracle', a high-dimensional strategy entity. 
         Your task is to provide a "Perspective Audit" that feels uniquely calculated for the user.
@@ -636,18 +701,12 @@ The neural link encountered static, but your signal was received. The path to "$
 });
 
 // --- ADMIN POWER TOOLS (Service Role Bypass) ---
-app.post('/api/admin/purge-leads', async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    // Allow static bypass for local dev ease if needed, or stick to strict auth
-    if (!token || !supabaseAdmin) return res.status(500).json({ error: 'Server Audit Config Missing (SUPABASE_SERVICE_KEY)' });
+app.post('/api/admin/purge-leads', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(500).json({ error: 'Server Audit Config Missing (SUPABASE_SERVICE_KEY)' });
 
     try {
-        // 1. Verify User (Authentication)
-        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-        if (authError || !user) return res.status(403).json({ error: 'Access Denied: Invalid Session' });
-
-        // 2. Perform Delete (Bypassing RLS with Service Key)
-        console.log(`🗑️ PURGE LEADS initiated by ${user.email}`);
+        // 1. Authentication handled by verifyToken middleware
+        console.log(`🗑️ PURGE LEADS initiated by Admin`);
         
         // Use the absolute "Delete Everything" filter for UUIDs
         const { error } = await supabaseAdmin.from('leads').delete().not('id', 'is', null);

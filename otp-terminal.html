@@ -841,10 +841,15 @@
           const current = html.getAttribute('data-theme');
           const next = current === 'light' ? 'dark' : 'light';
           
-          if(next === 'light') html.setAttribute('data-theme', 'light');
-          else html.removeAttribute('data-theme');
-          
-          localStorage.setItem('theme', next);
+          if (window.OTP && typeof window.OTP.setTheme === 'function') {
+              window.OTP.setTheme(next, true);
+          } else {
+              if(next === 'light') html.setAttribute('data-theme', 'light');
+              else html.removeAttribute('data-theme');
+              localStorage.setItem('theme', next);
+              localStorage.setItem('theme_manual', 'true');
+              localStorage.setItem('theme_manual_time', Date.now().toString());
+          }
 
           // Update Icon & Style
           const btns = document.querySelectorAll('.theme-btn');

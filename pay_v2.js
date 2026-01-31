@@ -136,7 +136,7 @@ function initPaymentSystem() {
 
                 try {
                     // SECURE BACKEND BRIDGE: Point to verified Vercel endpoint
-                    const API_BASE = window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+                    const API_BASE = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
 
                     // A. Save Lead
                     const saveRes = await fetch(`${API_BASE}/api/contact/submit`, {
@@ -186,7 +186,7 @@ async function handleDirectPay(e, title, stripe, btn) {
     
     showToast(`Securing ${title}...`);
     // SECURE BACKEND BRIDGE: Point to verified Vercel endpoint
-    const API_BASE = window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+    const API_BASE = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
 
     try {
         const response = await fetch(`${API_BASE}/api/create-checkout-session`, {

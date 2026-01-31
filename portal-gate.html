@@ -362,7 +362,7 @@
             btn.textContent = "VERIFYING...";
             btn.disabled = true;
 
-            const FALLBACK_PASS = 'otp2026';
+            // Security: Hardcoded fallback removed
 
             try {
                 // Try Config, then Saved Satellite, then current origin
@@ -370,7 +370,7 @@
                 let savedBase = localStorage.getItem('otp_api_base');
                 
                 // If savedBase is invalid or looks like the password, reset it
-                if (savedBase && (savedBase.length < 5 || savedBase === FALLBACK_PASS)) {
+                if (savedBase && savedBase.length < 5) {
                     savedBase = null;
                     localStorage.removeItem('otp_api_base');
                 }
@@ -389,23 +389,10 @@
                     if(data.success && data.token) { saveAndRedirect(data.token); return; }
                 }
                 
-                // If server is up but rejects, we still allow local bypass if matches exactly
-                if (pass === FALLBACK_PASS) {
-                    console.log("Engaging Auth Bypass (Server match failed but fallback validated)...");
-                    saveAndRedirect('static-bypass-token');
-                    return;
-                }
-
-                throw new Error("Server Reject");
+                throw new Error("Invalid response");
 
             } catch (e) {
-                console.warn("Satellite Handshake Failed:", e);
-                // IF SERVER FAILS OR REJECTS, ALLOW LOCAL OVERRIDE IF CODE MATCHES
-                if(pass === FALLBACK_PASS) {
-                    console.log("Engaging Local Bypass...");
-                    saveAndRedirect('static-bypass-token');
-                    return;
-                }
+                console.warn("Auth Failed:", e);
                 showError();
             }
         }

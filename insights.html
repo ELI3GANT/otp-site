@@ -62,9 +62,23 @@
   <!-- THEME GUARD -->
   <script>
     (function() {
-        const t = localStorage.getItem('theme') || localStorage.getItem('last_global_theme');
-        if (t === 'light' || (!t \u0026\u0026 new Date().getHours() \u003e= 6 \u0026\u0026 new Date().getHours() \u003c 18)) {
+        const savedTheme = localStorage.getItem('theme');
+        const isManual = localStorage.getItem('theme_manual') === 'true';
+        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+        const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+        
+        let theme;
+        if (isManual && !isExpired) {
+            theme = savedTheme;
+        } else {
+            const hour = new Date().getHours();
+            theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+        }
+
+        if (theme === 'light') {
             document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
         }
     })();
   </script>

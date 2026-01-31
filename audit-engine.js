@@ -9,6 +9,7 @@ window.AuditEngine = {
     isSubmitting: false,
 
     isNavigating: false,
+    typingIteration: 0,
 
     nextStep: function() {
         if (this.isNavigating) return;
@@ -23,7 +24,11 @@ window.AuditEngine = {
         
         // Mobile Back Button Logic
         const backBtns = document.querySelectorAll('.audit-back-btn');
-        backBtns.forEach(btn => btn.style.display = 'flex');
+        if (this.currentStep > 0) {
+            backBtns.forEach(btn => btn.style.display = 'flex');
+        } else {
+            backBtns.forEach(btn => btn.style.display = 'none');
+        }
 
         setTimeout(() => this.isNavigating = false, 600);
     },
@@ -120,8 +125,8 @@ window.AuditEngine = {
             let success = false;
 
             try {
-                // SECURE BACKEND BRIDGE: Point to verified Vercel endpoint
-                const API_BASE = 'https://otp-site.vercel.app';
+                // SECURE BACKEND BRIDGE: Use centralized config (respecting manual override)
+                const API_BASE = localStorage.getItem('otp_api_base') || (window.OTP_CONFIG ? window.OTP_CONFIG.apiBase : 'https://otp-site.vercel.app');
                 
                 const response = await fetch(`${API_BASE}/api/audit/submit`, {
                     method: 'POST',
@@ -285,6 +290,9 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
 
     // TYPEWRITER ENGINE
     typewrite: async function(targetEl, htmlContent) {
+        this.typingIteration++;
+        const currentIteration = this.typingIteration;
+
         targetEl.innerHTML = ''; // Clear
         targetEl.classList.add('audit-terminal');
         
@@ -301,6 +309,8 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
             if (node.nodeType === Node.TEXT_NODE) {
                 const text = node.textContent;
                 for (let i = 0; i < text.length; i++) {
+                    if (this.typingIteration !== currentIteration) return;
+
                     const charNode = document.createTextNode(text[i]);
                     // If we are at root, insert before cursor. If nested, just append (parent is already before cursor)
                     if (parent === targetEl) {
@@ -336,6 +346,7 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
 
         // Start Typing Process
         for (const child of Array.from(parser.childNodes)) {
+            if (this.typingIteration !== currentIteration) return;
             await typeNode(child, targetEl);
         }
     },
@@ -392,6 +403,7 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
         this.answers = {};
         this.isSubmitting = false;
         this.isNavigating = false;
+        this.typingIteration++; // Interrupt any active typing
         const steps = document.querySelectorAll('.audit-step');
         steps.forEach(s => {
             s.classList.remove('active');

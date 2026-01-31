@@ -192,6 +192,42 @@
             bindPersist(cloudC, 'cloud_claude');
             bindPersist(cloudGr, 'cloud_groq');
             
+            // SECURE WRITE PROXY HELPER
+            window.secureWrite = async function(table, payload, id = null) {
+                const apiBase = window.OTP_CONFIG?.apiBase || '';
+                const res = await fetch(`${apiBase}/api/admin/write-data`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify({ id, payload, table })
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Write Failed');
+                }
+                return await res.json();
+            };
+
+            // SECURE DELETE PROXY HELPER
+            window.secureDelete = async function(table, id) {
+                const apiBase = window.OTP_CONFIG?.apiBase || '';
+                const res = await fetch(`${apiBase}/api/admin/delete-post`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify({ id, table })
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'Delete Failed');
+                }
+                return await res.json();
+            };
+            
             // Satellite URL: Load & Validate
             if(satUrl) {
                 // Force default secure URL if not set
@@ -622,9 +658,9 @@
         try {
             let error;
             if (id) {
-                ({ error } = await state.client.from('categories').update({ name, slug }).eq('id', id));
+                await window.secureWrite('categories', { name, slug }, id);
             } else {
-                ({ error } = await state.client.from('categories').insert([{ name, slug }]));
+                await window.secureWrite('categories', { name, slug });
             }
 
             if (error) throw error;
@@ -650,9 +686,8 @@
             "Are you sure you want to remove this category?",
             async () => {
                 try {
-                    const { error } = await state.client.from('categories').delete().eq('id', id);
-                    if (error) throw error;
-                    showToast("CATEGORY DELETED");
+                    await window.secureDelete('categories', id);
+                    showToast("CATEGORY DELETED (SECURE)");
                     await fetchCategories();
                     renderCategoryList();
                 } catch (e) { showToast("DELETE FAILED: " + e.message); }
@@ -721,9 +756,9 @@
             let error;
             const payload = { name, slug, system_prompt, tags, category_id, model_config };
             if (id) {
-                ({ error } = await state.client.from('ai_archetypes').update(payload).eq('id', id));
+                await window.secureWrite('ai_archetypes', payload, id);
             } else {
-                ({ error } = await state.client.from('ai_archetypes').insert([payload]));
+                await window.secureWrite('ai_archetypes', payload);
             }
 
             if (error) throw error;
@@ -932,7 +967,7 @@
                     </div>
                     <div style="background: rgba(0,0,0,0.6); border-left: 2px solid var(--admin-accent); padding: 15px; border-radius: 4px; font-size: 0.85rem; line-height: 1.6;">
                         <div style="font-size: 0.6rem; color: var(--admin-accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">TACTICAL RESPONSE</div>
-                        <div style="color: #ffffff;">${(l.advice || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
+                        <div style="color: #ffffff;">${window.escapeHtml(l.advice || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
                     </div>
                 </div>
                 `;
@@ -969,53 +1004,36 @@
             
             newBtn.onclick = async () => {
                 // Define execution logic
-                const executePurge = async (key) => {
+                // Define execution logic
+                const executePurge = async () => {
                      showToast("INITIATING ADMIN FORCE PURGE...");
                      try {
-                         const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, key);
-                         const { error } = await adminClient.from('leads').delete().gt('created_at', '1970-01-01');
-
-                         if(error) throw error;
+                         const apiBase = window.OTP_CONFIG?.apiBase || '';
+                         const res = await fetch(`${apiBase}/api/admin/purge-leads`, {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${state.token}`
+                            }
+                         });
+                         
+                         if(!res.ok) throw new Error("Purge Request Failed");
                 
                          showToast("✅ SYSTEM PURGE COMPLETE. LEADS WIPED.");
                          await fetchLeads();
-                         // Close modal if still open (cached key case)
                          modal.style.display = 'none';
 
                      } catch(e) {
                         console.error("Purge Error:", e);
-                        if(e.message.includes('JWT')) {
-                            window.otpServiceKey = null; 
-                            showToast("ERROR: KEY INVALID");
-                        } else {
-                            showToast("PURGE FAILED: " + e.message);
-                        }
-                        // Reset button if modal still open
-                        if(modal.style.display === 'flex') {
-                            newBtn.textContent = "PURGE EVERYTHING";
-                            newBtn.disabled = false;
-                        }
+                        showToast("PURGE FAILED: " + e.message);
+                        newBtn.textContent = "PURGE EVERYTHING";
+                        newBtn.disabled = false;
                      }
                 };
 
-                // Logic Flow
-                if (!window.otpServiceKey) {
-                    modal.style.display = 'none'; // Close primary modal to show prompt
-                    promptAction(
-                        "SECURITY LOCK",
-                        "Enter SUPABASE_SERVICE_KEY (starts with eyJ...) to bypass database locks:",
-                        "eyJ...",
-                        async (key) => {
-                            if(!key) { showToast("PURGE CANCELLED"); return; }
-                            window.otpServiceKey = key;
-                            await executePurge(key);
-                        }
-                    );
-                } else {
-                    newBtn.textContent = "WIPING DATA...";
-                    newBtn.disabled = true;
-                    await executePurge(window.otpServiceKey);
-                }
+                newBtn.textContent = "WIPING DATA...";
+                newBtn.disabled = true;
+                await executePurge();
             };
             
             modal.style.display = 'flex';
@@ -1106,45 +1124,16 @@
                 newBtn.disabled = true;
                 
                 try {
-                     // 1. Try Standard Delete first
-                     const { error } = await state.client.from('leads').delete().eq('id', id);
-                     if(error) throw error;
-                     showToast("LEAD DELETED");
+                     await window.secureDelete('leads', id);
+                     showToast("LEAD DELETED (SECURE)");
                      await fetchLeads();
                      modal.style.display = 'none';
 
                 } catch(e) {
-                    console.warn("Standard delete failed, attempting Admin Override...", e);
-                    
-                    // 2. Fallback to Service Key logic
-                    let serviceKey = window.otpServiceKey;
-                    
-                    if (!serviceKey) {
-                        serviceKey = prompt("⚠️ PERMISSION DENIED. Enter SUPABASE_SERVICE_KEY to force delete:");
-                        if(!serviceKey) {
-                            showToast("DELETE CANCELLED");
-                            modal.style.display = 'none';
-                            return;
-                        }
-                        window.otpServiceKey = serviceKey;
-                    }
-
-                    try {
-                        const adminClient = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, serviceKey);
-                        const { error: adminError } = await adminClient.from('leads').delete().eq('id', id);
-                        
-                        if(adminError) throw adminError;
-                        
-                        showToast("LEAD DELETED (ADMIN OVERRIDE)");
-                        await fetchLeads();
-                        modal.style.display = 'none';
-
-                    } catch (finalErr) {
-                         console.error("Force Delete Failed:", finalErr);
-                         if(finalErr.message.includes('JWT')) window.otpServiceKey = null;
-                         showToast("DELETE FAILED: " + finalErr.message);
-                    }
-                } finally {
+                    console.error("Delete failed:", e);
+                    showToast("DELETE FAILED: " + e.message);
+                }
+ finally {
                     newBtn.textContent = "DELETE";
                     newBtn.disabled = false;
                 }
@@ -1344,10 +1333,9 @@
         const content = document.getElementById('replyDraftContent').value;
         
         try {
-            const { error } = await state.client.from('contacts').update({ draft_reply: content }).eq('id', id);
-            if(error) throw error;
-            showToast("DRAFT UPDATED");
-            // Update cache locally to reflect change immediately without refetch
+            await window.secureWrite('contacts', { draft_reply: content }, id);
+            showToast("DRAFT UPDATED (SECURE)");
+            // Update cache locally
             const c = window.inboxCache.find(x => x.id == id);
             if(c) c.draft_reply = content;
             await fetchInbox(); 
@@ -1381,9 +1369,8 @@
         const id = document.getElementById('replyContactId').value;
         confirmAction("SENT REPLY?", "Confirm you have sent the reply. This will mark the thread as completed.", async () => {
             try {
-                const { error } = await state.client.from('contacts').update({ ai_status: 'completed' }).eq('id', id);
-                if(error) throw error;
-                showToast("MARKED AS COMPLETED");
+                await window.secureWrite('contacts', { ai_status: 'completed' }, id);
+                showToast("MARKED AS COMPLETED (SECURE)");
                 document.getElementById('replyModal').style.display = 'none';
                 await fetchInbox();
             } catch(e) { showToast("UPDATE FAILED: " + e.message); }
@@ -1410,9 +1397,8 @@
                 btn.onclick = null; // Prevent double trigger
                 btn.textContent = "ARCHIVING...";
                 try {
-                     const { error } = await state.client.from('contacts').update({ ai_status: 'archived' }).eq('id', id);
-                     if(error) throw error;
-                     showToast("ARCHIVED");
+                     await window.secureWrite('contacts', { ai_status: 'archived' }, id);
+                     showToast("ARCHIVED (SECURE)");
                      modal.style.display = 'none';
                      await fetchInbox();
                      window.refocusInbox();
@@ -1463,16 +1449,10 @@
                 newBtn.disabled = true;
                 
                 try {
-                     // Try Server Delete first
-                     const apiBase = window.OTP_CONFIG?.apiBase || '';
-                     const res = await fetch(`${apiBase}/api/admin/delete-post`, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${state.token}`
-                        },
-                        body: JSON.stringify({ id: id, table: 'contacts' }) 
-                    });
+                     await window.secureDelete('contacts', id);
+                     showToast("CONTACT DELETED (SECURE)");
+                     await fetchInbox();
+                     modal.style.display = 'none';
                     const data = await res.json();
                     
                     if(data.success) {
@@ -1742,11 +1722,9 @@
                 console.warn("Server delete failed, trying client-side fallback...");
             }
 
-            // 2. Static Fallback (Client-Side)
-            const { error } = await state.client.from('posts').delete().eq('id', targetId);
-            if (error) throw error;
-            
-            showToast("POST TERMINATED (CLIENT)");
+            // Static Fallback (Server Proxy)
+            await window.secureDelete('posts', targetId);
+            showToast("POST TERMINATED (SECURE)");
             finishDelete();
 
         } catch (err) {
@@ -1773,7 +1751,7 @@
             const arch = state.archetypes.find(a => a.slug === slug);
             if (!arch) return;
             const newCount = (arch.usage_count || 0) + 1;
-            await state.client.from('ai_archetypes').update({ usage_count: newCount }).eq('slug', slug);
+            await window.secureWrite('ai_archetypes', { usage_count: newCount }, targetArch.id);
             await fetchArchetypes(); // Refresh local state
         } catch (e) { console.error("Track Usage Error:", e); }
     }
@@ -1886,15 +1864,13 @@
 
         if (id) {
             // UPDATE
-            console.log("📝 UPDATING POST:", id);
-            const { error } = await state.client.from('posts').update(payload).eq('id', id);
-            if (error) throw error;
+            console.log("📝 UPDATING POST (SECURE):", id);
+            await window.secureWrite('posts', payload, id);
         } else {
             // INSERT
-            console.log("📝 CREATING POST");
+            console.log("📝 CREATING POST (SECURE)");
             payload.created_at = new Date().toISOString();
-            const { error } = await state.client.from('posts').insert([payload]);
-            if (error) throw error;
+            await window.secureWrite('posts', payload);
         }
         
         resetForm();
@@ -2670,10 +2646,16 @@
             await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'theme', value: nextTheme } });
             persistSystemState('theme', nextTheme); // PERSIST
 
-            // Local Admin Persistence
-            localStorage.setItem('theme', nextTheme);
-            if (nextTheme === 'light') document.documentElement.setAttribute('data-theme', 'light');
-            else document.documentElement.removeAttribute('data-theme');
+            // Local Admin Persistence (Using manual lock)
+            if (window.OTP && typeof window.OTP.setTheme === 'function') {
+                window.OTP.setTheme(nextTheme, true);
+            } else {
+                localStorage.setItem('theme', nextTheme);
+                localStorage.setItem('theme_manual', 'true');
+                localStorage.setItem('theme_manual_time', Date.now().toString());
+                if (nextTheme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+                else document.documentElement.removeAttribute('data-theme');
+            }
 
             statusEl.textContent = nextTheme === 'light' ? 'DAY-MODE' : 'NIGHT-MODE';
             statusEl.style.color = nextTheme === 'light' ? '#ffaa00' : 'var(--accent2)';

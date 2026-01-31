@@ -59,14 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const msg = document.getElementById('authMsg');
 
         const check = () => {
-            if(input.value === 'otp2026') {
-                sessionStorage.setItem('otp_admin_auth', 'true');
-                modal.remove();
-            } else {
-                msg.textContent = 'ACCESS DENIED';
-                msg.style.color = 'red';
-                input.value = '';
-            }
+            // SECURITY: Hardcoded bypass removed. Use server auth or real terminal login.
+            msg.textContent = 'ACCESS DENIED';
+            msg.style.color = 'red';
+            input.value = '';
         };
 
         btn.onclick = check;

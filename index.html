@@ -57,11 +57,14 @@
   <script>
     (function() {
         const savedTheme = localStorage.getItem('theme');
-        const lastGlobal = localStorage.getItem('last_global_theme');
-        // Priority: User Override > Last Global Sync > Chrono-Logic
-        let theme = savedTheme || lastGlobal;
+        const isManual = localStorage.getItem('theme_manual') === 'true';
+        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+        const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
         
-        if (!theme) {
+        let theme;
+        if (isManual && !isExpired) {
+            theme = savedTheme;
+        } else {
             const hour = new Date().getHours();
             theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
         }
@@ -277,7 +280,7 @@
 
         <!-- Quiz Step 1 -->
         <div id="audit-step-1" class="audit-step">
-          <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
+          <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()" style="display: none;">← BACK</button>
           <span class="step-indicator">01 / 05</span>
           <h3>What is your primary objective?</h3>
           <div class="audit-options">
