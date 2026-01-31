@@ -139,7 +139,12 @@ window.AuditEngine = {
                     if (data.success && data.advice) {
                         advice = data.advice;
                         success = true;
+                        console.log("✅ Oracle response received.");
+                    } else {
+                        console.warn("Oracle returned success:false", data);
                     }
+                } else {
+                    console.warn(`Oracle connection failed: Status ${response.status}`);
                 }
             } catch (e) { 
                 console.warn("Backend link severed, pivoting to emergency protocol..."); 
@@ -367,9 +372,9 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
             // Remove markdown
             cleanLine = cleanLine.replace(/`/g, '');
             
-            // Bold (**text**)
+            // Bold (**text** or __text__)
             let safeLine = escape(cleanLine);
-            safeLine = safeLine.replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--accent2);">$1</strong>');
+            safeLine = safeLine.replace(/(\*\*|__)(.*?)\1/g, '<strong style="color:var(--accent2);">$2</strong>');
 
             const upper = safeLine.toUpperCase();
 

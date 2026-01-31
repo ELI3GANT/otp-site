@@ -608,17 +608,27 @@ app.post('/api/audit/submit', async (req, res) => {
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s Hard Timeout
 
-                    const fetchPromise = fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                    const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
+                    const fetchPromise = fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }],
+                            contents: [{ 
+                                role: 'user',
+                                parts: [{ text: systemPrompt + "\n\n" + userPrompt }] 
+                            }],
                             generationConfig: {
-                                temperature: 0.9,
-                                maxOutputTokens: 600,
-                                topP: 0.95,
+                                temperature: 0.85,
+                                maxOutputTokens: 500,
+                                topP: 0.9,
                                 topK: 40
-                            }
+                            },
+                            safetySettings: [
+                                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+                                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+                                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+                                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+                            ]
                         }),
                         signal: controller.signal
                     });
@@ -634,10 +644,14 @@ app.post('/api/audit/submit', async (req, res) => {
                     if (!response.ok) throw new Error(`API Error: ${response.status}`);
 
                     const data = await response.json();
-                    if (data.candidates && data.candidates[0].content) {
+                    if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
                         advice = data.candidates[0].content.parts[0].text;
                         success = true;
                         console.log(`✅ Transmission Captured via ${modelName}`);
+                    } else if (data.error) {
+                        console.error(`Gemini Error (${modelName}):`, data.error.message);
+                    } else if (data.candidates && data.candidates[0].finishReason === 'SAFETY') {
+                        console.warn(`⚠️ SAFETY BLOCK on ${modelName}`);
                     }
                 } catch (fetchError) {
                     const isTimeout = fetchError.name === 'AbortError';
