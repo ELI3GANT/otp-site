@@ -328,12 +328,14 @@
 
         // Initialize Satellite URL display
         (function() {
-            let saved = localStorage.getItem('otp_api_base');
             const origin = window.location.origin;
+            let saved = localStorage.getItem('otp_api_base');
+            const configBase = window.OTP_CONFIG?.apiBase;
             const input = document.getElementById('initSatUrl');
             
-            if(!saved) {
-                saved = origin;
+            // If saved is missing or just the origin (which 405s), force reset to configBase
+            if(!saved || saved === origin || saved === origin + '/') {
+                saved = configBase || origin;
                 localStorage.setItem('otp_api_base', saved);
             }
             
@@ -374,14 +376,14 @@
                 const savedBase = localStorage.getItem('otp_api_base');
                 
                 // INTELLIGENT ROUTING:
-                // 1. If we have a saved manual override, use it (highest priority)
-                // 2. If we are on the same domain as configBase, use relative (safe for CORS)
-                // 3. Fallback to configBase
+                // 1. Manual override (savedBase) always wins
+                // 2. configBase (Vercel) is the strong fallback
+                // 3. Absolute URL is REQUIRED if current domain is static-only
                 let baseUrl = savedBase || configBase || "";
 
-                // If no override and we are on the main domain, keep it relative to prevent CORS issues
-                if (!savedBase && configBase && currentOrigin.includes('onlytrueperspective.tech')) {
-                    baseUrl = ""; 
+                // If savedBase is just the origin, it will 405. Force it to configBase.
+                if (baseUrl === currentOrigin || baseUrl === currentOrigin + '/') {
+                    baseUrl = configBase || "";
                 }
 
                 if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
