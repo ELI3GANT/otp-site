@@ -170,6 +170,10 @@ Your mission for **${obj}** is currently being throttled by **${hurdle}**. To re
 2. **The Visuals**: Double down on the **${vibe}** vibe. It cuts through the noise of your competitors who are stuck in "Standard" mode.
 3. **The Solve**: To bypass **${hurdle}**, you must simplify your production workflow. Quality is non-negotiable, but velocity is your primary weapon.
 
+**THE STRATEGY.**
+- Leverage the 'Scarcity' protocol on **${platform}**. 
+- Use the **${vibe}** filter to mask high-velocity production as intentional aesthetic.
+
 **THE FORTUNE.**
 "Tactics without strategy is the noise before defeat. Your strategy is now clear."`,
 
@@ -182,6 +186,10 @@ Neural analysis complete. Your struggle with **${hurdle}** is a symptom of fragm
 2. **The Style**: The **${vibe}** direction isn't just a look; it's a statement of authority. Own it.
 3. **The Action**: Dedicate the next 14 days to solving **${hurdle}** through aggressive content testing.
 
+**THE STRATEGY.**
+- Your specific mission of "${goalText}" requires a high-intensity content batching session. 
+- Use **${vibe}** as your north star for all creative decisions.
+
 **THE FORTUNE.**
 "The secret of getting ahead is getting started. The secret of getting started is breaking your complex overwhelming tasks into small manageable tasks."`,
 
@@ -193,6 +201,10 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
 1. **The Core**: Your **${vibe}** vision is the differentiator. Don't water it down for **${platform}**.
 2. **The Method**: Address **${hurdle}** by documenting the process, not just the result. 
 3. **The Lockdown**: Focus 90% of your creative energy on achieving "${goalText}" through the lens of **${obj}**.
+
+**THE STRATEGY.**
+- Prioritize depth over breadth on **${platform}**. 
+- The **${vibe}** aesthetic isn't a filter; it's a code. Follow it.
 
 **THE FORTUNE.**
 "Precision is the difference between a signal and noise."`
@@ -379,7 +391,7 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
             const upper = safeLine.toUpperCase();
 
             // Headers
-            if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE FORTUNE') || upper.includes('THE TRUTH')) {
+            if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE STRATEGY') || upper.includes('THE FORTUNE') || upper.includes('THE TRUTH')) {
                 html += `<div class="advice-header">${safeLine}</div>`;
             } 
             // List Items

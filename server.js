@@ -565,10 +565,10 @@ app.post('/api/audit/submit', async (req, res) => {
         Your task is to provide a "Perspective Audit" that feels uniquely calculated for the user.
         
         STYLE GUIDELINES:
-        1. **Radical Specificity**: You MUST weave the user's specific goal ("${specificGoal}") and platform ("${platform}") into every single bullet point.
-        2. **High-Status / Dope Tone**: Professional, visionary, slightly mystical, but grounded in technical reality.
-        3. **Variability**: Each response should approach the problem from a different angle (psychological, technical, or aesthetic). Do not use the same phrasing twice.
-        4. **Max Impact**: Under 120 words. No greetings. No "I recommend". Just the Truth.`;
+        1. **Hyper-Detail**: Provide real-life, actionable tips. Don't be vague. Give them the actual move.
+        2. **Radical Specificity**: You MUST weave the user's specific goal ("${specificGoal}") and platform ("${platform}") into every single bullet point.
+        3. **High-Status / Dope Tone**: Professional, visionary, slightly mystical, but grounded in technical and street reality.
+        4. **Maximum Value**: Under 250 words. Focus on raw insight over filler. Just the Truth.`;
 
         const userPrompt = `ANALYZE THIS SIGNAL:
         - CORE OBJECTIVE: ${goal}
@@ -580,13 +580,16 @@ app.post('/api/audit/submit', async (req, res) => {
         OUTPUT STRUCTURE (Strictly enforce):
         
         **THE DIAGNOSIS.**
-        (1-2 surgical sentences on how "${hurdle}" is specifically corrupting the path to "${specificGoal}".)
+        (Surgical analysis of how "${hurdle}" is corrupting the path to "${specificGoal}".)
         
         **THE PLAN.**
         1. **The Tactical Pivot**: (Actionable move involving ${platform} and ${specificGoal}.)
-        2. **Visual Rebranding**: (How to achieve the "${vibe}" look in the next 24 hours.)
+        2. **Visual Rebranding**: (How to achieve the "${vibe}" look immediately.)
         3. **The Daily Protocol**: (The repeating habit for long-term dominance.)
         
+        **THE STRATEGY.**
+        (Provide 2-3 specific, real-life industry tips or "insider" advice that applies to "${platform}" and the objective of "${specificGoal}". Be blunt and effective.)
+
         **THE FORTUNE.**
         (A short, unique, powerful quote that sounds like it was written for a cyberpunk philosopher.)`;
 
