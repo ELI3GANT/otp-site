@@ -370,14 +370,18 @@
                 // 2. If config has apiBase, use it.
                 // 3. Otherwise use savedBase or relative.
                 const currentOrigin = window.location.origin;
-                const isLocal = currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1');
+                const configBase = (window.OTP_CONFIG && window.OTP_CONFIG.apiBase);
                 const savedBase = localStorage.getItem('otp_api_base');
                 
-                let baseUrl = '';
-                if (isLocal) {
-                    baseUrl = currentOrigin;
-                } else {
-                    baseUrl = (window.OTP_CONFIG && window.OTP_CONFIG.apiBase) || savedBase || "";
+                // INTELLIGENT ROUTING:
+                // 1. If we have a saved manual override, use it (highest priority)
+                // 2. If we are on the same domain as configBase, use relative (safe for CORS)
+                // 3. Fallback to configBase
+                let baseUrl = savedBase || configBase || "";
+
+                // If no override and we are on the main domain, keep it relative to prevent CORS issues
+                if (!savedBase && configBase && currentOrigin.includes('onlytrueperspective.tech')) {
+                    baseUrl = ""; 
                 }
 
                 if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
