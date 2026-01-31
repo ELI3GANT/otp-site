@@ -365,18 +365,23 @@
             // Security: Hardcoded fallback removed
 
             try {
-                // Try Config, then Saved Satellite, then current origin
-                let configBase = window.OTP_CONFIG?.apiBase;
-                let savedBase = localStorage.getItem('otp_api_base');
+                // RESOLUTION LOGIC:
+                // 1. If we are on localhost, ALWAYS use localhost.
+                // 2. If config has apiBase, use it.
+                // 3. Otherwise use savedBase or relative.
+                const currentOrigin = window.location.origin;
+                const isLocal = currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1');
                 
-                // If savedBase is invalid or looks like the password, reset it
-                if (savedBase && savedBase.length < 5) {
-                    savedBase = null;
-                    localStorage.removeItem('otp_api_base');
+                let baseUrl = '';
+                if (isLocal) {
+                    baseUrl = currentOrigin;
+                } else {
+                    baseUrl = (window.OTP_CONFIG && window.OTP_CONFIG.apiBase) || savedBase || "";
                 }
 
-                const baseUrl = configBase || savedBase || await getBaseApiUrl();
-                if (!savedBase && !configBase) localStorage.setItem('otp_api_base', baseUrl);
+                if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
+                
+                console.log("🔐 ATTEMPTING UPLINK TO:", baseUrl || 'RELATIVE');
 
                 const res = await fetch(baseUrl + '/api/auth/login', {
                     method: 'POST',
@@ -387,13 +392,16 @@
                 if(res.ok) {
                     const data = await res.json();
                     if(data.success && data.token) { saveAndRedirect(data.token); return; }
+                } else if (res.status === 401) {
+                    const data = await res.json();
+                    throw new Error(data.message || "Invalid Passcode");
                 }
                 
-                throw new Error("Invalid response");
+                throw new Error(`Server Error: ${res.status}`);
 
             } catch (e) {
                 console.warn("Auth Failed:", e);
-                showError();
+                showError(e.message);
             }
         }
 
@@ -412,11 +420,12 @@
             setTimeout(() => { window.location.href = 'otp-terminal.html'; }, 800);
         }
 
-        function showError() {
+        function showError(msg) {
             const err = document.getElementById('errorMsg');
             const btn = document.getElementById('loginBtn');
             const input = document.getElementById('passcode');
             err.style.display = 'block';
+            err.textContent = msg ? `ERROR: ${msg.toUpperCase()}` : "ACCESS DENIED // SIGNAL REJECTED";
             btn.disabled = false;
             btn.textContent = "IDENTIFICATION REQUIRED";
             input.value = '';

@@ -179,16 +179,15 @@ app.all('/api/diag', (req, res) => {
 app.post('/api/auth/login', (req, res) => {
     let { passcode } = req.body;
     const envPass = (process.env.ADMIN_PASSCODE || '').trim();
-    
-    // Robust comparison with trimming
-    if (passcode && passcode.trim() === envPass) {
+    // Robust comparison with trimming and case-insensitivity
+    if (passcode && passcode.trim().toLowerCase() === envPass.toLowerCase()) {
         // Issue JWT
         const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '12h' });
         return res.json({ success: true, token });
     }
     
-    console.warn(`🔓 Failed login attempt for passcode: ${passcode}`);
-    return res.status(401).json({ success: false, message: 'Access Denied' });
+    console.warn(`🔓 Failed login attempt for passcode: [${passcode}] | Target: [${envPass}]`);
+    return res.status(401).json({ success: false, message: 'Access Denied: Invalid Passcode' });
 });
 
 // Middleware to verify JWT
