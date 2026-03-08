@@ -2985,6 +2985,35 @@
     // Call presence init after a small delay
     setTimeout(initDashboardPresence, 3000);
 
+    // LIVE TRAFFIC SIMULATION (UPLINK)
+    function initTrafficUplink() {
+        const pingContainer = document.getElementById('geoPings');
+        if(!pingContainer) return;
+
+        const cities = ["NEW YORK", "TOKYO", "BERLIN", "LONDON", "PARIS", "SYDNEY", "DUBAI", "SEOUL", "TORONTO", "SINGAPORE"];
+        const actions = ["VIEWING: ARCHIVE", "INSPECTING: WORK", "READING: INSIGHTS", "REQUESTING: AUDIT", "LANDING: HERO"];
+
+        function addPing() {
+            const city = cities[Math.floor(Math.random() * cities.length)];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            const ping = document.createElement('div');
+            ping.style.animation = "slideIn 0.3s ease-out";
+            ping.innerHTML = `<span style="color:var(--admin-cyan)">[${new Date().toLocaleTimeString()}]</span> ${city} ➔ <span style="color:#fff">${action}</span>`;
+            
+            pingContainer.appendChild(ping);
+            if(pingContainer.children.length > 8) {
+                pingContainer.removeChild(pingContainer.firstChild);
+            }
+            
+            // Random interval between 2-8 seconds
+            setTimeout(addPing, 2000 + Math.random() * 6000);
+        }
+        
+        // Start first ping
+        setTimeout(addPing, 1000);
+    }
+    setTimeout(initTrafficUplink, 2000);
+
     // GLOBAL LOGOUT
     window.logout = function() {
         confirmAction("TERMINATE SESSION?", "Are you sure you want to log out of the secure terminal?", () => {
