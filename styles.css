@@ -2108,11 +2108,11 @@ html {
   animation: shineWipe 2.2s cubic-bezier(0.19, 1, 0.22, 1) infinite;
   
   /* Mask to the logo shape instead of a generic circle */
-  mask-image: url('assets/hero_eye_3d.png');
+  mask-image: url('assets/hero_eye_3d.gif');
   mask-size: contain;
   mask-repeat: no-repeat;
   mask-position: center;
-  -webkit-mask-image: url('assets/hero_eye_3d.png');
+  -webkit-mask-image: url('assets/hero_eye_3d.gif');
   -webkit-mask-size: contain;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
