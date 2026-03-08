@@ -5666,10 +5666,20 @@ input:focus, select:focus, textarea:focus {
   text-transform: uppercase;
 }
 
+.work-id {
+  font-size: 0.65rem;
+  font-family: monospace;
+  color: var(--accent2);
+  opacity: 0.8;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
 /* Day Mode Visibility for Work Grid */
 [data-theme="light"] .work-card-mini {
   background: #ffffff;
   border-color: #e0e0e5;
+  box-shadow: var(--shadowSoft);
 }
 [data-theme="light"] .work-thumb-visual {
   background: #f0f0f5;
@@ -5678,8 +5688,14 @@ input:focus, select:focus, textarea:focus {
 [data-theme="light"] .work-title-mini {
   color: #000;
 }
+[data-theme="light"] .work-type-mini {
+  color: #666;
+}
+[data-theme="light"] .work-id {
+  color: #0077b6; /* Slightly deeper blue for light mode */
+}
 [data-theme="light"] .work-placeholder-text {
-  color: var(--accent);
+  color: var(--accent2);
 }
 [data-theme="light"] .scanline-overlay {
   background: linear-gradient(
