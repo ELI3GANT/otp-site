@@ -98,24 +98,21 @@
         </div>
       </header>
       
-      <div class="center-text" style="margin-bottom: 60px;">
-        <p class="muted">A curated collection of visual storytelling, creative strategy, and digital builds.</p>
-        <p class="muted" style="font-size: 0.9rem; margin-top: 10px; font-style: italic;">A living record of technical execution and creative direction.</p>
+      <div class="archive-intro">
+        <p class="muted intro-text">A curated collection of visual storytelling, creative strategy, and digital builds.</p>
+        <p class="muted sub-text">A living record of technical execution and creative direction.</p>
+        <p class="muted vault-text">Explore the vault.</p>
       </div>
 
-      <p class="muted center-text" style="font-size: 0.9rem; margin-top: 40px; margin-bottom: 40px; font-style: italic;">
-        Explore the vault.
-      </p>
-
       <!-- TAG FILTER -->
-      <div id="filter-wrap" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 40px; opacity: 0; transform: translateY(10px); transition: 0.5s;">
+      <div id="filter-wrap">
           <button class="filter-btn active" data-filter="All">All</button>
           <button class="filter-btn" data-filter="Music">Music</button>
           <button class="filter-btn" data-filter="Brand">Brand</button>
           <button class="filter-btn" data-filter="Art">Art</button>
       </div>
 
-      <div class="archive-grid" style="perspective: 2000px;">
+      <div class="archive-grid">
         <!-- Project 1: Vlog -->
 
         <a href="https://www.youtube.com/watch?v=oFM_roer79A" target="_blank" rel="noopener noreferrer" class="project-card k-hover" data-category="Brand">
@@ -260,18 +257,18 @@
        // Filter Logic
        const filterIcon = document.querySelector('.neon-folder');
        const filterWrap = document.getElementById('filter-wrap');
+       if (filterWrap) filterWrap.classList.add('active'); // Added this line
        const filterBtns = document.querySelectorAll('.filter-btn');
        const projects = document.querySelectorAll('.project-card');
 
        if (filterIcon && filterWrap) {
            filterIcon.style.cursor = 'pointer';
            filterIcon.parentElement.addEventListener('click', () => {
-               if (filterWrap.style.opacity === '1') {
-                   filterWrap.style.opacity = '0';
-                   filterWrap.style.transform = 'translateY(10px)';
+               const isVisible = filterWrap.classList.contains('active');
+               if (isVisible) {
+                   filterWrap.classList.remove('active');
                } else {
-                   filterWrap.style.opacity = '1';
-                   filterWrap.style.transform = 'translateY(0)';
+                   filterWrap.classList.add('active');
                }
            });
        }
@@ -314,33 +311,22 @@
             ease: 'power3.out'
          });
 
-         // 2. "Gravity Cloud" Effect (Desktop Only)
-         if (window.innerWidth > 768) {
-             const cards = document.querySelectorAll('.project-card');
-             
-             // Assign random "Z-Depth" weight to each card for varied movement
-             cards.forEach(card => {
-                 card.dataset.speed = Math.random() * 0.4 + 0.6; // Speed factor 0.6 - 1.0
-             });
-
-             document.addEventListener('mousemove', (e) => {
-                 const xNorm = (e.clientX / window.innerWidth) - 0.5; // -0.5 to 0.5
-                 const yNorm = (e.clientY / window.innerHeight) - 0.5; 
-
-                 cards.forEach(card => {
-                     const speed = parseFloat(card.dataset.speed);
-                     
-                     gsap.to(card, {
-                         x: xNorm * 50 * speed,       // Move horizontally
-                         y: yNorm * 50 * speed,       // Move vertically
-                         rotationY: xNorm * 10 * speed, // Tilt L/R
-                         rotationX: -yNorm * 10 * speed, // Tilt U/D
-                         duration: 1.5,
-                         ease: 'power2.out'
-                     });
-                 });
-             });
-         }
+          // 2. Subtle Parallax (Desktop Only)
+          if (window.innerWidth > 1024) {
+              const cards = document.querySelectorAll('.project-card');
+              document.addEventListener('mousemove', (e) => {
+                  const xNorm = (e.clientX / window.innerWidth) - 0.5;
+                  const yNorm = (e.clientY / window.innerHeight) - 0.5; 
+                  cards.forEach(card => {
+                      gsap.to(card, {
+                          rotationY: xNorm * 8, 
+                          rotationX: -yNorm * 8,
+                          duration: 1.2,
+                          ease: 'power1.out'
+                      });
+                  });
+              });
+          }
        }
     });
   </script>
