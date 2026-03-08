@@ -6581,6 +6581,12 @@ input:focus, select:focus, textarea:focus {
   transform: none;
 }
 
+@keyframes pulse-cyan {
+  0% { box-shadow: 0 0 10px rgba(0,195,255,0.4); }
+  50% { box-shadow: 0 0 25px rgba(0,195,255,0.8); }
+  100% { box-shadow: 0 0 10px rgba(0,195,255,0.4); }
+}
+
 /* Mobile Adjustments */
 @media (max-width: 768px) {
   .pkg-buy-btn {
