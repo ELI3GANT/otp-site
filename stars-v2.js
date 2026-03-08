@@ -124,7 +124,6 @@ class Star {
         
         if (attractor.active && attractor.x !== null) {
             // cycle management
-            attractor.age = (attractor.age || 0) + 1;
             const cycleLength = 200; // ~3.3 seconds at 60fps
             const burstPhase = 160;  // Burst starts after this many frames
             const isBurst = (attractor.age % cycleLength) > burstPhase;
@@ -144,7 +143,7 @@ class Star {
                 this.vy += Math.sin(angle) * force * this.z;
                 
                 // Flash colors
-                this.hue = (attractor.age * 10) % 360; // Rapid cycling rainbow
+                this.hue = ((attractor.age || 0) * 10) % 360; // Rapid cycling rainbow
                 
                 // Friction (less damping for explosion)
                 this.vx *= 0.95;
@@ -181,8 +180,6 @@ class Star {
             }
 
         } else if (attractor.repel) {
-            // Reset Age
-             attractor.age = 0;
             // REPEL MODE (Mouse release / Explosion aftermath)
             this.hue = null; 
 
@@ -203,7 +200,6 @@ class Star {
              this.vy = this.vy * 0.94 + this.origVy * 0.06;
         } else {
              // NORMAL MODE
-             attractor.age = 0;
              this.hue = null;
              this.alpha = Math.min(this.alpha + 0.01, 1); // Restore alpha if it was low
              this.vx = this.vx * 0.98 + this.origVx * 0.02;
@@ -309,6 +305,12 @@ for (let i = 0; i < STAR_COUNT; i++) {
 
 function animate() {
     ctx.clearRect(0, 0, width, height);
+
+    if (attractor.active) {
+        attractor.age = (attractor.age || 0) + 1;
+    } else {
+        attractor.age = 0;
+    }
 
     // Check for Archive Page (No Motion Request)
     const isArchive = document.body.classList.contains('archive-page');
