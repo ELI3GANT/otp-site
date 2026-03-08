@@ -859,7 +859,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
                         name: `OTP PACKAGE: ${packageName}`,
                         // Dynamic Description based on package
                         description: normalizedName === 'the drop' ? '1 High-End Vertical Edit (Algorithm Friendly)' :
-                                     normalizedName === 'the vision' ? '1 Hour In-Person Photography Session (10 Edits)' :
+                                     normalizedName === 'the vision' ? 'Editorial/Studio Shoot (4h) - 15 High-End Retouched Images' :
                                      'Secure Payment for Creative Services',
                         metadata: {
                             package: packageName

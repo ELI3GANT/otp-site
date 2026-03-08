@@ -73,8 +73,11 @@ function initPaymentSystem() {
         const titleRaw = titleEl.innerText;
         const titleClean = titleRaw.trim(); // Remove whitespace
         
-        // --- RESTRICTED: ONLY PAY NOW for $50 & $100 items ---
-        const validPayPackages = ['the drop', 'the vision'];
+        // --- RESTRICTED: ALLOW DIRECT PAY FOR ALL DEFINED FIXED-PRICE PACKAGES ---
+        const validPayPackages = [
+            'the drop', 'the vision', 'the visualizer', 
+            'the identity', 'the stack', 'the partner'
+        ];
         
         if (!validPayPackages.includes(titleClean.toLowerCase())) {
              return;
@@ -105,7 +108,10 @@ function initPaymentSystem() {
         // Listen for service changes to update button text
         serviceSelect.addEventListener('change', () => {
             const val = serviceSelect.value;
-            const validPayPackages = ['The Drop', 'The Vision'];
+            const validPayPackages = [
+                'The Drop', 'The Vision', 'The Visualizer', 
+                'The Identity', 'The Stack', 'The Partner'
+            ];
 
             if (validPayPackages.includes(val)) {
                 submitBtn.innerHTML = `PAY & SEND DETAILS <span style="font-size:0.8em; opacity:0.7">(${val})</span>`;
@@ -121,7 +127,10 @@ function initPaymentSystem() {
         // Intercept Submission
         form.addEventListener('submit', async (e) => {
             const val = serviceSelect.value;
-            const validPayPackages = ['The Drop', 'The Vision'];
+            const validPayPackages = [
+                'The Drop', 'The Vision', 'The Visualizer', 
+                'The Identity', 'The Stack', 'The Partner'
+            ];
             
             if (validPayPackages.includes(val)) {
                 e.preventDefault();

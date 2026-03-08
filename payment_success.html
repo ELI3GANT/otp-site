@@ -136,7 +136,7 @@
             <input type="text" id="projectLink" placeholder="Paste link here..." style="width: 100%; padding: 15px; background: #000; border: 1px solid #333; color: #fff; border-radius: 5px; font-family: 'Space Grotesk'; margin-bottom: 10px;">
             <button class="btn" onclick="submitAssets()">CONFIRM ASSETS</button>
             <div style="margin-top: 15px; font-size: 0.85rem; color: #666;">
-                 Or email files to <a href="mailto:priority@onlytrueperspective.com" style="color:#fff;">priority@onlytrueperspective.com</a>
+                 Or email files to <a href="mailto:onlytrueperspective@gmail.com" style="color:#fff;">onlytrueperspective@gmail.com</a>
             </div>
         </div>
 
@@ -166,7 +166,7 @@
             const subject = `OTP PRIORITY ASSETS: ${sessionId || 'New Order'}`;
             const body = `Here are the assets for my project:\n\nLINK: ${link}\n\n(Please attach any other relevant files)`;
             
-            window.location.href = `mailto:priority@onlytrueperspective.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = `mailto:onlytrueperspective@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
             // Simulate UI success after a moment
             setTimeout(() => {
