@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Only True Perspective | OTP</title>
-  <meta name="description" content="Only True Perspective (OTP) — Tactical Visual Identities. High-retention creative direction, cinematic editing, and technical production for serious creators." />
+  <title>Only True Perspective | Creative Studio</title>
+  <meta name="description" content="Only True Perspective — Creative Studio for Tactical Visual Identities. High-retention cinematic editing, creative direction, and technical production." />
+  <meta name="keywords" content="creative studio, cinematic editing, technical production, creative direction, high-retention video, brand identity, motion graphics" />
 
   <meta name="theme-color" content="#030305" />
   <meta name="color-scheme" content="dark only" />
@@ -76,7 +77,10 @@
     })();
   </script>
 </head>
-<body>
+<body class="k-cursor-ready">
+  <!-- FILM GRAIN -->
+  <div class="bg-grain"></div>
+  
   <!-- PREMIUM PRELOADER -->
   <div id="page-loader" style="position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;">
     <div class="loader-pulse" style="width:40px;height:40px;border-radius:50%;background:var(--accent2);animation:pulse-cyan 1.5s infinite alternate;"></div>
@@ -94,11 +98,10 @@
 
     <nav class="nav-links" aria-label="Primary">
       <a href="#work" class="active k-hover">Work</a>
-      <a href="archive.html" class="k-hover">Archive</a>
-      <a href="insights.html" class="k-hover">Insights</a>
-
       <a href="#services" class="k-hover">Services</a>
+      <a href="#about" class="k-hover">About</a>
       <a href="#contact" class="k-hover">Contact</a>
+      <a href="insights.html" class="k-hover nav-secondary">Insights</a>
     </nav>
 
     <!-- Mobile toggle -->
@@ -108,11 +111,10 @@
 
     <nav class="nav-drawer" aria-label="Mobile">
       <a href="#work">Work</a>
-      <a href="archive.html">Archive</a>
-      <a href="insights.html">Insights</a>
-
       <a href="#services">Services</a>
+      <a href="#about">About</a>
       <a href="#contact">Contact</a>
+      <a href="insights.html">Insights</a>
     </nav>
   </header>
 
@@ -124,17 +126,20 @@
       <div class="hero-logo-wrap">
         <img src="assets/hero_eye_3d.gif" alt="OTP 3D Eye" class="hero-eye-3d" fetchpriority="high" />
       </div>
-      <div class="eyebrow">Creative Studio</div>
-      <h1 class="hero-title-adjust">
+      <h1 class="hero-title-adjust luxe-title">
         <span class="title">ONLY TRUE</span>
         <span class="title">PERSPECTIVE</span>
       </h1>
+      <div class="hero-subline-alt">Creative Studio — Directed by ELI3GANT.</div>
       
-      <p class="subtitle-lead" id="hero-subtitle" data-editable="true">Tactical Visual Identities. High-retention creative direction, cinematic editing, and technical production for serious creators.</p>
-      <p class="hero-value" id="hero-value" data-editable="true">Growth, clarity, and results.</p>
+      <p class="subtitle-lead" id="hero-subtitle" data-editable="true">We build cinematic worlds for digital brands. Creative direction, high-retention editing, and custom technical builds for those who demand excellence.</p>
       
       <div class="hero-cta">
-        <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" rel="noopener noreferrer" class="book-btn magnetic-btn">Secure a Vision Session</a>
+        <a href="#contact" class="book-btn magnetic-btn">Start a Project</a>
+        <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" rel="noopener noreferrer" class="book-btn-ghost magnetic-btn resonate">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          Vision Session
+        </a>
       </div>
 
       <div class="hero-micro">
@@ -150,23 +155,118 @@
 
     </div>
   </main>
+  
+  <!-- NETWORK / COLLABORATIONS (Tactical Text Cloud) -->
+  <div class="network-row section-alt">
+    <div class="network-scroll">
+      <div class="network-track">
+        <span class="network-item">ELITE_RECORDS</span>
+        <span class="network-item">NEXT_GEN_CO</span>
+        <span class="network-item">CREATIVE_LABS</span>
+        <span class="network-item">STUDIO_V</span>
+        <span class="network-item">TECH_ART_SOLUTIONS</span>
+        <span class="network-item">GLOBAL_CREATORS</span>
+        <!-- Duplicate for loop -->
+        <span class="network-item">ELITE_RECORDS</span>
+        <span class="network-item">NEXT_GEN_CO</span>
+        <span class="network-item">CREATIVE_LABS</span>
+        <span class="network-item">STUDIO_V</span>
+        <span class="network-item">TECH_ART_SOLUTIONS</span>
+        <span class="network-item">GLOBAL_CREATORS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROVEN RESULTS (ROI MAPPING) -->
+  <section class="section section-alt">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <span class="eyebrow-mini">THE IMPACT</span>
+        <h2>PROVEN RESULTS</h2>
+        <p>Visuals that don't just look good—they perform. We map every asset to a measurable outcome.</p>
+      </header>
+
+      <div class="results-grid">
+        <div class="result-card k-hover">
+          <div class="result-value">3X</div>
+          <div class="result-label">Higher Viewer Engagement</div>
+        </div>
+        <div class="result-card k-hover">
+          <div class="result-value">24h</div>
+          <div class="result-label">Shortest Asset Turnaround</div>
+        </div>
+        <div class="result-card k-hover">
+          <div class="result-value">20+</div>
+          <div class="result-label">Visions Delivered Globally</div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   
 
   <!-- WORK SECTION -->
 
-  <section id="work" class="section section-alt">
+  <section id="work" class="section section-work-preview">
     <div class="wrap">
       <header class="section-head center-text">
-        <h2>Work</h2>
-        <p>Selected projects from the archive.</p>
+        <span class="eyebrow-mini">THE LAB</span>
+        <h2>Featured Work</h2>
+        <p>Selected high-retention builds. Optimized for growth.</p>
       </header>
 
-      <!-- Replaced Grid with Cool Link -->
+      
+      <div class="featured-work-grid">
+        <!-- Project 01 -->
+        <article class="work-card-mini k-hover">
+          <div class="work-thumb-visual portfolio-visual">
+            <img src="https://i.ytimg.com/vi/oFM_roer79A/hqdefault.jpg" alt="THE FROZE TOUR" class="work-img" />
+            <div class="scanline-overlay"></div>
+            <div class="work-overlay-info">
+              <span class="work-type-tag">CINEMATIC_VLOG</span>
+            </div>
+          </div>
+          <div class="work-meta-mini">
+            <span class="work-id">OTP_SR_201</span>
+            <span class="work-title-text">THE FROZE TOUR</span>
+          </div>
+        </article>
+
+        <!-- Project 02 -->
+        <article class="work-card-mini k-hover">
+          <div class="work-thumb-visual portfolio-visual">
+            <img src="https://i.ytimg.com/vi/vNxUzSmr7x0/hqdefault.jpg" alt="FAME & FORTUNE" class="work-img" />
+            <div class="scanline-overlay"></div>
+            <div class="work-overlay-info">
+              <span class="work-type-tag">MUSIC_VIDEO</span>
+            </div>
+          </div>
+          <div class="work-meta-mini">
+            <span class="work-id">OTP_SR_202</span>
+            <span class="work-title-text">FAME & FORTUNE</span>
+          </div>
+        </article>
+
+        <!-- Project 03 -->
+        <article class="work-card-mini k-hover">
+          <div class="work-thumb-visual portfolio-visual">
+            <img src="https://i.ytimg.com/vi/KYVTqzsovU8/hqdefault.jpg" alt="STATE OF MIND" class="work-img" />
+            <div class="scanline-overlay"></div>
+            <div class="work-overlay-info">
+              <span class="work-type-tag">BRAND_DIRECTION</span>
+            </div>
+          </div>
+          <div class="work-meta-mini">
+            <span class="work-id">OTP_SR_203</span>
+            <span class="work-title-text">STATE OF MIND</span>
+          </div>
+        </article>
+      </div>
+
       <div class="work-link-container">
         <a href="archive.html" class="cool-work-link k-hover" aria-label="View Full Archive">
-          <span class="link-text">ENTER ARCHIVE</span>
-          <span class="link-sub">View Full Portfolio</span>
+          <span class="link-text">ENTER FULL VAULT</span>
+          <span class="link-sub">Full History of OTP</span>
         </a>
       </div>
       
@@ -175,8 +275,8 @@
 
   
 
-  <!-- STUDIO / PHILOSOPHY -->
-  <section id="studio" class="section-studio">
+  <!-- STUDIO / ABOUT / PHILOSOPHY -->
+  <section id="about" class="section-studio">
     <div class="wrap">
       <div class="glass-manifesto">
         <div class="manifesto-left">
@@ -206,17 +306,17 @@
         </div>
         <div class="manifesto-right">
           <span class="eyebrow" style="color: var(--accent2); margin-bottom: 20px; display: block;">IDENTITY</span>
-          <h2 class="syne-bold studio-title">A PERSPECTIVE<br>THAT'S TRUE.</h2>
+          <h2 class="syne-bold studio-title">ELI3GANT<br>DIRECTED.</h2>
           <div class="studio-body">
-            <p id="studio-text-1" data-editable="true">OTP is about finding the angle that is true to you. We don't just edit video; we build your visual world.</p>
-            <p id="studio-text-2" data-editable="true">This is a journey. Everyone has a story to tell, see, hear, and feel.</p>
+            <p id="studio-text-1" data-editable="true">Only True Perspective is the creative laboratory of ELI3GANT. Based on the principle of finding the angle that is true to you, we don't just edit video; we build visual worlds that command attention.</p>
+            <p id="studio-text-2" data-editable="true">High-end creative direction. Tactical execution. Direct collaboration with ELI3GANT.</p>
             
             <div class="capabilities-list">
-              <span class="cap-tag">Vision</span>
-              <span class="cap-tag">Innovation</span>
+              <span class="cap-tag">Creative Direction</span>
+              <span class="cap-tag">Cinematic Production</span>
+              <span class="cap-tag">Technical Design</span>
               <span class="cap-tag">Strategy</span>
-              <span class="cap-tag">Execution</span>
-              <span class="cap-tag">Impact</span>
+              <span class="cap-tag">Implementation</span>
             </div>
           </div>
         </div>
@@ -850,27 +950,22 @@
   
 
 
-  <!-- PROVEN RESULTS (ROI MAPPING) -->
-  <section class="section section-alt">
+  <!-- VIBRATION / AUDIO LAB (Music Embeds) -->
+  <section id="audio" class="section section-vibration">
     <div class="wrap">
       <header class="section-head center-text">
-        <span class="eyebrow-mini">THE IMPACT</span>
-        <h2>PROVEN RESULTS</h2>
-        <p>Visuals that don't just look good—they perform. We map every asset to a measurable outcome.</p>
+        <span class="eyebrow-mini">VIBRATION</span>
+        <h2>Audio Lab</h2>
+        <p>Tactical audio production and music integration. Experience the resonance.</p>
       </header>
 
-      <div class="results-grid">
-        <div class="result-card k-hover">
-          <div class="result-value">3X</div>
-          <div class="result-label">Higher Viewer Engagement</div>
-        </div>
-        <div class="result-card k-hover">
-          <div class="result-value">24h</div>
-          <div class="result-label">Shortest Asset Turnaround</div>
-        </div>
-        <div class="result-card k-hover">
-          <div class="result-value">20+</div>
-          <div class="result-label">Visions Delivered Globally</div>
+      <div class="audio-grid">
+        <div class="vibration-card">
+          <span class="audio-label">FEATURED_VIBE / AMBIENT_TACTICAL</span>
+          <div class="audio-player-placeholder">
+            <!-- Custom Styled Embed or Player -->
+            <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/2268873584&color=%2300ecff&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=true"></iframe>
+          </div>
         </div>
       </div>
     </div>
@@ -1017,18 +1112,23 @@
   </section>
 
 
-  <!-- FOOTER -->
   <footer class="footer">
     <div class="wrap footer-inner">
       <div class="footer-left">
-        <div class="nav-logo" aria-label="OTP">
+        <div class="footer-brand">
           <img src="assets/otp.gif" alt="OTP logo" class="nav-gif" />
+          <span class="brand-name">Only True Perspective</span>
         </div>
         <div class="footer-status" id="siteStatus">
           <span class="status-indicator"></span>
           <span class="status-text">SYSTEM: OPERATIONAL</span>
         </div>
-        <div class="fineprint">© <span id="year">2026</span> Only True Perspective. All rights reserved.</div>
+        <div class="footer-socials-row">
+          <a href="https://instagram.com/onlytrueperspective" class="k-hover">Instagram</a>
+          <a href="https://youtube.com/@onlytrueperspective" class="k-hover">YouTube</a>
+          <a href="mailto:onlytrueperspective@gmail.com" class="k-hover">Email</a>
+        </div>
+        <div class="fineprint">© <span id="year">2026</span> Only True Perspective. Directed by ELI3GANT.</div>
         <div class="footer-legal">
           <a href="terms.html">Terms</a>
           <span class="dot">•</span>
@@ -1037,7 +1137,13 @@
       </div>
 
       <div class="footer-right">
-        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
+        <nav class="footer-nav">
+          <a href="#work">Work</a>
+          <a href="#services">Services</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <a href="#" class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
       </div>
     </div>
   </footer>
@@ -1187,6 +1293,22 @@
       });
     }
   });
+  </script>
+
+  <!-- SCROLL REVEAL RUNNER -->
+  <script>
+    (function() {
+      const revealItems = document.querySelectorAll('.section-vibration, .network-row');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal');
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      revealItems.forEach(item => observer.observe(item));
+    })();
   </script>
 </body>
 </html>

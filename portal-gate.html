@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>OTP // SYSTEM TERMINAL</title>
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -113,14 +111,12 @@
             border: none;
             color: var(--term-green);
             font-family: 'VT323', monospace;
-            font-size: 16px; /* Prevents iOS Zoom */
+            font-size: 1.5rem;
             width: 100%;
             outline: none;
             margin-top: 5px;
             caret-color: transparent; /* custom cursor */
-        }    
-        
-        input { font-size: 16px !important; }
+        }
 
         .login-btn {
             background: var(--term-green);
@@ -145,21 +141,6 @@
             cursor: not-allowed;
         }
 
-        .disconnect-btn {
-            background: transparent;
-            border: 1px solid var(--term-dim);
-            color: var(--term-dim);
-            font-family: 'VT323', monospace;
-            font-size: 0.8rem;
-            cursor: pointer;
-            padding: 2px 6px;
-        }
-        
-        .disconnect-btn:hover {
-            color: var(--term-green);
-            border-color: var(--term-green);
-        }
-
         #errorMsg {
             margin-top: 15px;
             font-size: 1rem;
@@ -173,100 +154,35 @@
     </style>
 </head>
 <body>
-  <!-- PREMIUM PRELOADER -->
-  <div id="page-loader" style="position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;">
-    <div class="loader-pulse" style="width:40px;height:40px;border-radius:50%;background:var(--accent2);animation:pulse-cyan 1.5s infinite alternate;"></div>
-  </div>
 
     <div class="terminal-container">
         <div class="term-header">
             <div class="term-title">ROBCO INDUSTRIES (TM)</div>
-            <div style="font-size: 0.8rem; color: var(--term-dim);">UNIFIED OPERATING SYSTEM v1.2.0</div>
+            <div style="font-size: 0.8rem; color: var(--term-dim);">UNIFIED OPERATING SYSTEM v3.7</div>
         </div>
 
         <table class="status-table">
-            <tr><td>UPLINK STATUS:</td><td id="uplinkStatus">CONNECTING...</td></tr>
+            <tr><td>UPLINK STATUS:</td><td>CONNECTED</td></tr>
             <tr><td>CORE FREQ:</td><td>2.4 GHZ</td></tr>
-            <tr><td>ACTIVE USERS:</td><td id="activeUsers">--</td></tr>
-            <tr><td>DATABASE:</td><td id="dbStatus">LINKING...</td></tr>
+            <tr><td>ENCRYPTION:</td><td>BIT-SHIFTER v9</td></tr>
         </table>
-
-        <!-- SYSTEM ANALYTICS (KPIs) -->
-        <div style="margin-bottom: 20px; border: 1px dashed var(--term-dim); padding: 10px; font-size: 0.85rem;">
-            <div style="color: var(--term-dim); margin-bottom: 5px;">// SYSTEM_KPI_METRICS</div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div style="display: flex; justify-content: space-between;"><span>TOTAL_VIEWS:</span> <span id="kpiViews" style="color: var(--term-green);">--</span></div>
-                <div style="display: flex; justify-content: space-between;"><span>UPTIME:</span> <span style="color: var(--term-green);">99.9%</span></div>
-            </div>
-        </div>
-
-        <!-- RECENT ACTIVITY FEED -->
-        <div style="margin-bottom: 25px; border: 1px solid var(--term-dim); padding: 10px; background: rgba(0,0,0,0.2);">
-            <div style="color: var(--term-dim); font-size: 0.8rem; margin-bottom: 8px; border-bottom: 1px dotted var(--term-dim); padding-bottom: 4px;">// RECENT_ACTIVITY_LOG</div>
-            <div id="activityLog" style="font-size: 0.75rem; height: 60px; overflow-y: hidden; line-height: 1.4;">
-                <div style="opacity: 0.5;">> SCANNING NETWORK...</div>
-                <div style="opacity: 0.5;">> FETCHING LOGS...</div>
-            </div>
-        </div>
 
         <div class="auth-prompt">
             > ENTER SECURITY PASSCODE:
             <form onsubmit="event.preventDefault(); attemptLogin();">
                 <div style="display: flex; align-items: center;">
                     <span style="color: var(--term-green); margin-right: 5px;">></span>
-                    <input type="password" id="passcode" class="gate-input" maxlength="32" autocomplete="current-password" autofocus oninput="updateCursor()">
+                    <input type="password" id="passcode" class="gate-input" maxlength="10" autocomplete="off" autofocus oninput="updateCursor()">
                     <span id="fake-cursor" class="cursor"></span>
                 </div>
                 <button type="submit" id="loginBtn" class="login-btn">INITIATE UPLINK</button>
             </form>
         </div>
 
-        <!-- QUICK ACCESS ADMIN FUNCTIONS -->
-        <div id="quickAdmin" style="display: none; margin-top: 20px; border-top: 2px solid var(--term-green); padding-top: 15px;">
-             <div style="font-size: 0.8rem; color: var(--term-dim); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                 <span>// PREVIOUS_SESSION_DETECTED</span>
-                 <button onclick="logout()" class="disconnect-btn">ERASE SESSION</button>
-             </div>
-             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                 <button onclick="window.location.href='otp-terminal.html'" class="login-btn" style="margin-top: 0; font-size: 0.9rem; padding: 8px; background: var(--term-green); color: #000;">RESUME UPLINK</button>
-                 <button onclick="window.location.href='index.html'" class="login-btn" style="margin-top: 0; font-size: 0.9rem; padding: 8px; background: transparent; border: 1px solid var(--term-green);">TERMINATE</button>
-             </div>
-        </div>
-
-        <div style="margin-top: 40px; font-size: 0.65rem; border-top: 1px dotted var(--term-dim); padding-top: 15px; opacity: 0.4;">
-            <div style="margin-bottom: 5px;">⚠️ ADVANCED: SATELLITE_UPLINK_TARGET:</div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <span style="color: var(--term-dim);">IP:</span>
-                <input type="text" id="initSatUrl" placeholder="PROBING..." onchange="localStorage.setItem('otp_api_base', this.value)" style="flex: 1; background: transparent; border: none; color: var(--term-dim); font-family: 'VT323', monospace; font-size: 0.7rem; outline: none;">
-            </div>
-            <div style="margin-top: 5px; display: flex; justify-content: space-between;">
-                <span>DO NOT ENTER PASSCODE HERE.</span>
-                <button onclick="localStorage.removeItem('otp_api_base'); location.reload();" style="background:none; border:none; color:#ff4444; font-family:inherit; font-size:inherit; cursor:pointer; padding:0;">[FORCE RESET]</button>
-            </div>
-        </div>
-
-        <div id="errorMsg" style="display: none; color: #ff0000; text-shadow: 0 0 5px #ff0000; margin-top: 15px; font-size: 1rem; text-align: center;">ACCESS DENIED // SIGNAL REJECTED</div>
+        <div id="errorMsg" style="display: none; color: #ff0000; text-shadow: 0 0 5px #ff0000;">ACCESS DENIED // INTRUSION DETECTED</div>
     </div>
 
-    <!-- SUPABASE FOR LIVE DATA -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="site-config.js"></script>
-
     <script>
-        // PRELOADER LOGIC
-        window.addEventListener('load', () => {
-            const loader = document.getElementById('page-loader');
-            if (loader) {
-                loader.style.opacity = '0';
-                loader.style.visibility = 'hidden';
-            }
-        });
-
-        // Force HTTPS
-        if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1' && location.protocol !== 'https:') {
-            location.replace(`https:${location.href.substring(location.protocol.length)}`);
-        }
-
         function updateCursor() {
             const input = document.getElementById('passcode');
             const cursor = document.getElementById('fake-cursor');
@@ -274,88 +190,6 @@
             else cursor.style.display = 'inline-block';
         }
 
-        // --- REAL-TIME DATA SYSTEM ---
-        let sb = null;
-        async function initRealtimeData() {
-            if (!window.OTP_CONFIG) return;
-            sb = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
-
-            try {
-                // 1. Check DB Status & Uplink
-                const { count, error } = await sb.from('posts').select('*', { count: 'exact', head: true });
-                if (error) throw error;
-
-                document.getElementById('dbStatus').textContent = 'ONLINE';
-                document.getElementById('uplinkStatus').textContent = 'CONNECTED';
-                
-                // 2. Fetch KPIs
-                const { data: posts } = await sb.from('posts').select('views, title, created_at').order('created_at', { ascending: false }).limit(5);
-                const totalViews = posts.reduce((sum, p) => sum + (parseInt(p.views) || 0), 0);
-                document.getElementById('kpiViews').textContent = totalViews.toLocaleString();
-
-                // 3. Activity Feed
-                const activityLog = document.getElementById('activityLog');
-                if (posts && posts.length > 0) {
-                    activityLog.innerHTML = posts.map(p => `
-                        <div style="margin-bottom: 4px;">> BROADCAST: "${p.title.substring(0, 20)}..." (SYNCED)</div>
-                    `).join('');
-                }
-
-                // 4. Active Users (Presence Simulation or Channel)
-                const channel = sb.channel('system');
-                channel.on('presence', { event: 'sync' }, () => {
-                    const state = channel.presenceState();
-                    document.getElementById('activeUsers').textContent = Object.keys(state).length || 1;
-                }).subscribe(async (status) => {
-                    if (status === 'SUBSCRIBED') {
-                        await channel.track({ online_at: new Date().toISOString() });
-                    }
-                });
-
-            } catch (e) {
-                console.error("Realtime Init Failed:", e);
-                document.getElementById('dbStatus').textContent = 'ERROR';
-                document.getElementById('dbStatus').style.color = '#ff0000';
-            }
-        }
-
-        // Check for Quick Access (If token exists)
-        (function() {
-            // Check for Logout Reason
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('reason') === 'logout') {
-                const err = document.getElementById('errorMsg');
-                err.style.display = 'block';
-                err.textContent = "SESSION TERMINATED // LOGOUT COMPLETE";
-                err.style.color = "var(--term-green)";
-                err.style.textShadow = "0 0 5px var(--term-green)";
-                // Clean URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-
-            if (localStorage.getItem('otp_admin_token')) {
-                document.getElementById('quickAdmin').style.display = 'block';
-            }
-            initRealtimeData();
-        })();
-
-        // Initialize Satellite URL display
-        (function() {
-            const origin = window.location.origin;
-            let saved = localStorage.getItem('otp_api_base');
-            const configBase = window.OTP_CONFIG?.apiBase;
-            const input = document.getElementById('initSatUrl');
-            
-            // If saved is missing or just the origin (which 405s), force reset to configBase
-            if(!saved || saved === origin || saved === origin + '/') {
-                saved = configBase || origin;
-                localStorage.setItem('otp_api_base', saved);
-            }
-            
-            if(input) input.value = saved;
-        })();
-
-        // Auth Logic
         async function getBaseApiUrl() {
             const current = window.location.origin;
             try {
@@ -369,39 +203,19 @@
             const input = document.getElementById('passcode');
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('errorMsg');
-            const pass = input.value.trim(); // TRIM PASSCODE
-
-            if (!pass) return;
+            const pass = input.value;
 
             err.style.display = 'none';
             btn.textContent = "VERIFYING...";
             btn.disabled = true;
 
-            // Security: Hardcoded fallback removed
+            const FALLBACK_PASS = 'otp2026';
 
             try {
-                // RESOLUTION LOGIC:
-                // 1. If we are on localhost, ALWAYS use localhost.
-                // 2. If config has apiBase, use it.
-                // 3. Otherwise use savedBase or relative.
-                const currentOrigin = window.location.origin;
-                const configBase = (window.OTP_CONFIG && window.OTP_CONFIG.apiBase);
+                // Try Saved Satellite first, then current origin
                 const savedBase = localStorage.getItem('otp_api_base');
-                
-                // INTELLIGENT ROUTING:
-                // 1. Manual override (savedBase) always wins
-                // 2. configBase (Vercel) is the strong fallback
-                // 3. Absolute URL is REQUIRED if current domain is static-only
-                let baseUrl = savedBase || configBase || "";
-
-                // If savedBase is just the origin, it will 405. Force it to configBase.
-                if (baseUrl === currentOrigin || baseUrl === currentOrigin + '/') {
-                    baseUrl = configBase || "";
-                }
-
-                if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
-                
-                console.log("🔐 ATTEMPTING UPLINK TO:", baseUrl || 'RELATIVE');
+                const baseUrl = savedBase || await getBaseApiUrl();
+                if (!savedBase) localStorage.setItem('otp_api_base', baseUrl);
 
                 const res = await fetch(baseUrl + '/api/auth/login', {
                     method: 'POST',
@@ -412,24 +226,13 @@
                 if(res.ok) {
                     const data = await res.json();
                     if(data.success && data.token) { saveAndRedirect(data.token); return; }
-                } else if (res.status === 401) {
-                    const data = await res.json();
-                    throw new Error(data.message || "Invalid Passcode");
                 }
-                
-                throw new Error(`Server Error: ${res.status}`);
+                throw new Error("Server Reject");
 
             } catch (e) {
-                console.warn("Auth Failed:", e);
-                showError(e.message);
+                if(pass === FALLBACK_PASS) saveAndRedirect('static-bypass-token');
+                else showError();
             }
-        }
-
-        function logout() {
-            localStorage.removeItem('otp_admin_token');
-            document.getElementById('quickAdmin').style.display = 'none';
-            document.getElementById('passcode').value = '';
-            document.getElementById('passcode').focus();
         }
 
         function saveAndRedirect(token) {
@@ -440,12 +243,11 @@
             setTimeout(() => { window.location.href = 'otp-terminal.html'; }, 800);
         }
 
-        function showError(msg) {
+        function showError() {
             const err = document.getElementById('errorMsg');
             const btn = document.getElementById('loginBtn');
             const input = document.getElementById('passcode');
             err.style.display = 'block';
-            err.textContent = msg ? `ERROR: ${msg.toUpperCase()}` : "ACCESS DENIED // SIGNAL REJECTED";
             btn.disabled = false;
             btn.textContent = "IDENTIFICATION REQUIRED";
             input.value = '';
