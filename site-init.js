@@ -1245,4 +1245,42 @@ if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSite);
 } else {
     initSite();
-}
+}// ==========================================
+// 10. MAGNETIC BUTTON EFFECT (High-End Interaction)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const magneticBtns = document.querySelectorAll('.magnetic-btn');
+    
+    magneticBtns.forEach(btn => {
+        // Create an inner wrapper for the text if it doesn't exist, to move it slightly more for parallax
+        // Actually, we can just move the whole button
+        
+        btn.addEventListener('mousemove', (e) => {
+            const rect = btn.getBoundingClientRect();
+            // Calculate distance form center
+            const h = rect.width / 2;
+            const v = rect.height / 2;
+            
+            const x = e.clientX - rect.left - h;
+            const y = e.clientY - rect.top - v;
+            
+            // Move button 30% of the distance to the mouse
+            gsap.to(btn, {
+                x: x * 0.3,
+                y: y * 0.3,
+                duration: 0.4,
+                ease: "power3.out"
+            });
+        });
+        
+        btn.addEventListener('mouseleave', () => {
+            // Snap back to center
+            gsap.to(btn, {
+                x: 0,
+                y: 0,
+                duration: 0.7,
+                ease: "elastic.out(1, 0.3)"
+            });
+        });
+    });
+});
