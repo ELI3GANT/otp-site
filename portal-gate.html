@@ -253,6 +253,15 @@
     <script src="site-config.js"></script>
 
     <script>
+        // PRELOADER LOGIC
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                loader.style.visibility = 'hidden';
+            }
+        });
+
         // Force HTTPS
         if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1' && location.protocol !== 'https:') {
             location.replace(`https:${location.href.substring(location.protocol.length)}`);
