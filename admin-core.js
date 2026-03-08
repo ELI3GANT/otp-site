@@ -167,6 +167,11 @@
                     const timeStr = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
                     clockEl.innerHTML = `${statusTag} ${timeStr}`;
                 }, 1000);
+
+                // Initialize System Log
+                window.logAdminAction("SYSTEM KERNEL INITIALIZED", "success");
+                window.logAdminAction(`NODE UPLINK ESTABLISHED: ${isRemote ? 'REMOTE' : 'LOCAL'}`, "info");
+            }
             }
 
             // 5. Neural Cloud Settings (Persistence)
@@ -2523,10 +2528,7 @@
 
     window.copyPostLink = function(slug) {
         if(!slug) return;
-        let postUrl = '/insight.html?slug=' + slug;
-        if (slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
-        if (slug.startsWith('insight-post-')) postUrl = `/${slug}.html`;
-
+        const postUrl = '/insight.html?slug=' + slug;
         const url = window.location.origin + postUrl;
         navigator.clipboard.writeText(url);
         showToast("LINK COPIED TO CLIPBOARD");
@@ -2660,6 +2662,7 @@
             statusEl.textContent = nextTheme === 'light' ? 'DAY-MODE' : 'NIGHT-MODE';
             statusEl.style.color = nextTheme === 'light' ? '#ffaa00' : 'var(--accent2)';
             showToast("THEME SYNCED TO NETWORK");
+            window.logAdminAction(`THEME CONVERTED TO ${nextTheme.toUpperCase()}`, "info");
         }
 
         // 4. Kursor
@@ -2680,11 +2683,8 @@
         const slug = document.getElementById('slugInput').value;
         if(!slug) return;
         
-        let postUrl = '/insight.html?slug=' + slug;
-        if (slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
-        if (slug.startsWith('insight-post-')) postUrl = `/${slug}.html`;
-
-        const url = `https://onlytrueperspective.tech${postUrl}`;
+        const postUrl = '/insight.html?slug=' + slug;
+        const url = window.location.origin + postUrl;
         navigator.clipboard.writeText(url);
         
         const btn = document.querySelector('.share-btn-mini');
@@ -2749,6 +2749,7 @@
                 if(!state.siteChannel) return;
                 await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh' } });
                 showToast("NETWORK CACHE PURGED");
+                window.logAdminAction("NETWORK CACHE PURGE EXECUTED", "danger");
             }
         );
     };
@@ -2787,6 +2788,7 @@
                 }
                 
                 showToast("EMERGENCY BROADCAST SENT");
+                window.logAdminAction(`BROADCAST DISPATCHED: "${msg.substring(0, 20)}..."`, "warning");
             }
         );
     };
@@ -2971,46 +2973,89 @@
         document.body.removeChild(textArea);
     }
 
-    // Presence Sync for Dashboard
-    function initDashboardPresence() {
-        if(!state.client) return;
-        const room = state.client.channel('system');
-        room.on('presence', { event: 'sync' }, () => {
-            const state = room.presenceState();
-            const count = Object.keys(state).length;
-            const statEl = document.getElementById('statLive');
-            if(statEl) statEl.textContent = count;
-        }).subscribe();
-    }
-    // Call presence init after a small delay
-    setTimeout(initDashboardPresence, 3000);
+    // --- SESSION ACTION LOGGING ---
+    window.logAdminAction = function(msg, type = 'info') {
+        const logContainer = document.getElementById('sessionLog');
+        if(!logContainer) return;
 
-    // LIVE TRAFFIC SIMULATION (UPLINK)
+        const entry = document.createElement('div');
+        entry.className = `log-entry log-${type}`;
+        entry.style.padding = '4px 0';
+        entry.style.fontSize = '0.65rem';
+        entry.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
+        
+        const timestamp = new Date().toLocaleTimeString([], { hour12: false });
+        let color = '#888';
+        if(type === 'success') color = 'var(--admin-success)';
+        if(type === 'danger' || type === 'error') color = 'var(--admin-danger)';
+        if(type === 'warning') color = '#ffaa00';
+        if(type === 'info') color = 'var(--admin-cyan)';
+
+        entry.innerHTML = `<span style="opacity:0.4">[${timestamp}]</span> <span style="color:${color}; font-weight:bold;">${msg}</span>`;
+        
+        logContainer.prepend(entry);
+        if(logContainer.children.length > 50) {
+            logContainer.removeChild(logContainer.lastChild);
+        }
+    };
+
+    // --- ENHANCED LIVE TRAFFIC SIMULATION ---
     function initTrafficUplink() {
         const pingContainer = document.getElementById('geoPings');
         if(!pingContainer) return;
 
         const cities = ["NEW YORK", "TOKYO", "BERLIN", "LONDON", "PARIS", "SYDNEY", "DUBAI", "SEOUL", "TORONTO", "SINGAPORE"];
         const actions = ["VIEWING: ARCHIVE", "INSPECTING: WORK", "READING: INSIGHTS", "REQUESTING: AUDIT", "LANDING: HERO"];
+        const devices = ["MOBILE/IOS", "DESKTOP/MAC", "MOBILE/ANDROID", "DESKTOP/WIN", "TABLET/IPAD"];
 
         function addPing() {
             const city = cities[Math.floor(Math.random() * cities.length)];
             const action = actions[Math.floor(Math.random() * actions.length)];
+            const device = devices[Math.floor(Math.random() * devices.length)];
+            const latency = Math.floor(Math.random() * 80) + 12;
+            const signal = Math.floor(Math.random() * 40) + 60; // 60-100%
+
             const ping = document.createElement('div');
+            ping.className = "traffic-ping";
             ping.style.animation = "slideIn 0.3s ease-out";
-            ping.innerHTML = `<span style="color:var(--admin-cyan)">[${new Date().toLocaleTimeString()}]</span> ${city} ➔ <span style="color:#fff">${action}</span>`;
+            ping.style.marginBottom = "8px";
+            ping.style.paddingLeft = "8px";
+            ping.style.borderLeft = "2px solid rgba(0,255,170,0.3)";
             
-            pingContainer.appendChild(ping);
-            if(pingContainer.children.length > 8) {
-                pingContainer.removeChild(pingContainer.firstChild);
+            ping.innerHTML = `
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem; opacity:0.8;">
+                    <span><span style="color:var(--admin-cyan)">[${new Date().toLocaleTimeString([], {hour12:false})}]</span> ${city}</span>
+                    <span style="color:var(--admin-muted)">${latency}MS</span>
+                </div>
+                <div style="font-size:0.75rem; margin: 2px 0;">${device} ⚡ <span style="color:#fff">${action}</span></div>
+                <div style="height:2px; background:rgba(255,255,255,0.05); width:100%; border-radius:1px;">
+                    <div style="height:100%; width:${signal}%; background:var(--admin-success); opacity:0.5;"></div>
+                </div>
+            `;
+            
+            pingContainer.prepend(ping);
+            if(pingContainer.children.length > 6) {
+                pingContainer.removeChild(pingContainer.lastChild);
             }
             
             // Random interval between 2-8 seconds
-            setTimeout(addPing, 2000 + Math.random() * 6000);
+            setTimeout(addPing, 1500 + Math.random() * 5000);
         }
         
         // Start first ping
         setTimeout(addPing, 1000);
+
+        // Hardware Simulation
+        const cpuStat = document.getElementById('diagCPU');
+        const ramStat = document.getElementById('diagRAM');
+        if(cpuStat && ramStat) {
+            setInterval(() => {
+                const cpu = (Math.random() * 15 + 2).toFixed(1); // 2-17%
+                const ram = (Math.random() * 200 + 120).toFixed(0); // 120-320MB
+                cpuStat.textContent = `${cpu}%`;
+                ramStat.textContent = `${ram}MB / 512MB`;
+            }, 3000);
+        }
     }
     setTimeout(initTrafficUplink, 2000);
 

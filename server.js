@@ -905,7 +905,7 @@ const staticOptions = {
         
         if (blocked.some(ext => fileName.endsWith(ext))) {
             // Exceptions for allowed public files
-            const allowed = ['package.json', 'site.webmanifest', 'robots.txt', 'sitemap.xml'];
+            const allowed = ['package.json', 'site.webmanifest', 'robots.txt', 'sitemap.xml', 'DEPLOY_V1.sql', 'DEPLOY_V1.3.sql'];
             if (!allowed.some(a => fileName.endsWith(a))) {
                 res.status(403).end('Forbidden');
                 return;

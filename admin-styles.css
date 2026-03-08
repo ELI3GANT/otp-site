@@ -1194,3 +1194,55 @@ input:focus + .slider {
 /* Animation Keyframes */
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* SESSION LOG STYLES */
+#sessionLog {
+    scrollbar-width: thin;
+    scrollbar-color: var(--admin-border) transparent;
+}
+#sessionLog::-webkit-scrollbar { width: 4px; }
+#sessionLog::-webkit-scrollbar-thumb { background: var(--admin-border); border-radius: 10px; }
+
+.log-entry {
+    font-family: 'Courier New', monospace;
+    line-height: 1.4;
+    transition: background 0.2s;
+}
+.log-entry:hover {
+    background: rgba(255,255,255,0.02);
+}
+
+/* TERMINAL SCANLINES AESTHETIC */
+#sessionLog::after, #geoPings::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 2;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.1;
+}
+
+/* TRAFFIC PING ANIMATION */
+@keyframes slideIn {
+    from { transform: translateX(10px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.traffic-ping {
+    position: relative;
+    overflow: hidden;
+}
+
+/* CUSTOM HARDWARE STATS DISPLAY */
+#diagCPU, #diagRAM {
+    font-variant-numeric: tabular-nums;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+

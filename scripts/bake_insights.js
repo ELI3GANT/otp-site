@@ -44,8 +44,7 @@ async function bakeInsights() {
 
     const cardsHtml = posts.map(post => {
         const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        let link = `insight.html?slug=${post.slug}`;
-        if (post.slug === 'spooky-luh-ooky') link = 'spooky-luh-ooky.html';
+        const link = `insight.html?slug=${post.slug}`;
         
         // Strip tags for excerpt
         let rawBody = post.excerpt || post.content || '';

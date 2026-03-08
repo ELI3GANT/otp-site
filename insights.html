@@ -226,7 +226,7 @@
     <div class="wrap footer-inner">
       <div class="footer-left">
         <div class="nav-logo" aria-label="OTP">
-          <img src="assets/otp_v2.png" alt="OTP logo" class="nav-gif" />
+          <img src="assets/otp.gif" alt="OTP logo" class="nav-gif" />
         </div>
         <div class="fineprint">© <span id="year">2026</span> Only True Perspective. All rights reserved.</div>
         <div class="footer-legal">
@@ -384,8 +384,7 @@
             filtered.forEach(post => {
                 try {
                     const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    let link = `insight.html?slug=${post.slug}`;
-                    if (post.slug === 'spooky-luh-ooky') link = 'spooky-luh-ooky.html';
+                    const link = `insight.html?slug=${post.slug}`;
                     
                     const card = document.createElement('article');
                     card.className = 'insight-card k-hover';

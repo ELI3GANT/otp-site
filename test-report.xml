@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="OTP Master Suite" tests="9" failures="0" time="4.00">
+    <testsuite name="System Tests" tests="9" failures="0" time="4.00">
+        
+        <testcase name="Full System Integrity" classname="tests/full_system_test.js" time="0.76">
+            
+            <system-out><![CDATA[🏁 STARTING END-TO-END SYSTEM TEST...
+1️⃣ Creating test post...
+✅ Create Successful
+2️⃣ Testing view tracking (RPC)...
+✅ View Increment Successful
+3️⃣ Verifying data integrity...
+✅ Data Integrity Verified
+4️⃣ Cleaning up database...
+✅ Cleanup Successful
+
+🎊 ALL SYSTEMS PASS. VERSION 3.5 PRO IS STABLE.
+]]></system-out>
+        </testcase>
+        <testcase name="Admin Health & Schema" classname="tests/admin_health.js" time="0.65">
+            
+            <system-out><![CDATA[👮 STARTING ADMIN SYSTEM VERIFICATION...
+✅ Global State Entity Found
+✅ CMS Table 'site_content' Verified
+✅ Broadcasts Schema Verified (Tags & Views columns exist)
+✅ Admin File Integrity Verified
+
+🔐 ADMIN SYSTEM SAFE & READY.
+]]></system-out>
+        </testcase>
+        <testcase name="User Flow Validation" classname="tests/user_flow_validation.js" time="1.09">
+            
+            <system-out><![CDATA[🏁 STARTING FULL USER-FLOW VALIDATION...
+
+📩 Testing Contact Form Submission...
+✅ SUCCESS: Contact data reached Supabase.
+
+📊 Validating Dashboard Metrics...
+✅ SUCCESS: Dashboard Aggregation Logic verified. Total Broadcast Views: 0
+
+🛠️ Validating Admin CRUD (Broadcasts)...
+✅ SUCCESS: Admin CRUD lifecycle is 100% operational.
+
+📡 Checking Real-time Sync Readiness...
+✅ SUCCESS: Supabase Real-time connection established.
+
+🎊 FULL SITE VALIDATION COMPLETE. ALL SYSTEMS OPTIMAL.
+]]></system-out>
+        </testcase>
+        <testcase name="Authentication Logic" classname="tests/auth_flow_test.js" time="0.09">
+            
+            <system-out><![CDATA[🧪 STARTING AUTH FLOW UNIT TESTS...
+   Test 1: Logout Behavior...
+   ✅ PASSED
+   Test 2: Valid Token Check...
+   ✅ PASSED
+   Test 3: Expired Token Check...
+   ✅ PASSED
+   Test 4: Bypass Token Check...
+   ✅ PASSED
+
+🎉 ALL AUTH TESTS PASSED.
+]]></system-out>
+        </testcase>
+        <testcase name="Post Management Logic" classname="tests/manage_post_test.js" time="0.32">
+            
+            <system-out><![CDATA[TEST: Create Post
+[MOCK] Insert into posts: [
+  {
+    title: 'Test Title',
+    content: 'Test Content',
+    slug: 'test-title',
+    tags: [ 'tag1', 'tag2' ],
+    image_url: '',
+    published: true,
+    updated_at: '2026-03-08T17:05:49.385Z'
+  }
+]
+[MOCK] Reset Form
+[MOCK] Fetch Posts
+✅ Create Post Passed
+TEST: Update Post
+[MOCK] Update posts where id=123: {
+  title: 'Updated Title',
+  content: 'Test Content',
+  slug: 'updated-title',
+  tags: [ 'tag1', 'tag2' ],
+  image_url: '',
+  published: true,
+  updated_at: '2026-03-08T17:05:49.388Z'
+}
+[MOCK] Reset Form
+[MOCK] Fetch Posts
+✅ Update Post Passed
+ALL TESTS PASSED
+]]></system-out>
+        </testcase>
+        <testcase name="Email Link Logic" classname="tests/email_link_test.js" time="0.06">
+            
+            <system-out><![CDATA[TEST: Email Link Formatting
+Generated Link: mailto:test@example.com?subject=Inquiry Reply: Only True Perspective // John Doe&body=Hello there!
+✅ Email Link Formatting Passed
+]]></system-out>
+        </testcase>
+        <testcase name="Theme Logic" classname="tests/theme.test.js" time="0.81">
+            
+            <system-out><![CDATA[Running Theme Toggle Tests...
+PASS: Initial theme is dark (no attribute)
+PASS: Toggled to light mode
+PASS: LocalStorage updated to 'light'
+PASS: Toggled back to dark mode
+PASS: LocalStorage updated to 'dark'
+PASS: Local user preference overrides remote state
+Theme tests complete.
+]]></system-out>
+        </testcase>
+        <testcase name="Menu Logic" classname="tests/menu_logic_test.js" time="0.09">
+            
+            <system-out><![CDATA[Running Menu Logic Tests...
+PASS: Drawer has 'open' class after click.
+PASS: aria-expanded is 'true' (string).
+PASS: Drawer removed 'open' class after second click.
+PASS: aria-expanded is 'false' (string).
+]]></system-out>
+        </testcase>
+        <testcase name="Security & Performance" classname="tests/security_perf_audit.js" time="0.13">
+            
+            <system-out><![CDATA[🛡️ STARTING SECURITY & PERFORMANCE AUDIT...
+
+⏱️ Performance:
+- Initial Response Latency: 66ms
+✅ PASS: Low latency (<200ms)
+
+🛡️ Security Headers:
+✅ content-security-policy: PRESENT
+✅ x-frame-options: PRESENT
+✅ x-content-type-options: PRESENT
+✅ strict-transport-security: PRESENT
+✅ referrer-policy: PRESENT
+
+📦 Optimization:
+✅ Compression: ENABLED (br)
+]]></system-out>
+        </testcase>
+    </testsuite>
+</testsuites>
