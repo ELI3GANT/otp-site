@@ -25,7 +25,6 @@
   <link rel="manifest" href="site.webmanifest" />
 
 
-
   <!-- Font (optional but makes it instantly cleaner) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -152,6 +151,81 @@
     </div>
   </main>
 
+  
+
+  <!-- WORK SECTION -->
+
+  <section id="work" class="section section-alt">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <h2>Work</h2>
+        <p>Selected projects from the archive.</p>
+      </header>
+
+      <!-- Replaced Grid with Cool Link -->
+      <div class="work-link-container">
+        <a href="archive.html" class="cool-work-link k-hover" aria-label="View Full Archive">
+          <span class="link-text">ENTER ARCHIVE</span>
+          <span class="link-sub">View Full Portfolio</span>
+        </a>
+      </div>
+      
+    </div>
+  </section>
+
+  
+
+  <!-- STUDIO / PHILOSOPHY -->
+  <section id="studio" class="section-studio">
+    <div class="wrap">
+      <div class="glass-manifesto">
+        <div class="manifesto-left">
+          <!-- Animated SVG Eye -->
+          <svg class="otp-eye-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Lashes Group -->
+            <g class="eye-lashes">
+              <line x1="15" y1="25" x2="22" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="35" y1="15" x2="38" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="50" y1="12" x2="50" y2="25" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="65" y1="15" x2="62" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="85" y1="25" x2="78" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            </g>
+            
+            <!-- Eye Shape (Blinking Mask) -->
+            <g class="eye-shape-group">
+               <!-- Main outline -->
+               <path d="M10 50 C10 50 30 25 50 25 C70 25 90 50 90 50 C90 50 70 75 50 75 C30 75 10 50 10 50 Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+               
+               <!-- Pupil Group (Moves with Mouse) -->
+               <g class="eye-pupil-group">
+                 <circle cx="50" cy="50" r="14" fill="currentColor"/>
+                 <circle cx="55" cy="45" r="4" fill="white"/> <!-- Glint -->
+               </g>
+            </g>
+          </svg>
+        </div>
+        <div class="manifesto-right">
+          <span class="eyebrow" style="color: var(--accent2); margin-bottom: 20px; display: block;">IDENTITY</span>
+          <h2 class="syne-bold studio-title">A PERSPECTIVE<br>THAT'S TRUE.</h2>
+          <div class="studio-body">
+            <p id="studio-text-1" data-editable="true">OTP is about finding the angle that is true to you. We don't just edit video; we build your visual world.</p>
+            <p id="studio-text-2" data-editable="true">This is a journey. Everyone has a story to tell, see, hear, and feel.</p>
+            
+            <div class="capabilities-list">
+              <span class="cap-tag">Vision</span>
+              <span class="cap-tag">Innovation</span>
+              <span class="cap-tag">Strategy</span>
+              <span class="cap-tag">Execution</span>
+              <span class="cap-tag">Impact</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+
   <!-- SERVICES -->
   <section id="services" class="section section-alt">
     <!-- Services List (New Visual Revamp) -->
@@ -266,6 +340,8 @@
       </div>
     </div>
   </section>
+
+  
 
   <!-- PERSPECTIVE AUDIT (The Audit Engine) -->
   <section id="audit" class="section section-audit">
@@ -385,59 +461,7 @@
     </div>
   </section>
 
-  <!-- STUDIO / PHILOSOPHY -->
-  <section id="studio" class="section-studio">
-    <div class="wrap">
-      <div class="glass-manifesto">
-        <div class="manifesto-left">
-          <!-- Animated SVG Eye -->
-          <svg class="otp-eye-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Lashes Group -->
-            <g class="eye-lashes">
-              <line x1="15" y1="25" x2="22" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="35" y1="15" x2="38" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="50" y1="12" x2="50" y2="25" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="65" y1="15" x2="62" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-              <line x1="85" y1="25" x2="78" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-            </g>
-            
-            <!-- Eye Shape (Blinking Mask) -->
-            <g class="eye-shape-group">
-               <!-- Main outline -->
-               <path d="M10 50 C10 50 30 25 50 25 C70 25 90 50 90 50 C90 50 70 75 50 75 C30 75 10 50 10 50 Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-               
-               <!-- Pupil Group (Moves with Mouse) -->
-               <g class="eye-pupil-group">
-                 <circle cx="50" cy="50" r="14" fill="currentColor"/>
-                 <circle cx="55" cy="45" r="4" fill="white"/> <!-- Glint -->
-               </g>
-            </g>
-          </svg>
-        </div>
-        <div class="manifesto-right">
-          <span class="eyebrow" style="color: var(--accent2); margin-bottom: 20px; display: block;">IDENTITY</span>
-          <h2 class="syne-bold studio-title">A PERSPECTIVE<br>THAT'S TRUE.</h2>
-          <div class="studio-body">
-            <p id="studio-text-1" data-editable="true">OTP is about finding the angle that is true to you. We don't just edit video; we build your visual world.</p>
-            <p id="studio-text-2" data-editable="true">This is a journey. Everyone has a story to tell, see, hear, and feel.</p>
-            
-            <div class="capabilities-list">
-              <span class="cap-tag">Vision</span>
-              <span class="cap-tag">Innovation</span>
-              <span class="cap-tag">Strategy</span>
-              <span class="cap-tag">Execution</span>
-              <span class="cap-tag">Impact</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-
-
-
+  
 
 
   <!-- HOW WE WORK (Process) -->
@@ -475,6 +499,8 @@
     </div>
 
   </section>
+
+  
 
   <!-- PACKAGES MENU -->
   <section id="packages" class="section section-alt">
@@ -763,6 +789,8 @@
     </div>
   </section>
 
+  
+
   <!-- REVIEWS (Social Proof) -->
   <section id="reviews" class="section section-tight">
     <div class="wrap">
@@ -787,6 +815,8 @@
       </div>
     </div>
   </section>
+
+  
 
 
   <!-- FAQ SECTION -->
@@ -817,6 +847,7 @@
     </div>
   </section>
 
+  
 
 
   <!-- PROVEN RESULTS (ROI MAPPING) -->
@@ -842,26 +873,6 @@
           <div class="result-label">Visions Delivered Globally</div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- WORK SECTION -->
-
-  <section id="work" class="section section-alt">
-    <div class="wrap">
-      <header class="section-head center-text">
-        <h2>Work</h2>
-        <p>Selected projects from the archive.</p>
-      </header>
-
-      <!-- Replaced Grid with Cool Link -->
-      <div class="work-link-container">
-        <a href="archive.html" class="cool-work-link k-hover" aria-label="View Full Archive">
-          <span class="link-text">ENTER ARCHIVE</span>
-          <span class="link-sub">View Full Portfolio</span>
-        </a>
-      </div>
-      
     </div>
   </section>
 
@@ -1006,7 +1017,6 @@
   </section>
 
 
-
   <!-- FOOTER -->
   <footer class="footer">
     <div class="wrap footer-inner">
@@ -1045,7 +1055,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js" defer></script>
   <script src="https://unpkg.com/split-type" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
-
 
 
   
