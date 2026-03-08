@@ -10,6 +10,15 @@
         yearEl.textContent = new Date().getFullYear();
     }
 
+    // PREMIUM PRELOADER LOGIC
+    window.addEventListener('load', () => {
+        const loader = document.getElementById('page-loader');
+        if (loader) {
+            loader.style.opacity = '0';
+            loader.style.visibility = 'hidden';
+        }
+    });
+
     // 1.5 Lenis Smooth Scroll REMOVED for native feel.
 
 
@@ -224,7 +233,11 @@ window.OTP.trackView = async function(slug) {
     
     // SECURE UPDATE: Use Server Backend (Bypasses RLS)
     try {
-        const apiBase = window.OTP_CONFIG?.apiBase || '';
+        let apiBase = window.OTP_CONFIG?.apiBase || '';
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            apiBase = window.location.origin;
+        }
+
         await fetch(`${apiBase}/api/analytics/view`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -602,7 +615,10 @@ window.OTP.initLiveEditor = async function() {
 
             try {
                 // Use Secure Backend Proxy (Respecting local override)
-                const apiBase = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || '';
+                let apiBase = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || '';
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    apiBase = window.location.origin;
+                }
                 const res = await fetch(`${apiBase}/api/content/update`, {
                     method: 'POST',
                     headers: { 
@@ -1159,7 +1175,10 @@ function initSite() {
             const formData = new FormData(contactForm);
             const data = Object.fromEntries(formData.entries());
 
-            const apiBase = window.OTP_CONFIG?.apiBase || '';
+            let apiBase = window.OTP_CONFIG?.apiBase || '';
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                apiBase = window.location.origin;
+            }
             try {
                 const res = await fetch(`${apiBase}/api/contact/submit`, {
                     method: 'POST',
@@ -1281,6 +1300,84 @@ document.addEventListener('DOMContentLoaded', () => {
                 duration: 0.7,
                 ease: "elastic.out(1, 0.3)"
             });
+        });
+    });
+});
+
+// ==========================================
+// 11. 3D CARD TILT EFFECT (Holographic Glare)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Only apply on non-touch devices for performance
+    if (window.matchMedia("(hover: none)").matches) return;
+
+    const cards = document.querySelectorAll('.package-static:not(.pkg-icon-bubble)');
+    
+    cards.forEach(card => {
+        // Ensure card can position the glare
+        if (getComputedStyle(card).position === 'static') {
+            card.style.position = 'relative';
+        }
+
+        // Create Glare Element
+        const glare = document.createElement('div');
+        glare.className = 'card-glare';
+        glare.style.cssText = `
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15) 0%, transparent 60%);
+            opacity: 0;
+            mix-blend-mode: overlay; /* Very high-end feel */
+            z-index: 10;
+            transition: opacity 0.3s;
+        `;
+        card.appendChild(glare);
+
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Subtle rotation (max 6 degrees to feel realistic)
+            const rotateX = ((y - centerY) / centerY) * -6; 
+            const rotateY = ((x - centerX) / centerX) * 6;
+            
+            // Glare center tracking
+            const glareX = (x / rect.width) * 100;
+            const glareY = (y / rect.height) * 100;
+            
+            if (typeof gsap !== 'undefined') {
+                gsap.to(card, {
+                    rotationX: rotateX,
+                    rotationY: rotateY,
+                    transformPerspective: 1200,
+                    ease: "power2.out",
+                    duration: 0.4
+                });
+            } else {
+                card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            }
+
+            glare.style.opacity = '1';
+            glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.15) 0%, transparent 60%)`;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+             if (typeof gsap !== 'undefined') {
+                 gsap.to(card, {
+                     rotationX: 0,
+                     rotationY: 0,
+                     ease: "power2.out",
+                     duration: 0.7
+                 });
+             } else {
+                 card.style.transform = `perspective(1200px) rotateX(0deg) rotateY(0deg)`;
+             }
+             glare.style.opacity = '0';
         });
     });
 });

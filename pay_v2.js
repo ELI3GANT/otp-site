@@ -75,8 +75,9 @@ function initPaymentSystem() {
         
         // --- RESTRICTED: ALLOW DIRECT PAY FOR ALL DEFINED FIXED-PRICE PACKAGES ---
         const validPayPackages = [
-            'the drop', 'the vision', 'the visualizer', 
-            'the identity', 'the stack', 'the partner'
+            'the drop', 'the vision', 'the visualizer', 'the official video', 
+            'the rollout', 'the identity', 'the digital hq', 'the rebrand',
+            'the stack', 'the partner'
         ];
         
         if (!validPayPackages.includes(titleClean.toLowerCase())) {
@@ -109,8 +110,9 @@ function initPaymentSystem() {
         serviceSelect.addEventListener('change', () => {
             const val = serviceSelect.value;
             const validPayPackages = [
-                'The Drop', 'The Vision', 'The Visualizer', 
-                'The Identity', 'The Stack', 'The Partner'
+                'The Drop', 'The Vision', 'The Visualizer', 'The Official Video',
+                'The Rollout', 'The Identity', 'The Digital HQ', 'The Rebrand', 
+                'The Stack', 'The Partner'
             ];
 
             if (validPayPackages.includes(val)) {
@@ -118,9 +120,9 @@ function initPaymentSystem() {
                 submitBtn.style.background = 'var(--accent2)';
                 submitBtn.style.color = '#000';
             } else {
-                submitBtn.innerText = 'Send Details';
-                submitBtn.style.background = ''; // reset
-                submitBtn.style.color = '';
+                submitBtn.innerHTML = `REQUEST CUSTOM QUOTE`;
+                submitBtn.style.background = 'transparent';
+                submitBtn.style.color = '#fff';
             }
         });
 
@@ -128,8 +130,9 @@ function initPaymentSystem() {
         form.addEventListener('submit', async (e) => {
             const val = serviceSelect.value;
             const validPayPackages = [
-                'The Drop', 'The Vision', 'The Visualizer', 
-                'The Identity', 'The Stack', 'The Partner'
+                'The Drop', 'The Vision', 'The Visualizer', 'The Official Video',
+                'The Rollout', 'The Identity', 'The Digital HQ', 'The Rebrand', 
+                'The Stack', 'The Partner'
             ];
             
             if (validPayPackages.includes(val)) {
@@ -144,8 +147,11 @@ function initPaymentSystem() {
                 const data = Object.fromEntries(formData.entries());
 
                 try {
-                    // SECURE BACKEND BRIDGE: Point to verified Vercel endpoint
-                    const API_BASE = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+                    // SECURE BACKEND BRIDGE: Point to verified Vercel endpoint or localhost
+                    let API_BASE = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                        API_BASE = window.location.origin;
+                    }
 
                     // A. Save Lead
                     const saveRes = await fetch(`${API_BASE}/api/contact/submit`, {
@@ -195,7 +201,10 @@ async function handleDirectPay(e, title, stripe, btn) {
     
     showToast(`Securing ${title}...`);
     // SECURE BACKEND BRIDGE: Point to verified Vercel endpoint
-    const API_BASE = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+    let API_BASE = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        API_BASE = window.location.origin;
+    }
 
     try {
         const response = await fetch(`${API_BASE}/api/create-checkout-session`, {

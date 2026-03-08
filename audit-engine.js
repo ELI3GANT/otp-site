@@ -125,8 +125,11 @@ window.AuditEngine = {
             let success = false;
 
             try {
-                // SECURE BACKEND BRIDGE: Use centralized config (respecting manual override)
-                const API_BASE = localStorage.getItem('otp_api_base') || (window.OTP_CONFIG ? window.OTP_CONFIG.apiBase : 'https://otp-site.vercel.app');
+                // SECURE BACKEND BRIDGE: Use centralized config (respecting manual override and localhost dev)
+                let API_BASE = localStorage.getItem('otp_api_base') || (window.OTP_CONFIG ? window.OTP_CONFIG.apiBase : 'https://otp-site.vercel.app');
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                     API_BASE = window.location.origin;
+                }
                 
                 const response = await fetch(`${API_BASE}/api/audit/submit`, {
                     method: 'POST',
@@ -255,6 +258,11 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
                     onComplete: () => {
                         captureStep.classList.remove('active');
                         resultStep.classList.add('active');
+                        
+                        // Futuristic Glitch Transition
+                        document.body.classList.add('audit-glitch');
+                        setTimeout(() => document.body.classList.remove('audit-glitch'), 350);
+
                         // Trigger Typewriter instead of instant HTML
                         this.typewrite(adviceEl, this.formatAdvice(advice));
                     }

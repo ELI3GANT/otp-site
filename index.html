@@ -78,6 +78,11 @@
   </script>
 </head>
 <body>
+  <!-- PREMIUM PRELOADER -->
+  <div id="page-loader" style="position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;">
+    <div class="loader-pulse" style="width:40px;height:40px;border-radius:50%;background:var(--accent2);animation:pulse-cyan 1.5s infinite alternate;"></div>
+  </div>
+
   <div class="bg-fixed"></div>
   <a class="skip" href="#work">Skip to content</a>
 
@@ -1081,9 +1086,16 @@
   <script src="site-init.js" defer></script>
   <script src="audit-engine.js" defer></script>
   <script>
-
-
-
+    // PRELOADER LOGIC
+    window.addEventListener('load', () => {
+      const loader = document.getElementById('page-loader');
+      if (loader) {
+        loader.style.opacity = '0';
+        loader.style.visibility = 'hidden';
+      }
+    });
+  </script>
+  <script>
     document.addEventListener('DOMContentLoaded', () => {
         // SUPABASE INIT (Using centralized config)
         let supabase;
