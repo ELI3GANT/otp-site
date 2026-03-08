@@ -186,7 +186,8 @@ app.post('/api/auth/login', (req, res) => {
         return res.json({ success: true, token });
     }
     
-    console.warn(`🔓 Failed login attempt for passcode: [${passcode}] | Target: [${envPass}]`);
+    // SECURITY: Do not log the target passcode in production!
+    console.warn(`🔓 Failed login attempt for passcode: [REDACTED]`);
     return res.status(401).json({ success: false, message: 'Access Denied: Invalid Passcode' });
 });
 
@@ -891,13 +892,26 @@ app.post('/api/create-checkout-session', async (req, res) => {
 // --- CACHE CONTROL & STATIC ASSETS ---
 // Served AFTER API to avoid conflict (e.g. 405 on POST to static)
 const staticOptions = {
-    dotfiles: 'ignore',
+    dotfiles: 'ignore', // Still ignore .env
     etag: true,
-    extensions: ['html', 'js', 'css', 'png', 'jpg', 'gif', 'svg'],
+    extensions: ['html', 'js', 'css', 'png', 'jpg', 'gif', 'svg', 'webp', 'xml', 'txt'],
     index: 'index.html',
     maxAge: '1d', // Cache for 1 day
     redirect: false,
     setHeaders: function (res, path, stat) {
+        // BLOCK SENSITIVE EXTENSIONS (Secondary Defense)
+        const blocked = ['.env', '.sql', '.log', '.json', '.md'];
+        const fileName = path.toLowerCase();
+        
+        if (blocked.some(ext => fileName.endsWith(ext))) {
+            // Exceptions for allowed public files
+            const allowed = ['package.json', 'site.webmanifest', 'robots.txt', 'sitemap.xml'];
+            if (!allowed.some(a => fileName.endsWith(a))) {
+                res.status(403).end('Forbidden');
+                return;
+            }
+        }
+
         if (path.endsWith('.html')) {
             // Never cache HTML files to ensure updates are seen immediately
             res.set('Cache-Control', 'no-cache, no-store, must-revalidate');

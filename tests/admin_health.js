@@ -3,17 +3,27 @@ const fs = require('fs');
 const path = require('path');
 
 // Load Config
-const configPath = path.join(__dirname, '../site-config.js');
-const content = fs.readFileSync(configPath, 'utf8');
-const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
-const keyMatch = content.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+let supabaseUrl = process.env.SUPABASE_URL;
+let supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
-if (!urlMatch || !keyMatch) {
+if (!supabaseUrl || !supabaseKey) {
+    const configPath = path.join(__dirname, '../site-config.js');
+    if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, 'utf8');
+        const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
+        const keyMatch = content.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
+        supabaseUrl = urlMatch ? urlMatch[1] : null;
+        supabaseKey = keyMatch ? keyMatch[1] : null;
+    }
+}
+
+if (!supabaseUrl || !supabaseKey) {
     console.error("❌ ADMIN CONFIG LOAD FAILED");
     process.exit(1);
 }
 
-const supabase = createClient(urlMatch[1], keyMatch[1]);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function verifyAdminState() {
     console.log("👮 STARTING ADMIN SYSTEM VERIFICATION...");

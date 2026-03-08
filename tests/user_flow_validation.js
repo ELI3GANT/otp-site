@@ -7,11 +7,22 @@ const fs = require('fs');
 const path = require('path');
 
 // Load Config
-const configPath = path.join(__dirname, '../site-config.js');
-const content = fs.readFileSync(configPath, 'utf8');
-const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
-const keyMatch = content.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
-const supabase = createClient(urlMatch[1], keyMatch[1]);
+// Load Config
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+let supabaseUrl = process.env.SUPABASE_URL;
+let supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+    const configPath = path.join(__dirname, '../site-config.js');
+    if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, 'utf8');
+        const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
+        const keyMatch = content.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
+        supabaseUrl = urlMatch ? urlMatch[1] : null;
+        supabaseKey = keyMatch ? keyMatch[1] : null;
+    }
+}
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function validateUserFlows() {
     console.log("🏁 STARTING FULL USER-FLOW VALIDATION...");
