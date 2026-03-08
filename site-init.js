@@ -49,8 +49,7 @@
         }
     }
 
-    // 3. Scroll Progress Logic (Moved from inline)
-    // 3. Scroll Progress Logic (Optimized)
+    // 3. Scroll Progress Logic (Optimized for 120fps)
     let isScrolling = false;
     window.addEventListener('scroll', () => {
         if (!isScrolling) {
@@ -73,8 +72,8 @@
 
     // 4. Force Scroll To Top on Refresh (HomePage Only)
     // Prevents mobile jumping on index, but allows reading continuity on blogs.
-    const currentPath = window.location.pathname;
-    const isHome = currentPath === '/' || currentPath.endsWith('index.html');
+    const path = window.location.pathname;
+    const isHome = path === '/' || path.endsWith('index.html') || path === '';
     
     if (isHome) {
         if (history.scrollRestoration) {
