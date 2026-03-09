@@ -6,6 +6,8 @@ const FILES_TO_UPDATE = [
     'otp-terminal.html',
     'portal-gate.html',
     'insights.html',
+    'insight.html',
+    '404.html',
     'archive.html',
     'privacy.html',
     'terms.html'
