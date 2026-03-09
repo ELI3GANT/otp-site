@@ -169,7 +169,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
-    res.json({ version: 'v1.3.3', env: process.env.NODE_ENV, stripe: !!stripe });
+    res.json({ version: 'v1.4.0', env: process.env.NODE_ENV, stripe: !!stripe });
 });
 
 app.all('/api/diag', (req, res) => {
@@ -965,7 +965,7 @@ app.use((err, req, res, next) => {
 // Only listen if running locally (not imported as a module)
 if (require.main === module) {
     const server = app.listen(port, '0.0.0.0', () => {
-        console.log(`\n🚀 OTP SECURE SERVER V1.3.1 ONLINE`);
+        console.log(`\n🚀 OTP SECURE SERVER V1.4.0 ONLINE`);
         console.log(`🔒 Security Headers: ENABLED`);
         console.log(`📦 Compression: ENABLED`);
         console.log(`🔑 Auth System: JWT ENABLED`);
