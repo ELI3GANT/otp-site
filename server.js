@@ -601,7 +601,7 @@ app.post('/api/audit/submit', async (req, res) => {
 
         // 2. Call Gemini (With Robust Logic)
         if (process.env.GEMINI_API_KEY) {
-            const modelsToTry = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash-exp'];
+            const modelsToTry = ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'];
             let success = false;
             
             const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -610,23 +610,28 @@ app.post('/api/audit/submit', async (req, res) => {
                 const modelName = modelsToTry[i];
                 if (success) break;
                 try {
-                    console.log(`🤖 Oracle Probing Realm via ${modelName}...`);
+                    console.log(`[ORACLE] Transmitting signal to AI Realm via ${modelName}...`);
                     
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s Hard Timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // Extended to 15s to allow deep strategy synthesis
 
                     const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
+                    const startTime = Date.now();
+                    
                     const fetchPromise = fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
+                            systemInstruction: {
+                                parts: [{ text: systemPrompt }]
+                            },
                             contents: [{ 
                                 role: 'user',
-                                parts: [{ text: systemPrompt + "\n\n" + userPrompt }] 
+                                parts: [{ text: userPrompt }] 
                             }],
                             generationConfig: {
                                 temperature: 0.85,
-                                maxOutputTokens: 500,
+                                maxOutputTokens: 1500,
                                 topP: 0.9,
                                 topK: 40
                             },
@@ -641,29 +646,37 @@ app.post('/api/audit/submit', async (req, res) => {
                     });
 
                     const response = await fetchPromise.finally(() => clearTimeout(timeoutId));
+                    const duration = Date.now() - startTime;
 
                     if (response.status === 429) {
-                        console.warn(`⚠️ Realm Congestion (429) on ${modelName}.`);
+                        console.warn(`[ORACLE-WARN] Realm Congestion (HTTP 429) on ${modelName} after ${duration}ms.`);
                         if (i < modelsToTry.length - 1) await delay(1000 * Math.pow(2, i + 1));
                         continue;
                     }
 
-                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    if (!response.ok) {
+                        const errData = await response.text();
+                        console.error(`[ORACLE-ERROR] HTTP ${response.status} on ${modelName}. Body: ${errData}`);
+                        throw new Error(`API Error: ${response.status}`);
+                    }
 
                     const data = await response.json();
+                    
                     if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
                         advice = data.candidates[0].content.parts[0].text;
                         success = true;
-                        console.log(`✅ Transmission Captured via ${modelName}`);
+                        console.log(`[ORACLE-SUCCESS] Transmission Captured via ${modelName} in ${duration}ms. Tokens: ${data.usageMetadata?.totalTokenCount || 'N/A'}`);
                     } else if (data.error) {
-                        console.error(`Gemini Error (${modelName}):`, data.error.message);
+                        console.error(`[ORACLE-ERROR] Gemini Error Response (${modelName}):`, data.error.message);
                     } else if (data.candidates && data.candidates[0].finishReason === 'SAFETY') {
-                        console.warn(`⚠️ SAFETY BLOCK on ${modelName}`);
+                        console.warn(`[ORACLE-WARN] SAFETY BLOCK triggered on ${modelName}`);
+                    } else {
+                        console.warn(`[ORACLE-WARN] Unexpected response format from ${modelName}:`, JSON.stringify(data).substring(0, 200));
                     }
                 } catch (fetchError) {
                     const isTimeout = fetchError.name === 'AbortError';
-                    console.error(`❌ Portal Error (${modelName}):`, isTimeout ? 'TIMEOUT (8s)' : fetchError.message);
-                    if (!isTimeout) await delay(1000); 
+                    console.error(`[ORACLE-FAILED] Portal Error (${modelName}):`, isTimeout ? 'TIMEOUT (15s)' : fetchError.message);
+                    if (!isTimeout) await delay(1500); // Backoff before retry
                 }
             }
 

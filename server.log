@@ -1,0 +1,27 @@
+
+> otp-site-1@1.3.0 start
+> node server.js
+
+✅ Supabase Admin Initialized
+✅ Gemini API Key found
+
+🚀 OTP SECURE SERVER V1.3.1 ONLINE
+🔒 Security Headers: ENABLED
+📦 Compression: ENABLED
+🔑 Auth System: JWT ENABLED
+📡 Local: http://localhost:3000
+
+[2026-03-09T00:55:17.342Z] GET / - IP: 127.0.0.1
+[2026-03-09T00:55:17.390Z] GET /assets/otp.gif - IP: 127.0.0.1
+[2026-03-09T00:55:17.394Z] GET /styles.css?v=1769637172 - IP: 127.0.0.1
+[2026-03-09T00:55:17.396Z] GET /assets/hero_eye_3d.gif - IP: 127.0.0.1
+[2026-03-09T00:55:17.431Z] GET /site-config.js?v=1.0 - IP: 127.0.0.1
+[2026-03-09T00:55:17.435Z] GET /pay_v2.js?v=1.3.3 - IP: 127.0.0.1
+[2026-03-09T00:55:17.438Z] GET /stars-v2.js - IP: 127.0.0.1
+[2026-03-09T00:55:17.439Z] GET /site.webmanifest - IP: 127.0.0.1
+[2026-03-09T00:55:17.441Z] GET /audit-engine.js - IP: 127.0.0.1
+[2026-03-09T00:55:17.442Z] GET /site-init.js - IP: 127.0.0.1
+[2026-03-09T00:55:17.453Z] GET /assets/hero_eye_3d.gif - IP: 127.0.0.1
+[2026-03-09T00:55:18.275Z] GET /favicon.png - IP: 127.0.0.1
+[2026-03-09T00:55:20.911Z] HEAD /api/health - IP: 127.0.0.1
+[2026-03-09T00:56:45.327Z] GET / - IP: 127.0.0.1

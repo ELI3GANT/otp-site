@@ -336,22 +336,28 @@
         const el = document.getElementById(`status-${type}`);
         if (!el || !value) return;
 
+        const tile = el.closest('.cmd-tile');
+
         if (type === 'maintenance') {
             const isOn = value === 'on';
             el.textContent = isOn ? 'ACTIVE' : 'OFFLINE';
             el.style.color = isOn ? 'var(--admin-success)' : 'var(--admin-danger)';
+            if (tile) tile.classList.toggle('cmd-tile-active', isOn);
         } else if (type === 'visuals') {
             const isHi = value === 'high';
             el.textContent = isHi ? 'HIGH-FI' : 'PERF-MODE';
             el.style.color = isHi ? 'var(--admin-success)' : 'var(--accent2)';
+            if (tile) tile.classList.toggle('cmd-tile-active', isHi);
         } else if (type === 'kursor') {
             const isOn = value === 'on';
             el.textContent = isOn ? 'ACTIVE' : 'DISABLED';
             el.style.color = isOn ? 'var(--admin-success)' : 'var(--admin-muted)';
+            if (tile) tile.classList.toggle('cmd-tile-active', isOn);
         } else if (type === 'theme') {
             const isDay = value === 'light';
             el.textContent = isDay ? 'DAY-MODE' : 'NIGHT-MODE';
             el.style.color = isDay ? '#ffaa00' : 'var(--accent2)';
+            if (tile) tile.classList.toggle('cmd-tile-active', isDay);
         } else if (type === 'status') {
             el.textContent = value.toUpperCase();
             el.style.color = 'var(--admin-success)';
@@ -2642,6 +2648,32 @@
             console.error("State Persistence Failed:", e);
         }
     }
+
+    window.toggleCloudSettings = function() {
+        const settingsDiv = document.getElementById('cloudSettings');
+        const icon = document.querySelector('#toggleSettingsBtn .toggle-icon');
+        
+        if (settingsDiv.style.display === 'none' || settingsDiv.style.display === '') {
+            settingsDiv.style.display = 'block';
+            if (icon) icon.style.transform = 'rotate(180deg)';
+        } else {
+            settingsDiv.style.display = 'none';
+            if (icon) icon.style.transform = 'rotate(0deg)';
+        }
+    };
+
+    window.toggleCloudSettings = function() {
+        const settingsDiv = document.getElementById('cloudSettings');
+        const icon = document.querySelector('#toggleSettingsBtn .toggle-icon');
+        
+        if (settingsDiv.style.display === 'none' || settingsDiv.style.display === '') {
+            settingsDiv.style.display = 'block';
+            if (icon) icon.style.transform = 'rotate(180deg)';
+        } else {
+            settingsDiv.style.display = 'none';
+            if (icon) icon.style.transform = 'rotate(0deg)';
+        }
+    };
 
     window.toggleSiteControl = async function(type) {
         if(!state.siteChannel) return;

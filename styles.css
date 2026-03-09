@@ -22,7 +22,7 @@ body {
 }
 body.nav-open {
     overflow: hidden !important;
-    height: 100vh;
+    touch-action: none;
 }
 
 ::selection {
@@ -1159,6 +1159,8 @@ html, body {
   overflow-x: hidden;
   width: 100%;
   -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 a, button, input, select, textarea, .k-hover {
@@ -2564,7 +2566,7 @@ html {
 
 .nav-drawer {
   position: fixed;
-  top: 85px; /* Aligned with new nav height */
+  top: 75px; /* Aligned securely under the mobile nav bar */
   right: 15px;
   left: 15px;
   padding: 12px;
@@ -2578,6 +2580,9 @@ html {
   -webkit-backdrop-filter: blur(20px);
   z-index: 11000; /* Match nav */
   box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  max-height: calc(100dvh - 90px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   
   /* Smooth Transition State */
   visibility: hidden;
@@ -5363,6 +5368,7 @@ input:focus, select:focus, textarea:focus {
 /* Final fit check for small screens */
 @media (max-width: 480px) {
   .hero h1 { font-size: 2.2rem !important; }
+  .hero-title-adjust .title { font-size: clamp(1.8rem, 11vw, 2.5rem); line-height: 1.0; }
   .eyebrow { font-size: 0.8rem; }
   .wrap { width: 92vw; }
   .nav { padding: 15px 20px; }

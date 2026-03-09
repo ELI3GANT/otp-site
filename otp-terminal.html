@@ -389,41 +389,46 @@
 
                 <!-- SYSTEM & NEURAL SETTINGS (For Mobile/Live) -->
                 <div style="margin-top: 15px; border-top: 1px dashed #333; padding-top: 15px;">
-                    <button type="button" onclick="document.getElementById('cloudSettings').style.display = document.getElementById('cloudSettings').style.display==='none'?'block':'none'" style="background: transparent; border: 1px solid #333; color: #555; font-size: 0.6rem; padding: 4px 8px; width: auto;">🛰️ SYSTEM & NEURAL SETTINGS</button>
-                    <div id="cloudSettings" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                    <button type="button" id="toggleSettingsBtn" onclick="toggleCloudSettings()" class="settings-toggle-btn" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text); font-size: 0.65rem; padding: 6px 12px; width: 100%; text-align: left; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: space-between; align-items: center;">
+                        <span>🛰️ SYSTEM & NEURAL SETTINGS</span>
+                        <span class="toggle-icon" style="transition: transform 0.2s ease;">▼</span>
+                    </button>
+                    <div id="cloudSettings" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
                         
                         <!-- NEW: SATELLITE SERVER LINK -->
-                        <div style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px;">
-                            <label style="font-size: 0.65rem; color: var(--accent); display: block; margin-bottom: 4px;">SECURE SATELLITE URL (REMOTE BACKEND)</label>
+                        <div style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                            <label style="font-size: 0.65rem; color: var(--accent); display: block; margin-bottom: 6px; font-weight: bold;">SECURE SATELLITE URL (REMOTE BACKEND)</label>
                             <div style="display: flex; gap: 8px;">
-                                <input type="text" id="satelliteUrl" placeholder="https://your-api.vercel.app" onchange="localStorage.setItem('otp_api_base', this.value)" style="font-size: 0.7rem; padding: 8px; flex: 1; color: var(--admin-success); font-family: monospace;">
+                                <input type="text" id="satelliteUrl" placeholder="https://your-api.vercel.app" style="font-size: 0.7rem; padding: 8px; flex: 1; color: var(--admin-success); font-family: monospace; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 5px;">
-                                <p style="font-size: 0.55rem; color: #555; margin: 0; flex: 1;">Link your Vercel/Node backend to exit Legacy Mode on mobile.</p>
-                                <button type="button" onclick="testSatelliteConnection()" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-success); font-size: 0.6rem; padding: 4px 8px; cursor: pointer;">TEST LINK</button>
-                                <button type="button" onclick="viewSqlSchema()" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.6rem; padding: 4px 8px; cursor: pointer;">VIEW SCHEMA SQL</button>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 5px;">
+                                <p style="font-size: 0.55rem; color: var(--admin-muted); margin: 0; flex: 1;">Link your Vercel/Node backend to exit Legacy Mode on mobile.</p>
+                                <div style="display: flex; gap: 5px;">
+                                    <button type="button" onclick="testSatelliteConnection()" class="btn-secondary" style="font-size: 0.6rem; padding: 4px 8px;">TEST LINK</button>
+                                    <button type="button" onclick="viewSqlSchema()" class="btn-secondary" style="font-size: 0.6rem; padding: 4px 8px;">SCHEMA SQL</button>
+                                </div>
                             </div>
                         </div>
 
-                        <p style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 8px;">DIRECT NEURAL CLOUD (If server is offline)</p>
+                        <p style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 10px; font-weight: bold;">DIRECT NEURAL CLOUD (If server is offline)</p>
                         <div class="row" style="gap: 10px;">
                             <div class="input-group" style="flex: 1;">
                                 <label style="font-size: 0.6rem;">OPENAI KEY</label>
-                                <input type="password" id="cloudOpenAI" placeholder="sk-..." onchange="localStorage.setItem('cloud_openai', this.value)" style="font-size: 0.7rem; padding: 5px;">
+                                <input type="password" id="cloudOpenAI" placeholder="sk-..." style="font-size: 0.7rem; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
                             </div>
                             <div class="input-group" style="flex: 1;">
                                 <label style="font-size: 0.6rem;">GEMINI KEY</label>
-                                <input type="password" id="cloudGemini" placeholder="AIza..." onchange="localStorage.setItem('cloud_gemini', this.value)" style="font-size: 0.7rem; padding: 5px;">
+                                <input type="password" id="cloudGemini" placeholder="AIza..." style="font-size: 0.7rem; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
                             </div>
                         </div>
-                        <div class="row" style="gap: 10px; margin-top: 8px;">
+                        <div class="row" style="gap: 10px; margin-top: 10px;">
                             <div class="input-group" style="flex: 1;">
                                 <label style="font-size: 0.6rem;">ANTHROPIC KEY</label>
-                                <input type="password" id="cloudClaude" placeholder="sk-ant-..." onchange="localStorage.setItem('cloud_claude', this.value)" style="font-size: 0.7rem; padding: 5px;">
+                                <input type="password" id="cloudClaude" placeholder="sk-ant-..." style="font-size: 0.7rem; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
                             </div>
                             <div class="input-group" style="flex: 1;">
                                 <label style="font-size: 0.6rem;">GROQ KEY</label>
-                                <input type="password" id="cloudGroq" placeholder="gsk_..." onchange="localStorage.setItem('cloud_groq', this.value)" style="font-size: 0.7rem; padding: 5px;">
+                                <input type="password" id="cloudGroq" placeholder="gsk_..." style="font-size: 0.7rem; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
                             </div>
                         </div>
                     </div>
