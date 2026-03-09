@@ -948,6 +948,47 @@ h1, h2, h3 {
   background: #ffffff;
   border-color: #000;
   box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+  /* Review & FAQ Light Mode Fixes */
+}
+[data-theme="light"] .review-text {
+  color: #333;
+}
+[data-theme="light"] .review-author {
+  color: var(--accent2);
+}
+[data-theme="light"] .faq-item h4 {
+  color: #000;
+}
+[data-theme="light"] .faq-item p {
+  color: #555;
+}
+[data-theme="light"] .faq-item {
+  background: #ffffff;
+  border-color: #e0e0e5;
+}
+[data-theme="light"] .faq-item:hover {
+  background: #fdfdff;
+  border-color: var(--accent2);
+}
+
+/* Vibration / Audio Lab Light Mode */
+[data-theme="light"] .vibration-card {
+  background: #ffffff;
+  border-color: #e0e0e5;
+  box-shadow: var(--shadowSoft);
+}
+[data-theme="light"] .vibration-card:hover {
+  background: #ffffff;
+  border-color: var(--accent2);
+  box-shadow: 0 10px 40px rgba(0, 195, 255, 0.1);
+}
+[data-theme="light"] .audio-label {
+  color: #0077b6;
+}
+[data-theme="light"] .audio-player-placeholder iframe {
+  filter: grayscale(1) contrast(1.1); /* Remove invert so it doesn't turn white to black in light mode */
+  opacity: 0.9;
+}
   outline: none;
 }
 [data-theme="light"] .book-btn.k-hover-primary {
@@ -5588,12 +5629,36 @@ input:focus, select:focus, textarea:focus {
 }
 
 .work-img-full {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   filter: brightness(0.8) contrast(1.1);
   transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1), filter 0.4s ease;
+  z-index: 0;
+}
+
+.work-overlay-info {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 2;
+}
+
+.work-type-tag {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--accent2);
+  color: var(--accent2);
+  font-family: 'Space Grotesk', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  backdrop-filter: blur(4px);
 }
 
 .work-card-mini:hover .work-img-full {

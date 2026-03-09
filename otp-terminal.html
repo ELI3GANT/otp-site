@@ -776,9 +776,14 @@
             <div class="form-group" style="position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px;">
                     <label>DRAFT RESPONSE PROTOCOL</label>
-                    <button type="button" onclick="generateReplyForLead()" style="background: var(--admin-accent); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                        <span>⚡</span> GEN AI REPLY
-                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="replyArchetype" style="background: var(--admin-panel); color: var(--admin-cyan); border: 1px solid var(--admin-border); font-size: 0.65rem; padding: 4px; border-radius: 4px; max-width: 150px;">
+                            <option value="">Default Agent</option>
+                        </select>
+                        <button type="button" onclick="generateReplyForLead()" style="background: var(--admin-accent); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <span>⚡</span> GEN AI REPLY
+                        </button>
+                    </div>
                 </div>
                 <textarea id="replyDraftContent" class="input-field" rows="12" style="font-family: monospace; line-height: 1.4;"></textarea>
             </div>

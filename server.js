@@ -210,7 +210,7 @@ const verifyToken = (req, res, next) => {
 // 2. Secure AI Generation (Proxied)
 app.post('/api/ai/generate', verifyToken, async (req, res) => {
     // ... existing AI logic ...
-    const { provider, prompt, title, systemPrompt, model } = req.body;
+    const { provider, prompt, title, systemPrompt, model, modelConfig = {} } = req.body;
     
     try {
         let result;
@@ -231,7 +231,8 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                         { role: "user", content: `Generate post: "${title}". Focus: ${prompt}` }
                     ],
                     temperature: 0.8,
-                    response_format: { type: "json_object" }
+                    response_format: { type: "json_object" },
+                    ...modelConfig
                 })
             });
             
@@ -245,7 +246,8 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             
             const candidates = model ? [model] : ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-flash-001', 'gemini-1.5-pro'];
             const payload = {
-                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nGenerate post titled "${title}" based on prompt: "${prompt}". Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }]
+                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nGenerate post titled "${title}" based on prompt: "${prompt}". Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }],
+                generationConfig: { ...modelConfig }
             };
 
             let lastErr = "";
@@ -291,7 +293,8 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                 body: JSON.stringify({
                     model: model || 'claude-3-5-sonnet-20240620',
                     max_tokens: 4000,
-                    messages: [{ role: 'user', content: `${systemPrompt}\n\n${title}: ${prompt}` }]
+                    messages: [{ role: 'user', content: `${systemPrompt}\n\n${title}: ${prompt}` }],
+                    ...modelConfig
                 })
             });
             const data = await response.json();
@@ -310,7 +313,8 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                         { role: 'system', content: systemPrompt },
                         { role: "user", content: `Generate post: "${title}". ${prompt}` }
                     ],
-                    response_format: { type: "json_object" }
+                    response_format: { type: "json_object" },
+                    ...modelConfig
                 })
             });
             const data = await response.json();

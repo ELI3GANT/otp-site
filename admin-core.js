@@ -614,12 +614,23 @@
     }
 
     function syncArchetypeDropdowns() {
-        const el = document.getElementById('archetype');
-        if (!el) return;
-        const current = el.value;
+        const selects = ['archetype', 'replyArchetype'];
         const escape = window.escapeHtml || (s => s);
-        el.innerHTML = state.archetypes.map(a => `<option value="${escape(a.slug)}">${escape(a.name)}</option>`).join('');
-        if (current) el.value = current;
+        
+        selects.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const current = el.value;
+            const options = state.archetypes.map(a => `<option value="${escape(a.slug)}">${escape(a.name)}</option>`).join('');
+            
+            if (id === 'replyArchetype') {
+                el.innerHTML = '<option value="">Default Agent</option>' + options;
+            } else {
+                el.innerHTML = options;
+            }
+            
+            if (current) el.value = current;
+        });
     }
 
     window.openCategoryManager = function() {
@@ -1253,8 +1264,16 @@
                 groq: localStorage.getItem('cloud_groq')
             };
 
-            const systemPrompt = `You are an elite business consultant and executive assistant. 
-            Your task is to draft a professional, warm, and high-conversion reply to a potential lead.
+            // DYNAMIC ARCHETYPE OVERRIDE
+            const archInput = document.getElementById('replyArchetype');
+            const selectedArchSlug = archInput ? archInput.value : '';
+            const archetype = selectedArchSlug ? state.archetypes.find(a => a.slug === selectedArchSlug) : null;
+            const modelConfig = (archetype && archetype.model_config) ? archetype.model_config : {};
+            
+            const baseSystemPrompt = archetype ? archetype.system_prompt : `You are an elite business consultant and executive assistant. 
+            Your task is to draft a professional, warm, and high-conversion reply to a potential lead.`;
+
+            const systemPrompt = `${baseSystemPrompt}
             
             Lead Name: ${name}
             Lead Email: ${email}
@@ -1282,7 +1301,8 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
                     body: JSON.stringify({
                         model: 'gpt-4o',
-                        messages: [{ role: 'system', content: "You represent a high-end agency." }, { role: 'user', content: systemPrompt }]
+                        messages: [{ role: 'system', content: "You represent a high-end agency." }, { role: 'user', content: systemPrompt }],
+                        ...modelConfig
                     })
                 });
                 const data = await res.json();
@@ -1296,7 +1316,8 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: systemPrompt }] }]
+                        contents: [{ parts: [{ text: systemPrompt }] }],
+                        generationConfig: { ...modelConfig }
                     })
                 });
                 const data = await res.json();
@@ -1309,7 +1330,8 @@
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
                     body: JSON.stringify({
                         model: 'llama-3.1-70b-versatile',
-                        messages: [{ role: 'system', content: "You are a professional assistant." }, { role: 'user', content: systemPrompt }]
+                        messages: [{ role: 'system', content: "You are a professional assistant." }, { role: 'user', content: systemPrompt }],
+                        ...modelConfig
                     })
                 });
                 const data = await res.json();
@@ -1323,6 +1345,9 @@
             // Stream simulation or just paste
              draftBox.value = replyText.trim();
              showToast("REPLY GENERATED");
+
+             // --- TRACK USAGE ---
+             if (selectedArchSlug) incrementArchetypeUsage(selectedArchSlug);
 
         } catch(e) {
             console.error("GEN ERROR:", e);
@@ -1756,7 +1781,7 @@
             const arch = state.archetypes.find(a => a.slug === slug);
             if (!arch) return;
             const newCount = (arch.usage_count || 0) + 1;
-            await window.secureWrite('ai_archetypes', { usage_count: newCount }, targetArch.id);
+            await window.secureWrite('ai_archetypes', { usage_count: newCount }, arch.id);
             await fetchArchetypes(); // Refresh local state
         } catch (e) { console.error("Track Usage Error:", e); }
     }
@@ -2191,6 +2216,7 @@
             const selectedArchSlug = archetypeInput ? archetypeInput.value : 'technical';
             const archetype = state.archetypes.find(a => a.slug === selectedArchSlug);
             const baseSystemPrompt = archetype ? archetype.system_prompt : 'You are a professional blog writer.';
+            const modelConfig = (archetype && archetype.model_config) ? archetype.model_config : {};
 
             const sysPrompt = `${baseSystemPrompt} 
             CRITICAL INSTRUCTION: Output RAW JSON ONLY. No markdown blocks. 
@@ -2218,7 +2244,7 @@
                     const res = await fetch(base + '/api/ai/generate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title: currentTitle, systemPrompt: sysPrompt })
+                        body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title: currentTitle, systemPrompt: sysPrompt, modelConfig })
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
@@ -2248,7 +2274,8 @@
                         body: JSON.stringify({
                             model: 'gpt-4o',
                             messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }],
-                            response_format: { type: "json_object" }
+                            response_format: { type: "json_object" },
+                            ...modelConfig
                         })
                     });
                     const raw = await res.json();
@@ -2263,7 +2290,8 @@
                         body: JSON.stringify({
                             model: 'claude-3-5-sonnet-20240620',
                             max_tokens: 4000,
-                            messages: [{ role: 'user', content: sysPrompt + "\n\n" + userPrompt }]
+                            messages: [{ role: 'user', content: sysPrompt + "\n\n" + userPrompt }],
+                            ...modelConfig
                         })
                     });
                     const raw = await res.json();
@@ -2278,7 +2306,8 @@
                         body: JSON.stringify({
                             model: 'llama-3.1-70b-versatile',
                             messages: [{ role: 'system', content: sysPrompt }, { role: 'user', content: userPrompt }],
-                            response_format: { type: "json_object" }
+                            response_format: { type: "json_object" },
+                            ...modelConfig
                         })
                     });
                     const raw = await res.json();
@@ -2293,11 +2322,12 @@
                     for (const v of endpoints) {
                         try {
                             const payload = { 
-                                contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }] 
+                                contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }],
+                                generationConfig: { ...modelConfig }
                             };
                             // Add Native JSON Mode for v1beta
                             if (v === 'v1beta') {
-                                payload.generationConfig = { response_mime_type: "application/json" };
+                                payload.generationConfig.response_mime_type = "application/json";
                             }
 
                             const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudKey}`, {
