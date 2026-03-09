@@ -50,24 +50,24 @@ async function bakeInsights() {
         let rawBody = post.excerpt || post.content || '';
         let safeBody = rawBody.replace(/<[^>]*>/g, '').substring(0, 100) + (rawBody.length > 100 ? '...' : '');
 
-        const tagsHtml = (post.tags || []).map(t => `<span class="post-tag">#${escapeHtml(t.toUpperCase())}</span>`).join('');
+        const tagsHtml = (post.tags || []).slice(0, 3).map(t => `<span class="post-tag">#${escapeHtml(t.toUpperCase())}</span>`).join('');
 
         return `
-            <article class="insight-card k-hover">
+            <a href="${link}" class="insight-card k-hover">
                 <div class="insight-card-inner">
                     <div class="insight-date">${date} • ${escapeHtml(post.category || 'Insight')}</div>
                     <h2>${escapeHtml(post.title)}</h2>
                     <p>${escapeHtml(safeBody)}</p>
                     
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px;">
                         ${tagsHtml}
                     </div>
 
                     <div class="insight-footer">
-                        <a href="${link}" class="read-more">Read Insight</a>
+                        <span class="read-more">Access Uplink</span>
                     </div>
                 </div>
-            </article>
+            </a>
         `;
     }).join('\n');
 
