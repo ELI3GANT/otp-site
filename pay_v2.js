@@ -86,10 +86,17 @@ function initPaymentSystem() {
         
         console.log(`✅ Injecting Payment Button for: ${titleClean}`);
         
+        // --- DYNAMIC PRICE EXTRACTION ---
+        let priceStr = "";
+        const priceEl = pkg.querySelector('.pkg-amount');
+        if (priceEl) {
+            priceStr = ` — $${priceEl.innerText.trim()}`;
+        }
+        
         // Create Buy Button
         const buyBtn = document.createElement('button');
         buyBtn.className = 'pkg-buy-btn';
-        buyBtn.innerHTML = `<span>⚡ PAY NOW</span>`;
+        buyBtn.innerHTML = `<span>⚡ PAY NOW${priceStr}</span>`;
 
         buyBtn.onclick = (e) => handleDirectPay(e, titleClean, stripe, buyBtn);
         
@@ -116,13 +123,16 @@ function initPaymentSystem() {
             ];
 
             if (validPayPackages.includes(val)) {
-                submitBtn.innerHTML = `PAY & SEND DETAILS <span style="font-size:0.8em; opacity:0.7">(${val})</span>`;
+                // Find corresponding price from the grid if possible, otherwise rely on backend sync
+                submitBtn.innerHTML = `SECURE YOUR SLOT // PAY NOW <span style="font-size:0.8em; opacity:0.8">(${val})</span>`;
                 submitBtn.style.background = 'var(--accent2)';
                 submitBtn.style.color = '#000';
+                submitBtn.style.boxShadow = '0 0 30px rgba(0, 195, 255, 0.3)';
             } else {
                 submitBtn.innerHTML = `REQUEST CUSTOM QUOTE`;
                 submitBtn.style.background = 'transparent';
                 submitBtn.style.color = '#fff';
+                submitBtn.style.boxShadow = 'none';
             }
         });
 
@@ -205,6 +215,7 @@ async function handleDirectPay(e, title, stripe, btn) {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         API_BASE = window.location.origin;
     }
+    console.log(`🔌 Payment Uplink: ${API_BASE}/api/create-checkout-session`);
 
     try {
         const response = await fetch(`${API_BASE}/api/create-checkout-session`, {

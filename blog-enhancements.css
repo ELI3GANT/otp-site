@@ -17,7 +17,6 @@
     height: auto;
     display: block;
     object-fit: contain;
-    aspect-ratio: 21/9;
     background: #000;
 }
 

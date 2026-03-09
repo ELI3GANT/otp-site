@@ -169,7 +169,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
-    res.json({ version: 'v1.4.0', env: process.env.NODE_ENV, stripe: !!stripe });
+    res.json({ version: 'v1.4.1', env: process.env.NODE_ENV, stripe: !!stripe });
 });
 
 app.all('/api/diag', (req, res) => {
@@ -849,22 +849,28 @@ app.post('/api/create-checkout-session', async (req, res) => {
 
     // Pricing Map (In cents) - Customize these values
     // Using lowercase keys for robust matching
+    // Pricing Map (In cents) - Synchronized with index.html
     const prices = {
-        'the drop': 5000, // $50.00 (Simple editing)
-        'the visualizer': 50000, 
-        'the official video': 150000, 
-        'the rollout': 100000,
-        'the identity': 100000,
-        'the digital hq': 200000,
-        'the rebrand': 350000,
-        'the stack': 100000,
-        'the vision': 10000, // $100.00 (In-person photo)
-        'the partner': 500000
+        'the drop': 5000,           // $50.00
+        'the vision': 10000,         // $100.00
+        'the visualizer': 15000,     // $150.00
+        'the identity': 25000,       // $250.00
+        'the stack': 30000,          // $300.00
+        'the rollout': 40000,        // $400.00
+        'the official video': 50000, // $500.00
+        'the digital hq': 75000,     // $750.00
+        'the rebrand': 100000,       // $1,000.00
+        'the partner': 150000        // $1,500.00
     };
 
     // Normalize input to lowercase to avoid case-mismatch fallbacks
     const normalizedName = packageName ? packageName.toLowerCase().trim() : '';
-    const amount = prices[normalizedName] || 10000; // Default $100 if no match
+    const amount = prices[normalizedName];
+
+    if (!amount) {
+        console.error(`❌ Checkout Failed: Package [${packageName}] not found in map.`);
+        return res.status(400).json({ error: `Package '${packageName}' is currently set to Inquiry Only.` });
+    }
 
     try {
         const sessionConfig = {
@@ -873,13 +879,23 @@ app.post('/api/create-checkout-session', async (req, res) => {
                 price_data: {
                     currency: 'usd',
                     product_data: {
-                        name: `OTP PACKAGE: ${packageName}`,
+                        name: `OTP // ${packageName.toUpperCase() || 'CREATIVE SERVICE'}`,
                         // Dynamic Description based on package
                         description: normalizedName === 'the drop' ? '1 High-End Vertical Edit (Algorithm Friendly)' :
                                      normalizedName === 'the vision' ? 'Editorial/Studio Shoot (4h) - 15 High-End Retouched Images' :
-                                     'Secure Payment for Creative Services',
+                                     normalizedName === 'the visualizer' ? 'Perfect Loop + Lyric Integration for Audio' :
+                                     normalizedName === 'the identity' ? 'Professional Brand Identity System (Logo + Marks)' :
+                                     normalizedName === 'the stack' ? '5-10 Short-Form Edits / Batch Alignment' :
+                                     normalizedName === 'the rollout' ? 'Album/EP Launch Kit (Cover + Teasers)' :
+                                     normalizedName === 'the official video' ? 'Full Video Production + VFX + Color' :
+                                     normalizedName === 'the digital hq' ? 'Modern, High-Speed Performance Website' :
+                                     normalizedName === 'the rebrand' ? 'Full Logo System + Professional Website Overhaul' :
+                                     normalizedName === 'the partner' ? 'Monthly Creative Retainer - Priority Activation' :
+                                     'OTP Priority Activation & Booking',
                         metadata: {
-                            package: packageName
+                            package: packageName,
+                            realm: 'visual_division',
+                            server_version: 'v1.4.1'
                         }
                     },
                     unit_amount: amount,

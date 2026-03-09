@@ -3,14 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Secure system terminal for Only True Perspective. Restricted access only.">
     <title>OTP // SYSTEM TERMINAL</title>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
     <style>
         :root {
-            --term-green: #33ff33;
-            --term-dim: #1a5c1a;
-            --term-bg: #0a0e0a;
+            --term-green: #00ff00;
+            --term-dim: rgba(0, 255, 0, 0.5);
+            --term-bg: #030305;
             --term-glow: 0 0 10px rgba(51, 255, 51, 0.4);
+            --accent2: #00ecff;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -18,7 +28,7 @@
         body {
             background-color: var(--term-bg);
             color: var(--term-green);
-            font-family: 'VT323', monospace;
+            font-family: 'Space Grotesk', 'Courier New', monospace;
             height: 100vh;
             display: flex;
             align-items: center;
@@ -62,6 +72,19 @@
             box-shadow: inset 0 0 20px rgba(51, 255, 51, 0.2), 0 0 15px rgba(51, 255, 51, 0.1);
             position: relative;
             z-index: 10;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
         }
 
         .term-header {
@@ -149,17 +172,35 @@
 
         /* MOBILE OPTIMIZATION */
         @media (max-width: 480px) {
-            .terminal-container { border: none; height: 100vh; max-width: 100%; background: var(--term-bg); }
+            .terminal-container { 
+                border: none; 
+                height: auto;
+                min-height: 100vh;
+                max-width: 100%; 
+                background: var(--term-bg);
+                padding: 15px; 
+                font-size: 14px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+            .term-title { font-size: 1.4rem; }
+            .login-btn { padding: 15px; font-size: 1.1rem; }
+            .gate-input { font-size: 1.2rem; }
+            /* Prevent keyboard from blocking by adding padding bottom */
+            body { align-items: flex-start; }
+            .terminal-container { padding-bottom: 50vh; }
         }
     </style>
 </head>
 <body>
 
-    <div class="terminal-container">
-        <div class="term-header">
-            <div class="term-title">ROBCO INDUSTRIES (TM)</div>
-            <div style="font-size: 0.8rem; color: var(--term-dim);">UNIFIED OPERATING SYSTEM v3.7</div>
-        </div>
+    <main class="terminal-container">
+        <header class="term-header">
+            <h1 class="term-title">OTP SECURE TERMINAL (TM)</h1>
+            <h2 style="font-size: 0.8rem; color: var(--term-dim); font-weight: normal;">SYSTEM OS v4.0</h2>
+            <p class="sr-only">Welcome to the secure server terminal of Only True Perspective. Execute authorized commands to interact with the database.</p>
+        </header>
 
         <table class="status-table">
             <tr><td>UPLINK STATUS:</td><td>CONNECTED</td></tr>
@@ -168,19 +209,19 @@
         </table>
 
         <div class="auth-prompt">
-            > ENTER SECURITY PASSCODE:
+            <label for="passcode">> ENTER SECURITY COMMAND:</label>
             <form onsubmit="event.preventDefault(); attemptLogin();">
-                <div style="display: flex; align-items: center;">
-                    <span style="color: var(--term-green); margin-right: 5px;">></span>
-                    <input type="password" id="passcode" class="gate-input" maxlength="10" autocomplete="off" autofocus oninput="updateCursor()">
-                    <span id="fake-cursor" class="cursor"></span>
+                <div style="display: flex; align-items: center; margin-top: 5px;">
+                    <span style="color: var(--term-green); margin-right: 5px;" aria-hidden="true">></span>
+                    <input type="password" id="passcode" class="gate-input" maxlength="20" autocomplete="off" autofocus oninput="updateCursor()" aria-label="Command Input">
+                    <span id="fake-cursor" class="cursor" aria-hidden="true"></span>
                 </div>
-                <button type="submit" id="loginBtn" class="login-btn">INITIATE UPLINK</button>
+                <button type="submit" id="loginBtn" class="login-btn">EXECUTE COMMAND</button>
             </form>
         </div>
 
-        <div id="errorMsg" style="display: none; color: #ff0000; text-shadow: 0 0 5px #ff0000;">ACCESS DENIED // INTRUSION DETECTED</div>
-    </div>
+        <div id="errorMsg" style="display: none; color: #ff0000; text-shadow: 0 0 5px #ff0000; margin-top: 15px;" role="alert">ACCESS DENIED // INTRUSION DETECTED</div>
+    </main>
 
     <script>
         function updateCursor() {
@@ -203,9 +244,15 @@
             const input = document.getElementById('passcode');
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('errorMsg');
-            const pass = input.value;
+            const pass = input.value.trim();
 
             err.style.display = 'none';
+
+            if (!pass) {
+                showError("ERROR: COMMAND CANNOT BE EMPTY");
+                return;
+            }
+
             btn.textContent = "VERIFYING...";
             btn.disabled = true;
 
@@ -226,12 +273,15 @@
                 if(res.ok) {
                     const data = await res.json();
                     if(data.success && data.token) { saveAndRedirect(data.token); return; }
+                } else if (res.status >= 500) {
+                     showError("ERROR: CONNECTION TO SERVER LOST");
+                     return;
                 }
                 throw new Error("Server Reject");
 
             } catch (e) {
                 if(pass === FALLBACK_PASS) saveAndRedirect('static-bypass-token');
-                else showError();
+                else showError("ERROR: INVALID COMMAND SEQUENCE");
             }
         }
 
@@ -240,13 +290,14 @@
             const btn = document.getElementById('loginBtn');
             btn.style.background = '#00ff00';
             btn.textContent = "ACCESS GRANTED";
-            setTimeout(() => { window.location.href = 'otp-terminal.html'; }, 800);
+            setTimeout(() => { window.location.href = 'otp-terminal.html?v=1773059408'; }, 800);
         }
 
-        function showError() {
+        function showError(msg) {
             const err = document.getElementById('errorMsg');
             const btn = document.getElementById('loginBtn');
             const input = document.getElementById('passcode');
+            err.textContent = msg || "ACCESS DENIED // INTRUSION DETECTED";
             err.style.display = 'block';
             btn.disabled = false;
             btn.textContent = "IDENTIFICATION REQUIRED";
