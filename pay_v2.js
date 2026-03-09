@@ -39,7 +39,14 @@ if (document.readyState === 'loading') {
     initPaymentSystem();
 }
 
-function initPaymentSystem() {
+// CONFIG: Defined packages eligible for direct payment
+const VALID_PAY_PACKAGES = [
+    'The Drop', 'The Vision', 'The Visualizer', 'The Official Video',
+    'The Rollout', 'The Identity', 'The Digital HQ', 'The Rebrand', 
+    'The Stack', 'The Partner'
+];
+
+async function initPaymentSystem() {
     console.log('💰 Init Payment System...');
     const STRIPE_PK = 'pk_live_51SqqA9Pux5EhFZOuR0oo7VsFZrKoebiaWLXHNTZPx2kpa3w9kmqgUCtmEN4sY9LPW80UyfjBIfZkIfnPQW0Ba5MC007yWafN6y'; 
 
@@ -70,17 +77,10 @@ function initPaymentSystem() {
         const selectBtn = pkg.querySelector('.pkg-select-btn');
         if(!titleEl || !selectBtn) return;
 
-        const titleRaw = titleEl.innerText;
-        const titleClean = titleRaw.trim(); // Remove whitespace
+        const titleClean = titleEl.innerText.trim();
         
         // --- RESTRICTED: ALLOW DIRECT PAY FOR ALL DEFINED FIXED-PRICE PACKAGES ---
-        const validPayPackages = [
-            'the drop', 'the vision', 'the visualizer', 'the official video', 
-            'the rollout', 'the identity', 'the digital hq', 'the rebrand',
-            'the stack', 'the partner'
-        ];
-        
-        if (!validPayPackages.includes(titleClean.toLowerCase())) {
+        if (!VALID_PAY_PACKAGES.map(p => p.toLowerCase()).includes(titleClean.toLowerCase())) {
              return;
         }
         
@@ -139,13 +139,8 @@ function initPaymentSystem() {
         // Intercept Submission
         form.addEventListener('submit', async (e) => {
             const val = serviceSelect.value;
-            const validPayPackages = [
-                'The Drop', 'The Vision', 'The Visualizer', 'The Official Video',
-                'The Rollout', 'The Identity', 'The Digital HQ', 'The Rebrand', 
-                'The Stack', 'The Partner'
-            ];
             
-            if (validPayPackages.includes(val)) {
+            if (VALID_PAY_PACKAGES.includes(val)) {
                 e.preventDefault();
                 e.stopImmediatePropagation(); // STOP site-init.js
 
@@ -157,7 +152,7 @@ function initPaymentSystem() {
                 const data = Object.fromEntries(formData.entries());
 
                 try {
-                    // SECURE BACKEND BRIDGE: Point to verified Vercel endpoint or localhost
+                    // SECURE BACKEND BRIDGE
                     let API_BASE = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
                     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                         API_BASE = window.location.origin;
@@ -170,8 +165,13 @@ function initPaymentSystem() {
                         body: JSON.stringify(data)
                     });
                     
+                    if (!saveRes.ok) {
+                        const errData = await saveRes.json();
+                        throw new Error(errData.message || "Lead storage failed. Please try again.");
+                    }
+
                     // B. Redirect to Stripe
-                    submitBtn.innerText = "REDIRECTING...";
+                    submitBtn.innerText = "REDIRECTING TO SECURE CHECKOUT...";
                     
                     const payRes = await fetch(`${API_BASE}/api/create-checkout-session`, {
                         method: 'POST',
@@ -183,19 +183,20 @@ function initPaymentSystem() {
                     });
 
                     const session = await payRes.json();
-                    if(session.error) throw new Error(session.error);
+                    if (session.error) throw new Error(session.error);
 
                     const result = await stripe.redirectToCheckout({ sessionId: session.id });
-                    if(result.error) {
-                        showToast(result.error.message, 'error');
-                        alert(result.error.message);
+                    if (result.error) {
+                        throw new Error(result.error.message);
                     }
 
                 } catch (err) {
-                    console.error(err);
-                    showToast("Error: " + err.message, 'error');
+                    console.error("Payment Flow Error:", err);
+                    showToast(err.message, 'error');
+                    
                     submitBtn.disabled = false;
-                    submitBtn.innerText = "PAY & SEND DETAILS";
+                    // Restore dynamic price-aware text on error
+                    serviceSelect.dispatchEvent(new Event('change'));
                 }
             }
         }, true); // Capture phase!

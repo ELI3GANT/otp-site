@@ -1430,6 +1430,9 @@
                     const pkg = btn.dataset.package;
                     if(serviceSelect) {
                         serviceSelect.value = pkg;
+                        // Trigger change event for pay_v2.js to update payment buttons
+                        serviceSelect.dispatchEvent(new Event('change'));
+                        
                         // Scroll to contact
                         const contactSection = document.getElementById('contact');
                         if(contactSection) {
