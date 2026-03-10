@@ -5505,10 +5505,24 @@ input:focus, select:focus, textarea:focus {
   .hero h1 { font-size: 2.2rem !important; }
   .luxe-title { gap: 10px; }
   .luxe-title .title { 
-    font-size: clamp(1.8rem, 10vw, 2.6rem) !important; 
-    line-height: 1.15 !important; 
+    line-height: 1.1 !important; 
     margin-top: 0 !important;
-    letter-spacing: -2px !important;
+    width: fit-content !important;
+    max-width: 90vw !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow: visible !important;
+  }
+  .line, .char { overflow: visible !important; }
+  .luxe-title .title:first-child {
+    font-size: clamp(1.8rem, 8.5vw, 2.4rem) !important;
+    letter-spacing: -1px !important;
+  }
+  .luxe-title .title:last-child {
+    font-size: clamp(1.4rem, 7vw, 1.95rem) !important; /* Final safety reduction for 11 chars */
+    letter-spacing: -1px !important;
+    padding: 0 5px;
   }
   .eyebrow { font-size: 0.8rem; }
   .wrap { width: 92vw; }
