@@ -5503,7 +5503,13 @@ input:focus, select:focus, textarea:focus {
 /* Final fit check for small screens */
 @media (max-width: 480px) {
   .hero h1 { font-size: 2.2rem !important; }
-  .hero-title-adjust .title { font-size: clamp(1.8rem, 11vw, 2.5rem); line-height: 1.0; }
+  .luxe-title { gap: 10px; }
+  .luxe-title .title { 
+    font-size: clamp(1.8rem, 10vw, 2.6rem) !important; 
+    line-height: 1.15 !important; 
+    margin-top: 0 !important;
+    letter-spacing: -2px !important;
+  }
   .eyebrow { font-size: 0.8rem; }
   .wrap { width: 92vw; }
   .nav { padding: 15px 20px; }
