@@ -2662,19 +2662,6 @@
         }
     };
 
-    window.toggleCloudSettings = function() {
-        const settingsDiv = document.getElementById('cloudSettings');
-        const icon = document.querySelector('#toggleSettingsBtn .toggle-icon');
-        
-        if (settingsDiv.style.display === 'none' || settingsDiv.style.display === '') {
-            settingsDiv.style.display = 'block';
-            if (icon) icon.style.transform = 'rotate(180deg)';
-        } else {
-            settingsDiv.style.display = 'none';
-            if (icon) icon.style.transform = 'rotate(0deg)';
-        }
-    };
-
     window.toggleSiteControl = async function(type) {
         if(!state.siteChannel) return;
         const statusEl = document.getElementById(`status-${type}`);
