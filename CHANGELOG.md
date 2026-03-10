@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2026-03-10
+
+### Added
+- **Universal Neon Glitch:** Refactored `NeonController` to `site-init.js` to enable "Neon Glitch" effect for logos on all site pages (`archive.html`, `insights.html`, `privacy.html`, `terms.html`, `insight.html`).
+- **Logo Restore:** Automatically applied `nav-logo-neon` and `footer-logo-neon` IDs to all header and footer logos to ensure a unified flickering brand identity.
+
+### Changed
+- **Server Identity:** Updated API status version to `1.4.1`.
+
+### Fixed
+- **Light Theme Select Fix:** Injected custom SVG arrow into `select` elements in light mode to ensure visibility on all browsers.
+- **Admin Persistence:** Improved theme and maintenance state synchronization between client and server.
+
 ## [1.4.0] - 2026-03-08
 
 ### Added
