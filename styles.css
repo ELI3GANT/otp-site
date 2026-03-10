@@ -4757,6 +4757,23 @@ input:focus, select:focus, textarea:focus {
   }
 }
 
+.secondary-header h1 {
+  font-size: clamp(3.0rem, 12vw, 7rem);
+  line-height: 0.85;
+  letter-spacing: -4px;
+  margin: 0;
+  text-transform: uppercase;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .secondary-header h1 {
+    font-size: clamp(2.5rem, 15vw, 4rem);
+    letter-spacing: -2px;
+  }
+}
+
 .archive-header h1 {
   font-size: clamp(2.5rem, 10vw, 6rem);
   line-height: 0.9;
@@ -4765,28 +4782,39 @@ input:focus, select:focus, textarea:focus {
   text-transform: uppercase;
 }
 
-.archive-intro {
+.status-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--accent2);
+  text-transform: uppercase;
+}
+
+.secondary-intro {
   text-align: center;
   max-width: 800px;
   margin: 0 auto 60px;
   display: flex;
   flex-direction: column;
   gap: 15px;
+  padding: 0 20px;
 }
 
-.intro-text { font-size: 1.2rem; }
+.intro-text { font-size: 1.2rem; line-height: 1.6; }
 .sub-text { font-size: 0.9rem; font-style: italic; opacity: 0.7; }
 .vault-text { font-size: 0.9rem; font-style: italic; margin-top: 20px; letter-spacing: 1px; }
 
 @media (max-width: 768px) {
-  .archive-intro { margin-bottom: 40px; }
-  .intro-text { font-size: 1rem; }
+  .secondary-intro { margin-bottom: 40px; }
+  .intro-text { font-size: 1.1rem; }
 }
+
 @media (max-width: 480px) {
   .archive-header h1 {
     font-size: clamp(2.0rem, 11vw, 3.2rem);
     letter-spacing: -1px;
-    word-break: break-word; /* Ensure it wraps if needed */
+    word-break: break-word;
     hyphens: auto;
   }
 }
