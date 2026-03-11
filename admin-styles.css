@@ -1255,3 +1255,224 @@ input:focus + .slider {
     letter-spacing: 1px;
 }
 
+/* ============================================
+   OTP TERMINAL V10.5 — MISSING CLASS FIXES
+   + PREMIUM VISUAL OVERHAUL
+   ============================================ */
+
+/* --- CMD-TILE (Site Command Pro buttons) --- */
+.cmd-tile {
+    background: var(--admin-panel);
+    border: 1px solid var(--admin-border);
+    padding: 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+    color: inherit;
+    font-family: 'Space Grotesk', sans-serif;
+    text-decoration: none;
+    display: block;
+}
+.cmd-tile::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.cmd-tile:hover::before { opacity: 1; }
+.cmd-tile:hover {
+    border-color: var(--admin-cyan);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 195, 255, 0.12);
+}
+.cmd-tile:active { transform: scale(0.96) translateY(0); }
+.cmd-tile-active {
+    border-color: var(--admin-success) !important;
+    background: rgba(0, 255, 170, 0.05) !important;
+    box-shadow: 0 0 20px rgba(0, 255, 170, 0.08) inset !important;
+}
+
+/* --- STATUS PILL --- */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--admin-border);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--admin-muted);
+    background: rgba(255,255,255,0.02);
+    cursor: default;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.status-pill:hover { border-color: var(--admin-cyan); color: var(--admin-text); }
+
+/* --- ACTION BTN (Reply Modal) --- */
+.action-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--admin-border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+/* --- INPUT FIELD (Reply Textarea) --- */
+.input-field {
+    width: 100%;
+    background: var(--admin-panel);
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    color: var(--admin-text);
+    padding: 14px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.2s;
+}
+.input-field:focus { outline: none; border-color: var(--admin-accent); box-shadow: 0 0 0 3px rgba(112,0,255,0.1); }
+
+/* --- STAT CARD ACCENT TOP BORDERS --- */
+.stat-card:nth-child(1) { border-top: 2px solid var(--admin-cyan); }
+.stat-card:nth-child(2) { border-top: 2px solid var(--admin-success); }
+.stat-card:nth-child(3) { border-top: 2px solid var(--admin-accent); }
+.stat-card:nth-child(4) { border-top: 2px solid #ffaa00; }
+.stat-card:nth-child(1):hover { box-shadow: 0 8px 25px rgba(0,195,255,0.12); }
+.stat-card:nth-child(2):hover { box-shadow: 0 8px 25px rgba(0,255,170,0.12); }
+.stat-card:nth-child(3):hover { box-shadow: 0 8px 25px rgba(112,0,255,0.12); }
+.stat-card:nth-child(4):hover { box-shadow: 0 8px 25px rgba(255,170,0,0.12); }
+
+/* --- ADMIN MAIN GRID: Full responsive layout --- */
+.admin-main-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+.admin-main-content, .dashboard-sidebar { width: 100%; }
+
+@media (min-width: 1024px) {
+    .admin-main-grid {
+        display: grid;
+        grid-template-columns: 1.3fr 0.9fr;
+        gap: 35px;
+        align-items: start;
+    }
+    .dashboard-sidebar {
+        position: sticky;
+        top: 100px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--admin-border) transparent;
+        padding-right: 4px;
+    }
+    .dashboard-sidebar::-webkit-scrollbar { width: 4px; }
+    .dashboard-sidebar::-webkit-scrollbar-thumb { background: var(--admin-border); border-radius: 4px; }
+}
+
+/* --- MOBILE FIXES --- */
+@media (max-width: 768px) {
+    .admin-wrap { padding: 15px 12px 100px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+}
+
+@media (max-width: 600px) {
+    .post-row {
+        grid-template-columns: 1fr auto !important;
+        grid-template-areas: "content status" "actions actions" !important;
+        gap: 10px !important;
+    }
+    .post-row > div:first-child { grid-area: content; }
+    .status-badge { grid-area: status; align-self: start; }
+    .post-row > div:last-child {
+        grid-area: actions;
+        display: flex; width: 100%; gap: 8px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+        padding-top: 10px; justify-content: flex-end;
+    }
+    [style*="grid-template-columns: 1fr 1fr; gap: 20px"] { grid-template-columns: 1fr !important; }
+}
+
+@media (max-width: 480px) {
+    .stat-card { padding: 12px; }
+    .stat-card h3 { font-size: 0.55rem; letter-spacing: 1px; }
+    .stat-card .stat-num { font-size: 1.5rem; }
+    .desktop-only { display: none; }
+    #geoPings { font-size: 0.65rem !important; }
+    .cmd-tile { padding: 12px 8px !important; }
+}
+
+/* --- DIAGNOSTICS PANEL POLISH --- */
+#diagnosticsPanel {
+    background: rgba(0,0,0,0.4) !important;
+    border: 1px solid rgba(0,195,255,0.15) !important;
+    position: relative;
+    overflow: hidden;
+}
+#diagnosticsPanel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--admin-cyan), transparent);
+    opacity: 0.4;
+}
+#diagDB, #diagAuth {
+    padding: 4px 0;
+    display: flex !important;
+    justify-content: space-between;
+}
+
+/* --- NEURAL HUB GLOW --- */
+.ai-tips {
+    background: linear-gradient(180deg, rgba(112,0,255,0.07), rgba(112,0,255,0.02)) !important;
+    border: 1px solid rgba(112,0,255,0.2) !important;
+    position: relative;
+    overflow: hidden;
+}
+.ai-tips::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(112,0,255,0.6), transparent);
+}
+
+/* --- TRAFFIC PINGS STYLE --- */
+.traffic-ping-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    animation: slideIn 0.3s ease;
+    transition: background 0.2s;
+}
+.traffic-ping-row:hover { background: rgba(255,255,255,0.03); }
+
+/* --- LIGHT MODE OVERRIDES --- */
+html[data-theme="light"] .cmd-tile { background: #fff; border-color: #e0e0e5; }
+html[data-theme="light"] .cmd-tile:hover { border-color: var(--admin-cyan); box-shadow: 0 4px 15px rgba(0,122,255,0.1); }
+html[data-theme="light"] .status-pill { background: rgba(0,0,0,0.04); color: #666; }
+html[data-theme="light"] #diagnosticsPanel { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,122,255,0.2) !important; }
+html[data-theme="light"] .ai-tips { background: linear-gradient(180deg, rgba(88,86,214,0.05), rgba(88,86,214,0.01)) !important; border-color: rgba(88,86,214,0.2) !important; }
+html[data-theme="light"] .post-row { background: #fff; border-color: #e5e5ea; }
+html[data-theme="light"] .post-row:hover { background: #f7f7f9; }
+html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !important; border-color: var(--admin-success) !important; }
