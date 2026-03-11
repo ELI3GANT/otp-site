@@ -376,180 +376,185 @@
   <canvas id="cursor-canvas"></canvas>
 
   <script src="site-config.js" defer></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/kursor"></script>
+
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   
   <script>
-    // Page-specific: Fetch Insights & Spotlight Effect
+    // Insights page: fetch from Supabase with baked-content fallback
     document.addEventListener("DOMContentLoaded", async () => {
         const grid = document.querySelector('.insights-grid');
-        const hasBakedContent = grid && grid.querySelectorAll('.insight-card').length > 0;
+        const bakedCards = grid ? [...grid.querySelectorAll('.insight-card')] : [];
+        const hasBakedContent = bakedCards.length > 0;
 
-        // Helper: Escape HTML to prevent XSS (Moved up for scope safety)
         const escapeHtml = (str) => {
             if (!str) return '';
-            return str.replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;")
-                      .replace(/"/g, "&quot;")
-                      .replace(/'/g, "&#039;");
-        };
-
-        // 1. SUPABASE FETCH (Using centralized config)
-        const SUPABASE_URL = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : null;
-        const SUPABASE_KEY = window.OTP_CONFIG ? window.OTP_CONFIG.supabaseKey : null;
-        
-        const setStatus = (msg, isError = false) => {
-            if (grid && !hasBakedContent) {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 40px; color: ${isError ? '#ff4444' : 'var(--muted)'}; opacity: 0.8;">${msg}</div>`;
-            } else {
-                console.log(`[Status]: ${msg}`);
-            }
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         };
 
         let allPosts = [];
         let activeTag = 'ALL';
 
+        // Show status without wiping baked content
+        const setStatus = (msg, isError = false) => {
+            let statusEl = document.getElementById('fetch-status');
+            if (!statusEl) {
+                statusEl = document.createElement('div');
+                statusEl.id = 'fetch-status';
+                statusEl.style.cssText = 'grid-column:1/-1; text-align:center; padding:20px; font-size:0.75rem; letter-spacing:2px; font-family:\'Space Grotesk\', sans-serif; opacity:0.6;';
+                grid.prepend(statusEl);
+            }
+            statusEl.style.color = isError ? '#ff4444' : 'var(--muted)';
+            statusEl.textContent = msg;
+        };
+
+        const clearStatus = () => {
+            const el = document.getElementById('fetch-status');
+            if (el) el.remove();
+        };
+
         try {
-            if (!hasBakedContent) setStatus("CONNECTING TO DATABASE...");
+            // Wait for OTP_CONFIG (site-config.js loads async/deferred)
+            let attempts = 0;
+            while (!window.OTP_CONFIG && attempts < 20) {
+                await new Promise(r => setTimeout(r, 150));
+                attempts++;
+            }
+
+            const SUPABASE_URL = window.OTP_CONFIG?.supabaseUrl;
+            const SUPABASE_KEY = window.OTP_CONFIG?.supabaseKey;
 
             if (typeof window.supabase === 'undefined' || !SUPABASE_URL || !SUPABASE_KEY) {
-                setStatus("CONFIGURATION ERROR: MISSING CREDENTIALS", true);
+                if (!hasBakedContent) setStatus("CONFIGURATION SIGNAL LOST", true);
                 return;
             }
 
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            
             if (!hasBakedContent) setStatus("SCANNING FOR SIGNALS...");
-            
-            // Timeout Wrapper
-            const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("CONNECTION TIMED OUT")), 5000)
-            );
-            
-            const fetchPosts = supabase
-                .from('posts')
-                .select('*')
-                .eq('published', true)
-                .order('created_at', { ascending: false });
 
-            // Race against time
-            const { data: posts, error } = await Promise.race([fetchPosts, timeout]);
+            const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            const { data: posts, error } = await Promise.race([
+                client.from('posts').select('id, title, slug, excerpt, content, category, tags, image_url, views, created_at').eq('published', true).order('created_at', { ascending: false }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 8000))
+            ]);
 
             if (error) throw error;
-
-            console.log("Fetched posts:", posts);
-            setStatus(`FOUND ${posts ? posts.length : 0} SIGNALS. DECODING...`);
-
-            if (posts) {
-                allPosts = posts;
-                if (posts.length > 0) {
-                    renderPosts(posts);
-                    renderFilters(); // No arguments needed now
-                } else {
-                    setStatus("NO SIGNALS DETECTED. STATION IS SILENT.");
-                }
+            if (!posts || posts.length === 0) {
+                if (!hasBakedContent) setStatus("NO SIGNALS DETECTED. STATION IS SILENT.");
+                return;
             }
+
+            allPosts = posts;
+            clearStatus();
+            renderFilters();
+            renderPosts(posts);
+
         } catch (e) {
-            console.error("Error fetching insights:", e);
-            if (!allPosts.length) setStatus(`SIGNAL LOSS: ${e.message}`, true);
+            console.warn("Insights fetch error:", e);
+            if (!hasBakedContent) setStatus(`SIGNAL LOSS: ${e.message}`, true);
         }
 
-
-
         function renderFilters() {
-            // Filters are now static in HTML, but we update active state
-            const buttons = document.querySelectorAll('.filter-btn');
-            buttons.forEach(btn => {
-                const tag = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
-                if (tag === activeTag) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+            // Build tag list dynamically from actual post data
+            const tagSet = new Set(['ALL']);
+            allPosts.forEach(p => {
+                if (p.category) tagSet.add(p.category.toUpperCase());
+                (p.tags || []).forEach(t => tagSet.add(t.toUpperCase()));
             });
+
+            const wrap = document.getElementById('filter-wrap');
+            if (!wrap) return;
+
+            // Keep only tags that have more than 1 post OR are the active one
+            const tagCounts = {};
+            allPosts.forEach(p => {
+                const cats = [p.category?.toUpperCase()].filter(Boolean);
+                const tags = (p.tags || []).map(t => t.toUpperCase());
+                [...cats, ...tags].forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
+            });
+
+            // Always show ALL + tags that exist
+            const usefulTags = ['ALL', ...Object.keys(tagCounts).sort()];
+
+            wrap.innerHTML = usefulTags.map(tag => `
+                <button class="filter-btn ${tag === activeTag ? 'active' : ''}" onclick="window.filterByTag('${escapeHtml(tag)}')">${tag === 'ALL' ? 'All' : tag}</button>
+            `).join('');
         }
 
         window.filterByTag = (tag) => {
             activeTag = tag;
-            renderPosts(allPosts);
             renderFilters();
+            renderPosts(allPosts);
         };
 
         function renderPosts(posts) {
             if (!grid) return;
-            
-            const filtered = activeTag === 'ALL' 
-                ? posts 
+
+            const filtered = activeTag === 'ALL'
+                ? posts
                 : posts.filter(p => {
-                    const postCat = (p.category || '').toUpperCase();
-                    const postTags = (p.tags || []).map(t => t.toUpperCase());
-                    // Match category OR any of the tags
-                    return postCat === activeTag || postTags.includes(activeTag);
+                    const cat = (p.category || '').toUpperCase();
+                    const tags = (p.tags || []).map(t => t.toUpperCase());
+                    return cat === activeTag || tags.includes(activeTag);
                 });
 
             if (filtered.length === 0) {
-                grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding: 100px 40px; color: var(--muted); opacity: 0.8; font-family: 'Space Grotesk', sans-serif; letter-spacing: 2px;">NO SIGNALS FOUND FOR: ${activeTag}</div>`;
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:100px 40px; color:var(--muted); font-family:'Space Grotesk',sans-serif; letter-spacing:2px;">NO SIGNALS FOUND FOR: ${escapeHtml(activeTag)}</div>`;
                 return;
             }
 
             const fragment = document.createDocumentFragment();
-            let validCount = 0;
 
             filtered.forEach(post => {
                 try {
                     const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                    const link = `insight.html?slug=${post.slug}`;
-                    
+                    const link = `insight.html?slug=${encodeURIComponent(post.slug)}`;
+
+                    let rawBody = post.excerpt || post.content || '';
+                    // Strip HTML tags from body preview
+                    let safeBody = rawBody.replace(/<[^>]*>/g, '').replace(/&[a-z]+;/gi, ' ').trim();
+                    safeBody = safeBody.substring(0, 120) + (safeBody.length > 120 ? '...' : '');
+
+                    const viewCount = post.views || 0;
+
                     const card = document.createElement('a');
                     card.href = link;
                     card.className = 'insight-card k-hover';
-
-                    let rawBody = post.excerpt || post.content || '';
-                    let safeBody = rawBody.replace(/<[^>]*>/g, '').substring(0, 100) + (rawBody.length > 100 ? '...' : '');
-
                     card.innerHTML = `
                         <div class="insight-card-inner">
                             <div class="insight-date">${date} • ${escapeHtml(post.category || 'Insight')}</div>
                             <h2>${escapeHtml(post.title)}</h2>
                             <p>${escapeHtml(safeBody)}</p>
-                            
-                            <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px;">
+                            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
                                 ${(post.tags || []).slice(0, 3).map(t => `<span class="post-tag">#${escapeHtml(t.toUpperCase())}</span>`).join('')}
                             </div>
-
-                            <div class="insight-footer">
+                            <div class="insight-footer" style="display:flex; justify-content:space-between; align-items:center;">
                                 <span class="read-more">Access Uplink</span>
+                                ${viewCount > 0 ? `<span style="font-size:0.6rem; color:var(--muted2); font-family:'Space Grotesk',sans-serif; letter-spacing:1px; opacity:0.7;">${viewCount.toLocaleString()} reads</span>` : ''}
                             </div>
                         </div>
                     `;
                     fragment.appendChild(card);
-                    validCount++;
                 } catch (err) {
-                    console.warn("Skipping malformed post:", post.title, err);
+                    console.warn("Skipping malformed post:", post?.title, err);
                 }
             });
 
-            if (validCount > 0) {
-                grid.innerHTML = '';
-                grid.appendChild(fragment);
-                
-                // Animation
-                if (window.gsap) {
-                    gsap.from(grid.querySelectorAll('.insight-card'), {
-                        opacity: 0,
-                        y: 30,
-                        stagger: 0.1,
-                        duration: 0.8,
-                        ease: "power3.out"
-                    });
-                }
+            grid.innerHTML = '';
+            grid.appendChild(fragment);
+
+            // Animate in
+            if (window.gsap) {
+                gsap.from(grid.querySelectorAll('.insight-card'), {
+                    opacity: 0, y: 30, stagger: 0.1, duration: 0.8, ease: "power3.out"
+                });
             }
         }
     });
   </script>
+
 
   <script src="stars-v2.js"></script>
   <script src="site-init.js?v=1773018092"></script>

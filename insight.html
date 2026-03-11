@@ -243,7 +243,8 @@
   </main>
 
   <script src="stars-v2.js"></script>
-  <script src="site-init.js"></script>
+  <script src="site-init.js?v=1773192397"></script>
+
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
@@ -251,26 +252,52 @@
         const slug = params.get('slug');
         if (!slug) { window.location.href = 'insights.html'; return; }
 
+        // Wait for OTP_CONFIG to be available
+        let attempts = 0;
+        while (!window.OTP_CONFIG && attempts < 20) {
+            await new Promise(r => setTimeout(r, 150));
+            attempts++;
+        }
+
         try {
+            if (!window.supabase || !window.OTP_CONFIG) throw new Error('CONFIG_MISSING');
+
             const supabase = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
             const { data: post, error } = await supabase
                 .from('posts')
                 .select('*')
                 .eq('slug', slug)
+                .eq('published', true)  // Block drafts from being accessed directly
                 .single();
 
             if (error || !post) throw new Error("POST_NOT_FOUND");
 
+            // --- Update Page Meta ---
             document.title = `${post.title} | Only True Perspective`;
             document.getElementById('postTitle').innerText = post.title;
-            document.getElementById('postMeta').innerText = `${new Date(post.created_at).toLocaleDateString()} • ${post.category || 'Insight'}`;
+            document.getElementById('postMeta').innerText = `${new Date(post.created_at).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})} • ${post.category || 'Insight'}`;
+
+            // Dynamically update OG tags for proper social sharing
+            const postExcerpt = (post.excerpt || post.content || '').replace(/<[^>]*>/g, '').substring(0, 160);
+            const postImage = post.image_url || 'https://onlytrueperspective.tech/og.jpg';
+            const postUrl = `https://onlytrueperspective.tech/insight.html?slug=${encodeURIComponent(slug)}`;
+            document.querySelector('meta[property="og:title"]')?.setAttribute('content', `${post.title} | Only True Perspective`);
+            document.querySelector('meta[property="og:description"]')?.setAttribute('content', postExcerpt);
+            document.querySelector('meta[property="og:image"]')?.setAttribute('content', postImage);
+            document.querySelector('meta[property="og:url"]')?.setAttribute('content', postUrl);
+            document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', post.title);
+            document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', postExcerpt);
+            document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', postImage);
+            document.querySelector('link[rel="canonical"]')?.setAttribute('href', postUrl);
             
             const body = document.getElementById('postBody');
-            body.innerHTML = post.content || '';
+            body.innerHTML = post.content || '<p>No content available.</p>';
             
             if (post.image_url) {
                 const img = document.getElementById('postImg');
                 img.src = post.image_url;
+                img.alt = post.title;
+                img.loading = 'lazy';
                 img.style.display = 'block';
             }
 
@@ -278,7 +305,7 @@
             document.getElementById('loader').style.display = 'none';
             body.style.display = 'block';
 
-            // Analytics
+            // Track analytics view
             if (window.OTP && typeof window.OTP.trackView === 'function') {
                 window.OTP.trackView(slug);
             }
@@ -287,12 +314,19 @@
         } catch (e) {
             console.error("Uplink Error:", e);
             document.getElementById('loader').style.display = 'none';
-            document.getElementById('postTitle').innerText = "SIGNAL LOST";
+            const titleEl = document.getElementById('postTitle');
             const body = document.getElementById('postBody');
-            body.style.display = 'block';
-            body.innerHTML = "<div style='text-align:center; padding: 40px;'><p>The data requested is unavailable or has been archived.</p><a href='insights.html' style='color:var(--accent2); text-decoration:none; font-weight:bold; letter-spacing:1px;'>RETURN TO VAULT</a></div>";
+            if (titleEl) titleEl.innerText = e.message === 'POST_NOT_FOUND' ? "SIGNAL NOT FOUND" : "UPLINK ERROR";
+            if (body) {
+                body.style.display = 'block';
+                body.innerHTML = `<div style='text-align:center; padding: 60px 40px;'>
+                    <p style='color:var(--muted); margin-bottom:30px;'>${e.message === 'POST_NOT_FOUND' ? 'This transmission has been archived or does not exist.' : 'Connection lost. Please try again.'}</p>
+                    <a href='insights.html' style='color:var(--accent2); text-decoration:none; font-weight:bold; letter-spacing:2px; font-family:\'Space Grotesk\',sans-serif; border:1px solid rgba(0,236,255,0.3); padding:12px 24px; border-radius:8px;'>↩ RETURN TO VAULT</a>
+                </div>`;
+            }
         }
     });
   </script>
+
 </body>
 </html>
