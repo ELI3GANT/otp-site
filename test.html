@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  .parent { color: transparent !important; -webkit-text-stroke: 1px blue; }
+  .child { color: red; }
+</style>
+</head>
+<body>
+  <div class="parent">
+    <span class="child">This should be red fill, blue stroke.</span>
+    <span class="child" style="color: green;">This should be green fill, blue stroke.</span>
+  </div>
+</body>
+</html>

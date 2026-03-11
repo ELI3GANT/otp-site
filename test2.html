@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://unpkg.com/split-type"></script>
+</head>
+<body>
+  <span class="title" id="perspective-neon">PERSPECTIVE</span>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      new SplitType('.title', { types: 'lines, chars' });
+      const el = document.getElementById('perspective-neon');
+      console.log('ID exists after SplitType:', el !== null);
+      if (el) {
+          console.log('Number of chars inside el:', el.querySelectorAll('.char').length);
+      }
+    });
+  </script>
+</body>
+</html>

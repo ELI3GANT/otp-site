@@ -1024,6 +1024,17 @@ function initSite() {
         }
     });
 
+    // Fix: Close mobile drawer on desktop resize to prevent stuck overflow:hidden
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768 && document.body.classList.contains('nav-open')) {
+            const drawer = document.querySelector('.nav-drawer');
+            const btn = document.querySelector('.nav-toggle');
+            if (drawer) drawer.classList.remove('open');
+            document.body.classList.remove('nav-open');
+            if (btn) btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+
 
     // --- BEFORE/AFTER SLIDER ---
     const slider = document.getElementById('baSlider');
