@@ -6707,12 +6707,12 @@ input:focus, select:focus, textarea:focus {
 
 .sticker-hieroglyphic {
   position: relative;
-  width: 80%;
-  height: 80%;
+  width: 90%; /* Larger for impact */
+  height: 90%;
   z-index: 3;
   color: #fff;
   filter: drop-shadow(0 0 15px rgba(0, 236, 255, 0.4));
-  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .star-main-face {
@@ -6730,9 +6730,14 @@ input:focus, select:focus, textarea:focus {
 }
 
 .star-4d-container:hover .sticker-base {
-    transform: scale(1.1) rotate(10deg);
+    transform: scale(1.15) rotate(15deg); /* More aggressive */
     border-color: var(--accent2);
-    background: rgba(0, 236, 255, 0.05);
+    background: rgba(0, 236, 255, 0.08);
+}
+
+.star-4d-container:hover .sticker-hieroglyphic {
+    filter: drop-shadow(0 0 25px rgba(0, 236, 255, 0.8)); /* Hyper Glow */
+    transform: scale(1.05);
 }
 
 .star-4d-container:hover .sticker-resonance {
