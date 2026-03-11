@@ -1,5 +1,5 @@
 /**
- * OTP MASTER TEST RUNNER [V1.2.1]
+ * OTP MASTER TEST RUNNER [V10.5]
  * Aggregates all system tests into a detailed XML report.
  * Supports: --scope, --mode, --report, --output
  */

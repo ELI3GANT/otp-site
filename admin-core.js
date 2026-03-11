@@ -1,4 +1,4 @@
-/**
+2/**
  * ADMIN CORE V10.5 (RELEASE)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Server-side Auth, Secure API Proxy, Supabase Connection.
@@ -169,10 +169,17 @@
                 }, 1000);
 
                 // Initialize System Log
-                window.logAdminAction("SYSTEM KERNEL INITIALIZED", "success");
-                window.logAdminAction(`NODE UPLINK ESTABLISHED: ${isRemote ? 'REMOTE' : 'LOCAL'}`, "info");
+                if (window.logAdminAction) {
+                    window.logAdminAction("SYSTEM KERNEL INITIALIZED", "success");
+                    window.logAdminAction(`NODE UPLINK ESTABLISHED: ${isRemote ? 'REMOTE' : 'LOCAL'}`, "info");
+                }
             }
-            }
+        } catch (e) {
+            console.error("BOOT ERROR:", e);
+            updateDiagnostics('db', 'FAIL: ' + e.message, '#ff4444');
+            showToast("BOOT FAILED: " + e.message);
+        }
+    }
 
             // 5. Neural Cloud Settings (Persistence)
             const cloudOA = document.getElementById('cloudOpenAI');
@@ -1225,9 +1232,10 @@
         const analysisDiv = document.getElementById('replyAnalysis');
         if(c.ai_analysis || c.advice) {
              const analysisData = c.ai_analysis || { tactical_advice: c.advice };
-             analysisDiv.innerHTML = '<pre style="white-space:pre-wrap; font-family:monospace; font-size:0.75em; color:var(--admin-cyan);">' + (typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2)) + '</pre>';
+             const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
+             analysisDiv.innerHTML = `<pre style="white-space:pre-wrap; font-family:monospace; font-size:0.75rem; color:var(--admin-cyan); background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border: 1px solid var(--admin-border);">${window.escapeHTML ? window.escapeHTML(analysisText) : analysisText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`;
         } else {
-             analysisDiv.textContent = "No analysis data.";
+             analysisDiv.innerHTML = `<div style="text-align:center; padding:20px; color:var(--admin-muted); font-size:0.75rem; border: 1px dashed var(--admin-border); border-radius:8px;">SIGNAL DATA NOT ANALYZED</div>`;
         }
         
         const modal = document.getElementById('replyModal');
@@ -3106,6 +3114,10 @@
             }, 3000);
         }
     }
+    // KICK OFF BOT SEQUENCE
+    init();
+    
+    // DELAYED TRAFFIC BOOT
     setTimeout(initTrafficUplink, 2000);
 
     // GLOBAL LOGOUT
