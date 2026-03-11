@@ -1668,17 +1668,23 @@
         if(!list) return;
 
         if (posts.length === 0) {
-            list.innerHTML = `<div style="text-align: center; color: #666; font-size: 0.8rem; padding: 20px;">NO POSTS FOUND</div>`;
+            list.innerHTML = `<div style="text-align: center; color: #666; font-size: 0.8rem; padding: 20px;">NO TRANSMISSIONS FOUND</div>`;
             return;
         }
 
+        const LIVE_ORIGIN = 'https://onlytrueperspective.tech';
+
         list.innerHTML = posts.map(post => {
             const isLive = post.published === true;
+            // All posts use the standard insight.html?slug= URL — no special cases
+            const postUrl = `${LIVE_ORIGIN}/insight.html?slug=${post.slug}`;
+            const internalUrl = `/insight.html?slug=${post.slug}`;
             return `
             <div class="post-row ${isLive ? 'row-active-live' : ''}">
                 <div style="cursor: pointer; flex: 1;" onclick="loadPostForEdit(${post.id})">
                     <div class="post-title">${window.escapeHtml(post.title || 'Untitled')} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
-                    <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span class="theme-active" style="color:var(--admin-success); font-weight:bold;">${post.views || 0}</span> Views</div>
+                    <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span style="color:var(--admin-success); font-weight:bold;">${(post.views || 0).toLocaleString()}</span> Views</div>
+                    ${post.slug ? `<div style="font-size:0.55rem; color:var(--admin-muted); font-family:monospace; margin-top:2px; opacity:0.6;">↗ /insight.html?slug=${window.escapeHtml(post.slug)}</div>` : ''}
                     <div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;">
                         ${(post.tags || []).map(t => `<span style="font-size: 0.55rem; color: var(--admin-cyan); background: rgba(0, 195, 255, 0.05); padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(0, 195, 255, 0.1);">#${window.escapeHtml(t)}</span>`).join('')}
                     </div>
@@ -1687,15 +1693,10 @@
                     ${isLive ? 'LIVE' : 'DRAFT'}
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    ${isLive && post.slug ? (() => {
-                        let postUrl = `/insight.html?slug=${post.slug}`;
-                        if (post.slug === 'spooky-luh-ooky') postUrl = '/spooky-luh-ooky.html';
-                        if (post.slug.startsWith('insight-post-')) postUrl = `/${post.slug}.html`;
-                        return `
-                            <a href="${postUrl}" target="_blank" class="view-btn" title="View Live" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW</a>
-                            <button type="button" onclick="copyPostLink('${post.slug}')" title="Copy Link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
-                        `;
-                    })() : ''}
+                    ${isLive && post.slug ? `
+                        <a href="${postUrl}" target="_blank" rel="noopener" class="view-btn" title="View on live site" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW ↗</a>
+                        <button type="button" onclick="copyPostLink('${window.escapeHtml(post.slug)}')" title="Copy share link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
+                    ` : ''}
                     <button type="button" onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
                 </div>
             </div>
@@ -1745,39 +1746,15 @@
         }
 
         try {
-            // 1. Try Secure Server Delete
-            try {
-                const apiBase = window.OTP_CONFIG?.apiBase || '';
-                const res = await fetch(`${apiBase}/api/admin/delete-post`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${state.token}`
-                    },
-                    body: JSON.stringify({ id: targetId, table: 'posts' }) // Explicitly tell server to use posts
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.success) {
-                         showToast("POST TERMINATED (SECURE)");
-                         finishDelete();
-                         return;
-                    }
-                }
-            } catch(serverErr) {
-                console.warn("Server delete failed, trying client-side fallback...");
-            }
-
-            // Static Fallback (Server Proxy)
+            // Use secureDelete which resolves the best API base automatically
             await window.secureDelete('posts', targetId);
-            showToast("POST TERMINATED (SECURE)");
+            showToast("POST TERMINATED");
             finishDelete();
-
         } catch (err) {
             console.error("❌ DELETION FAILED:", err);
             showToast("DELETION FAILED: " + err.message);
         } finally {
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
             if(confirmBtn) {
                 confirmBtn.textContent = "DELETE";
                 confirmBtn.disabled = false;
@@ -1845,25 +1822,25 @@
             `PERMANENTLY DELETE: ${slug}?`,
             async () => {
                 try {
-                    const apiBase = window.OTP_CONFIG?.apiBase || '';
+                    const apiBase = (function() {
+                        const stored = localStorage.getItem('otp_api_base');
+                        if (stored && stored.startsWith('http') && !stored.includes('localhost')) return stored;
+                        return window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+                    })();
                     const res = await fetch(`${apiBase}/api/admin/delete-post`, {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${state.token}`
                         },
-                        body: JSON.stringify({ slug: slug })
+                        body: JSON.stringify({ slug })
                     });
-                     // (Fetch continuation is handled by original code flow if I match correctly)
-                    // Wait, I need to include the rest of the function because I replaced the top block.
-                    // The original code had the try/catch AFTER the confirm.
                     if (res.ok) {
                         showToast(`RELEASE KILLED: ${slug}`);
-                        const inputFn = document.getElementById('manualDeleteSlug');
-                        if(inputFn) inputFn.value = '';
+                        if(input) input.value = '';
                         fetchPosts(true);
                     } else {
-                        throw new Error("Deletion Failed");
+                        throw new Error(`Server Error: ${res.status}`);
                     }
                 } catch(e) {
                      showToast("KILL FAILED: " + e.message);
@@ -2575,10 +2552,20 @@
 
     window.copyPostLink = function(slug) {
         if(!slug) return;
-        const postUrl = '/insight.html?slug=' + slug;
-        const url = window.location.origin + postUrl;
-        navigator.clipboard.writeText(url);
-        showToast("LINK COPIED TO CLIPBOARD");
+        // Always copy the canonical live site URL, not the admin terminal origin
+        const url = 'https://onlytrueperspective.tech/insight.html?slug=' + slug;
+        navigator.clipboard.writeText(url).then(() => {
+            showToast("🔗 LINK COPIED: " + slug);
+        }).catch(() => {
+            // Fallback for older browsers / http
+            const el = document.createElement('textarea');
+            el.value = url;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("🔗 LINK COPIED");
+        });
     };
 
     window.openDraftPreview = function() {
