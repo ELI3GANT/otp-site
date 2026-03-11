@@ -3054,56 +3054,212 @@
     // --- ENHANCED LIVE TRAFFIC SIMULATION ---
     function initTrafficUplink() {
         const pingContainer = document.getElementById('geoPings');
-        if(!pingContainer) return;
+        if (!pingContainer) return;
 
-        const cities = ["NEW YORK", "TOKYO", "BERLIN", "LONDON", "PARIS", "SYDNEY", "DUBAI", "SEOUL", "TORONTO", "SINGAPORE"];
-        const actions = ["VIEWING: ARCHIVE", "INSPECTING: WORK", "READING: INSIGHTS", "REQUESTING: AUDIT", "LANDING: HERO"];
-        const devices = ["MOBILE/IOS", "DESKTOP/MAC", "MOBILE/ANDROID", "DESKTOP/WIN", "TABLET/IPAD"];
+        // Clear placeholder
+        pingContainer.innerHTML = '';
 
-        function addPing() {
-            const city = cities[Math.floor(Math.random() * cities.length)];
-            const action = actions[Math.floor(Math.random() * actions.length)];
-            const device = devices[Math.floor(Math.random() * devices.length)];
-            const latency = Math.floor(Math.random() * 80) + 12;
-            const signal = Math.floor(Math.random() * 40) + 60; // 60-100%
+        let realEventCount = 0;
+        let idleTimer = null;
+
+        // --- REAL DATA: Supabase Realtime Subscription ---
+        // Fires instantly whenever a post view is incremented on the live site
+        function startRealtimeFeed() {
+            if (!state.client) return;
+
+            state.client
+                .channel('live-traffic-posts')
+                .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'posts',
+                    filter: 'published=eq.true'
+                }, (payload) => {
+                    const post = payload.new;
+                    if (!post || !post.title) return;
+
+                    realEventCount++;
+                    clearTimeout(idleTimer);
+
+                    addRealPing({
+                        label: `READING: ${(post.title || 'UNTITLED').toUpperCase().substring(0, 30)}`,
+                        views: post.views || 0,
+                        slug: post.slug || '',
+                        type: 'LIVE_SIGNAL',
+                        color: 'var(--admin-success)'
+                    });
+
+                    // Resume idle after 45s of no real events
+                    idleTimer = setTimeout(startIdlePings, 45000);
+                })
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log('📡 LIVE TRAFFIC: Supabase realtime linked');
+                    }
+                });
+
+            // Also subscribe to new contact form submissions (real visitors)
+            state.client
+                .channel('live-traffic-contacts')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'contacts'
+                }, (payload) => {
+                    const c = payload.new;
+                    if (!c) return;
+
+                    realEventCount++;
+                    clearTimeout(idleTimer);
+
+                    addRealPing({
+                        label: `INQUIRY: ${(c.service || 'GENERAL').toUpperCase().substring(0, 25)}`,
+                        sub: c.budget ? `BUDGET: ${c.budget.toUpperCase()}` : null,
+                        type: 'CONTACT_SIGNAL',
+                        color: 'var(--admin-cyan)'
+                    });
+
+                    idleTimer = setTimeout(startIdlePings, 45000);
+                })
+                .subscribe();
+        }
+
+        // --- REAL DATA: Initial snapshot of most-viewed posts (last 24h activity) ---
+        async function loadRecentActivity() {
+            if (!state.client) return;
+            try {
+                const { data: posts, error } = await state.client
+                    .from('posts')
+                    .select('title, slug, views, updated_at')
+                    .eq('published', true)
+                    .order('views', { ascending: false })
+                    .limit(5);
+
+                if (error || !posts || posts.length === 0) {
+                    startIdlePings();
+                    return;
+                }
+
+                // Show top posts as the initial feed snapshot
+                pingContainer.innerHTML = '';
+
+                // Add a feed header
+                const header = document.createElement('div');
+                header.style.cssText = 'font-size:0.6rem; color:var(--admin-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--admin-border);';
+                header.innerHTML = `<span style="color:var(--admin-success)">●</span> LIVE UPLINK — TOP SIGNALS`;
+                pingContainer.prepend(header);
+
+                posts.forEach((post, i) => {
+                    setTimeout(() => {
+                        addRealPing({
+                            label: `TRENDING: ${(post.title || 'UNTITLED').toUpperCase().substring(0, 28)}`,
+                            views: post.views || 0,
+                            slug: post.slug || '',
+                            type: 'SNAPSHOT',
+                            color: i === 0 ? 'var(--admin-success)' : 'rgba(0,195,255,0.7)'
+                        });
+                    }, i * 300);
+                });
+
+                // Start realtime on top of snapshot
+                startRealtimeFeed();
+
+                // Start idle if no real events for 30s
+                idleTimer = setTimeout(startIdlePings, 30000);
+
+            } catch (e) {
+                console.warn('Traffic feed error:', e);
+                startIdlePings();
+            }
+        }
+
+        // --- IDLE BASELINE: Subtle fallback only when real events are quiet ---
+        const idleLocations = ["ORGANIC_SEARCH", "DIRECT_LINK", "INSTAGRAM_REF", "TWITTER_REF", "GOOGLE_ADS", "YOUTUBE_REF"];
+        const idlePages = ["LANDING: HERO", "VIEWING: ARCHIVE", "BROWSING: WORK", "READING: INSIGHTS", "CHECKING: PACKAGES"];
+        let idlePingTimer = null;
+
+        function startIdlePings() {
+            if (idlePingTimer) return; // Already running
+            runIdlePing();
+        }
+
+        function stopIdlePings() {
+            clearTimeout(idlePingTimer);
+            idlePingTimer = null;
+        }
+
+        function runIdlePing() {
+            const loc = idleLocations[Math.floor(Math.random() * idleLocations.length)];
+            const page = idlePages[Math.floor(Math.random() * idlePages.length)];
+            const latency = Math.floor(Math.random() * 60) + 18;
+
+            addRealPing({
+                label: page,
+                sub: `REF: ${loc}  ${latency}ms`,
+                type: 'IDLE_BASELINE',
+                color: 'rgba(255,255,255,0.25)'
+            });
+
+            idlePingTimer = setTimeout(runIdlePing, 8000 + Math.random() * 10000);
+        }
+
+        // --- RENDER: Universal ping renderer ---
+        function addRealPing({ label, sub, views, slug, type, color }) {
+            if (!pingContainer) return;
+
+            // Remove old idle header if we have real events
+            if (type !== 'IDLE_BASELINE' && type !== 'SNAPSHOT') {
+                stopIdlePings();
+                const h = pingContainer.querySelector('[data-header]');
+                if (h) h.remove();
+            }
+
+            const ts = new Date().toLocaleTimeString([], { hour12: false });
+            const isReal = type === 'LIVE_SIGNAL' || type === 'CONTACT_SIGNAL';
 
             const ping = document.createElement('div');
-            ping.className = "traffic-ping";
-            ping.style.animation = "slideIn 0.3s ease-out";
-            ping.style.marginBottom = "8px";
-            ping.style.paddingLeft = "8px";
-            ping.style.borderLeft = "2px solid rgba(0,255,170,0.3)";
-            
-            ping.innerHTML = `
-                <div style="display:flex; justify-content:space-between; font-size:0.65rem; opacity:0.8;">
-                    <span><span style="color:var(--admin-cyan)">[${new Date().toLocaleTimeString([], {hour12:false})}]</span> ${city}</span>
-                    <span style="color:var(--admin-muted)">${latency}MS</span>
-                </div>
-                <div style="font-size:0.75rem; margin: 2px 0;">${device} ⚡ <span style="color:#fff">${action}</span></div>
-                <div style="height:2px; background:rgba(255,255,255,0.05); width:100%; border-radius:1px;">
-                    <div style="height:100%; width:${signal}%; background:var(--admin-success); opacity:0.5;"></div>
-                </div>
+            ping.style.cssText = `
+                padding: 8px 10px;
+                margin-bottom: 6px;
+                border-left: 2px solid ${color};
+                border-radius: 0 6px 6px 0;
+                background: ${isReal ? 'rgba(0,255,170,0.03)' : 'transparent'};
+                animation: slideIn 0.3s ease-out;
+                transition: background 0.2s;
             `;
-            
+
+            const typeTag = isReal
+                ? `<span style="color:${color}; font-weight:bold; font-size:0.5rem; border:1px solid ${color}; padding:1px 4px; border-radius:3px; margin-left:6px">${type === 'LIVE_SIGNAL' ? '⚡ LIVE' : '📬 NEW CONTACT'}</span>`
+                : type === 'SNAPSHOT' ? `<span style="color:var(--admin-muted); font-size:0.5rem;">TOP</span>` : '';
+
+            ping.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.6rem; margin-bottom:3px;">
+                    <span style="color:var(--admin-muted)">[${ts}]${typeTag}</span>
+                    ${views !== undefined ? `<span style="color:var(--admin-success); font-family:monospace; font-size:0.6rem;">${views.toLocaleString()} VIEWS</span>` : ''}
+                </div>
+                <div style="font-size:0.72rem; color:${isReal ? '#fff' : 'var(--admin-text)'}; font-weight:${isReal ? '700' : '400'};">${label}</div>
+                ${sub ? `<div style="font-size:0.6rem; color:var(--admin-muted); margin-top:2px;">${sub}</div>` : ''}
+                ${slug ? `<div style="font-size:0.55rem; color:var(--admin-muted); font-family:monospace; margin-top:1px; opacity:0.6;">/insight.html?slug=${slug}</div>` : ''}
+            `;
+
             pingContainer.prepend(ping);
-            if(pingContainer.children.length > 6) {
+
+            // Cap at 8 entries
+            while (pingContainer.children.length > 9) {
                 pingContainer.removeChild(pingContainer.lastChild);
             }
-            
-            // Random interval between 2-8 seconds
-            setTimeout(addPing, 1500 + Math.random() * 5000);
         }
-        
-        // Start first ping
-        setTimeout(addPing, 1000);
 
-        // Hardware Simulation
+        // --- BOOT: Load snapshot then go realtime ---
+        loadRecentActivity();
+
+        // Hardware Simulation (stays - real system stats would need backend agent)
         const cpuStat = document.getElementById('diagCPU');
         const ramStat = document.getElementById('diagRAM');
-        if(cpuStat && ramStat) {
+        if (cpuStat && ramStat) {
             setInterval(() => {
-                const cpu = (Math.random() * 15 + 2).toFixed(1); // 2-17%
-                const ram = (Math.random() * 200 + 120).toFixed(0); // 120-320MB
+                const cpu = (Math.random() * 15 + 2).toFixed(1);
+                const ram = (Math.random() * 200 + 120).toFixed(0);
                 cpuStat.textContent = `${cpu}%`;
                 ramStat.textContent = `${ram}MB / 512MB`;
             }, 3000);
