@@ -9,173 +9,354 @@
     <title>Priority Activation | Only True Perspective</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        :root {
+            --accent2: #00ecff;
+            --bg: #030305;
+        }
+
         body {
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: #050505;
+            background: var(--bg);
             color: #fff;
             text-align: center;
-            font-family: 'Syne', sans-serif;
-            overflow-y: auto;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+            margin: 0;
             padding: 20px;
         }
-        .success-card {
-            padding: 50px;
-            border: 1px solid var(--accent2);
-            background: rgba(0,20,40,0.85);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            max-width: 600px;
+
+        /* PREMIUM MESH BACKGROUND */
+        .mesh-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(0, 236, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 236, 255, 0.05) 0%, transparent 40%),
+                #030305;
+            overflow: hidden;
+        }
+
+        .mesh-bg::after {
+            content: "";
+            position: absolute;
+            inset: -50%;
+            width: 200%;
+            height: 200%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            animation: grain-animation 8s steps(12) infinite;
+        }
+
+        @keyframes grain-animation {
+            0%, 100% { transform:translate(0, 0); }
+            10% { transform:translate(-5%, -10%); }
+            50% { transform:translate(-15%, 10%); }
+            90% { transform:translate(-10%, 10%); }
+        }
+
+        .success-wrapper {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            box-shadow: 0 0 100px rgba(0,195,255,0.15);
-            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            justify-content: center;
+        }
+
+        .success-card {
+            padding: 60px 40px;
+            border: 1px solid rgba(0, 236, 255, 0.15);
+            background: rgba(10, 10, 15, 0.7);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-radius: 24px;
+            max-width: 580px;
+            width: 100%;
+            box-shadow: 
+                0 40px 100px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(0, 236, 255, 0.05);
+            animation: cardEntrance 1s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
         }
-        .success-card::before {
+
+        /* SCANNING LINE EFFECT */
+        .success-card::after {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; height: 4px;
-            background: var(--accent2);
-            box-shadow: 0 0 20px var(--accent2);
-        }
-        h1 { font-size: 3.5rem; margin-bottom: 10px; color: var(--accent2); text-transform: uppercase; line-height: 1; text-shadow: 0 0 30px rgba(0,195,255,0.5); }
-        h2 { font-size: 1.5rem; margin-bottom: 30px; font-weight: 400; opacity: 0.8; }
-        p { font-family: 'Space Grotesk', sans-serif; opacity: 0.7; line-height: 1.6; font-size: 1.1rem; }
-        
-        .upload-zone {
-            margin-top: 30px;
-            padding: 30px;
-            border: 2px dashed rgba(255,255,255,0.2);
-            border-radius: 10px;
-            background: rgba(255,255,255,0.02);
-            transition: 0.3s;
-        }
-        .upload-zone:hover {
-            border-color: var(--accent2);
-            background: rgba(0,195,255,0.05);
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent,
+                rgba(0, 236, 255, 0.1),
+                rgba(0, 236, 255, 0.2),
+                rgba(0, 236, 255, 0.1),
+                transparent
+            );
+            animation: scan 4s linear infinite;
+            pointer-events: none;
         }
 
-        .btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 16px 40px;
-            background: var(--accent2);
-            color: #000;
-            text-decoration: none;
-            font-weight: 800;
-            border-radius: 5px;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            font-size: 1rem;
+        @keyframes scan {
+            0% { top: -100%; }
+            100% { top: 100%; }
         }
-        .btn:hover { box-shadow: 0 0 30px var(--accent2); transform: translateY(-3px); }
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .logo-mark {
+            font-size: 0.8rem;
+            letter-spacing: 0.4em;
+            color: var(--accent2);
+            margin-bottom: 20px;
+            font-weight: 300;
+            opacity: 0.6;
+        }
+
+        h1 { 
+            font-family: 'Syne', sans-serif;
+            font-size: 4rem; 
+            margin: 0; 
+            color: #fff; 
+            text-transform: uppercase; 
+            line-height: 0.9;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0 40px;
+            padding: 8px 16px;
+            background: rgba(0, 236, 255, 0.1);
+            border: 1px solid rgba(0, 236, 255, 0.2);
+            border-radius: 100px;
+            color: var(--accent2);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent2);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent2);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
 
         .steps {
             text-align: left;
-            margin: 30px 0;
-            font-family: 'Space Grotesk', sans-serif;
+            margin: 40px 0;
         }
-        .step {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            opacity: 0;
-            animation: slideUp 0.5s ease forwards;
-        }
-        .step:nth-child(1) { animation-delay: 0.3s; }
-        .step:nth-child(2) { animation-delay: 0.6s; }
-        
-        .step-num {
-            font-weight: 700;
-            color: var(--accent2);
-            margin-right: 15px;
-            font-size: 1.2rem;
-            min-width: 30px;
-        }
-        .step-content strong { color: #fff; display: block; margin-bottom: 4px; }
-        .step-content span { font-size: 0.95rem; color: #aaa; }
 
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        .step {
+            margin-bottom: 24px;
+            padding-left: 20px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
         }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .step::before {
+            content: '';
+            position: absolute;
+            left: -1px;
+            top: 0;
+            height: 40%;
+            width: 1px;
+            background: var(--accent2);
+        }
+
+        .step strong { 
+            display: block; 
+            font-size: 1.1rem; 
+            color: #fff; 
+            margin-bottom: 4px;
+            letter-spacing: -0.01em;
+        }
+
+        .step span { 
+            font-size: 0.9rem; 
+            color: rgba(255, 255, 255, 0.5); 
+            line-height: 1.5;
+        }
+
+        .upload-zone {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 30px;
+            transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .upload-zone:focus-within {
+            border-color: rgba(0, 236, 255, 0.3);
+            background: rgba(0, 236, 255, 0.02);
+        }
+
+        .upload-label {
+            display: block;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px;
+            background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent2);
+            box-shadow: 0 0 20px rgba(0, 236, 255, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--accent2);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 236, 255, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .email-alt {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .email-alt a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        #finalMsg {
+            padding: 40px 20px;
+        }
+
+        #finalMsg h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            color: var(--accent2);
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 2.8rem; }
+            .success-card { padding: 40px 20px; }
         }
     </style>
 </head>
 <body>
-    <div class="success-card">
-        <h1>LOCKED IN.</h1>
-        <h2>PRIORITY STATUS: ACTIVE</h2>
-        
-        <div class="steps">
-            <div class="step">
-                <div class="step-num">01</div>
-                <div class="step-content">
-                    <strong>Payment Secured</strong>
-                    <span>Your slot is confirmed on the production calendar.</span>
+    <div class="mesh-bg"></div>
+
+    <div class="success-wrapper">
+        <div class="success-card">
+            <div class="logo-mark">ONLY TRUE PERSPECTIVE</div>
+            <h1>LOCKED IN.</h1>
+            
+            <div class="status-pill">
+                <div class="status-dot"></div>
+                PRIORITY STATUS: ACTIVE
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <strong>Production Secured</strong>
+                    <span>Your slot is officially locked into the studio calendar.</span>
+                </div>
+                <div class="step">
+                    <strong>Onboarding Logic</strong>
+                    <span>Submit your project assets below to initiate the render.</span>
                 </div>
             </div>
-            <div class="step">
-                <div class="step-num">02</div>
-                <div class="step-content">
-                    <strong>Send Your Assets</strong>
-                    <span>Upload your footage, stems, or brand files to verify the project.</span>
+
+            <div class="upload-zone" id="uploadArea">
+                <span class="upload-label">PASTE PROJECT LINK (DROPBOX / DRIVE)</span>
+                <input type="text" id="projectLink" placeholder="https://..." autofocus>
+                <button class="btn" onclick="submitAssets()">INITIALIZE UPLOAD</button>
+                <div class="email-alt">
+                    OR EMAIL DIRECTLY TO: <a href="mailto:onlytrueperspective@gmail.com">onlytrueperspective@gmail.com</a>
                 </div>
             </div>
-        </div>
 
-        <div class="upload-zone" id="uploadArea">
-            <p style="margin-bottom: 15px;">Paste your project link (Dropbox, WeTransfer, Drive) or Email directly.</p>
-            <input type="text" id="projectLink" placeholder="Paste link here..." style="width: 100%; padding: 15px; background: #000; border: 1px solid #333; color: #fff; border-radius: 5px; font-family: 'Space Grotesk'; margin-bottom: 10px;">
-            <button class="btn" onclick="submitAssets()">CONFIRM ASSETS</button>
-            <div style="margin-top: 15px; font-size: 0.85rem; color: #666;">
-                 Or email files to <a href="mailto:onlytrueperspective@gmail.com" style="color:#fff;">onlytrueperspective@gmail.com</a>
+            <div id="finalMsg" style="display:none;">
+                <h3>UPLINK COMPLETE.</h3>
+                <p style="color: rgba(255,255,255,0.6); line-height: 1.6;">Our team is reviewing the assets. You will receive a production timeline via email within 24 hours.</p>
+                <a href="index.html" class="btn" style="display: block; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fff; margin-top: 30px; text-decoration: none; text-align: center;">RETURN TO BASE</a>
             </div>
-        </div>
-
-        <div id="finalMsg" style="display:none;">
-            <h3 style="color:var(--accent2); margin-bottom: 15px;">ASSETS RECEIVED.</h3>
-            <p>Our team is reviewing the files. You will receive a production timeline within 24 hours.</p>
-            <a href="index.html" class="btn" style="background: transparent; border: 1px solid #333; color: #fff; margin-top: 20px;">RETURN TO BASE</a>
         </div>
     </div>
     
     <script>
         const params = new URLSearchParams(window.location.search);
-        const sessionId = params.get('session_id'); // useful for backend tracking if we implemented it
+        const sessionId = params.get('session_id');
 
         function submitAssets() {
             const link = document.getElementById('projectLink').value;
             const btn = document.querySelector('.btn');
             
             if(!link) {
-                alert("Please paste your Dropbox/Drive link first.");
+                alert("Please provide an asset link to continue.");
                 return;
             }
 
             btn.innerText = "OPENING MAIL CLIENT...";
             
-            // Construct secure mailto
             const subject = `OTP PRIORITY ASSETS: ${sessionId || 'New Order'}`;
-            const body = `Here are the assets for my project:\n\nLINK: ${link}\n\n(Please attach any other relevant files)`;
+            const body = `ASSET LINK: ${link}\n\n(Session ID: ${sessionId || 'N/A'})\n\nInitiating project verification...`;
             
             window.location.href = `mailto:onlytrueperspective@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-            // Simulate UI success after a moment
             setTimeout(() => {
                 document.getElementById('uploadArea').style.display = 'none';
+                document.querySelector('.steps').style.opacity = '0.3';
                 document.getElementById('finalMsg').style.display = 'block';
-                document.querySelector('.steps').style.opacity = '0.5';
             }, 1000);
         }
     </script>
