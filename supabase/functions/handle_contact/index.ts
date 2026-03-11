@@ -23,18 +23,14 @@ serve(async (req) => {
       body: JSON.stringify({
         from: "OTP Studio <contact@onlytrueperspective.tech>", // Sending from verified domain
         to: record.email,
-        subject: "We received your request | OTP",
+        subject: "We received your project inquiry",
         html: `
-          <div style="font-family: sans-serif; background: #000; color: #fff; padding: 40px;">
-            <h1 style="color: #7000ff;">Vision Locked.</h1>
-            <p>Hey ${record.name || 'Creator'},</p>
-            <p>We received your inquiry regarding <strong>${record.service || 'a project'}</strong>.</p>
-            <p>Our team is reviewing your details and will reach out shortly to lock in the timeline.</p>
+          <div style="font-family: sans-serif; background: #000; color: #fff; padding: 40px; border-radius: 8px;">
+            <p style="font-size: 16px; line-height: 1.5;">Thank you for reaching out to OnlyTruePerspective. Your project request has been received and is currently being reviewed. If your project requires a consultation you can schedule a Vision Session here: <a href="https://calendly.com/onlytrueperspective/30min" style="color: #00ecff; text-decoration: none;">Calendly Link</a>. We will follow up shortly.</p>
             <br/>
-            <p>Welcome to the Only True Perspective.</p>
-            <p style="opacity: 0.5;">- OTP Team</p>
-            <hr style="border-color: #333;" />
-            <p style="font-size: 12px; opacity: 0.4;">You provided: ${record.message}</p>
+            <p style="font-size: 16px; font-weight: bold; color: #00ecff;">– ELI, OnlyTruePerspective</p>
+            <hr style="border-color: #333; margin-top: 40px;" />
+            <p style="font-size: 12px; opacity: 0.4;">Inquiry Details: ${record.service || 'General'} | ${record.message}</p>
           </div>
         `,
       }),
