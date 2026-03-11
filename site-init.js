@@ -1476,7 +1476,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         start() {
-            this.setStaticOn();
+            this.setStaticOff(); // Default to OFF (hollow text)
             // Randomize first flicker start
             this.timer = setTimeout(() => this.runSequence(), Math.random() * 2000 + 1000);
         }
@@ -1506,20 +1506,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 chars.forEach(c => {
                     c.style.color = 'inherit';
                     c.style.textShadow = 'none';
-                    c.style.opacity = '0.7'; 
+                    c.style.opacity = '1'; // Ensure it's fully visible (opacity 1) for the hollow effect
                 });
             } else {
-                this.el.style.opacity = '0.4';
-                this.el.style.filter = 'contrast(1) brightness(0.8) grayscale(0.5)';
+                this.el.style.opacity = '0.8';
+                this.el.style.filter = 'contrast(1) brightness(1)';
             }
         }
         
         async runSequence() {
             if (!this.isActive) return;
             
-            // Hardware Glitch Pattern
-            this.setStaticOff();
-            await this.wait(this.flashDuration);
+            // Hardware Glitch Pattern (Flashes ON, then goes OFF)
             this.setStaticOn();
             await this.wait(this.flashDuration);
             this.setStaticOff();
@@ -1529,6 +1527,8 @@ document.addEventListener('DOMContentLoaded', () => {
             this.setStaticOff();
             await this.wait(this.flashDuration * 0.5);
             this.setStaticOn();
+            await this.wait(this.flashDuration);
+            this.setStaticOff(); // <--- LEAVE IT OFF
             
             // Queue next sequence with random delay
             const nextInterval = this.interval + (Math.random() * 4000);

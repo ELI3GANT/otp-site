@@ -1029,8 +1029,6 @@ h1, h2, h3 {
   filter: grayscale(1) contrast(1.1); /* Remove invert so it doesn't turn white to black in light mode */
   opacity: 0.9;
 }
-  outline: none;
-}
 [data-theme="light"] .book-btn.k-hover-primary {
   background: #111;
   color: #fff;
