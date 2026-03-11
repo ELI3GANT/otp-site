@@ -22,8 +22,10 @@ body {
 }
 body.nav-open {
     overflow: hidden !important;
-    touch-action: none;
+    /* Don't block touch on the whole body — drawer handles its own scroll */
+    touch-action: pan-y;
 }
+
 
 /* SMART CONTAINMENT (For 'Beast' PC Performance) */
 section, .section-studio, .section-work, #services, #contact {
@@ -2071,7 +2073,19 @@ html {
 }
 
 .nav.nav-split {
-  justify-content: space-between;
+  /* nav-split: handled by base .nav flex justify-content:space-between */
+}
+
+/* Scroll-shrink: nav compacts when page is scrolled */
+.nav.scrolled {
+  padding: 12px 48px;
+  background: rgba(10,10,18,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+@media (max-width: 768px) {
+  .nav.scrolled { padding: 10px 20px; }
 }
 
 .nav-logo .otp-mark {
@@ -2129,37 +2143,8 @@ html {
 
 /* ... existing code ... */
 
-.nav-drawer {
-  position: fixed;
-  top: 85px;
-  right: 15px;
-  left: 15px;
-  padding: 12px;
-  display: flex;
-  gap: 8px;
-  flex-direction: column;
-  background: rgba(10,10,18,0.96);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 20px;
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  z-index: 11000;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
-  
-  /* Smooth Transition State */
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-15px) scale(0.98);
-  transform-origin: top center;
-  transition: 
-    opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-    visibility 0s linear 0.3s;
-  will-change: transform, opacity;
-}
+/* nav-drawer is defined further below in the mobile section */
 
-/* Removed broad aura ::after */
 .hero-logo-wrap::after {
   content: none; 
 }
@@ -2590,35 +2575,38 @@ html {
 
 .nav-drawer {
   position: fixed;
-  top: 75px; /* Aligned securely under the mobile nav bar */
+  top: 70px; /* Matches .nav mobile height exactly */
   right: 15px;
   left: 15px;
   padding: 12px;
   display: flex;
   gap: 8px;
   flex-direction: column;
-  background: rgba(10,10,18,0.95);
+  background: rgba(10,10,18,0.97);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 20px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  z-index: 11000; /* Match nav */
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-  max-height: calc(100dvh - 90px);
+  z-index: 11000;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,236,255,0.04);
+  max-height: calc(100dvh - 80px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   
   /* Smooth Transition State */
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-15px) scale(0.98);
-  transform-origin: top center;
+  transform: translateY(-12px) scale(0.97);
+  transform-origin: top right;
   transition: 
-    opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-    visibility 0s linear 0.3s;
+    opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    visibility 0s linear 0.25s;
+  will-change: transform, opacity;
 }
+
 
 .nav-drawer.open { 
   visibility: visible;

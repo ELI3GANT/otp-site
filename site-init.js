@@ -50,8 +50,9 @@
         }
     }
 
-    // 3. Scroll Progress Logic (Optimized for 120fps)
+    // 3. Scroll Progress + Nav Shrink (Optimized for 120fps)
     let isScrolling = false;
+    const navEl = document.querySelector('.nav');
     window.addEventListener('scroll', () => {
         if (!isScrolling) {
             window.requestAnimationFrame(() => {
@@ -65,11 +66,22 @@
                 const max = docHeight - winHeight;
                 const scrollPercent = max > 0 ? (scrollTop / max) * 100 : 0;
                 document.body.style.setProperty('--scroll', `${scrollPercent}%`);
+
+                // Nav scroll-shrink
+                if (navEl) {
+                    if (scrollTop > 20) {
+                        navEl.classList.add('scrolled');
+                    } else {
+                        navEl.classList.remove('scrolled');
+                    }
+                }
+
                 isScrolling = false;
             });
             isScrolling = true;
         }
     }, { passive: true });
+
 
     // 4. Force Scroll To Top on Refresh (HomePage Only)
     // Prevents mobile jumping on index, but allows reading continuity on blogs.
@@ -941,25 +953,21 @@ function initSite() {
         cardObserver.observe(card);
     }
 
-    // --- MOBILE MENU ---
-    // --- MOBILE MENU (DELEGATION & ROBUSTNESS) ---
-    // Using delegation to handle any rendering timing issues
-    // --- MOBILE MENU (DELEGATION & ROBUSTNESS) ---
-    // Handle both Click and Touch to ensure responsiveness
     const handleMenuToggle = (e) => {
         const toggle = e.target.closest('.nav-toggle');
         const link = e.target.closest('.nav-drawer a');
         const drawer = document.querySelector('.nav-drawer');
-        const btn = document.querySelector('.nav-toggle'); 
+        const btn = document.querySelector('.nav-toggle');
 
+        // 1. Toggle button clicked
         if (toggle && drawer) {
             e.preventDefault();
             e.stopPropagation();
-            
-            // Debounce check (prevent double firing from touch+click)
+
+            // Debounce (prevent double-fire from touch + click)
             if (toggle.dataset.processing) return;
             toggle.dataset.processing = "true";
-            setTimeout(() => delete toggle.dataset.processing, 500);
+            setTimeout(() => delete toggle.dataset.processing, 300);
 
             const isOpen = drawer.classList.contains('open');
             if (isOpen) {
@@ -971,31 +979,51 @@ function initSite() {
                 document.body.classList.add('nav-open');
                 btn.setAttribute('aria-expanded', 'true');
             }
-            console.log('[OTP] Mobile Menu Toggled:', !isOpen);
+            return; // Don't fall through to close-outside check
         }
 
+        // 2. Drawer link clicked — close menu
         if (link && drawer && drawer.classList.contains('open')) {
             drawer.classList.remove('open');
             document.body.classList.remove('nav-open');
             if (btn) btn.setAttribute('aria-expanded', 'false');
+            return;
         }
 
-        // --- NEW: CLOSE ON CLICK OUTSIDE ---
-        if (drawer && drawer.classList.contains('open') && !drawer.contains(e.target) && !toggle) {
-            drawer.classList.remove('open');
-            document.body.classList.remove('nav-open');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
+        // 3. Click outside — close if open
+        if (drawer && drawer.classList.contains('open')) {
+            const clickedInsideDrawer = drawer.contains(e.target);
+            const clickedToggle = btn && btn.contains(e.target);
+            if (!clickedInsideDrawer && !clickedToggle) {
+                drawer.classList.remove('open');
+                document.body.classList.remove('nav-open');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
         }
     };
 
     document.body.addEventListener('click', handleMenuToggle);
+    // touchstart only for toggle button — passive to avoid blocking scroll
     document.body.addEventListener('touchstart', (e) => {
-        // Only handle TOGGLE on touchstart to ensure responsiveness. 
-        // Links should rely on 'click' to allow scrolling to trigger correctly.
-        if(e.target.closest('.nav-toggle')) {
+        if (e.target.closest('.nav-toggle')) {
             handleMenuToggle(e);
         }
-    }, { passive: false });
+    }, { passive: true });
+
+    // Keyboard: close drawer on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const drawer = document.querySelector('.nav-drawer');
+            const btn = document.querySelector('.nav-toggle');
+            if (drawer && drawer.classList.contains('open')) {
+                drawer.classList.remove('open');
+                document.body.classList.remove('nav-open');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+                btn?.focus();
+            }
+        }
+    });
+
 
     // --- BEFORE/AFTER SLIDER ---
     const slider = document.getElementById('baSlider');
