@@ -174,12 +174,6 @@
                     window.logAdminAction(`NODE UPLINK ESTABLISHED: ${isRemote ? 'REMOTE' : 'LOCAL'}`, "info");
                 }
             }
-        } catch (e) {
-            console.error("BOOT ERROR:", e);
-            updateDiagnostics('db', 'FAIL: ' + e.message, '#ff4444');
-            showToast("BOOT FAILED: " + e.message);
-        }
-    }
 
             // 5. Neural Cloud Settings (Persistence)
             const cloudOA = document.getElementById('cloudOpenAI');
