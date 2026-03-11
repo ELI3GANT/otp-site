@@ -160,8 +160,13 @@ section, .section-studio, .section-work, #services, #contact {
   -webkit-backdrop-filter: blur(15px);
 }
 
+[data-theme="light"] .nav.scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
 [data-theme="light"] .nav-logo img {
-  filter: grayscale(1) invert(1) contrast(1.5); /* Hard black logo */
+  filter: grayscale(1) invert(1) contrast(1.5) !important; /* Hard black logo */
   mix-blend-mode: multiply !important;
   background: transparent !important;
   border: none !important;
@@ -189,15 +194,21 @@ section, .section-studio, .section-work, #services, #contact {
 
 /* Footer Logo Light Mode */
 [data-theme="light"] .nav-gif {
-  filter: brightness(0);
+  filter: brightness(0) !important;
   mix-blend-mode: normal !important;
-  opacity: 0.8;
+  opacity: 0.8 !important;
 }
 
 [data-theme="light"] .hero h1 {
   text-shadow: none;
   color: #000;
   letter-spacing: -1px;
+}
+
+[data-theme="light"] .hero h1 .char {
+  color: #000 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
 }
 
 [data-theme="light"] .eyebrow {
@@ -351,6 +362,9 @@ section, .section-studio, .section-work, #services, #contact {
 [data-theme="light"] .nav-links a.active,
 [data-theme="light"] .nav-links a:hover {
   color: var(--accent);
+}
+[data-theme="light"] .nav-links a.active::after {
+  background: var(--accent); /* Black indicator */
 }
 
 /* FAQ & REVIEWS (Light Mode Fixes) */
