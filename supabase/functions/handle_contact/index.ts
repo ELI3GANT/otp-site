@@ -41,9 +41,38 @@ serve(async (req) => {
     });
 
     const data = await res.json();
-    console.log("Resend response:", data);
+    console.log("Resend customer response:", data);
 
-    return new Response(JSON.stringify(data), {
+    // 3. Send Notification to Business Team
+    const adminRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "OTP System <contact@onlytrueperspective.tech>",
+        to: ["contact@onlytrueperspective.tech", "eli@onlytrueperspective.tech"],
+        reply_to: record.email,
+        subject: `NEW INQUIRY: ${record.service || 'General'} from ${record.name || 'Unknown'}`,
+        html: `
+          <div style="font-family: sans-serif; padding: 20px; background: #111; color: #eee; border-radius: 8px;">
+            <h2 style="color: #00ecff;">New Contact Submission</h2>
+            <p><strong>Name:</strong> ${record.name || 'N/A'}</p>
+            <p><strong>Email:</strong> ${record.email}</p>
+            <p><strong>Service:</strong> ${record.service || 'N/A'}</p>
+            <hr style="border-color: #333; margin: 20px 0;" />
+            <p><strong>Message:</strong></p>
+            <div style="white-space: pre-wrap; background: #000; padding: 15px; border-radius: 4px; color: #fff;">${record.message || 'No message provided.'}</div>
+          </div>
+        `,
+      }),
+    });
+
+    const adminData = await adminRes.json();
+    console.log("Resend admin response:", adminData);
+
+    return new Response(JSON.stringify({ customer_receipt: data, admin_receipt: adminData }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
     });
