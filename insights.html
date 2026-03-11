@@ -56,15 +56,39 @@
         transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
+
+        /* Fix <a> tag defaults — prevents blue text, underline, and browser highlights */
+        color: inherit;
+        text-decoration: none;
+        display: block;
+        -webkit-tap-highlight-color: transparent;
+        outline: none;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    /* Keyboard focus — custom ring instead of browser default */
+    .insight-card:focus-visible {
+        outline: 2px solid var(--accent2);
+        outline-offset: 3px;
+    }
+    /* Tap/click press — subtle scale feedback */
+    .insight-card:active {
+        transform: scale(0.985);
+        transition: transform 0.1s ease;
     }
     @media (hover: hover) {
+        .insight-card:active {
+            transform: translateY(-10px) scale(1.01);
+        }
         .insight-card:hover {
             transform: translateY(-10px) scale(1.02);
             border-color: var(--accent2);
             box-shadow: 0 40px 100px -20px rgba(0,0,0,0.6), 0 0 20px rgba(0, 236, 255, 0.1);
         }
     }
-    .insight-card::selection, .insight-card *::selection {
+    /* Override browser blue selection on link children */
+    .insight-card::selection,
+    .insight-card *::selection {
         background: var(--accent2);
         color: #000;
         text-shadow: none;
@@ -196,12 +220,14 @@
         background: #fff;
         border-color: #eee;
         box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        color: #111;
     }
     [data-theme="light"] .insight-card h2 { color: #000; }
     [data-theme="light"] .insight-card p { color: #555; }
     [data-theme="light"] .filter-btn { background: #f8f8fa; border-color: #ddd; color: #666; }
     [data-theme="light"] .filter-btn:hover { background: #eee; border-color: #ccc; color: #000; }
     [data-theme="light"] .filter-btn.active { background: #000; color: #fff; border-color: #000; }
+    [data-theme="light"] .insight-card:focus-visible { outline-color: #000; }
   </style>
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
