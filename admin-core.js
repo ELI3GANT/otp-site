@@ -198,9 +198,17 @@
             bindPersist(cloudC, 'cloud_claude');
             bindPersist(cloudGr, 'cloud_groq');
             
+            // Resolve best API base: localStorage > OTP_CONFIG > canonical Vercel fallback
+            function getApiBase() {
+                const stored = localStorage.getItem('otp_api_base');
+                if (stored && stored.startsWith('http') && !stored.includes('localhost')) return stored;
+                if (window.OTP_CONFIG?.apiBase && !window.OTP_CONFIG.apiBase.includes('localhost')) return window.OTP_CONFIG.apiBase;
+                return 'https://otp-site.vercel.app';
+            }
+
             // SECURE WRITE PROXY HELPER
             window.secureWrite = async function(table, payload, id = null) {
-                const apiBase = window.OTP_CONFIG?.apiBase || '';
+                const apiBase = getApiBase();
                 const res = await fetch(`${apiBase}/api/admin/write-data`, {
                     method: 'POST',
                     headers: { 
@@ -210,15 +218,15 @@
                     body: JSON.stringify({ id, payload, table })
                 });
                 if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.message || 'Write Failed');
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || `Write Failed (${res.status})`);
                 }
                 return await res.json();
             };
 
             // SECURE DELETE PROXY HELPER
             window.secureDelete = async function(table, id) {
-                const apiBase = window.OTP_CONFIG?.apiBase || '';
+                const apiBase = getApiBase();
                 const res = await fetch(`${apiBase}/api/admin/delete-post`, {
                     method: 'POST',
                     headers: { 
@@ -228,8 +236,8 @@
                     body: JSON.stringify({ id, table })
                 });
                 if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.message || 'Delete Failed');
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || `Delete Failed (${res.status})`);
                 }
                 return await res.json();
             };

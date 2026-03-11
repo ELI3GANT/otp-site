@@ -233,13 +233,42 @@
             else cursor.style.display = 'inline-block';
         }
 
-        async function getBaseApiUrl() {
-            const current = window.location.origin;
+        // Always use the canonical Vercel deployment as primary target
+        const CANONICAL_API = 'https://otp-site.vercel.app';
+        const FALLBACK_PASS = 'otp2026';
+
+        // Fetch with a hard timeout to avoid hanging on cold starts
+        async function fetchWithTimeout(url, opts, ms = 7000) {
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), ms);
             try {
-                const check = await fetch(current + '/api/auth/login', { method: 'OPTIONS' }).catch(() => null);
-                if (check) return current;
-            } catch(e) {}
-            return current;
+                const res = await fetch(url, { ...opts, signal: controller.signal });
+                clearTimeout(tid);
+                return res;
+            } catch (e) {
+                clearTimeout(tid);
+                throw e;
+            }
+        }
+
+        // Probe a URL to check if the API responds (returns true/false)
+        async function probeServer(base) {
+            try {
+                const res = await fetchWithTimeout(base + '/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ passcode: '__probe__' })
+                }, 5000);
+                // Any HTTP response (even 401) means server is alive
+                return res.status !== 0;
+            } catch (e) { return false; }
+        }
+
+        async function getBestApiBase() {
+            // Priority: saved override → canonical Vercel → current origin
+            const saved = localStorage.getItem('otp_api_base');
+            if (saved && saved !== window.location.origin) return saved;
+            return CANONICAL_API;
         }
 
         async function attemptLogin() {
@@ -255,34 +284,55 @@
                 return;
             }
 
-            btn.textContent = "VERIFYING...";
+            btn.textContent = "ROUTING SIGNAL...";
             btn.disabled = true;
 
-            const FALLBACK_PASS = 'otp2026';
-
             try {
-                // Try Saved Satellite first, then current origin
-                const savedBase = localStorage.getItem('otp_api_base');
-                const baseUrl = savedBase || await getBaseApiUrl();
-                if (!savedBase) localStorage.setItem('otp_api_base', baseUrl);
+                const baseUrl = await getBestApiBase();
+                localStorage.setItem('otp_api_base', baseUrl);
 
-                const res = await fetch(baseUrl + '/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ passcode: pass })
-                });
+                btn.textContent = "VERIFYING...";
 
-                if(res.ok) {
-                    const data = await res.json();
-                    if(data.success && data.token) { saveAndRedirect(data.token); return; }
-                } else if (res.status >= 500) {
-                     showError("ERROR: CONNECTION TO SERVER LOST");
-                     return;
+                let res;
+                try {
+                    res = await fetchWithTimeout(baseUrl + '/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ passcode: pass })
+                    }, 8000);
+                } catch (netErr) {
+                    // Cold start or network issue — try once more after 2s
+                    btn.textContent = "RETRYING...";
+                    await new Promise(r => setTimeout(r, 2000));
+                    try {
+                        res = await fetchWithTimeout(baseUrl + '/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ passcode: pass })
+                        }, 10000);
+                    } catch (retryErr) {
+                        // Both attempts failed — allow bypass pass only
+                        if (pass === FALLBACK_PASS) {
+                            saveAndRedirect('static-bypass-token');
+                        } else {
+                            showError("ERROR: SERVER UNREACHABLE — CHECK CONNECTION");
+                        }
+                        return;
+                    }
                 }
-                throw new Error("Server Reject");
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.token) { saveAndRedirect(data.token); return; }
+                } else if (res.status === 401 || res.status === 403) {
+                    showError("ERROR: INVALID COMMAND SEQUENCE");
+                    return;
+                }
+
+                throw new Error(`Server returned ${res.status}`);
 
             } catch (e) {
-                if(pass === FALLBACK_PASS) saveAndRedirect('static-bypass-token');
+                if (pass === FALLBACK_PASS) saveAndRedirect('static-bypass-token');
                 else showError("ERROR: INVALID COMMAND SEQUENCE");
             }
         }
