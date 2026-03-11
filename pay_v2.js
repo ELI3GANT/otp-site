@@ -70,7 +70,7 @@ async function initPaymentSystem() {
     if (pkgs.length === 0) console.warn("💰 No packages found to inject buttons into.");
 
     pkgs.forEach(pkg => {
-        // Debounce: Don't inject twice
+        // Debounce: Don't inject twice — skip if already has a pay button (static or dynamic)
         if (pkg.querySelector('.pkg-buy-btn')) return;
 
         const titleEl = pkg.querySelector('h4');

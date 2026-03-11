@@ -699,6 +699,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Visualizer">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Visualizer', this)"><span>⚡ PAY NOW — $150</span></button>
         </article>
 
         <article class="package-static featured" data-category="music">
@@ -729,6 +730,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Official Video">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Official Video', this)"><span>⚡ PAY NOW — $500</span></button>
         </article>
 
         <article class="package-static" data-category="music">
@@ -759,6 +761,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Rollout">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Rollout', this)"><span>⚡ PAY NOW — $400</span></button>
         </article>
 
         <!-- BRAND & BUSINESS -->
@@ -790,6 +793,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Identity">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Identity', this)"><span>⚡ PAY NOW — $250</span></button>
         </article>
 
         <article class="package-static featured" data-category="business">
@@ -819,6 +823,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Digital HQ">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Digital HQ', this)"><span>⚡ PAY NOW — $750</span></button>
         </article>
 
         <article class="package-static" data-category="business">
@@ -848,6 +853,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Rebrand">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Rebrand', this)"><span>⚡ PAY NOW — $1,000</span></button>
         </article>
 
         <!-- CONTENT & GROWTH -->
@@ -880,6 +886,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Drop">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Drop', this)"><span>⚡ PAY NOW — $50</span></button>
         </article>
 
         <article class="package-static featured" data-category="content">
@@ -909,6 +916,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Stack">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Stack', this)"><span>⚡ PAY NOW — $300</span></button>
         </article>
         <h3 class="pkg-group-header" data-category="photography">Visuals & Photography</h3>
         <article class="package-static" data-category="photography">
@@ -938,6 +946,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Vision">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Vision', this)"><span>⚡ PAY NOW — $100</span></button>
         </article>
 
         <article class="package-static network-pkg featured" data-category="content" data-category-2="business" data-category-3="music">
@@ -992,6 +1001,7 @@
             </div>
           </div>
           <button class="pkg-select-btn" data-package="The Partner">Select Package</button>
+          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Partner', this)"><span>⚡ PAY NOW — $1,500</span></button>
         </article>
 
       </div>
@@ -1259,11 +1269,11 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS (Moved to bottom for reliable loading) -->
-  <script src="site-config.js?v=1773059408" defer></script>
-  <script src="pay_v2.js?v=1773059408" defer></script>
+  <script src="site-config.js?v=1773192397" defer></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="pay_v2.js?v=1773192397" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
   <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js" defer></script>
-  <script src="https://js.stripe.com/v3/" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js" defer></script>
   <script src="https://unpkg.com/split-type" defer></script>
@@ -1271,6 +1281,53 @@
 
 
   
+  <!-- PAY NOW STATIC HANDLER: Runs synchronously so baked-in buttons always work -->
+  <script>
+    window.handleDirectPayStatic = function(title, btn) {
+      const waitForStripe = (attempts) => {
+        if (typeof Stripe !== 'undefined') {
+          btn.disabled = true;
+          btn.style.opacity = '0.7';
+          const orig = btn.innerHTML;
+          btn.innerHTML = '<span>SECURING...</span>';
+
+          const stripe = Stripe('pk_live_51SqqA9Pux5EhFZOuR0oo7VsFZrKoebiaWLXHNTZPx2kpa3w9kmqgUCtmEN4sY9LPW80UyfjBIfZkIfnPQW0Ba5MC007yWafN6y');
+          let API_BASE = (window.OTP_CONFIG && window.OTP_CONFIG.apiBase) || 'https://otp-site.vercel.app';
+          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            API_BASE = window.location.origin;
+          }
+
+          fetch(API_BASE + '/api/create-checkout-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ packageName: title })
+          })
+          .then(r => r.json())
+          .then(session => {
+            if (session.error) throw new Error(session.error);
+            btn.innerHTML = '<span>REDIRECTING...</span>';
+            return stripe.redirectToCheckout({ sessionId: session.id });
+          })
+          .then(result => {
+            if (result && result.error) throw new Error(result.error.message);
+          })
+          .catch(err => {
+            console.error('Pay Now Error:', err);
+            alert('Payment Error: ' + err.message);
+            btn.innerHTML = orig;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+          });
+        } else if (attempts > 0) {
+          setTimeout(() => waitForStripe(attempts - 1), 300);
+        } else {
+          alert('Payment system is loading, please try again in a moment.');
+        }
+      };
+      waitForStripe(20); // Retry up to 20 times (6 seconds total)
+    };
+  </script>
+
   <!-- GSAP & SPLIT TYPE (Keep these active) -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {

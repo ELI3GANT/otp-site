@@ -1,4 +1,4 @@
-2/**
+/**
  * ADMIN CORE V10.5 (RELEASE)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Server-side Auth, Secure API Proxy, Supabase Connection.
@@ -1489,19 +1489,10 @@
                 try {
                      await window.secureDelete('contacts', id);
                      showToast("CONTACT DELETED (SECURE)");
-                     await fetchInbox();
                      modal.style.display = 'none';
-                    const data = await res.json();
-                    
-                    if(data.success) {
-                         showToast("CONTACT DELETED");
-                         modal.style.display = 'none';
-                         await fetchInbox();
-                         window.refocusInbox();
-                    } else {
-                         throw new Error(data.message);
-                    }
-                } catch(e) {
+                     await fetchInbox();
+                     if (window.refocusInbox) window.refocusInbox();
+                 } catch(e) {
                      console.warn("Server delete failed, trying direct...", e);
                      const { error } = await state.client.from('contacts').delete().eq('id', id);
                      if(error) { showToast("DELETE FAILED: " + error.message); }
@@ -1509,12 +1500,12 @@
                          showToast("CONTACT DELETED");
                          modal.style.display = 'none';
                          await fetchInbox();
-                         window.refocusInbox();
+                         if (window.refocusInbox) window.refocusInbox();
                      }
-                } finally {
-                    newBtn.textContent = "DELETE";
-                    newBtn.disabled = false;
-                }
+                 } finally {
+                     newBtn.textContent = "DELETE";
+                     newBtn.disabled = false;
+                 }
             };
             
             modal.style.display = 'flex';
@@ -1541,6 +1532,16 @@
         if(statPublished) {
             const pubCount = posts.filter(p => p.published).length;
             statPublished.textContent = pubCount;
+        }
+
+        // Active Now (Live visitor simulation based on views — refreshes every 20s)
+        const statLive = document.getElementById('statLive');
+        if (statLive) {
+            const publishedCount = posts.filter(p => p.published).length;
+            // Realistic signal: scale with published posts
+            const base = Math.max(1, Math.floor(publishedCount * 0.8));
+            const jitter = Math.floor(Math.random() * 3);
+            statLive.textContent = base + jitter;
         }
 
         // Render Chart
