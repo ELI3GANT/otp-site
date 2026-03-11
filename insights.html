@@ -52,10 +52,13 @@
         background: rgba(10, 10, 18, 0.4);
         border: 1px solid rgba(255,255,255,0.05);
         border-radius: 24px;
-        overflow: hidden;
+        /* overflow:hidden moved to .insight-card-inner so box-shadow isn't clipped */
+        overflow: visible;
         transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
+        position: relative;
+        z-index: 0; /* Base stacking — hover will elevate this */
 
         /* Fix <a> tag defaults — prevents blue text, underline, and browser highlights */
         color: inherit;
@@ -69,9 +72,10 @@
     /* Keyboard focus — custom ring instead of browser default */
     .insight-card:focus-visible {
         outline: 2px solid var(--accent2);
-        outline-offset: 3px;
+        outline-offset: 4px;
+        z-index: 2;
     }
-    /* Tap/click press — subtle scale feedback */
+    /* Tap/click press — subtle scale feedback on touch */
     .insight-card:active {
         transform: scale(0.985);
         transition: transform 0.1s ease;
@@ -82,8 +86,14 @@
         }
         .insight-card:hover {
             transform: translateY(-10px) scale(1.02);
-            border-color: var(--accent2);
-            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.6), 0 0 20px rgba(0, 236, 255, 0.1);
+            border-color: rgba(0, 236, 255, 0.6);
+            /* Layered glow: deep shadow + strong cyan halo */
+            box-shadow:
+                0 40px 80px -20px rgba(0, 0, 0, 0.7),
+                0 0 0 1px rgba(0, 236, 255, 0.15),
+                0 0 30px rgba(0, 236, 255, 0.25),
+                0 0 60px rgba(0, 236, 255, 0.1);
+            z-index: 10; /* Lifts hovered card above siblings so glow isn't clipped by neighbors */
         }
     }
     /* Override browser blue selection on link children */
@@ -98,6 +108,8 @@
         height: 100%;
         display: flex;
         flex-direction: column;
+        border-radius: 24px; /* Match card for clipping bg */
+        overflow: hidden;    /* Clips internal content correctly without cutting box-shadow */
     }
     .insight-date {
         font-family: 'Space Grotesk', sans-serif;
@@ -206,6 +218,7 @@
         grid-template-columns: repeat(3, 1fr);
         gap: 30px;
         margin-top: 60px;
+        isolation: isolate; /* Create new stacking context so z-index on cards works correctly */
     }
 
     @media (max-width: 1100px) {
