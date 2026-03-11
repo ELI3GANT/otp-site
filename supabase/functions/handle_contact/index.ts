@@ -21,7 +21,7 @@ serve(async (req) => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "OTP Studio <onboarding@resend.dev>", // Change this if you have a custom domain verified in Resend
+        from: "OTP Studio <studio@onlytrueperspective.tech>", // Sending from verified domain
         to: record.email,
         subject: "We received your request | OTP",
         html: `
