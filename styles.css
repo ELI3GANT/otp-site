@@ -25,6 +25,14 @@ body.nav-open {
     touch-action: none;
 }
 
+/* SMART CONTAINMENT (For 'Beast' PC Performance) */
+section, .section-studio, .section-work, #services, #contact {
+    contain: paint;
+    isolation: isolate; 
+    content-visibility: auto; /* Chrome Beast-Mode Fix: Skips off-screen render */
+    contain-intrinsic-size: 1px 1000px; /* Placeholder height while off-screen */
+}
+
 ::selection {
   background: var(--accent);
   color: #fff;

@@ -893,7 +893,12 @@ function initSite() {
         }
 
         let startTime = Date.now();
+        let animationFrameId = null;
+        let isCardVisible = false;
+
         function update() {
+            if (!isCardVisible) return;
+
             const elapsed = (Date.now() - startTime) / 1000;
             // CALMER FLOAT: Slower frequency, smaller amplitude
             const floatY = Math.sin(elapsed * 1.0) * 8; 
@@ -912,9 +917,27 @@ function initSite() {
             card.style.setProperty('--floatY', `${floatY}px`);
             card.style.setProperty('--eyeX', `${currentEyeX}px`);
             card.style.setProperty('--eyeY', `${currentEyeY}px`);
-            requestAnimationFrame(update);
+            animationFrameId = requestAnimationFrame(update);
         }
-        update();
+
+        const cardObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                isCardVisible = entry.isIntersecting;
+                if (isCardVisible) {
+                    if (!animationFrameId) {
+                        startTime = Date.now(); // Reset sync
+                        update();
+                    }
+                } else {
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+                }
+            });
+        }, { threshold: 0.1 });
+
+        cardObserver.observe(card);
     }
 
     // --- MOBILE MENU ---
