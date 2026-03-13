@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=1773412444" />
+  <link rel="stylesheet" href="./styles.css?v=1773412867" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -1054,9 +1054,9 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS (Moved to bottom for reliable loading) -->
-  <script src="site-config.js?v=1773412444" defer></script>
+  <script src="site-config.js?v=1773412867" defer></script>
   <script src="https://js.stripe.com/v3/" defer></script>
-  <script src="pay_v2.js?v=1773412444" defer></script>
+  <script src="pay_v2.js?v=1773412867" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
   <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
@@ -1215,7 +1215,7 @@
       const sections = document.querySelectorAll('.section');
       sections.forEach(sec => {
         const head = sec.querySelector('.section-head');
-        const content = sec.querySelectorAll('.grid, .grid-2, .process-stack, .faq-grid, .work-link-container, .contact-container');
+        const content = sec.querySelectorAll('.grid, .grid-2, .process-stack, .pkg-grid-dynamic, .faq-grid, .work-link-container, .contact-container');
         
         if (head) {
           gsap.from(head, {

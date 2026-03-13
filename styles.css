@@ -6295,7 +6295,7 @@ input:focus, select:focus, textarea:focus {
 
 /* SCROLL REVEAL ANIMATIONS */
 .section-vibration, .network-row {
-  opacity: 0;
+  opacity: 1; /* Fallback */
   transform: translateY(30px);
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }

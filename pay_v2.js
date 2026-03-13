@@ -70,39 +70,40 @@ async function initPaymentSystem() {
     if (pkgs.length === 0) console.warn("💰 No packages found to inject buttons into.");
 
     pkgs.forEach(pkg => {
-        // Debounce: Don't inject twice — skip if already has a pay button (static or dynamic)
+        console.log("Checking package card...", pkg);
         if (pkg.querySelector('.pkg-buy-btn')) return;
 
         const selectBtn = pkg.querySelector('.pkg-select-btn');
-        if(!selectBtn) return;
+        if(!selectBtn) {
+            console.warn("No .pkg-select-btn found in package article.");
+            return;
+        }
 
-        // Prioritize data-package attribute, fallback to h4 text
         const titleClean = selectBtn.getAttribute('data-package') || pkg.querySelector('h4')?.innerText.trim();
-        if(!titleClean) return;
+        console.log("Package Title Detected:", titleClean);
         
-        // --- RESTRICTED: ALLOW DIRECT PAY FOR ALL DEFINED FIXED-PRICE PACKAGES ---
-        if (!VALID_PAY_PACKAGES.map(p => p.toLowerCase()).includes(titleClean.toLowerCase())) {
+        if (!titleClean || !VALID_PAY_PACKAGES.map(p => p.toLowerCase()).includes(titleClean.toLowerCase())) {
+             console.warn("Package not in VALID_PAY_PACKAGES list:", titleClean);
              return;
         }
         
-        console.log(`✅ Injecting Payment Button for: ${titleClean}`);
-        
-        // --- DYNAMIC PRICE EXTRACTION ---
         let priceStr = "";
         const priceEl = pkg.querySelector('.pkg-amount');
         if (priceEl) {
             priceStr = ` — $${priceEl.innerText.trim()}`;
         }
         
-        // Create Buy Button
         const buyBtn = document.createElement('button');
         buyBtn.className = 'pkg-buy-btn';
+        buyBtn.style.display = 'flex'; // Force visibility
+        buyBtn.style.visibility = 'visible';
+        buyBtn.style.opacity = '1';
         buyBtn.innerHTML = `<span>⚡ PAY NOW${priceStr}</span>`;
 
         buyBtn.onclick = (e) => handleDirectPay(e, titleClean, stripe, buyBtn);
         
-        // Insert
         selectBtn.insertAdjacentElement('afterend', buyBtn);
+        console.log(`✅ SUCCESS: Injected Payment Button for ${titleClean}`);
     });
 
     console.log(`✅ Injected ${document.querySelectorAll('.pkg-buy-btn').length} Payment Buttons.`);
