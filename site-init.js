@@ -1216,7 +1216,7 @@ function initSite() {
                 
                 // Fallback check
                 const optionExists = Array.from(serviceSelect.options).some(o => o.value === targetValue);
-                serviceSelect.value = optionExists ? targetValue : 'Custom';
+                serviceSelect.value = optionExists ? targetValue : 'Custom Build';
 
                 messageInput.value = `I'm interested in the "${pkgName}" package. \n\nHere are some details about my project:`;
 

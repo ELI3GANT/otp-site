@@ -7683,17 +7683,17 @@ input:focus, select:focus, textarea:focus {
 
 /* ---- PREMIUM PACKAGE CARDS ---- */
 .package-static {
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease, box-shadow 0.3s ease !important;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease, box-shadow 0.4s ease !important;
 }
 
 .package-static:hover {
-    transform: translateY(-10px) scale(1.02) !important;
+    transform: translateY(-8px) scale(1.015) !important;
     border-color: var(--accent2) !important;
-    box-shadow: 0 30px 60px rgba(var(--accent2-rgb), 0.15) !important;
+    box-shadow: 0 40px 80px rgba(var(--accent2-rgb), 0.12) !important;
 }
 
 .package-static.featured:hover {
-    transform: translateY(-10px) scale(1.07) !important;
+    transform: translateY(-10px) scale(1.04) !important;
 }
 
 .check-list li {
