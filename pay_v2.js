@@ -66,7 +66,7 @@ async function initPaymentSystem() {
     }
 
     // --- 1. CARD BUTTONS (Visual check) ---
-    const pkgs = document.querySelectorAll('.package-static');
+    const pkgs = []; // Disabled injection
     if (pkgs.length === 0) console.warn("💰 No packages found to inject buttons into.");
 
     pkgs.forEach(pkg => {
@@ -108,7 +108,18 @@ async function initPaymentSystem() {
 
     console.log(`✅ Injected ${document.querySelectorAll('.pkg-buy-btn').length} Payment Buttons.`);
 
+    
+    // --- 1.5 BIND EXISTING BUTTONS ---
+    const existingBuyBtns = document.querySelectorAll('.pkg-buy-btn');
+    existingBuyBtns.forEach(btn => {
+        const pkgName = btn.getAttribute('data-package');
+        if (pkgName) {
+            btn.onclick = (e) => handleDirectPay(e, pkgName, stripe, btn);
+        }
+    });
+
     // --- 2. CONTACT FORM INTEGRATION ---
+
     const form = document.getElementById('contactForm');
     const serviceSelect = document.getElementById('service');
     const submitBtn = form ? form.querySelector('button[type="submit"]') : null;

@@ -3634,7 +3634,7 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.82rem;
 }/* SCROLL REVEAL (Updated for more impact) */
 .reveal {
-  opacity: 0;
+  opacity: 1; /* Fixed */
   transform: translateY(60px); /* Increased from default */
   transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }

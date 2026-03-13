@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=1773412867" />
+  <link rel="stylesheet" href="./styles.css?v=1773413058" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -707,7 +707,8 @@
                 <span class="pkg-currency" style="font-size: 1.2rem; color: var(--accent2); font-weight: 700;">$</span><span class="pkg-amount" style="font-size: 2.5rem; font-weight: 800; color: #fff;">50</span>
               </div>
             </div>
-            <button class="pkg-select-btn" data-package="The Drop" style="width: 100%; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">SELECT PLAN</button>
+            <button class="pkg-select-btn" data-package="The Drop" style="width: 100%; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s ease; margin-bottom: 10px;">SELECT PLAN</button>
+            <button class="pkg-buy-btn" data-package="The Drop" style="display: flex; visibility: visible; opacity: 1;"><span>⚡ PAY NOW — $50</span></button>
           </div>
         </article>
 
@@ -736,7 +737,8 @@
                 <span class="pkg-currency" style="font-size: 1.2rem; color: var(--accent2); font-weight: 700;">$</span><span class="pkg-amount" style="font-size: 2.5rem; font-weight: 800; color: #fff;">100</span>
               </div>
             </div>
-            <button class="pkg-select-btn" data-package="The Vision" style="width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--accent2); color: #000; font-weight: 800; cursor: pointer; transition: all 0.3s ease;">SELECT PLAN</button>
+            <button class="pkg-select-btn" data-package="The Vision" style="width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--accent2); color: #000; font-weight: 800; cursor: pointer; transition: all 0.3s ease; margin-bottom: 10px;">SELECT PLAN</button>
+            <button class="pkg-buy-btn" data-package="The Vision" style="display: flex; visibility: visible; opacity: 1;"><span>⚡ PAY NOW — $100</span></button>
           </div>
         </article>
 
@@ -763,7 +765,8 @@
                 <span class="pkg-currency" style="font-size: 1.2rem; color: var(--accent2); font-weight: 700;">$</span><span class="pkg-amount" style="font-size: 2.5rem; font-weight: 800; color: #fff;">200</span>
               </div>
             </div>
-            <button class="pkg-select-btn" data-package="The Campaign" style="width: 100%; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">SELECT PLAN</button>
+            <button class="pkg-select-btn" data-package="The Campaign" style="width: 100%; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s ease; margin-bottom: 10px;">SELECT PLAN</button>
+            <button class="pkg-buy-btn" data-package="The Campaign" style="display: flex; visibility: visible; opacity: 1;"><span>⚡ PAY NOW — $200</span></button>
           </div>
         </article>
 
@@ -1054,9 +1057,9 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS (Moved to bottom for reliable loading) -->
-  <script src="site-config.js?v=1773412867" defer></script>
+  <script src="site-config.js?v=1773413058" defer></script>
   <script src="https://js.stripe.com/v3/" defer></script>
-  <script src="pay_v2.js?v=1773412867" defer></script>
+  <script src="pay_v2.js?v=1773413058" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
   <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
@@ -1120,7 +1123,7 @@
         const heroSubtitle = new SplitType('.hero .subtitle', { types: 'lines, words' });
         
         gsap.from(heroTitle.chars, {
-          opacity: 0,
+          opacity: 0.1,
           y: 50,
           rotateX: -90,
           stagger: 0.015,
@@ -1130,7 +1133,7 @@
         });
 
         gsap.from('.subtitle-lead, .hero-value', {
-          opacity: 0,
+          opacity: 0.1,
           y: 20,
           duration: 0.8,
           stagger: 0.1,
@@ -1139,7 +1142,7 @@
         });
 
         gsap.from('.hero-cta, .hero-micro', {
-          opacity: 0,
+          opacity: 0.1,
           y: 20,
           duration: 0.6,
           ease: 'power2.out',
@@ -1225,7 +1228,7 @@
               once: true
             },
             y: 30,
-            opacity: 0,
+            opacity: 0.1,
             duration: 0.6,
             ease: "power2.out"
           });
@@ -1239,7 +1242,7 @@
               once: true
             },
             y: 30,
-            opacity: 0,
+            opacity: 0.1,
             duration: 0.6,
             stagger: 0.05,
             ease: "power2.out"
