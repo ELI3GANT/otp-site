@@ -6,7 +6,7 @@
     --admin-panel: #0a0a10;
     --admin-border: rgba(255,255,255,0.08);
     --admin-accent: #7000ff;
-    --admin-cyan: #00c3ff;
+    --admin-cyan: var(--accent2, #00c3ff);
     --admin-success: #00ffaa;
     --admin-danger: #ff4444;
     --admin-text: #ffffff;
@@ -20,7 +20,7 @@ html[data-theme="light"] {
     --admin-panel: #ffffff;
     --admin-border: #d1d1d6;
     --admin-accent: #5856d6;
-    --admin-cyan: #007aff;
+    --admin-cyan: var(--accent2, #007aff);
     --admin-success: #34c759;
     --admin-danger: #ff3b30;
     --admin-text: #000000;
@@ -130,7 +130,7 @@ html[data-theme="light"] .stat-card {
 }
 
 .stat-card h3 {
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     color: var(--admin-muted);
     text-transform: uppercase;
     letter-spacing: 2px; /* Wider spacing */
@@ -152,7 +152,7 @@ html[data-theme="light"] .stat-card {
 /* FORM ELEMENTS */
 .section-label {
     color: var(--admin-cyan);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 2px;
     margin: 30px 0 15px;
@@ -173,7 +173,7 @@ html[data-theme="light"] .stat-card {
 label {
     display: block;
     margin-bottom: 6px;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     color: var(--admin-muted);
     text-transform: uppercase;
     font-weight: 600;
@@ -246,7 +246,7 @@ button {
     background: transparent;
     border: 1px solid var(--admin-border);
     color: var(--admin-muted);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
 }
 
 .btn-secondary:hover {
@@ -500,7 +500,7 @@ button {
 }
 
 .post-meta { 
-    font-size: 0.7rem; 
+    font-size: 0.85rem; 
     color: var(--admin-muted); 
     margin-top: 6px;
     font-family: monospace;
@@ -515,7 +515,7 @@ button {
     gap: 6px;
     padding: 5px 12px;
     border-radius: 4px;
-    font-size: 0.6rem;
+    font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -559,7 +559,7 @@ button {
 
 .delete-btn {
     padding: 6px 10px; /* Compact */
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     background: transparent;
     border: 1px solid rgba(255, 68, 68, 0.4);
     color: #ff4444;
@@ -710,7 +710,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100vw;
+    width: 100%;
     height: 100vh;
     background: rgba(0,0,0,0.85); /* Darker backdrop */
     backdrop-filter: blur(8px);
@@ -855,7 +855,7 @@ input, textarea, select {
     background: var(--admin-accent);
     color: #fff;
     padding: 6px 12px;
-    font-size: 0.7rem;
+    font-size: 0.85rem;
     border-radius: 4px;
 }
 
@@ -985,8 +985,8 @@ html[data-theme="light"] .status-dot {
 }
 
 .console-header {
-    background: rgba(0, 195, 255, 0.1);
-    border-bottom: 1px solid rgba(0, 195, 255, 0.2);
+    background: rgba(var(--accent2-rgb, 0, 195, 255), 0.1);
+    border-bottom: 1px solid rgba(var(--accent2-rgb, 0, 195, 255), 0.2);
     padding: 10px 15px;
     display: flex;
     justify-content: space-between;
@@ -1288,7 +1288,7 @@ input:focus + .slider {
 .cmd-tile:hover {
     border-color: var(--admin-cyan);
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 195, 255, 0.12);
+    box-shadow: 0 8px 25px rgba(var(--accent2-rgb, 0, 195, 255), 0.12);
 }
 .cmd-tile:active { transform: scale(0.96) translateY(0); }
 .cmd-tile-active {
@@ -1305,7 +1305,7 @@ input:focus + .slider {
     padding: 6px 14px;
     border-radius: 20px;
     border: 1px solid var(--admin-border);
-    font-size: 0.65rem;
+    font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -1414,7 +1414,7 @@ input:focus + .slider {
 
 @media (max-width: 480px) {
     .stat-card { padding: 12px; }
-    .stat-card h3 { font-size: 0.55rem; letter-spacing: 1px; }
+    .stat-card h3 { font-size: 0.85rem; letter-spacing: 1px; }
     .stat-card .stat-num { font-size: 1.5rem; }
     .desktop-only { display: none; }
     #geoPings { font-size: 0.65rem !important; }
@@ -1476,3 +1476,11 @@ html[data-theme="light"] .ai-tips { background: linear-gradient(180deg, rgba(88,
 html[data-theme="light"] .post-row { background: #fff; border-color: #e5e5ea; }
 html[data-theme="light"] .post-row:hover { background: #f7f7f9; }
 html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !important; border-color: var(--admin-success) !important; }
+
+
+/* Prevent zooming on inputs on iPhone (Admin Terminal) */
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
