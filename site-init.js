@@ -443,7 +443,7 @@ window.OTP.initRealtimeState = function() {
                     localStorage.setItem('last_global_theme', config.theme);
                 }
             }
-        } catch(e) { console.error("Config Sync Error:", e); }
+        } catch(e) { console.error("Config Sync Error:", e, error); }
     })();
 
     // Listen for Site Commands (Broadcast/Maintenance/Theme)

@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=1773414194" />
+  <link rel="stylesheet" href="./styles.css?v=1773414737" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -102,7 +102,7 @@
   </script>
   <style>
     /* Ensure content is visible by default */
-    .section-head, .grid, .grid-2, .process-stack, .pkg-grid-dynamic, .faq-grid, .work-link-container, .contact-container {
+    .section-head, .grid, .grid-2, .process-stack, .faq-grid, .work-link-container, .contact-container {
       opacity: 1 !important;
       visibility: visible !important;
     }
@@ -1047,9 +1047,9 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS (Moved to bottom for reliable loading) -->
-  <script src="site-config.js?v=1773414194" defer></script>
+  <script src="site-config.js?v=1773414737" defer></script>
   <script src="https://js.stripe.com/v3/" defer></script>
-  <script src="pay_v2.js?v=1773414194" defer></script>
+  <script src="pay_v2.js?v=1773414737" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
   <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
@@ -1113,13 +1113,12 @@
         const heroSubtitle = new SplitType('.hero .subtitle', { types: 'lines, words' });
         
         gsap.from(heroTitle.chars, {
-          /* opacity: 0.1 removed */
-          y: 50,
-          rotateX: -90,
-          stagger: 0.015,
-          duration: 0.6,
+          opacity: 0,
+          y: 20,
+          stagger: 0.01,
+          duration: 0.8,
           ease: 'power2.out',
-          delay: 0.05
+          delay: 0.1
         });
 
         gsap.from('.subtitle-lead, .hero-value', {
@@ -1208,7 +1207,7 @@
       const sections = document.querySelectorAll('.section');
       sections.forEach(sec => {
         const head = sec.querySelector('.section-head');
-        const content = sec.querySelectorAll('.grid, .grid-2, .process-stack, .pkg-grid-dynamic, .faq-grid, .work-link-container, .contact-container');
+        const content = sec.querySelectorAll('.grid, .grid-2, .process-stack, .faq-grid, .work-link-container, .contact-container');
         
         if (head) {
           gsap.from(head, {

@@ -2636,7 +2636,7 @@
                     title: 'SYSTEM CONFIG [DO NOT DELETE]',
                     excerpt: 'Global persistent state for OTP Site Command Pro.',
                     content: JSON.stringify(config),
-                    published: false, // Keep hidden from blog feed
+                    published: true, // Keep hidden from blog feed
                     category: 'System'
                 }, { onConflict: 'slug' });
 

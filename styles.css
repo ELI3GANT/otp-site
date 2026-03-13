@@ -393,12 +393,7 @@ section, .section-studio, .section-work, #services, #contact {
 }
 
 /* PACKAGE BUTTONS (Light Mode) */
-[data-theme="light"] .pkg-select-btn {
-  border: 1px solid #ccc;
-  color: #000;
-  font-weight: 700;
-  background: rgba(0,0,0,0.03);
-}
+
 [data-theme="light"] .pkg-select-btn:hover {
   background: #000;
   color: #fff;
@@ -780,11 +775,7 @@ h1, h2, h3 {
   border-color: #b0b0b8;
 }
 
-[data-theme="light"] .package-static {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
+[data-theme="light"] 
 [data-theme="light"] .package-static.featured, 
 [data-theme="light"] .network-pkg {
   background: rgba(var(--accent2-rgb), 0.04); 
@@ -818,12 +809,7 @@ h1, h2, h3 {
 [data-theme="light"] .pkg-meta span strong {
   color: #000;
 }
-[data-theme="light"] .pkg-select-btn {
-  border: 1px solid #d1d1d6;
-  color: #111;
-  font-weight: 700;
-  background: #ffffff;
-}
+
 [data-theme="light"] .pkg-select-btn:hover {
   background: #000;
   color: #fff;
@@ -3939,13 +3925,7 @@ input:focus, select:focus, textarea:focus {
 
 /* HIGH TIER (PARTNER/NETWORK) SPECIAL BUTTON */
 .network-pkg .pkg-select-btn,
-.package.featured .pkg-select-btn {
-  background: linear-gradient(135deg, var(--accent2) 0%, #aa00ff 100%);
-  border: 1px solid rgba(255,255,255,0.3);
-  color: white;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  box-shadow: 0 4px 15px rgba(var(--accent2-rgb), 0.3);
-}
+.package.featured 
 
 .network-pkg .pkg-select-btn:hover,
 .package.featured .pkg-select-btn:hover {
@@ -4125,34 +4105,13 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-.package-static {
-  flex: 1;
-  background: transparent;
-  border: none;
-  border-radius: 20px;
-  padding: 30px 24px;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), 
-              background 0.4s ease, 
-              box-shadow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-  position: relative;
-}
 
-.package-static:hover {
-  background: rgba(255, 255, 255, 0.02);
-  transform: translateY(-8px);
-}
 
-.package-static.featured {
-  background: rgba(var(--accent2-rgb), 0.03); /* Extremely muted cyan tint */
-  border: none;
-}
 
-.package-static.featured:hover {
-  background: rgba(var(--accent2-rgb), 0.05);
-  box-shadow: 0 20px 80px rgba(var(--accent2-rgb), 0.05);
-}
+
+
+
+
 
 .package-static .package-top {
   border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -4316,11 +4275,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Ensure the normal featured button in light mode is still clear */
 [data-theme="light"] .package-static.featured .pkg-select-btn,
-[data-theme="light"] .network-pkg .pkg-select-btn {
-  background: #111;
-  color: #fff;
-  border: 1px solid #000;
-}
+[data-theme="light"] .network-pkg 
 
 .pkg-meta {
   margin-top: auto;
@@ -7106,11 +7061,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Base Card Sizing for Flex */
-.package-static {
-  flex: 1 1 300px;
-  max-width: 360px;
-  width: 100%; /* For mobile fallback */
-}
+
 
 @media (max-width: 600px) {
   .pkg-group-header {
@@ -7120,12 +7071,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Hide items when filtered */
-.package-static {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
+
 
 .package-static.hidden {
   display: none !important;
@@ -7142,24 +7088,7 @@ input:focus, select:focus, textarea:focus {
   will-change: transform, opacity;
 }
 
-.pkg-select-btn {
-  display: block;
-  width: 100%;
-  margin-top: 24px;
-  padding: 14px 0;
-  border-radius: 12px;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.15);
-  color: #fff;
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 1.5px;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  cursor: pointer;
-  text-align: center;
-}
+
 
 .pkg-select-btn:hover {
   background: var(--accent);
@@ -7169,10 +7098,7 @@ input:focus, select:focus, textarea:focus {
   color: #fff;
 }
 
-.featured .pkg-select-btn {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.3);
-}
+.featured 
 
 .featured .pkg-select-btn:hover {
   background: #fff;
@@ -7188,15 +7114,7 @@ input:focus, select:focus, textarea:focus {
 
 
 /* SPECIAL TIER BUTTON (The Partner - Night Mode) */
-.network-pkg .pkg-select-btn {
-  background: linear-gradient(135deg, rgba(var(--accent2-rgb),0.1), rgba(0,195,255,0.1));
-  border: 1px solid rgba(0,195,255,0.3);
-  color: #fff;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: 0 0 15px rgba(0,195,255,0.1);
-}
+.network-pkg 
 
 .network-pkg .pkg-select-btn::before {
   content: '';
@@ -7222,12 +7140,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* Ensure Light Mode override for Special Tier remains clean */
-[data-theme="light"] .network-pkg .pkg-select-btn {
-  background: linear-gradient(135deg, #f0f0f0, #fff);
-  border: 1px solid #ccc;
-  color: #000;
-  box-shadow: none;
-}
+[data-theme="light"] .network-pkg 
 [data-theme="light"] .network-pkg .pkg-select-btn:hover {
   background: #000;
   border-color: #000;
@@ -7684,108 +7597,105 @@ input:focus, select:focus, textarea:focus {
 
 
 
+
+
 /* ---- ULTIMATE PACKAGE REFINEMENT (Butter-Smooth) ---- */
 .package-static {
-    display: flex;
-    flex-direction: column;
-    background: rgba(255, 255, 255, 0.02) !important;
-    border: 1px solid rgba(var(--accent2-rgb), 0.1) !important;
-    border-radius: 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: rgba(10, 10, 20, 0.6) !important; /* Darker for readability */
+    border: 1px solid rgba(var(--accent2-rgb), 0.2) !important;
+    border-radius: 20px !important;
     padding: 40px !important;
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
-                box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
-                border-color 0.4s ease, 
-                background 0.4s ease !important;
-    will-change: transform, box-shadow;
+    transition: transform 0.3s ease-out, border-color 0.3s ease, box-shadow 0.3s ease !important;
+    will-change: transform;
     position: relative;
-    overflow: hidden;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .package-static:hover {
-    transform: translateY(-12px) scale(1.02) !important;
+    transform: translateY(-5px) !important; /* Subtle lift */
     border-color: var(--accent2) !important;
-    background: rgba(255, 255, 255, 0.04) !important;
-    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.7), 
-                0 0 40px rgba(var(--accent2-rgb), 0.15) !important;
-    z-index: 10;
+    box-shadow: 0 15px 40px rgba(var(--accent2-rgb), 0.2) !important;
 }
 
 .package-static.featured {
-    background: rgba(var(--accent2-rgb), 0.05) !important;
+    background: rgba(var(--accent2-rgb), 0.08) !important;
     border: 2px solid var(--accent2) !important;
-    transform: scale(1.05);
-}
-
-.package-static.featured:hover {
-    transform: translateY(-15px) scale(1.07) !important;
-    box-shadow: 0 50px 120px -20px rgba(0, 0, 0, 0.8), 
-                0 0 60px rgba(var(--accent2-rgb), 0.25) !important;
 }
 
 /* Light Mode Overrides for Packages */
 [data-theme="light"] .package-static {
-    background: #ffffff !important;
-    border: 1px solid #e0e0e5 !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.04) !important;
+    background: #fdfdfd !important;
+    border: 1px solid #ddd !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
 }
 
 [data-theme="light"] .package-static:hover {
     background: #ffffff !important;
     border-color: var(--accent2) !important;
-    box-shadow: 0 30px 70px rgba(0,0,0,0.08) !important;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
 }
 
-[data-theme="light"] .package-static.featured {
-    background: rgba(var(--accent2-rgb), 0.03) !important;
+/* Text Readability Fixes */
+.pkg-desc {
+    font-size: 1.1rem !important;
+    font-weight: 500 !important;
+    line-height: 1.5 !important;
+    color: #eee !important;
+    margin-bottom: 25px !important;
+}
+[data-theme="light"] .pkg-desc {
+    color: #111 !important; /* Sharp black */
 }
 
-/* Fix Select Button visibility */
+.check-list li {
+    font-size: 1.05rem !important;
+    color: #fff !important;
+    margin-bottom: 10px !important;
+}
+[data-theme="light"] .check-list li {
+    color: #000 !important;
+}
+
+/* Buttons Visibility */
 .pkg-select-btn {
-    margin-bottom: 12px;
-    padding: 16px !important;
+    display: block !important;
+    width: 100% !important;
+    padding: 18px !important;
+    border-radius: 10px !important;
     font-size: 0.9rem !important;
     font-weight: 900 !important;
-    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    border: none !important;
 }
 
+.package-static:not(.featured) .pkg-select-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+}
+.package-static.featured .pkg-select-btn {
+    background: var(--accent2) !important;
+    color: #000 !important;
+}
+
+/* Light Mode Buttons */
 [data-theme="light"] .package-static:not(.featured) .pkg-select-btn {
     background: #000 !important;
     color: #fff !important;
-    border: none !important;
 }
 
-[data-theme="light"] .package-static.featured .pkg-select-btn {
-    background: var(--accent2) !important;
+[data-theme="light"] .pkg-buy-btn {
+    background: #f5f5f7 !important;
     color: #000 !important;
-    border: none !important;
+    border: 1px solid #ccc !important;
 }
 
 /* Custom Builds Section */
 .network-pkg {
-    margin-top: 80px !important;
-    background: rgba(var(--accent2-rgb), 0.03) !important;
-    border: 1px solid rgba(var(--accent2-rgb), 0.1) !important;
-    border-radius: 24px !important;
-    padding: 40px !important;
-    text-align: center !important;
-}
-
-.custom-builds-title {
-    margin-bottom: 20px !important; 
-    color: #fff !important; 
-    font-size: 1.6rem !important;
-}
-
-[data-theme="light"] .custom-builds-title {
-    margin-bottom: 20px !important; 
-    color: #000 !important; 
-}
-
-[data-theme="light"] .network-pkg .pkg-select-btn {
-    background: #111 !important;
-    color: #fff !important;
-    border-radius: 100px !important;
-    padding: 18px 40px !important;
-    width: auto !important;
-    display: inline-block !important;
+    background: rgba(var(--accent2-rgb), 0.05) !important;
+    padding: 50px !important;
+    border-radius: 20px !important;
 }
