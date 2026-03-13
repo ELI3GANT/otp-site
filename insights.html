@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
-  <link rel="stylesheet" href="./styles.css?v=1773413465" />
+  <link rel="stylesheet" href="./styles.css?v=1773413709" />
   <link rel="stylesheet" href="./blog-enhancements.css" />
   <style>
     body { margin: 0 !important; }
@@ -29,7 +29,7 @@
         padding: 10px 20px;
         border-radius: 12px;
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.75rem;
+        font-size: 0.85rem;
         cursor: pointer;
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         text-transform: uppercase;
@@ -114,12 +114,13 @@
     }
     .insight-date {
         font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.7rem;
+        font-size: 0.8rem;
         color: var(--accent2);
         letter-spacing: 3px;
         text-transform: uppercase;
-        margin-bottom: 20px;
-        font-weight: 800;
+        margin-bottom: 12px;
+        font-weight: 700;
+        opacity: 0.9;
     }
     .insight-card h2 {
         font-family: 'Syne', sans-serif;
@@ -465,11 +466,19 @@
             if (!statusEl) {
                 statusEl = document.createElement('div');
                 statusEl.id = 'fetch-status';
-                statusEl.style.cssText = 'grid-column:1/-1; text-align:center; padding:20px; font-size:0.75rem; letter-spacing:2px; font-family:\'Space Grotesk\', sans-serif; opacity:0.6;';
+                statusEl.style.cssText = 'grid-column:1/-1; text-align:center; padding:40px; font-size:0.85rem; letter-spacing:2px; font-family:\'Space Grotesk\',sans-serif;';
                 grid.prepend(statusEl);
             }
             statusEl.style.color = isError ? '#ff4444' : 'var(--muted)';
-            statusEl.textContent = msg;
+            
+            if (isError) {
+                statusEl.innerHTML = `
+                    <div style="margin-bottom:20px;">${msg}</div>
+                    <button onclick="window.location.reload()" style="background:var(--accent2); color:#000; border:none; padding:10px 20px; border-radius:8px; font-family:\'Space Grotesk\',sans-serif; font-weight:800; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Retry Signal</button>
+                `;
+            } else {
+                statusEl.textContent = msg;
+            }
         };
 
         const clearStatus = () => {
@@ -594,7 +603,7 @@
                             </div>
                             <div class="insight-footer" style="display:flex; justify-content:space-between; align-items:center;">
                                 <span class="read-more">Access Uplink</span>
-                                ${viewCount > 0 ? `<span style="font-size:0.6rem; color:var(--muted2); font-family:'Space Grotesk',sans-serif; letter-spacing:1px; opacity:0.7;">${viewCount.toLocaleString()} reads</span>` : ''}
+                                ${viewCount > 0 ? `<span style="font-size:0.8rem; color:var(--muted2); font-family:'Space Grotesk',sans-serif; letter-spacing:1px; opacity:0.8;">${viewCount.toLocaleString()} reads</span>` : ''}
                             </div>
                         </div>
                     `;
@@ -619,6 +628,6 @@
 
 
   <script src="stars-v2.js"></script>
-  <script src="site-init.js?v=1773413465"></script>
+  <script src="site-init.js?v=1773413709"></script>
 </body>
 </html>

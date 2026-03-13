@@ -19,7 +19,7 @@
   <meta name="twitter:description" content="Tactical visual identity & cinematic storytelling deconstructed." />
   <meta name="twitter:image" content="https://onlytrueperspective.tech/og.jpg" />
 
-  <link rel="stylesheet" href="./styles.css?v=1773413465" />
+  <link rel="stylesheet" href="./styles.css?v=1773413709" />
   <link rel="stylesheet" href="./blog-enhancements.css" />
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -96,12 +96,12 @@
         text-decoration: none;
         font-family: 'Space Grotesk', sans-serif;
         text-transform: uppercase;
-        font-size: 0.7rem;
+        font-size: 0.85rem;
         letter-spacing: 3px;
         font-weight: 800;
         transition: all 0.4s;
         margin-bottom: 60px;
-        opacity: 0.7;
+        opacity: 0.85;
       }
       .back-to-vault:hover {
         color: var(--accent2);
@@ -153,6 +153,7 @@
   
   <script src="site-config.js"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- THEME GUARD: Prevents flickering by initializing theme before first paint -->
   <script>
     (function() {
@@ -263,7 +264,7 @@
   </main>
 
   <script src="stars-v2.js"></script>
-  <script src="site-init.js?v=1773413465"></script>
+  <script src="site-init.js?v=1773413709"></script>
 
 
   <script>
@@ -321,8 +322,22 @@
                 body: JSON.stringify({ slug: slug })
             }).catch(e => console.warn("Signal ping failed:", e));
 
+            
             const body = document.getElementById('postBody');
-            body.innerHTML = post.content || '<p>No content available.</p>';
+            // Use marked for markdown rendering if available
+            if (typeof marked !== 'undefined') {
+                body.innerHTML = marked.parse(post.content || '');
+            } else {
+                body.innerHTML = post.content || '<p>No content available.</p>';
+            }
+
+            // Fix the return link to use dynamic theme and better styling
+            const footerNav = document.createElement('div');
+            footerNav.style.cssText = 'text-align:center; margin-top:80px; padding-top:40px; border-top:1px solid rgba(var(--accent2-rgb), 0.1);';
+            footerNav.innerHTML = `
+                <a href='insights.html' style='color:var(--accent2); text-decoration:none; font-weight:bold; letter-spacing:2px; font-family:"Space Grotesk",sans-serif; border:1px solid rgba(var(--accent2-rgb), 0.3); padding:12px 24px; border-radius:8px; display:inline-block;' class='k-hover'>↩ RETURN TO VAULT</a>
+            `;
+            body.appendChild(footerNav);
             
             if (post.image_url) {
                 const img = document.getElementById('postImg');
