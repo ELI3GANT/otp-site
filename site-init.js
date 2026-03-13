@@ -382,72 +382,80 @@ window.OTP.showBroadcast = function(message) {
 window.OTP.initTheme();
 
 // 8. REALTIME SITE STATE (Sync Dashboard Controls)
-window.OTP.initRealtimeState = function() {
-    // SAFETY: Never sync on Admin/Portal (they handle their own state)
+
+// 8. REALTIME SITE STATE (Sync Dashboard Controls)
+window.OTP.initRealtimeState = async function() {
+    // SAFETY: Never sync on Admin/Portal
     if (window.location.pathname.includes('otp-terminal') || 
         window.location.pathname.includes('portal')) return;
 
-    if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
+    // WAIT FOR DEPENDENCIES
+    let attempts = 0;
+    while ((typeof window.supabase === 'undefined' || !window.OTP_CONFIG) && attempts < 50) {
+        await new Promise(r => setTimeout(r, 100));
+        attempts++;
+    }
+    
+    if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) {
+        console.warn("📡 REALTIME: Dependencies timed out.");
+        return;
+    }
+
     const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
     
     // 8.1 Fetch Remote State on Load (Sticky Config)
-    (async function() {
-        // SAFETY: Ignore on Admin/Portal pages
-        if (window.location.pathname.includes('otp-terminal') || 
-            window.location.pathname.includes('portal') ||
-            window.location.pathname.includes('404')) return;
-
-        try {
-            const { data, error } = await client
-                .from('posts')
-                .select('content')
-                .eq('slug', 'system-global-state')
-                .single();
+    try {
+        const { data, error } = await client
+            .from('posts')
+            .select('content')
+            .eq('slug', 'system-global-state')
+            .single();
+        
+        if (data && data.content) {
+            const config = JSON.parse(data.content);
+            console.log("📡 REMOTE STATE SYNC:", config);
             
-            if (data && data.content) {
-                const config = JSON.parse(data.content);
-                console.log("📡 REMOTE STATE SYNC:", config);
-                
-                // Apply Maintenance
-                if (config.maintenance === 'on') {
-                    document.body.innerHTML = `
-                        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; font-family: 'Space Grotesk', sans-serif; text-align: center; padding: 20px;">
-                            <h1 style="font-size: 3rem; margin-bottom: 10px;">SYSTEM MAINTENANCE</h1>
-                            <p style="opacity: 0.5; letter-spacing: 2px;">WE ARE CURRENTLY CALIBRATING THE FEED. STANDBY.</p>
-                            <div style="margin-top: 30px; width: 40px; height: 1px; background: #333;"></div>
-                        </div>
-                    `;
-                    return; // Stop further init
-                }
+            // Apply Maintenance IMMEDIATELY
+            if (config.maintenance === 'on') {
+                document.body.style.visibility = 'hidden'; // Hide while rendering maintenance
+                document.body.innerHTML = `
+                    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; font-family: 'Space Grotesk', sans-serif; text-align: center; padding: 20px; visibility: visible !important;">
+                        <h1 style="font-size: 3rem; margin-bottom: 10px;">SYSTEM MAINTENANCE</h1>
+                        <p style="opacity: 0.5; letter-spacing: 2px;">WE ARE CURRENTLY CALIBRATING THE FEED. STANDBY.</p>
+                        <div style="margin-top: 30px; width: 40px; height: 1px; background: #333;"></div>
+                    </div>
+                `;
+                document.body.style.visibility = 'visible';
+                return; // STOP EXECUTION
+            }
 
-                // Apply Visuals
-                if (config.visuals) {
-                    document.documentElement.setAttribute('data-fx-intensity', config.visuals);
-                    window.FX_INTENSITY = config.visuals;
-                    const canvas = document.getElementById('cursor-canvas');
-                    if(canvas) canvas.style.display = config.visuals === 'high' ? 'block' : 'none';
-                }
-                
-                 // Apply Kursor
-                if (config.kursor) {
-                    const kNodes = document.querySelectorAll('.kursor, .kursor-child');
-                    kNodes.forEach(n => n.style.opacity = config.kursor === 'on' ? '1' : '0');
-                }
-                
-                // Apply Theme
-                if (config.theme) {
-                    const hasOverride = localStorage.getItem('theme');
-                    if (!hasOverride) {
-                        window.OTP.setTheme(config.theme);
-                    }
-                    localStorage.setItem('last_global_theme', config.theme);
+            // Apply Visuals
+            if (config.visuals) {
+                document.documentElement.setAttribute('data-fx-intensity', config.visuals);
+                window.FX_INTENSITY = config.visuals;
+                const canvas = document.getElementById('cursor-canvas');
+                if(canvas) canvas.style.display = config.visuals === 'high' ? 'block' : 'none';
+            }
+            
+             // Apply Kursor
+            if (config.kursor) {
+                const kNodes = document.querySelectorAll('.kursor, .kursor-child');
+                kNodes.forEach(n => n.style.opacity = config.kursor === 'on' ? '1' : '0');
+            }
+            
+            // Apply Theme
+            if (config.theme && !window.location.pathname.includes('otp-terminal')) {
+                const hasOverride = localStorage.getItem('theme');
+                if (!hasOverride) {
+                    window.OTP.setTheme(config.theme);
                 }
             }
-        } catch(e) { console.error("Config Sync Error:", e, error); }
-    })();
+        }
+    } catch(e) { console.error("Config Sync Error:", e); }
 
     // Listen for Site Commands (Broadcast/Maintenance/Theme)
     const channel = client.channel('site_state');
+
     
     channel.on('broadcast', { event: 'command' }, (message) => {
         console.log("📡 INCOMING COMMAND:", message);
@@ -1295,7 +1303,7 @@ function initSite() {
 
     // 10. BOOTSTRAP REALTIME & DYNAMIC CONTENT
     if (window.OTP && window.OTP.initRealtimeState) {
-        window.OTP.initRealtimeState();
+        window.OTP.initRealtimeState().catch(e => console.error("Realtime Init Error:", e));
     }
     if (window.OTP && window.OTP.initLiveEditor) {
         window.OTP.initLiveEditor();
