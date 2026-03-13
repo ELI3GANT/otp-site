@@ -19,7 +19,7 @@
   <meta name="twitter:description" content="Tactical visual identity & cinematic storytelling deconstructed." />
   <meta name="twitter:image" content="https://onlytrueperspective.tech/og.jpg" />
 
-  <link rel="stylesheet" href="./styles.css?v=1773410468" />
+  <link rel="stylesheet" href="./styles.css?v=1773411495" />
   <link rel="stylesheet" href="./blog-enhancements.css" />
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -263,7 +263,7 @@
   </main>
 
   <script src="stars-v2.js"></script>
-  <script src="site-init.js?v=1773410468"></script>
+  <script src="site-init.js?v=1773411495"></script>
 
 
   <script>
@@ -310,6 +310,17 @@
             document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', postImage);
             document.querySelector('link[rel="canonical"]')?.setAttribute('href', postUrl);
             
+            
+            // --- FIRE LIVE TRAFFIC SIGNAL ---
+            let apiBase = window.OTP_CONFIG?.apiBase || '';
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') apiBase = window.location.origin;
+            
+            fetch(`${apiBase}/api/track/view`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slug: slug })
+            }).catch(e => console.warn("Signal ping failed:", e));
+
             const body = document.getElementById('postBody');
             body.innerHTML = post.content || '<p>No content available.</p>';
             
@@ -335,6 +346,17 @@
             console.error("Uplink Error:", e);
             document.getElementById('loader').style.display = 'none';
             const titleEl = document.getElementById('postTitle');
+            
+            // --- FIRE LIVE TRAFFIC SIGNAL ---
+            let apiBase = window.OTP_CONFIG?.apiBase || '';
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') apiBase = window.location.origin;
+            
+            fetch(`${apiBase}/api/track/view`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ slug: slug })
+            }).catch(e => console.warn("Signal ping failed:", e));
+
             const body = document.getElementById('postBody');
             if (titleEl) titleEl.innerText = e.message === 'POST_NOT_FOUND' ? "SIGNAL NOT FOUND" : "UPLINK ERROR";
             if (body) {

@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=1773410468" />
+  <link rel="stylesheet" href="./styles.css?v=1773411495" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -1128,9 +1128,9 @@
           y: 100,
           rotateX: -90,
           stagger: 0.02,
-          duration: 1,
+          duration: 0.8,
           ease: 'back.out(1.7)',
-          delay: 0.5
+          delay: 0.1
         });
 
         gsap.from('.subtitle-lead, .hero-value', {
@@ -1139,15 +1139,15 @@
           duration: 1.2,
           stagger: 0.3,
           ease: 'power3.out',
-          delay: 1.2
+          delay: 0.5
         });
 
         gsap.from('.hero-cta, .hero-micro', {
           opacity: 0,
           y: 30,
-          duration: 1,
+          duration: 0.8,
           ease: 'power2.out',
-          delay: 1.8
+          delay: 0.7
         });
     });
   </script>
@@ -1225,11 +1225,11 @@
           gsap.from(head, {
             scrollTrigger: {
               trigger: head,
-              start: "top 85%",
+              start: "top 95%",
             },
             y: 50,
             opacity: 0,
-            duration: 1,
+            duration: 0.8,
             ease: "power3.out"
           });
         }
@@ -1238,12 +1238,12 @@
           gsap.from(content, {
             scrollTrigger: {
               trigger: content[0],
-              start: "top 85%",
+              start: "top 95%",
             },
             y: 40,
             opacity: 0,
-            duration: 1.5,
-            stagger: 0.15,
+            duration: 0.8,
+            stagger: 0.1,
             ease: "power3.out"
           });
         }
@@ -1262,7 +1262,7 @@
             entry.target.classList.add('reveal');
           }
         });
-      }, { threshold: 0.1 });
+      }, { rootMargin: '0px 0px 200px 0px', threshold: 0 });
       
       revealItems.forEach(item => observer.observe(item));
     })();

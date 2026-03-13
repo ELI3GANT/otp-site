@@ -41,7 +41,7 @@ if (document.readyState === 'loading') {
 
 // CONFIG: Defined packages eligible for direct payment
 const VALID_PAY_PACKAGES = [
-    'The Drop', 'The Vision', 'The Visualizer', 'The Official Video',
+    'The Drop', 'The Vision', 'The Campaign', 'The Visualizer', 'The Official Video',
     'The Rollout', 'The Identity', 'The Digital HQ', 'The Rebrand', 
     'The Stack', 'The Partner'
 ];
@@ -117,7 +117,7 @@ async function initPaymentSystem() {
         serviceSelect.addEventListener('change', () => {
             const val = serviceSelect.value;
             const validPayPackages = [
-                'The Drop', 'The Vision', 'The Visualizer', 'The Official Video',
+                'The Drop', 'The Vision', 'The Campaign', 'The Visualizer', 'The Official Video',
                 'The Rollout', 'The Identity', 'The Digital HQ', 'The Rebrand', 
                 'The Stack', 'The Partner'
             ];

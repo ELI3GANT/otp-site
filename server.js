@@ -460,6 +460,39 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
     }
 });
 
+
+// --- ANALYTICS UPLINK (Bypasses RLS to increment views) ---
+app.post('/api/track/view', async (req, res) => {
+    const { slug } = req.body;
+    if (!slug) return res.status(400).json({ error: "Slug required" });
+    
+    try {
+        if (!supabaseAdmin) throw new Error("Supabase Admin Key missing");
+        
+        // 1. Get current views
+        const { data: post, error: fetchError } = await supabaseAdmin
+            .from('posts')
+            .select('id, views')
+            .eq('slug', slug)
+            .single();
+            
+        if (fetchError || !post) throw new Error("Post not found");
+        
+        // 2. Increment views directly
+        const { error: updateError } = await supabaseAdmin
+            .from('posts')
+            .update({ views: (post.views || 0) + 1 })
+            .eq('id', post.id);
+            
+        if (updateError) throw updateError;
+        
+        res.json({ success: true });
+    } catch (e) {
+        console.warn("⚠️ View Tracking Failed:", e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // 5. CONTACT AGENT (AI Auto-Draft)
 app.post('/api/contact/submit', async (req, res) => {
     const { name, email, service, message, budget, timeline, _gotcha } = req.body;
