@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         :root {
-            --accent2: #00ecff;
+            --accent2: var(--accent2);
             --bg: #030305;
         }
 
@@ -34,8 +34,8 @@
             inset: 0;
             z-index: -1;
             background: 
-                radial-gradient(circle at 10% 20%, rgba(0, 236, 255, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(0, 236, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 10% 20%, rgba(var(--accent2-rgb), 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(var(--accent2-rgb), 0.05) 0%, transparent 40%),
                 #030305;
             overflow: hidden;
         }
@@ -69,7 +69,7 @@
 
         .success-card {
             padding: 60px 40px;
-            border: 1px solid rgba(0, 236, 255, 0.15);
+            border: 1px solid rgba(var(--accent2-rgb), 0.15);
             background: rgba(10, 10, 15, 0.7);
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
@@ -78,7 +78,7 @@
             width: 100%;
             box-shadow: 
                 0 40px 100px rgba(0, 0, 0, 0.8),
-                0 0 40px rgba(0, 236, 255, 0.05);
+                0 0 40px rgba(var(--accent2-rgb), 0.05);
             animation: cardEntrance 1s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
@@ -95,9 +95,9 @@
             background: linear-gradient(
                 to bottom,
                 transparent,
-                rgba(0, 236, 255, 0.1),
-                rgba(0, 236, 255, 0.2),
-                rgba(0, 236, 255, 0.1),
+                rgba(var(--accent2-rgb), 0.1),
+                rgba(var(--accent2-rgb), 0.2),
+                rgba(var(--accent2-rgb), 0.1),
                 transparent
             );
             animation: scan 4s linear infinite;
@@ -140,8 +140,8 @@
             gap: 8px;
             margin: 20px 0 40px;
             padding: 8px 16px;
-            background: rgba(0, 236, 255, 0.1);
-            border: 1px solid rgba(0, 236, 255, 0.2);
+            background: rgba(var(--accent2-rgb), 0.1);
+            border: 1px solid rgba(var(--accent2-rgb), 0.2);
             border-radius: 100px;
             color: var(--accent2);
             font-size: 0.85rem;
@@ -211,8 +211,8 @@
         }
 
         .upload-zone:focus-within {
-            border-color: rgba(0, 236, 255, 0.3);
-            background: rgba(0, 236, 255, 0.02);
+            border-color: rgba(var(--accent2-rgb), 0.3);
+            background: rgba(var(--accent2-rgb), 0.02);
         }
 
         .upload-label {
@@ -239,7 +239,7 @@
         input[type="text"]:focus {
             outline: none;
             border-color: var(--accent2);
-            box-shadow: 0 0 20px rgba(0, 236, 255, 0.1);
+            box-shadow: 0 0 20px rgba(var(--accent2-rgb), 0.1);
         }
 
         .btn {
@@ -259,7 +259,7 @@
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 236, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(var(--accent2-rgb), 0.3);
             filter: brightness(1.1);
         }
 

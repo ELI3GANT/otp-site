@@ -31,7 +31,7 @@
     if (typeof kursor !== 'undefined' && !isMobile) {
         new kursor({
             type: 1, // Ring
-            color: '#00c3ff', // Cyan
+            color: 'var(--accent2)', // Cyan
             removeDefaultCursor: false
         });
     } 

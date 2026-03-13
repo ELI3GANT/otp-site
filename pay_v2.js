@@ -127,7 +127,7 @@ async function initPaymentSystem() {
                 submitBtn.innerHTML = `SECURE YOUR SLOT // PAY NOW <span style="font-size:0.8em; opacity:0.8">(${val})</span>`;
                 submitBtn.style.background = 'var(--accent2)';
                 submitBtn.style.color = '#000';
-                submitBtn.style.boxShadow = '0 0 30px rgba(0, 195, 255, 0.3)';
+                submitBtn.style.boxShadow = '0 0 30px rgba(var(--accent2-rgb), 0.3)';
             } else {
                 submitBtn.innerHTML = `REQUEST CUSTOM QUOTE`;
                 submitBtn.style.background = 'transparent';

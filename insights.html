@@ -16,7 +16,7 @@
   <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
-  <link rel="stylesheet" href="./styles.css?v=1773409873" />
+  <link rel="stylesheet" href="./styles.css?v=1773410049" />
   <link rel="stylesheet" href="./blog-enhancements.css" />
   <style>
     body { margin: 0 !important; }
@@ -39,14 +39,14 @@
     .filter-btn:hover {
         border-color: var(--accent2);
         color: var(--text);
-        background: rgba(0, 236, 255, 0.05);
+        background: rgba(var(--accent2-rgb), 0.05);
         transform: translateY(-2px);
     }
     .filter-btn.active {
         background: var(--accent2);
         border-color: var(--accent2);
         color: #000;
-        box-shadow: 0 0 30px rgba(0, 236, 255, 0.25);
+        box-shadow: 0 0 30px rgba(var(--accent2-rgb), 0.25);
     }
 
     .insight-card {
@@ -87,13 +87,13 @@
         }
         .insight-card:hover {
             transform: translateY(-10px) scale(1.02);
-            border-color: rgba(0, 236, 255, 0.6);
+            border-color: rgba(var(--accent2-rgb), 0.6);
             /* Layered glow: deep shadow + strong cyan halo */
             box-shadow:
                 0 40px 80px -20px rgba(0, 0, 0, 0.7),
-                0 0 0 1px rgba(0, 236, 255, 0.15),
-                0 0 30px rgba(0, 236, 255, 0.25),
-                0 0 60px rgba(0, 236, 255, 0.1);
+                0 0 0 1px rgba(var(--accent2-rgb), 0.15),
+                0 0 30px rgba(var(--accent2-rgb), 0.25),
+                0 0 60px rgba(var(--accent2-rgb), 0.1);
             z-index: 10; /* Lifts hovered card above siblings so glow isn't clipped by neighbors */
         }
     }
@@ -151,8 +151,8 @@
     }
     .insight-card:hover .post-tag {
         color: var(--accent2);
-        border-color: rgba(0, 236, 255, 0.2);
-        background: rgba(0, 236, 255, 0.05);
+        border-color: rgba(var(--accent2-rgb), 0.2);
+        background: rgba(var(--accent2-rgb), 0.05);
     }
     .read-more {
         display: inline-flex;
@@ -211,7 +211,7 @@
     }
 
     [data-theme="light"] .pinpoint-icon {
-        filter: drop-shadow(0 5px 15px rgba(0, 236, 255, 0.3));
+        filter: drop-shadow(0 5px 15px rgba(var(--accent2-rgb), 0.3));
     }
 
     .insights-grid {
@@ -619,6 +619,6 @@
 
 
   <script src="stars-v2.js"></script>
-  <script src="site-init.js?v=1773409873"></script>
+  <script src="site-init.js?v=1773410049"></script>
 </body>
 </html>

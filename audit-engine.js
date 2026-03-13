@@ -62,7 +62,7 @@ window.AuditEngine = {
         buttons.forEach(btn => {
             if (btn.textContent === value) {
                 btn.style.borderColor = 'var(--accent2)';
-                btn.style.background = 'rgba(0, 195, 255, 0.1)';
+                btn.style.background = 'rgba(var(--accent2-rgb), 0.1)';
             } else {
                 btn.style.borderColor = '';
                 btn.style.background = '';
@@ -415,7 +415,7 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
         // Tactical Badge
         const bonusBadge = `
             <div class="audit-badge-transmission">
-                <span style="width: 6px; height: 6px; background: #00c3ff; border-radius: 50%; box-shadow: 0 0 5px #00c3ff;"></span>
+                <span style="width: 6px; height: 6px; background: var(--accent2); border-radius: 50%; box-shadow: 0 0 5px var(--accent2);"></span>
                 Start Transmission
             </div>
         `;

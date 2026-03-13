@@ -1686,7 +1686,7 @@
                     <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span style="color:var(--admin-success); font-weight:bold;">${(post.views || 0).toLocaleString()}</span> Views</div>
                     ${post.slug ? `<div style="font-size:0.55rem; color:var(--admin-muted); font-family:monospace; margin-top:2px; opacity:0.6;">↗ /insight.html?slug=${window.escapeHtml(post.slug)}</div>` : ''}
                     <div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;">
-                        ${(post.tags || []).map(t => `<span style="font-size: 0.55rem; color: var(--admin-cyan); background: rgba(0, 195, 255, 0.05); padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(0, 195, 255, 0.1);">#${window.escapeHtml(t)}</span>`).join('')}
+                        ${(post.tags || []).map(t => `<span style="font-size: 0.55rem; color: var(--admin-cyan); background: rgba(var(--accent2-rgb), 0.05); padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(var(--accent2-rgb), 0.1);">#${window.escapeHtml(t)}</span>`).join('')}
                     </div>
                 </div>
                 <div class="status-badge ${isLive ? 'status-live' : 'status-draft'}">
