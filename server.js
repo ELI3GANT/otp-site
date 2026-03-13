@@ -462,8 +462,14 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
 
 // 5. CONTACT AGENT (AI Auto-Draft)
 app.post('/api/contact/submit', async (req, res) => {
-    const { name, email, service, message, budget, timeline } = req.body;
+    const { name, email, service, message, budget, timeline, _gotcha } = req.body;
     
+    // 0. Honeypot Spam Check
+    if (_gotcha) {
+        console.warn(`🛑 Spam caught by honeypot: ${email}`);
+        return res.status(200).json({ success: true, message: "Contact received." }); // Fake success for bots
+    }
+
     // 1. Basic Validation
     if (!name || !email) {
         return res.status(400).json({ success: false, message: "Name and Email are required." });
@@ -510,30 +516,38 @@ app.post('/api/contact/submit', async (req, res) => {
         let draftReply = "";
         let analysis = {};
 
-        if (process.env.GEMINI_API_KEY) {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }]
-                })
-            });
-            const data = await response.json();
-            if (data.candidates) {
-                draftReply = data.candidates[0].content.parts[0].text;
-            }
-        } 
+        try {
+            if (process.env.GEMINI_API_KEY) {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }]
+                    })
+                });
+                const data = await response.json();
+                if (data.candidates) {
+                    draftReply = data.candidates[0].content.parts[0].text;
+                }
+            } 
+        } catch (aiError) {
+            console.warn("⚠️ AI Drafting failed (User submission still saved):", aiError.message);
+        }
         
         // 4. Update Contact with Draft
-        if (draftReply) {
-            await adminClient
-                .from('contacts')
-                .update({ 
-                    draft_reply: draftReply,
-                    ai_status: 'drafted',
-                    ai_analysis: { generated_at: new Date().toISOString() }
-                })
-                .eq('id', contactData.id);
+        try {
+            if (draftReply) {
+                await adminClient
+                    .from('contacts')
+                    .update({ 
+                        draft_reply: draftReply,
+                        ai_status: 'drafted',
+                        ai_analysis: { generated_at: new Date().toISOString() }
+                    })
+                    .eq('id', contactData.id);
+            }
+        } catch (dbUpdateError) {
+            console.warn("⚠️ Failed to update DB with AI draft:", dbUpdateError.message);
         }
 
         res.json({ success: true, message: "Contact received and agent activated." });

@@ -1498,31 +1498,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         setStaticOn() {
-            const chars = this.el.querySelectorAll('.char');
-            if (chars.length > 0) {
-                chars.forEach(c => {
-                    c.style.color = '#fff';
-                    c.style.textShadow = '0 0 10px rgba(0, 236, 255, 0.8), 0 0 20px rgba(0, 236, 255, 0.6), 0 0 40px rgba(0, 236, 255, 0.4)';
-                    c.style.opacity = '1';
-                });
-            } else {
-                this.el.style.opacity = '1';
-                this.el.style.filter = 'contrast(1.3) brightness(1.2) drop-shadow(0 0 15px rgba(0, 236, 255, 0.4))';
-            }
+            this.el.classList.add('neon-active');
         }
         
         setStaticOff() {
-            const chars = this.el.querySelectorAll('.char');
-            if (chars.length > 0) {
-                chars.forEach(c => {
-                    c.style.color = 'inherit';
-                    c.style.textShadow = 'none';
-                    c.style.opacity = '1'; // Ensure it's fully visible (opacity 1) for the hollow effect
-                });
-            } else {
-                this.el.style.opacity = '0.8';
-                this.el.style.filter = 'contrast(1) brightness(1)';
-            }
+            this.el.classList.remove('neon-active');
         }
         
         async runSequence() {

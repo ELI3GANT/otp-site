@@ -205,12 +205,6 @@ section, .section-studio, .section-work, #services, #contact {
   letter-spacing: -1px;
 }
 
-[data-theme="light"] .hero h1 .char {
-  color: #000 !important;
-  text-shadow: none !important;
-  opacity: 1 !important;
-}
-
 [data-theme="light"] .eyebrow {
   background: #ffffff;
   border-color: #d1d1d6;
@@ -7649,3 +7643,26 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* IDENTITY STAMP: REMOVED */
+
+
+/* ---- NEON CONTROLLER STYLES ---- */
+.neon-active .char {
+    color: #fff !important;
+    text-shadow: 0 0 10px rgba(0, 236, 255, 0.8), 0 0 20px rgba(0, 236, 255, 0.6), 0 0 40px rgba(0, 236, 255, 0.4) !important;
+    opacity: 1 !important;
+}
+
+.neon-active:not(.title):not(.nav-logo) {
+    opacity: 1 !important;
+    filter: contrast(1.3) brightness(1.2) drop-shadow(0 0 15px rgba(0, 236, 255, 0.4)) !important;
+}
+
+/* Light Mode Variations */
+[data-theme="light"] .neon-active .char {
+    color: #111 !important;
+    text-shadow: 0 0 10px rgba(0, 236, 255, 0.8), 0 0 20px rgba(0, 236, 255, 0.6) !important;
+}
+
+[data-theme="light"] .neon-active:not(.title):not(.nav-logo) {
+    filter: contrast(1.3) brightness(1.2) drop-shadow(0 0 15px rgba(0, 236, 255, 0.6)) !important;
+}
