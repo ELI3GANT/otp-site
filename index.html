@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=1773412225" />
+  <link rel="stylesheet" href="./styles.css?v=1773412444" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -1054,9 +1054,9 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS (Moved to bottom for reliable loading) -->
-  <script src="site-config.js?v=1773412225" defer></script>
+  <script src="site-config.js?v=1773412444" defer></script>
   <script src="https://js.stripe.com/v3/" defer></script>
-  <script src="pay_v2.js?v=1773412225" defer></script>
+  <script src="pay_v2.js?v=1773412444" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
   <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
@@ -1121,29 +1121,29 @@
         
         gsap.from(heroTitle.chars, {
           opacity: 0,
-          y: 100,
+          y: 50,
           rotateX: -90,
-          stagger: 0.02,
-          duration: 0.8,
-          ease: 'back.out(1.7)',
-          delay: 0.1
+          stagger: 0.015,
+          duration: 0.6,
+          ease: 'power2.out',
+          delay: 0.05
         });
 
         gsap.from('.subtitle-lead, .hero-value', {
           opacity: 0,
           y: 20,
-          duration: 1.2,
-          stagger: 0.3,
-          ease: 'power3.out',
-          delay: 0.5
+          duration: 0.8,
+          stagger: 0.1,
+          ease: 'power2.out',
+          delay: 0.3
         });
 
         gsap.from('.hero-cta, .hero-micro', {
           opacity: 0,
-          y: 30,
-          duration: 0.8,
+          y: 20,
+          duration: 0.6,
           ease: 'power2.out',
-          delay: 0.7
+          delay: 0.6
         });
     });
   </script>
@@ -1221,12 +1221,13 @@
           gsap.from(head, {
             scrollTrigger: {
               trigger: head,
-              start: "top 95%",
+              start: "top bottom",
+              once: true
             },
-            y: 50,
+            y: 30,
             opacity: 0,
-            duration: 0.8,
-            ease: "power3.out"
+            duration: 0.6,
+            ease: "power2.out"
           });
         }
         
@@ -1234,13 +1235,14 @@
           gsap.from(content, {
             scrollTrigger: {
               trigger: content[0],
-              start: "top 95%",
+              start: "top bottom",
+              once: true
             },
-            y: 40,
+            y: 30,
             opacity: 0,
-            duration: 0.8,
-            stagger: 0.1,
-            ease: "power3.out"
+            duration: 0.6,
+            stagger: 0.05,
+            ease: "power2.out"
           });
         }
       });
@@ -1258,7 +1260,7 @@
             entry.target.classList.add('reveal');
           }
         });
-      }, { rootMargin: '0px 0px 200px 0px', threshold: 0 });
+      }, { rootMargin: '0px 0px 400px 0px', threshold: 0 });
       
       revealItems.forEach(item => observer.observe(item));
     })();
