@@ -7677,8 +7677,8 @@ input:focus, select:focus, textarea:focus {
   color: #000;
 }
 
-.package-static { display: flex !important; flex-direction: column; opacity: 1 !important; visibility: visible !important; transform: none !important; }
-.package-static.hidden { display: none !important; }
+
+
 
 
 /* ---- PREMIUM PACKAGE CARDS ---- */
