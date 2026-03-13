@@ -2310,7 +2310,7 @@
                     if (raw.usage) trackAICost('groq', raw.usage.total_tokens);
                 }
                 else if (provider === 'gemini') {
-                    const gemModel = model || 'gemini-2.5-flash';
+                    const gemModel = model || 'gemini-2.0-flash';
                     const endpoints = ['v1beta', 'v1'];
                     let gemSuccess = false;
                     for (const v of endpoints) {
