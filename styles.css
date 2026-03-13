@@ -7679,3 +7679,64 @@ input:focus, select:focus, textarea:focus {
 
 .package-static { display: flex !important; flex-direction: column; opacity: 1 !important; visibility: visible !important; transform: none !important; }
 .package-static.hidden { display: none !important; }
+
+
+/* ---- PREMIUM PACKAGE CARDS ---- */
+.package-static {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.package-static:hover {
+    transform: translateY(-10px) scale(1.02) !important;
+    border-color: var(--accent2) !important;
+    box-shadow: 0 30px 60px rgba(var(--accent2-rgb), 0.15) !important;
+}
+
+.package-static.featured:hover {
+    transform: translateY(-10px) scale(1.07) !important;
+}
+
+.check-list li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.check-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent2);
+    font-weight: 800;
+}
+
+.pkg-amount {
+    font-family: 'Syne', sans-serif;
+    letter-spacing: -1px;
+}
+
+.pkg-select-btn {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.05) !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+.pkg-select-btn:hover {
+    background: #fff !important;
+    color: #000 !important;
+    border-color: #fff !important;
+}
+
+.featured .pkg-select-btn {
+    background: var(--accent2) !important;
+    color: #000 !important;
+    border: none !important;
+}
+
+.featured .pkg-select-btn:hover {
+    background: #fff !important;
+    box-shadow: 0 0 20px #fff;
+}

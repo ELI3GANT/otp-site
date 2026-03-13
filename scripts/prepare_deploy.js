@@ -14,9 +14,9 @@ const FILES_TO_UPDATE = [
 ];
 
 const ROOT_DIR = path.join(__dirname, '..');
-const NEW_VERSION = Math.floor(Date.now() / 1000); // Unix Timestamp
+const NEW_VERSION = Math.floor(Date.now() / 1000);
 
-console.log(`🚀 PREPARING DEPLOYMENT: v${NEW_VERSION}`);
+console.log(`🚀 MASTER CACHE BUSTER: v${NEW_VERSION}`);
 
 FILES_TO_UPDATE.forEach(file => {
     const filePath = path.join(ROOT_DIR, file);
@@ -24,23 +24,13 @@ FILES_TO_UPDATE.forEach(file => {
 
     let content = fs.readFileSync(filePath, 'utf8');
     
-    // 1. Update CSS Versions
-    content = content.replace(/styles\.css\?v=[0-9.]+/g, `styles.css?v=${NEW_VERSION}`);
-    content = content.replace(/admin-styles\.css\?v=[0-9.]+/g, `admin-styles.css?v=${NEW_VERSION}`);
-    content = content.replace(/blog-enhancements\.css\?v=[0-9.]+/g, `blog-enhancements.css?v=${NEW_VERSION}`);
+    // Universal replacement for any script or link with ?v=
+    content = content.replace(/(\.js|\.css)\?v=[0-9.]+/g, `$1?v=${NEW_VERSION}`);
 
-    // 2. Update JS Versions
-    content = content.replace(/site-init\.js\?v=[0-9.]+/g, `site-init.js?v=${NEW_VERSION}`);
-    content = content.replace(/admin-core\.js\?v=[0-9.]+/g, `admin-core.js?v=${NEW_VERSION}`);
-    content = content.replace(/admin-init\.js\?v=[0-9.]+/g, `admin-init.js?v=${NEW_VERSION}`);
-    content = content.replace(/audit-engine\.js\?v=[0-9.]+/g, `audit-engine.js?v=${NEW_VERSION}`);
-
-    // 3. Update Footer Year
+    // Update Footer Year
     const year = new Date().getFullYear();
-    content = content.replace(/© <span id="year">.*?<\/span>/g, `© <span id="year">${year}</span>`);
+    content = content.replace(/<span id="year">.*?<\/span>/g, `<span id="year">${year}</span>`);
 
     fs.writeFileSync(filePath, content);
-    console.log(`✅ Updated ${file}`);
+    console.log(`✅ ${file} synchronized.`);
 });
-
-console.log(`\n✨ ASSETS BUSTED. READY TO PUSH.`);

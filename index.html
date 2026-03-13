@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=1773411941" />
+  <link rel="stylesheet" href="./styles.css?v=1773412225" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -670,114 +670,110 @@
 
   
 
-    <!-- PACKAGES MENU -->
+      <!-- PACKAGES MENU -->
   <section id="packages" class="section section-alt">
     <div class="wrap">
       <header class="section-head center-text">
         <span class="eyebrow-mini">THE MENU</span>
-        <h2>Select Your Package</h2>
-        <p>Curated solutions to execute your vision.</p>
+        <h2 class="syne-bold">Service Tiers</h2>
+        <p>Strategic visual solutions engineered for impact.</p>
       </header>
 
       <!-- DYNAMIC GRID: Rebuilt for 3 powerful tiers -->
-      <div class="pkg-grid-dynamic" id="pkgGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px;">
+      <div class="pkg-grid-dynamic" id="pkgGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 50px;">
         
         <!-- PACKAGE 1: THE DROP -->
-        <article class="package-static">
-          <div class="package-top">
-            <h4>The Drop</h4>
-            <div class="pkg-icon-wrap" aria-label="Edit">
-              <svg class="pkg-neon-icon icon-content" viewBox="0 0 24 24" style="stroke: var(--accent2);">
+        <article class="package-static" style="display: flex; flex-direction: column; background: rgba(255,255,255,0.02); border: 1px solid rgba(var(--accent2-rgb), 0.1); border-radius: 24px; padding: 40px; transition: all 0.4s ease;">
+          <div class="package-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Drop</h4>
+            <div class="pkg-icon-wrap" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(var(--accent2-rgb), 0.1); border-radius: 12px;">
+              <svg class="pkg-neon-icon icon-content" viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--accent2); fill: none; stroke-width: 2;">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
             </div>
           </div>
-          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">High-retention editing for creators and brands needing rapid, cinematic cuts. Perfect for short-form content or precision photo retouching.</p>
-          <ul class="check-list">
-            <li><strong>Format:</strong> Short Video or 5 Photos</li>
-            <li><strong>Style:</strong> Fast-paced, Color Graded</li>
-            <li><strong>Outcome:</strong> Ready to post</li>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">Precision editing and retouching for creators who move fast. We take your raw files and turn them into high-retention assets.</p>
+          <ul class="check-list" style="list-style: none; padding: 0; margin-bottom: 40px; flex-grow: 1;">
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 1x Short-Form Video (Reels/TikTok)</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Advanced Color Grading</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 24-48 Hour Rapid Delivery</li>
           </ul>
-          <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 24h - 48h</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">50</span>
+          <div class="pkg-meta" style="margin-top: auto;">
+            <div class="pkg-price" style="margin-bottom: 20px;">
+              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Tier 01</span>
+              <div class="pkg-amount-wrapper" style="display: flex; align-items: baseline; gap: 4px;">
+                <span class="pkg-currency" style="font-size: 1.2rem; color: var(--accent2); font-weight: 700;">$</span><span class="pkg-amount" style="font-size: 2.5rem; font-weight: 800; color: #fff;">50</span>
               </div>
             </div>
-            <button class="pkg-select-btn" data-package="The Drop">Select Package</button>
+            <button class="pkg-select-btn" data-package="The Drop" style="width: 100%; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">SELECT PLAN</button>
           </div>
         </article>
 
         <!-- PACKAGE 2: THE VISION -->
-        <article class="package-static featured">
-          <div class="package-top">
-            <h4>The Vision</h4>
-            <div class="pkg-icon-wrap" aria-label="Shoot">
-              <svg class="pkg-neon-icon icon-photo" viewBox="0 0 24 24" style="stroke: var(--accent2);">
+        <article class="package-static featured" style="display: flex; flex-direction: column; background: rgba(var(--accent2-rgb), 0.05); border: 2px solid var(--accent2); border-radius: 24px; padding: 40px; position: relative; transform: scale(1.05); transition: all 0.4s ease; box-shadow: 0 20px 50px rgba(var(--accent2-rgb), 0.15);">
+          <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent2); color: #000; padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;">MOST POPULAR</div>
+          <div class="package-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Vision</h4>
+            <div class="pkg-icon-wrap" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(var(--accent2-rgb), 0.2); border-radius: 12px;">
+              <svg class="pkg-neon-icon icon-photo" viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--accent2); fill: none; stroke-width: 2;">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                 <circle cx="12" cy="13" r="4"></circle>
               </svg>
             </div>
           </div>
-          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">Professional photoshoot or short on-location video shoot. Capture the raw essence of your brand, product, or artistry.</p>
-          <ul class="check-list">
-            <li><strong>Scope:</strong> Up to 1 Hour Shoot</li>
-            <li><strong>Deliverables:</strong> 15+ Retouched Images</li>
-            <li><strong>Focus:</strong> Lighting & Composition</li>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">Full-scale creative production. From lighting to composition, we capture the visuals that define your brand's true perspective.</p>
+          <ul class="check-list" style="list-style: none; padding: 0; margin-bottom: 40px; flex-grow: 1;">
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> On-Location Shoot (Up to 2 Hours)</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 20+ High-End Retouched Images</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Creative Direction & Lighting</li>
           </ul>
-          <div class="pkg-meta">
-            <span><strong>Location:</strong> Local / Studio</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">100</span>
+          <div class="pkg-meta" style="margin-top: auto;">
+            <div class="pkg-price" style="margin-bottom: 20px;">
+              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Tier 02</span>
+              <div class="pkg-amount-wrapper" style="display: flex; align-items: baseline; gap: 4px;">
+                <span class="pkg-currency" style="font-size: 1.2rem; color: var(--accent2); font-weight: 700;">$</span><span class="pkg-amount" style="font-size: 2.5rem; font-weight: 800; color: #fff;">100</span>
               </div>
             </div>
-            <button class="pkg-select-btn" data-package="The Vision">Select Package</button>
+            <button class="pkg-select-btn" data-package="The Vision" style="width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--accent2); color: #000; font-weight: 800; cursor: pointer; transition: all 0.3s ease;">SELECT PLAN</button>
           </div>
         </article>
 
         <!-- PACKAGE 3: THE CAMPAIGN -->
-        <article class="package-static">
-          <div class="package-top">
-            <h4>The Campaign</h4>
-            <div class="pkg-icon-wrap" aria-label="Full Rights">
-              <svg class="pkg-neon-icon icon-business" viewBox="0 0 24 24" style="stroke: var(--accent2);">
+        <article class="package-static" style="display: flex; flex-direction: column; background: rgba(255,255,255,0.02); border: 1px solid rgba(var(--accent2-rgb), 0.1); border-radius: 24px; padding: 40px; transition: all 0.4s ease;">
+          <div class="package-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Campaign</h4>
+            <div class="pkg-icon-wrap" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(var(--accent2-rgb), 0.1); border-radius: 12px;">
+              <svg class="pkg-neon-icon icon-business" viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--accent2); fill: none; stroke-width: 2;">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
               </svg>
             </div>
           </div>
-          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">The ultimate package for artists and brands who want full control. A complete production shoot, premium edits, and full commercial rights.</p>
-          <ul class="check-list">
-            <li><strong>Scope:</strong> Full Shoot + Premium Edit</li>
-            <li><strong>Extras:</strong> BTS clips & Raw Files</li>
-            <li><strong>Rights:</strong> 100% Commercial Usage</li>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">The total rollout. Complete commercial rights and master files for a campaign that dominates the digital landscape.</p>
+          <ul class="check-list" style="list-style: none; padding: 0; margin-bottom: 40px; flex-grow: 1;">
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Full Shoot + Premium Editing Suite</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> BTS Assets & All Raw Deliverables</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 100% Commercial Usage Rights</li>
           </ul>
-          <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 3-5 Days</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">200</span>
+          <div class="pkg-meta" style="margin-top: auto;">
+            <div class="pkg-price" style="margin-bottom: 20px;">
+              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Tier 03</span>
+              <div class="pkg-amount-wrapper" style="display: flex; align-items: baseline; gap: 4px;">
+                <span class="pkg-currency" style="font-size: 1.2rem; color: var(--accent2); font-weight: 700;">$</span><span class="pkg-amount" style="font-size: 2.5rem; font-weight: 800; color: #fff;">200</span>
               </div>
             </div>
-            <button class="pkg-select-btn" data-package="The Campaign">Select Package</button>
+            <button class="pkg-select-btn" data-package="The Campaign" style="width: 100%; padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">SELECT PLAN</button>
           </div>
         </article>
 
       </div>
       
-      <!-- Network Section (Optional CTA below packages) -->
-      <div class="network-pkg" style="margin-top: 50px; background: rgba(var(--accent2-rgb), 0.05); border: 1px solid rgba(var(--accent2-rgb), 0.1); border-radius: 12px; padding: 30px; text-align: center;">
-        <div class="package-top" style="border-bottom: none; justify-content: center; margin-bottom: 10px;">
-          <h4 style="color: #fff;">Need Custom Production?</h4>
-        </div>
-        <p style="color: var(--muted); max-width: 600px; margin: 0 auto 20px auto; font-size: 0.95rem;">Music videos, documentaries, or a massive brand rollout. Book a strategy session to discuss bespoke builds.</p>
-        <button class="pkg-select-btn" data-package="Custom Build" style="margin: 0 auto;">Book a Vision Session</button>
+      <!-- Network Section -->
+      <div class="network-pkg" style="margin-top: 80px; background: rgba(var(--accent2-rgb), 0.03); border: 1px solid rgba(var(--accent2-rgb), 0.1); border-radius: 24px; padding: 40px; text-align: center;">
+        <h4 class="syne-bold" style="color: #fff; font-size: 1.4rem; margin-bottom: 10px;">Custom Builds & Large Scale Production</h4>
+        <p style="color: var(--muted); max-width: 700px; margin: 0 auto 30px auto; font-size: 1rem; line-height: 1.6;">Music videos, documentaries, or enterprise-level rollouts. Book a session to architect a custom solution for your unique requirements.</p>
+        <button class="pkg-select-btn" data-package="Custom Build" style="margin: 0 auto; padding: 14px 32px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">BOOK STRATEGY SESSION</button>
       </div>
 
     </div>
@@ -1058,9 +1054,9 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS (Moved to bottom for reliable loading) -->
-  <script src="site-config.js?v=1773192397" defer></script>
+  <script src="site-config.js?v=1773412225" defer></script>
   <script src="https://js.stripe.com/v3/" defer></script>
-  <script src="pay_v2.js?v=1773192397" defer></script>
+  <script src="pay_v2.js?v=1773412225" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
   <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>

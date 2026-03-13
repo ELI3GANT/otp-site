@@ -11,7 +11,7 @@ function showToast(msg, type = 'info') {
         toast.id = 'pay-toast';
         toast.style.cssText = `
             position: fixed; bottom: 20px; right: 20px;
-            background: rgba(10,10,18,0.95); var(--accent2);
+            background: rgba(10,10,18,0.98);
             color: #fff; padding: 12px 24px; border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.1);
             font-family: 'Space Grotesk', sans-serif;
@@ -73,11 +73,12 @@ async function initPaymentSystem() {
         // Debounce: Don't inject twice — skip if already has a pay button (static or dynamic)
         if (pkg.querySelector('.pkg-buy-btn')) return;
 
-        const titleEl = pkg.querySelector('h4');
         const selectBtn = pkg.querySelector('.pkg-select-btn');
-        if(!titleEl || !selectBtn) return;
+        if(!selectBtn) return;
 
-        const titleClean = titleEl.innerText.trim();
+        // Prioritize data-package attribute, fallback to h4 text
+        const titleClean = selectBtn.getAttribute('data-package') || pkg.querySelector('h4')?.innerText.trim();
+        if(!titleClean) return;
         
         // --- RESTRICTED: ALLOW DIRECT PAY FOR ALL DEFINED FIXED-PRICE PACKAGES ---
         if (!VALID_PAY_PACKAGES.map(p => p.toLowerCase()).includes(titleClean.toLowerCase())) {
