@@ -37,7 +37,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=1773410049" />
+  <link rel="stylesheet" href="./styles.css?v=1773410468" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -670,362 +670,116 @@
 
   
 
-  <!-- PACKAGES MENU -->
+    <!-- PACKAGES MENU -->
   <section id="packages" class="section section-alt">
     <div class="wrap">
       <header class="section-head center-text">
         <span class="eyebrow-mini">THE MENU</span>
         <h2>Select Your Package</h2>
-        <p>Curated solutions for every stage of your journey.</p>
+        <p>Curated solutions to execute your vision.</p>
       </header>
 
-      <!-- TABS -->
-      <div class="pkg-tabs">
-        <button class="pkg-tab-btn active" data-tab="all">All</button>
-        <button class="pkg-tab-btn" data-tab="music">Music & Video</button>
-        <button class="pkg-tab-btn" data-tab="business">Brand & Business</button>
-        <button class="pkg-tab-btn" data-tab="content">Content & Growth</button>
-      </div>
-
-      <!-- DYNAMIC GRID -->
-      <div class="pkg-grid-dynamic" id="pkgGrid">
+      <!-- DYNAMIC GRID: Rebuilt for 3 powerful tiers -->
+      <div class="pkg-grid-dynamic" id="pkgGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px;">
         
-        <!-- MUSIC & VIDEO -->
-        <h3 class="pkg-group-header" data-category="music">Music & Video</h3>
-        <article class="package-static" data-category="music">
-          <div class="package-top">
-            <h4>The Visualizer</h4>
-            <div class="pkg-icon-wrap" aria-label="Music">
-              <svg class="pkg-neon-icon icon-music" viewBox="0 0 24 24">
-                <path d="M9 18V5l12-2v13"></path>
-                <circle cx="6" cy="18" r="3"></circle>
-                <circle cx="18" cy="16" r="3"></circle>
-              </svg>
-            </div>
-          </div>
-          <ul class="check-list">
-
-            <li><strong>Best for:</strong> Artists & Labels</li>
-            <li><strong>Scope:</strong> Perfect Loop + Lyric Integration</li>
-            <li><strong>Outcome:</strong> Release Ready</li>
-          </ul>
-          <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 48h</span>
-            <span><strong>Outcome:</strong> Release Ready</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">150</span>
-              </div>
-            </div>
-          </div>
-          <button class="pkg-select-btn" data-package="The Visualizer">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Visualizer', this)"><span>⚡ PAY NOW — $150</span></button>
-        </article>
-
-        <article class="package-static featured" data-category="music">
-          <div class="package-top">
-            <h4>The Official Video</h4>
-            <div class="pkg-icon-wrap" aria-label="Music">
-              <svg class="pkg-neon-icon icon-music" viewBox="0 0 24 24">
-                <path d="M9 18V5l12-2v13"></path>
-                <circle cx="6" cy="18" r="3"></circle>
-                <circle cx="18" cy="16" r="3"></circle>
-              </svg>
-            </div>
-          </div>
-          <ul class="check-list">
-
-            <li><strong>Best for:</strong> Serious Artists</li>
-            <li><strong>Scope:</strong> Full Production + VFX + Color</li>
-            <li><strong>Outcome:</strong> Cinematic Masterpiece</li>
-          </ul>
-          <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 5-7 Days</span>
-            <span><strong>Outcome:</strong> Industry Standard</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">500</span>
-              </div>
-            </div>
-          </div>
-          <button class="pkg-select-btn" data-package="The Official Video">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Official Video', this)"><span>⚡ PAY NOW — $500</span></button>
-        </article>
-
-        <article class="package-static" data-category="music">
-          <div class="package-top">
-            <h4>The Rollout</h4>
-            <div class="pkg-icon-wrap" aria-label="Music">
-              <svg class="pkg-neon-icon icon-music" viewBox="0 0 24 24">
-                <path d="M9 18V5l12-2v13"></path>
-                <circle cx="6" cy="18" r="3"></circle>
-                <circle cx="18" cy="16" r="3"></circle>
-              </svg>
-            </div>
-          </div>
-          <ul class="check-list">
-
-            <li><strong>Best for:</strong> Album/EP Launches</li>
-            <li><strong>Scope:</strong> Cover Art + 3x Teasers + Social Kit</li>
-            <li><strong>Outcome:</strong> Hype Campaign</li>
-          </ul>
-          <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 1 Week</span>
-            <span><strong>Outcome:</strong> Maximum Reach</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">400</span>
-              </div>
-            </div>
-          </div>
-          <button class="pkg-select-btn" data-package="The Rollout">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Rollout', this)"><span>⚡ PAY NOW — $400</span></button>
-        </article>
-
-        <!-- BRAND & BUSINESS -->
-        <h3 class="pkg-group-header" data-category="business">Brand & Business</h3>
-        <article class="package-static" data-category="business">
-          <div class="package-top">
-            <h4>The Identity</h4>
-            <div class="pkg-icon-wrap" aria-label="Business">
-              <svg class="pkg-neon-icon icon-business" viewBox="0 0 24 24">
-                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-              </svg>
-            </div>
-          </div>
-          <ul class="check-list">
-
-            <li><strong>Best for:</strong> Startups & SMBs</li>
-            <li><strong>Scope:</strong> Logo + Marks + Type System</li>
-            <li><strong>Outcome:</strong> Professional Trust</li>
-          </ul>
-          <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 5-7 Days</span>
-            <span><strong>Outcome:</strong> Instant Credibility</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">250</span>
-              </div>
-            </div>
-          </div>
-          <button class="pkg-select-btn" data-package="The Identity">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Identity', this)"><span>⚡ PAY NOW — $250</span></button>
-        </article>
-
-        <article class="package-static featured" data-category="business">
-          <div class="package-top">
-            <h4>The Digital HQ</h4>
-            <div class="pkg-icon-wrap" aria-label="Business">
-              <svg class="pkg-neon-icon icon-business" viewBox="0 0 24 24">
-                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-              </svg>
-            </div>
-          </div>
-          <ul class="check-list">
-
-            <li><strong>Best for:</strong> Service Providers</li>
-            <li><strong>Scope:</strong> Modern, High-Speed Website</li>
-            <li><strong>Outcome:</strong> Works 24/7</li>
-          </ul>
-          <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 1-2 Weeks</span>
-            <span><strong>Outcome:</strong> Automated Growth</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">750</span>
-              </div>
-            </div>
-          </div>
-          <button class="pkg-select-btn" data-package="The Digital HQ">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Digital HQ', this)"><span>⚡ PAY NOW — $750</span></button>
-        </article>
-
-        <article class="package-static" data-category="business">
-          <div class="package-top">
-            <h4>The Rebrand</h4>
-            <div class="pkg-icon-wrap" aria-label="Business">
-              <svg class="pkg-neon-icon icon-business" viewBox="0 0 24 24">
-                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-              </svg>
-            </div>
-          </div>
-          <ul class="check-list">
-
-            <li><strong>Best for:</strong> Scaling Brands</li>
-            <li><strong>Scope:</strong> Full Logo System + Website Overhaul</li>
-            <li><strong>Outcome:</strong> Market Authority</li>
-          </ul>
-          <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 2-3 Weeks</span>
-            <span><strong>Outcome:</strong> Total Transformation</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">1,000</span>
-              </div>
-            </div>
-          </div>
-          <button class="pkg-select-btn" data-package="The Rebrand">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Rebrand', this)"><span>⚡ PAY NOW — $1,000</span></button>
-        </article>
-
-        <!-- CONTENT & GROWTH -->
-        <h3 class="pkg-group-header" data-category="content">Content & Growth</h3>
-        <article class="package-static" data-category="content">
+        <!-- PACKAGE 1: THE DROP -->
+        <article class="package-static">
           <div class="package-top">
             <h4>The Drop</h4>
-            <div class="pkg-icon-wrap" aria-label="Content">
-              <svg class="pkg-neon-icon icon-content" viewBox="0 0 24 24">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            <div class="pkg-icon-wrap" aria-label="Edit">
+              <svg class="pkg-neon-icon icon-content" viewBox="0 0 24 24" style="stroke: var(--accent2);">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
             </div>
           </div>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">High-retention editing for creators and brands needing rapid, cinematic cuts. Perfect for short-form content or precision photo retouching.</p>
           <ul class="check-list">
-
-            <li><strong>Best for:</strong> Quick Content Needs</li>
-            <li><strong>Scope:</strong> 1 High-End Vertical Edit</li>
-            <li><strong>Outcome:</strong> Algorithm Friendly</li>
+            <li><strong>Format:</strong> Short Video or 5 Photos</li>
+            <li><strong>Style:</strong> Fast-paced, Color Graded</li>
+            <li><strong>Outcome:</strong> Ready to post</li>
           </ul>
           <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 24-48h</span>
-            <span><strong>Outcome:</strong> Keep Posting</span>
+            <span><strong>Turnaround:</strong> 24h - 48h</span>
             <div class="pkg-price">
               <span class="price-label">Starting at</span>
               <div class="pkg-amount-wrapper">
                 <span class="pkg-currency">$</span><span class="pkg-amount">50</span>
               </div>
             </div>
+            <button class="pkg-select-btn" data-package="The Drop">Select Package</button>
           </div>
-          <button class="pkg-select-btn" data-package="The Drop">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Drop', this)"><span>⚡ PAY NOW — $50</span></button>
         </article>
 
-        <article class="package-static featured" data-category="content">
-          <div class="package-top">
-            <h4>The Stack</h4>
-            <div class="pkg-icon-wrap" aria-label="Content">
-              <svg class="pkg-neon-icon icon-content" viewBox="0 0 24 24">
-                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-            </div>
-          </div>
-          <ul class="check-list">
-            <li><strong>Best for:</strong> Consistency</li>
-            <li><strong>Scope:</strong> 5-10 Short-Form Edits / Batch</li>
-            <li><strong>Outcome:</strong> Dominate Feed</li>
-            <li>Content Strategy Session included</li>
-          </ul>
-          <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> Weekly</span>
-            <span><strong>Outcome:</strong> Algorithm Control</span>
-            <div class="pkg-price">
-              <span class="price-label">Starting at</span>
-              <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">300</span>
-                <span style="font-size:0.6rem; color:var(--muted); margin-left:4px; font-weight:normal;">/mo</span>
-              </div>
-            </div>
-          </div>
-          <button class="pkg-select-btn" data-package="The Stack">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Stack', this)"><span>⚡ PAY NOW — $300</span></button>
-        </article>
-        <h3 class="pkg-group-header" data-category="photography">Visuals & Photography</h3>
-        <article class="package-static" data-category="photography">
+        <!-- PACKAGE 2: THE VISION -->
+        <article class="package-static featured">
           <div class="package-top">
             <h4>The Vision</h4>
-            <div class="pkg-icon-wrap" aria-label="Photography">
-              <svg class="pkg-neon-icon icon-photo" viewBox="0 0 24 24">
+            <div class="pkg-icon-wrap" aria-label="Shoot">
+              <svg class="pkg-neon-icon icon-photo" viewBox="0 0 24 24" style="stroke: var(--accent2);">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                 <circle cx="12" cy="13" r="4"></circle>
               </svg>
             </div>
           </div>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">Professional photoshoot or short on-location video shoot. Capture the raw essence of your brand, product, or artistry.</p>
           <ul class="check-list">
-            <li><strong>Best for:</strong> Brands & Artists</li>
-            <li><strong>Scope:</strong> Editorial/Studio Shoot (4h)</li>
-            <li><strong>Outcome:</strong> 15 High-End Retouched Images</li>
-            <li>Creative Direction included</li>
+            <li><strong>Scope:</strong> Up to 1 Hour Shoot</li>
+            <li><strong>Deliverables:</strong> 15+ Retouched Images</li>
+            <li><strong>Focus:</strong> Lighting & Composition</li>
           </ul>
           <div class="pkg-meta">
-            <span><strong>Turnaround:</strong> 3-5 Days</span>
-            <span><strong>Outcome:</strong> Visual Definition</span>
+            <span><strong>Location:</strong> Local / Studio</span>
             <div class="pkg-price">
               <span class="price-label">Starting at</span>
               <div class="pkg-amount-wrapper">
                 <span class="pkg-currency">$</span><span class="pkg-amount">100</span>
               </div>
             </div>
+            <button class="pkg-select-btn" data-package="The Vision">Select Package</button>
           </div>
-          <button class="pkg-select-btn" data-package="The Vision">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Vision', this)"><span>⚡ PAY NOW — $100</span></button>
         </article>
 
-        <article class="package-static network-pkg featured" data-category="content" data-category-2="business" data-category-3="music">
+        <!-- PACKAGE 3: THE CAMPAIGN -->
+        <article class="package-static">
           <div class="package-top">
-            <h4>The Partner</h4>
-            <div class="pkg-icon-wrap" aria-label="All Access">
-              <!-- Partner (Gold) -->
-              <div class="pkg-icon-bubble" aria-label="Partner">
-                <svg class="pkg-neon-icon icon-partner" viewBox="0 0 24 24">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-              </div>
-              <!-- Music (Cyan) -->
-              <div class="pkg-icon-bubble" aria-label="Music">
-                <svg class="pkg-neon-icon icon-music" viewBox="0 0 24 24">
-                   <path d="M9 18V5l12-2v13"></path>
-                   <circle cx="6" cy="18" r="3"></circle>
-                   <circle cx="18" cy="16" r="3"></circle>
-                </svg>
-              </div>
-              <!-- Business (Purple) -->
-              <div class="pkg-icon-bubble" aria-label="Business">
-                <svg class="pkg-neon-icon icon-business" viewBox="0 0 24 24">
-                   <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                   <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                </svg>
-              </div>
-              <!-- Content (White) -->
-              <div class="pkg-icon-bubble" aria-label="Content">
-                <svg class="pkg-neon-icon icon-content" viewBox="0 0 24 24">
-                   <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
-              </div>
+            <h4>The Campaign</h4>
+            <div class="pkg-icon-wrap" aria-label="Full Rights">
+              <svg class="pkg-neon-icon icon-business" viewBox="0 0 24 24" style="stroke: var(--accent2);">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
             </div>
           </div>
-          <p class="pkg-desc">Your dedicated creative department. Long-term alignment.</p>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">The ultimate package for artists and brands who want full control. A complete production shoot, premium edits, and full commercial rights.</p>
           <ul class="check-list">
-            <li><strong>Best for:</strong> Consistent Growth</li>
-            <li><strong>Scope:</strong> Unlimited Requests (Retainer)</li>
-            <li><strong>Outcome:</strong> Total Scale</li>
-            <li>Direct Slack & Priority Access</li>
+            <li><strong>Scope:</strong> Full Shoot + Premium Edit</li>
+            <li><strong>Extras:</strong> BTS clips & Raw Files</li>
+            <li><strong>Rights:</strong> 100% Commercial Usage</li>
           </ul>
           <div class="pkg-meta">
-            <span><strong>Commitment:</strong> Month-to-Month</span>
-            <span><strong>Outcome:</strong> Creative Freedom</span>
+            <span><strong>Turnaround:</strong> 3-5 Days</span>
             <div class="pkg-price">
               <span class="price-label">Starting at</span>
               <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">1,500</span>
-                <span style="font-size:0.6rem; color:var(--muted); margin-left:4px; font-weight:normal;">/mo</span>
+                <span class="pkg-currency">$</span><span class="pkg-amount">200</span>
               </div>
             </div>
+            <button class="pkg-select-btn" data-package="The Campaign">Select Package</button>
           </div>
-          <button class="pkg-select-btn" data-package="The Partner">Select Package</button>
-          <button class="pkg-buy-btn" onclick="handleDirectPayStatic('The Partner', this)"><span>⚡ PAY NOW — $1,500</span></button>
         </article>
 
       </div>
+      
+      <!-- Network Section (Optional CTA below packages) -->
+      <div class="network-pkg" style="margin-top: 50px; background: rgba(var(--accent2-rgb), 0.05); border: 1px solid rgba(var(--accent2-rgb), 0.1); border-radius: 12px; padding: 30px; text-align: center;">
+        <div class="package-top" style="border-bottom: none; justify-content: center; margin-bottom: 10px;">
+          <h4 style="color: #fff;">Need Custom Production?</h4>
+        </div>
+        <p style="color: var(--muted); max-width: 600px; margin: 0 auto 20px auto; font-size: 0.95rem;">Music videos, documentaries, or a massive brand rollout. Book a strategy session to discuss bespoke builds.</p>
+        <button class="pkg-select-btn" data-package="Custom Build" style="margin: 0 auto;">Book a Vision Session</button>
+      </div>
+
     </div>
   </section>
 
