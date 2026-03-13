@@ -291,6 +291,49 @@
             .success-card { padding: 40px 20px; }
         }
     </style>
+  <!-- THEME GUARD: Prevents flickering by initializing theme before first paint -->
+  <script>
+    (function() {
+        window.OTP_HUES = [
+            { dark: '0, 236, 255', light: '0, 170, 204' }, // Cyan
+            { dark: '170, 0, 255', light: '120, 0, 200' }, // Purple
+            { dark: '255, 0, 170', light: '200, 0, 120' }, // Pink
+            { dark: '0, 255, 170', light: '0, 180, 120' }, // Green
+            { dark: '255, 215, 0', light: '184, 134, 11' }, // Gold
+            { dark: '255, 60, 0',  light: '200, 40, 0' }    // Neon Orange
+        ];
+        
+        // Randomize hue every load/refresh
+        let hueIndex = Math.floor(Math.random() * window.OTP_HUES.length);
+        sessionStorage.setItem('otp_hue_index', hueIndex);
+        window.OTP_HUE_INDEX = hueIndex;
+        const selectedHue = window.OTP_HUES[hueIndex];
+
+        const savedTheme = localStorage.getItem('theme');
+        const isManual = localStorage.getItem('theme_manual') === 'true';
+        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+        const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+        
+        let theme;
+        if (isManual && !isExpired) {
+            theme = savedTheme;
+        } else {
+            const hour = new Date().getHours();
+            theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+        }
+
+        const rootStyle = document.documentElement.style;
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.light);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.light})`);
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
+        }
+    })();
+  </script>
 </head>
 <body>
     <div class="mesh-bg"></div>

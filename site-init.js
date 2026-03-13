@@ -166,10 +166,21 @@ window.OTP.getThemeIcon = function(theme) {
 
 window.OTP.setTheme = function(theme, isManual = false) {
     const html = document.documentElement;
+    const rootStyle = html.style;
+    
+    // Fallback if THEME GUARD didn't run for some reason
+    let hues = window.OTP_HUES || [{ dark: '0, 236, 255', light: '0, 170, 204' }];
+    let hueIndex = window.OTP_HUE_INDEX !== undefined ? window.OTP_HUE_INDEX : 0;
+    let selectedHue = hues[hueIndex];
+
     if (theme === 'light') {
         html.setAttribute('data-theme', 'light');
+        rootStyle.setProperty('--accent2-rgb', selectedHue.light);
+        rootStyle.setProperty('--accent2', `rgb(${selectedHue.light})`);
     } else {
         html.removeAttribute('data-theme');
+        rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
+        rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
     }
     
     // Save to local storage
