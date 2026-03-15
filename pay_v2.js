@@ -143,9 +143,9 @@ async function initPaymentSystem() {
                 submitBtn.style.boxShadow = '0 0 30px rgba(var(--accent2-rgb), 0.3)';
             } else {
                 submitBtn.innerHTML = `REQUEST CUSTOM QUOTE`;
-                submitBtn.style.background = 'transparent';
-                submitBtn.style.color = '#fff';
-                submitBtn.style.boxShadow = 'none';
+                submitBtn.style.background = '';
+                submitBtn.style.color = '';
+                submitBtn.style.boxShadow = '';
             }
         });
 
