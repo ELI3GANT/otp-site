@@ -906,6 +906,7 @@ app.route('/api/create-checkout-session')
     const prices = {
         'the drop': 5000,           // $50.00
         'the vision': 10000,         // $100.00
+        'the campaign': 20000,       // $200.00
         'the visualizer': 15000,     // $150.00
         'the identity': 25000,       // $250.00
         'the stack': 30000,          // $300.00
@@ -936,6 +937,7 @@ app.route('/api/create-checkout-session')
                         // Dynamic Description based on package
                         description: normalizedName === 'the drop' ? '1 High-End Vertical Edit (Algorithm Friendly)' :
                                      normalizedName === 'the vision' ? 'Editorial/Studio Shoot (4h) - 15 High-End Retouched Images' :
+                                     normalizedName === 'the campaign' ? 'Comprehensive Production Package (Shoot + Full High-End Edit Bundle)' :
                                      normalizedName === 'the visualizer' ? 'Perfect Loop + Lyric Integration for Audio' :
                                      normalizedName === 'the identity' ? 'Professional Brand Identity System (Logo + Marks)' :
                                      normalizedName === 'the stack' ? '5-10 Short-Form Edits / Batch Alignment' :
