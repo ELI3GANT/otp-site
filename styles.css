@@ -2724,6 +2724,7 @@ html {
   display: flex;
   gap: 12px;
   justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -4464,6 +4465,9 @@ input:focus, select:focus, textarea:focus {
 
 /* ULTRA MODERN BUTTON */
 .book-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: #fff;
   color: #000;
   border-radius: 99px;
@@ -6489,7 +6493,6 @@ input:focus, select:focus, textarea:focus {
 /* START A PROJECT LINK POLISH */
 .book-btn {
   text-decoration: none !important; /* Remove underline per request */
-  display: inline-block;
   cursor: pointer;
 }
 
