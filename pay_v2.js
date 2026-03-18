@@ -57,7 +57,7 @@ async function initPaymentSystem() {
 
     let stripe;
     try {
-        stripe = Stripe(STRIPE_PK);
+        window.stripeInstance = Stripe(STRIPE_PK);
         console.log("Stripe Initialized Client Side");
     } catch(e) {
         console.error("Stripe Init Failed", e);
@@ -66,7 +66,7 @@ async function initPaymentSystem() {
     }
 
     // --- 1. CARD BUTTONS (Visual check) ---
-    const pkgs = []; // Disabled injection
+    const pkgs = document.querySelectorAll('.package-static');
     if (pkgs.length === 0) console.warn("💰 No packages found to inject buttons into.");
 
     pkgs.forEach(pkg => {
@@ -265,5 +265,15 @@ async function handleDirectPay(e, title, stripe, btn) {
             btn.style.opacity = 1;
             btn.disabled = false;
         }
+    }
+}
+
+// Global exposed handler for HTML onclick
+window.handleDirectPayStatic = function(title, btn) {
+    if (window.stripeInstance) {
+        handleDirectPay(new Event('click'), title, window.stripeInstance, btn);
+    } else {
+        showToast("Payment System Syncing...", "info");
+        console.warn("💰 StripeInstance not ready for DirectPayStatic");
     }
 }

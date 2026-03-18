@@ -575,7 +575,7 @@ app.post('/api/contact/submit', async (req, res) => {
                     })
                 });
                 const data = await response.json();
-                if (data && data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+                if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
                     draftReply = data.candidates[0].content.parts[0].text;
                 }
             } 
@@ -725,7 +725,7 @@ app.post('/api/audit/submit', async (req, res) => {
 
                     const data = await response.json();
                     
-                    if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+                    if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
                         advice = data.candidates[0].content.parts[0].text;
                         success = true;
                         console.log(`[ORACLE-SUCCESS] Transmission Captured via ${modelName} in ${duration}ms. Tokens: ${data.usageMetadata?.totalTokenCount || 'N/A'}`);
@@ -944,7 +944,7 @@ app.route('/api/create-checkout-session')
                 price_data: {
                     currency: 'usd',
                     product_data: {
-                        name: `OTP // ${packageName.toUpperCase() || 'CREATIVE SERVICE'}`,
+                        name: `OTP // ${(packageName || 'CREATIVE SERVICE').toUpperCase()}`,
                         // Dynamic Description based on package
                         description: normalizedName === 'the drop' ? '1 High-End Vertical Edit (Algorithm Friendly)' :
                                      normalizedName === 'the vision' ? 'Editorial/Studio Shoot (4h) - 15 High-End Retouched Images' :
