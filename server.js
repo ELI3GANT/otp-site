@@ -169,7 +169,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.get('/api/status', (req, res) => {
-    res.json({ version: 'v10.5.0', env: process.env.NODE_ENV, stripe: !!stripe });
+    res.json({ version: 'v10.5.1', env: process.env.NODE_ENV, stripe: !!stripe });
 });
 
 app.all('/api/diag', (req, res) => {
@@ -942,7 +942,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
                         metadata: {
                             package: packageName,
                             realm: 'visual_division',
-                            server_version: 'v10.5.0'
+                            server_version: 'v10.5.1'
                         }
                     },
                     unit_amount: amount,
