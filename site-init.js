@@ -799,7 +799,7 @@ function initSite() {
     
     // --- ACTIVE LINK LOGIC & CLICK SCROLL ---
     const currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.nav-links a, .nav-drawer a');
+    const navLinks = document.querySelectorAll('.nav-links a, .nav-drawer a, .book-btn[href^="#"], .book-btn[href*="index.html#"]');
     
     // Normalize path (handle root / vs index.html)
     const normalize = (p) => (p === '/' || p.endsWith('index.html')) ? 'index.html' : p;

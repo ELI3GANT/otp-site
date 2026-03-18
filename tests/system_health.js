@@ -4,24 +4,28 @@ const fs = require('fs');
 const path = require('path');
 
 // Load Config from file directly
-const configPath = path.join(__dirname, '../site-config.js');
-let CONFIG = {};
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+let CONFIG = {
+    supabaseUrl: process.env.SUPABASE_URL,
+    supabaseKey: process.env.SUPABASE_SERVICE_KEY
+};
 
-try {
-    const content = fs.readFileSync(configPath, 'utf8');
-    // Simple regex parse to avoid eval or complex parsing
-    const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
-    const keyMatch = content.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
-    
-    if (urlMatch && keyMatch) {
-        CONFIG.supabaseUrl = urlMatch[1];
-        CONFIG.supabaseKey = keyMatch[1];
-    } else {
-        throw new Error("Could not parse config");
+if (!CONFIG.supabaseUrl || !CONFIG.supabaseKey) {
+    const configPath = path.join(__dirname, '../site-config.js');
+    try {
+        const content = fs.readFileSync(configPath, 'utf8');
+        // Simple regex parse to avoid eval or complex parsing
+        const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
+        const keyMatch = content.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
+        
+        if (urlMatch && keyMatch && !CONFIG.supabaseUrl) {
+            CONFIG.supabaseUrl = urlMatch[1];
+            CONFIG.supabaseKey = keyMatch[1];
+        }
+    } catch (e) {
+        console.error("❌ FAILED TO LOAD CONFIG:", e.message);
+        process.exit(1);
     }
-} catch (e) {
-    console.error("❌ FAILED TO LOAD CONFIG:", e.message);
-    process.exit(1);
 }
 
 async function runHealthCheck() {

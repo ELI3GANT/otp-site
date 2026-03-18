@@ -1900,10 +1900,19 @@
         showToast("ORACLE GENERATING DRAFT...");
         try {
             const API_BASE = window.location.origin;
+            const authToken = localStorage.getItem('otp_admin_token');
             const res = await fetch(`${API_BASE}/api/ai/generate`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: topic, type: "post" })
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ 
+                    provider: state.cloudSettings?.default_provider || "openai",
+                    title: "AI Generated Post",
+                    prompt: topic, 
+                    systemPrompt: "You are an expert digital agency blog writer. Generate a highly engaging, SEO optimized post in Markdown format."
+                })
             });
             if(!res.ok) throw new Error("Oracle connection failed.");
             const data = await res.json();
@@ -1911,6 +1920,16 @@
                 document.getElementById("titleInput").value = data.title || "AI GENERATED DRAFT";
                 document.getElementById("contentArea").value = data.content;
                 document.getElementById("tagsInput").value = (data.tags || []).join(", ");
+                showToast("DRAFT GENERATED SUCCESSFULLY");
+            } else if (data.content) {
+                // Handle raw JSON response from some providers
+                document.getElementById("titleInput").value = data.title || data.seo_title || "AI GENERATED DRAFT";
+                document.getElementById("contentArea").value = data.content;
+                showToast("DRAFT GENERATED SUCCESSFULLY");
+            } else if (data.success === true && data.result) {
+               // Handle standard server response
+                document.getElementById("titleInput").value = data.result.title || data.result.seo_title || "AI GENERATED DRAFT";
+                document.getElementById("contentArea").value = data.result.content;
                 showToast("DRAFT GENERATED SUCCESSFULLY");
             } else {
                 throw new Error("Invalid Oracle Response.");
