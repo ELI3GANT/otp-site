@@ -96,19 +96,21 @@ app.use(helmet({
 app.use(compression());
 
 // --- STATIC ASSETS (CRITICAL FIX) ---
-// Serve static files immediately after compression.
-const staticPath = __dirname;
+const staticPath = path.resolve(__dirname);
+console.log("Static Path Configured:", staticPath);
+
 app.use(express.static(staticPath, {
-    index: false, // We handle root separately
-    maxAge: '1d'
+    maxAge: '1d',
+    etag: true
 }));
 
 // Root Route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(staticPath, 'index.html'), (err) => {
+    const rootFile = path.join(staticPath, 'index.html');
+    res.sendFile(rootFile, (err) => {
         if (err) {
-            console.error("Root serve error:", err);
-            res.status(500).send("Core Load Error");
+            // Fallback to current working directory if __dirname is restricted
+            res.sendFile(path.join(process.cwd(), 'index.html'));
         }
     });
 });
@@ -120,10 +122,13 @@ app.get('/:file', (req, res, next) => {
     const allowed = ['.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.webmanifest', '.xml', '.txt'];
     
     if (allowed.includes(ext)) {
-        return res.sendFile(path.join(staticPath, file), (err) => {
+        const fullPath = path.join(staticPath, file);
+        return res.sendFile(fullPath, (err) => {
             if (err) {
-                // If file not found, fall through to 404
-                next();
+                // Try CWD fallback
+                res.sendFile(path.join(process.cwd(), file), (err2) => {
+                    if (err2) next();
+                });
             }
         });
     }
