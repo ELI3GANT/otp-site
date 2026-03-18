@@ -309,12 +309,8 @@
             document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', post.title);
             document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', postExcerpt);
             document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', postImage);
-            document.querySelector('link[rel="canonical"]')?.setAttribute('href', postUrl);
-            
-            
             // --- FIRE LIVE TRAFFIC SIGNAL ---
-            let apiBase = window.OTP_CONFIG?.apiBase || '';
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') apiBase = window.location.origin;
+            const apiBase = window.OTP.getApiBase();
             
             fetch(`${apiBase}/api/track/view`, {
                 method: 'POST',
@@ -363,8 +359,7 @@
             const titleEl = document.getElementById('postTitle');
             
             // --- FIRE LIVE TRAFFIC SIGNAL ---
-            let apiBase = window.OTP_CONFIG?.apiBase || '';
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') apiBase = window.location.origin;
+            const apiBase = window.OTP.getApiBase();
             
             fetch(`${apiBase}/api/track/view`, {
                 method: 'POST',

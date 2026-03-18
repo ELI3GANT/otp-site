@@ -71,16 +71,21 @@ h1, h2, h3, h4 {
 }
 
 .admin-header h1 {
-    font-size: 0.9rem; /* Smaller font for mobile */
+    font-size: 1rem; /* Slightly larger for clarity */
     letter-spacing: 0.5px;
     display: flex;
     align-items: center;
     gap: 8px;
-    white-space: nowrap; /* Prevent breaking */
+    white-space: nowrap;
 }
 
 @media (min-width: 400px) {
-    .admin-header h1 { font-size: 1rem; letter-spacing: 1px; }
+    .admin-header h1 { font-size: 1.1rem; letter-spacing: 1px; }
+}
+
+.admin-nav-actions button {
+    font-size: 0.85rem !important; /* Larger touch target */
+    padding: 10px 16px !important;
 }
 
 .admin-nav-actions {

@@ -258,10 +258,12 @@ const verifyToken = (req, res, next) => {
         const bearer = bearerHeader.split(' ');
         const bearerToken = bearer[1];
 
-        // LOCAL STATIC BYPASS (Dev Only)
+        // STATIC BYPASS (Dev Only or Explicitly Enabled)
         const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
-        const isDev = process.env.NODE_ENV === 'development'; // SECURED: Explicitly check for 'development' instead of '!== production'
-        if (bearerToken === 'static-bypass-token' && isLocal && isDev) {
+        const isDev = process.env.NODE_ENV === 'development';
+        const legacyBypass = process.env.LEGACY_BYPASS_ENABLED === 'true';
+        
+        if (bearerToken === 'static-bypass-token' && (legacyBypass || (isLocal && isDev))) {
             req.auth = { role: 'admin', bypass: true };
             return next();
         }

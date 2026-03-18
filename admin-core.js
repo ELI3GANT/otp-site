@@ -199,14 +199,10 @@
             bindPersist(cloudGr, 'cloud_groq');
             
             // Resolve best API base: localStorage > OTP_CONFIG > canonical Vercel fallback
-            function getApiBase() {
-                return window.OTP_CONFIG?.apiBase || '';
-            }
-
-            // SECURE WRITE PROXY HELPER
-            window.secureWrite = async function(table, payload, id = null) {
-                const apiBase = getApiBase();
-                const res = await fetch(`${apiBase}/api/admin/write-data`, {
+                        // SECURE WRITE PROXY HELPER
+                        window.secureWrite = async function(table, payload, id = null) {
+                            const apiBase = window.OTP.getApiBase();
+                            const res = await fetch(`${apiBase}/api/admin/write-data`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -223,7 +219,7 @@
 
             // SECURE DELETE PROXY HELPER
             window.secureDelete = async function(table, id) {
-                const apiBase = getApiBase();
+                const apiBase = window.OTP.getApiBase();
                 const res = await fetch(`${apiBase}/api/admin/delete-post`, {
                     method: 'POST',
                     headers: { 

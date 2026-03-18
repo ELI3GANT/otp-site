@@ -165,11 +165,11 @@ async function initPaymentSystem() {
                 const data = Object.fromEntries(formData.entries());
 
                 try {
-                    // SECURE BACKEND BRIDGE: Same-origin preferred
-                    let API_BASE = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
-                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                        API_BASE = window.location.origin;
-                    }
+        // Resolve API base
+        const API_BASE = window.OTP.getApiBase();
+
+        // 2. Fetch checkout session if payment is enabled
+        let sessionId = null;
 
                     // A. Save Lead
                     const saveRes = await fetch(`${API_BASE}/api/contact/submit`, {

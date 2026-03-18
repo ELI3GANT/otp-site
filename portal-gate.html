@@ -256,10 +256,11 @@
         <div class="auth-prompt">
             <label for="passcode">> ENTER SECURITY COMMAND:</label>
             <form onsubmit="event.preventDefault(); attemptLogin();">
-                <div style="display: flex; align-items: center; margin-top: 5px;">
+                <div style="display: flex; align-items: center; margin-top: 5px; position: relative;">
                     <span style="color: var(--term-green); margin-right: 5px;" aria-hidden="true">></span>
                     <input type="password" id="passcode" class="gate-input" maxlength="20" autocomplete="off" autofocus oninput="updateCursor()" aria-label="Command Input">
                     <span id="fake-cursor" class="cursor" aria-hidden="true"></span>
+                    <button type="button" onclick="togglePasscode()" id="eyeBtn" style="background: none; border: none; color: var(--term-dim); cursor: pointer; padding: 5px; font-size: 0.8rem; position: absolute; right: 0;">VIEW</button>
                 </div>
                 <button type="submit" id="loginBtn" class="login-btn">EXECUTE COMMAND</button>
             </form>
@@ -269,6 +270,19 @@
     </main>
 
     <script>
+        function togglePasscode() {
+            const input = document.getElementById('passcode');
+            const btn = document.getElementById('eyeBtn');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = 'HIDE';
+                btn.style.color = 'var(--term-green)';
+            } else {
+                input.type = 'password';
+                btn.textContent = 'VIEW';
+                btn.style.color = 'var(--term-dim)';
+            }
+        }
         function updateCursor() {
             const input = document.getElementById('passcode');
             const cursor = document.getElementById('fake-cursor');

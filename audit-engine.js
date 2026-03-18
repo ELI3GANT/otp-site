@@ -125,11 +125,8 @@ window.AuditEngine = {
             let success = false;
 
             try {
-                // SECURE BACKEND BRIDGE: Same-origin preferred
-                let API_BASE = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                     API_BASE = window.location.origin;
-                }
+                // SECURE BACKEND BRIDGE: Centralized helper
+                const API_BASE = window.OTP.getApiBase();
                 
                 const response = await fetch(`${API_BASE}/api/audit/submit`, {
                     method: 'POST',

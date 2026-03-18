@@ -12,3 +12,13 @@ window.OTP_CONFIG = {
         return 'https://otp-site.vercel.app';
     })(), // Empty string to force relative requests and avoid cross-origin/redirect issues
 };
+
+// Global Helper for resolving best API base
+window.OTP = window.OTP || {};
+window.OTP.getApiBase = function() {
+    let base = window.OTP_CONFIG?.apiBase || '';
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return window.location.origin;
+    }
+    return base;
+};

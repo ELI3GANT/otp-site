@@ -256,11 +256,8 @@ window.OTP.trackView = async function(slug) {
     
     // SECURE UPDATE: Use Server Backend (Bypasses RLS)
     try {
-        // Use centralized config (same-origin preferred)
-        let apiBase = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            apiBase = window.location.origin;
-        }
+        // Use centralized config
+        const apiBase = window.OTP.getApiBase();
 
         await fetch(`${apiBase}/api/analytics/view`, {
             method: 'POST',
@@ -646,11 +643,8 @@ window.OTP.initLiveEditor = async function() {
             }
 
             try {
-                // Use Secure Backend Proxy (Same-origin preferred)
-                let apiBase = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    apiBase = window.location.origin;
-                }
+                // Use Secure Backend Proxy
+                const apiBase = window.OTP.getApiBase();
                 const res = await fetch(`${apiBase}/api/content/update`, {
                     method: 'POST',
                     headers: { 
@@ -1257,10 +1251,7 @@ function initSite() {
             const formData = new FormData(contactForm);
             const data = Object.fromEntries(formData.entries());
 
-            let apiBase = window.OTP_CONFIG?.apiBase || '';
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                apiBase = window.location.origin;
-            }
+            const apiBase = window.OTP.getApiBase();
             try {
                 const res = await fetch(`${apiBase}/api/contact/submit`, {
                     method: 'POST',
