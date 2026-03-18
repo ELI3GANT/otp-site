@@ -563,6 +563,18 @@
         function renderPosts(posts) {
             if (!grid) return;
 
+            // HANDLE OFFLINE (BAKED) FILTERING
+            if (posts.length === 0 && hasBakedContent) {
+                bakedCards.forEach(card => {
+                    const dateText = card.querySelector('.insight-date')?.textContent.toUpperCase() || '';
+                    const tagElements = [...card.querySelectorAll('.post-tag')].map(t => t.textContent.toUpperCase());
+                    const isMatch = activeTag === 'ALL' || dateText.includes(activeTag) || tagElements.some(t => t.includes(activeTag));
+                    card.style.display = isMatch ? 'block' : 'none';
+                    if (isMatch) grid.appendChild(card); // Ensure it's in the grid if we previously cleared
+                });
+                return;
+            }
+
             const filtered = activeTag === 'ALL'
                 ? posts
                 : posts.filter(p => {
@@ -575,7 +587,9 @@
                 grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:100px 40px; color:var(--muted); font-family:'Space Grotesk',sans-serif; letter-spacing:2px;">NO SIGNALS FOUND FOR: ${escapeHtml(activeTag)}</div>`;
                 return;
             }
-
+            
+            // CLEAR GRID FOR NEW POSTS
+            grid.innerHTML = '';
             const fragment = document.createDocumentFragment();
 
             filtered.forEach(post => {
@@ -613,7 +627,6 @@
                 }
             });
 
-            grid.innerHTML = '';
             grid.appendChild(fragment);
 
             // Animate in

@@ -241,6 +241,8 @@
             
             // Satellite URL: Load & Validate
             if(satUrl) {
+                let storedUrl = localStorage.getItem('otp_api_base');
+                
                 // Force default secure URL if not set
                 if (!storedUrl || storedUrl === 'http://localhost:3000' || storedUrl === 'https://otp-site.vercel.app') {
                     storedUrl = window.OTP_CONFIG?.apiBase || '';
@@ -397,11 +399,7 @@
         } catch (e) { console.error("Config Fetch Error:", e); }
     }
 
-    // --- AUTH UTILS ---
-    window.logout = function() {
-        localStorage.removeItem('otp_admin_token');
-        window.location.href = 'portal-gate.html?reason=logout';
-    };
+    // --- AUTH UTILS --- (Consolidated at Bottom)
 
     // --- POST MANAGER & STATS LOGIC ---
     let postsCache = null;
@@ -1231,7 +1229,7 @@
         if(c.ai_analysis || c.advice) {
              const analysisData = c.ai_analysis || { tactical_advice: c.advice };
              const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
-             analysisDiv.innerHTML = `<pre style="white-space:pre-wrap; font-family:monospace; font-size:0.75rem; color:var(--admin-cyan); background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border: 1px solid var(--admin-border);">${window.escapeHTML ? window.escapeHTML(analysisText) : analysisText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`;
+             analysisDiv.innerHTML = `<pre style="white-space:pre-wrap; font-family:monospace; font-size:0.75rem; color:var(--admin-cyan); background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border: 1px solid var(--admin-border);">${window.escapeHtml ? window.escapeHtml(analysisText) : analysisText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`;
         } else {
              analysisDiv.innerHTML = `<div style="text-align:center; padding:20px; color:var(--admin-muted); font-size:0.75rem; border: 1px dashed var(--admin-border); border-radius:8px;">SIGNAL DATA NOT ANALYZED</div>`;
         }
@@ -1397,7 +1395,7 @@
     const safeSubject = encodeURIComponent(subject);
     const safeBody = encodeURIComponent(content);
     
-    const mailto = `mailto:${email}?subject=${safeSubject}&body=${safeBody}`;
+    const mailto = `mailto:${encodeURIComponent(email)}?subject=${safeSubject}&body=${safeBody}`;
     
     // Use window.location for better protocol handling in some browsers, fallback to window.open
     try {
@@ -1668,7 +1666,7 @@
             return;
         }
 
-        const LIVE_ORIGIN = 'https://onlytrueperspective.tech';
+        const LIVE_ORIGIN = window.location.origin;
 
         list.innerHTML = posts.map(post => {
             const isLive = post.published === true;
@@ -1861,7 +1859,7 @@
         // Auto-Generate Slug if empty
         let slug = slugRaw;
         if (!slug) {
-            slug = title.toLowerCase()
+            slug = title.trim().toLowerCase()
                 .replace(/[^\w\s-]/g, '') // Remove non-word chars
                 .replace(/\s+/g, '-')     // Replace spaces with -
                 .replace(/--+/g, '-')     // Replace multiple - with single
@@ -2548,8 +2546,9 @@
 
     window.copyPostLink = function(slug) {
         if(!slug) return;
-        // Always copy the canonical live site URL, not the admin terminal origin
-        const url = 'https://onlytrueperspective.tech/insight.html?slug=' + slug;
+        // Always try to use the current origin for shared links to ensure local/preview testing works
+        const origin = window.location.origin;
+        const url = origin + '/insight.html?slug=' + slug;
         navigator.clipboard.writeText(url).then(() => {
             showToast("🔗 LINK COPIED: " + slug);
         }).catch(() => {
@@ -2604,7 +2603,7 @@
 
     // --- SITE COMMAND PRO LOGIC ---
     // 4.8 PERSIST STATE HELPER
-    async function persistSystemState(key, value) {
+    window.persistSystemState = async function(key, value) {
         try {
             // Fetch current state object first
             let { data: current } = await state.client
@@ -3292,7 +3291,9 @@
     window.logout = function() {
         confirmAction("TERMINATE SESSION?", "Are you sure you want to log out of the secure terminal?", () => {
             localStorage.removeItem('otp_admin_token');
+            // Clean up session specific caches
             localStorage.removeItem('otp_insights_cache');
+            localStorage.removeItem('otp_admin_profile');
             window.location.href = 'portal-gate.html';
         });
     };

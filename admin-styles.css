@@ -138,7 +138,7 @@ html[data-theme="light"] .stat-card {
 }
 
 .stat-card .stat-num, .stat-card .value {
-    font-size: 1.8rem; /* Bigger for mobile too */
+    font-size: clamp(1.4rem, 6vw, 1.8rem); /* Fluid sizing for mobile comfort */
     font-weight: 700;
     color: var(--admin-text);
     line-height: 1.2;
