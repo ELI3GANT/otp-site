@@ -882,7 +882,7 @@
             // Apply Filters
             if (filter === 'active') {
                 // 'new', 'processing', 'drafted', 'pending' - basically anything not completed/archived
-                 query = query.not('ai_status', 'in', ['completed', 'archived']);
+                 query = query.filter('ai_status', 'not.in', '(completed,archived)');
             } else if (filter === 'completed') {
                 query = query.eq('ai_status', 'completed');
             } else if (filter === 'archived') {
