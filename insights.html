@@ -438,7 +438,7 @@
 
   <canvas id="cursor-canvas"></canvas>
 
-  <script src="site-config.js" defer></script>
+  <script src="site-config.js?v=10.5.1" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/kursor"></script>
 
@@ -487,7 +487,7 @@
         };
 
         try {
-            // Wait for OTP_CONFIG (site-config.js loads async/deferred)
+            // Wait for OTP_CONFIG (site-config.js?v=10.5.1 loads async/deferred)
             let attempts = 0;
             while (!window.OTP_CONFIG && attempts < 20) {
                 await new Promise(r => setTimeout(r, 150));
