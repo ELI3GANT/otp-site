@@ -201,7 +201,14 @@ app.all('/api/diag', (req, res) => {
     res.json({ method: req.method, path: req.path, headers: req.headers });
 });
 
-app.post('/api/auth/login', (req, res) => {
+// Strict Rate Limiting for Login Route (Brute-force protection)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 login requests per windowMs
+    message: { success: false, message: "Too many login attempts. Please try again in 15 minutes." }
+});
+
+app.post('/api/auth/login', authLimiter, (req, res) => {
     let { passcode } = req.body;
     const envPass = (process.env.ADMIN_PASSCODE || '').trim();
     // Robust comparison with trimming and case-insensitivity
@@ -225,7 +232,7 @@ const verifyToken = (req, res, next) => {
 
         // LOCAL STATIC BYPASS (Dev Only)
         const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
-        const isDev = process.env.NODE_ENV !== 'production';
+        const isDev = process.env.NODE_ENV === 'development'; // SECURED: Explicitly check for 'development' instead of '!== production'
         if (bearerToken === 'static-bypass-token' && isLocal && isDev) {
             req.auth = { role: 'admin', bypass: true };
             return next();
