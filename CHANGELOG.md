@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-03-24
+
+### Added
+- **Mobile Responsive Audit:** Comprehensive audit and refinement of all mobile viewports.
+- **Micro-Scale Typography:** Added ultra-compact scaling (down to 375px) for the main Hero title to ensure "PERSPECTIVE" never overflows.
+- **Light Mode Drawer Polish:** Fixed contrast for navigation drawer links in Light Mode (white text on dark gradient).
+
+### Fixed
+- **Nav Drawer Alignment:** Synced the `top` offset of the mobile drawer with the reduced header height on the Archive page (60px instead of 70px) to eliminate gaps.
+- **Footer Centering:** Improved mobile footer layout with centralized stacking for a cleaner visual profile.
+- **Payment API 405:** Completely resolved the Stripe Payment "Method Not Allowed" error by implementing dynamic API routing for GitHub Pages to Vercel communication.
+
 ## [1.4.1] - 2026-03-10
 
 ### Added

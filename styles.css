@@ -608,6 +608,12 @@ h1, h2, h3 {
     color: #fff !important;
 }
 
+/* Ensure Contact Button stays readable in Light Mode drawer */
+[data-theme="light"] .nav-drawer a[href*="#contact"] {
+    color: #fff !important;
+    background: linear-gradient(135deg, #000 0%, #4a00e0 100%) !important;
+}
+
 [data-theme="light"] .mobile-portal-link {
     background: #ffffff;
     border-color: #d1d1d6;
@@ -2613,7 +2619,7 @@ html {
 }
 
 /* Highlight Mobile Contact Button */
-.nav-drawer a[href="#contact"] {
+.nav-drawer a[href*="#contact"] {
   background: linear-gradient(135deg, var(--accent) 0%, #4a00e0 100%);
   border-color: rgba(255, 255, 255, 0.2);
   color: #fff;
@@ -5367,6 +5373,16 @@ input:focus, select:focus, textarea:focus {
     flex-direction: column;
     text-align: center;
     gap: 20px;
+    align-items: center; /* Explicit center */
+  }
+  
+  .footer-left {
+    align-items: center;
+    text-align: center;
+  }
+
+  .footer-legal {
+    justify-content: center;
   }
   
   .footer-right { margin-top: 10px; }
@@ -5380,17 +5396,18 @@ input:focus, select:focus, textarea:focus {
 
 /* Final fit check for small screens */
 @media (max-width: 480px) {
-  .hero h1 { font-size: 2.2rem !important; }
-  .luxe-title { gap: 10px; }
+  .hero h1 { font-size: 2.1rem !important; letter-spacing: 1px !important; }
+  .luxe-title { gap: 8px; }
   .luxe-title .title { 
     line-height: 1.1 !important; 
     margin-top: 0 !important;
     width: fit-content !important;
-    max-width: 90vw !important;
+    max-width: 95vw !important;
     display: block !important;
     margin-left: auto !important;
     margin-right: auto !important;
     overflow: visible !important;
+    font-size: clamp(1.8rem, 10vw, 2.1rem) !important;
   }
   .line, .char { overflow: visible !important; }
   .luxe-title .title:first-child {
@@ -5402,11 +5419,21 @@ input:focus, select:focus, textarea:focus {
     letter-spacing: -1px !important;
     padding: 0 5px;
   }
+  
+  /* Sync drawer with smaller mobile nav on Archive */
+  .archive-page .nav-drawer { top: 60px !important; }
+  
   .eyebrow { font-size: 0.8rem; }
   .wrap { width: 92vw; }
   .nav { padding: 15px 20px; }
   .archive-page .nav { padding: 15px 20px; }
   .back-link { font-size: 0.8rem; }
+}
+
+/* Extra tight for mini screens (iPhone SE) */
+@media (max-width: 375px) {
+  .hero h1 { font-size: 1.85rem !important; }
+  .luxe-title .title:last-child { font-size: 1.6rem !important; }
 }
 
 /* INSIGHTS GRID */
