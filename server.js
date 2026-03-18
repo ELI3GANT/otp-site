@@ -106,9 +106,16 @@ const allowedOrigins = [
 ];
 app.use(cors({
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin) return callback(null, true);
+        
+        const isAllowed = allowedOrigins.includes(origin) || 
+                         origin.endsWith('.vercel.app') || 
+                         origin.endsWith('onlytrueperspective.tech');
+                         
+        if (isAllowed) {
             callback(null, true);
         } else {
+            console.warn(`🛑 CORS Blocked: ${origin}`);
             callback(new Error('CORS Not Allowed'));
         }
     },
@@ -881,7 +888,8 @@ app.post('/api/content/update', verifyToken, async (req, res) => {
 });
 
 // 7. STRIPE CHECKOUT SESSION (ADDED FOR PAYMENTS)
-app.post('/api/create-checkout-session', async (req, res) => {
+app.route('/api/create-checkout-session')
+    .post(async (req, res) => {
     const { packageName, customerEmail } = req.body;
     
     // Check if Stripe is actually ready (Key might be invalid or missing)
@@ -966,7 +974,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
         console.error("Stripe Error:", e.message);
         res.status(500).json({ error: e.message });
     }
-});
+})
+.all((req, res) => res.status(405).json({ error: "Method Not Allowed. Use POST." }));
 
 
 // --- CACHE CONTROL & STATIC ASSETS ---

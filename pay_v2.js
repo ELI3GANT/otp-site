@@ -165,8 +165,8 @@ async function initPaymentSystem() {
                 const data = Object.fromEntries(formData.entries());
 
                 try {
-                    // SECURE BACKEND BRIDGE
-                    let API_BASE = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+                    // SECURE BACKEND BRIDGE: Same-origin preferred
+                    let API_BASE = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
                     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                         API_BASE = window.location.origin;
                     }
@@ -224,8 +224,8 @@ async function handleDirectPay(e, title, stripe, btn) {
     btn.disabled = true;
     
     showToast(`Securing ${title}...`);
-    // SECURE BACKEND BRIDGE: Point to verified Vercel endpoint
-    let API_BASE = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+    // SECURE BACKEND BRIDGE: Point to same origin by default
+    let API_BASE = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         API_BASE = window.location.origin;
     }

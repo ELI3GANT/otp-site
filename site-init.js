@@ -256,7 +256,8 @@ window.OTP.trackView = async function(slug) {
     
     // SECURE UPDATE: Use Server Backend (Bypasses RLS)
     try {
-        let apiBase = window.OTP_CONFIG?.apiBase || '';
+        // Use centralized config (same-origin preferred)
+        let apiBase = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             apiBase = window.location.origin;
         }
@@ -645,8 +646,8 @@ window.OTP.initLiveEditor = async function() {
             }
 
             try {
-                // Use Secure Backend Proxy (Respecting local override)
-                let apiBase = localStorage.getItem('otp_api_base') || window.OTP_CONFIG?.apiBase || '';
+                // Use Secure Backend Proxy (Same-origin preferred)
+                let apiBase = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     apiBase = window.location.origin;
                 }

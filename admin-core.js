@@ -200,10 +200,7 @@
             
             // Resolve best API base: localStorage > OTP_CONFIG > canonical Vercel fallback
             function getApiBase() {
-                const stored = localStorage.getItem('otp_api_base');
-                if (stored && stored.startsWith('http') && !stored.includes('localhost')) return stored;
-                if (window.OTP_CONFIG?.apiBase && !window.OTP_CONFIG.apiBase.includes('localhost')) return window.OTP_CONFIG.apiBase;
-                return 'https://otp-site.vercel.app';
+                return window.OTP_CONFIG?.apiBase || '';
             }
 
             // SECURE WRITE PROXY HELPER
@@ -245,9 +242,8 @@
             // Satellite URL: Load & Validate
             if(satUrl) {
                 // Force default secure URL if not set
-                let storedUrl = localStorage.getItem('otp_api_base');
-                if (!storedUrl || storedUrl === 'http://localhost:3000') {
-                    storedUrl = 'https://otp-site.vercel.app';
+                if (!storedUrl || storedUrl === 'http://localhost:3000' || storedUrl === 'https://otp-site.vercel.app') {
+                    storedUrl = window.OTP_CONFIG?.apiBase || '';
                     localStorage.setItem('otp_api_base', storedUrl);
                 }
                 
@@ -1825,7 +1821,7 @@
                     const apiBase = (function() {
                         const stored = localStorage.getItem('otp_api_base');
                         if (stored && stored.startsWith('http') && !stored.includes('localhost')) return stored;
-                        return window.OTP_CONFIG?.apiBase || 'https://otp-site.vercel.app';
+                        return window.OTP_CONFIG?.apiBase || '';
                     })();
                     const res = await fetch(`${apiBase}/api/admin/delete-post`, {
                         method: 'POST',
