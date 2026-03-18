@@ -95,6 +95,15 @@ app.use(helmet({
 // 2. Compression: Gzip/Brotli for text assets
 app.use(compression());
 
+// --- STATIC ASSETS (CRITICAL FIX) ---
+// Serve static files immediately after compression to ensure they are found and served correctly.
+const staticPath = path.resolve(__dirname);
+app.use(express.static(staticPath, {
+    index: 'index.html',
+    extensions: ['html', 'js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'],
+    maxAge: '1d'
+}));
+
 // 3. CORS: Allow same-origin (adjust if frontend is separate)
 // 3. CORS: Restrict to main domain and known satellites
 const allowedOrigins = [
@@ -1024,31 +1033,7 @@ app.route('/api/create-checkout-session')
 .all((req, res) => res.status(405).json({ error: "Method Not Allowed. Use POST." }));
 
 
-// --- CACHE CONTROL & STATIC ASSETS ---
-// Defined early to ensure assets like CSS/JS are served before any catch-all routes.
-const staticPath = path.resolve(__dirname);
-const staticOptions = {
-    dotfiles: 'ignore',
-    etag: true,
-    extensions: ['html', 'js', 'css', 'png', 'jpg', 'gif', 'svg', 'webp', 'xml', 'txt'],
-    index: 'index.html',
-    maxAge: '1d',
-    setHeaders: function (res, path, stat) {
-        if (path.endsWith('.html')) {
-            res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        }
-    }
-};
-
-// 1. Static Middleware First
-app.use(express.static(staticPath, staticOptions));
-
-// 2. Explicit Root Route
-app.get('/', (req, res) => {
-    res.sendFile(path.join(staticPath, 'index.html'));
-});
-
-// --- API ROUTES ---
+// --- FALLBACK ROUTE ---
 // Serve 404 for any unknown API routes specifically
 app.use('/api', (req, res) => {
     res.status(404).json({ success: false, message: "API Endpoint Not Found" });
