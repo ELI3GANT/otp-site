@@ -297,12 +297,10 @@
         // Probe a URL to check if the API responds (returns true/false)
         async function probeServer(base) {
             try {
-                const res = await fetchWithTimeout(base + '/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ passcode: '__probe__' })
+                const res = await fetchWithTimeout(base + '/api/status', {
+                    method: 'GET'
                 }, 5000);
-                // Any HTTP response (even 401) means server is alive
+                // Any HTTP response means server is alive
                 return res.status !== 0;
             } catch (e) { return false; }
         }
@@ -385,7 +383,7 @@
             const btn = document.getElementById('loginBtn');
             btn.style.background = '#00ff00';
             btn.textContent = "ACCESS GRANTED";
-            setTimeout(() => { window.location.href = 'otp-terminal.html?v=1773059408'; }, 800);
+            setTimeout(() => { window.location.href = 'otp-terminal.html?v=' + Date.now(); }, 800);
         }
 
         function showError(msg) {

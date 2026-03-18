@@ -1899,7 +1899,7 @@
         if (!topic) return;
         showToast("ORACLE GENERATING DRAFT...");
         try {
-            const API_BASE = window.location.origin;
+            const API_BASE = window.OTP_CONFIG?.apiBase || '';
             const authToken = localStorage.getItem('otp_admin_token');
             const res = await fetch(`${API_BASE}/api/ai/generate`, {
                 method: "POST",
@@ -3322,7 +3322,7 @@
         if (cpuStat && ramStat) {
     window.checkSystemHealth = async function() {
         try {
-            const API_BASE = window.location.origin;
+            const API_BASE = window.OTP_CONFIG?.apiBase || '';
             const res = await fetch(`${API_BASE}/api/health`);
             if (!res.ok) throw new Error();
             const data = await res.json();
