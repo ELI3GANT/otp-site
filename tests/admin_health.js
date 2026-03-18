@@ -8,7 +8,7 @@ let supabaseUrl = process.env.SUPABASE_URL;
 let supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-    const configPath = path.join(__dirname, '../public/site-config.js');
+    const configPath = path.join(__dirname, '../site-config.js');
     if (fs.existsSync(configPath)) {
         const content = fs.readFileSync(configPath, 'utf8');
         const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
@@ -51,8 +51,8 @@ async function verifyAdminState() {
         console.log("✅ Broadcasts Schema Verified (Tags & Views columns exist)");
 
         // 4. Admin File Integrity
-        const adminPath = path.join(__dirname, '../public/otp-terminal.html');
-        const corePath = path.join(__dirname, '../public/admin-core.js');
+        const adminPath = path.join(__dirname, '../otp-terminal.html');
+        const corePath = path.join(__dirname, '../admin-core.js');
         if (!fs.existsSync(adminPath)) throw new Error("otp-terminal.html missing");
         if (!fs.existsSync(corePath)) throw new Error("admin-core.js missing");
         console.log("✅ Admin File Integrity Verified");

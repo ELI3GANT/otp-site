@@ -6,8 +6,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PAGES = [
-    'public/index.html', 'public/archive.html', 'public/insights.html', 'public/404.html', 
-    'public/privacy.html', 'public/terms.html', 'public/otp-terminal.html', 'public/portal-gate.html'
+    'index.html', 'archive.html', 'insights.html', '404.html', 
+    'privacy.html', 'terms.html', 'otp-terminal.html', 'portal-gate.html'
 ];
 
 const REQUIRED_SCRIPTS = ['site-config.js', 'site-init.js'];
@@ -57,9 +57,8 @@ function auditPage(file) {
     links.forEach(l => {
         const url = l.split('"')[1];
         if (url.endsWith('.html') && !url.startsWith('http') && !url.includes('#')) {
-            const fullPath = path.join('public', url);
-            if (!fs.existsSync(fullPath)) {
-                console.error(`❌ BROKEN LINK: ${url} (resolved to ${fullPath})`);
+            if (!fs.existsSync(url)) {
+                console.error(`❌ BROKEN LINK: ${url}`);
                 errors++;
             }
         }

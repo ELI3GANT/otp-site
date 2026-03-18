@@ -3,7 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 
 // Load config
-const configContent = fs.readFileSync('public/site-config.js', 'utf8');
+const configContent = fs.readFileSync('site-config.js', 'utf8');
 const urlMatch = configContent.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
 const keyMatch = configContent.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
 
@@ -44,7 +44,7 @@ async function runDiagnostics() {
 
     // 3. Check UI Select Elements in HTML (Static check)
     console.log("\n--- [3] UI INTEGRATION CHECK ---");
-    const adminCore = fs.readFileSync('public/admin-core.js', 'utf8');
+    const adminCore = fs.readFileSync('admin-core.js', 'utf8');
     if (adminCore.includes('fetchCategories()') && adminCore.includes('syncCategoryDropdowns()')) {
         console.log("✅ admin-core.js is configured to fetch and sync data.");
     } else {

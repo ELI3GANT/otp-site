@@ -73,7 +73,7 @@ global.resetForm = () => console.log("[MOCK] Reset Form");
 // Let's load the actual file content and eval it in our context? 
 // The file is wrapped in an IIFE but assigns to window.managePost.
 
-const adminCoreContent = fs.readFileSync(path.join(__dirname, '../public/admin-core.js'), 'utf8');
+const adminCoreContent = fs.readFileSync(path.join(__dirname, '../admin-core.js'), 'utf8');
 
 // We need to execute the file content to get managePost on window
 // But the file has a lot of other stuff. 

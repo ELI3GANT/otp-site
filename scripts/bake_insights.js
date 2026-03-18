@@ -3,13 +3,13 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 
 // 1. Get Config
-const configPath = path.join(__dirname, '../public/site-config.js');
+const configPath = path.join(__dirname, '../site-config.js');
 const content = fs.readFileSync(configPath, 'utf8');
 const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
 const keyMatch = content.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
 
 if (!urlMatch || !keyMatch) {
-    console.error("❌ Could not parse public/site-config.js for credentials.");
+    console.error("❌ Could not parse site-config.js for credentials.");
     process.exit(1);
 }
 
@@ -72,7 +72,7 @@ async function bakeInsights() {
     }).join('\n');
 
     // 4. Inject into insights.html
-    const htmlPath = path.join(__dirname, '../public/insights.html');
+    const htmlPath = path.join(__dirname, '../insights.html');
     let html = fs.readFileSync(htmlPath, 'utf8');
 
     // Regex to replace content inside .insights-grid

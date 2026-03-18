@@ -96,7 +96,7 @@ app.use(helmet({
 app.use(compression());
 
 // --- STATIC ASSETS (CRITICAL FIX) ---
-const staticPath = path.join(__dirname, 'public');
+const staticPath = __dirname;
 console.log("Static Path Configured:", staticPath);
 
 app.use(express.static(staticPath, {
