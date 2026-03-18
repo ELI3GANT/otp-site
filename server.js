@@ -1017,6 +1017,7 @@ app.route('/api/create-checkout-session')
 
 // --- CACHE CONTROL & STATIC ASSETS ---
 // Served AFTER API to avoid conflict (e.g. 405 on POST to static)
+const rootPath = process.cwd();
 const staticOptions = {
     dotfiles: 'ignore', // Still ignore .env
     etag: true,
@@ -1050,7 +1051,12 @@ const staticOptions = {
     }
 };
 
-app.use(express.static(__dirname, staticOptions));
+// Explicitly serve index.html for the root to bypass any static resolution issues
+app.get('/', (req, res) => {
+    res.sendFile(path.join(rootPath, 'index.html'));
+});
+
+app.use(express.static(rootPath, staticOptions));
 
 // --- FALLBACK ROUTE ---
 // Serve 404 for any unknown API routes specifically
