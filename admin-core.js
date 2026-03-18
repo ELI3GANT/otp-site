@@ -1950,10 +1950,12 @@
             if (fetchError) throw fetchError;
 
             const trash = posts.filter(post => {
-                const isSpooky = post.slug.includes('spooky');
-                const isElegant = post.slug.includes('eli3gant');
+                // Safer Cleanup: Only target posts intentionally marked as trash or test
+                const isTest = post.slug.includes('test-post') || post.slug.includes('temporary');
+                const isDraft = !post.published;
                 const wordCount = (post.content || "").trim().split(/\s+/).filter(w => w.length > 0).length;
-                return !isSpooky && !isElegant && wordCount < 50;
+                // Only delete if it's a test post AND very short, never touch published content automatically
+                return isTest && wordCount < 10;
             });
 
             if (trash.length === 0) {
@@ -1990,7 +1992,7 @@
         grid.innerHTML = '<div class="loader">FETCHING ASSETS FROM CLOUD...</div>';
 
         try {
-            const { data, error } = await state.client.storage.from('uploads').list('blog', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+            const { data, error } = await state.client.storage.from('uploads').list('blog', { limit: 120, sortBy: { column: 'created_at', order: 'desc' } });
             
             if (error) throw error;
             

@@ -664,7 +664,7 @@ app.post('/api/audit/submit', async (req, res) => {
 
         // 2. Call Gemini (With Robust Logic)
         if (process.env.GEMINI_API_KEY) {
-            const modelsToTry = ['gemini-2.0-flash-exp', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
+            const modelsToTry = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-exp'];
             let success = false;
             
             const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
