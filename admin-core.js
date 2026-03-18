@@ -1901,46 +1901,15 @@
             "e.g., 'The power of 3D in 2026'",
             async (topic) => {
                 if (!topic) return;
-                showToast("ORACLE GENERATING DRAFT...");
-                try {
-                    const API_BASE = window.OTP_CONFIG?.apiBase || '';
-                    const authToken = localStorage.getItem('otp_admin_token');
-                    const res = await fetch(`${API_BASE}/api/ai/generate`, {
-                        method: "POST",
-                        headers: { 
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${authToken}`
-                        },
-                        body: JSON.stringify({ 
-                            provider: state.cloudSettings?.default_provider || "openai",
-                            title: "AI Generated Post",
-                            prompt: topic, 
-                            systemPrompt: "You are an expert digital agency blog writer. Generate a highly engaging, SEO optimized post in Markdown format."
-                        })
-                    });
-                    if(!res.ok) throw new Error("Oracle connection failed.");
-                    const data = await res.json();
-                    if (data.success && data.content) {
-                        document.getElementById("titleInput").value = data.title || "AI GENERATED DRAFT";
-                        document.getElementById("contentArea").value = data.content;
-                        document.getElementById("tagsInput").value = (data.tags || []).join(", ");
-                        showToast("DRAFT GENERATED SUCCESSFULLY");
-                    } else if (data.content) {
-                        // Handle raw JSON response from some providers
-                        document.getElementById("titleInput").value = data.title || data.seo_title || "AI GENERATED DRAFT";
-                        document.getElementById("contentArea").value = data.content;
-                        showToast("DRAFT GENERATED SUCCESSFULLY");
-                    } else if (data.success === true && data.result) {
-                       // Handle standard server response
-                        document.getElementById("titleInput").value = data.result.title || data.result.seo_title || "AI GENERATED DRAFT";
-                        document.getElementById("contentArea").value = data.result.content;
-                        showToast("DRAFT GENERATED SUCCESSFULLY");
+                const promptInput = document.getElementById('aiPrompt');
+                if (promptInput) {
+                    promptInput.value = topic;
+                    if (typeof triggerAIGenerator === 'function') {
+                        showToast("ORACLE INITIALIZING...");
+                        await triggerAIGenerator();
                     } else {
-                        throw new Error("Invalid Oracle Response.");
+                        showToast("GENERATOR UNAVAILABLE");
                     }
-                } catch (e) {
-                    console.error("AI Generation Error:", e);
-                    showToast("GENERATION FAILED: " + e.message);
                 }
             }
         );
@@ -2237,8 +2206,7 @@
         const model = (provider === 'gemini' && modelSel) ? modelSel.value : null;
 
         // UI Feedback
-        btn.textContent = "SYNTHESIZING...";
-        btn.disabled = true;
+        if(btn) { btn.textContent = "SYNTHESIZING..."; btn.disabled = true; }
         if(status) { 
             status.innerHTML = `<span class="blink">⚡ TRANSMITTING TO ${provider.toUpperCase()}...</span>`; 
             status.style.color = "var(--admin-cyan)"; 
@@ -2431,8 +2399,10 @@
             if(status) { status.textContent = "ERROR: " + err.message; status.style.color = "#ff4444"; }
             showToast("AI ERROR: " + err.message);
         } finally {
-            btn.textContent = "⚡ TRANSMIT";
-            btn.disabled = false;
+            if (btn) {
+                btn.textContent = "⚡ TRANSMIT";
+                btn.disabled = false;
+            }
         }
     }
 
@@ -3355,8 +3325,21 @@
                 pay.style.color = data.integrations.stripe === "CONFIGURED" ? "var(--admin-success)" : "var(--admin-danger)";
             }
             if (ai) {
-                ai.textContent = data.integrations.ai === "CONFIGURED" ? "SYNCED" : "JAMMED";
-                ai.style.color = data.integrations.ai === "CONFIGURED" ? "var(--admin-success)" : "var(--admin-danger)";
+                if (data.integrations.ai === "CONFIGURED") {
+                    ai.textContent = "SYNCED";
+                    ai.style.color = "var(--admin-success)";
+                } else {
+                    const localGemini = localStorage.getItem('cloud_gemini');
+                    const localOpenAI = localStorage.getItem('cloud_openai');
+                    const localAnthropic = localStorage.getItem('cloud_anthropic');
+                    if (localGemini || localOpenAI || localAnthropic) {
+                        ai.textContent = "SYNCED (LOCAL)";
+                        ai.style.color = "var(--admin-cyan)";
+                    } else {
+                        ai.textContent = "JAMMED";
+                        ai.style.color = "var(--admin-danger)";
+                    }
+                }
             }
         } catch (e) {
             console.warn("Heartbeat Failed");
