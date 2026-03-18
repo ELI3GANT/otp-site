@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Insights | Only True Perspective</title>
+  <meta name="description" content="Strategic deconstructions of visual culture, high-retention editing, and the business of creative direction." />
+  
+  <!-- SEO / Social -->
+  <meta property="og:title" content="Insights | Only True Perspective" />
+  <meta property="og:description" content="Tactical breakdowns and creative strategy from the OTP lab." />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://onlytrueperspective.tech/insights.html" />
+  <link rel="canonical" href="https://onlytrueperspective.tech/insights.html" />
+  <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
+  <link rel="stylesheet" href="./styles.css?v=10.5.2" />
+  <link rel="stylesheet" href="./blog-enhancements.css" />
+  <style>
+    body { margin: 0 !important; }
+    
+    /* PREMIUM VAULT UI */
+    .filter-btn {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--stroke);
+        color: var(--muted);
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 700;
+    }
+    .filter-btn:hover {
+        border-color: var(--accent2);
+        color: var(--text);
+        background: rgba(var(--accent2-rgb), 0.05);
+        transform: translateY(-2px);
+    }
+    .filter-btn.active {
+        background: var(--accent2);
+        border-color: var(--accent2);
+        color: #000;
+        box-shadow: 0 0 30px rgba(var(--accent2-rgb), 0.25);
+    }
+
+    .insight-card {
+        background: rgba(10, 10, 18, 0.4);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 24px;
+        /* overflow:hidden moved to .insight-card-inner so box-shadow isn't clipped */
+        overflow: visible;
+        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        position: relative;
+        z-index: 0; /* Base stacking — hover will elevate this */
+
+        /* Fix <a> tag defaults — prevents blue text, underline, and browser highlights */
+        color: inherit;
+        text-decoration: none;
+        display: block;
+        -webkit-tap-highlight-color: transparent;
+        outline: none;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+    /* Keyboard focus — custom ring instead of browser default */
+    .insight-card:focus-visible {
+        outline: 2px solid var(--accent2);
+        outline-offset: 4px;
+        z-index: 2;
+    }
+    /* Tap/click press — subtle scale feedback on touch */
+    .insight-card:active {
+        transform: scale(0.985);
+        transition: transform 0.1s ease;
+    }
+    @media (hover: hover) {
+        .insight-card:active {
+            transform: translateY(-10px) scale(1.01);
+        }
+        .insight-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(var(--accent2-rgb), 0.6);
+            /* Layered glow: deep shadow + strong cyan halo */
+            box-shadow:
+                0 40px 80px -20px rgba(0, 0, 0, 0.7),
+                0 0 0 1px rgba(var(--accent2-rgb), 0.15),
+                0 0 30px rgba(var(--accent2-rgb), 0.25),
+                0 0 60px rgba(var(--accent2-rgb), 0.1);
+            z-index: 10; /* Lifts hovered card above siblings so glow isn't clipped by neighbors */
+        }
+    }
+    /* Override browser blue selection on link children */
+    .insight-card::selection,
+    .insight-card *::selection {
+        background: var(--accent2);
+        color: #000;
+        text-shadow: none;
+    }
+    .insight-card-inner {
+        padding: 40px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border-radius: 24px; /* Match card for clipping bg */
+        overflow: hidden;    /* Clips internal content correctly without cutting box-shadow */
+    }
+    .insight-date {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.8rem;
+        color: var(--accent2);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        font-weight: 700;
+        opacity: 0.9;
+    }
+    .insight-card h2 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.8rem;
+        line-height: 1.2;
+        margin-bottom: 20px;
+        color: #fff;
+        text-transform: uppercase;
+    }
+    .insight-card p {
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        flex-grow: 1;
+    }
+    .post-tag {
+        font-size: 0.6rem;
+        color: var(--muted2);
+        background: rgba(255,255,255,0.03);
+        padding: 5px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(255,255,255,0.05);
+        font-family: 'Space Grotesk', sans-serif;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-weight: 700;
+        transition: all 0.3s;
+    }
+    .insight-card:hover .post-tag {
+        color: var(--accent2);
+        border-color: rgba(var(--accent2-rgb), 0.2);
+        background: rgba(var(--accent2-rgb), 0.05);
+    }
+    .read-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        text-decoration: none;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        transition: all 0.3s;
+    }
+    .read-more::after {
+        content: "→";
+        transition: transform 0.3s;
+    }
+    .read-more:hover {
+        color: var(--accent2);
+    }
+    .read-more:hover::after {
+        transform: translateX(5px);
+    }
+
+    /* PINPOINT EYE ICON */
+    .pinpoint-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 20px;
+        filter: drop-shadow(0 0 20px var(--accent2));
+        display: block;
+    }
+    .eye-outer {
+        animation: eye-pulse 4s infinite ease-in-out;
+    }
+    .eye-iris {
+        animation: iris-rotate 10s linear infinite;
+        transform-origin: center;
+    }
+    .eye-pupil {
+        animation: pupil-blink 3s infinite alternate;
+    }
+    @keyframes eye-pulse {
+        0%, 100% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.05); opacity: 1; }
+    }
+    @keyframes iris-rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    @keyframes pupil-blink {
+        0%, 90% { opacity: 1; transform: scale(1); }
+        95% { opacity: 0; transform: scale(0.5); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    [data-theme="light"] .pinpoint-icon {
+        filter: drop-shadow(0 5px 15px rgba(var(--accent2-rgb), 0.3));
+    }
+
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        margin-top: 60px;
+        isolation: isolate; /* Create new stacking context so z-index on cards works correctly */
+    }
+
+    @media (max-width: 1100px) {
+        .insights-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+        .insights-grid { grid-template-columns: 1fr; }
+        .neon-brain { width: 100px; height: 100px; }
+    }
+
+    [data-theme="light"] .insight-card {
+        background: #fff;
+        border-color: #eee;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        color: #111;
+    }
+    [data-theme="light"] .insight-card h2 { color: #000; }
+    [data-theme="light"] .insight-card p { color: #555; }
+    [data-theme="light"] .filter-btn { background: #f8f8fa; border-color: #ddd; color: #666; }
+    [data-theme="light"] .filter-btn:hover { background: #eee; border-color: #ccc; color: #000; }
+    [data-theme="light"] .filter-btn.active { background: #000; color: #fff; border-color: #000; }
+    [data-theme="light"] .insight-card:focus-visible { outline-color: #000; }
+  </style>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;800&family=Syne:wght@700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet" />
+    <!-- THEME GUARD: Prevents flickering by initializing theme before first paint -->
+  <script>
+    (function() {
+        window.OTP_HUES = [
+            { dark: '0, 236, 255', light: '0, 170, 204' }, // Cyan
+            { dark: '170, 0, 255', light: '120, 0, 200' }, // Purple
+            { dark: '255, 0, 170', light: '200, 0, 120' }, // Pink
+            { dark: '0, 255, 170', light: '0, 180, 120' }, // Green
+            { dark: '255, 215, 0', light: '184, 134, 11' }, // Gold
+            { dark: '255, 60, 0',  light: '200, 40, 0' }    // Neon Orange
+        ];
+        
+        // Randomize hue every load/refresh
+        let hueIndex = Math.floor(Math.random() * window.OTP_HUES.length);
+        sessionStorage.setItem('otp_hue_index', hueIndex);
+        window.OTP_HUE_INDEX = hueIndex;
+        const selectedHue = window.OTP_HUES[hueIndex];
+
+        const savedTheme = localStorage.getItem('theme');
+        const isManual = localStorage.getItem('theme_manual') === 'true';
+        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+        const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+        
+        let theme;
+        if (isManual && !isExpired) {
+            theme = savedTheme;
+        } else {
+            const hour = new Date().getHours();
+            theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+        }
+
+        const rootStyle = document.documentElement.style;
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.light);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.light})`);
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
+        }
+    })();
+  </script>
+</head>
+<body class="insights-page k-cursor-ready">
+  <div class="bg-fixed"></div>
+
+  <header class="nav nav-split">
+    <!-- Logo Left -->
+    <a href="index.html" class="nav-logo" aria-label="OTP">
+      <img src="assets/otp.gif" alt="OTP" class="otp-mark" id="nav-logo-neon" />
+    </a>
+
+    <!-- Links Right -->
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html#work" class="k-hover">Work</a>
+      <a href="archive.html" class="k-hover">Archive</a>
+      <a href="insights.html" class="active k-hover">Insights</a>
+      <a href="index.html#services" class="k-hover">Services</a>
+      <a href="index.html#contact" class="k-hover">Contact</a>
+    </nav>
+
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav-drawer" aria-label="Mobile">
+      <a href="index.html#work">Work</a>
+      <a href="archive.html">Archive</a>
+      <a href="insights.html" class="active">Insights</a>
+      <a href="index.html#services">Services</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main class="archive-main">
+    <div class="wrap" style="padding-top: 140px;">
+        <div class="secondary-intro" style="margin-bottom: 80px;">
+          <div class="header-visual" style="margin: 0 auto 30px; display: flex; justify-content: center; align-items: center;">
+            <svg class="otp-eye-svg pinpoint-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100px; height: 100px;">
+              <circle cx="50" cy="50" r="40" stroke="var(--accent2)" stroke-width="1.5" class="eye-outer" opacity="0.3"/>
+              <circle cx="50" cy="50" r="15" stroke="var(--accent2)" stroke-width="2" class="eye-iris"/>
+              <circle cx="50" cy="50" r="5" fill="var(--accent2)" class="eye-pupil"/>
+              <path d="M50 5V15M50 85V95M5 50H15M85 50H95" stroke="var(--accent2)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 25px;">
+              <span class="status-dot-mini" style="width: 8px; height: 8px; background: var(--accent2); border-radius: 50%; box-shadow: 0 0 10px var(--accent2); animation: pulse-cyan 1.5s infinite alternate;"></span>
+              <span class="status-label">Live Network Signal</span>
+          </div>
+          <div class="secondary-header">
+            <h1>THE VAULT</h1>
+          </div>
+          <p class="intro-text">
+            Deep-dive deconstructions of visual culture, high-velocity editing workflows, and tactical creative strategy from the OTP lab.
+          </p>
+        </div>
+
+      <!-- TAG FILTER -->
+      <div id="filter-wrap" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 80px;">
+          <button class="filter-btn active" onclick="window.filterByTag('ALL')">All</button>
+          <button class="filter-btn" onclick="window.filterByTag('VISUALS')">Visuals</button>
+          <button class="filter-btn" onclick="window.filterByTag('STRATEGY')">Strategy</button>
+      </div>
+
+      <div class="insights-grid">
+        <!-- BAKED_DATA_START -->
+        
+            <a href="insight.html?slug=spooky-luh-ooky" class="insight-card k-hover">
+                <div class="insight-card-inner">
+                    <div class="insight-date">Jan 8, 2026 • Visuals</div>
+                    <h2>Deconstruction: Spooky (Luh Ooky)</h2>
+                    <p>A tactical breakdown of Spooky&#039;s dark-modernist visual mastery in the Morbid Musik project.</p>
+                    
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px;">
+                        <span class="post-tag">#SPOOKY</span><span class="post-tag">#EDITING</span><span class="post-tag">#VISUALS</span>
+                    </div>
+
+                    <div class="insight-footer">
+                        <span class="read-more">Access Uplink</span>
+                    </div>
+                </div>
+            </a>
+        
+
+            <a href="insight.html?slug=whats-elegant-about-eli3gant" class="insight-card k-hover">
+                <div class="insight-card-inner">
+                    <div class="insight-date">Jan 8, 2026 • Strategy</div>
+                    <h2>The Architecture of ELI3GANT</h2>
+                    <p>Decoding the structural foundations and cyberpunk grit of the &#039;No Aversion&#039; movement.</p>
+                    
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px;">
+                        <span class="post-tag">#ELI3GANT</span><span class="post-tag">#STRATEGY</span><span class="post-tag">#AESTHETICS</span>
+                    </div>
+
+                    <div class="insight-footer">
+                        <span class="read-more">Access Uplink</span>
+                    </div>
+                </div>
+            </a>
+        
+        <!-- BAKED_DATA_END -->
+      </div>
+
+      <!-- Subscribe / Connect Section -->
+      <section class="subscribe-section center-text" style="margin-top: 100px; padding: 60px; border-radius: 32px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
+        <h3 class="syne-bold" style="font-size: 2.5rem; text-transform: uppercase; margin-bottom: 15px;">Visual Intelligence.</h3>
+        <p class="muted" style="max-width: 500px; margin: 0 auto 40px; font-size: 1.1rem;">Get strategic deconstructions and visual systems delivered directly to your terminal.</p>
+        <form action="https://formspree.io/f/mwvprvll" method="POST" class="subscribe-form" style="display: flex; gap: 10px; max-width: 500px; margin: 0 auto;">
+          <input type="email" name="email" placeholder="neural@uplink.io" required style="flex-grow: 1; padding: 18px 24px; border-radius: 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: 'Space Grotesk', sans-serif;">
+          <button type="submit" class="k-hover" style="background: var(--accent2); color: #000; border: none; padding: 0 30px; border-radius: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;">Join</button>
+        </form>
+      </section>
+
+      <div class="insights-footer-nav center-text" style="margin-top: 80px; display: flex; gap: 30px; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px;">
+        <a href="index.html" class="k-hover" style="text-decoration: none; color: var(--muted2);">Back to Base</a>
+        <a href="archive.html" class="k-hover" style="text-decoration: none; color: var(--muted2);">The Archive</a>
+        <a href="index.html#contact" class="k-hover" style="text-decoration: none; color: var(--muted2);">Open Connection</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-left">
+        <div class="nav-logo" aria-label="OTP">
+          <img src="assets/otp.gif" alt="OTP logo" class="nav-gif" id="footer-logo-neon" />
+        </div>
+        <div class="fineprint">© <span id="year">2026</span> Only True Perspective. All rights reserved.</div>
+        <div class="footer-legal">
+          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>
+          <span class="dot">•</span>
+          <a href="terms.html">Terms</a>
+          <span class="dot">•</span>
+          <a href="privacy.html">Privacy</a>
+        </div>
+      </div>
+
+      <div class="footer-right">
+        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <canvas id="cursor-canvas"></canvas>
+
+  <script src="site-config.js?v=10.5.2" defer></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/kursor"></script>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  
+  <script>
+    // Insights page: fetch from Supabase with baked-content fallback
+    document.addEventListener("DOMContentLoaded", async () => {
+        const grid = document.querySelector('.insights-grid');
+        const bakedCards = grid ? [...grid.querySelectorAll('.insight-card')] : [];
+        const hasBakedContent = bakedCards.length > 0;
+
+        const escapeHtml = (str) => {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        };
+
+        let allPosts = [];
+        let activeTag = 'ALL';
+
+        // Show status without wiping baked content
+        const setStatus = (msg, isError = false) => {
+            let statusEl = document.getElementById('fetch-status');
+            if (!statusEl) {
+                statusEl = document.createElement('div');
+                statusEl.id = 'fetch-status';
+                statusEl.style.cssText = 'grid-column:1/-1; text-align:center; padding:40px; font-size:0.85rem; letter-spacing:2px; font-family:\'Space Grotesk\',sans-serif;';
+                grid.prepend(statusEl);
+            }
+            statusEl.style.color = isError ? '#ff4444' : 'var(--muted)';
+            
+            if (isError) {
+                statusEl.innerHTML = `
+                    <div style="margin-bottom:20px;">${msg}</div>
+                    <button onclick="window.location.reload()" style="background:var(--accent2); color:#000; border:none; padding:10px 20px; border-radius:8px; font-family:\'Space Grotesk\',sans-serif; font-weight:800; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Retry Signal</button>
+                `;
+            } else {
+                statusEl.textContent = msg;
+            }
+        };
+
+        const clearStatus = () => {
+            const el = document.getElementById('fetch-status');
+            if (el) el.remove();
+        };
+
+        try {
+            // Wait for OTP_CONFIG (site-config.js?v=10.5.2 loads async/deferred)
+            let attempts = 0;
+            while (!window.OTP_CONFIG && attempts < 20) {
+                await new Promise(r => setTimeout(r, 150));
+                attempts++;
+            }
+
+            const SUPABASE_URL = window.OTP_CONFIG?.supabaseUrl;
+            const SUPABASE_KEY = window.OTP_CONFIG?.supabaseKey;
+
+            if (typeof window.supabase === 'undefined' || !SUPABASE_URL || !SUPABASE_KEY) {
+                if (!hasBakedContent) setStatus("CONFIGURATION SIGNAL LOST", true);
+                return;
+            }
+
+            if (!hasBakedContent) setStatus("SCANNING FOR SIGNALS...");
+
+            const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            const { data: posts, error } = await Promise.race([
+                client.from('posts').select('id, title, slug, excerpt, content, category, tags, image_url, views, created_at').eq('published', true).order('created_at', { ascending: false }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 8000))
+            ]);
+
+            if (error) throw error;
+            if (!posts || posts.length === 0) {
+                if (!hasBakedContent) setStatus("NO SIGNALS DETECTED. STATION IS SILENT.");
+                return;
+            }
+
+            allPosts = posts;
+            clearStatus();
+            renderFilters();
+            renderPosts(posts);
+
+        } catch (e) {
+            console.warn("Insights fetch error:", e);
+            if (!hasBakedContent) setStatus(`SIGNAL LOSS: ${e.message}`, true);
+        }
+
+        function renderFilters() {
+            // Build tag list dynamically from actual post data
+            const tagSet = new Set(['ALL']);
+            allPosts.forEach(p => {
+                if (p.category) tagSet.add(p.category.toUpperCase());
+                (p.tags || []).forEach(t => tagSet.add(t.toUpperCase()));
+            });
+
+            const wrap = document.getElementById('filter-wrap');
+            if (!wrap) return;
+
+            // Keep only tags that have more than 1 post OR are the active one
+            const tagCounts = {};
+            allPosts.forEach(p => {
+                const cats = [p.category?.toUpperCase()].filter(Boolean);
+                const tags = (p.tags || []).map(t => t.toUpperCase());
+                [...cats, ...tags].forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
+            });
+
+            // Always show ALL + tags that exist
+            const usefulTags = ['ALL', ...Object.keys(tagCounts).sort()];
+
+            wrap.innerHTML = usefulTags.map(tag => `
+                <button class="filter-btn ${tag === activeTag ? 'active' : ''}" onclick="window.filterByTag('${escapeHtml(tag)}')">${tag === 'ALL' ? 'All' : tag}</button>
+            `).join('');
+        }
+
+        window.filterByTag = (tag) => {
+            activeTag = tag;
+            renderFilters();
+            renderPosts(allPosts);
+        };
+
+        function renderPosts(posts) {
+            if (!grid) return;
+
+            // HANDLE OFFLINE (BAKED) FILTERING
+            if (posts.length === 0 && hasBakedContent) {
+                bakedCards.forEach(card => {
+                    const dateText = card.querySelector('.insight-date')?.textContent.toUpperCase() || '';
+                    const tagElements = [...card.querySelectorAll('.post-tag')].map(t => t.textContent.toUpperCase());
+                    const isMatch = activeTag === 'ALL' || dateText.includes(activeTag) || tagElements.some(t => t.includes(activeTag));
+                    card.style.display = isMatch ? 'block' : 'none';
+                    if (isMatch) grid.appendChild(card); // Ensure it's in the grid if we previously cleared
+                });
+                return;
+            }
+
+            const filtered = activeTag === 'ALL'
+                ? posts
+                : posts.filter(p => {
+                    const cat = (p.category || '').toUpperCase();
+                    const tags = (p.tags || []).map(t => t.toUpperCase());
+                    return cat === activeTag || tags.includes(activeTag);
+                });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:100px 40px; color:var(--muted); font-family:'Space Grotesk',sans-serif; letter-spacing:2px;">NO SIGNALS FOUND FOR: ${escapeHtml(activeTag)}</div>`;
+                return;
+            }
+            
+            // CLEAR GRID FOR NEW POSTS
+            grid.innerHTML = '';
+            const fragment = document.createDocumentFragment();
+
+            filtered.forEach(post => {
+                try {
+                    const date = new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const link = `insight.html?slug=${encodeURIComponent(post.slug)}`;
+
+                    let rawBody = post.excerpt || post.content || '';
+                    // Strip HTML tags from body preview
+                    let safeBody = rawBody.replace(/<[^>]*>/g, '').replace(/&[a-z]+;/gi, ' ').trim();
+                    safeBody = safeBody.substring(0, 120) + (safeBody.length > 120 ? '...' : '');
+
+                    const viewCount = post.views || 0;
+
+                    const card = document.createElement('a');
+                    card.href = link;
+                    card.className = 'insight-card k-hover';
+                    card.innerHTML = `
+                        <div class="insight-card-inner">
+                            <div class="insight-date">${date} • ${escapeHtml(post.category || 'Insight')}</div>
+                            <h2>${escapeHtml(post.title)}</h2>
+                            <p>${escapeHtml(safeBody)}</p>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+                                ${(post.tags || []).slice(0, 3).map(t => `<span class="post-tag">#${escapeHtml(t.toUpperCase())}</span>`).join('')}
+                            </div>
+                            <div class="insight-footer" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="read-more">Access Uplink</span>
+                                ${viewCount > 0 ? `<span style="font-size:0.8rem; color:var(--muted2); font-family:'Space Grotesk',sans-serif; letter-spacing:1px; opacity:0.8;">${viewCount.toLocaleString()} reads</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    fragment.appendChild(card);
+                } catch (err) {
+                    console.warn("Skipping malformed post:", post?.title, err);
+                }
+            });
+
+            grid.appendChild(fragment);
+
+            // Animate in
+            if (window.gsap) {
+                gsap.from(grid.querySelectorAll('.insight-card'), {
+                    opacity: 0, y: 20, stagger: 0.05, duration: 0.6, ease: "power2.out"
+                });
+            }
+        }
+    });
+  </script>
+
+
+  <script src="stars-v2.js"></script>
+  <script src="site-init.js?v=10.5.2"></script>
+</body>
+</html>

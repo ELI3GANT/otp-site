@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Archive | Only True Perspective</title>
+  <meta name="description" content="Visual archive for Only True Perspective. Explorations in high-retention motion and technical production." />
+
+  <!-- SEO / Social -->
+  <meta property="og:title" content="Archive | Only True Perspective" />
+  <meta property="og:description" content="A curated collection of technical visual storytelling and cinematic builds." />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://onlytrueperspective.tech/archive.html" />
+  <link rel="canonical" href="https://onlytrueperspective.tech/archive.html" />
+  <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
+  <meta name="theme-color" content="#030305" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Archive | Only True Perspective" />
+  <meta name="twitter:description" content="A curated collection of technical visual storytelling." />
+  <meta name="twitter:image" content="https://onlytrueperspective.tech/og.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
+  <link rel="stylesheet" href="./styles.css?v=10.5.2" />
+  <style>body { margin: 0 !important; }</style>
+  
+  <!-- FAVICON -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <!-- THEME GUARD: Prevents flickering by initializing theme before first paint -->
+  <script>
+    (function() {
+        window.OTP_HUES = [
+            { dark: '0, 236, 255', light: '0, 170, 204' }, // Cyan
+            { dark: '170, 0, 255', light: '120, 0, 200' }, // Purple
+            { dark: '255, 0, 170', light: '200, 0, 120' }, // Pink
+            { dark: '0, 255, 170', light: '0, 180, 120' }, // Green
+            { dark: '255, 215, 0', light: '184, 134, 11' }, // Gold
+            { dark: '255, 60, 0',  light: '200, 40, 0' }    // Neon Orange
+        ];
+        
+        // Randomize hue every load/refresh
+        let hueIndex = Math.floor(Math.random() * window.OTP_HUES.length);
+        sessionStorage.setItem('otp_hue_index', hueIndex);
+        window.OTP_HUE_INDEX = hueIndex;
+        const selectedHue = window.OTP_HUES[hueIndex];
+
+        const savedTheme = localStorage.getItem('theme');
+        const isManual = localStorage.getItem('theme_manual') === 'true';
+        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+        const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+        
+        let theme;
+        if (isManual && !isExpired) {
+            theme = savedTheme;
+        } else {
+            const hour = new Date().getHours();
+            theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+        }
+
+        const rootStyle = document.documentElement.style;
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.light);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.light})`);
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
+        }
+    })();
+  </script>
+</head>
+<body class="archive-page k-cursor-ready">
+  <div class="bg-fixed"></div>
+
+  <header class="nav nav-split">
+    <!-- Logo Left -->
+    <a href="index.html" class="nav-logo" aria-label="OTP">
+      <img src="assets/otp.gif" alt="OTP" class="otp-mark" id="nav-logo-neon" />
+    </a>
+
+    <!-- Links Right -->
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html#work" class="k-hover">Work</a>
+      <a href="index.html#services" class="k-hover">Services</a>
+      <a href="index.html#about" class="k-hover">About</a>
+      <a href="index.html#contact" class="k-hover">Contact</a>
+      <a href="archive.html" class="active k-hover nav-secondary">Archive</a>
+    </nav>
+    
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav-drawer" aria-label="Mobile">
+      <a href="index.html#work">Work</a>
+      <a href="archive.html" class="active">Archive</a>
+      <a href="insights.html">Insights</a>
+      <a href="index.html#services">Services</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main class="archive-main">
+    <div class="wrap">
+      <div class="secondary-intro">
+        <div class="header-visual" style="margin: 0 auto 30px; display: flex; justify-content: center; align-items: center;">
+          <svg class="neon-icon neon-folder" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 80px; height: 80px;">
+            <path d="M10 30C10 24.4772 14.4772 20 20 20H40L50 30H80C85.5228 30 90 34.4772 90 40V70C90 75.5228 85.5228 80 80 80H20C14.4772 80 10 75.5228 10 70V30Z" stroke="var(--accent2)" stroke-width="2" class="folder-outline"/>
+            <path d="M30 45H70" stroke="var(--accent2)" stroke-width="1.5" stroke-linecap="round" class="file-line line-1"/>
+            <path d="M30 55H60" stroke="var(--accent2)" stroke-width="1.5" stroke-linecap="round" class="file-line line-2"/>
+            <path d="M30 65H50" stroke="var(--accent2)" stroke-width="1.5" stroke-linecap="round" class="file-line line-3"/>
+            <circle cx="80" cy="40" r="3" fill="var(--accent)" class="status-dot"/>
+          </svg>
+        </div>
+        <div class="secondary-header">
+          <h1>THE ARCHIVE</h1>
+        </div>
+        <p class="intro-text">A curated collection of visual storytelling, creative strategy, and digital builds.</p>
+        <p class="sub-text">A living record of technical execution and creative direction.</p>
+        <p class="vault-text">Explore the vault.</p>
+      </div>
+
+      <!-- TAG FILTER -->
+      <div id="filter-wrap">
+          <button class="filter-btn active" data-filter="All">All</button>
+          <button class="filter-btn" data-filter="Music">Music</button>
+          <button class="filter-btn" data-filter="Brand">Brand</button>
+          <button class="filter-btn" data-filter="Art">Art</button>
+      </div>
+
+      <div class="archive-grid">
+        <!-- Project 1: Vlog -->
+
+        <a href="https://www.youtube.com/watch?v=oFM_roer79A" target="_blank" rel="noopener noreferrer" class="project-card k-hover" data-category="Brand">
+             <img src="https://i.ytimg.com/vi/oFM_roer79A/hqdefault.jpg" alt="2 The Froze Tour Vlog" class="project-img-static" loading="lazy" crossOrigin="anonymous">
+             <div class="video-preview-container">
+               <video loop muted playsinline class="video-preview">
+                 <source src="" type="video/mp4">
+               </video>
+             </div>
+             <div class="project-overlay">
+               <h3>'2 The Froze Tour' | Vlog</h3>
+               <span>Tour Documentary / Creative Direction</span>
+               <div class="view-project-btn">View Project →</div>
+             </div>
+        </a>
+
+
+        <!-- Project 2: Music Video -->
+        <a href="https://www.youtube.com/watch?v=vNxUzSmr7x0" target="_blank" rel="noopener noreferrer" class="project-card k-hover" data-category="Music">
+             <img src="https://i.ytimg.com/vi/vNxUzSmr7x0/hqdefault.jpg" alt="Fame and Fortune Music Video" class="project-img-static" loading="lazy" crossOrigin="anonymous">
+             <div class="video-preview-container">
+                <video loop muted playsinline class="video-preview">
+                 <source src="" type="video/mp4">
+               </video>
+             </div>
+             <div class="project-overlay">
+               <h3>ELI & Tengu: 'Fame and Fortune'</h3>
+               <span>Official Music Video / Post-Production</span>
+               <div class="view-project-btn">View Project →</div>
+             </div>
+        </a>
+
+
+        <!-- Project 3: Visuals -->
+        <a href="https://www.youtube.com/watch?v=5uPeZWd5jVo" target="_blank" rel="noopener noreferrer" class="project-card k-hover" data-category="Art">
+             <img src="https://i.ytimg.com/vi/5uPeZWd5jVo/hqdefault.jpg" alt="Neon Nights Visuals" class="project-img-static" style="opacity: 1;" loading="lazy" crossOrigin="anonymous">
+             <div class="project-overlay">
+               <h3>Neon Nights | Workout Visuals</h3>
+               <span>VFX / Cinematic Color</span>
+               <div class="view-project-btn">View Project →</div>
+             </div>
+        </a>
+
+        <!-- Project 4: Motion -->
+        <a href="https://www.youtube.com/watch?v=L-5bRU7Ai0U" target="_blank" rel="noopener noreferrer" class="project-card k-hover" data-category="Brand">
+             <img src="https://i.ytimg.com/vi/L-5bRU7Ai0U/hqdefault.jpg" alt="Perspective Sweep Motion" class="project-img-static" style="opacity: 1;" loading="lazy" crossOrigin="anonymous">
+             <div class="project-overlay">
+               <h3>Perspective Sweep: ELI</h3>
+               <span>Motion Graphics / Brand Identity</span>
+               <div class="view-project-btn">View Project →</div>
+             </div>
+        </a>
+
+        <!-- Project 5: Show -->
+        <a href="https://www.youtube.com/watch?v=gq5dkcnOkok" target="_blank" rel="noopener noreferrer" class="project-card k-hover" data-category="Art">
+             <img src="https://i.ytimg.com/vi/gq5dkcnOkok/hqdefault.jpg" alt="No Aversion Show" class="project-img-static" style="opacity: 1;" loading="lazy" crossOrigin="anonymous">
+             <div class="project-overlay">
+               <h3>OTP: NO AVERSION SHOW</h3>
+               <span>Live Event Visuals / Recap</span>
+               <div class="view-project-btn">View Project →</div>
+             </div>
+        </a>
+
+        <!-- Project 6: Concept -->
+        <a href="https://www.youtube.com/watch?v=KYVTqzsovU8" target="_blank" rel="noopener noreferrer" class="project-card k-hover" data-category="Art">
+             <img src="https://i.ytimg.com/vi/KYVTqzsovU8/hqdefault.jpg" alt="State of Mind Concept" class="project-img-static" style="opacity: 1;" loading="lazy" crossOrigin="anonymous">
+             <div class="project-overlay">
+               <h3>OTP Presents: State of Mind</h3>
+               <span>Visual Concept / Art Direction</span>
+               <div class="view-project-btn">View Project →</div>
+             </div>
+        </a>
+
+        <!-- Project 7: Series -->
+        <a href="https://www.youtube.com/watch?v=MGvCpDN-Tss" target="_blank" rel="noopener noreferrer" class="project-card k-hover" data-category="Art">
+             <img src="https://i.ytimg.com/vi/MGvCpDN-Tss/hqdefault.jpg" alt="Another Night Series" class="project-img-static" loading="lazy" crossOrigin="anonymous">
+             <div class="video-preview-container">
+               <video loop muted playsinline class="video-preview">
+                 <source src="" type="video/mp4">
+               </video>
+             </div>
+             <div class="project-overlay">
+               <h3>Series #001: 'Another Night'</h3>
+               <span>Episodic Content / Narrative Edit</span>
+               <div class="view-project-btn">View Project →</div>
+             </div>
+        </a>
+
+      </div>
+
+      <div class="archive-footer-cta center-text" style="margin-top: 80px; padding-bottom: 40px; display: flex; flex-direction: column; align-items: center;">
+        <h2 class="syne-bold" style="margin-bottom: 20px;">Your vision belongs here.</h2>
+        <div style="display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap;">
+          <a href="index.html#services" class="book-btn k-hover" style="background: var(--accent2); color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center;">Start a Project</a>
+          <a href="mailto:contact@onlytrueperspective.tech" class="book-btn-ghost k-hover" style="color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Get in touch
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-left">
+        <div class="nav-logo" aria-label="OTP">
+          <img src="assets/otp.gif" alt="OTP logo" class="nav-gif" id="footer-logo-neon" />
+        </div>
+        <div class="fineprint">© <span id="year">2026</span> Only True Perspective. All rights reserved.</div>
+        <div class="footer-legal">
+          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>
+          <span class="dot">•</span>
+          <a href="terms.html">Terms</a>
+          <span class="dot">•</span>
+          <a href="privacy.html">Privacy</a>
+        </div>
+      </div>
+
+      <div class="footer-right">
+        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <canvas id="cursor-canvas"></canvas>
+
+  <!-- SVG Filter for Liquid Distortion (Works with YouTube/External Images) -->
+  <svg style="position: absolute; width: 0; height: 0; pointer-events: none;">
+    <defs>
+      <filter id="liquid-distortion">
+        <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" result="warp"></feTurbulence>
+        <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="0" in="SourceGraphic" in2="warp"></feDisplacementMap>
+      </filter>
+    </defs>
+  </svg>
+
+  <script src="site-config.js?v=10.5.2"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/kursor"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  
+  <script>
+    // Page-specific: Project Reveal & 3D Parallax & Filters
+    document.addEventListener("DOMContentLoaded", (event) => {
+       // Filter Logic
+       const filterIcon = document.querySelector('.neon-folder');
+       const filterWrap = document.getElementById('filter-wrap');
+       if (filterWrap) filterWrap.classList.add('active'); // Added this line
+       const filterBtns = document.querySelectorAll('.filter-btn');
+       const projects = document.querySelectorAll('.project-card');
+
+       if (filterIcon && filterWrap) {
+           filterIcon.style.cursor = 'pointer';
+           filterIcon.parentElement.addEventListener('click', () => {
+               const isVisible = filterWrap.classList.contains('active');
+               if (isVisible) {
+                   filterWrap.classList.remove('active');
+               } else {
+                   filterWrap.classList.add('active');
+               }
+           });
+       }
+
+       filterBtns.forEach(btn => {
+           btn.addEventListener('click', () => {
+               // Update active class
+               filterBtns.forEach(b => b.classList.remove('active'));
+               btn.classList.add('active');
+
+               const filter = btn.dataset.filter;
+               let delay = 0;
+
+               projects.forEach(project => {
+                   if (filter === 'All' || project.dataset.category === filter) {
+                       project.style.display = 'block';
+                       // Animate in
+                       if (typeof gsap !== 'undefined') {
+                           gsap.fromTo(project, 
+                               { opacity: 0, y: 20 }, 
+                               { opacity: 1, y: 0, duration: 0.5, delay: delay }
+                           );
+                           delay += 0.05;
+                       }
+                   } else {
+                       project.style.display = 'none';
+                   }
+               });
+           });
+       });
+
+       if (typeof gsap !== 'undefined') {
+         // 1. Dramatic Intro
+         gsap.from('.project-card', {
+            opacity: 0,
+            y: 30,
+            rotationX: 10,
+            stagger: 0.05,
+            duration: 0.6,
+            ease: 'power2.out'
+         });
+
+          // 2. Subtle Parallax (Desktop Only)
+          if (window.innerWidth > 1024) {
+              const cards = document.querySelectorAll('.project-card');
+              document.addEventListener('mousemove', (e) => {
+                  const xNorm = (e.clientX / window.innerWidth) - 0.5;
+                  const yNorm = (e.clientY / window.innerHeight) - 0.5; 
+                  cards.forEach(card => {
+                      gsap.to(card, {
+                          rotationY: xNorm * 8, 
+                          rotationX: -yNorm * 8,
+                          duration: 1.2,
+                          ease: 'power1.out'
+                      });
+                  });
+              });
+          }
+       }
+    });
+  </script>
+
+  <script src="stars-v2.js"></script>
+  <script>
+    // Page-specific: SVG Liquid Distortion Effect
+    document.addEventListener("DOMContentLoaded", () => {
+        const turbulence = document.querySelector('#liquid-distortion feTurbulence');
+        const displacement = document.querySelector('#liquid-distortion feDisplacementMap');
+        const cards = document.querySelectorAll('.project-card');
+
+        // Apply filter to images via CSS
+        // We dynamically add the filter only on hover to save performance
+        
+        cards.forEach(card => {
+            const img = card.querySelector('img');
+            
+            card.addEventListener('mouseenter', () => {
+                // Activate Filter
+                img.style.filter = 'url(#liquid-distortion)';
+                
+                // Animate Scale (Distort) - Smoother, Larger impact
+                gsap.to(displacement, {
+                    attr: { scale: 150 }, // More intensity
+                    duration: 1.2,        // Slower movement
+                    ease: 'power3.out'
+                });
+                
+                // Animate Base Frequency (Turbulence flow) - Liquid "Pour" feel
+                gsap.to(turbulence, {
+                    attr: { baseFrequency: '0.02 0.05' }, 
+                    duration: 1.2,
+                    ease: 'power2.out'
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                // Animate Back - Slow fade
+                gsap.to(displacement, {
+                    attr: { scale: 0 },
+                    duration: 0.8,
+                    ease: 'power2.inOut',
+                    onComplete: () => {
+                        img.style.filter = 'none'; // Cleanup
+                    }
+                });
+                
+                gsap.to(turbulence, {
+                    attr: { baseFrequency: '0.01 0.01' },
+                    duration: 0.8
+                });
+            });
+        });
+    });
+  </script>
+  <script src="site-init.js?v=10.5.2" defer></script>
+</body>
+</html>

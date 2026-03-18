@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Only True Perspective | Creative Studio</title>
+  <meta name="description" content="Only True Perspective — Creative Studio for Tactical Visual Identities. High-retention cinematic editing, creative direction, and technical production." />
+  <meta name="keywords" content="creative studio, cinematic editing, technical production, creative direction, high-retention video, brand identity, motion graphics" />
+
+  <meta name="theme-color" content="#030305" />
+  <meta name="color-scheme" content="dark only" />
+
+  <!-- SEO / Social -->
+  <meta property="og:title" content="Only True Perspective | OTP" />
+  <meta property="og:description" content="Tactical Visual Identities. High-retention creative direction and cinematic editing for the digital elite." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://onlytrueperspective.tech/" />
+  <link rel="canonical" href="https://onlytrueperspective.tech/" />
+  <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@otp_tech" />
+  <meta name="twitter:title" content="Only True Perspective | Creative Studio" />
+  <meta name="twitter:description" content="Tactical visual identities & cinematic storytelling." />
+  <meta name="twitter:image" content="https://onlytrueperspective.tech/og.jpg" />
+  
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="site.webmanifest" />
+
+
+  <!-- Font (optional but makes it instantly cleaner) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://assets.calendly.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="./styles.css?v=10.5.2" />
+  <!-- Calendly Widget (Lazy Loaded via JS) -->
+  <style>body { margin: 0 !important; }</style>
+  
+
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+    "name": "Only True Perspective",
+    "url": "https://onlytrueperspective.tech/",
+    "email": "contact@onlytrueperspective.tech",
+    "founder": {
+      "@type": "Person",
+      "name": "Elijah",
+      "email": "eli@onlytrueperspective.tech"
+    }
+  }
+  </script>
+    <!-- THEME GUARD: Prevents flickering by initializing theme before first paint -->
+  <script>
+    (function() {
+        window.OTP_HUES = [
+            { dark: '0, 236, 255', light: '0, 170, 204' }, // Cyan
+            { dark: '170, 0, 255', light: '120, 0, 200' }, // Purple
+            { dark: '255, 0, 170', light: '200, 0, 120' }, // Pink
+            { dark: '0, 255, 170', light: '0, 180, 120' }, // Green
+            { dark: '255, 215, 0', light: '184, 134, 11' }, // Gold
+            { dark: '255, 60, 0',  light: '200, 40, 0' }    // Neon Orange
+        ];
+        
+        // Randomize hue every load/refresh
+        let hueIndex = Math.floor(Math.random() * window.OTP_HUES.length);
+        sessionStorage.setItem('otp_hue_index', hueIndex);
+        window.OTP_HUE_INDEX = hueIndex;
+        const selectedHue = window.OTP_HUES[hueIndex];
+
+        const savedTheme = localStorage.getItem('theme');
+        const isManual = localStorage.getItem('theme_manual') === 'true';
+        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+        const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+        
+        let theme;
+        if (isManual && !isExpired) {
+            theme = savedTheme;
+        } else {
+            const hour = new Date().getHours();
+            theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+        }
+
+        const rootStyle = document.documentElement.style;
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.light);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.light})`);
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
+        }
+    })();
+  </script>
+  <style>
+    /* Ensure content is visible by default */
+    .section-head, .grid, .grid-2, .process-stack, .faq-grid, .work-link-container, .contact-container {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+  </style>
+</head>
+<body class="k-cursor-ready">
+  <!-- FILM GRAIN -->
+  <div class="bg-grain"></div>
+  
+  <!-- PREMIUM PRELOADER -->
+  <div id="page-loader" style="position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;">
+    <div class="loader-pulse" style="width:40px;height:40px;border-radius:50%;background:var(--accent2);animation:pulse-cyan 1.5s infinite alternate;"></div>
+  </div>
+
+  <div class="bg-fixed"></div>
+  <a class="skip" href="#work">Skip to content</a>
+
+  <!-- NAV -->
+  <header class="nav nav-split" id="top">
+    <!-- Logo Left -->
+    <a href="index.html" class="nav-logo" aria-label="OTP">
+      <img src="assets/otp.gif" alt="OTP" class="otp-mark" id="nav-logo-neon" />
+    </a>
+
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#work" class="active k-hover">Work</a>
+      <a href="#services" class="k-hover">Services</a>
+      <a href="#about" class="k-hover">About</a>
+      <a href="#contact" class="k-hover">Contact</a>
+      <a href="insights.html" class="k-hover nav-secondary">Insights</a>
+    </nav>
+
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav-drawer" aria-label="Mobile">
+      <a href="#work">Work</a>
+      <a href="archive.html">Archive</a>
+      <a href="insights.html">Insights</a>
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <main class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <div class="hero-logo-wrap">
+        <img src="assets/otp.gif" alt="OTP Hero Eye" class="hero-eye-3d" fetchpriority="high" />
+      </div>
+      <h1 class="hero-title-adjust luxe-title">
+        <span class="title">ONLY TRUE</span>
+        <span class="title" id="perspective-neon">PERSPECTIVE</span>
+      </h1>
+      <div class="hero-subline-alt">Creative Studio — Directed by ELI3GANT.</div>
+      <p class="subtitle-lead" id="hero-subtitle" data-editable="true">We build cinematic worlds. Tactical creative direction, high-retention visuals, and technical execution for brands demanding excellence.</p>
+      
+      <div class="hero-cta">
+        <a href="#services" class="book-btn magnetic-btn">Start a Project</a>
+        <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" rel="noopener noreferrer" class="book-btn-ghost magnetic-btn resonate">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          Vision Session
+        </a>
+      </div>
+
+      <div class="hero-micro">
+        <span class="scarcity-badge"><span class="pulse-dot"></span> <span id="scarcity-text" data-editable="true">1 Slot Remaining for March</span></span>
+        <span class="dot-circle">•</span>
+        <span>Fast Turnaround</span>
+        <span class="dot-circle">•</span>
+        <span>Direct Collaboration</span>
+        <span class="dot-circle">•</span>
+        <span>Built for Scale</span>
+      </div>
+
+
+    </div>
+  </main>
+  
+  <!-- NETWORK / COLLABORATIONS (Tactical Text Cloud) -->
+  <div class="network-row section-alt">
+    <div class="network-scroll">
+      <div class="network-track">
+        <span class="network-item">ELITE_RECORDS</span>
+        <span class="network-item">NEXT_GEN_CO</span>
+        <span class="network-item">CREATIVE_LABS</span>
+        <span class="network-item">STUDIO_V</span>
+        <span class="network-item">TECH_ART_SOLUTIONS</span>
+        <span class="network-item">GLOBAL_CREATORS</span>
+        <!-- Duplicate for loop -->
+        <span class="network-item">ELITE_RECORDS</span>
+        <span class="network-item">NEXT_GEN_CO</span>
+        <span class="network-item">CREATIVE_LABS</span>
+        <span class="network-item">STUDIO_V</span>
+        <span class="network-item">TECH_ART_SOLUTIONS</span>
+        <span class="network-item">GLOBAL_CREATORS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROVEN RESULTS (ROI MAPPING) -->
+  <section class="section section-alt">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <span class="eyebrow-mini">THE IMPACT</span>
+        <h2>PROVEN RESULTS</h2>
+        <p>Visuals that don't just look good—they perform. We map every asset to a measurable outcome.</p>
+      </header>
+
+      <div class="results-grid">
+        <div class="result-card k-hover">
+          <div class="result-value">3X</div>
+          <div class="result-label">Higher Viewer Engagement</div>
+        </div>
+        <div class="result-card k-hover">
+          <div class="result-value">24h</div>
+          <div class="result-label">Shortest Asset Turnaround</div>
+        </div>
+        <div class="result-card k-hover">
+          <div class="result-value">20+</div>
+          <div class="result-label">Visions Delivered Globally</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+
+  <!-- WORK SECTION -->
+
+  <section id="work" class="section section-work-preview">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <span class="eyebrow-mini">THE LAB</span>
+        <h2>Featured Work</h2>
+        <p>Selected high-retention builds. Optimized for growth.</p>
+      </header>
+
+      
+      <div class="featured-work-grid">
+        <!-- Project 01: The Froze Tour -->
+        <a href="https://www.youtube.com/watch?v=oFM_roer79A" target="_blank" rel="noopener noreferrer" class="work-card-mini k-hover">
+          <div class="work-thumb-visual portfolio-visual">
+            <img src="https://i.ytimg.com/vi/oFM_roer79A/maxresdefault.jpg" alt="THE FROZE TOUR" class="work-img-full" loading="lazy" />
+            <div class="scanline-overlay"></div>
+            <div class="work-overlay-info">
+              <span class="work-type-tag">CINEMATIC_VLOG</span>
+            </div>
+          </div>
+          <div class="work-meta-mini">
+            <span class="work-id">OTP_SR_201</span>
+            <span class="work-title-mini">'2 THE FROZE TOUR' | VLOG</span>
+            <span class="work-type-mini">PERSON NETWORKING VLOG / SCENERY SCENES</span>
+            <div class="work-stat-badge">
+              <span class="icon">🎥</span>
+              <span>PREMIUM SCENERY CAPTURE</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Project 02: Fame and Fortune -->
+        <a href="https://www.youtube.com/watch?v=vNxUzSmr7x0" target="_blank" rel="noopener noreferrer" class="work-card-mini k-hover">
+          <div class="work-thumb-visual portfolio-visual">
+            <img src="https://i.ytimg.com/vi/vNxUzSmr7x0/maxresdefault.jpg" alt="FAME & FORTUNE" class="work-img-full" loading="lazy" />
+            <div class="scanline-overlay"></div>
+            <div class="work-overlay-info">
+              <span class="work-type-tag">MUSIC_VIDEO</span>
+            </div>
+          </div>
+          <div class="work-meta-mini">
+            <span class="work-id">OTP_SR_202</span>
+            <span class="work-title-mini">ELI & TENGU: 'FAME AND FORTUNE'</span>
+            <span class="work-type-mini">CUSTOM MADE BEAT BY ELIAS</span>
+            <div class="work-stat-badge">
+              <span class="icon">🎹</span>
+              <span>EXCLUSIVE PRODUCTION</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Project 03: State of Mind -->
+        <a href="https://www.youtube.com/watch?v=KYVTqzsovU8" target="_blank" rel="noopener noreferrer" class="work-card-mini k-hover">
+          <div class="work-thumb-visual portfolio-visual">
+            <img src="https://i.ytimg.com/vi/KYVTqzsovU8/maxresdefault.jpg" alt="STATE OF MIND" class="work-img-full" loading="lazy" />
+            <div class="scanline-overlay"></div>
+            <div class="work-overlay-info">
+              <span class="work-type-tag">BRAND_DIRECTION</span>
+            </div>
+          </div>
+          <div class="work-meta-mini">
+            <span class="work-id">OTP_SR_203</span>
+            <span class="work-title-mini">OTP PRESENTS: STATE OF MIND</span>
+            <span class="work-type-mini">ALL-IN-ONE SHORT CLIP / REEL</span>
+            <div class="work-stat-badge">
+              <span class="icon">⚡</span>
+              <span>HIGH-IMPACT EDIT</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="work-link-container">
+        <a href="archive.html" class="cool-work-link k-hover" aria-label="View Full Archive">
+          <span class="link-text">ENTER FULL VAULT</span>
+          <span class="link-sub">Full History of OTP</span>
+        </a>
+      </div>
+      
+    </div>
+  </section>
+
+  
+
+  <!-- STUDIO / ABOUT / PHILOSOPHY -->
+  <section id="about" class="section-studio">
+    <div class="wrap">
+      <div class="glass-manifesto">
+        <div class="manifesto-left">
+          <!-- Animated SVG Eye -->
+          <svg class="otp-eye-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Lashes Group -->
+            <g class="eye-lashes">
+              <line x1="15" y1="25" x2="22" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="35" y1="15" x2="38" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="50" y1="12" x2="50" y2="25" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="65" y1="15" x2="62" y2="28" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <line x1="85" y1="25" x2="78" y2="35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            </g>
+            
+            <!-- Eye Shape (Blinking Mask) -->
+            <g class="eye-shape-group">
+               <!-- Main outline -->
+               <path d="M10 50 C10 50 30 25 50 25 C70 25 90 50 90 50 C90 50 70 75 50 75 C30 75 10 50 10 50 Z" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+               
+               <!-- Pupil Group (Moves with Mouse) -->
+               <g class="eye-pupil-group">
+                 <circle cx="50" cy="50" r="14" fill="currentColor"/>
+                 <circle cx="55" cy="45" r="4" fill="white"/> <!-- Glint -->
+               </g>
+            </g>
+          </svg>
+        </div>
+        <div class="manifesto-right">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <span class="eyebrow" style="color: var(--accent2); margin: 0; display: block;">IDENTITY</span>
+            
+            <!-- MINIMAL SHARD STAR : DEEP GLASS -->
+            <div class="star-4d-container k-hover">
+              <div class="sticker-base"></div>
+              <div class="sticker-resonance"></div>
+              <svg class="sticker-hieroglyphic" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- SLEEK MINIMAL HYPERSTAR -->
+                <!-- Main Vertical Sharp -->
+                <path d="M50 2 L54 46 L50 50 L46 46 Z" fill="currentColor"/>
+                <path d="M50 98 L46 54 L50 50 L54 54 Z" fill="currentColor"/>
+                
+                <!-- Main Horizontal Sharp -->
+                <path d="M98 50 L54 54 L50 50 L54 46 Z" fill="currentColor"/>
+                <path d="M2 50 L46 46 L50 50 L46 54 Z" fill="currentColor"/>
+
+                <!-- DIAMOND CORE (Sleek) -->
+                <path d="M50 35 L65 50 L50 65 L35 50 Z" fill="currentColor" opacity="0.3"/>
+                
+                <!-- INNER ACCENT SHARDS -->
+                <path d="M50 42 L58 50 L50 58 L42 50 Z" fill="currentColor" opacity="0.9"/>
+                
+                <!-- LIGHT GLINT (Top Right) -->
+                <circle cx="58" cy="42" r="1.5" fill="white" opacity="0.8"/>
+              </svg>
+            </div>
+          </div>
+          
+          <h2 class="syne-bold studio-title">ELI3GANT<br>DIRECTED.</h2>
+          <div class="studio-body">
+            <p id="studio-text-1" data-editable="true">Only True Perspective is the creative laboratory of ELI3GANT. Based on the principle of finding the angle that is true to you, we don't just edit video; we build visual worlds that command attention.</p>
+            <p id="studio-text-2" data-editable="true">High-end creative direction. Tactical execution. Direct collaboration with ELI3GANT.</p>
+            
+            <div class="capabilities-list">
+              <span class="cap-tag">Creative Direction</span>
+              <span class="cap-tag">Cinematic Production</span>
+              <span class="cap-tag">Technical Design</span>
+              <span class="cap-tag">Strategy</span>
+              <span class="cap-tag">Implementation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+
+  <!-- SERVICES -->
+  <section id="services" class="section section-alt">
+    <!-- Services List (New Visual Revamp) -->
+    <div class="wrap">
+      <header class="section-head center-text">
+        <span class="eyebrow-mini">CAPABILITIES</span>
+        <h2>Services</h2>
+        <p id="services-desc" data-editable="true">Comprehensive creative solutions. We handle the heavy lifting so you can focus on the art.</p>
+      </header>
+
+      <div class="services-list">
+        <!-- 01 Video & Motion -->
+        <article class="service-item">
+          <div class="service-head">
+            <span class="service-tag">01 / PRODUCTION</span>
+            <h3>Video & Motion</h3>
+            <div class="service-icons">
+               <!-- Camera -->
+               <svg viewBox="0 0 24 24" class="svc-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+               <!-- Timeline -->
+               <svg viewBox="0 0 24 24" class="svc-icon"><path d="M3 3h18v18H3zM8 8h8v2H8zm0 6h8v2H8z"/></svg>
+               <!-- Wave -->
+               <svg viewBox="0 0 24 24" class="svc-icon"><path d="M2 12h2v3H2zm4-4h2v11H6zm4-6h2v19h-2zm4 4h2v11h-2zm4 5h2v6h-2z"/></svg>
+            </div>
+          </div>
+          <div class="service-body">
+            <p>From music videos to brand commercials, we handle the edit, the effects, and the color. We blend technical skill with the right energy to make sure your content connects.</p>
+            <ul class="service-details">
+              <li>Music Videos (VFX, Sky Swaps, Color)</li>
+              <li>Viral Short-Form (Reels/TikTok)</li>
+              <li>Commercial Ad Creatives</li>
+              <li>Dynamic Storytelling & SFX</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- 02 Creative Direction -->
+        <article class="service-item">
+          <div class="service-head">
+            <span class="service-tag">02 / CREATIVE DIRECTION</span>
+            <h3>Creative Direction</h3>
+            <div class="service-icons">
+              <!-- Eye -->
+              <svg viewBox="0 0 24 24" class="svc-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <!-- Compass -->
+              <svg viewBox="0 0 24 24" class="svc-icon"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              <!-- Star -->
+              <svg viewBox="0 0 24 24" class="svc-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+          </div>
+          <div class="service-body">
+            <p>The blueprint for your image. We handle the aesthetic—from wardrobe choices to set design—ensuring you look professional and consistent everywhere.</p>
+            <ul class="service-details">
+              <li>Editorial Photography & Retouching</li>
+              <li>Campaign Strategy & Rollout</li>
+              <li>Aesthetic Curation (Wardrobe/Set)</li>
+              <li>Album Art & Mixed Media</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- 03 Brand Identity -->
+        <article class="service-item">
+          <div class="service-head">
+            <span class="service-tag">03 / DESIGN</span>
+            <h3>Brand Identity</h3>
+            <div class="service-icons">
+              <!-- Fingerprint -->
+              <svg viewBox="0 0 24 24" class="svc-icon"><path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10v.5a3.5 3.5 0 0 1-4.7 3.2 4.48 4.48 0 0 0-4.6-1.7 5.5 5.5 0 0 0-3.2 2.7 6.33 6.33 0 0 0-.5 3.3V21"/></svg>
+              <!-- Pen Tool -->
+              <svg viewBox="0 0 24 24" class="svc-icon"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+              <!-- Layout -->
+              <svg viewBox="0 0 24 24" class="svc-icon"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+            </div>
+          </div>
+          <div class="service-body">
+            <p>A look that builds trust instantly. We design more than just logos; we build full visual systems with fonts and motion that give your brand authority.</p>
+            <ul class="service-details">
+              <li>Logo Systems & Typography</li>
+              <li>Motion Branding (Intro/Outro)</li>
+              <li>Social Media Kits & Templates</li>
+              <li>Merch & Deck Design</li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- 04 Web & Digital -->
+        <article class="service-item">
+          <div class="service-head">
+            <span class="service-tag">04 / DEVELOPMENT</span>
+            <h3>Web & Digital</h3>
+             <div class="service-icons">
+              <!-- Code -->
+              <svg viewBox="0 0 24 24" class="svc-icon"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              <!-- Laptop -->
+              <svg viewBox="0 0 24 24" class="svc-icon"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="21" x2="22" y2="21"/></svg>
+              <!-- Smartphone -->
+              <svg viewBox="0 0 24 24" class="svc-icon"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            </div>
+          </div>
+          <div class="service-body">
+            <p>Your digital home base. We build fast, clean websites that look perfect on mobile and are designed to turn visitors into business.</p>
+            <ul class="service-details">
+              <li>High-Conversion Landing Sites</li>
+              <li>Booking & Automation Systems</li>
+              <li>SEO Optimization & Analytics</li>
+              <li>Mobile-First Responsive Design</li>
+            </ul>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  
+
+  <!-- PERSPECTIVE AUDIT (The Audit Engine) -->
+  <section id="audit" class="section section-audit">
+    <div class="wrap">
+      <div class="audit-card glass-panel" id="audit-container">
+        <!-- Intro State -->
+        <div id="audit-intro" class="audit-step active">
+          <div class="audit-badge">BETA ACCESS</div>
+          <h2 class="syne-bold">The Perspective Audit<sup>™</sup></h2>
+          <p>Get a high-end tactical strategy for your brand identity. AI-powered. Human-calibrated.</p>
+          <div class="audit-visual-decor">
+            <div class="decor-circle"></div>
+            <div class="decor-line"></div>
+          </div>
+          <button onclick="window.AuditEngine.nextStep()" class="book-btn k-hover magnetic-btn">Initiate Audit</button>
+        </div>
+
+        <!-- Quiz Step 1 -->
+        <div id="audit-step-1" class="audit-step">
+          <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()" style="display: none;">← BACK</button>
+          <span class="step-indicator">01 / 05</span>
+          <h3>What is your primary objective?</h3>
+          <div class="audit-options">
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(1, 'Brand Identity')">Brand Identity</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(1, 'Content Growth')">Content Growth</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(1, 'Video Production')">Video Production</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(1, 'High-End Strategy')">High-End Strategy</button>
+          </div>
+        </div>
+
+        <!-- Quiz Step 2 -->
+        <div id="audit-step-2" class="audit-step">
+          <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
+          <span class="step-indicator">02 / 05</span>
+          <h3>Your biggest hurdle right now?</h3>
+          <div class="audit-options">
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(2, 'Low Engagement')">Low Engagement</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(2, 'Inconsistency')">Inconsistency</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(2, 'Technical Quality')">Technical Quality</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(2, 'No Clear Vision')">No Clear Vision</button>
+          </div>
+        </div>
+
+        <!-- Quiz Step 3 -->
+        <div id="audit-step-3" class="audit-step">
+          <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
+          <span class="step-indicator">03 / 05</span>
+          <h3>Your primary platform?</h3>
+          <div class="audit-options">
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(3, 'Reels / TikTok')">Reels / TikTok</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(3, 'YouTube')">YouTube</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(3, 'Personal Site')">Personal Site</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(3, 'Private / Portfolio')">Private / Portfolio</button>
+          </div>
+        </div>
+
+        <!-- Quiz Step 4 -->
+        <div id="audit-step-4" class="audit-step">
+          <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
+          <span class="step-indicator">04 / 05</span>
+          <h3>Desired Vibe?</h3>
+          <div class="audit-options">
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(4, 'Minimal / Clean')">Minimal / Clean</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(4, 'Dark / Futuristic')">Dark / Futuristic</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(4, 'High-Energy / VFX')">High-Energy / VFX</button>
+            <button class="audit-opt k-hover" onclick="window.AuditEngine.select(4, 'Classic / Professional')">Classic / Professional</button>
+          </div>
+        </div>
+
+        <!-- Quiz Step 5 (NEW) -->
+        <div id="audit-step-5" class="audit-step">
+          <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
+          <span class="step-indicator">05 / 05</span>
+          <h3>What is your definitive growth goal?</h3>
+          <div class="audit-input-wrap">
+            <textarea id="audit-goal-input" class="audit-textarea" placeholder="e.g. Hit 100k subscribers, Launch my mentorship, Rebrand for high-ticket clients..."></textarea>
+          </div>
+          <button class="book-btn k-hover" onclick="window.AuditEngine.submitGoal()" style="margin-top: 20px; width: 100%;">Confirm Objective</button>
+        </div>
+
+        <div id="audit-capture" class="audit-step">
+          <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
+          <div class="decryption-status">
+            <div class="status-text">Decrypting Strategy...</div>
+            <div class="decryption-bar">
+              <div class="decryption-progress" id="audit-progress-bar"></div>
+            </div>
+          </div>
+          <div class="processing-glow"></div>
+          <div class="capture-inner">
+
+            <h3>Access Tactical Response</h3>
+            <p>Enter your authorization email to decrypt the perspective analysis.</p>
+            <div class="audit-form">
+              <input type="email" id="audit-email" placeholder="ACCESS_CODE@CLIENT.OTP" class="audit-input" autocomplete="off" />
+              <button onclick="window.AuditEngine.submit()" id="audit-submit-btn" class="book-btn k-hover magnetic-btn">Reveal Strategy</button>
+              <div id="audit-error-msg" style="opacity:0; transition: opacity 0.3s; color:#ff4444; font-size:0.75rem; margin-top:8px; font-weight:700;"></div>
+              <p class="audit-privacy-text">
+                <span class="privacy-icon">🔒</span> <strong>Access Key:</strong> Unlocks your strategy and exclusive deals. Your data is secure. No spam, ever.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result State -->
+        <div id="audit-result" class="audit-step">
+          <div class="result-header">
+            <span class="eyebrow-mini">TACTICAL RESPONSE</span>
+            <h3 id="audit-result-title">Strategy Decrypted</h3>
+          </div>
+          <div id="audit-advice-content" class="advice-text">
+            <!-- AI Content Injected Here -->
+          </div>
+          <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" class="book-btn magnetic-btn pulse-glow" style="display: block; text-align: center; margin-bottom: 12px; background: linear-gradient(135deg, var(--accent2), #0051ff); color: white; text-transform: uppercase;">Lock In Your Solution</a>
+          <button onclick="window.AuditEngine.reset()" class="audit-reset-btn">Run Another Audit</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+
+
+  <!-- HOW WE WORK (Process) -->
+  <section id="process" class="section section-alt">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <span class="eyebrow-mini">THE PROCESS</span>
+        <h2>How We Work</h2>
+        <p>From concept to completion in three clear steps.</p>
+      </header>
+      <div class="process-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px;">
+        <div class="process-card" style="padding: 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 12px;">
+          <span class="step-num" style="display: block; font-size: 3rem; color: var(--accent); font-weight: 700; opacity: 0.3; margin-bottom: 10px;">01</span>
+          <div class="step-content">
+            <h4 style="margin-bottom: 10px;">Vision & Strategy</h4>
+            <p style="color: var(--muted); font-size: 0.95rem;">We start by breaking down your goal. Whether it's a music video or a business site, we get on the same page with examples and deadlines. One chat to lock in the vision.</p>
+          </div>
+        </div>
+        <div class="process-card" style="padding: 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 12px;">
+          <span class="step-num" style="display: block; font-size: 3rem; color: var(--accent); font-weight: 700; opacity: 0.3; margin-bottom: 10px;">02</span>
+          <div class="step-content">
+            <h4 style="margin-bottom: 10px;">Production & Polish</h4>
+            <p style="color: var(--muted); font-size: 0.95rem;">The lab phase. We edit, design, and refine the work. You get updates at key moments so you're never guessing. We move with purpose.</p>
+          </div>
+        </div>
+
+        <div class="process-card" style="padding: 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 12px;">
+          <span class="step-num" style="display: block; font-size: 3rem; color: var(--accent); font-weight: 700; opacity: 0.3; margin-bottom: 10px;">03</span>
+          <div class="step-content">
+            <h4 style="margin-bottom: 10px;">Delivery & Launch</h4>
+            <p style="color: var(--muted); font-size: 0.95rem;">Final delivery in top quality. Organized folders, all formats (vertical and horizontal). You get the keys to your new digital world.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  
+
+      <!-- PACKAGES MENU -->
+  <section id="packages" class="section section-alt">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <span class="eyebrow-mini">THE MENU</span>
+        <h2 class="syne-bold">Service Tiers</h2>
+        <p>Strategic visual solutions engineered for impact.</p>
+      </header>
+
+      <!-- DYNAMIC GRID: Rebuilt for 3 powerful tiers -->
+      <div class="pkg-grid-dynamic" id="pkgGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 50px;">
+        
+        <!-- PACKAGE 1: THE DROP -->
+        <article class="package-static">
+          <div class="package-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Drop</h4>
+            <div class="pkg-icon-wrap" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(var(--accent2-rgb), 0.1); border-radius: 12px;">
+              <svg class="pkg-neon-icon icon-content" viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--accent2); fill: none; stroke-width: 2;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+          </div>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">Precision editing and retouching for creators who move fast. We take your raw files and turn them into high-retention assets.</p>
+          <ul class="check-list" style="list-style: none; padding: 0; margin-bottom: 40px; flex-grow: 1;">
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 1x Short-Form Video (Reels/TikTok)</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Advanced Color Grading</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 24-48 Hour Rapid Delivery</li>
+          </ul>
+          <div class="pkg-meta" style="margin-top: auto;">
+            <div class="pkg-price" style="margin-bottom: 20px;">
+              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Tier 01</span>
+              <div class="pkg-amount-wrapper" >
+                <span class="pkg-currency" >$</span><span class="pkg-amount" >50</span>
+              </div>
+            </div>
+            <button class="pkg-select-btn" data-package="The Drop" >SELECT PLAN</button>
+            <button class="pkg-buy-btn" data-package="The Drop" onclick="window.handleDirectPayStatic('The Drop', this)"><span>⚡ PAY NOW — $50</span></button>
+          </div>
+        </article>
+
+        <!-- PACKAGE 2: THE VISION -->
+        <article class="package-static featured">
+          <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent2); color: #000; padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;">MOST POPULAR</div>
+          <div class="package-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Vision</h4>
+            <div class="pkg-icon-wrap" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(var(--accent2-rgb), 0.2); border-radius: 12px;">
+              <svg class="pkg-neon-icon icon-photo" viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--accent2); fill: none; stroke-width: 2;">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+          </div>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">Full-scale creative production. From lighting to composition, we capture the visuals that define your brand's true perspective.</p>
+          <ul class="check-list" style="list-style: none; padding: 0; margin-bottom: 40px; flex-grow: 1;">
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> On-Location Shoot (Up to 2 Hours)</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 20+ High-End Retouched Images</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Creative Direction & Lighting</li>
+          </ul>
+          <div class="pkg-meta" style="margin-top: auto;">
+            <div class="pkg-price" style="margin-bottom: 20px;">
+              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Tier 02</span>
+              <div class="pkg-amount-wrapper" >
+                <span class="pkg-currency" >$</span><span class="pkg-amount" >100</span>
+              </div>
+            </div>
+            <button class="pkg-select-btn" data-package="The Vision" >SELECT PLAN</button>
+            <button class="pkg-buy-btn" data-package="The Vision" onclick="window.handleDirectPayStatic('The Vision', this)"><span>⚡ PAY NOW — $100</span></button>
+          </div>
+        </article>
+
+        <!-- PACKAGE 3: THE CAMPAIGN -->
+        <article class="package-static">
+          <div class="package-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Campaign</h4>
+            <div class="pkg-icon-wrap" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(var(--accent2-rgb), 0.1); border-radius: 12px;">
+              <svg class="pkg-neon-icon icon-business" viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--accent2); fill: none; stroke-width: 2;">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </div>
+          </div>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">The total rollout. Complete commercial rights and master files for a campaign that dominates the digital landscape.</p>
+          <ul class="check-list" style="list-style: none; padding: 0; margin-bottom: 40px; flex-grow: 1;">
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Full Shoot + Premium Editing Suite</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> BTS Assets & All Raw Deliverables</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 100% Commercial Usage Rights</li>
+          </ul>
+          <div class="pkg-meta" style="margin-top: auto;">
+            <div class="pkg-price" style="margin-bottom: 20px;">
+              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Tier 03</span>
+              <div class="pkg-amount-wrapper" >
+                <span class="pkg-currency" >$</span><span class="pkg-amount" >200</span>
+              </div>
+            </div>
+            <button class="pkg-select-btn" data-package="The Campaign" >SELECT PLAN</button>
+            <button class="pkg-buy-btn" data-package="The Campaign" onclick="window.handleDirectPayStatic('The Campaign', this)"><span>⚡ PAY NOW — $200</span></button>
+          </div>
+        </article>
+
+      </div>
+      
+      <!-- Network Section -->
+      <div class="network-pkg">
+        <h4 class="syne-bold custom-builds-title">Custom Builds & Large Scale Production</h4>
+        <p style="color: var(--muted); max-width: 700px; margin: 0 auto 30px auto; font-size: 1rem; line-height: 1.6;">Music videos, documentaries, or enterprise-level rollouts. Book a session to architect a custom solution for your unique requirements.</p>
+        <button class="pkg-select-btn" data-package="Custom Build">BOOK STRATEGY SESSION</button>
+      </div>
+
+    </div>
+  </section>
+
+  
+
+  <!-- REVIEWS (Social Proof) -->
+  <section id="reviews" class="section section-tight">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <h2>Trusted by Creators</h2>
+        <p>Results that speak louder than words.</p>
+      </header>
+      <div class="reviews-grid">
+        <div class="review-card">
+          <p class="review-text">"Tactical, branding & services."</p>
+          <div class="review-author">Mr. Thought</div>
+        </div>
+        <div class="review-card">
+          <p class="review-text">"Scaled our views 10x in a month. Undeniable ROI."</p>
+          <div class="review-author">Sarah V. // Creator</div>
+        </div>
+        <div class="review-card">
+          <p class="review-text">"Instant premium feel. The team just gets it."</p>
+          <div class="review-author">NextGen Capital</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  
+
+
+  <!-- FAQ SECTION -->
+  <section id="faq" class="section section-tight">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <h2>FAQ</h2>
+        <p>Quick answers to common questions.</p>
+      </header>
+      <div class="faq-grid">
+        <div class="faq-item">
+          <h4>What is the turnaround time?</h4>
+          <p>Standard delivery is 3-5 days. Priority 24-72h options are available for most video and visual assets.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Do you handle revisions?</h4>
+          <p>Yes, all packages include one round of revisions to ensure the final product matches your vision perfectly.</p>
+        </div>
+        <div class="faq-item">
+          <h4>How do payments work?</h4>
+          <p>We typically require a 50% deposit to secure your start date, with the balance due upon delivery of the final assets.</p>
+        </div>
+        <div class="faq-item">
+          <h4>Can we do a custom package?</h4>
+          <p>Absolutely. If the listed packages don't fit your rollout, reach out and we'll build a custom quote.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  
+
+
+  <!-- VIBRATION / AUDIO LAB (Music Embeds) -->
+  <section id="audio" class="section section-vibration">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <span class="eyebrow-mini">VIBRATION</span>
+        <h2>Audio Lab</h2>
+        <p>Tactical audio production and music integration. Experience the resonance.</p>
+      </header>
+
+      <div class="audio-grid">
+        <div class="vibration-card">
+          <span class="audio-label">FEATURED_VIBE / AMBIENT_TACTICAL</span>
+          <div class="audio-player-placeholder">
+            <!-- Custom Styled Embed or Player -->
+            <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/2268873584&color=%2300ecff&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=true"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <h2>Contact</h2>
+        <p>Tell us about your project and we’ll get back to you shortly to discuss next steps.</p>
+        <a href="mailto:contact@onlytrueperspective.tech" class="book-btn-ghost magnetic-btn" style="margin-top: 20px; display: inline-flex; align-items: center; gap: 8px;">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Get in touch via Email
+        </a>
+      </header>
+
+      <div class="contact-container">
+        <!-- Removed Formspree Action to force JS Handling -->
+        <form class="contact-form" id="contactForm" onsubmit="event.preventDefault();">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" placeholder="Your Name" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="email@example.com" required />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="service">Interested In</label>
+            <select id="service" name="service" required>
+              <option value="" disabled selected>Select a package</option>
+              <option value="The Drop">The Drop ($50)</option>
+              <option value="The Vision">The Vision ($100)</option>
+              <option value="The Campaign">The Campaign ($200)</option>
+              <option value="Custom Build">Custom Production / Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Project Details</label>
+            <textarea id="message" name="message" rows="5" placeholder="Tell us about the project, mood, and deadline..." required></textarea>
+          </div>
+
+          <!-- Anti-spam -->
+          <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="budget">Approx. Budget</label>
+              <select id="budget" name="budget">
+                <option value="" disabled selected>Select range</option>
+                <option value="<500">< $500</option>
+                <option value="500-1500">$500 - $1,500</option>
+                <option value="1500-3000">$1,500 - $3,000</option>
+                <option value="3000+">$3,000+</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="timeline">Desired Timeline</label>
+              <select id="timeline" name="timeline">
+                <option value="" disabled selected>Select timeline</option>
+                <option value="asap">ASAP / Urgent</option>
+                <option value="2-weeks">1-2 Weeks</option>
+                <option value="month">1 Month</option>
+                <option value="flexible">Flexible</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="k-hover k-hover-primary book-btn">Send Details</button>
+            <div style="margin-top: 15px; text-align: center;">
+              <span class="muted" style="font-size: 0.9rem;">Prefer a call?</span>
+      <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" rel="noopener noreferrer" style="color: var(--accent2); text-decoration: none; font-weight: 700; margin-left: 5px;">Book a Strategy Call</a>
+            </div>
+          </div>
+          
+          <div id="formStatus" class="form-status"></div>
+        </form>
+
+        <div class="contact-trust-msg" style="margin-top: 25px; opacity: 0.6; font-size: 0.85rem; text-align: center; font-family: 'Space Grotesk', sans-serif; letter-spacing: 0.5px;">
+          Creators and brands trust OnlyTruePerspective for high-quality creative production.
+        </div>
+
+        <!-- CINEMATIC SUCCESS STATE (Hidden by default) -->
+        <div id="successState" class="success-state" style="display: none; text-align: center; padding: 40px;">
+           <div class="success-icon" style="opacity: 0; transform: scale(0.5);">
+             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+               <polyline points="22 4 12 14.01 9 11.01"></polyline>
+             </svg>
+           </div>
+           <h3 class="syne-bold" style="font-size: 2rem; margin: 20px 0 10px; opacity: 0; transform: translateY(10px);">LOCKED IN.</h3>
+           <p style="color: var(--muted); opacity: 0; transform: translateY(10px); max-width: 400px; margin: 0 auto; line-height: 1.5;">
+             Thanks for contacting OnlyTruePerspective. Your request has been received and we will follow up shortly.
+             <br><br>
+             <span style="color: var(--accent2); font-weight: 700;">— ELI, OnlyTruePerspective</span>
+           </p>
+        </div>
+
+        <div class="contact-sidebar">
+          <div class="contact-icons">
+            <a href="https://instagram.com/onlytrueperspective" target="_blank" rel="noreferrer" aria-label="Instagram" class="icon-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+            
+            <a href="mailto:contact@onlytrueperspective.tech" aria-label="Email" class="icon-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </a>
+
+            <a href="https://youtube.com/@onlytrueperspective" target="_blank" rel="noreferrer" aria-label="YouTube" class="icon-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                 <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                 <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+              </svg>
+            </a>
+          </div>
+          
+          <div class="contact-details-side">
+            <p>Based in RI. Remote Worldwide.</p>
+            <p class="muted">Clean exports. Fast replies.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-left">
+        <div class="footer-brand">
+          <img src="assets/otp.gif" alt="OTP logo" class="nav-gif" id="footer-logo-neon" loading="lazy" />
+          <span class="brand-name">Only True Perspective</span>
+        </div>
+        <div class="footer-status" id="siteStatus">
+          <span class="status-indicator"></span>
+          <span class="status-text">SYSTEM: OPERATIONAL</span>
+        </div>
+        <div class="footer-socials-row">
+          <a href="https://instagram.com/onlytrueperspective" class="k-hover">Instagram</a>
+          <a href="https://youtube.com/@onlytrueperspective" class="k-hover">YouTube</a>
+          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Email</a>
+        </div>
+        <div class="fineprint">© <span id="year">2026</span> Only True Perspective. Directed by ELI3GANT.</div>
+        <div class="footer-legal">
+          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>
+          <span class="dot">•</span>
+          <a href="terms.html">Terms</a>
+          <span class="dot">•</span>
+          <a href="privacy.html">Privacy</a>
+        </div>
+      </div>
+
+      <div class="footer-right">
+        <nav class="footer-nav">
+          <a href="#work">Work</a>
+          <a href="#services">Services</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <a href="#" class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Canvas for Cursor & Debris -->
+  <canvas id="cursor-canvas"></canvas>
+
+  <!-- SCRIPTS (Moved to bottom for reliable loading) -->
+  <script src="site-config.js?v=10.5.2" defer></script>
+  <script src="https://js.stripe.com/v3/" defer></script>
+  <script src="pay_v2.js?v=10.5.2" defer></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
+  <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js" defer></script>
+  <script src="https://unpkg.com/split-type" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+
+
+  
+  <!-- PAY NOW STATIC HANDLER: Runs synchronously so baked-in buttons always work -->
+  <script>
+    window.handleDirectPayStatic = function(title, btn) {
+      const waitForStripe = (attempts) => {
+        if (typeof Stripe !== 'undefined') {
+          btn.disabled = true;
+          btn.style.opacity = '0.7';
+          const orig = btn.innerHTML;
+          btn.innerHTML = '<span>SECURING...</span>';
+
+          const stripe = Stripe('pk_live_51SqqA9Pux5EhFZOuR0oo7VsFZrKoebiaWLXHNTZPx2kpa3w9kmqgUCtmEN4sY9LPW80UyfjBIfZkIfnPQW0Ba5MC007yWafN6y');
+          let API_BASE = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
+          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            API_BASE = window.location.origin;
+          }
+
+          fetch(API_BASE + '/api/create-checkout-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ packageName: title })
+          })
+          .then(r => r.json())
+          .then(session => {
+            if (session.error) throw new Error(session.error);
+            btn.innerHTML = '<span>REDIRECTING...</span>';
+            return stripe.redirectToCheckout({ sessionId: session.id });
+          })
+          .then(result => {
+            if (result && result.error) throw new Error(result.error.message);
+          })
+          .catch(err => {
+            console.error('Pay Now Error:', err);
+            alert('Payment Error: ' + err.message);
+            btn.innerHTML = orig;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+          });
+        } else if (attempts > 0) {
+          setTimeout(() => waitForStripe(attempts - 1), 300);
+        } else {
+          alert('Payment system is loading, please try again in a moment.');
+        }
+      };
+      waitForStripe(20); // Retry up to 20 times (6 seconds total)
+    };
+  </script>
+
+  <!-- GSAP & SPLIT TYPE (Keep these active) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const heroTitle = new SplitType('.hero .title', { types: 'lines, chars' });
+        const heroSubtitle = new SplitType('.hero .subtitle', { types: 'lines, words' });
+        
+        gsap.from(heroTitle.chars, {
+          opacity: 0,
+          y: 20,
+          stagger: 0.01,
+          duration: 0.8,
+          ease: 'power2.out',
+          delay: 0.1
+        });
+
+        gsap.from('.subtitle-lead, .hero-value', {
+          /* opacity: 0.1 removed */
+          y: 20,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: 'power2.out',
+          delay: 0.3
+        });
+
+        gsap.from('.hero-cta, .hero-micro', {
+          /* opacity: 0.1 removed */
+          y: 20,
+          duration: 0.6,
+          ease: 'power2.out',
+          delay: 0.6
+        });
+    });
+  </script>
+  <script src="https://unpkg.com/kursor" defer></script>
+  <script src="stars-v2.js" defer></script>
+  <script src="site-init.js?v=10.5.2" defer></script>
+  <script src="audit-engine.js?v=10.5.2" defer></script>
+  <script>
+    // PRELOADER LOGIC
+    window.addEventListener('load', () => {
+      const loader = document.getElementById('page-loader');
+      if (loader) {
+        loader.style.opacity = '0';
+        loader.style.visibility = 'hidden';
+      }
+    });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // SUPABASE INIT (Using centralized config)
+        let supabase;
+        try {
+            if (window.OTP_CONFIG) {
+                const SUPABASE_URL = window.OTP_CONFIG.supabaseUrl;
+                const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
+                
+                if (window.supabase && SUPABASE_URL) {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                } else {
+                    console.error("Supabase library not loaded");
+                }
+            }
+        } catch(e) { console.error("Supabase Init Error", e); }
+
+        // PACKAGE SELECTION BRIDGE
+        const pkgBtns = document.querySelectorAll('.pkg-select-btn');
+        const serviceSelect = document.getElementById('service');
+        if(pkgBtns.length) {
+            pkgBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const pkg = btn.dataset.package;
+                    if(serviceSelect) {
+                        serviceSelect.value = pkg;
+                        // Trigger change event for pay_v2.js to update payment buttons
+                        serviceSelect.dispatchEvent(new Event('change'));
+                        
+                        // Scroll to contact
+                        const contactSection = document.getElementById('contact');
+                        if(contactSection) {
+                            contactSection.scrollIntoView({ behavior: 'smooth' });
+                            // Highlight the select
+                            serviceSelect.style.borderColor = 'var(--accent2)';
+                            setTimeout(() => serviceSelect.style.borderColor = '', 2000);
+                        }
+                    }
+                });
+            });
+        }
+
+    /* 
+       FORM HANDLING MOVED TO: site-init.js?v=10.5.2 
+       (Prevents double submission & enables AI Agent Logic via /api)
+    */
+
+    // SCROLL REVEALS
+    if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+      gsap.registerPlugin(ScrollTrigger);
+      
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(sec => {
+        const head = sec.querySelector('.section-head');
+        const content = sec.querySelectorAll('.grid, .grid-2, .process-stack, .faq-grid, .work-link-container, .contact-container');
+        
+        if (head) {
+          gsap.from(head, {
+            scrollTrigger: {
+              trigger: head,
+              start: "top bottom",
+              once: true
+            },
+            y: 30,
+            /* opacity: 0.1 removed */
+            duration: 0.6,
+            ease: "power2.out"
+          });
+        }
+        
+        if (content.length) {
+          gsap.from(content, {
+            scrollTrigger: {
+              trigger: content[0],
+              start: "top bottom",
+              once: true
+            },
+            y: 30,
+            /* opacity: 0.1 removed */
+            duration: 0.6,
+            stagger: 0.05,
+            ease: "power2.out"
+          });
+        }
+      });
+    }
+  });
+  </script>
+
+  <!-- SCROLL REVEAL RUNNER -->
+  <script>
+    (function() {
+      const revealItems = document.querySelectorAll('.section-vibration, .network-row');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal');
+          }
+        });
+      }, { rootMargin: '0px 0px 400px 0px', threshold: 0 });
+      
+      revealItems.forEach(item => observer.observe(item));
+    })();
+  </script>
+</body>
+</html>

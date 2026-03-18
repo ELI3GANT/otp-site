@@ -96,7 +96,7 @@ app.use(helmet({
 app.use(compression());
 
 // --- STATIC ASSETS (CRITICAL FIX) ---
-const staticPath = path.join(__dirname, 'public');
+const staticPath = path.resolve(__dirname);
 console.log("Static Path Configured:", staticPath);
 
 app.use(express.static(staticPath, {
@@ -106,7 +106,13 @@ app.use(express.static(staticPath, {
 
 // Root Route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(staticPath, 'index.html'));
+    const rootFile = path.join(staticPath, 'index.html');
+    res.sendFile(rootFile, (err) => {
+        if (err) {
+            // Fallback to current working directory if __dirname is restricted
+            res.sendFile(path.join(process.cwd(), 'index.html'));
+        }
+    });
 });
 
 // Static Fallback for Vercel
@@ -116,8 +122,14 @@ app.get('/:file', (req, res, next) => {
     const allowed = ['.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.webmanifest', '.xml', '.txt'];
     
     if (allowed.includes(ext)) {
-        return res.sendFile(path.join(staticPath, file), (err) => {
-            if (err) next();
+        const fullPath = path.join(staticPath, file);
+        return res.sendFile(fullPath, (err) => {
+            if (err) {
+                // Try CWD fallback
+                res.sendFile(path.join(process.cwd(), file), (err2) => {
+                    if (err2) next();
+                });
+            }
         });
     }
     next();
