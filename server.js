@@ -173,15 +173,6 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/api/debug-path', (req, res) => {
-    const fs = require('fs');
-    res.json({
-        cwd: process.cwd(),
-        dirname: __dirname,
-        files: fs.readdirSync(__dirname)
-    });
-});
-
 // --- API ROUTES ---
 // Defined BEFORE static files to ensure they take precedence
 
