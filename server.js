@@ -105,7 +105,12 @@ app.use(express.static(staticPath, {
 
 // Root Route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(staticPath, 'index.html'));
+    res.sendFile(path.join(staticPath, 'index.html'), (err) => {
+        if (err) {
+            console.error("Root serve error:", err);
+            res.status(500).send("Core Load Error");
+        }
+    });
 });
 
 // Static Fallback for Vercel
@@ -115,10 +120,12 @@ app.get('/:file', (req, res, next) => {
     const allowed = ['.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.webmanifest', '.xml', '.txt'];
     
     if (allowed.includes(ext)) {
-        const filePath = path.join(staticPath, file);
-        if (fs.existsSync(filePath)) {
-            return res.sendFile(filePath);
-        }
+        return res.sendFile(path.join(staticPath, file), (err) => {
+            if (err) {
+                // If file not found, fall through to 404
+                next();
+            }
+        });
     }
     next();
 });
