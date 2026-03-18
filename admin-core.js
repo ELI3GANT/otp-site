@@ -1895,49 +1895,55 @@
         await fetchPosts(true); // Force refresh
     };
     window.draftPostWithAI = async function() {
-        const topic = prompt("Enter a topic or inspiration (e.g., 'The power of 3D in 2026')");
-        if (!topic) return;
-        showToast("ORACLE GENERATING DRAFT...");
-        try {
-            const API_BASE = window.OTP_CONFIG?.apiBase || '';
-            const authToken = localStorage.getItem('otp_admin_token');
-            const res = await fetch(`${API_BASE}/api/ai/generate`, {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${authToken}`
-                },
-                body: JSON.stringify({ 
-                    provider: state.cloudSettings?.default_provider || "openai",
-                    title: "AI Generated Post",
-                    prompt: topic, 
-                    systemPrompt: "You are an expert digital agency blog writer. Generate a highly engaging, SEO optimized post in Markdown format."
-                })
-            });
-            if(!res.ok) throw new Error("Oracle connection failed.");
-            const data = await res.json();
-            if (data.success && data.content) {
-                document.getElementById("titleInput").value = data.title || "AI GENERATED DRAFT";
-                document.getElementById("contentArea").value = data.content;
-                document.getElementById("tagsInput").value = (data.tags || []).join(", ");
-                showToast("DRAFT GENERATED SUCCESSFULLY");
-            } else if (data.content) {
-                // Handle raw JSON response from some providers
-                document.getElementById("titleInput").value = data.title || data.seo_title || "AI GENERATED DRAFT";
-                document.getElementById("contentArea").value = data.content;
-                showToast("DRAFT GENERATED SUCCESSFULLY");
-            } else if (data.success === true && data.result) {
-               // Handle standard server response
-                document.getElementById("titleInput").value = data.result.title || data.result.seo_title || "AI GENERATED DRAFT";
-                document.getElementById("contentArea").value = data.result.content;
-                showToast("DRAFT GENERATED SUCCESSFULLY");
-            } else {
-                throw new Error("Invalid Oracle Response.");
+        window.promptAction(
+            "AI ORACLE GENERATION",
+            "Enter a topic or inspiration for the new post.",
+            "e.g., 'The power of 3D in 2026'",
+            async (topic) => {
+                if (!topic) return;
+                showToast("ORACLE GENERATING DRAFT...");
+                try {
+                    const API_BASE = window.OTP_CONFIG?.apiBase || '';
+                    const authToken = localStorage.getItem('otp_admin_token');
+                    const res = await fetch(`${API_BASE}/api/ai/generate`, {
+                        method: "POST",
+                        headers: { 
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({ 
+                            provider: state.cloudSettings?.default_provider || "openai",
+                            title: "AI Generated Post",
+                            prompt: topic, 
+                            systemPrompt: "You are an expert digital agency blog writer. Generate a highly engaging, SEO optimized post in Markdown format."
+                        })
+                    });
+                    if(!res.ok) throw new Error("Oracle connection failed.");
+                    const data = await res.json();
+                    if (data.success && data.content) {
+                        document.getElementById("titleInput").value = data.title || "AI GENERATED DRAFT";
+                        document.getElementById("contentArea").value = data.content;
+                        document.getElementById("tagsInput").value = (data.tags || []).join(", ");
+                        showToast("DRAFT GENERATED SUCCESSFULLY");
+                    } else if (data.content) {
+                        // Handle raw JSON response from some providers
+                        document.getElementById("titleInput").value = data.title || data.seo_title || "AI GENERATED DRAFT";
+                        document.getElementById("contentArea").value = data.content;
+                        showToast("DRAFT GENERATED SUCCESSFULLY");
+                    } else if (data.success === true && data.result) {
+                       // Handle standard server response
+                        document.getElementById("titleInput").value = data.result.title || data.result.seo_title || "AI GENERATED DRAFT";
+                        document.getElementById("contentArea").value = data.result.content;
+                        showToast("DRAFT GENERATED SUCCESSFULLY");
+                    } else {
+                        throw new Error("Invalid Oracle Response.");
+                    }
+                } catch (e) {
+                    console.error("AI Generation Error:", e);
+                    showToast("GENERATION FAILED: " + e.message);
+                }
             }
-        } catch (e) {
-            console.error("AI Generation Error:", e);
-            showToast("GENERATION FAILED: " + e.message);
-        }
+        );
     };
 
     window.handlePostSubmit = async function(event) {
@@ -3319,7 +3325,18 @@
         // Hardware Simulation (stays - real system stats would need backend agent)
         const cpuStat = document.getElementById('diagCPU');
         const ramStat = document.getElementById('diagRAM');
+        
         if (cpuStat && ramStat) {
+            setInterval(() => {
+                const cpu = (Math.random() * 15 + 2).toFixed(1);
+                const ram = (Math.random() * 200 + 120).toFixed(0);
+                cpuStat.textContent = `${cpu}%`;
+                ramStat.textContent = `${ram}MB / 512MB`;
+            }, 3000);
+        }
+    }
+    
+    // EXPOSE SYSTEM HEALTH TO WINDOW
     window.checkSystemHealth = async function() {
         try {
             const API_BASE = window.OTP_CONFIG?.apiBase || '';
@@ -3338,23 +3355,17 @@
                 pay.style.color = data.integrations.stripe === "CONFIGURED" ? "var(--admin-success)" : "var(--admin-danger)";
             }
             if (ai) {
-                ai.textContent = data.integrations.gemini === "CONFIGURED" ? "SYNCED" : "JAMMED";
-                ai.style.color = data.integrations.gemini === "CONFIGURED" ? "var(--admin-success)" : "var(--admin-danger)";
+                ai.textContent = data.integrations.ai === "CONFIGURED" ? "SYNCED" : "JAMMED";
+                ai.style.color = data.integrations.ai === "CONFIGURED" ? "var(--admin-success)" : "var(--admin-danger)";
             }
         } catch (e) {
             console.warn("Heartbeat Failed");
         }
     };
+    
     setInterval(window.checkSystemHealth, 30000);
     window.checkSystemHealth();
-            setInterval(() => {
-                const cpu = (Math.random() * 15 + 2).toFixed(1);
-                const ram = (Math.random() * 200 + 120).toFixed(0);
-                cpuStat.textContent = `${cpu}%`;
-                ramStat.textContent = `${ram}MB / 512MB`;
-            }, 3000);
-        }
-    }
+
     // KICK OFF BOT SEQUENCE
     init();
     
