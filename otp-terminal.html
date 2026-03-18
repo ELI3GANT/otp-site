@@ -34,11 +34,14 @@
     (function() {
         // 1. Check Auth
         const token = localStorage.getItem('otp_admin_token');
+        console.log(`[AUTH_DEBUG] Terminal loaded. Token: ${token ? token.substring(0, 20) + '...' : 'null'}`);
         if(!token) {
+            console.log("[AUTH_DEBUG] No token found, redirecting to portal gate.");
             window.location.href = 'portal-gate.html';
         }
         
         if(token === 'static-bypass-token') {
+             console.log("[AUTH_DEBUG] Static bypass token detected.");
              // Will handle UI updates in body
         }
 

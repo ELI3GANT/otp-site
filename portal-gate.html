@@ -327,6 +327,7 @@
         }
 
         async function attemptLogin() {
+            console.log("[AUTH_DEBUG] Initiating login attempt...");
             const input = document.getElementById('passcode');
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('errorMsg');
@@ -343,10 +344,12 @@
             btn.disabled = true;
 
             try {
-                const baseUrl = await getBestApiBase();
+                const baseUrl = window.OTP.getApiBase();
+                console.log(`[AUTH_DEBUG] Resolved API Base: ${baseUrl}`);
                 localStorage.setItem('otp_api_base', baseUrl);
 
                 btn.textContent = "VERIFYING...";
+                console.log("[AUTH_DEBUG] Sending request to /api/auth/login");
 
                 let res;
                 try {
@@ -355,7 +358,10 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ passcode: pass })
                     }, 8000);
+                    console.log(`[AUTH_DEBUG] Server response: ${res.status}`);
+
                 } catch (netErr) {
+                    console.error("[AUTH_DEBUG] Network error on first attempt:", netErr);
                     // Cold start or network issue — try once more after 2s
                     btn.textContent = "RETRYING...";
                     await new Promise(r => setTimeout(r, 2000));
@@ -365,9 +371,12 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ passcode: pass })
                         }, 10000);
+                        console.log(`[AUTH_DEBUG] Server response on retry: ${res.status}`);
                     } catch (retryErr) {
+                        console.error("[AUTH_DEBUG] Network error on retry, checking fallback:", retryErr);
                         // Both attempts failed — allow bypass pass only
                         if (pass === FALLBACK_PASS) {
+                            console.log("[AUTH_DEBUG] Fallback passcode matched. Engaging Legacy Mode.");
                             saveAndRedirect('static-bypass-token');
                         } else {
                             showError("ERROR: SERVER UNREACHABLE — CHECK CONNECTION");
@@ -378,21 +387,31 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.success && data.token) { saveAndRedirect(data.token); return; }
+                    console.log("[AUTH_DEBUG] Login response data:", data);
+                    if (data.success && data.token) { 
+                        saveAndRedirect(data.token); 
+                        return; 
+                    }
                 } else if (res.status === 401 || res.status === 403) {
+                    console.warn("[AUTH_DEBUG] Access Denied (401/403).");
                     showError("ERROR: INVALID COMMAND SEQUENCE");
                     return;
                 }
 
-                throw new Error(`Server returned ${res.status}`);
+                throw new Error(`Server returned non-OK status: ${res.status}`);
 
             } catch (e) {
-                if (pass === FALLBACK_PASS) saveAndRedirect('static-bypass-token');
+                console.error("[AUTH_DEBUG] General error, checking fallback:", e);
+                if (pass === FALLBACK_PASS) {
+                    console.log("[AUTH_DEBUG] Fallback passcode matched in catch block. Engaging Legacy Mode.");
+                    saveAndRedirect('static-bypass-token');
+                }
                 else showError("ERROR: INVALID COMMAND SEQUENCE");
             }
         }
 
         function saveAndRedirect(token) {
+            console.log(`[AUTH_DEBUG] Saving token: ${token.substring(0, 20)}... and redirecting.`);
             localStorage.setItem('otp_admin_token', token);
             const btn = document.getElementById('loginBtn');
             btn.style.background = '#00ff00';
