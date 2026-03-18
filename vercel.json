@@ -8,10 +8,6 @@
     {
       "source": "/ping",
       "destination": "/server.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/server.js"
     }
   ]
 }

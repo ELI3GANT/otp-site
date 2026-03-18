@@ -1051,7 +1051,7 @@ app.use('/api', (req, res) => {
 
 // Serve 404.html for any unknown frontend routes
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, '404.html'));
+    res.status(404).sendFile(path.join(staticPath, '404.html'));
 });
 
 // --- GLOBAL ERROR HANDLER ---
