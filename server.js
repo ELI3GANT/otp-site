@@ -96,13 +96,32 @@ app.use(helmet({
 app.use(compression());
 
 // --- STATIC ASSETS (CRITICAL FIX) ---
-// Serve static files immediately after compression to ensure they are found and served correctly.
-const staticPath = path.resolve(__dirname);
+// Serve static files immediately after compression.
+const staticPath = __dirname;
 app.use(express.static(staticPath, {
-    index: 'index.html',
-    extensions: ['html', 'js', 'css', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'],
+    index: false, // We handle root separately
     maxAge: '1d'
 }));
+
+// Root Route
+app.get('/', (req, res) => {
+    res.sendFile(path.join(staticPath, 'index.html'));
+});
+
+// Static Fallback for Vercel
+app.get('/:file', (req, res, next) => {
+    const file = req.params.file;
+    const ext = path.extname(file).toLowerCase();
+    const allowed = ['.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.webmanifest', '.xml', '.txt'];
+    
+    if (allowed.includes(ext)) {
+        const filePath = path.join(staticPath, file);
+        if (fs.existsSync(filePath)) {
+            return res.sendFile(filePath);
+        }
+    }
+    next();
+});
 
 // 3. CORS: Allow same-origin (adjust if frontend is separate)
 // 3. CORS: Restrict to main domain and known satellites
