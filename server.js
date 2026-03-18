@@ -164,6 +164,15 @@ app.use((req, res, next) => {
     next();
 });
 
+app.get('/api/debug-path', (req, res) => {
+    const fs = require('fs');
+    res.json({
+        cwd: process.cwd(),
+        dirname: __dirname,
+        files: fs.readdirSync(__dirname)
+    });
+});
+
 // --- API ROUTES ---
 // Defined BEFORE static files to ensure they take precedence
 
@@ -1016,49 +1025,30 @@ app.route('/api/create-checkout-session')
 
 
 // --- CACHE CONTROL & STATIC ASSETS ---
-// Served AFTER API to avoid conflict (e.g. 405 on POST to static)
-const rootPath = process.cwd();
+// Defined early to ensure assets like CSS/JS are served before any catch-all routes.
+const staticPath = path.resolve(__dirname);
 const staticOptions = {
-    dotfiles: 'ignore', // Still ignore .env
+    dotfiles: 'ignore',
     etag: true,
     extensions: ['html', 'js', 'css', 'png', 'jpg', 'gif', 'svg', 'webp', 'xml', 'txt'],
     index: 'index.html',
-    maxAge: '1d', // Cache for 1 day
-    redirect: false,
+    maxAge: '1d',
     setHeaders: function (res, path, stat) {
-        // BLOCK SENSITIVE FILES (Defense in Depth)
-        const blockedExtensions = ['.env', '.sql', '.log', '.json', '.md'];
-        const blockedFiles = ['server.js', 'package.json', 'package-lock.json', 'DEPLOY_V1.sql'];
-        
-        const fileName = path.toLowerCase();
-        const baseName = path.split('/').pop().toLowerCase();
-        
-        if (blockedExtensions.some(ext => fileName.endsWith(ext)) || blockedFiles.includes(baseName)) {
-            // Exceptions for allowed public files (Manifests/SEO)
-            const allowed = ['site.webmanifest', 'robots.txt', 'sitemap.xml'];
-            if (!allowed.includes(baseName)) {
-                res.status(403).end('Forbidden');
-                return;
-            }
-        }
-
         if (path.endsWith('.html')) {
-            // Never cache HTML files to ensure updates are seen immediately
             res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        } else {
-            res.set('x-timestamp', Date.now());
         }
     }
 };
 
-// Explicitly serve index.html for the root to bypass any static resolution issues
+// 1. Static Middleware First
+app.use(express.static(staticPath, staticOptions));
+
+// 2. Explicit Root Route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(rootPath, 'index.html'));
+    res.sendFile(path.join(staticPath, 'index.html'));
 });
 
-app.use(express.static(rootPath, staticOptions));
-
-// --- FALLBACK ROUTE ---
+// --- API ROUTES ---
 // Serve 404 for any unknown API routes specifically
 app.use('/api', (req, res) => {
     res.status(404).json({ success: false, message: "API Endpoint Not Found" });
