@@ -120,6 +120,23 @@
             return;
         }
 
+        // ---[ CORE BUGFIX: MULTIPLE SUPABASE CLIENTS ]---
+        // Detect and neutralize the conflicting client from site-init.js if it exists.
+        if (window.OTP && window.OTP.supabase) {
+            console.warn("[AUTH_FIX] Detected and neutralizing conflicting Supabase client.");
+            // Overwrite the conflicting client's methods to be inert.
+            window.OTP.supabase.from = () => ({
+                select: () => Promise.resolve({ error: { message: "Client Neutralized" } }),
+                insert: () => Promise.resolve({ error: { message: "Client Neutralized" } }),
+                update: () => Promise.resolve({ error: { message: "Client Neutralized" } }),
+                delete: () => Promise.resolve({ error: { message: "Client Neutralized" } }),
+            });
+            window.OTP.supabase.channel = () => ({
+                on: () => ({ subscribe: () => {} }),
+            });
+        }
+        // ---[ END BUGFIX ]---
+
         try {
             console.log("🔌 Connecting to Supabase...");
             state.client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
