@@ -2,15 +2,15 @@ const fs = require('fs');
 const path = require('path');
 
 const FILES_TO_UPDATE = [
-    'index.html',
-    'otp-terminal.html',
-    'portal-gate.html',
-    'insights.html',
-    'insight.html',
-    '404.html',
-    'archive.html',
-    'privacy.html',
-    'terms.html'
+    'public/index.html',
+    'public/otp-terminal.html',
+    'public/portal-gate.html',
+    'public/insights.html',
+    'public/insight.html',
+    'public/404.html',
+    'public/archive.html',
+    'public/privacy.html',
+    'public/terms.html'
 ];
 
 const ROOT_DIR = path.join(__dirname, '..');
