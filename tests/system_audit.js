@@ -6,8 +6,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PAGES = [
-    'index.html', 'archive.html', 'insights.html', '404.html', 
-    'privacy.html', 'terms.html', 'otp-terminal.html', 'portal-gate.html'
+    'public/index.html', 'public/archive.html', 'public/insights.html', 'public/404.html', 
+    'public/privacy.html', 'public/terms.html', 'public/otp-terminal.html', 'public/portal-gate.html'
 ];
 
 const REQUIRED_SCRIPTS = ['site-config.js', 'site-init.js'];
@@ -28,7 +28,7 @@ function auditPage(file) {
     if (!content.includes('<meta name="viewport"')) { console.warn('⚠️ Missing Viewport Meta'); errors++; }
 
     // 2. Check for Scripts
-    if (file !== 'portal-gate.html') {
+    if (!file.includes('portal-gate.html')) {
         REQUIRED_SCRIPTS.forEach(script => {
             if (!content.includes(script)) {
                 console.error(`❌ MISSING SCRIPT: ${script}`);
@@ -37,7 +37,7 @@ function auditPage(file) {
         });
     }
 
-    if (file === 'otp-terminal.html') {
+    if (file.includes('otp-terminal.html')) {
         ADMIN_SCRIPTS.forEach(script => {
             if (!content.includes(script)) {
                 console.error(`❌ MISSING ADMIN SCRIPT: ${script}`);
@@ -47,7 +47,7 @@ function auditPage(file) {
     }
 
     // 3. Selector Integrity Check
-    if (file === 'index.html') {
+    if (file.includes('index.html')) {
         if (!content.includes('class="cool-work-link')) { console.error('❌ MISSING: .cool-work-link (Black Hole Effect target)'); errors++; }
         if (!content.includes('class="nav-toggle')) { console.error('❌ MISSING: .nav-toggle'); errors++; }
     }
@@ -57,8 +57,9 @@ function auditPage(file) {
     links.forEach(l => {
         const url = l.split('"')[1];
         if (url.endsWith('.html') && !url.startsWith('http') && !url.includes('#')) {
-            if (!fs.existsSync(url)) {
-                console.error(`❌ BROKEN LINK: ${url}`);
+            const fullPath = path.join('public', url);
+            if (!fs.existsSync(fullPath)) {
+                console.error(`❌ BROKEN LINK: ${url} (resolved to ${fullPath})`);
                 errors++;
             }
         }

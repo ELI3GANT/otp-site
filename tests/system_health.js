@@ -11,7 +11,7 @@ let CONFIG = {
 };
 
 if (!CONFIG.supabaseUrl || !CONFIG.supabaseKey) {
-    const configPath = path.join(__dirname, '../site-config.js');
+    const configPath = path.join(__dirname, '../public/site-config.js');
     try {
         const content = fs.readFileSync(configPath, 'utf8');
         // Simple regex parse to avoid eval or complex parsing

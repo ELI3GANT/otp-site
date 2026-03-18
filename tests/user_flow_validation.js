@@ -13,7 +13,7 @@ let supabaseUrl = process.env.SUPABASE_URL;
 let supabaseKey = process.env.SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-    const configPath = path.join(__dirname, '../site-config.js');
+    const configPath = path.join(__dirname, '../public/site-config.js');
     if (fs.existsSync(configPath)) {
         const content = fs.readFileSync(configPath, 'utf8');
         const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);

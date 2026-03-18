@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 1. Load Config
-const configPath = path.join(__dirname, '../site-config.js');
+const configPath = path.join(__dirname, '../public/site-config.js');
 const content = fs.readFileSync(configPath, 'utf8');
 const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
 const keyMatch = content.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
