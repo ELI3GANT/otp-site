@@ -1894,6 +1894,32 @@
         resetForm();
         await fetchPosts(true); // Force refresh
     };
+    window.draftPostWithAI = async function() {
+        const topic = prompt("Enter a topic or inspiration (e.g., 'The power of 3D in 2026')");
+        if (!topic) return;
+        showToast("ORACLE GENERATING DRAFT...");
+        try {
+            const API_BASE = window.location.origin;
+            const res = await fetch(`${API_BASE}/api/ai/generate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt: topic, type: "post" })
+            });
+            if(!res.ok) throw new Error("Oracle connection failed.");
+            const data = await res.json();
+            if (data.success && data.content) {
+                document.getElementById("titleInput").value = data.title || "AI GENERATED DRAFT";
+                document.getElementById("contentArea").value = data.content;
+                document.getElementById("tagsInput").value = (data.tags || []).join(", ");
+                showToast("DRAFT GENERATED SUCCESSFULLY");
+            } else {
+                throw new Error("Invalid Oracle Response.");
+            }
+        } catch (e) {
+            console.error("AI Generation Error:", e);
+            showToast("GENERATION FAILED: " + e.message);
+        }
+    };
 
     window.handlePostSubmit = async function(event) {
         if(event) { event.preventDefault(); event.stopPropagation(); }
@@ -3275,6 +3301,33 @@
         const cpuStat = document.getElementById('diagCPU');
         const ramStat = document.getElementById('diagRAM');
         if (cpuStat && ramStat) {
+    window.checkSystemHealth = async function() {
+        try {
+            const API_BASE = window.location.origin;
+            const res = await fetch(`${API_BASE}/api/health`);
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            const db = document.getElementById("status-db");
+            const pay = document.getElementById("status-pay");
+            const ai = document.getElementById("status-ai");
+            if (db) {
+                db.textContent = data.integrations.supabase === "CONNECTED" ? "OK" : "ERROR";
+                db.style.color = data.integrations.supabase === "CONNECTED" ? "var(--admin-success)" : "var(--admin-danger)";
+            }
+            if (pay) {
+                pay.textContent = data.integrations.stripe === "CONFIGURED" ? "READY" : "OFFLINE";
+                pay.style.color = data.integrations.stripe === "CONFIGURED" ? "var(--admin-success)" : "var(--admin-danger)";
+            }
+            if (ai) {
+                ai.textContent = data.integrations.gemini === "CONFIGURED" ? "SYNCED" : "JAMMED";
+                ai.style.color = data.integrations.gemini === "CONFIGURED" ? "var(--admin-success)" : "var(--admin-danger)";
+            }
+        } catch (e) {
+            console.warn("Heartbeat Failed");
+        }
+    };
+    setInterval(window.checkSystemHealth, 30000);
+    window.checkSystemHealth();
             setInterval(() => {
                 const cpu = (Math.random() * 15 + 2).toFixed(1);
                 const ram = (Math.random() * 200 + 120).toFixed(0);

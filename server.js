@@ -172,7 +172,26 @@ app.get('/api', (req, res) => {
     res.send("OTP API SERVICE RUNNING");
 });
 app.get('/ping', (req, res) => res.json({ status: 'PONG', timestamp: new Date() }));
-app.get('/api/health', (req, res) => res.json({ status: 'UP', timestamp: new Date() }));
+app.get('/api/health', async (req, res) => {
+    const health = {
+        status: 'UP',
+        timestamp: new Date(),
+        integrations: {
+            supabase: 'UNKNOWN',
+            stripe: !!stripe ? 'CONFIGURED' : 'DISCONNECTED',
+            gemini: !!process.env.GEMINI_API_KEY ? 'CONFIGURED' : 'UNAVAILABLE'
+        }
+    };
+    
+    try {
+        if (supabaseAdmin) {
+            const { error } = await supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).limit(1);
+            health.integrations.supabase = error ? 'ERROR' : 'CONNECTED';
+        }
+    } catch(e) { health.integrations.supabase = 'ERROR'; }
+
+    res.json(health);
+});
 
 app.get('/api/status', (req, res) => {
     res.json({ version: 'v10.5.1', env: process.env.NODE_ENV, stripe: !!stripe });
