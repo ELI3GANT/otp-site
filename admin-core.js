@@ -882,7 +882,7 @@
             // Apply Filters
             if (filter === 'active') {
                 // 'new', 'processing', 'drafted', 'pending' - basically anything not completed/archived
-                 query = query.not('ai_status', 'in', '("completed","archived")');
+                 query = query.not('ai_status', 'in', ['completed', 'archived']);
             } else if (filter === 'completed') {
                 query = query.eq('ai_status', 'completed');
             } else if (filter === 'archived') {
@@ -3117,6 +3117,31 @@
                     idleTimer = setTimeout(startIdlePings, 45000);
                 })
                 .subscribe();
+                 
+            // Also subscribe to Audit Leads
+            state.client
+                .channel('live-traffic-leads')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'leads'
+                }, (payload) => {
+                    const l = payload.new;
+                    if (!l) return;
+
+                    realEventCount++;
+                    clearTimeout(idleTimer);
+
+                    addRealPing({
+                        label: `AUDIT: ${(l.email || 'SIGNAL').toUpperCase().substring(0, 25)}`,
+                        sub: `MISSION: ${(l.answers?.q5_goal || 'STRATEGY').toUpperCase().substring(0, 30)}`,
+                        type: 'LEAD_SIGNAL',
+                        color: 'var(--admin-accent)'
+                    });
+
+                    idleTimer = setTimeout(startIdlePings, 45000);
+                })
+                .subscribe();
         }
 
         // --- REAL DATA: Initial snapshot of most-viewed posts (last 24h activity) ---
@@ -3141,6 +3166,7 @@
                 // Add a feed header
                 const header = document.createElement('div');
                 header.style.cssText = 'font-size:0.6rem; color:var(--admin-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid var(--admin-border);';
+                header.setAttribute('data-header', 'true');
                 header.innerHTML = `<span style="color:var(--admin-success)">●</span> LIVE UPLINK — TOP SIGNALS`;
                 pingContainer.prepend(header);
 
@@ -3210,7 +3236,7 @@
             }
 
             const ts = new Date().toLocaleTimeString([], { hour12: false });
-            const isReal = type === 'LIVE_SIGNAL' || type === 'CONTACT_SIGNAL';
+            const isReal = type === 'LIVE_SIGNAL' || type === 'CONTACT_SIGNAL' || type === 'LEAD_SIGNAL';
 
             const ping = document.createElement('div');
             ping.style.cssText = `
@@ -3224,7 +3250,7 @@
             `;
 
             const typeTag = isReal
-                ? `<span style="color:${color}; font-weight:bold; font-size:0.5rem; border:1px solid ${color}; padding:1px 4px; border-radius:3px; margin-left:6px">${type === 'LIVE_SIGNAL' ? '⚡ LIVE' : '📬 NEW CONTACT'}</span>`
+                ? `<span style="color:${color}; font-weight:bold; font-size:0.5rem; border:1px solid ${color}; padding:1px 4px; border-radius:3px; margin-left:6px">${type === 'LIVE_SIGNAL' ? '⚡ LIVE' : type === 'CONTACT_SIGNAL' ? '📬 NEW CONTACT' : '🔍 NEW AUDIT'}</span>`
                 : type === 'SNAPSHOT' ? `<span style="color:var(--admin-muted); font-size:0.5rem;">TOP</span>` : '';
 
             ping.innerHTML = `
