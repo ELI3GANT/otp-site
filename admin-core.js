@@ -2460,7 +2460,7 @@
                 
                 // Mock an event for handleFileUpload
                 if (typeof window.handleFileUpload === 'function') {
-                    window.handleFileUpload({ target: { files: [file] } });
+                    await window.handleFileUpload({ target: { files: [file] } });
                 } else {
                     console.warn('handleFileUpload missing, skipping auto-upload.');
                     document.getElementById('imageUrl').value = tempUrl;
@@ -2609,37 +2609,14 @@
         let content = document.getElementById('contentArea').value || "_No content captured._";
         const image = document.getElementById('imageUrl').value;
         
-        // --- 1. Basic Markdown Parsing ---
-        // Headers
-        content = content.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-        content = content.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-        content = content.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-        // Bold/Italic
-        content = content.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
-        content = content.replace(/\*(.*)\*/gim, '<i>$1</i>');
-        // Lists
-        content = content.replace(/^\s*-\s+(.*)/gm, '<li>$1</li>');
-        content = content.replace(/^\s*\d+\.\s+(.*)/gm, '<li>$1</li>'); // Numbered handled locally
-        // Wrap lists (Simplistic)
-        content = content.replace(/(<li>.*<\/li>)/gsm, '<ul>$1</ul>');
-        
-        // Code Blocks
-        content = content.replace(/```(?:[a-z]*)\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-        // Inline Code
-        content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-        // Links
-        content = content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-        // Line Breaks (Ignore inside pre)
-        content = content.split('</pre>').map(part => {
-             if (part.includes('<pre>')) {
-                 const pieces = part.split('<pre>');
-                 pieces[0] = pieces[0].replace(/\n/g, '<br>');
-                 return pieces.join('<pre>');
-             } else {
-                 return part.replace(/\n/g, '<br>');
-             }
-        }).join('</pre>');
+        // --- 1. Markdown Parsing (Using marked.js for safety and 1:1 public parity) ---
+        let parsedHtml = content;
+        if (typeof marked !== 'undefined') {
+            parsedHtml = marked.parse(content);
+        } else {
+            console.warn("marked.js missing, using raw content");
+            parsedHtml = content.replace(/\n/g, '<br>');
+        }
 
         // --- 2. Construct Preview HTML ---
         const imageHtml = image ? `<img src="${image}" style="width:100%; border-radius:12px; margin-bottom:20px; border:1px solid #333;" />` : '';
@@ -2647,7 +2624,7 @@
             <div style="max-width: 680px; margin: 0 auto; font-family: 'Georgia', serif; font-size: 1.1rem; line-height: 1.8;">
                 ${imageHtml}
                 <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; line-height: 1.1; margin-bottom: 30px; border-bottom: 1px solid var(--admin-border); padding-bottom: 20px; color: var(--admin-text);">${title}</h1>
-                <div class="otp-content blog-content">${content}</div>
+                <div class="otp-content blog-content">${parsedHtml}</div>
             </div>
         `;
 
