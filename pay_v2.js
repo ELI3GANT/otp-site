@@ -57,7 +57,8 @@ async function initPaymentSystem() {
 
     let stripe;
     try {
-        window.stripeInstance = Stripe(STRIPE_PK);
+        stripe = Stripe(STRIPE_PK);
+        window.stripeInstance = stripe;
         console.log("Stripe Initialized Client Side");
     } catch(e) {
         console.error("Stripe Init Failed", e);
