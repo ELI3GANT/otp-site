@@ -185,3 +185,60 @@
     border-bottom: 1px solid rgba(255,255,255,0.1);
     padding-bottom: 40px;
 }
+
+/* Hacker-Tier Code Snippets */
+.blog-content pre {
+    background: #050508;
+    border: 1px solid var(--admin-border, rgba(255, 255, 255, 0.1));
+    border-radius: 12px;
+    padding: 20px;
+    margin: 30px 0;
+    overflow-x: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    position: relative;
+}
+
+.blog-content pre::before {
+    content: "● ● ●";
+    display: block;
+    color: rgba(255, 255, 255, 0.15);
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+}
+
+.blog-content code {
+    font-family: 'SFMono-Regular', Consolas, 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    color: #e6edf3;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 3px 6px;
+    border-radius: 6px;
+}
+
+.blog-content pre code {
+    background: transparent;
+    padding: 0;
+    color: var(--accent2, #00ffcc); /* Terminal Cyan Accent */
+    text-shadow: 0 0 5px rgba(0, 236, 255, 0.3);
+}
+
+[data-theme="light"] .blog-content pre {
+    background: #f6f8fa;
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+[data-theme="light"] .blog-content pre::before {
+    color: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .blog-content code {
+    color: #24292e;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .blog-content pre code {
+    color: #032f62;
+    text-shadow: none;
+}

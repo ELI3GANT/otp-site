@@ -2617,10 +2617,24 @@
         content = content.replace(/^\s*\d+\.\s+(.*)/gm, '<li>$1</li>'); // Numbered handled locally
         // Wrap lists (Simplistic)
         content = content.replace(/(<li>.*<\/li>)/gsm, '<ul>$1</ul>');
+        
+        // Code Blocks
+        content = content.replace(/```(?:[a-z]*)\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+        // Inline Code
+        content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+
         // Links
         content = content.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
-        // Line Breaks
-        content = content.replace(/\n/g, '<br>');
+        // Line Breaks (Ignore inside pre)
+        content = content.split('</pre>').map(part => {
+             if (part.includes('<pre>')) {
+                 const pieces = part.split('<pre>');
+                 pieces[0] = pieces[0].replace(/\n/g, '<br>');
+                 return pieces.join('<pre>');
+             } else {
+                 return part.replace(/\n/g, '<br>');
+             }
+        }).join('</pre>');
 
         // --- 2. Construct Preview HTML ---
         const imageHtml = image ? `<img src="${image}" style="width:100%; border-radius:12px; margin-bottom:20px; border:1px solid #333;" />` : '';
