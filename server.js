@@ -487,30 +487,48 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
     const { prompt, title, aspect_ratio, cloud_key } = req.body;
     
     try {
+        let buffer;
+
+        // Try OpenAI DALL-E 3 First (If Key Provided)
         const apiKey = process.env.OPENAI_API_KEY || cloud_key;
-        if (!apiKey) throw new Error("OpenAI Key missing on server AND client.");
-        if (!supabaseAdmin) throw new Error("Supabase Admin key missing.");
+        let usedOpenAI = false;
 
-        // 1. Generate via DALL-E 3
-        const aiRes = await fetch('https://api.openai.com/v1/images/generations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-            body: JSON.stringify({
-                model: "dall-e-3",
-                prompt: `High-tech, cinematic, professional photography/render for a brand called 'Only True Perspective'. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. High resolution, 4k. Title reference: ${title}`,
-                n: 1,
-                size: aspect_ratio === 'landscape' ? "1792x1024" : "1024x1024",
-                quality: "hd"
-            })
-        });
+        if (apiKey && apiKey.length > 10) {
+            try {
+                const aiRes = await fetch('https://api.openai.com/v1/images/generations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                    body: JSON.stringify({
+                        model: "dall-e-3",
+                        prompt: `High-tech, cinematic, professional photography/render for a brand called 'Only True Perspective'. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. High resolution, 4k. Title reference: ${title}`,
+                        n: 1,
+                        size: aspect_ratio === 'landscape' ? "1792x1024" : "1024x1024",
+                        quality: "hd"
+                    })
+                });
 
-        const aiData = await aiRes.json();
-        if (aiData.error) throw new Error(aiData.error.message);
-        const tempUrl = aiData.data[0].url;
+                const aiData = await aiRes.json();
+                if (aiData.error) throw new Error(aiData.error.message);
+                
+                const imgRes = await fetch(aiData.data[0].url);
+                buffer = await imgRes.arrayBuffer();
+                usedOpenAI = true;
+            } catch(e) {
+                console.warn("OpenAI Image Sync Failed, triggering Flux fallback:", e.message);
+            }
+        }
 
-        // 2. Fetch image buffer
-        const imgRes = await fetch(tempUrl);
-        const buffer = await imgRes.arrayBuffer();
+        // 2. Flux Image Proxy Failover (Completely Free, No API Key)
+        if (!usedOpenAI) {
+            const width = aspect_ratio === 'landscape' ? 1792 : 1024;
+            const height = 1024;
+            const safePrompt = encodeURIComponent(`High-tech, cinematic, professional render. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. Title reference: ${title}`);
+            const fluxUrl = `https://image.pollinations.ai/prompt/${safePrompt}?width=${width}&height=${height}&nologo=true&seed=${Date.now()}`;
+            
+            const fluxRes = await fetch(fluxUrl);
+            if (!fluxRes.ok) throw new Error("Emergency Flux Link offline. All Visual Engines exhausted.");
+            buffer = await fluxRes.arrayBuffer();
+        }
 
         // 3. Upload to Supabase Storage (Permanent)
         const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
