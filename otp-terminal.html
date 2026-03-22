@@ -19,6 +19,7 @@
 
   <link rel="stylesheet" href="./styles.css?v=10.15.0" />
   <link rel="stylesheet" href="./admin-styles.css?v=10.15.0" />
+  <link rel="stylesheet" href="./blog-enhancements.css" />
   <!-- CRITICAL STATUS STYLE OVERRIDE -->
   <style>
     .post-row.row-active-live, .post-row.live-row {
@@ -154,7 +155,7 @@
                 <h3 id="previewTitleDisplay">Draft Preview</h3>
                 <button class="close-icon" onclick="document.getElementById('previewModal').style.display='none'" style="font-size: 1.5rem;">&times;</button>
             </div>
-            <div id="previewBodyDisplay" style="padding: 30px; line-height: 1.6; color: var(--admin-text); font-family: 'Inter', sans-serif;">
+            <div id="previewBodyDisplay" class="blog-content" style="padding: 30px; line-height: 1.6; color: var(--admin-text); font-family: 'Inter', sans-serif;">
                 <!-- Content injected here -->
             </div>
         </div>

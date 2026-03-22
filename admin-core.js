@@ -2641,8 +2641,8 @@
         const html = `
             <div style="max-width: 680px; margin: 0 auto; font-family: 'Georgia', serif; font-size: 1.1rem; line-height: 1.8;">
                 ${imageHtml}
-                <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; line-height: 1.1; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 20px;">${title}</h1>
-                <div class="otp-content">${content}</div>
+                <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; line-height: 1.1; margin-bottom: 30px; border-bottom: 1px solid var(--admin-border); padding-bottom: 20px; color: var(--admin-text);">${title}</h1>
+                <div class="otp-content blog-content">${content}</div>
             </div>
         `;
 
@@ -3117,7 +3117,6 @@
                     if (!post || !post.title) return;
 
                     realEventCount++;
-                    clearTimeout(idleTimer);
 
                     addRealPing({
                         label: `READING: ${(post.title || 'UNTITLED').toUpperCase().substring(0, 30)}`,
@@ -3145,7 +3144,6 @@
                     if (!c) return;
 
                     realEventCount++;
-                    clearTimeout(idleTimer);
 
                     addRealPing({
                         label: `INQUIRY: ${(c.service || 'GENERAL').toUpperCase().substring(0, 25)}`,
@@ -3168,7 +3166,6 @@
                     if (!l) return;
 
                     realEventCount++;
-                    clearTimeout(idleTimer);
 
                     addRealPing({
                         label: `AUDIT: ${(l.email || 'SIGNAL').toUpperCase().substring(0, 25)}`,
