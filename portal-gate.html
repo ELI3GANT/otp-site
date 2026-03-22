@@ -239,6 +239,11 @@
   </script>
 </head>
 <body>
+    <script>
+        if (localStorage.getItem('otp_admin_token')) {
+            window.location.href = 'otp-terminal.html';
+        }
+    </script>
     <script src="site-config.js?v=10.5.5"></script>
 
     <main class="terminal-container">
