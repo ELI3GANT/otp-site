@@ -2459,7 +2459,12 @@
                 const file = new File([blob], `gen-${Date.now()}.png`, { type: 'image/png' });
                 
                 // Mock an event for handleFileUpload
-                handleFileUpload({ target: { files: [file] } });
+                if (typeof window.handleFileUpload === 'function') {
+                    window.handleFileUpload({ target: { files: [file] } });
+                } else {
+                    console.warn('handleFileUpload missing, skipping auto-upload.');
+                    document.getElementById('imageUrl').value = tempUrl;
+                }
                 
                 trackAICost('openai', 2000);
                 showToast("CLIENT-SIDE SYNTHESIS COMPLETE");
