@@ -3086,7 +3086,6 @@
         pingContainer.innerHTML = '';
 
         let realEventCount = 0;
-        let idleTimer = null;
 
         // --- REAL DATA: Supabase Realtime Subscription ---
         // Fires instantly whenever a post view is incremented on the live site
@@ -3114,9 +3113,6 @@
                         type: 'LIVE_SIGNAL',
                         color: 'var(--admin-success)'
                     });
-
-                    // Resume idle after 45s of no real events
-                    idleTimer = setTimeout(startIdlePings, 45000);
                 })
                 .subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
@@ -3144,8 +3140,6 @@
                         type: 'CONTACT_SIGNAL',
                         color: 'var(--admin-cyan)'
                     });
-
-                    idleTimer = setTimeout(startIdlePings, 45000);
                 })
                 .subscribe();
                  
@@ -3169,8 +3163,6 @@
                         type: 'LEAD_SIGNAL',
                         color: 'var(--admin-accent)'
                     });
-
-                    idleTimer = setTimeout(startIdlePings, 45000);
                 })
                 .subscribe();
         }
@@ -3187,7 +3179,7 @@
                     .limit(5);
 
                 if (error || !posts || posts.length === 0) {
-                    startIdlePings();
+                    pingContainer.innerHTML = '<div style="text-align: center; padding: 40px;">WAITING FOR LIVE SIGNALS...</div>';
                     return;
                 }
 
@@ -3216,54 +3208,25 @@
                 // Start realtime on top of snapshot
                 startRealtimeFeed();
 
-                // Start idle if no real events for 30s
-                idleTimer = setTimeout(startIdlePings, 30000);
-
             } catch (e) {
                 console.warn('Traffic feed error:', e);
-                startIdlePings();
+                pingContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--admin-danger);">UPLINK ERROR</div>';
             }
-        }
-
-        // --- IDLE BASELINE: Subtle fallback only when real events are quiet ---
-        const idleLocations = ["ORGANIC_SEARCH", "DIRECT_LINK", "INSTAGRAM_REF", "TWITTER_REF", "GOOGLE_ADS", "YOUTUBE_REF"];
-        const idlePages = ["LANDING: HERO", "VIEWING: ARCHIVE", "BROWSING: WORK", "READING: INSIGHTS", "CHECKING: PACKAGES"];
-        let idlePingTimer = null;
-
-        function startIdlePings() {
-            if (idlePingTimer) return; // Already running
-            runIdlePing();
-        }
-
-        function stopIdlePings() {
-            clearTimeout(idlePingTimer);
-            idlePingTimer = null;
-        }
-
-        function runIdlePing() {
-            const loc = idleLocations[Math.floor(Math.random() * idleLocations.length)];
-            const page = idlePages[Math.floor(Math.random() * idlePages.length)];
-            const latency = Math.floor(Math.random() * 60) + 18;
-
-            addRealPing({
-                label: page,
-                sub: `REF: ${loc}  ${latency}ms`,
-                type: 'IDLE_BASELINE',
-                color: 'rgba(255,255,255,0.25)'
-            });
-
-            idlePingTimer = setTimeout(runIdlePing, 8000 + Math.random() * 10000);
         }
 
         // --- RENDER: Universal ping renderer ---
         function addRealPing({ label, sub, views, slug, type, color }) {
             if (!pingContainer) return;
 
-            // Remove old idle header if we have real events
-            if (type !== 'IDLE_BASELINE' && type !== 'SNAPSHOT') {
-                stopIdlePings();
+            // Remove old messages if we have real events
+            if (type !== 'SNAPSHOT') {
                 const h = pingContainer.querySelector('[data-header]');
                 if (h) h.remove();
+                
+                // Clear the "WAITING FOR SIGNALS" placeholder
+                if(pingContainer.textContent.includes('WAITING FOR')) {
+                    pingContainer.innerHTML = '';
+                }
             }
 
             const ts = new Date().toLocaleTimeString([], { hour12: false });
