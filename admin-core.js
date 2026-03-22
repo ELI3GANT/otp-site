@@ -2420,72 +2420,18 @@
     }
 
     async function triggerImageGenerator(prompt, title) {
-        // VERCEL HOBBY FIX: Prioritize Client-Side Generation if Key Exists
-        // This bypasses the 10s Serverless Function Timeout limit on free tiers.
-        const localKey = localStorage.getItem('cloud_openai');
-        
-        if (localKey) {
-            try {
-                console.log("🚀 USING CLIENT-SIDE GENERATION (BYPASS SERVER TIME LIMIT)...");
-                const res = await fetch('https://api.openai.com/v1/images/generations', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localKey}`
-                    },
-                    body: JSON.stringify({
-                        model: "dall-e-3",
-                        prompt: `High-tech, cinematic, professional photography/render for a brand called 'Only True Perspective'. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. High resolution, 4k. Title reference: ${title}`,
-                        n: 1,
-                        size: "1024x1024",
-                        quality: "hd"
-                    })
-                });
-
-                const data = await res.json();
-                if (data.error) throw new Error(data.error.message);
-                
-                // Success - Use the URL directly (Note: OpenAI URLs expire, but for instant preview/upload it works)
-                // ideally we would upload this to Supabase here, but for now we just show it.
-                // To make it permanent, we trigger an upload from URL if possible, or just let the user save it.
-                // BETTER: We can download the blob client side and use handleFileUpload logic!
-                
-                const tempUrl = data.data[0].url;
-                
-                // Auto-Upload to preserve it (since we have the URL)
-                // We'll reuse the handleFileUpload logic by fetching the blob
-                const imgRes = await fetch(tempUrl);
-                const blob = await imgRes.blob();
-                const file = new File([blob], `gen-${Date.now()}.png`, { type: 'image/png' });
-                
-                // Mock an event for handleFileUpload
-                if (typeof window.handleFileUpload === 'function') {
-                    await window.handleFileUpload({ target: { files: [file] } });
-                } else {
-                    console.warn('handleFileUpload missing, skipping auto-upload.');
-                    document.getElementById('imageUrl').value = tempUrl;
-                }
-                
-                trackAICost('openai', 2000);
-                showToast("CLIENT-SIDE SYNTHESIS COMPLETE");
-                return; // Exit, don't try server
-
-            } catch (clientErr) {
-                console.warn("Client Gen Failed:", clientErr);
-                showToast("CLIENT GEN FAILED: " + clientErr.message);
-                // Fallthrough to server attempt just in case
-            }
-        }
-
+        // All generation MUST be routed through the server to bypass CORS fetching restrictions from OpenAI blobs
         try {
             const base = window.OTP_CONFIG?.apiBase || localStorage.getItem('otp_api_base') || window.location.origin;
+            const localKeyBackup = localStorage.getItem('cloud_openai');
+            
             const res = await fetch(base + '/api/ai/generate-image', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + state.token
                 },
-                body: JSON.stringify({ prompt, title, aspect_ratio: 'landscape' })
+                body: JSON.stringify({ prompt, title, aspect_ratio: 'landscape', cloud_key: localKeyBackup })
             });
 
             const data = await res.json();

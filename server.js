@@ -484,16 +484,17 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
 
 // 4. Secure Image Generation (DALL-E 3 + Supabase Storage)
 app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
-    const { prompt, title, aspect_ratio } = req.body;
+    const { prompt, title, aspect_ratio, cloud_key } = req.body;
     
     try {
-        if (!process.env.OPENAI_API_KEY) throw new Error("OpenAI Key missing on server.");
+        const apiKey = process.env.OPENAI_API_KEY || cloud_key;
+        if (!apiKey) throw new Error("OpenAI Key missing on server AND client.");
         if (!supabaseAdmin) throw new Error("Supabase Admin key missing.");
 
         // 1. Generate via DALL-E 3
         const aiRes = await fetch('https://api.openai.com/v1/images/generations', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
             body: JSON.stringify({
                 model: "dall-e-3",
                 prompt: `High-tech, cinematic, professional photography/render for a brand called 'Only True Perspective'. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. High resolution, 4k. Title reference: ${title}`,
