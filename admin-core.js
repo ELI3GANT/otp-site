@@ -2658,34 +2658,33 @@
             // Fetch current state object first
             let { data: current } = await state.client
                 .from('posts')
-                .select('content')
+                .select('id, content')
                 .eq('slug', 'system-global-state')
                 .single();
 
             let config = {};
-            if (current && current.content) {
-                try { config = JSON.parse(current.content); } catch (e) {}
-            } else {
-                // If it doesn't exist, we must create it (first time run)
-                // We'll handle creation via upsert logic below if needed, 
-                // but for now let's assume we just need to get the object to update it.
+            let postId = null;
+
+            if (current) {
+                postId = current.id; // NEED ID TO UPDATE EXISTING RECORD
+                if (current.content) {
+                    try { config = JSON.parse(current.content); } catch (e) {}
+                }
             }
 
             config[key] = value;
 
-            // Updated Upsert logic specifically for the config post
-            const { error } = await state.client
-                .from('posts')
-                .upsert({ 
-                    slug: 'system-global-state',
-                    title: 'SYSTEM CONFIG [DO NOT DELETE]',
-                    excerpt: 'Global persistent state for OTP Site Command Pro.',
-                    content: JSON.stringify(config),
-                    published: true, // Keep hidden from blog feed
-                    category: 'System'
-                }, { onConflict: 'slug' });
+            const payload = {
+                slug: 'system-global-state',
+                title: 'SYSTEM CONFIG [DO NOT DELETE]',
+                excerpt: 'Global persistent state for OTP Site Command Pro.',
+                content: JSON.stringify(config),
+                published: true, // Keep hidden from blog feed
+                category: 'System'
+            };
 
-            if (error) console.error("Persist Error:", error);
+            // Route through secure backend proxy which has Service Role access to bypass RLS
+            await window.secureWrite('posts', payload, postId);
 
         } catch (e) {
             console.error("State Persistence Failed:", e);
