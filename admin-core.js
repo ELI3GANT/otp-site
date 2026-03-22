@@ -1889,8 +1889,7 @@
             slug,
             tags,
             image_url: imageUrl,
-            published: document.getElementById('pubToggle')?.checked ?? true,
-            updated_at: new Date().toISOString()
+            published: document.getElementById('pubToggle')?.checked ?? true
         };
 
         if (id) {
@@ -2443,28 +2442,21 @@
                 const prevDiv = document.getElementById('imagePreview');
                 if (prevImg && prevDiv) {
                     prevImg.src = data.url;
-                    prevDiv.style.display = 'block';
-                }
-                
                 trackAICost('openai', 2000); 
                 showToast("VISUAL SYNTHESIS COMPLETE");
             } else {
                 throw new Error(data.message || "Image Gen Failed");
             }
         } catch (e) {
-            console.warn("Image Synthesis Failed, using fallback visual.", e);
-            // Fallback to rotator of nice tech images
-            const fallbacks = [
-                "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1920&auto=format&fit=crop", // Space
-                "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1920&auto=format&fit=crop", // Chip
-                "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1920&auto=format&fit=crop", // Cyberpunk City
-                "https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?q=80&w=1920&auto=format&fit=crop"  // Nebula
-            ];
-            const fallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+            console.error("Image Synthesis Failed:", e);
             
-            document.getElementById('imageUrl').value = fallback;
-            document.getElementById('urlInput').value = fallback;
-            showToast("IMAGE GEN FAILED: USING FALLBACK");
+            document.getElementById('imageUrl').value = "";
+            document.getElementById('urlInput').value = "";
+            
+            const prevDiv = document.getElementById('imagePreview');
+            if(prevDiv) prevDiv.style.display = 'none';
+            
+            showToast("VISUAL SYNTHESIS FAILED: " + e.message);
         }
     }
 
@@ -3111,7 +3103,7 @@
             try {
                 const { data: posts, error } = await state.client
                     .from('posts')
-                    .select('title, slug, views, updated_at')
+                    .select('title, slug, views')
                     .eq('published', true)
                     .order('views', { ascending: false })
                     .limit(5);
