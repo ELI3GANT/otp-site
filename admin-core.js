@@ -2442,6 +2442,7 @@
                 const prevDiv = document.getElementById('imagePreview');
                 if (prevImg && prevDiv) {
                     prevImg.src = data.url;
+                }
                 trackAICost('openai', 2000); 
                 showToast("VISUAL SYNTHESIS COMPLETE");
             } else {
