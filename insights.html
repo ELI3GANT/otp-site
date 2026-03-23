@@ -276,8 +276,14 @@
         if (isManual && !isExpired) {
             theme = savedTheme;
         } else {
-            const hour = new Date().getHours();
-            theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                theme = 'light';
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                theme = 'dark';
+            } else {
+                const hour = new Date().getHours();
+                theme = (hour >= 6 && hour < 18) ? 'light' : 'dark';
+            }
         }
 
         const rootStyle = document.documentElement.style;

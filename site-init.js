@@ -218,6 +218,19 @@ window.OTP.initTheme = function() {
     
     window.OTP.setTheme(targetTheme);
 
+    if (window.matchMedia && !window.OTP._themeListenerBound) {
+        window.OTP._themeListenerBound = true;
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            const isManual = localStorage.getItem('theme_manual') === 'true';
+            const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
+            const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+            if (!isManual || (isManual && isExpired)) {
+                const newTheme = e.matches ? 'dark' : 'light';
+                window.OTP.setTheme(newTheme);
+            }
+        });
+    }
+
     // 3. Start Live Sync (Check every 5 minutes)
     setInterval(() => {
         const isManual = localStorage.getItem('theme_manual') === 'true';
@@ -244,11 +257,10 @@ window.OTP.initTheme = function() {
 };
 
 window.OTP.calculateChronoTheme = function() {
-    // We use local hours but refer to it as "World Timing" logic. 
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
     const hour = new Date().getHours();
-    // 6 AM to 6 PM is Daytime
-    const isDaytime = hour >= 6 && hour < 18; 
-    return isDaytime ? 'light' : 'dark';
+    return (hour >= 6 && hour < 18) ? 'light' : 'dark';
 };
 
 window.OTP.trackView = async function(slug) {
