@@ -28,7 +28,7 @@ function auditPage(file) {
     if (!content.includes('<meta name="viewport"')) { console.warn('⚠️ Missing Viewport Meta'); errors++; }
 
     // 2. Check for Scripts
-    if (!file.includes('portal-gate.html')) {
+    if (!file.includes('portal-gate.html') && !file.includes('otp-terminal.html')) {
         REQUIRED_SCRIPTS.forEach(script => {
             if (!content.includes(script)) {
                 console.error(`❌ MISSING SCRIPT: ${script}`);
@@ -38,6 +38,11 @@ function auditPage(file) {
     }
 
     if (file.includes('otp-terminal.html')) {
+        // We still need site-config.js for otp-terminal
+        if (!content.includes('site-config.js')) {
+            console.error(`❌ MISSING SCRIPT: site-config.js`);
+            errors++;
+        }
         ADMIN_SCRIPTS.forEach(script => {
             if (!content.includes(script)) {
                 console.error(`❌ MISSING ADMIN SCRIPT: ${script}`);

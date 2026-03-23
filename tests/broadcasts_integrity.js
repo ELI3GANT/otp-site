@@ -2,22 +2,18 @@
  * BROADCASTS INTEGRITY TEST
  * Verifies the lifecycle of a broadcast entry.
  */
+require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const path = require('path');
 
-// Load Config
-const configPath = path.join(__dirname, '../site-config.js');
-const content = fs.readFileSync(configPath, 'utf8');
-const urlMatch = content.match(/supabaseUrl:\s*['"]([^'"]+)['"]/);
-const keyMatch = content.match(/supabaseKey:\s*['"]([^'"]+)['"]/);
-
-if (!urlMatch || !keyMatch) {
-    console.error("❌ FAILED TO LOAD CONFIG");
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+    console.error("❌ FAILED TO LOAD CONFIG: Ensure .env is present with SERVICE_KEY");
     process.exit(1);
 }
 
-const supabase = createClient(urlMatch[1], keyMatch[1]);
+// SECURE: Use service role to bypass RLS for system testing and cleanup
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 const TEST_SLUG = `broadcast-test-${Date.now()}`;
 
 async function runBroadcastTest() {
