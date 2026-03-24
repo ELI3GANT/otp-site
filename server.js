@@ -92,6 +92,15 @@ app.use(helmet({
     },
 }));
 
+// 3. Global Cache Protocol (BREAK PERSISTENT BROWSER CACHING)
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.set('Surrogate-Control', 'no-store');
+    next();
+});
+
 // 2. Compression: Gzip/Brotli for text assets
 app.use(compression());
 

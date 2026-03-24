@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V10.16.15 (ORACLE_V2.7)
+ * ADMIN CORE V12.0.0 (ORACLE_X)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Session Persistence, JWT decoding, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V10.16.15 RELEASE (V2.7): ORACLE ONLINE.");
+    console.log("🚀 ADMIN CORE V12.0.0 RELEASE (ORACLE_X): ONLINE.");
 
     // GLOBAL ERROR TRAP
     window.addEventListener('unhandledrejection', function(event) {
@@ -151,16 +151,31 @@
         // ---[ END BUGFIX ]---
 
         try {
-            console.log("🔌 Connecting to Supabase...");
+            console.log("🔌 Connecting to Supabase KERNEL...");
+            updateDiagnostics('db', 'CONNECTING...', 'var(--admin-muted)');
+            
             state.client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
-            window.sb = state.client; // Expose global
+            window.sb = state.client; 
+
+            // --- AUTH HARDENING: INJECT SESSION TOKEN ---
+            if (state.token && state.token !== 'static-bypass-token') {
+                console.log("🔑 Injecting secure session token...");
+                try {
+                    state.client.auth.setSession({
+                        access_token: state.token,
+                        refresh_token: state.token 
+                    });
+                } catch (authErr) {
+                    console.warn("⚠️ Session injection skipped:", authErr.message);
+                }
+            }
             
             // Connection Test (Uses Real Query to verify RLS/Key)
             let testRes = await state.client.from('posts').select('id').limit(1);
             
             if (testRes.error) {
                 console.warn("⚠️ Database connection error:", testRes.error.message);
-                updateDiagnostics('db', 'CONN ERROR', 'var(--danger)');
+                updateDiagnostics('db', 'CONN ERROR: ' + testRes.error.message, 'var(--danger)');
                 if (!testRes.error.message.includes('permission')) throw testRes.error;
             }
 
@@ -251,6 +266,25 @@
                     throw new Error(err.message || `Write Failed (${res.status})`);
                 }
                 return await res.json();
+            };
+
+            // SECURE READ PROXY HELPER (Bypass browser-blockages/RLS mismatch)
+            window.secureRead = async function(table, config = {}) {
+                const apiBase = window.OTP.getApiBase();
+                const res = await fetch(`${apiBase}/api/admin/fetch-data`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify({ table, ...config })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || `Read Failed (${res.status})`);
+                }
+                const json = await res.json();
+                return json.data;
             };
 
             // SECURE DELETE PROXY HELPER
@@ -865,12 +899,10 @@
         }
 
         try {
-            // Fetch ALL posts (no date filter, no status filter so we see drafts too)
-            const { data: posts, error } = await state.client
-                .from('posts')
-                .select('id, title, created_at, published, views, slug, tags, category')
-                .neq('slug', 'system-global-state')
-                .order('created_at', { ascending: false });
+            // Use SECURE PROXY (Bypass RLS issues)
+            const posts = await window.secureRead('posts', {
+                filters: [{ column: 'slug', op: 'neq', value: 'system-global-state' }]
+            });
 
             if (error) {
                 // Check if this is an Auth failure (might happen if RLS is strict or server rotated key)
@@ -907,25 +939,18 @@
         inbox.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">SYNCING SECURE COMMS...</div>';
 
         try {
-            let query = state.client
-                .from('contacts')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(50); // Performance cap
-
-            // Apply Filters
+            const filters = [];
             if (filter === 'active') {
-                // 'new', 'processing', 'drafted', 'pending' - basically anything not completed/archived
-                 query = query.neq('ai_status', 'completed').neq('ai_status', 'archived');
+                filters.push({ column: 'ai_status', op: 'neq', value: 'completed' });
+                filters.push({ column: 'ai_status', op: 'neq', value: 'archived' });
             } else if (filter === 'completed') {
-                query = query.eq('ai_status', 'completed');
+                filters.push({ column: 'ai_status', op: 'eq', value: 'completed' });
             } else if (filter === 'archived') {
-                query = query.eq('ai_status', 'archived');
+                filters.push({ column: 'ai_status', op: 'eq', value: 'archived' });
             }
-            
-            const { data, error } = await query;
 
-            if (error) throw error;
+            const data = await window.secureRead('contacts', { filters, limit: 50 });
+            // Note: contacts and inbox are the same conceptually in this UI
 
             if (!data || data.length === 0) {
                 inbox.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO COMMS FOUND IN THIS CHANNEL</div>';
@@ -995,13 +1020,7 @@
         leads.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">SYNCING LEAD DATA...</div>';
 
         try {
-            const { data, error } = await state.client
-                .from('leads')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(100);
-
-            if (error) throw error;
+            const data = await window.secureRead('leads', { limit: 100 });
 
             if (!data || data.length === 0) {
                 leads.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO LEADS CAPTURED YET</div>';
