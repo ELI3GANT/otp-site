@@ -455,8 +455,8 @@ window.OTP.initRealtimeState = async function() {
             
             // Apply Theme
             if (config.theme && !window.location.pathname.includes('otp-terminal')) {
-                const hasOverride = localStorage.getItem('theme');
-                if (!hasOverride) {
+                const isManual = localStorage.getItem('theme_manual') === 'true';
+                if (!isManual) {
                     window.OTP.setTheme(config.theme);
                 }
             }

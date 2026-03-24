@@ -2568,6 +2568,9 @@ html {
   -webkit-backdrop-filter: blur(20px);
   z-index: 11000;
   box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,236,255,0.04);
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   max-height: calc(100dvh - 80px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
