@@ -3139,6 +3139,76 @@
                     });
                 })
                 .subscribe();
+
+            // --- ACTIVE USERS (PRESENCE) ---
+            const presenceChannel = state.client.channel('system');
+            
+            presenceChannel.on('presence', { event: 'sync' }, () => {
+                const presenceState = presenceChannel.presenceState();
+                renderActiveUsers(presenceState);
+            });
+            
+            presenceChannel.subscribe();
+        }
+
+        function renderActiveUsers(presenceState) {
+            const feedContainer = document.getElementById('activeUsersFeed');
+            const countEl = document.getElementById('activeCount');
+            if (!feedContainer || !countEl) return;
+
+            let allUsers = [];
+            for (const key in presenceState) {
+                presenceState[key].forEach(p => allUsers.push(p));
+            }
+
+            countEl.textContent = allUsers.length;
+
+            if (allUsers.length === 0) {
+                feedContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--admin-muted); font-size: 0.8rem;">NO ACTIVE USERS.</div>';
+                return;
+            }
+
+            allUsers.sort((a, b) => new Date(b.online_at) - new Date(a.online_at));
+
+            let html = '';
+            allUsers.forEach((u, index) => {
+                const ts = new Date(u.online_at).toLocaleTimeString([], { hour12: false });
+                
+                let browser = "Unknown";
+                if (u.agent) {
+                    if (u.agent.includes("Chrome")) browser = "Chrome";
+                    else if (u.agent.includes("Firefox")) browser = "Firefox";
+                    else if (u.agent.includes("Safari") && !u.agent.includes("Chrome")) browser = "Safari";
+                    else if (u.agent.includes("Edge")) browser = "Edge";
+                    else if (u.agent.includes("Mobile") || u.agent.includes("iPhone") || u.agent.includes("Android")) browser = "Mobile Device";
+                }
+                
+                const os = u.agent ? (u.agent.includes("Mac OS") ? "macOS" : u.agent.includes("Windows") ? "Windows" : u.agent.includes("Linux") ? "Linux" : "iOS/Android") : "Unknown OS";
+
+                const displayId = u.id ? u.id.split('-')[1] : `usr-${index}`;
+                const pageStr = (u.page || 'index').replace('.html', '').replace('/', '');
+                const pageLabel = pageStr === '' ? 'HOME' : pageStr.toUpperCase();
+
+                html += `
+                    <div class="active-user-card" style="padding: 10px; border: 1px solid rgba(0, 255, 170, 0.2); border-radius: 8px; background: rgba(0, 255, 170, 0.02); display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-family: monospace; font-size: 0.7rem; color: #00ffaa; font-weight: bold;">[${ts}] ⚡ ${displayId.toUpperCase()}</span>
+                            <span style="font-size: 0.6rem; color: #fff; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">${pageLabel}</span>
+                        </div>
+                        <div style="font-size: 0.65rem; color: var(--admin-muted); display: flex; justify-content: space-between;">
+                            <span>🌐 ${browser} on ${os}</span>
+                            <span>${u.screen || 'Unknown Res'}</span>
+                        </div>
+                        <details style="font-size: 0.6rem; color: var(--admin-muted); margin-top: 4px; cursor: pointer;">
+                            <summary style="outline: none; user-select: none;">[+] MORE DETAILS</summary>
+                            <div style="padding-top: 5px; font-family: monospace; white-space: pre-wrap; word-break: break-all; opacity: 0.7;">${u.agent || 'No Agent Data'}
+Lang: ${u.lang || 'Unknown'}</div>
+                        </details>
+                    </div>
+                `;
+            });
+
+            feedContainer.innerHTML = html;
         }
 
         // --- REAL DATA: Initial snapshot of most-viewed posts (last 24h activity) ---

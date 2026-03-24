@@ -535,12 +535,20 @@ window.OTP.initRealtimeState = async function() {
     });
 
     // Init Presence
+    const sessionId = 'visitor-' + Math.random().toString(36).substring(2, 9);
     const room = client.channel('system', {
-        config: { presence: { key: 'user-' + Math.random().toString(36).substring(7) } }
+        config: { presence: { key: sessionId } }
     });
     room.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-            await room.track({ online_at: new Date().toISOString(), page: window.location.pathname });
+            await room.track({ 
+                id: sessionId,
+                online_at: new Date().toISOString(), 
+                page: window.location.pathname || 'index.html',
+                agent: navigator.userAgent,
+                lang: navigator.language || 'en-US',
+                screen: `${window.innerWidth}x${window.innerHeight}`
+            });
         }
     });
 };

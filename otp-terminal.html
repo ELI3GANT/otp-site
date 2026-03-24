@@ -222,6 +222,21 @@
             </div>
         </section>
 
+        <!-- ACTIVE NOW FEED (REALTIME PRESENCE) -->
+        <section class="admin-section" style="margin-bottom: 25px;">
+            <div style="background: var(--admin-panel); border: 1px solid var(--admin-border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
+                <h3 style="font-size: 0.8rem; color: #00ffaa; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 8px;">
+                        <span class="status-dot-mini blink" style="width: 8px; height: 8px; background: #00ffaa; border-radius: 50%; display: inline-block;"></span>
+                        ACTIVE NOW: <span id="activeCount" style="color: white; font-weight: bold; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 12px;">0</span>
+                    </span>
+                </h3>
+                <div id="activeUsersFeed" style="min-height: 100px; max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="text-align: center; padding: 20px; color: var(--admin-muted); font-size: 0.8rem;">WAITING FOR CONNECTIONS...</div>
+                </div>
+            </div>
+        </section>
+
         <!-- LIVE TRAFFIC UPLINK (PREMIUM) -->
         <section class="admin-section" style="margin-bottom: 25px;">
             <div style="background: var(--admin-panel); border: 1px solid var(--admin-border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
