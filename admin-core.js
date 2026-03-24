@@ -2267,6 +2267,7 @@
             // --- STRATEGY: TRY SERVER PROXY FIRST (PREFER SECURE HUB) ---
             let aiResult = null;
             let usedDirect = false;
+            let hubError = null;
 
             if (authToken !== 'static-bypass-token') {
                 try {
@@ -2281,12 +2282,14 @@
                     if (res.ok && data.success) {
                         aiResult = data.data;
                         if (data.usage) trackAICost(provider, data.usage.total_tokens);
-                        else trackAICost(provider, 1200); // Estimate if usage missing from proxy
+                        else trackAICost(provider, 1200); 
                     } else {
-                        console.warn("Secure Hub Failed/Unauthorized. Checking Cloud Failover.");
+                        hubError = data.message || "Unauthorized";
+                        console.warn("Secure Hub Failed:", hubError);
                     }
                 } catch (e) {
-                    console.warn("Secure Hub Offline. Checking Cloud Failover.");
+                    hubError = "Server Offline or Unreachable";
+                    console.warn("Secure Hub Offline:", hubError);
                 }
             }
 
@@ -2294,7 +2297,10 @@
             if (!aiResult) {
                 usedDirect = true;
                 const cloudKey = personalKeys[provider];
-                if (!cloudKey) throw new Error(`Neural Link Blocked: Server Hub is offline and no personal key found for ${provider.toUpperCase()} in Cloud Settings.`);
+                if (!cloudKey) {
+                    const msg = hubError ? `Server Hub Error: ${hubError}` : "No personal key found in Cloud Settings.";
+                    throw new Error(`NEURAL LINK BLOCKED: ${msg}`);
+                }
                 
                 if(status) { status.innerHTML = `<span class="blink">🚀 DIRECT CLOUD LINK ACTIVE...</span>`; }
 
@@ -2350,16 +2356,22 @@
                     const gemModel = model || 'gemini-2.0-flash';
                     const endpoints = ['v1beta', 'v1'];
                     let gemSuccess = false;
+                    let gemError = "Unknown Gemini error.";
                     for (const v of endpoints) {
                         try {
                             const payload = { 
-                                contents: [{ parts: [{ text: sysPrompt + "\n\n" + userPrompt }] }],
-                                generationConfig: { ...modelConfig }
+                                systemInstruction: {
+                                    parts: [{ text: sysPrompt }]
+                                },
+                                contents: [{ 
+                                    role: 'user',
+                                    parts: [{ text: userPrompt }] 
+                                }],
+                                generationConfig: { 
+                                    response_mime_type: "application/json",
+                                    ...modelConfig 
+                                }
                             };
-                            // Add Native JSON Mode for v1beta
-                            if (v === 'v1beta') {
-                                payload.generationConfig.response_mime_type = "application/json";
-                            }
 
                             const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudKey}`, {
                                 method: 'POST',
@@ -2367,7 +2379,19 @@
                                 body: JSON.stringify(payload)
                             });
                             const raw = await res.json();
-                            if(!raw.error) {
+                            
+                            if (raw.error) {
+                                gemError = `${raw.error.message} (${raw.error.status || 'ERROR'})`;
+                                console.warn(`⚠️ Gemini ${v} failed:`, raw.error.message);
+                                continue;
+                            }
+
+                            if (raw.candidates && raw.candidates[0].finishReason === 'SAFETY') {
+                                gemError = "NEURAL BLOCK: Content flagged by safety filter. Try a different concept.";
+                                break;
+                            }
+
+                            if (raw.candidates && raw.candidates[0].content && raw.candidates[0].content.parts) {
                                 let text = raw.candidates[0].content.parts[0].text;
                                 // Robust JSON Extraction
                                 const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -2376,12 +2400,17 @@
                                 aiResult = JSON.parse(text);
                                 // Gemini token tracking
                                 if (raw.usageMetadata) trackAICost('gemini', raw.usageMetadata.totalTokenCount);
-                                else trackAICost('gemini', 1000); 
-                                gemSuccess = true; break;
+                                else trackAICost('gemini', 1500); 
+                                gemSuccess = true; 
+                                break;
+                            } else {
+                                gemError = "Unexpected Gemini response format.";
                             }
-                        } catch(e) {}
+                        } catch(e) {
+                            gemError = e.message;
+                        }
                     }
-                    if(!gemSuccess) throw new Error("Gemini Neural Bridge Failed. Check key permissions.");
+                    if(!gemSuccess) throw new Error(`Gemini Neural Bridge Failed: ${gemError}`);
                 }
             }
 
