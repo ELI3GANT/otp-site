@@ -1162,20 +1162,29 @@
             newBtn.onclick = async () => {
                 newBtn.textContent = "WIPING...";
                 newBtn.disabled = true;
-                
-                showToast("WIPING SECURE COMMS...");
-        
+                showToast("INITIATING SECURE INBOX PURGE...");
+
                 try {
-                    const { error } = await state.client.from('contacts').delete().not('id', 'is', null);
-                    if(error) throw error;
-                    
+                    const apiBase = window.OTP.getApiBase();
+                    const res = await fetch(`${apiBase}/api/admin/purge-contacts`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${state.token}`
+                        }
+                    });
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.message || err.error || `Purge failed (${res.status})`);
+                    }
                     showToast("✅ INBOX WIPED CLEAN.");
-                    await fetchInbox();
+                    await window.fetchInbox();
                     modal.style.display = 'none';
                 } catch(e) {
-                    console.error("Purge Error:", e);
+                    console.error("Inbox Purge Error:", e);
                     showToast("PURGE FAILED: " + e.message);
-                    modal.style.display = 'none';
+                    newBtn.textContent = "PURGE MESSAGES";
+                    newBtn.disabled = false;
                 }
             };
             
@@ -1573,38 +1582,31 @@
         const titleEl = modal.querySelector('h3');
         const descEl = modal.querySelector('p');
         
-        if(titleEl) titleEl.textContent = "DELETE LEAD?";
-        if(descEl) descEl.innerHTML = "This will permanently remove the contact.<br>This cannot be undone.";
+        if(titleEl) titleEl.textContent = "DELETE CONTACT?";
+        if(descEl) descEl.innerHTML = "This will permanently remove the contact message.<br>This cannot be undone.";
 
         if(modal && confirmBtn) {
             // Remove old listeners by cloning
             const newBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-            
+
             newBtn.onclick = async () => {
                 newBtn.textContent = "DELETING...";
                 newBtn.disabled = true;
-                
+
                 try {
-                     await window.secureDelete('contacts', id);
-                     showToast("CONTACT DELETED (SECURE)");
-                     modal.style.display = 'none';
-                     await fetchInbox();
-                     if (window.refocusInbox) window.refocusInbox();
-                 } catch(e) {
-                     console.warn("Server delete failed, trying direct...", e);
-                     const { error } = await state.client.from('contacts').delete().eq('id', id);
-                     if(error) { showToast("DELETE FAILED: " + error.message); }
-                     else { 
-                         showToast("CONTACT DELETED");
-                         modal.style.display = 'none';
-                         await fetchInbox();
-                         if (window.refocusInbox) window.refocusInbox();
-                     }
-                 } finally {
-                     newBtn.textContent = "DELETE";
-                     newBtn.disabled = false;
-                 }
+                    await window.secureDelete('contacts', id);
+                    showToast("✅ CONTACT DELETED");
+                    modal.style.display = 'none';
+                    await window.fetchInbox();
+                    if (window.refocusInbox) window.refocusInbox();
+                } catch(e) {
+                    console.error("Contact delete error:", e);
+                    showToast("DELETE FAILED: " + e.message);
+                } finally {
+                    newBtn.textContent = "DELETE";
+                    newBtn.disabled = false;
+                }
             };
             
             modal.style.display = 'flex';
@@ -2092,8 +2094,8 @@
             }
 
             const idsToDelete = trash.map(t => t.id);
-            const { error: deleteError } = await state.client.from('posts').delete().in('id', idsToDelete);
-            if (deleteError) throw deleteError;
+            // Use secureDelete proxy (bypasses RLS on live site)
+            await Promise.all(idsToDelete.map(id => window.secureDelete('posts', id)));
 
             showToast(`CLEANUP COMPLETE: ${trash.length} POSTS PURGED`);
             if(modal) modal.style.display = 'none';

@@ -1050,6 +1050,21 @@ app.post('/api/admin/purge-leads', verifyToken, async (req, res) => {
     }
 });
 
+// --- PURGE ALL INBOX CONTACTS ---
+app.post('/api/admin/purge-contacts', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(500).json({ success: false, message: 'Server Config Missing (SUPABASE_SERVICE_KEY)' });
+
+    try {
+        console.log(`🗑️ PURGE CONTACTS/INBOX initiated by Admin`);
+        const { error } = await supabaseAdmin.from('contacts').delete().not('id', 'is', null);
+        if (error) throw error;
+        res.json({ success: true, message: 'Inbox purged successfully' });
+    } catch (e) {
+        console.error("Inbox Purge Error:", e);
+        res.status(500).json({ success: false, message: e.message });
+    }
+});
+
 // --- NEW SECURE PROXIES (Relay Client Actions to Service Role) ---
 
 // 6.1 Secure Analytics Tracking
