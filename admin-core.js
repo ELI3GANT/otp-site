@@ -91,26 +91,42 @@
              try {
 
                  if (state.token !== 'static-bypass-token') {
-                     const payload = JSON.parse(atob(state.token.split('.')[1]));
-                     const now = Math.floor(Date.now() / 1000);
-                     if (payload.exp && payload.exp < now) {
-                         console.warn("Session Expired");
-                         window.logout();
-                         return;
+                     // JWT tokens are base64url encoded. Standard atob() may fail on '-' and '_'.
+                     try {
+                         const base64Url = state.token.split('.')[1];
+                         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                         const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
+                             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                         }).join('')));
+
+                         const now = Math.floor(Date.now() / 1000);
+                         if (payload.exp && payload.exp < now) {
+                             console.warn("Session Expired");
+                             window.logout();
+                             return;
+                         }
+                         console.log("🔄 Found existing secure session. Exp:", new Date(payload.exp * 1000).toLocaleString());
+                         updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
+                     } catch (parseErr) {
+                         console.warn("⚠️ Token decode issue, attempting standard parse:", parseErr);
+                         const payload = JSON.parse(atob(state.token.split('.')[1]));
+                         updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
                      }
                  } else {
                      // SECURITY: Static bypass is limited, but allow UI access
                      if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) {
                          console.warn("⚠️ USING STATIC BYPASS IN PRODUCTION - SERVER API WILL BE RESTRICTED");
                          updateDiagnostics('auth', 'LOCAL BYPASS', '#ffaa00');
+                     } else {
+                         updateDiagnostics('auth', 'LOCAL BYPASS', '#ffaa00');
                      }
                  }
-                 console.log("🔄 Found existing session token.");
-                 updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
              } catch(e) {
-                 console.warn("Token Parse Error:", e);
-                 // Don't logout immediately on parse error to allow legacy tokens, but warn
+                 console.error("Token Validation Error:", e);
+                 updateDiagnostics('auth', 'SECURE (UNVERIFIED)', 'var(--warning)');
              }
+        } else {
+            updateDiagnostics('auth', 'NO SESSION', 'var(--danger)');
         }
 
         // Check for Supabase Library
@@ -120,8 +136,14 @@
             return;
         }
 
+        // Check for Config
+        if (!CONFIG.supabaseUrl || !CONFIG.supabaseKey) {
+            console.error("❌ CRITICAL: Supabase Configuration Missing.");
+            updateDiagnostics('db', 'CONFIG ERROR', '#ff4444');
+            return;
+        }
+
         // ---[ CORE BUGFIX: MULTIPLE SUPABASE CLIENTS ]---
-        // Detect and neutralize the conflicting client from site-init.js if it exists.
         if (window.OTP && window.OTP.supabase) {
             console.warn("[AUTH_FIX] Detected and neutralizing conflicting Supabase client.");
             // Overwrite the conflicting client's methods to be inert.
@@ -142,10 +164,16 @@
             state.client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
             window.sb = state.client; // Expose global
             
-            // Test Connection
-            const { count, error } = await state.client.from('posts').select('*', { count: 'exact', head: true });
+            // Test Connection (Retry once on fail)
+            let testRes = await state.client.from('posts').select('id', { count: 'exact', head: true });
             
-            if (error) throw error;
+            if (testRes.error) {
+                console.warn("⚠️ Initial connection test failed, retrying...", testRes.error);
+                await new Promise(r => setTimeout(r, 1000));
+                testRes = await state.client.from('posts').select('id', { count: 'exact', head: true });
+            }
+
+            if (testRes.error) throw testRes.error;
 
             state.isConnected = true;
             console.log(`✅ DATABASE ONLINE. Posts: ${count}`);
@@ -176,7 +204,7 @@
                 
                 let statusTag = '<span style="color:var(--admin-success)">[NODE:LIVE]</span>';
                 if (isStatic) statusTag = '<span style="color:#ff8800">[NODE:LEGACY]</span>';
-                else if (isRemote) statusTag = '<span style="color:#00ffaa; filter: drop-shadow(0 0 5px #00ffaa); font-weight:bold;">[NODE:SECURE]</span>';
+                else if (isRemote || window.location.hostname.endsWith('.vercel.app') || window.location.hostname === 'onlytrueperspective.tech') statusTag = '<span style="color:#00ffaa; filter: drop-shadow(0 0 5px #00ffaa); font-weight:bold;">[NODE:SECURE]</span>';
 
                 // Update only time every second, not status checks
                 setInterval(() => {
@@ -853,7 +881,14 @@
                 .neq('slug', 'system-global-state')
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            if (error) {
+                // Check if this is an Auth failure (might happen if RLS is strict or server rotated key)
+                if (error.code === '401' || (error.message && error.message.toLowerCase().includes('permission'))) {
+                    console.error("Critical Auth Mismatch with Supabase/RLS. session might be dead.", error);
+                    updateDiagnostics('auth', 'RLS BLOCK', 'var(--danger)');
+                }
+                throw error;
+            }
             
             // Update Cache
             postsCache = posts;
