@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V10.17.5 (ORACLE_V2.7)
+ * ADMIN CORE V10.18.0 (ORACLE_V2.8)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Session Persistence, JWT decoding, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V10.17.5 RELEASE (V2.7): ORACLE ONLINE.");
+    console.log("🚀 ADMIN CORE V10.18.0 RELEASE (V2.8): ORACLE ONLINE.");
 
     // GLOBAL ERROR TRAP
     window.addEventListener('unhandledrejection', function(event) {
@@ -151,16 +151,31 @@
         // ---[ END BUGFIX ]---
 
         try {
-            console.log("🔌 Connecting to Supabase...");
+            console.log("🔌 Connecting to Supabase KERNEL...");
+            updateDiagnostics('db', 'CONNECTING...', 'var(--admin-muted)');
+            
             state.client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
-            window.sb = state.client; // Expose global
+            window.sb = state.client; 
+
+            // --- AUTH HARDENING: INJECT SESSION TOKEN ---
+            if (state.token && state.token !== 'static-bypass-token') {
+                console.log("🔑 Injecting secure session token...");
+                try {
+                    state.client.auth.setSession({
+                        access_token: state.token,
+                        refresh_token: state.token 
+                    });
+                } catch (authErr) {
+                    console.warn("⚠️ Session injection skipped:", authErr.message);
+                }
+            }
             
             // Connection Test (Uses Real Query to verify RLS/Key)
             let testRes = await state.client.from('posts').select('id').limit(1);
             
             if (testRes.error) {
                 console.warn("⚠️ Database connection error:", testRes.error.message);
-                updateDiagnostics('db', 'CONN ERROR', 'var(--danger)');
+                updateDiagnostics('db', 'CONN ERROR: ' + testRes.error.message, 'var(--danger)');
                 if (!testRes.error.message.includes('permission')) throw testRes.error;
             }
 
