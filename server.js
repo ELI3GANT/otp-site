@@ -315,10 +315,19 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
         } else if (provider === 'gemini') {
             if (!process.env.GEMINI_API_KEY) throw new Error("Gemini Key not configured on server.");
             
-            const candidates = model ? [model] : ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-flash-001', 'gemini-1.5-pro'];
+            const candidates = model ? [model] : ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
             const payload = {
-                contents: [{ parts: [{ text: `${systemPrompt || 'You are a professional blog writer.'}\n\nGenerate post titled "${title}" based on prompt: "${prompt}". Return format: { "content": "markdown...", "excerpt": "...", "seo_title": "...", "seo_desc": "..." }` }] }],
-                generationConfig: { ...modelConfig }
+                systemInstruction: {
+                    parts: [{ text: systemPrompt || 'You are a professional blog writer.' }]
+                },
+                contents: [{ 
+                    role: 'user',
+                    parts: [{ text: `Generate a post titled "${title || 'New Insight'}" based on this prompt: "${prompt}". Return ALL fields as JSON.` }] 
+                }],
+                generationConfig: { 
+                    response_mime_type: "application/json",
+                    ...modelConfig 
+                }
             };
 
             let lastErr = "";
@@ -327,7 +336,6 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             for (const m of candidates) {
                 if(success) break;
                 try {
-                    // JSON Mode is best supported on v1beta
                     console.log(`🤖 Gemini Probing Model: ${m}...`);
                     const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
                         method: 'POST',
@@ -337,8 +345,12 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                     
                     const data = await apiRes.json();
                     if (!data.error) {
-                        const text = data.candidates[0].content.parts[0].text;
-                        result = JSON.parse(text.replace(/```json|```/g, '').trim());
+                        let text = data.candidates[0].content.parts[0].text;
+                        // Robust JSON Extraction
+                        const jsonMatch = text.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) text = jsonMatch[0];
+                        
+                        result = JSON.parse(text);
                         usage = data.usageMetadata ? { total_tokens: data.usageMetadata.totalTokenCount } : null;
                         success = true;
                         console.log(`✅ Success via ${m}`);
@@ -739,7 +751,7 @@ app.post('/api/audit/submit', async (req, res) => {
 
         // 2. Call Gemini (With Robust Logic)
         if (process.env.GEMINI_API_KEY) {
-            const modelsToTry = ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-exp'];
+            const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'];
             let success = false;
             
             const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));

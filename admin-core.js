@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V10.5 (RELEASE)
+ * ADMIN CORE V10.16.7 (ORACLE_V2.5)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Server-side Auth, Secure API Proxy, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V10.5 RELEASE: Boot sequence initiated...");
+    console.log("🚀 ADMIN CORE V10.16.7 RELEASE: Oracle V2.5 engaged...");
 
     // GLOBAL ERROR TRAP
     window.addEventListener('unhandledrejection', function(event) {
@@ -1915,8 +1915,17 @@
             async (topic) => {
                 if (!topic) return;
                 const promptInput = document.getElementById('aiPrompt');
+                const archInput = document.getElementById('archetype');
+                
                 if (promptInput) {
                     promptInput.value = topic;
+                    
+                    // Try to auto-select Oracle or Visionary archetype
+                    if (archInput && state.archetypes) {
+                        const oracleArch = state.archetypes.find(a => a.slug === 'oracle' || a.slug === 'visionary');
+                        if (oracleArch) archInput.value = oracleArch.slug;
+                    }
+
                     if (typeof triggerAIGenerator === 'function') {
                         showToast("ORACLE INITIALIZING...");
                         await triggerAIGenerator();
@@ -2359,8 +2368,12 @@
                             });
                             const raw = await res.json();
                             if(!raw.error) {
-                                const text = raw.candidates[0].content.parts[0].text;
-                                aiResult = JSON.parse(text.replace(/```json|```/g, '').trim());
+                                let text = raw.candidates[0].content.parts[0].text;
+                                // Robust JSON Extraction
+                                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                                if (jsonMatch) text = jsonMatch[0];
+                                
+                                aiResult = JSON.parse(text);
                                 // Gemini token tracking
                                 if (raw.usageMetadata) trackAICost('gemini', raw.usageMetadata.totalTokenCount);
                                 else trackAICost('gemini', 1000); 
@@ -2477,10 +2490,10 @@
         const status = document.getElementById('aiStatus');
         if (status) {
             const limits = {
-                'groq': 'LIMITS: ~30 requests / min (FREE)',
-                'gemini': 'LIMITS: 15 requests / min (FREE TIER)',
-                'openai': 'LIMITS: Usage-based (PAID)',
-                'anthropic': 'LIMITS: Usage-based (PAID)'
+                'gemini': 'LIMITS: 15 req/min (Oracle V2.5 Tier)',
+                'groq': 'LIMITS: 30 req/min (Extreme Speed)',
+                'openai': 'LIMITS: Usage-based (GPT-4o Premium)',
+                'anthropic': 'LIMITS: Usage-based (Claude 3.5 Sonnet)'
             };
             status.textContent = limits[val] || '';
             status.style.color = 'var(--admin-muted)';

@@ -174,7 +174,7 @@
             <div id="systemHeartbeat" style="font-size: 0.6rem; color: var(--admin-muted); letter-spacing: 1px; margin-right: 15px; display: flex; gap: 12px; font-family: monospace;">
                 <span>DATABASE: <span id="status-db" style="color: var(--admin-success);">OK</span></span>
                 <span>STRIPE: <span id="status-pay" style="color: var(--admin-success);">Ready</span></span>
-                <span>AI: <span id="status-ai" style="color: var(--admin-success);">Oracle V1</span></span>
+                <span>AI: <span id="status-ai" style="color: var(--accent2);">Oracle V2.5</span></span>
             </div>
             <button onclick="logout()" aria-label="Logout" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.7rem; padding: 8px 12px; width: auto;">LOGOUT</button>
         </div>
@@ -207,7 +207,7 @@
              </div>
              <div class="stat-card">
                  <h3>SYSTEM</h3>
-                 <p class="stat-num" style="color:var(--admin-muted)">V10.5</p>
+                 <p class="stat-num" style="color:var(--admin-muted)">V10.16.7</p>
                  <span class="stat-change">STABLE</span>
              </div>
         </section>
@@ -310,7 +310,7 @@
             <div id="postForm" class="dashboard-sidebar">
                 <!-- SECTION: AI SYNTHESIZER -->
                 <section class="input-section" style="margin-top: 0;">
-                    <div class="section-label" style="margin-top: 0;">02 // Neural Hub</div>
+                    <div class="section-label" style="margin-top: 0;">01 // Neural Hub</div>
     
                 <div class="input-group">
                     <div id="imagePreview" style="display:none; border-radius: 12px; overflow: hidden; border: 1px solid var(--stroke); margin-bottom: 15px;">
@@ -399,8 +399,8 @@
                     <div class="input-group" style="flex: 1;">
                         <label for="aiProvider">Neural Engine</label>
                         <select id="aiProvider" onchange="window.switchProvider(this.value);" style="background: var(--admin-panel); font-weight: bold; color: var(--accent2);">
-                            <option value="groq">Groq Llama 3.1 [FREE / OPEN-SOURCE]</option>
-                            <option value="gemini">Google Gemini 1.5 [FREE TIER / STUDIO]</option>
+                            <option value="gemini">Google Gemini 2.0 (Oracle Flagship)</option>
+                            <option value="groq">Groq Llama 3.3 (Extreme Speed)</option>
                             <option value="openai">OpenAI (GPT-4o) [PAID / PREMIUM]</option>
                             <option value="anthropic">Anthropic Claude 3.5 [PAID / PREMIUM]</option>
                         </select>
