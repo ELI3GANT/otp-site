@@ -1,5 +1,5 @@
 /**
- * ADMIN CORE V14.5.0 (MASTER_BUILD)
+ * ADMIN CORE V15.0.0 (FORCE-DATA)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Session Persistence, JWT decoding, Supabase Connection.
  */
