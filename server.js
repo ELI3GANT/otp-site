@@ -514,6 +514,32 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
     }
 });
 
+// 2.7 Secure Multi-Table Data Fetching (Bypass RLS via Service Key)
+app.post('/api/admin/fetch-data', verifyToken, async (req, res) => {
+    const { table, select = '*', order = 'created_at', descending = true, filters = [] } = req.body;
+    
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+
+    try {
+        let query = supabaseAdmin.from(table).select(select);
+        
+        // Apply basic filters if any
+        filters.forEach(f => {
+            if (f.op === 'eq') query = query.eq(f.column, f.value);
+            if (f.op === 'neq') query = query.neq(f.column, f.value);
+        });
+
+        const { data, error } = await query.order(order, { ascending: !descending });
+        
+        if (error) throw error;
+        res.json({ success: true, data });
+
+    } catch (error) {
+        console.error(`Fetch Error [${table}]:`, error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // 4. Secure Image Generation (DALL-E 3 + Supabase Storage)
 // 2.5 Secure AI Chat Completion (Generic)
 app.post('/api/ai/chat', verifyToken, async (req, res) => {
