@@ -189,7 +189,7 @@
         <div class="admin-main-grid">
             <div class="admin-main-content">
                 <!-- DASHBOARD STATS -->
-                <section class="stats-grid" aria-label="Dashboard Statistics">
+                <section class="input-section stats-grid" aria-label="Dashboard Statistics" style="margin-bottom: 25px;">
              <div class="stat-card">
                  <h3>TOTAL VIEWS</h3>
                  <p class="stat-num" id="statViews">--</p>
@@ -213,9 +213,9 @@
         </section>
 
         <!-- VISUAL ANALYTICS CHART -->
-        <section class="admin-section" style="margin-bottom: 25px;">
-            <div style="background: var(--admin-panel); border: 1px solid var(--admin-border); border-radius: 12px; padding: 20px; min-height: 350px; position: relative;">
-                <h3 style="font-size: 0.8rem; color: var(--admin-cyan); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">01 // VISUAL ANALYTICS (TOTAL_VIEWS / BY_SIGNAL)</h3>
+        <section class="input-section" style="margin-bottom: 25px;">
+            <div style="min-height: 350px; position: relative;">
+                <h3 style="font-size: 0.75rem; color: var(--admin-cyan); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">01 // VISUAL ANALYTICS (TOTAL_VIEWS / BY_SIGNAL)</h3>
                 <div style="height: 280px; width: 100%; position: relative;">
                     <canvas id="activityChart"></canvas>
                 </div>
@@ -223,9 +223,9 @@
         </section>
 
         <!-- ACTIVE NOW FEED (REALTIME PRESENCE) -->
-        <section class="admin-section" style="margin-bottom: 25px;">
-            <div style="background: var(--admin-panel); border: 1px solid var(--admin-border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
-                <h3 style="font-size: 0.8rem; color: #00ffaa; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between;">
+        <section class="input-section" style="margin-bottom: 25px;">
+            <div style="position: relative; overflow: hidden;">
+                <h3 style="font-size: 0.75rem; color: #00ffaa; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; display: flex; justify-content: space-between; font-weight: 800;">
                     <span style="display: flex; align-items: center; gap: 8px;">
                         <span class="status-dot-mini blink" style="width: 8px; height: 8px; background: #00ffaa; border-radius: 50%; display: inline-block;"></span>
                         ACTIVE NOW: <span id="activeCount" style="color: white; font-weight: bold; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 12px;">0</span>
@@ -238,9 +238,9 @@
         </section>
 
         <!-- LIVE TRAFFIC UPLINK (PREMIUM) -->
-        <section class="admin-section" style="margin-bottom: 25px;">
-            <div style="background: var(--admin-panel); border: 1px solid var(--admin-border); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
-                <h3 style="font-size: 0.8rem; color: var(--admin-cyan); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between;">
+        <section class="input-section" style="margin-bottom: 25px;">
+            <div style="position: relative; overflow: hidden;">
+                <h3 style="font-size: 0.75rem; color: var(--admin-cyan); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; display: flex; justify-content: space-between; font-weight: 800;">
                     <span>LIVE TRAFFIC UPLINK</span>
                     <span style="font-size: 0.6rem; opacity: 0.5;">REAL-TIME SIGNAL DECODING</span>
                 </h3>

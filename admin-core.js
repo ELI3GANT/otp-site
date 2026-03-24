@@ -3385,9 +3385,6 @@ Lang: ${u.lang || 'Unknown'}</div>
     setInterval(window.checkSystemHealth, 30000);
     window.checkSystemHealth();
 
-    // KICK OFF BOT SEQUENCE
-    init();
-    
     // DELAYED TRAFFIC BOOT
     setTimeout(initTrafficUplink, 2000);
 
