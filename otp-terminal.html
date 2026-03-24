@@ -65,9 +65,8 @@
             { dark: '255, 60, 0',  light: '200, 40, 0' }    // Neon Orange
         ];
         
-        // Randomize hue every load/refresh
+        // Always randomize hue on every load for a fresh feel
         let hueIndex = Math.floor(Math.random() * window.OTP_HUES.length);
-        sessionStorage.setItem('otp_hue_index', hueIndex);
         window.OTP_HUE_INDEX = hueIndex;
         const selectedHue = window.OTP_HUES[hueIndex];
 

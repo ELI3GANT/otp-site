@@ -2922,88 +2922,44 @@
     window.testSatelliteConnection = async function() {
         const input = document.getElementById('satelliteUrl');
         let url = input ? input.value.trim() : '';
-        
-        if(!url) { 
-            showToast("ENTER URL FIRST"); 
-            if(input) input.style.borderColor = 'var(--admin-danger)';
-            return; 
-        }
-        
-        // Robust URL Regex Validation (Handles localhost and standard URLs)
-        const urlPattern = /^(https?:\/\/)?(localhost|[\da-z.-]+\.[a-z.]{2,6})(:[\d]+)?([\/\w .-]*)*\/?$/;
-        if (!urlPattern.test(url)) {
-            showToast("INVALID URL FORMAT");
-            if(input) input.style.borderColor = 'var(--admin-danger)';
+
+        if (!url) {
+            showToast("URL IS REQUIRED");
+            if (input) { input.style.border = '1px solid var(--admin-danger)'; }
             return;
         }
 
-        if(input) input.style.borderColor = 'var(--admin-border)';
-        
-        // Auto-fix URL for test (Ensure protocol)
-        if (!url.startsWith('http')) url = 'https://' + url;
-        if (url.endsWith('/')) url = url.slice(0, -1);
-        
-        const healthUrl = url + '/api/health';
-        showToast("PROBING SATELLITE...");
-        console.log(`📡 Probing: ${healthUrl}`);
-        
+        if (input) input.style.border = '1px solid var(--admin-cyan)'; // Probing state
+        showToast("PROBING SATELLITE LINK...");
+
+        // Auto-add protocol if missing
+        if (!url.startsWith('http')) {
+            url = 'https://' + url;
+        }
+
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout for mobile
+            const res = await fetch(`${url}/api/health`, { method: 'GET', cache: 'no-cache' });
+            const latency = res.headers.get('x-response-time') || 'N/A'; // Assuming Vercel header
 
-            const start = Date.now();
-            
-            // 1. Try Standard Check
-            try {
-                const res = await fetch(healthUrl, { 
-                    method: 'GET', 
-                    cache: 'no-cache',
-                    signal: controller.signal 
-                });
-                
-                clearTimeout(timeoutId);
-                const latency = Date.now() - start;
-
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.success) {
-                        showToast(`SATELLITE ONLINE (${latency}ms)`);
-                        if(input) input.style.borderColor = 'var(--admin-success)';
-                        return;
-                    } 
-                } 
-                
-                // If we get here, response wasn't 'success' but we did connect
-                showToast(`SATELLITE REACHABLE (HTTP ${res.status})`);
-                
-            } catch (networkErr) {
-                // 2. Fallback: Try NO-CORS (Opaque check)
-                // This handles cases where server is up but CORS blocks the specific health check from this client origin
-                console.warn("Standard probe failed, attempting opaque probe...", networkErr);
-                
-                try {
-                    const modeRes = await fetch(healthUrl, { 
-                        method: 'GET', 
-                        mode: 'no-cors',
-                        cache: 'no-cache',
-                        signal: controller.signal 
-                    });
-                     clearTimeout(timeoutId);
-                     showToast("LINK ESTABLISHED (OPAQUE)");
-                     if(input) input.style.borderColor = 'var(--admin-success)';
-                     return;
-                } catch (opaqueErr) {
-                    throw opaqueErr; // Real network failure
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`✅ SATELLITE LINK SUCCESSFUL (${latency})`);
+                    if (input) input.style.border = '1px solid var(--admin-success)';
+                    
+                    // On success, save it as the new default
+                    localStorage.setItem('otp_api_base', url);
+                    console.log(`[HUB] New satellite URL saved: ${url}`);
+                } else {
+                    throw new Error(data.message || "Health check failed");
                 }
-            }
-        } catch(e) {
-            console.error("Link Test Failed:", e);
-            if (e.name === 'AbortError') {
-                showToast("PROBE TIMEOUT (15s) - CHECK SIGNAL");
             } else {
-                showToast("LINK FAILED: CHECK URL / WIFI");
+                throw new Error(`Server responded with HTTP ${res.status}`);
             }
-            if(input) input.style.borderColor = 'var(--admin-danger)';
+        } catch (e) {
+            console.error("Satellite Connection Probe Failed:", e);
+            showToast(`❌ LINK FAILED: ${e.message}`);
+            if (input) { input.style.border = '1px solid var(--admin-danger)'; }
         }
     };
 
