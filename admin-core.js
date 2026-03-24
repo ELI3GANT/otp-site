@@ -117,6 +117,8 @@
                  } else {
                      updateDiagnostics('auth', 'LOCAL BYPASS', '#ffaa00');
                  }
+             } catch (authErr) {
+                 console.warn('⚠️ Auth block error:', authErr);
              }
         }
 
@@ -1439,11 +1441,6 @@
                     if(data.error) throw new Error(data.error.message);
                     replyText = data.choices[0].message.content;
                 }
-            }
-                replyText = data.choices[0].message.content;
-            }
-            else {
-                throw new Error(`Cloud Provider ${provider.toUpperCase()} not yet bridged for Quick Reply.`);
             }
 
             // Stream simulation or just paste
