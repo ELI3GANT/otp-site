@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V10.16.8 (ORACLE_V2.6)
+ * ADMIN CORE V10.16.15 (ORACLE_V2.7)
  * Centralized logic for the OTP Admin Panel.
  * Handles: Session Persistence, JWT decoding, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V10.16.8 RELEASE (V2.6): ORACLE ONLINE.");
+    console.log("🚀 ADMIN CORE V10.16.15 RELEASE (V2.7): ORACLE ONLINE.");
 
     // GLOBAL ERROR TRAP
     window.addEventListener('unhandledrejection', function(event) {
@@ -87,6 +87,11 @@
     async function init() {
         console.log("🛠️ INITIALIZING TERMINAL ENGINE...");
         updateDiagnostics('auth', 'INITIALIZING...', 'var(--admin-muted)');
+        
+        if (!state.token && window.location.hostname !== 'localhost') {
+            window.location.href = 'portal-gate.html?reason=missing_token';
+            return;
+        }
 
         if (state.token) {
              try {
@@ -150,16 +155,14 @@
             state.client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
             window.sb = state.client; // Expose global
             
-            // Test Connection (Retry once on fail)
-            let testRes = await state.client.from('posts').select('id', { count: 'exact', head: true });
+            // Connection Test (Uses Real Query to verify RLS/Key)
+            let testRes = await state.client.from('posts').select('id').limit(1);
             
             if (testRes.error) {
-                console.warn("⚠️ Initial connection test failed, retrying...", testRes.error);
-                await new Promise(r => setTimeout(r, 1000));
-                testRes = await state.client.from('posts').select('id', { count: 'exact', head: true });
+                console.warn("⚠️ Database connection error:", testRes.error.message);
+                updateDiagnostics('db', 'CONN ERROR', 'var(--danger)');
+                if (!testRes.error.message.includes('permission')) throw testRes.error;
             }
-
-            if (testRes.error) throw testRes.error;
 
             state.isConnected = true;
             console.log(`✅ DATABASE ONLINE. Count: ${testRes.count || 'N/A'}`);
@@ -170,12 +173,14 @@
             const dot = document.getElementById('dbStatusDot');
             if(dot) dot.classList.add('active');
 
-            // Load Posts for Manager & Stats
-            fetchPosts();
-            fetchCategories();
-            fetchArchetypes();
-            fetchInbox();
-            fetchLeads();
+            // Load Data (Parallel)
+            await Promise.allSettled([
+                fetchPosts(true),
+                fetchInbox(),
+                fetchLeads(),
+                fetchCategories(),
+                fetchArchetypes()
+            ]);
             
             // Backup Polling (30s) - Realtime handles immediate updates
             setInterval(() => fetchPosts(false), 30000);
