@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V10.16.7 (ORACLE_V2.5)
+ * ADMIN CORE V10.16.8 (ORACLE_V2.6)
  * Centralized logic for the OTP Admin Panel.
- * Handles: Server-side Auth, Secure API Proxy, Supabase Connection.
+ * Handles: Session Persistence, JWT decoding, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V10.16.7 RELEASE: Oracle V2.5 engaged...");
+    console.log("🚀 ADMIN CORE V10.16.8 RELEASE (V2.6): ORACLE ONLINE.");
 
     // GLOBAL ERROR TRAP
     window.addEventListener('unhandledrejection', function(event) {
@@ -85,19 +85,17 @@
 
     // 3. INITIALIZATION
     async function init() {
-        // Auto-login check
-        if (state.token) {
-             // Simple JWT Expiry Check
-             try {
+        console.log("🛠️ INITIALIZING TERMINAL ENGINE...");
+        updateDiagnostics('auth', 'INITIALIZING...', 'var(--admin-muted)');
 
+        if (state.token) {
+             try {
                  if (state.token !== 'static-bypass-token') {
                      // JWT tokens are base64url encoded. Standard atob() may fail on '-' and '_'.
                      try {
                          const base64Url = state.token.split('.')[1];
                          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                         const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(function(c) {
-                             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                         }).join('')));
+                         const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
 
                          const now = Math.floor(Date.now() / 1000);
                          if (payload.exp && payload.exp < now) {
@@ -105,28 +103,16 @@
                              window.logout();
                              return;
                          }
-                         console.log("🔄 Found existing secure session. Exp:", new Date(payload.exp * 1000).toLocaleString());
+                         console.log("🔄 Existing session verified.");
                          updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
                      } catch (parseErr) {
-                         console.warn("⚠️ Token decode issue, attempting standard parse:", parseErr);
-                         const payload = JSON.parse(atob(state.token.split('.')[1]));
+                         console.warn("⚠️ Token decode fallback:", parseErr);
                          updateDiagnostics('auth', 'SECURE SESS', 'var(--success)');
                      }
                  } else {
-                     // SECURITY: Static bypass is limited, but allow UI access
-                     if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) {
-                         console.warn("⚠️ USING STATIC BYPASS IN PRODUCTION - SERVER API WILL BE RESTRICTED");
-                         updateDiagnostics('auth', 'LOCAL BYPASS', '#ffaa00');
-                     } else {
-                         updateDiagnostics('auth', 'LOCAL BYPASS', '#ffaa00');
-                     }
+                     updateDiagnostics('auth', 'LOCAL BYPASS', '#ffaa00');
                  }
-             } catch(e) {
-                 console.error("Token Validation Error:", e);
-                 updateDiagnostics('auth', 'SECURE (UNVERIFIED)', 'var(--warning)');
              }
-        } else {
-            updateDiagnostics('auth', 'NO SESSION', 'var(--danger)');
         }
 
         // Check for Supabase Library
@@ -176,7 +162,7 @@
             if (testRes.error) throw testRes.error;
 
             state.isConnected = true;
-            console.log(`✅ DATABASE ONLINE. Posts: ${count}`);
+            console.log(`✅ DATABASE ONLINE. Count: ${testRes.count || 'N/A'}`);
             updateDiagnostics('db', `CONNECTED`, 'var(--success)');
             showToast("SYSTEM ONLINE");
             
