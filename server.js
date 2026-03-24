@@ -515,6 +515,74 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
 });
 
 // 4. Secure Image Generation (DALL-E 3 + Supabase Storage)
+// 2.5 Secure AI Chat Completion (Generic)
+app.post('/api/ai/chat', verifyToken, async (req, res) => {
+    const { provider, messages, systemPrompt, model, modelConfig = {} } = req.body;
+    
+    try {
+        let result;
+        if (provider === 'openai') {
+            const openaiKey = (process.env.OPENAI_API_KEY || '').trim();
+            if (!openaiKey) throw new Error("OpenAI Key not configured on server.");
+            
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${openaiKey}` 
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o",
+                    messages: [
+                        { role: "system", content: systemPrompt || "You are a professional assistant." },
+                        ...messages
+                    ],
+                    ...modelConfig
+                })
+            });
+            
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+            result = data.choices[0].message.content;
+
+        } else if (provider === 'gemini') {
+            const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
+            if (!geminiKey) throw new Error("Gemini Key not configured on server.");
+            
+            const m = model || 'gemini-1.5-flash';
+            const payload = {
+                systemInstruction: {
+                    parts: [{ text: systemPrompt || 'You are a professional assistant.' }]
+                },
+                contents: messages.map(msg => ({
+                    role: msg.role === 'assistant' ? 'model' : 'user',
+                    parts: [{ text: msg.content }]
+                })),
+                generationConfig: modelConfig
+            };
+
+            const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${geminiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await apiRes.json();
+            if (data.error) throw new Error(data.error.message);
+            result = data.candidates[0].content.parts[0].text;
+
+        } else {
+            throw new Error("Invalid provider requested for chat.");
+        }
+
+        res.json({ success: true, data: result });
+
+    } catch (error) {
+        console.error("AI Chat Error:", error.stack);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
     const { prompt, title, aspect_ratio, cloud_key } = req.body;
     

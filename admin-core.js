@@ -1315,61 +1315,91 @@
             `;
 
             let replyText = "";
-            let usedDirect = false;
+            let hubError = null;
 
-            // 1. Try Server Proxy (if available) - Reusing /api/ai/generate endpoint logic if it supports generic completion?
-            // Actually, /api/ai/generate is strictly JSON for posts. Let's use direct keys for Speed/Reliability on this specific tool or a simple chat completion.
-            // For now, let's implement the DIRECT CLOUD LINK primarily for this "Quick Action" to avoid schema validation issues with the blog generator.
-            
-            const cloudKey = personalKeys[provider];
-            if (!cloudKey && provider !== 'groq') throw new Error(`NO API KEY FOUND FOR ${provider.toUpperCase()}`);
-
-            if (provider === 'openai') {
-                const res = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
-                    body: JSON.stringify({
-                        model: 'gpt-4o',
-                        messages: [{ role: 'system', content: "You represent a high-end agency." }, { role: 'user', content: systemPrompt }],
-                        ...modelConfig
-                    })
-                });
-                const data = await res.json();
-                if(data.error) throw new Error(data.error.message);
-                replyText = data.choices[0].message.content;
-            } 
-            else if (provider === 'gemini') {
-                 // Google Gen AI REST
-                 const geminiConfig = {};
-                 if (modelConfig.temperature !== undefined) geminiConfig.temperature = modelConfig.temperature;
-                 if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
-                 if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
-
-                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cloudKey}`;
-                 const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: systemPrompt }] }],
-                        generationConfig: geminiConfig
-                    })
-                });
-                const data = await res.json();
-                if(data.error) throw new Error(data.error.message);
-                replyText = data.candidates[0].content.parts[0].text;
+            // 1. Try Server Proxy First (Secure Hub)
+            if (state.token && state.token !== 'static-bypass-token') {
+                try {
+                    const apiBase = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || window.location.origin);
+                    const res = await fetch(apiBase + '/api/ai/chat', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${state.token}`
+                        },
+                        body: JSON.stringify({ 
+                            provider, 
+                            systemPrompt, 
+                            messages: [{ role: 'user', content: `Lead Name: ${name}. Context: ${msg}. Draft Reply.` }],
+                            modelConfig 
+                        })
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        replyText = data.data;
+                    } else {
+                        hubError = data.message || "Server Hub Refused Connection";
+                    }
+                } catch (e) {
+                    hubError = "Secure Hub Offline";
+                }
             }
-            else if (provider === 'groq') {
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
-                    body: JSON.stringify({
-                        model: 'llama-3.1-70b-versatile',
-                        messages: [{ role: 'system', content: "You are a professional assistant." }, { role: 'user', content: systemPrompt }],
-                        ...modelConfig
-                    })
-                });
-                const data = await res.json();
-                if(data.error) throw new Error(data.error.message);
+
+            // 2. Failover: Try Direct Cloud Link
+            if (!replyText) {
+                const cloudKey = personalKeys[provider];
+                if (!cloudKey && provider !== 'groq') {
+                    throw new Error(hubError ? `NEURAL LINK FAILED: ${hubError}` : `NO API KEY FOUND FOR ${provider.toUpperCase()}`);
+                }
+
+                if (provider === 'openai') {
+                    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
+                        body: JSON.stringify({
+                            model: 'gpt-4o',
+                            messages: [{ role: 'system', content: "You represent a high-end agency." }, { role: 'user', content: systemPrompt }],
+                            ...modelConfig
+                        })
+                    });
+                    const data = await res.json();
+                    if(data.error) throw new Error(data.error.message);
+                    replyText = data.choices[0].message.content;
+                } 
+                else if (provider === 'gemini') {
+                    const geminiConfig = {};
+                    if (modelConfig.temperature !== undefined) geminiConfig.temperature = modelConfig.temperature;
+                    if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
+                    if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
+
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cloudKey}`;
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: systemPrompt }] }],
+                            generationConfig: geminiConfig
+                        })
+                    });
+                    const data = await res.json();
+                    if(data.error) throw new Error(data.error.message);
+                    replyText = data.candidates[0].content.parts[0].text;
+                }
+                else if (provider === 'groq') {
+                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
+                        body: JSON.stringify({
+                            model: 'llama-3.1-70b-versatile',
+                            messages: [{ role: 'system', content: "You are a professional assistant." }, { role: 'user', content: systemPrompt }],
+                            ...modelConfig
+                        })
+                    });
+                    const data = await res.json();
+                    if(data.error) throw new Error(data.error.message);
+                    replyText = data.choices[0].message.content;
+                }
+            }
                 replyText = data.choices[0].message.content;
             }
             else {

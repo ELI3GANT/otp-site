@@ -21,8 +21,7 @@ serve(async (req) => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "OTP Studio <contact@onlytrueperspective.tech>", // Sending from verified domain
-        to: record.email,
+                    from: "OTP Studio <eli3gant@onlytrueperspective.tech>", // Sending from verified domain        to: record.email,
         subject: "We received your project inquiry",
         html: `
           <div style="font-family: sans-serif; background: #000; color: #fff; padding: 40px; border-radius: 8px;">
@@ -47,8 +46,7 @@ serve(async (req) => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "OTP System <contact@onlytrueperspective.tech>",
-        to: ["contact@onlytrueperspective.tech", "eli@onlytrueperspective.tech"],
+                    from: "OTP System <eli3gant@onlytrueperspective.tech>",            to: ["eli3gant@onlytrueperspective.tech", "eli@onlytrueperspective.tech"],
         reply_to: record.email,
         subject: `NEW INQUIRY: ${record.service || 'General'} from ${record.name || 'Unknown'}`,
         html: `
