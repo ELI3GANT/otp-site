@@ -294,6 +294,7 @@
                 .from('posts')
                 .select('*')
                 .eq('slug', slug)
+                .neq('slug', 'system-global-state')
                 .eq('published', true)  // Block drafts from being accessed directly
                 .single();
 

@@ -23,6 +23,7 @@ async function bakeInsights() {
         .from('posts')
         .select('*')
         .eq('published', true)
+        .neq('slug', 'system-global-state')
         .order('created_at', { ascending: false });
 
     if (error) {

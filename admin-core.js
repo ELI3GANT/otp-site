@@ -850,6 +850,7 @@
             const { data: posts, error } = await state.client
                 .from('posts')
                 .select('id, title, created_at, published, views, slug')
+                .neq('slug', 'system-global-state')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;

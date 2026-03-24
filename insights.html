@@ -513,7 +513,11 @@
             const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
             const { data: posts, error } = await Promise.race([
-                client.from('posts').select('id, title, slug, excerpt, content, category, tags, image_url, views, created_at').eq('published', true).order('created_at', { ascending: false }),
+                client.from('posts')
+                    .select('id, title, slug, excerpt, content, category, tags, image_url, views, created_at')
+                    .eq('published', true)
+                    .neq('slug', 'system-global-state')
+                    .order('created_at', { ascending: false }),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 8000))
             ]);
 
