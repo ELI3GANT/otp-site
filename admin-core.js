@@ -643,7 +643,7 @@
             const el = document.getElementById(id);
             if (!el) return;
             const current = el.value;
-            const options = state.archetypes.map(a => `<option value="${escape(a.slug)}">${escape(a.name)}</option>`).join('');
+            const options = (state.archetypes || []).map(a => `<option value="${escape(a.slug)}">${escape(a.name)}</option>`).join('');
             
             if (id === 'replyArchetype') {
                 el.innerHTML = '<option value="">Default Agent</option>' + options;
@@ -809,7 +809,7 @@
     };
 
     window.editArchetype = function(id) {
-        const a = state.archetypes.find(arch => arch.id == id);
+        const a = (state.archetypes || []).find(arch => arch.id == id);
         if (!a) return;
         document.getElementById('archId').value = a.id;
         document.getElementById('archName').value = a.name;
@@ -1291,7 +1291,7 @@
             // DYNAMIC ARCHETYPE OVERRIDE
             const archInput = document.getElementById('replyArchetype');
             const selectedArchSlug = archInput ? archInput.value : '';
-            const archetype = selectedArchSlug ? state.archetypes.find(a => a.slug === selectedArchSlug) : null;
+            const archetype = selectedArchSlug ? (state.archetypes || []).find(a => a.slug === selectedArchSlug) : null;
             const modelConfig = (archetype && archetype.model_config) ? archetype.model_config : {};
             
             const baseSystemPrompt = archetype ? archetype.system_prompt : `You are an elite business consultant and executive assistant. 
@@ -1785,7 +1785,7 @@
 
     async function incrementArchetypeUsage(slug) {
         try {
-            const arch = state.archetypes.find(a => a.slug === slug);
+            const arch = (state.archetypes || []).find(a => a.slug === slug);
             if (!arch) return;
             const newCount = (arch.usage_count || 0) + 1;
             await window.secureWrite('ai_archetypes', { usage_count: newCount }, arch.id);
@@ -2250,7 +2250,7 @@
             
             // DYNAMIC ARCHETYPE SYSTEM
             const selectedArchSlug = archetypeInput ? archetypeInput.value : 'technical';
-            const archetype = state.archetypes.find(a => a.slug === selectedArchSlug);
+            const archetype = (state.archetypes || []).find(a => a.slug === selectedArchSlug);
             const baseSystemPrompt = archetype ? archetype.system_prompt : 'You are a professional blog writer.';
             const modelConfig = (archetype && archetype.model_config) ? archetype.model_config : {};
 

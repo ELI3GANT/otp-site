@@ -48,7 +48,7 @@ const port = process.env.PORT || 3000;
 // Initialize Supabase Admin Client (Service Role)
 // Only needed if performing admin actions like Delete/Update on restricted tables
 const supabaseAdmin = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY 
-    ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY) 
+    ? createClient(process.env.SUPABASE_URL.trim(), process.env.SUPABASE_SERVICE_KEY.trim()) 
     : null;
 
 if (supabaseAdmin) {
@@ -287,13 +287,14 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
         let result;
         let usage;
         if (provider === 'openai') {
-            if (!process.env.OPENAI_API_KEY) throw new Error("OpenAI Key not configured on server.");
+            const openaiKey = (process.env.OPENAI_API_KEY || '').trim();
+            if (!openaiKey) throw new Error("OpenAI Key not configured on server.");
             
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}` 
+                    'Authorization': `Bearer ${openaiKey}` 
                 },
                 body: JSON.stringify({
                     model: "gpt-4o",
@@ -341,7 +342,8 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                 if(success) break;
                 try {
                     console.log(`🤖 Gemini Probing Model: ${m}...`);
-                    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                    const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
+                    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${geminiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
@@ -361,7 +363,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                         continue;
                     }
 
-                    if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+                    if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text) {
                         let text = data.candidates[0].content.parts[0].text;
                         // Robust JSON Extraction
                         const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -382,12 +384,13 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             if(!success) throw new Error(`Gemini Probe Failed: ${lastErr}`);
 
         } else if (provider === 'anthropic') {
-            if (!process.env.ANTHROPIC_API_KEY) throw new Error("Claude Key not configured on server.");
+            const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
+            if (!anthropicKey) throw new Error("Claude Key not configured on server.");
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json', 
-                    'x-api-key': process.env.ANTHROPIC_API_KEY,
+                    'x-api-key': anthropicKey,
                     'anthropic-version': '2023-06-01'
                 },
                 body: JSON.stringify({
@@ -403,10 +406,11 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             usage = data.usage ? { total_tokens: data.usage.input_tokens + data.usage.output_tokens } : null;
 
         } else if (provider === 'groq') {
-            if (!process.env.GROQ_API_KEY) throw new Error("Groq Key not configured on server.");
+            const groqKey = (process.env.GROQ_API_KEY || '').trim();
+            if (!groqKey) throw new Error("Groq Key not configured on server.");
             const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
                 body: JSON.stringify({
                     model: model || 'llama-3.1-70b-versatile',
                     messages: [
@@ -430,10 +434,9 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
 
     } catch (error) {
         console.error("AI Error:", error.stack);
-        const isDev = process.env.NODE_ENV === 'development';
         res.status(500).json({ 
             success: false, 
-            message: isDev ? error.message : "Internal Server Error during AI generation" 
+            message: error.message || "Internal Server Error during AI generation" 
         });
     }
 });
@@ -519,14 +522,15 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
         let buffer;
 
         // Try OpenAI DALL-E 3 First (If Key Provided)
-        const apiKey = process.env.OPENAI_API_KEY || cloud_key;
+        const openaiKey = (process.env.OPENAI_API_KEY || '').trim();
+        const apiKey = openaiKey || cloud_key;
         let usedOpenAI = false;
 
         if (apiKey && apiKey.length > 10) {
             try {
                 const aiRes = await fetch('https://api.openai.com/v1/images/generations', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey.trim()}` },
                     body: JSON.stringify({
                         model: "dall-e-3",
                         prompt: `High-tech, cinematic, professional photography/render for a brand called 'Only True Perspective'. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. High resolution, 4k. Title reference: ${title}`,
@@ -671,7 +675,8 @@ app.post('/api/contact/submit', async (req, res) => {
         try {
             if (process.env.GEMINI_API_KEY) {
                 // Using stable 1.5-flash for reliability in auto-drafts
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -679,7 +684,7 @@ app.post('/api/contact/submit', async (req, res) => {
                     })
                 });
                 const data = await response.json();
-                if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text) {
                     draftReply = data.candidates[0].content.parts[0].text;
                 }
             } 
