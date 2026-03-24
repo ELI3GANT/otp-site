@@ -309,9 +309,12 @@
             if(satUrl) {
                 let storedUrl = localStorage.getItem('otp_api_base');
                 
-                // Force default secure URL if not set
-                if (!storedUrl || storedUrl === 'http://localhost:3000' || storedUrl === 'https://otp-site.vercel.app') {
-                    storedUrl = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || '');
+                // Resolve canonical URL from getApiBase and update if stale
+                const canonicalUrl = window.OTP.getApiBase();
+                
+                // Reset if empty, or pointing to the old Vercel hardcoded URL (stale config)
+                if (!storedUrl || storedUrl === 'https://otp-site.vercel.app') {
+                    storedUrl = canonicalUrl;
                     localStorage.setItem('otp_api_base', storedUrl);
                 }
                 
@@ -899,20 +902,11 @@
         }
 
         try {
-            // Use SECURE PROXY (Bypass RLS issues)
+            // Use SECURE PROXY (Bypass RLS issues). secureRead throws on error.
             const posts = await window.secureRead('posts', {
                 filters: [{ column: 'slug', op: 'neq', value: 'system-global-state' }]
             });
 
-            if (error) {
-                // Check if this is an Auth failure (might happen if RLS is strict or server rotated key)
-                if (error.code === '401' || (error.message && error.message.toLowerCase().includes('permission'))) {
-                    console.error("Critical Auth Mismatch with Supabase/RLS. session might be dead.", error);
-                    updateDiagnostics('auth', 'RLS BLOCK', 'var(--danger)');
-                }
-                throw error;
-            }
-            
             // Update Cache
             postsCache = posts;
             lastFetchTime = now;
@@ -922,6 +916,10 @@
 
         } catch (err) {
             console.error("POST FETCH ERROR:", err);
+            // If this is an auth error, flag it in diagnostics
+            if (err.message && (err.message.includes('401') || err.message.toLowerCase().includes('permission') || err.message.toLowerCase().includes('jwt'))) {
+                updateDiagnostics('auth', 'RLS BLOCK', 'var(--danger)');
+            }
             if (list.children.length === 0) {
                  list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">LINK ERROR: ${err.message}</div>`;
             }

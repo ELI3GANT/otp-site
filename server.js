@@ -537,7 +537,7 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
 
 // 2.7 Secure Multi-Table Data Fetching (Bypass RLS via Service Key)
 app.post('/api/admin/fetch-data', verifyToken, async (req, res) => {
-    const { table, select = '*', order = 'created_at', descending = true, filters = [] } = req.body;
+    const { table, select = '*', order = 'created_at', descending = true, filters = [], limit } = req.body;
     
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
 
@@ -550,7 +550,14 @@ app.post('/api/admin/fetch-data', verifyToken, async (req, res) => {
             if (f.op === 'neq') query = query.neq(f.column, f.value);
         });
 
-        const { data, error } = await query.order(order, { ascending: !descending });
+        query = query.order(order, { ascending: !descending });
+
+        // Apply limit if provided
+        if (limit && Number.isInteger(limit) && limit > 0) {
+            query = query.limit(limit);
+        }
+
+        const { data, error } = await query;
         
         if (error) throw error;
         res.json({ success: true, data });
