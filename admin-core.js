@@ -152,6 +152,66 @@
         }
         // ---[ END BUGFIX ]---
 
+
+            // ═══════════════════════════════════════════════════════
+            // SECURE PROXY HELPERS — defined before try block so they
+            // are always available even if Supabase connection fails.
+            // ═══════════════════════════════════════════════════════
+                        // SECURE WRITE PROXY HELPER
+                        window.secureWrite = async function(table, payload, id = null) {
+                            const apiBase = window.OTP.getApiBase();
+                            const res = await fetch(`${apiBase}/api/admin/write-data`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify({ id, payload, table })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || `Write Failed (${res.status})`);
+                }
+                return await res.json();
+            };
+
+            // SECURE READ PROXY HELPER (Bypass browser-blockages/RLS mismatch)
+            window.secureRead = async function(table, config = {}) {
+                const apiBase = window.OTP.getApiBase();
+                const res = await fetch(`${apiBase}/api/admin/fetch-data`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify({ table, ...config })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || `Read Failed (${res.status})`);
+                }
+                const json = await res.json();
+                return json.data;
+            };
+
+            // SECURE DELETE PROXY HELPER
+            window.secureDelete = async function(table, id) {
+                const apiBase = window.OTP.getApiBase();
+                const res = await fetch(`${apiBase}/api/admin/delete-post`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${state.token}`
+                    },
+                    body: JSON.stringify({ id, table })
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.message || `Delete Failed (${res.status})`);
+                }
+                return await res.json();
+            };
+
         try {
             console.log("🔌 Connecting to Supabase KERNEL...");
             updateDiagnostics('db', 'CONNECTING...', 'var(--admin-muted)');
@@ -252,60 +312,6 @@
             bindPersist(cloudGr, 'cloud_groq');
             
             // Resolve best API base: localStorage > OTP_CONFIG > canonical Vercel fallback
-                        // SECURE WRITE PROXY HELPER
-                        window.secureWrite = async function(table, payload, id = null) {
-                            const apiBase = window.OTP.getApiBase();
-                            const res = await fetch(`${apiBase}/api/admin/write-data`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${state.token}`
-                    },
-                    body: JSON.stringify({ id, payload, table })
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || `Write Failed (${res.status})`);
-                }
-                return await res.json();
-            };
-
-            // SECURE READ PROXY HELPER (Bypass browser-blockages/RLS mismatch)
-            window.secureRead = async function(table, config = {}) {
-                const apiBase = window.OTP.getApiBase();
-                const res = await fetch(`${apiBase}/api/admin/fetch-data`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${state.token}`
-                    },
-                    body: JSON.stringify({ table, ...config })
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || `Read Failed (${res.status})`);
-                }
-                const json = await res.json();
-                return json.data;
-            };
-
-            // SECURE DELETE PROXY HELPER
-            window.secureDelete = async function(table, id) {
-                const apiBase = window.OTP.getApiBase();
-                const res = await fetch(`${apiBase}/api/admin/delete-post`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${state.token}`
-                    },
-                    body: JSON.stringify({ id, table })
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || `Delete Failed (${res.status})`);
-                }
-                return await res.json();
-            };
             
             // Satellite URL: Load & Validate
             if(satUrl) {
@@ -3106,7 +3112,14 @@
         // --- REAL DATA: Supabase Realtime Subscription ---
         // Fires instantly whenever a post view is incremented on the live site
         function startRealtimeFeed() {
-            if (!state.client) return;
+            if (!state.client) {
+                // Supabase Realtime unavailable — update Active Feed to show correct state
+                const feedEl = document.getElementById('activeUsersFeed');
+                const countEl = document.getElementById('activeCount');
+                if (feedEl) feedEl.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--admin-muted); font-size: 0.8rem;">NO ACTIVE USERS — REALTIME OFFLINE</div>';
+                if (countEl) countEl.textContent = '0';
+                return;
+            }
 
             state.client
                 .channel('live-traffic-posts')
@@ -3188,6 +3201,16 @@
             });
             
             presenceChannel.subscribe();
+
+            // Safety fallback: if Realtime doesn't connect in 5s, show "no users" instead of hanging "WAITING"
+            setTimeout(() => {
+                const feedEl = document.getElementById('activeUsersFeed');
+                if (feedEl && feedEl.textContent.includes('WAITING FOR CONNECTIONS')) {
+                    feedEl.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--admin-muted); font-size: 0.8rem;">NO ACTIVE USERS AT THIS TIME</div>';
+                    const countEl = document.getElementById('activeCount');
+                    if (countEl && countEl.textContent === '--') countEl.textContent = '0';
+                }
+            }, 5000);
         }
 
         function renderActiveUsers(presenceState) {
@@ -3252,17 +3275,21 @@ Lang: ${u.lang || 'Unknown'}</div>
 
         // --- REAL DATA: Initial snapshot of most-viewed posts (last 24h activity) ---
         async function loadRecentActivity() {
-            if (!state.client) return;
             try {
-                const { data: posts, error } = await state.client
-                    .from('posts')
-                    .select('title, slug, views')
-                    .eq('published', true)
-                    .order('views', { ascending: false })
-                    .limit(5);
+                // Use secureRead proxy to bypass RLS anon key restrictions on live site
+                const posts = await window.secureRead('posts', {
+                    select: 'title,slug,views',
+                    filters: [
+                        { column: 'published', op: 'eq', value: true },
+                        { column: 'slug', op: 'neq', value: 'system-global-state' }
+                    ],
+                    order: 'views',
+                    descending: true,
+                    limit: 5
+                });
 
-                if (error || !posts || posts.length === 0) {
-                    pingContainer.innerHTML = '<div style="text-align: center; padding: 40px;">WAITING FOR LIVE SIGNALS...</div>';
+                if (!posts || posts.length === 0) {
+                    pingContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--admin-muted);">NO SIGNALS YET — WAITING FOR TRAFFIC...</div>';
                     return;
                 }
 
