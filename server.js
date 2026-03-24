@@ -151,7 +151,8 @@ const allowedOrigins = [
     'https://www.onlytrueperspective.tech',
     'https://otp-site.vercel.app',
     'http://localhost:3000',
-    'http://localhost:5500' // Local dev
+    'http://localhost:8080',
+    'http://localhost:5500' // Local dev (Live Server)
 ];
 app.use(cors({
     origin: (origin, callback) => {

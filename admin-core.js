@@ -309,12 +309,9 @@
             if(satUrl) {
                 let storedUrl = localStorage.getItem('otp_api_base');
                 
-                // Resolve canonical URL from getApiBase and update if stale
-                const canonicalUrl = window.OTP.getApiBase();
-                
-                // Reset if empty, or pointing to the old Vercel hardcoded URL (stale config)
-                if (!storedUrl || storedUrl === 'https://otp-site.vercel.app') {
-                    storedUrl = canonicalUrl;
+                // If nothing stored yet, resolve from site-config.js logic
+                if (!storedUrl) {
+                    storedUrl = window.OTP.getApiBase();
                     localStorage.setItem('otp_api_base', storedUrl);
                 }
                 
