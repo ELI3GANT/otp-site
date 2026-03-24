@@ -6,13 +6,18 @@
  */
 
 const canvas = document.getElementById('cursor-canvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas ? canvas.getContext('2d') : null;
 
-let width, height;
-let stars = [];
-let shootingStars = [];
-// Responsive Star Count: Extreme optimization for mobile
-const IS_MOBILE = window.innerWidth < 768;
+if (!canvas || !ctx) {
+    console.warn('[OTP] Stars system: cursor-canvas or 2D context missing. Particle field disabled.');
+    // Provide a dummy mouse update function to avoid errors if site-init.js calls it
+    window.updateMouse = () => {};
+} else {
+    let width, height;
+    let stars = [];
+    let shootingStars = [];
+    // Responsive Star Count: Extreme optimization for mobile
+    const IS_MOBILE = window.innerWidth < 768;
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const STAR_COUNT = REDUCED_MOTION ? 0 : (IS_MOBILE ? 40 : 180); 
 const CONNECTION_DIST = IS_MOBILE ? 80 : 120; // Shorter connections on mobile
@@ -370,3 +375,4 @@ function animate() {
 }
 
 animate();
+} // End stars system scope

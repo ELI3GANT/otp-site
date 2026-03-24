@@ -258,7 +258,7 @@
                 
                 // Force default secure URL if not set
                 if (!storedUrl || storedUrl === 'http://localhost:3000' || storedUrl === 'https://otp-site.vercel.app') {
-                    storedUrl = window.OTP_CONFIG?.apiBase || '';
+                    storedUrl = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || '');
                     localStorage.setItem('otp_api_base', storedUrl);
                 }
                 
@@ -849,7 +849,7 @@
             // Fetch ALL posts (no date filter, no status filter so we see drafts too)
             const { data: posts, error } = await state.client
                 .from('posts')
-                .select('id, title, created_at, published, views, slug')
+                .select('id, title, created_at, published, views, slug, tags, category')
                 .neq('slug', 'system-global-state')
                 .order('created_at', { ascending: false });
 
@@ -1052,7 +1052,7 @@
                 const executePurge = async () => {
                      showToast("INITIATING ADMIN FORCE PURGE...");
                      try {
-                         const apiBase = window.OTP_CONFIG?.apiBase || '';
+                         const apiBase = window.OTP ? window.OTP.getApiBase() : '';
                          const res = await fetch(`${apiBase}/api/admin/purge-leads`, {
                             method: 'POST',
                             headers: { 
@@ -1548,6 +1548,7 @@
     };
 
     function updateStats(posts) {
+        if (!posts || !Array.isArray(posts)) return;
         const statViews = document.getElementById('statViews');
         // Calculate total views
         const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
@@ -1701,7 +1702,7 @@
             <div class="post-row ${isLive ? 'row-active-live' : ''}">
                 <div style="cursor: pointer; flex: 1;" onclick="loadPostForEdit(${post.id})">
                     <div class="post-title">${window.escapeHtml(post.title || 'Untitled')} <span style="font-size:0.7em; color:var(--admin-accent); margin-left:5px;">(EDIT)</span></div>
-                    <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span style="color:var(--admin-success); font-weight:bold;">${(post.views || 0).toLocaleString()}</span> Views</div>
+                    <div class="post-meta">${new Date(post.created_at).toLocaleDateString()} • <span style="color:var(--admin-cyan); font-weight:bold;">${window.escapeHtml(post.category || 'Uncategorized')}</span> • <span style="color:var(--admin-success); font-weight:bold;">${(post.views || 0).toLocaleString()}</span> Views</div>
                     ${post.slug ? `<div style="font-size:0.55rem; color:var(--admin-muted); font-family:monospace; margin-top:2px; opacity:0.6;">↗ /insight.html?slug=${window.escapeHtml(post.slug)}</div>` : ''}
                     <div style="display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap;">
                         ${(post.tags || []).map(t => `<span style="font-size: 0.55rem; color: var(--admin-cyan); background: rgba(var(--accent2-rgb), 0.05); padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(var(--accent2-rgb), 0.1);">#${window.escapeHtml(t)}</span>`).join('')}
@@ -1895,6 +1896,7 @@
         const payload = {
             title,
             author: document.getElementById('authorInput')?.value || 'OTP Admin',
+            category: document.getElementById('catInput')?.value || 'Strategy',
             excerpt: excerpt || content.substring(0, 150) + '...',
             content,
             slug,
@@ -2282,7 +2284,7 @@
             if (authToken !== 'static-bypass-token') {
                 try {
                     if(status) { status.innerHTML = `<span class="blink">📡 CONTACTING SECURE HUB...</span>`; }
-                    const base = window.OTP_CONFIG?.apiBase || localStorage.getItem('otp_api_base') || window.location.origin;
+                    const base = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || window.location.origin);
                     const res = await fetch(base + '/api/ai/generate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
@@ -2478,7 +2480,7 @@
     async function triggerImageGenerator(prompt, title) {
         // All generation MUST be routed through the server to bypass CORS fetching restrictions from OpenAI blobs
         try {
-            const base = window.OTP_CONFIG?.apiBase || localStorage.getItem('otp_api_base') || window.location.origin;
+            const base = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || window.location.origin);
             const localKeyBackup = localStorage.getItem('cloud_openai');
             
             const res = await fetch(base + '/api/ai/generate-image', {
@@ -3343,7 +3345,7 @@ Lang: ${u.lang || 'Unknown'}</div>
     // EXPOSE SYSTEM HEALTH TO WINDOW
     window.checkSystemHealth = async function() {
         try {
-            const API_BASE = window.OTP_CONFIG?.apiBase || '';
+            const API_BASE = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || '');
             const res = await fetch(`${API_BASE}/api/health`);
             if (!res.ok) throw new Error();
             const data = await res.json();
