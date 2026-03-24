@@ -916,34 +916,38 @@
                 else if (isDrafted) { statusColor = 'var(--admin-cyan)'; statusText = 'DRAFT READY'; }
 
                 return `
-                <div class="post-row" style="display: block; padding: 15px; margin-bottom: 10px; cursor: default; border-left: 2px solid ${statusColor};">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <div class="post-row" style="display: block; padding: 15px; margin-bottom: 12px; cursor: default; border-left: 3px solid ${statusColor}; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: flex-start;">
                         <div>
-                             <span style="font-weight: bold; color: var(--admin-accent); font-size: 0.9rem;">${window.escapeHtml(c.name)}</span>
-                             <span style="color: var(--admin-muted); font-size: 0.8rem;"> &lt;${window.escapeHtml(c.email)}&gt;</span>
-                             <span style="font-size: 0.65rem; color: var(--admin-muted); margin-left: 10px;">${new Date(c.created_at).toLocaleDateString()}</span>
+                             <div style="font-weight: 800; color: #fff; font-size: 1rem; letter-spacing: 0.5px; margin-bottom: 2px;">${window.escapeHtml(c.name)}</div>
+                             <div style="color: var(--admin-cyan); font-size: 0.75rem; font-family: monospace;">&lt;${window.escapeHtml(c.email)}&gt;</div>
+                             <div style="font-size: 0.6rem; color: var(--admin-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">LAST SIGNAL: ${new Date(c.created_at).toLocaleString()}</div>
                         </div>
                         <div style="display:flex; gap: 8px; align-items:center;">
-                            <div style="font-size: 0.7rem; font-family: monospace; color: ${statusColor}; border: 1px solid ${statusColor}; padding: 2px 6px; border-radius: 4px;">${statusText}</div>
-                            <button type="button" onclick="return archiveContact('${c.id}', event)" title="Archive" style="background:transparent; border:none; color:var(--admin-muted); cursor:pointer;">📦</button>
-                            <button type="button" onclick="return deleteContact('${c.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer;">✖</button>
+                            <div style="font-size: 0.65rem; font-family: 'Space Grotesk', sans-serif; font-weight: 900; color: ${statusColor}; border: 1px solid ${statusColor}; padding: 3px 8px; border-radius: 4px; background: rgba(${statusColor === 'var(--admin-success)' ? '0,255,170' : '255,170,0'}, 0.05);">${statusText}</div>
+                            <button type="button" onclick="return archiveContact('${c.id}', event)" title="Archive" style="background:transparent; border:none; color:var(--admin-muted); cursor:pointer; font-size: 1.1rem; transition: color 0.2s;">📦</button>
+                            <button type="button" onclick="return deleteContact('${c.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer; font-size: 1.1rem; transition: color 0.2s;">✖</button>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; margin-bottom: 10px; color: var(--admin-text);">
-                        <div><span style="color: var(--admin-muted);">SERVICE:</span> ${window.escapeHtml(c.service || 'N/A')}</div>
-                        <div><span style="color: var(--admin-muted);">BUDGET:</span> ${window.escapeHtml(c.budget || 'N/A')}</div>
-                        <div style="grid-column: span 2;"><span style="color: var(--admin-muted);">MSG:</span> ${window.escapeHtml(c.message || '')}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem; margin-bottom: 12px; color: var(--admin-text); padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+                        <div><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// SERVICE</span><br>${window.escapeHtml(c.service || 'N/A')}</div>
+                        <div><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// BUDGET</span><br>${window.escapeHtml(c.budget || 'N/A')}</div>
+                        <div style="grid-column: span 2;"><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// MESSAGE</span><br><span style="line-height: 1.6;">${window.escapeHtml(c.message || '')}</span></div>
                     </div>
 
                     ${isDrafted ? `
-                    <div style="background: rgba(0,0,0,0.3); border-left: 2px solid var(--admin-cyan); padding: 10px; margin-top: 10px;">
-                        <div style="font-size: 0.65rem; color: var(--admin-cyan); margin-bottom: 5px; text-transform: uppercase;">// AI GENERATED RESPONSE</div>
-                        <div style="font-size: 0.8rem; color: var(--admin-muted); white-space: pre-wrap; margin-bottom: 10px;">${c.draft_reply.substring(0, 150)}...</div>
-                        <div style="display:flex; gap:10px;">
-                            <button type="button" onclick="copyDraft('${c.id}')" style="background: var(--admin-cyan); color: #000; border: none; padding: 5px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold;">COPY DRAFT</button>
-                            <button type="button" onclick="openReplyManager('${c.id}')" style="background: transparent; border: 1px solid var(--admin-cyan); color: var(--admin-cyan); padding: 5px 10px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold;">REVIEW & SEND</button>
+                    <div style="background: rgba(var(--accent2-rgb), 0.05); border-left: 3px solid var(--admin-cyan); padding: 15px; margin-top: 10px; border-radius: 0 6px 6px 0;">
+                        <div style="font-size: 0.65rem; color: var(--admin-cyan); margin-bottom: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px;">// AI NEURAL DRAFT</div>
+                        <div style="font-size: 0.85rem; color: #ccc; white-space: pre-wrap; margin-bottom: 15px; line-height: 1.5; font-style: italic;">"${c.draft_reply.substring(0, 200)}${c.draft_reply.length > 200 ? '...' : ''}"</div>
+                        <div style="display:flex; gap:12px;">
+                            <button type="button" onclick="copyDraft('${c.id}')" style="background: var(--admin-cyan); color: #000; border: none; padding: 8px 16px; font-size: 0.75rem; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase;">COPY SIGNAL</button>
+                            <button type="button" onclick="openReplyManager('${c.id}')" style="background: transparent; border: 1px solid var(--admin-cyan); color: var(--admin-cyan); padding: 8px 16px; font-size: 0.75rem; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase;">MODULATE RESPONSE</button>
                         </div>
-                    </div>` : ''}
+                    </div>` : `
+                    <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
+                        <button type="button" onclick="openReplyManager('${c.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--admin-border); color: #fff; padding: 6px 12px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">GENERATE RESPONSE</button>
+                    </div>
+                    `}
                 </div>
                 `;
             }).join('');
@@ -985,28 +989,29 @@
                 }
                 const escape = window.escapeHtml;
                 return `
-                <div class="post-row" style="display: block; padding: 15px; margin-bottom: 10px; cursor: default; border-left: 2px solid var(--admin-cyan);">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <div class="post-row" style="display: block; padding: 18px; margin-bottom: 12px; cursor: default; border-left: 3px solid var(--admin-cyan); background: rgba(var(--accent2-rgb), 0.03); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center;">
                         <div>
-                             <span style="font-weight: bold; color: var(--admin-accent); font-size: 0.9rem;">${escape(l.email)}</span>
-                             <span style="font-size: 0.65rem; color: var(--admin-muted); margin-left: 10px;">${new Date(l.created_at).toLocaleDateString()}</span>
+                             <div style="font-weight: 800; color: #fff; font-size: 0.95rem; letter-spacing: 0.5px;">${escape(l.email)}</div>
+                             <div style="font-size: 0.6rem; color: var(--admin-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">SIGNAL CAPTURED: ${new Date(l.created_at).toLocaleString()}</div>
                         </div>
                         <div style="display:flex; gap: 8px; align-items:center;">
-                            <div style="font-size: 0.7rem; font-family: monospace; color: var(--admin-cyan); border: 1px solid var(--admin-cyan); padding: 2px 6px; border-radius: 4px;">AUDIT</div>
-                            <button type="button" onclick="openReplyManager('${l.id}', 'leads')" title="Reply" style="background:transparent; border:none; color:var(--admin-cyan); cursor:pointer; font-size: 0.8rem;">📩</button>
-                            <button type="button" onclick="return deleteLead('${l.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer;">✖</button>
+                            <div style="font-size: 0.65rem; font-family: 'Space Grotesk', sans-serif; font-weight: 900; color: var(--admin-cyan); border: 1px solid var(--admin-cyan); padding: 3px 8px; border-radius: 4px; background: rgba(var(--accent2-rgb), 0.1); letter-spacing: 1px;">AUDIT SIGNAL</div>
+                            <button type="button" onclick="openReplyManager('${l.id}', 'leads')" title="Reply" style="background:transparent; border:none; color:var(--admin-cyan); cursor:pointer; font-size: 1.1rem;">📩</button>
+                            <button type="button" onclick="return deleteLead('${l.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer; font-size: 1.1rem;">✖</button>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; margin-bottom: 15px; color: var(--admin-text); background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px;">
-                        <div><span style="color: var(--admin-muted);">GOAL:</span> ${escape(answers.q1 || 'N/A')}</div>
-                        <div><span style="color: var(--admin-muted);">HURDLE:</span> ${escape(answers.q2 || 'N/A')}</div>
-                        <div><span style="color: var(--admin-muted);">PLATFORM:</span> ${escape(answers.q3 || 'N/A')}</div>
-                        <div><span style="color: var(--admin-muted);">VIBE:</span> ${escape(answers.q4 || 'N/A')}</div>
-                        <div style="grid-column: 1 / -1; margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.1);"><span style="color: var(--accent2); font-weight:700;">TARGET:</span> ${escape(answers.q5_goal || 'Not specified')}</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 0.8rem; margin-bottom: 15px; color: var(--admin-text); background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="grid-column: 1 / -1; margin-bottom: 5px;"><span style="color: var(--admin-cyan); font-weight:900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px;">// MISSION PARAMETERS</span></div>
+                        <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">OBJECTIVE:</span><br>${escape(answers.q1 || 'N/A')}</div>
+                        <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">BARRIER:</span><br>${escape(answers.q2 || 'N/A')}</div>
+                        <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">DOMAIN:</span><br>${escape(answers.q3 || 'N/A')}</div>
+                        <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">AESTHETIC:</span><br>${escape(answers.q4 || 'N/A')}</div>
+                        <div style="grid-column: 1 / -1; margin-top: 5px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);"><span style="color: var(--admin-success); font-weight:900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">PRIMARY TARGET:</span><br><span style="font-size: 0.9rem; font-weight: 700; color: #fff;">"${escape(answers.q5_goal || 'Not specified')}"</span></div>
                     </div>
-                    <div style="background: rgba(0,0,0,0.6); border-left: 2px solid var(--admin-accent); padding: 15px; border-radius: 4px; font-size: 0.85rem; line-height: 1.6;">
-                        <div style="font-size: 0.6rem; color: var(--admin-accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">TACTICAL RESPONSE</div>
-                        <div style="color: #ffffff;">${window.escapeHtml(l.advice || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
+                    <div style="background: rgba(0,0,0,0.5); border-left: 3px solid var(--admin-accent); padding: 15px; border-radius: 0 8px 8px 0; font-size: 0.85rem; line-height: 1.6; border: 1px solid rgba(112,0,255,0.1); border-left-width: 3px;">
+                        <div style="font-size: 0.6rem; color: var(--admin-accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; font-weight: 900;">// ORACLE TRANSMISSION</div>
+                        <div style="color: #eee; font-style: italic;">${window.escapeHtml(l.advice || '').replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--admin-cyan);">$1</strong>').replace(/\n/g, '<br>')}</div>
                     </div>
                 </div>
                 `;

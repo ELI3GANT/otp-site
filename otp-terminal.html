@@ -406,13 +406,13 @@
             </section>
   
             <!-- AI BRAIN (SECURE) -->
-            <section class="ai-tips">
-                <h4>🤖 SECURE NEURAL GENERATOR</h4>
-                <p style="font-size: 0.8rem; color: var(--admin-muted); margin-bottom: 15px;">Powered by Server-Side Proxy. Keys are hidden.</p>
+            <section class="input-section ai-tips">
+                <div class="section-label">04 // Neural AI Generator</div>
+                <p style="font-size: 0.8rem; color: var(--admin-muted); margin-bottom: 20px;">Powered by Server-Side Proxy. Keys are hidden.</p>
   
-                <div class="row" style="gap: 12px; margin-bottom: 12px;">
+                <div class="row" style="gap: 12px; margin-bottom: 15px;">
                     <div class="input-group" style="flex: 1;">
-                        <label for="aiProvider">Neural Engine</label>
+                        <label for="aiProvider">Intelligence Engine</label>
                         <select id="aiProvider" onchange="window.switchProvider(this.value);" style="background: var(--admin-panel); font-weight: bold; color: var(--accent2);">
                             <option value="gemini">Google Gemini 2.0 (Oracle Flagship)</option>
                             <option value="groq">Groq Llama 3.3 (Extreme Speed)</option>
@@ -422,12 +422,12 @@
                     </div>
                 </div>
 
-                <div id="neuralLinkStatus" style="font-size: 0.6rem; color: var(--admin-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                    <span id="hubIndicator" class="status-dot-mini" style="width: 6px; height: 6px; background: var(--admin-success);"></span>
-                    <span id="hubText">UPLINK: SECURE SERVER HUB (NO KEY REQUIRED)</span>
+                <div id="neuralLinkStatus" style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                    <span id="hubIndicator" class="status-dot-mini" style="width: 8px; height: 8px; background: var(--admin-success); box-shadow: 0 0 10px var(--admin-success);"></span>
+                    <span id="hubText" style="letter-spacing: 0.5px;">UPLINK: SECURE SERVER HUB (NO KEY REQUIRED)</span>
                 </div>
 
-                <div id="geminiModelGroup" style="display: none; margin-bottom: 12px;">
+                <div id="geminiModelGroup" style="display: none; margin-bottom: 15px;">
                     <div class="input-group">
                         <label for="geminiModel">Gemini Neural Variant</label>
                         <select id="geminiModel" style="background: var(--admin-panel); font-weight: bold; color: var(--accent2);">
@@ -458,10 +458,10 @@
                          <label for="aiPrompt">Core Concept / Prompt</label>
                          <textarea id="aiPrompt" placeholder="What is this about?" style="height: 60px;"></textarea>
                     </div>
-                    <button type="button" id="magicBtn" style="height: 100%; margin-top: 23px; background: linear-gradient(135deg, #7000ff, #ff00ff); color: white;" aria-label="Generate content using AI">⚡ TRANSMIT</button>
+                    <button type="button" id="magicBtn" style="height: 100%; margin-top: 23px; background: linear-gradient(135deg, var(--admin-accent), var(--accent2)); color: white; box-shadow: 0 0 15px rgba(var(--accent2-rgb), 0.3);" aria-label="Generate content using AI">⚡ TRANSMIT</button>
                 </div>
   
-                <div id="aiStatus" role="status" aria-live="polite" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px;"></div>
+                <div id="aiStatus" role="status" aria-live="polite" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px; font-weight: bold;"></div>
 
                 <!-- COST TRACKING UI -->
                 <div id="aiCostTracking" style="display: none; margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--admin-border); font-family: monospace; font-size: 0.65rem;">
@@ -476,12 +476,12 @@
                 </div>
 
                 <!-- SYSTEM & NEURAL SETTINGS (For Mobile/Live) -->
-                <div style="margin-top: 15px; border-top: 1px dashed #333; padding-top: 15px;">
-                    <button type="button" id="toggleSettingsBtn" onclick="toggleCloudSettings()" class="settings-toggle-btn" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text); font-size: 0.65rem; padding: 6px 12px; width: 100%; text-align: left; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: space-between; align-items: center;">
-                        <span>🛰️ SYSTEM & NEURAL SETTINGS</span>
+                <div style="margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
+                    <button type="button" id="toggleSettingsBtn" onclick="toggleCloudSettings()" class="settings-toggle-btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--admin-border); color: var(--admin-text); font-size: 0.65rem; padding: 8px 12px; width: 100%; text-align: left; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="letter-spacing: 1px;">🛰️ SYSTEM & NEURAL SETTINGS</span>
                         <span class="toggle-icon" style="transition: transform 0.2s ease;">▼</span>
                     </button>
-                    <div id="cloudSettings" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
+                    <div id="cloudSettings" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
                         
                         <!-- NEW: SATELLITE SERVER LINK -->
                         <div style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
