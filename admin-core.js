@@ -1335,13 +1335,18 @@
             } 
             else if (provider === 'gemini') {
                  // Google Gen AI REST
+                 const geminiConfig = {};
+                 if (modelConfig.temperature !== undefined) geminiConfig.temperature = modelConfig.temperature;
+                 if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
+                 if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
+
                  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cloudKey}`;
                  const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: systemPrompt }] }],
-                        generationConfig: { ...modelConfig }
+                        generationConfig: geminiConfig
                     })
                 });
                 const data = await res.json();
@@ -2357,6 +2362,13 @@
                     const endpoints = ['v1beta', 'v1'];
                     let gemSuccess = false;
                     let gemError = "Unknown Gemini error.";
+                    
+                    // Map common configs to Gemini specific
+                    const geminiConfig = { response_mime_type: "application/json" };
+                    if (modelConfig.temperature !== undefined) geminiConfig.temperature = modelConfig.temperature;
+                    if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
+                    if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
+
                     for (const v of endpoints) {
                         try {
                             const payload = { 
@@ -2367,10 +2379,7 @@
                                     role: 'user',
                                     parts: [{ text: userPrompt }] 
                                 }],
-                                generationConfig: { 
-                                    response_mime_type: "application/json",
-                                    ...modelConfig 
-                                }
+                                generationConfig: geminiConfig
                             };
 
                             const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudKey}`, {

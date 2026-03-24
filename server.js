@@ -316,6 +316,13 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             if (!process.env.GEMINI_API_KEY) throw new Error("Gemini Key not configured on server.");
             
             const candidates = model ? [model] : ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+            
+            // Map standard OpenAI-style model configs to Gemini format
+            const geminiConfig = { response_mime_type: "application/json" };
+            if (modelConfig.temperature !== undefined) geminiConfig.temperature = modelConfig.temperature;
+            if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
+            if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
+
             const payload = {
                 systemInstruction: {
                     parts: [{ text: systemPrompt || 'You are a professional blog writer.' }]
@@ -324,10 +331,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                     role: 'user',
                     parts: [{ text: `Generate a post titled "${title || 'New Insight'}" based on this prompt: "${prompt}". Return ALL fields as JSON.` }] 
                 }],
-                generationConfig: { 
-                    response_mime_type: "application/json",
-                    ...modelConfig 
-                }
+                generationConfig: geminiConfig
             };
 
             let lastErr = "";
@@ -344,7 +348,20 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                     });
                     
                     const data = await apiRes.json();
-                    if (!data.error) {
+                    
+                    if (data.error) {
+                        lastErr = `${m}: ${data.error.message}`; 
+                        console.warn(`⚠️ ${m} Failed: ${data.error.message}`);
+                        continue;
+                    }
+
+                    if (data.candidates && data.candidates[0].finishReason === 'SAFETY') {
+                        lastErr = `${m}: NEURAL BLOCK: Content flagged by safety filter.`;
+                        console.warn(`⚠️ ${m} SAFETY BLOCK.`);
+                        continue;
+                    }
+
+                    if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
                         let text = data.candidates[0].content.parts[0].text;
                         // Robust JSON Extraction
                         const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -355,8 +372,8 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                         success = true;
                         console.log(`✅ Success via ${m}`);
                     } else { 
-                        lastErr = `${m}: ${data.error.message}`; 
-                        console.warn(`⚠️ ${m} Failed: ${data.error.message}`);
+                        lastErr = `${m}: Unexpected response structure.`;
+                        console.warn(`⚠️ ${m} Unexpected format:`, JSON.stringify(data).substring(0, 100));
                     }
                 } catch (e) { 
                     lastErr = `${m}: ${e.message}`; 
