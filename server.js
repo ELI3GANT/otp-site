@@ -132,6 +132,18 @@ app.get('/:file', (req, res, next) => {
     next();
 });
 
+
+app.get('/api/status', async (req, res) => {
+    try {
+        if (!supabaseAdmin) return res.json({ status: 'ERR', database: 'DISCONNECTED', message: 'No Service Key' });
+        const { error } = await supabaseAdmin.from('posts').select('id', { head: true, count: 'exact' }).limit(1);
+        if (error) throw error;
+        res.json({ status: 'UP', database: 'CONNECTED', timestamp: new Date().toISOString() });
+    } catch (e) {
+        res.status(500).json({ status: 'ERR', database: 'DISCONNECTED', message: e.message });
+    }
+});
+
 // 3. CORS: Allow same-origin (adjust if frontend is separate)
 // 3. CORS: Restrict to main domain and known satellites
 const allowedOrigins = [
