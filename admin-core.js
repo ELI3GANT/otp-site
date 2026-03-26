@@ -963,11 +963,20 @@
             inbox.innerHTML = data.map(c => {
                 const isDrafted = c.draft_reply && c.draft_reply.length > 0;
                 let statusColor = '#ffaa00';
-                let statusText = 'PENDING';
+                let statusText = 'NEW LEAD';
                 
-                if (c.ai_status === 'completed') { statusColor = 'var(--admin-success)'; statusText = 'COMPLETED'; }
-                else if (c.ai_status === 'archived') { statusColor = '#666'; statusText = 'ARCHIVED'; }
-                else if (isDrafted) { statusColor = 'var(--admin-cyan)'; statusText = 'DRAFT READY'; }
+                if (c.ai_status === 'completed') { 
+                    statusColor = 'var(--admin-success)'; 
+                    statusText = 'ACTIVE CLIENT'; 
+                }
+                else if (c.ai_status === 'archived') { 
+                    statusColor = '#666'; 
+                    statusText = 'ARCHIVED'; 
+                }
+                else if (isDrafted) { 
+                    statusColor = 'var(--admin-cyan)'; 
+                    statusText = 'LEAD (AI DRAFTED)'; 
+                }
 
                 return `
                 <div class="post-row" style="display: block; padding: 15px; margin-bottom: 12px; cursor: default; border-left: 3px solid ${statusColor}; background: rgba(255,255,255,0.02); border-radius: 8px;">
@@ -1289,6 +1298,20 @@
         document.getElementById('replyContactEmail').value = c.email || '';
         document.getElementById('replyContactName').value = c.name || (source === 'leads' ? 'Valued Lead' : 'Client');
         
+        // --- NEW WORKFLOW LOGIC ---
+        const aliasLabel = document.getElementById('senderAliasLabel');
+        const subjectInput = document.getElementById('replySubject');
+        const isClient = c.ai_status === 'completed';
+        const name = c.name || (source === 'leads' ? 'Valued Lead' : 'Client');
+
+        if (isClient) {
+            if(aliasLabel) aliasLabel.textContent = 'SENDER: bookings@onlytrueperspective.tech';
+            if(subjectInput) subjectInput.value = `OTP Project Update // ${name}`;
+        } else {
+            if(aliasLabel) aliasLabel.textContent = 'SENDER: contact@onlytrueperspective.tech';
+            if(subjectInput) subjectInput.value = `Inquiry Reply: Only True Perspective // ${name}`;
+        }
+
         // Context formatting
         let messageContext = c.message || '';
         if (source === 'leads' && c.answers) {
@@ -1492,10 +1515,7 @@
     const email = document.getElementById('replyContactEmail').value;
     const name = document.getElementById('replyContactName').value;
     const content = document.getElementById('replyDraftContent').value;
-    
-    // Clean and Professional Subject
-    const subjectName = name ? ` // ${name}` : '';
-    const subject = `Inquiry Reply: Only True Perspective${subjectName}`;
+    const subject = document.getElementById('replySubject').value || `Inquiry Reply: Only True Perspective`;
     
     // Ensure content is safe for URL
     const safeSubject = encodeURIComponent(subject);
@@ -1983,11 +2003,13 @@
         if (id) {
             // UPDATE
             console.log("📝 UPDATING POST (SECURE):", id);
+            payload.updated_at = new Date().toISOString();
             await window.secureWrite('posts', payload, id);
         } else {
             // INSERT
             console.log("📝 CREATING POST (SECURE)");
             payload.created_at = new Date().toISOString();
+            payload.updated_at = payload.created_at;
             await window.secureWrite('posts', payload);
         }
         
@@ -2576,6 +2598,7 @@
                 const prevDiv = document.getElementById('imagePreview');
                 if (prevImg && prevDiv) {
                     prevImg.src = data.url;
+                    prevDiv.style.display = 'block';
                 }
                 trackAICost('openai', 2000); 
                 showToast("VISUAL SYNTHESIS COMPLETE");

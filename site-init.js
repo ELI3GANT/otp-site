@@ -811,6 +811,21 @@ function initSite() {
         sections.forEach(s => observer.observe(s));
     }
     
+    /**
+     * Security Utility: Escape HTML
+     * Prevents XSS in innerHTML injections
+     */
+    window.escapeHtml = function(text) {
+        if (text === undefined || text === null) return '';
+        return text
+            .toString()
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
+
     // --- ACTIVE LINK LOGIC & CLICK SCROLL ---
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('.nav-links a, .nav-drawer a, .book-btn[href^="#"], .book-btn[href*="index.html#"]');
@@ -1225,8 +1240,8 @@ function initSite() {
     // --- PACKAGE SELECTION (CONTACT PRE-FILL) ---
     const pkgButtons = document.querySelectorAll('.pkg-select-btn');
     const contactSection = document.getElementById('contact');
-    const serviceSelect = document.getElementById('service');
-    const messageInput = document.getElementById('message');
+    const serviceSelect = document.getElementById('project_type');
+    const messageInput = document.getElementById('project_details');
 
     if (pkgButtons.length > 0 && contactSection && serviceSelect && messageInput) {
         pkgButtons.forEach(btn => {

@@ -92,6 +92,53 @@ app.use(helmet({
     },
 }));
 
+// --- EMAIL WORKFLOW SYSTEM ---
+const BUSINESS_EMAILS = {
+    MAIN: 'eli3gant@onlytrueperspective.tech',
+    CONTACT: 'contact@onlytrueperspective.tech',
+    BOOKINGS: 'bookings@onlytrueperspective.tech',
+    INFO: 'info@onlytrueperspective.tech'
+};
+
+async function sendSecureEmail({ to, subject, html, text, from = BUSINESS_EMAILS.CONTACT }) {
+    const key = process.env.RESEND_API_KEY; // Recommended service
+    
+    // For local dev/demo, we log the intent if no key exists
+    if (!key) {
+        console.log(`
+[📩 EMAIL WORKFLOW SIMULATION]
+FROM: ${from}
+TO: ${to}
+SUBJECT: ${subject}
+BODY: ${text || 'HTML Content Sent'}
+-------------------------------
+        `);
+        return { success: true, simulated: true };
+    }
+
+    try {
+        const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${key}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                from: `OnlyTruePerspective <${from}>`,
+                to: [to],
+                subject,
+                html,
+                text
+            })
+        });
+        const data = await response.json();
+        return { success: response.ok, data };
+    } catch (e) {
+        console.error("❌ Email Sending Failed:", e.message);
+        return { success: false, error: e.message };
+    }
+}
+
 // 3. Global Cache Protocol (BREAK PERSISTENT BROWSER CACHING)
 app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -518,10 +565,14 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
     try {
         let query;
         if (id) {
-            // UPDATE
+            // Ensure updated_at is set for tracking
+            if (!payload.updated_at) payload.updated_at = new Date().toISOString();
             query = supabaseAdmin.from(targetTable).update(payload).eq('id', id);
         } else {
             // INSERT
+            // Ensure created/updated timestamps exist
+            if (!payload.created_at) payload.created_at = new Date().toISOString();
+            if (!payload.updated_at) payload.updated_at = payload.created_at;
             query = supabaseAdmin.from(targetTable).insert([payload]);
         }
 
@@ -741,7 +792,7 @@ app.post('/api/track/view', async (req, res) => {
 
 // 5. CONTACT AGENT (AI Auto-Draft)
 app.post('/api/contact/submit', async (req, res) => {
-    const { name, email, service, message, budget, timeline, _gotcha } = req.body;
+    const { name, email, project_type, project_details, budget, timeline, _gotcha } = req.body;
     
     // 0. Honeypot Spam Check
     if (_gotcha) {
@@ -762,7 +813,12 @@ app.post('/api/contact/submit', async (req, res) => {
         const { data: contactData, error: dbError } = await adminClient
             .from('contacts')
             .insert([{ 
-                name, email, service, message, budget, timeline, 
+                name, 
+                email, 
+                service: project_type, // Map to DB column
+                message: project_details, // Map to DB column
+                budget, 
+                timeline, 
                 ai_status: 'processing' 
             }])
             .select()
@@ -770,34 +826,56 @@ app.post('/api/contact/submit', async (req, res) => {
 
         if (dbError) throw dbError;
 
-        // 3. Trigger AI Agent (Fire and Forget or Await?)
-        // We will await it to ensure it's done for the demo, but usually this is a background job.
-        
+        // 3. INTERNAL NOTIFICATION (Forward to contact@)
+        await sendSecureEmail({
+            to: BUSINESS_EMAILS.CONTACT,
+            subject: `[NEW LEAD] ${name} // OTP`,
+            html: `
+                <div style="font-family: sans-serif; padding: 20px; background: #000; color: #fff;">
+                    <h2 style="color: #00ffaa; border-bottom: 1px solid #333; padding-bottom: 10px;">TACTICAL LEAD ACQUISITION</h2>
+                    <p><strong>NAME:</strong> ${name}</p>
+                    <p><strong>EMAIL:</strong> ${email}</p>
+                    <p><strong>PROJECT TYPE:</strong> ${project_type}</p>
+                    <p><strong>BUDGET:</strong> ${budget || 'N/A'}</p>
+                    <p><strong>TIMELINE:</strong> ${timeline || 'N/A'}</p>
+                    <p><strong>DETAILS:</strong><br>${project_details}</p>
+                    <div style="margin-top: 20px; font-size: 0.8rem; color: #666;">
+                        Generated via OTP Portal System // ID: ${contactData.id}
+                    </div>
+                </div>
+            `,
+            text: `NEW LEAD: ${name}\nEmail: ${email}\nProject Type: ${project_type}\nBudget: ${budget}\nTimeline: ${timeline}\n\nMessage:\n${project_details}`,
+            from: BUSINESS_EMAILS.CONTACT
+        });
+
+        // 4. AUTO-RESPONSE (Send to Lead)
+        await sendSecureEmail({
+            to: email,
+            subject: 'We got your request — OnlyTruePerspective',
+            text: `Hey — appreciate you reaching out to OnlyTruePerspective.\n\nWe just received your request and we’re reviewing it now.\n\nIf you want to speed things up, reply with your timeline, budget range, and any references or examples.\n\nWe’ll get back to you shortly.\n\n– ELI\nOnlyTruePerspective`,
+            html: `
+                <div style="font-family: sans-serif; line-height: 1.6; color: #111;">
+                    <p>Hey — appreciate you reaching out to OnlyTruePerspective.</p>
+                    <p>We just received your request and we’re reviewing it now.</p>
+                    <p>If you want to speed things up, reply with your timeline, budget range, and any references or examples.</p>
+                    <p>We’ll get back to you shortly.</p>
+                    <br>
+                    <p><strong>– ELI</strong><br>OnlyTruePerspective</p>
+                </div>
+            `,
+            from: BUSINESS_EMAILS.CONTACT
+        });
+
+        // 5. TRIGGER AI AGENT (Content Analysis & Draft Generation)
         const systemPrompt = `You are the Studio Manager for 'Only True Perspective' (OTP), a high-end creative agency.
-        Your goal represents the agency to a potential client.
-        Tone: Professional, high-status, concise, slightly futuristic ("dope").
-        Action: Draft a reply email acknowledging their inquiry and proposing a time to talk.
-        Context: 
-        - If budget is low (<$500), allow them to down gently or suggest "The Visualizer" package.
-        - If budget is high ($3000+), give them VIP treatment.
-        - Sign off with "OTP // Visual Division".`;
+        Draft a high-status, professional reply email for ${name}.
+        Sign off with "OTP // Visual Division".`;
 
-        const userPrompt = `Client: ${name}
-        Service: ${service}
-        Budget: ${budget}
-        Message: ${message}
-        
-        Task: Write the email draft (Subject + Body).`;
-
-        // Use the same AI logic as /generate, but simplified inline here for speed or reuse function.
-        // For simplicity, we'll try Gemini first as it's free/fast, fallback to OpenAI.
+        const userPrompt = `Lead: ${name}\nService: ${project_type}\nBudget: ${budget}\nDetails: ${project_details}`;
         
         let draftReply = "";
-        let analysis = {};
-
         try {
             if (process.env.GEMINI_API_KEY) {
-                // Using stable 1.5-flash for reliability in auto-drafts
                 const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
                     method: 'POST',
@@ -807,31 +885,27 @@ app.post('/api/contact/submit', async (req, res) => {
                     })
                 });
                 const data = await response.json();
-                if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text) {
+                if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
                     draftReply = data.candidates[0].content.parts[0].text;
                 }
             } 
         } catch (aiError) {
-            console.warn("⚠️ AI Drafting failed (User submission still saved):", aiError.message);
+            console.warn("⚠️ AI Drafting fallback triggered:", aiError.message);
         }
         
-        // 4. Update Contact with Draft
-        try {
-            if (draftReply) {
-                await adminClient
-                    .from('contacts')
-                    .update({ 
-                        draft_reply: draftReply,
-                        ai_status: 'drafted',
-                        ai_analysis: { generated_at: new Date().toISOString() }
-                    })
-                    .eq('id', contactData.id);
-            }
-        } catch (dbUpdateError) {
-            console.warn("⚠️ Failed to update DB with AI draft:", dbUpdateError.message);
+        // Update DB with Draft
+        if (draftReply) {
+            await adminClient
+                .from('contacts')
+                .update({ 
+                    draft_reply: draftReply,
+                    ai_status: 'drafted',
+                    ai_analysis: { processed_at: new Date().toISOString() }
+                })
+                .eq('id', contactData.id);
         }
 
-        res.json({ success: true, message: "Contact received and agent activated." });
+        res.json({ success: true, message: "Contact workflow initiated successfully." });
 
     } catch (error) {
         console.error("Agent Error:", error);

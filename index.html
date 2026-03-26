@@ -49,11 +49,11 @@
       "@type": "Organization",
     "name": "Only True Perspective",
     "url": "https://onlytrueperspective.tech/",
-    "email": "eli3gant@onlytrueperspective.tech",
+    "email": "contact@onlytrueperspective.tech",
     "founder": {
       "@type": "Person",
       "name": "Elijah",
-      "email": "eli@onlytrueperspective.tech"
+      "email": "contact@onlytrueperspective.tech"
     }
   }
   </script>
@@ -882,7 +882,7 @@
       <header class="section-head center-text">
         <h2>Contact</h2>
         <p>Tell us about your project and we’ll get back to you shortly to discuss next steps.</p>
-                  <a href="mailto:eli3gant@onlytrueperspective.tech" class="book-btn-ghost magnetic-btn" style="margin-top: 20px; display: inline-flex; align-items: center; gap: 8px;">          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <a href="mailto:contact@onlytrueperspective.tech" class="book-btn-ghost magnetic-btn" style="margin-top: 20px; display: inline-flex; align-items: center; gap: 8px;">          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           Get in touch via Email
         </a>
       </header>
@@ -902,8 +902,8 @@
           </div>
           
           <div class="form-group">
-            <label for="service">Interested In</label>
-            <select id="service" name="service" required>
+            <label for="project_type">Project Type</label>
+            <select id="project_type" name="project_type" required>
               <option value="" disabled selected>Select a package</option>
               <option value="The Drop">The Drop ($50)</option>
               <option value="The Vision">The Vision ($100)</option>
@@ -913,8 +913,8 @@
           </div>
 
           <div class="form-group">
-            <label for="message">Project Details</label>
-            <textarea id="message" name="message" rows="5" placeholder="Tell us about the project, mood, and deadline..." required></textarea>
+            <label for="project_details">Project Details</label>
+            <textarea id="project_details" name="project_details" rows="5" placeholder="Tell us about the project, mood, and deadline..." required></textarea>
           </div>
 
           <!-- Anti-spam -->
@@ -984,7 +984,7 @@
               </svg>
             </a>
             
-            <a href="mailto:eli3gant@onlytrueperspective.tech" aria-label="Email" class="icon-link">
+            <a href="mailto:contact@onlytrueperspective.tech" aria-label="Email" class="icon-link">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                 <polyline points="22,6 12,13 2,6"></polyline>
@@ -1023,10 +1023,10 @@
         <div class="footer-socials-row">
           <a href="https://instagram.com/onlytrueperspective" class="k-hover">Instagram</a>
           <a href="https://youtube.com/@onlytrueperspective" class="k-hover">YouTube</a>
-                      <a href="mailto:eli3gant@onlytrueperspective.tech" class="k-hover">Email</a>        </div>
+                      <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Email</a>        </div>
         <div class="fineprint">© <span id="year">2026</span> Only True Perspective. Directed by ELI3GANT.</div>
         <div class="footer-legal">
-                      <a href="mailto:eli3gant@onlytrueperspective.tech" class="k-hover">Contact</a>          <span class="dot">•</span>
+                      <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>          <span class="dot">•</span>
           <a href="terms.html">Terms</a>
           <span class="dot">•</span>
           <a href="privacy.html">Privacy</a>
@@ -1171,7 +1171,7 @@
 
         // PACKAGE SELECTION BRIDGE
         const pkgBtns = document.querySelectorAll('.pkg-select-btn');
-        const serviceSelect = document.getElementById('service');
+        const serviceSelect = document.getElementById('project_type');
         if(pkgBtns.length) {
             pkgBtns.forEach(btn => {
                 btn.addEventListener('click', () => {

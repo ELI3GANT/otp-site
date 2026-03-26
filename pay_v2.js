@@ -122,7 +122,7 @@ async function initPaymentSystem() {
     // --- 2. CONTACT FORM INTEGRATION ---
 
     const form = document.getElementById('contactForm');
-    const serviceSelect = document.getElementById('service');
+    const serviceSelect = document.getElementById('project_type');
     const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
 
     if (form && serviceSelect && submitBtn) {

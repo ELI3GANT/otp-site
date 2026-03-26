@@ -369,7 +369,7 @@
                 <input type="text" id="projectLink" placeholder="https://..." autofocus>
                 <button class="btn" onclick="submitAssets()">INITIALIZE UPLOAD</button>
                 <div class="email-alt">
-                    OR EMAIL DIRECTLY TO: <a href="mailto:eli3gant@onlytrueperspective.tech">eli3gant@onlytrueperspective.tech</a>
+                    OR EMAIL DIRECTLY TO: <a href="mailto:bookings@onlytrueperspective.tech">bookings@onlytrueperspective.tech</a>
                 </div>
             </div>
 
@@ -399,7 +399,7 @@
             const subject = `OTP PRIORITY ASSETS: ${sessionId || 'New Order'}`;
             const body = `ASSET LINK: ${link}\n\n(Session ID: ${sessionId || 'N/A'})\n\nInitiating project verification...`;
             
-            window.location.href = `mailto:eli3gant@onlytrueperspective.tech?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = `mailto:bookings@onlytrueperspective.tech?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
             setTimeout(() => {
                 document.getElementById('uploadArea').style.display = 'none';
