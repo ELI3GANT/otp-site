@@ -538,8 +538,8 @@
             const optimizedFile = await optimizeImage(file);
             if(btn) btn.textContent = "UPLOADING...";
 
-            // Ensure extension matches MIME type (jpeg)
-            const fileExt = "jpg"; // optimizedImage returns image/jpeg
+            // Ensure extension matches MIME type if it was optimized, otherwise use original
+            const fileExt = optimizedFile.name.split('.').pop().toLowerCase() || "jpg";
             const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
             const filePath = `blog/${fileName}`;
 
@@ -1656,14 +1656,18 @@
             statPublished.textContent = pubCount;
         }
 
-        // Active Now (Live visitor simulation based on views — refreshes every 20s)
+        // Active Now (Link to Realtime Presence if available, otherwise simulation)
         const statLive = document.getElementById('statLive');
         if (statLive) {
-            const publishedCount = posts.filter(p => p.published).length;
-            // Realistic signal: scale with published posts
-            const base = Math.max(1, Math.floor(publishedCount * 0.8));
-            const jitter = Math.floor(Math.random() * 3);
-            statLive.textContent = base + jitter;
+            const realCount = document.getElementById('activeCount')?.textContent;
+            if (realCount && realCount !== '--') {
+                statLive.textContent = realCount;
+            } else {
+                const publishedCount = posts.filter(p => p.published).length;
+                const base = Math.max(1, Math.floor(publishedCount * 0.8));
+                const jitter = Math.floor(Math.random() * 3);
+                statLive.textContent = base + jitter;
+            }
         }
 
         // Render Chart
@@ -1971,7 +1975,7 @@
         const content = document.getElementById('contentArea')?.value.trim();
         const slugRaw = document.getElementById('slugInput')?.value.trim();
         const tagsRaw = document.getElementById('tagsInput')?.value.trim();
-        const imageUrl = document.getElementById('imageUrl')?.value;
+        const imageUrl = document.getElementById('imageUrl')?.value || document.getElementById('urlInput')?.value;
 
         if (!title) throw new Error("HEADLINE REQUIRED");
         if (!content) throw new Error("CONTENT REQUIRED");
@@ -3166,6 +3170,9 @@
                         type: 'LIVE_SIGNAL',
                         color: 'var(--admin-success)'
                     });
+
+                    // Auto-refresh stats if view changes on live site
+                    if (window.fetchPosts) window.fetchPosts(false);
                 })
                 .subscribe((status) => {
                     if (status === 'SUBSCRIBED') {
@@ -3192,6 +3199,9 @@
                         type: 'CONTACT_SIGNAL',
                         color: 'var(--admin-cyan)'
                     });
+
+                    // Live auto-refresh inbox
+                    if (window.fetchInbox) window.fetchInbox();
                 })
                 .subscribe();
                  
@@ -3214,6 +3224,9 @@
                         type: 'LEAD_SIGNAL',
                         color: 'var(--admin-accent)'
                     });
+
+                    // Live auto-refresh leads
+                    if (window.fetchLeads) window.fetchLeads();
                 })
                 .subscribe();
 
@@ -3249,6 +3262,8 @@
             }
 
             countEl.textContent = allUsers.length;
+            const liveStat = document.getElementById('statLive');
+            if (liveStat) liveStat.textContent = allUsers.length;
 
             if (allUsers.length === 0) {
                 feedContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--admin-muted); font-size: 0.8rem;">NO ACTIVE USERS.</div>';

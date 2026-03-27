@@ -35,7 +35,7 @@
   }
   </script>
 
-  <link rel="stylesheet" href="./styles.css?v=10.5.2" />
+  <link rel="stylesheet" href="./styles.css?v=15.1.1" />
   <link rel="stylesheet" href="./blog-enhancements.css" />
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -167,7 +167,7 @@
   
     </style>
   
-  <script src="site-config.js?v=10.5.2"></script>
+  <script src="site-config.js?v=15.1.1"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- THEME GUARD: Prevents flickering by initializing theme before first paint -->
@@ -285,7 +285,7 @@
   </main>
 
   <script src="stars-v2.js"></script>
-  <script src="site-init.js?v=10.5.2"></script>
+  <script src="site-init.js?v=15.1.1"></script>
 
 
   <script>
@@ -332,14 +332,9 @@
             document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', postExcerpt);
             document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', postImage);
             // --- FIRE LIVE TRAFFIC SIGNAL ---
-            const apiBase = window.OTP.getApiBase();
-            
-            fetch(`${apiBase}/api/track/view`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ slug: slug })
-            }).catch(e => console.warn("Signal ping failed:", e));
-
+            if (window.OTP && typeof window.OTP.trackView === 'function') {
+                window.OTP.trackView(slug);
+            }
             
             const body = document.getElementById('postBody');
             // Use marked for markdown rendering if available
@@ -369,26 +364,12 @@
             document.getElementById('loader').style.display = 'none';
             body.style.display = 'block';
 
-            // Track analytics view
-            if (window.OTP && typeof window.OTP.trackView === 'function') {
-                window.OTP.trackView(slug);
-            }
-
             console.log(`[OTP] Loaded: ${post.title}`);
         } catch (e) {
             console.error("Uplink Error:", e);
             document.getElementById('loader').style.display = 'none';
             const titleEl = document.getElementById('postTitle');
             
-            // --- FIRE LIVE TRAFFIC SIGNAL ---
-            const apiBase = window.OTP.getApiBase();
-            
-            fetch(`${apiBase}/api/track/view`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ slug: slug })
-            }).catch(e => console.warn("Signal ping failed:", e));
-
             const body = document.getElementById('postBody');
             if (titleEl) titleEl.innerText = e.message === 'POST_NOT_FOUND' ? "SIGNAL NOT FOUND" : "UPLINK ERROR";
             if (body) {
