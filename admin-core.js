@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V15.0.0 (FORCE-DATA)
+ * ADMIN CORE V15.10.3 STABLE
  * Centralized logic for the OTP Admin Panel.
  * Handles: Session Persistence, JWT decoding, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V14.5.0 RELEASE (ORACLE_MASTER_BUILD): ONLINE.");
+    console.log("🚀 ADMIN CORE V15.10.3 STABLE: ONLINE.");
 
     // GLOBAL ERROR TRAP
     window.addEventListener('unhandledrejection', function(event) {
