@@ -2591,7 +2591,19 @@
                                 const jsonMatch = text.match(/\{[\s\S]*\}/);
                                 if (jsonMatch) text = jsonMatch[0];
                                 
-                                aiResult = JSON.parse(text);
+                                // FIX: Protect against "Bad escaped character" (LLM often returns literal \ or bad escapes)
+                                // We replace illegal backslashes (those not followed by valid JSON escape chars)
+                                let sanitizedText = text
+                                    .replace(/\r?\n/g, "\\n") // Fix raw newlines in strings
+                                    .replace(/\\(?!["\\\/bfnrtu]|u[0-9a-fA-F]{4})/g, "\\\\"); // Fix illegal backslashes
+                                
+                                try {
+                                    aiResult = JSON.parse(sanitizedText);
+                                } catch(parseErr) {
+                                    console.warn("Retrying with raw text escape fallback...");
+                                    aiResult = JSON.parse(text.replace(/\r?\n/g, "\\n"));
+                                }
+                                
                                 // Gemini token tracking
                                 if (raw.usageMetadata) trackAICost('gemini', raw.usageMetadata.totalTokenCount);
                                 else trackAICost('gemini', 1500); 
