@@ -351,14 +351,14 @@ const verifyToken = (req, res, next) => {
 // 2. Secure AI Generation (Proxied)
 app.post('/api/ai/generate', verifyToken, async (req, res) => {
     // ... existing AI logic ...
-    const { provider, prompt, title, systemPrompt, model, modelConfig = {} } = req.body;
+    const { provider, prompt, title, systemPrompt, model, modelConfig = {}, keys = {} } = req.body;
     
     try {
         let result;
         let usage;
         if (provider === 'openai') {
-            const openaiKey = (process.env.OPENAI_API_KEY || '').trim();
-            if (!openaiKey) throw new Error("OpenAI Key not configured on server.");
+            const openaiKey = (process.env.OPENAI_API_KEY || keys.openai || '').trim();
+            if (!openaiKey) throw new Error("OpenAI Key not configured on server or terminal.");
             
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
@@ -384,7 +384,8 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             usage = data.usage;
 
         } else if (provider === 'gemini') {
-            if (!process.env.GEMINI_API_KEY) throw new Error("Gemini Key not configured on server.");
+            const geminiKey = (process.env.GEMINI_API_KEY || keys.gemini || '').trim();
+            if (!geminiKey) throw new Error("Gemini Key not configured on server or terminal.");
             
             const candidates = model ? [model] : ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
             
@@ -412,7 +413,6 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                 if(success) break;
                 try {
                     console.log(`🤖 Gemini Probing Model: ${m}...`);
-                    const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
                     const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${geminiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -454,8 +454,8 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             if(!success) throw new Error(`Gemini Probe Failed: ${lastErr}`);
 
         } else if (provider === 'anthropic') {
-            const anthropicKey = (process.env.ANTHROPIC_API_KEY || '').trim();
-            if (!anthropicKey) throw new Error("Claude Key not configured on server.");
+            const anthropicKey = (process.env.ANTHROPIC_API_KEY || keys.anthropic || '').trim();
+            if (!anthropicKey) throw new Error("Claude Key not configured on server or terminal.");
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: { 
@@ -719,7 +719,7 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
                 if (aiData.error) throw new Error(aiData.error.message);
                 
                 const imgRes = await fetch(aiData.data[0].url);
-                buffer = await imgRes.arrayBuffer();
+                buffer = Buffer.from(await imgRes.arrayBuffer());
                 usedOpenAI = true;
             } catch(e) {
                 console.warn("OpenAI Image Sync Failed, triggering Flux fallback:", e.message);
@@ -735,7 +735,7 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
             
             const fluxRes = await fetch(fluxUrl);
             if (!fluxRes.ok) throw new Error("Emergency Flux Link offline. All Visual Engines exhausted.");
-            buffer = await fluxRes.arrayBuffer();
+            buffer = Buffer.from(await fluxRes.arrayBuffer());
         }
 
         // 3. Upload to Supabase Storage (Permanent)
