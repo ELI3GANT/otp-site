@@ -2034,13 +2034,13 @@
         if (id) {
             // UPDATE
             console.log("📝 UPDATING POST (SECURE):", id);
-            payload.updated_at = new Date().toISOString();
+            // payload.updated_at = new Date().toISOString(); // Schema fallback: skip if column missing
             await window.secureWrite('posts', payload, id);
         } else {
             // INSERT
             console.log("📝 CREATING POST (SECURE)");
             payload.created_at = new Date().toISOString();
-            payload.updated_at = payload.created_at;
+            // payload.updated_at = payload.created_at; // Schema fallback: skip if column missing
             await window.secureWrite('posts', payload);
         }
         
