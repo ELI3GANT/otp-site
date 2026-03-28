@@ -1447,32 +1447,38 @@
                     if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
 
                     const versions = ['v1', 'v1beta'];
+                    const modelCandidates = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
                     let success = false;
                     let lastError = "Neural link failed.";
 
                     for (const v of versions) {
-                        try {
-                            const url = `https://generativelanguage.googleapis.com/${v}/models/gemini-1.5-flash:generateContent?key=${cloudKey}`;
-                            const res = await fetch(url, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    contents: [{ parts: [{ text: systemPrompt }] }],
-                                    generationConfig: geminiConfig
-                                })
-                            });
-                            const data = await res.json();
-                            if(data.error) {
-                                lastError = data.error.message;
-                                continue;
+                        if(success) break;
+                        for (const m of modelCandidates) {
+                            if(success) break;
+                            try {
+                                const url = `https://generativelanguage.googleapis.com/${v}/models/${m}:generateContent?key=${cloudKey}`;
+                                const res = await fetch(url, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        contents: [{ parts: [{ text: systemPrompt }] }],
+                                        generationConfig: geminiConfig
+                                    })
+                                });
+                                const data = await res.json();
+                                if(data.error) {
+                                    lastError = `${m} [${v}]: ${data.error.message}`;
+                                    console.warn(`⚠️ Deep Dive Probe Fail [${v}] [${m}]:`, data.error.message);
+                                    continue;
+                                }
+                                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+                                    replyText = data.candidates[0].content.parts[0].text;
+                                    success = true;
+                                    break;
+                                }
+                            } catch (e) {
+                                lastError = e.message;
                             }
-                            if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
-                                replyText = data.candidates[0].content.parts[0].text;
-                                success = true;
-                                break;
-                            }
-                        } catch (e) {
-                            lastError = e.message;
                         }
                     }
                     if(!success) throw new Error(`GEMINI DEEP DIVE FAILED: ${lastError}`);
