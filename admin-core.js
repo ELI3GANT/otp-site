@@ -2691,10 +2691,9 @@
                 document.getElementById('imageUrl').value = data.url;
                 document.getElementById('urlInput').value = data.url;
                 
-                const prevImg = document.getElementById('previewImg');
                 const prevDiv = document.getElementById('imagePreview');
-                if (prevImg && prevDiv) {
-                    prevImg.src = data.url;
+                if (prevDiv) {
+                    prevDiv.innerHTML = `<img id="previewImg" src="${data.url}" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">`;
                     prevDiv.style.display = 'block';
                 }
                 

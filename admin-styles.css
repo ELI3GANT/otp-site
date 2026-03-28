@@ -1631,4 +1631,6 @@ html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !im
 [data-theme="light"] .modal-content p { color: #444 !important; }
 [data-theme="light"] .modal-overlay { background: rgba(255,255,255,0.85) !important; }
 [data-theme="light"] .post-row .post-details-grid { background: rgba(0,0,0,0.05) !important; color: #333 !important; }
-[data-theme="light"] select, [data-theme="light"] input, [data-theme="light"] textarea { background: #fff !important; color: #111 !important; border-color: #ccc !important; }
+[data-theme="light"] select, [data-theme="light"] input, [data-theme="light"] textarea, [data-theme="light"] .input-field { background: #fff !important; color: #111 !important; border-color: #ccc !important; }
+[data-theme="light"] .input-group label { color: #333 !important; }
+[data-theme="light"] .section-label { color: var(--admin-cyan) !important; filter: brightness(0.8); }
