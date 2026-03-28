@@ -1018,8 +1018,6 @@
           <a href="terms.html">Terms</a>
           <span class="dot">•</span>
           <a href="privacy.html">Privacy</a>
-          <span class="dot">•</span>
-          <div id="ghost-trigger" style="display: inline-block; width: 30px; height: 30px; cursor: default; vertical-align: middle; margin-left: 5px; opacity: 0;" title="System Status" aria-hidden="true">.</div>
         </div>
       </div>
 
@@ -1142,63 +1140,28 @@
   <script src="site-init.js?v=15.1.1"></script>
   <script src="audit-engine.js?v=15.1.1"></script>
   <script>
-    // STEALTH PORTAL ACCESS: Ctrl + Shift + U
+    // --- GHOST SIGNAL V3: THE EYE SYNCHRONIZATION ---
+    // Protocol: Hold 'CTRL' and Click the OTP EYE in the Hero section.
+    const otpEye = document.querySelector('.otp-eye-svg');
+    if (otpEye) {
+        otpEye.style.cursor = 'pointer'; // Subtle hint for the operator
+        otpEye.addEventListener('click', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                // AUTH SUCCESS: Trigger system glitch
+                document.body.classList.add('terminal-auth-glitch');
+                setTimeout(() => {
+                    window.location.href = 'portal-gate.html';
+                }, 400);
+            }
+        });
+    }
+
+    // Backup Shortcut: Ctrl + Shift + U (Legacy Support)
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === 'U') {
         window.location.href = 'portal-gate.html';
       }
     });
-    // --- GHOST SIGNAL V2: TACTICAL SEQUENCE ---
-    // Protocol: Double-Click, then Long-Press (1.5s) on the same spot.
-    let ghostClicks = 0;
-    let ghostTimer = null;
-    let longPressTimer = null;
-    const ghost = document.getElementById('ghost-trigger');
-
-    if (ghost) {
-      // 1. CLICK HANDLING
-      ghost.addEventListener('mousedown', (e) => {
-        ghostClicks++;
-        if (ghostTimer) clearTimeout(ghostTimer);
-        
-        // Start long-press detection on the 3rd attempt if double-clicked first
-        if (ghostClicks === 3) {
-            // Visual feedback: Subtle cursor change
-            document.body.style.cursor = 'crosshair';
-            
-            longPressTimer = setTimeout(() => {
-                // AUTH SUCCESS: Trigger system glitch
-                document.body.classList.add('terminal-auth-glitch');
-                // Play subtle beep if possible (optional, but keep it silent for stealth)
-                setTimeout(() => {
-                    window.location.href = 'portal-gate.html';
-                }, 400);
-            }, 1500);
-        } else {
-            ghostTimer = setTimeout(() => { 
-                ghostClicks = 0; 
-                document.body.style.cursor = '';
-            }, 1500);
-        }
-      });
-
-      ghost.addEventListener('mouseup', () => {
-        if (longPressTimer) {
-            clearTimeout(longPressTimer);
-            if (ghostClicks === 3) {
-                // Interrupted long-press
-                ghostClicks = 0;
-                document.body.style.cursor = '';
-            }
-        }
-      });
-
-      ghost.addEventListener('mouseleave', () => {
-        if (longPressTimer) clearTimeout(longPressTimer);
-        ghostClicks = 0;
-        document.body.style.cursor = '';
-      });
-    }
   </script>
   <script src="https://js.stripe.com/v3/"></script>
   <script src="pay_v2.js?v=15.1.1"></script>
