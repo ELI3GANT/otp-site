@@ -1692,8 +1692,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch(e) { console.warn("Initial State Fetch Silent Fail (Network Mode)"); }
 
-            // 2. Subscribe to Live Commands
-            window.OTP_STATE.channel = window.OTP_STATE.client.channel('site-commands')
+            // 2. Subscribe to Live Commands (Unified Channel)
+            window.OTP_STATE.channel = window.OTP_STATE.client.channel('otp-uplink')
                 .on('broadcast', { event: 'command' }, ({ payload }) => {
                     console.log("🛰️ INCOMING COMMAND:", payload);
                     if (payload) applyGlobalCommand({ [payload.type]: payload.value });

@@ -337,34 +337,27 @@
                 });
             }
 
-            // 6. SITE COMMAND UPLINK (Realtime & Vice-Versa Sync)
-            state.siteChannel = state.client.channel('site_state');
+            // 5. SITE COMMAND PRO UPLINK (Unified Channel)
+            state.siteChannel = state.client.channel('otp-uplink');
             
+            // Listen for changes from other admin sessions
             state.siteChannel.on('broadcast', { event: 'command' }, (message) => {
-                console.log("📡 REMOTE COMMAND RECEIVED:", message);
+                console.log("🛰️ COMMAND UPLINK: REMOTE SIGNAL RECEIVED.", message);
                 const { type, value } = message.payload || {};
                 
-                // 1. Show Broadcast Alerts (Cinematic Sync)
-                if (type === 'alert') {
-                    if (window.OTP && window.OTP.showBroadcast) {
-                        window.OTP.showBroadcast(value);
-                    } else {
-                        showToast(`BROADCAST: ${value}`);
-                    }
-                }
-                
-                // 2. Sync Dashboard UI Buttons
-                if (['maintenance', 'visuals', 'kursor', 'theme'].includes(type)) {
+                // 1. Sync Dashboard UI Buttons
+                if (['maintenance', 'visuals', 'kursor', 'theme', 'status'].includes(type)) {
                     syncDashboardElement(type, value);
                     
                     // Dashboard Theme Sync (Apply theme to self)
                     if (type === 'theme') {
                         const html = document.documentElement;
-                        if (value === 'light') html.setAttribute('data-theme', 'light');
+                        const isLight = value === 'light';
+                        if (isLight) html.setAttribute('data-theme', 'light');
                         else html.removeAttribute('data-theme');
                         
                         const btns = document.querySelectorAll('.theme-btn');
-                        btns.forEach(btn => btn.textContent = value === 'light' ? '☀️' : '🌗');
+                        btns.forEach(btn => btn.textContent = isLight ? '☀️' : '🌗');
                     }
                     
                     showToast(`CONTROL SYNCED: ${type.toUpperCase()}`);
@@ -372,10 +365,8 @@
             });
 
             state.siteChannel.subscribe((status) => {
-                console.log("📡 SITE COMMAND UPLINK:", status);
                 if(status === 'SUBSCRIBED') {
-                    const centerDot = document.getElementById('aiStatusDot');
-                    if(centerDot) centerDot.style.background = 'var(--admin-success)';
+                    console.log("🛰️ COMMAND UPLINK: STABLE.");
                 }
             });
 
