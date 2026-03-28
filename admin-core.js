@@ -2832,6 +2832,7 @@
 
             const isOracle = document.getElementById('aiDraftSource')?.value === 'true' || content.includes('// NEURAL_DRAFT');
             const isVideo = image && image.match(/\.(mp4|webm|mov)$/i);
+            const excerptHtml = excerpt ? `<p style="font-size: 1.25rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${excerpt}</p>` : '';
             
             const mediaHtml = image ? `
                 <div style="margin-bottom: 30px;">
