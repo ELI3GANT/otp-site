@@ -2765,40 +2765,70 @@
     };
 
     window.openDraftPreview = function() {
-        const title = document.getElementById('titleInput').value || "UNTITLED BROADCAST";
-        let content = document.getElementById('contentArea').value || "_No content captured._";
-        const image = document.getElementById('imageUrl').value || document.getElementById('urlInput').value;
-        const excerpt = document.getElementById('excerptInput').value;
-        
-        // --- 1. Markdown Parsing ---
-        let parsedHtml = content;
-        if (typeof marked !== 'undefined') {
-            parsedHtml = marked.parse(content);
-        } else {
-            console.warn("marked.js missing, using raw content");
-            parsedHtml = content.replace(/\n/g, '<br>');
+        console.log("🛠️ PREVIEW SIGNAL INITIATED...");
+        try {
+            const titleInput = document.getElementById('titleInput');
+            const contentArea = document.getElementById('contentArea');
+            const urlInput = document.getElementById('urlInput');
+            const imageUrl = document.getElementById('imageUrl');
+            const excerptInput = document.getElementById('excerptInput');
+
+            if (!titleInput || !contentArea) {
+                throw new Error("PREVIEW FAILED: Critical form elements missing in DOM.");
+            }
+
+            const title = titleInput.value || "UNTITLED BROADCAST";
+            let content = contentArea.value || "_No content captured._";
+            const image = (imageUrl ? imageUrl.value : '') || (urlInput ? urlInput.value : '');
+            const excerpt = excerptInput ? excerptInput.value : '';
+            
+            // --- 1. Markdown Parsing (Robust Check) ---
+            let parsedHtml = content;
+            if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+                parsedHtml = marked.parse(content);
+            } else if (typeof marked === 'function') {
+                parsedHtml = marked(content);
+            } else {
+                console.warn("marked.js missing or incompatible, using raw line breaks");
+                parsedHtml = content.replace(/\n/g, '<br>');
+            }
+
+            // --- 2. Construct Preview HTML ---
+            const imageHtml = image ? `<div style="margin-bottom: 30px;"><img src="${image}" style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3);" /></div>` : '';
+            const excerptHtml = excerpt ? `<p style="font-size: 1.2rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${excerpt}</p>` : '';
+            
+            const html = `
+                <div style="max-width: 720px; margin: 0 auto; font-family: 'Inter', sans-serif; color: var(--admin-text);">
+                    ${imageHtml}
+                    <div style="border-bottom: 1px solid var(--admin-border); margin-bottom: 35px; padding-bottom: 25px;">
+                        <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; line-height: 1.1; margin-bottom: 15px; color: #fff; font-weight: 700;">${title}</h1>
+                        ${excerptHtml}
+                    </div>
+                    <div class="otp-content blog-content" style="font-size: 1.1rem; line-height: 1.8;">
+                        ${parsedHtml}
+                    </div>
+                </div>
+            `;
+
+            const modal = document.getElementById('previewModal');
+            const titleDisplay = document.getElementById('previewTitleDisplay');
+            const bodyDisplay = document.getElementById('previewBodyDisplay');
+
+            if (!modal || !titleDisplay || !bodyDisplay) {
+                throw new Error("PREVIEW FAILED: Modal components are unreachable.");
+            }
+
+            titleDisplay.innerHTML = `<span style="opacity:0.5;">PREVIEW //</span> ${title}`;
+            bodyDisplay.innerHTML = html;
+            modal.style.display = 'flex';
+            
+            console.log("✅ PREVIEW RENDERED SUCCESSFULLY.");
+            showToast("PREVIEW SYNTHESIS READY");
+
+        } catch (err) {
+            console.error("CRITICAL PREVIEW ERROR:", err);
+            showToast("PREVIEW ERROR: " + err.message);
         }
-
-        // --- 2. Construct Preview HTML ---
-        const imageHtml = image ? `<div style="margin-bottom: 30px;"><img src="${image}" style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3);" /></div>` : '';
-        const excerptHtml = excerpt ? `<p style="font-size: 1.2rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${excerpt}</p>` : '';
-        
-        const html = `
-            <div style="max-width: 720px; margin: 0 auto; font-family: 'Inter', sans-serif; color: var(--admin-text);">
-                ${imageHtml}
-                <div style="border-bottom: 1px solid var(--admin-border); margin-bottom: 35px; padding-bottom: 25px;">
-                    <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; line-height: 1.1; margin-bottom: 15px; color: #fff; font-weight: 700;">${title}</h1>
-                    ${excerptHtml}
-                </div>
-                <div class="otp-content blog-content" style="font-size: 1.1rem; line-height: 1.8;">
-                    ${parsedHtml}
-                </div>
-            </div>
-        `;
-
-        document.getElementById('previewTitleDisplay').innerHTML = `<span style="opacity:0.5;">PREVIEW //</span> ${title}`;
-        document.getElementById('previewBodyDisplay').innerHTML = html;
-        document.getElementById('previewModal').style.display = 'flex';
     };
 
     // --- SITE COMMAND PRO LOGIC ---

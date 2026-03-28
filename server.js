@@ -733,37 +733,61 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
 
         // 2. Flux Image Proxy Failover (High-Speed Cinematic Engine)
         if (!usedOpenAI) {
-            const width = aspect_ratio === 'landscape' ? 1280 : 1024; // slightly smaller for speed/stability
+            const width = aspect_ratio === 'landscape' ? 1280 : 1024;
             const height = aspect_ratio === 'landscape' ? 720 : 1024;
             
-            // Modern Pollinations URL pattern + Model variety fallback
-            const models = ['flux', 'flux-pro', 'flux-realism'];
-            const selectedModel = models[Math.floor(Date.now() / 1000) % models.length];
-            
-            // Randomize style slightly to prevent "exhaustion" feel
-            const variations = [
-                'cinematic lighting, ultra-detailed',
-                'atmospheric depth, volumetric fog',
-                'minimalist tech, clean lines',
-                'noir aesthetic, high contrast'
-            ];
-            const variant = variations[Math.floor(Date.now() / 5000) % variations.length];
-
-            const enhancedPrompt = `${prompt}. ${variant}. Style: Dark, futuristic, Only True Perspective brand identity.`;
+            const models = ['flux', 'flux-pro', 'flux-realism', 'any'];
+            const seed = Date.now();
+            const enhancedPrompt = `${prompt}. Cinematic lighting, ultra-detailed. Style: Dark futuristic.`;
             const safePrompt = encodeURIComponent(enhancedPrompt);
-            const fluxUrl = `https://image.pollinations.ai/prompt/${safePrompt}?width=${width}&height=${height}&nologo=true&seed=${Date.now()}&model=${selectedModel}`;
-            
-            console.log(`🎨 Flux Synthesis (${selectedModel}): ${fluxUrl.substring(0, 100)}...`);
-            
-            const fluxRes = await fetch(fluxUrl);
-            if (!fluxRes.ok) {
-                // Final Emergency: Random prompt bypass
-                const bypassUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&seed=${Date.now()}`;
-                const bypassRes = await fetch(bypassUrl);
-                if (!bypassRes.ok) throw new Error("Emergency Flux Link offline. All Visual Engines exhausted.");
-                buffer = Buffer.from(await bypassRes.arrayBuffer());
-            } else {
-                buffer = Buffer.from(await fluxRes.arrayBuffer());
+
+            let success = false;
+            let lastErr = "";
+
+            // --- TIER 1: MULTI-MODEL PROBE ---
+            for (const m of models) {
+                if (success) break;
+                try {
+                    const url = `https://pollinations.ai/p/${safePrompt}?width=${width}&height=${height}&nologo=true&seed=${seed}&model=${m}`;
+                    console.log(`🤖 Visual Probing [${m}]: ${url.substring(0, 80)}...`);
+                    const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+                    if (res.ok) {
+                        buffer = Buffer.from(await res.arrayBuffer());
+                        success = true;
+                        console.log(`✅ Success via ${m}`);
+                    } else {
+                        lastErr = `HTTP ${res.status}`;
+                    }
+                } catch(e) {
+                    lastErr = e.message;
+                }
+            }
+
+            // --- TIER 2: RAW BYPASS (SIMPLEST URL) ---
+            if (!success) {
+                try {
+                    console.log("⚠️ Neural Synthesis Straining. Attempting RAW Bypass...");
+                    const bypassUrl = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
+                    const res = await fetch(bypassUrl, { signal: AbortSignal.timeout(10000) });
+                    if (res.ok) {
+                        buffer = Buffer.from(await res.arrayBuffer());
+                        success = true;
+                    }
+                } catch(e) { lastErr = e.message; }
+            }
+
+            // --- TIER 3: STATIC DECONSTRUCTION FALLBACK (LAST RESORT) ---
+            if (!success) {
+                console.warn("🛑 All Visual Engines Exhausted. Using Static Deconstruction Background.");
+                // High-End dark tech placeholder from stock-ish source
+                const fallbackUrl = "https://images.unsplash.com/photo-1635776062127-d379bfcbb9c8?q=80&w=1792&h=1024&auto=format&fit=crop";
+                try {
+                    const res = await fetch(fallbackUrl);
+                    buffer = Buffer.from(await res.arrayBuffer());
+                    success = true;
+                } catch(e) {
+                    throw new Error(`CRITICAL SYSTEM FAILURE: ${lastErr}`);
+                }
             }
         }
 

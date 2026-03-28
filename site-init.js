@@ -1605,8 +1605,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- END OF CORE SYSTEM INITIALIZATION ---
-
 // --- SCROLL REVEAL (Visual Success Engineering) ---
 (function() {
     document.addEventListener('DOMContentLoaded', () => {
@@ -1661,7 +1659,100 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             observer.observe(cursorCanvas);
         }
-
-        console.log("✅ [OTP_PRODUCTION] SYSTEM_HEALTH: OPTIMAL // PERFORMANCE_LOAD: LOW");
     });
 })();
+
+// --- SITE COMMAND PRO (Real-Time Terminal Sync) ---
+(function() {
+    window.OTP_STATE = {
+        client: null,
+        channel: null
+    };
+
+    async function initializeCommandUplink() {
+        if (!window.OTP_CONFIG) return;
+        
+        const SUPABASE_URL = window.OTP_CONFIG.supabaseUrl;
+        const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
+
+        if (typeof window.supabase !== 'undefined') {
+            window.OTP_STATE.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            
+            // 1. Fetch Initial Global State
+            try {
+                const { data } = await window.OTP_STATE.client
+                    .from('posts')
+                    .select('content')
+                    .eq('slug', 'system-global-state')
+                    .single();
+
+                if (data && data.content) {
+                    const config = JSON.parse(data.content);
+                    applyGlobalCommand(config);
+                }
+            } catch(e) { console.warn("Initial State Fetch Silent Fail (Network Mode)"); }
+
+            // 2. Subscribe to Live Commands
+            window.OTP_STATE.channel = window.OTP_STATE.client.channel('site-commands')
+                .on('broadcast', { event: 'command' }, ({ payload }) => {
+                    console.log("🛰️ INCOMING COMMAND:", payload);
+                    if (payload) applyGlobalCommand({ [payload.type]: payload.value });
+                })
+                .subscribe();
+        }
+    }
+
+    function applyGlobalCommand(config) {
+        if (!config) return;
+
+        // A. THEME
+        if (config.theme) {
+            if (window.OTP && typeof window.OTP.setTheme === 'function') {
+                window.OTP.setTheme(config.theme, true);
+            } else {
+                if (config.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+                else document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', config.theme);
+            }
+        }
+
+        // B. MAINTENANCE
+        if (config.maintenance) {
+            const isMaintenance = config.maintenance === 'on';
+            if (isMaintenance && !window.location.search.includes('bypass')) {
+                 // Check if maintenance overlay exists, if not create
+                 if (!document.getElementById('maintenance-lock')) {
+                     const overlay = document.createElement('div');
+                     overlay.id = 'maintenance-lock';
+                     overlay.style = "position:fixed; inset:0; z-index:999999; background:#000; color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk', sans-serif; text-align:center; padding:20px;";
+                     overlay.innerHTML = `<div><h1 style="font-size:3rem; margin-bottom:10px;">SIGNAL INTERRUPTED</h1><p style="opacity:0.5; letter-spacing:2px;">CORE SYSTEMS UNDERGOING MAINTENANCE</p></div>`;
+                     document.body.appendChild(overlay);
+                     document.body.style.overflow = 'hidden';
+                 }
+            } else {
+                const el = document.getElementById('maintenance-lock');
+                if (el) el.remove();
+                document.body.style.overflow = '';
+            }
+        }
+
+        // C. KURSOR
+        if (config.kursor) {
+            const enabled = config.kursor === 'on';
+            const cursorEl = document.querySelector('.kursor');
+            if (cursorEl) cursorEl.style.display = enabled ? 'block' : 'none';
+        }
+
+        // D. VISUALS (FX Intensity)
+        if (config.visuals) {
+             const highFi = config.visuals === 'high';
+             document.documentElement.classList.toggle('perf-mode', !highFi);
+             // Broadcast internal event for logic that listens
+             window.dispatchEvent(new CustomEvent('otp-fx-change', { detail: { intensity: config.visuals } }));
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeCommandUplink);
+})();
+
+console.log("✅ [OTP_PRODUCTION] SYSTEM_HEALTH: OPTIMAL // PERFORMANCE_LOAD: LOW");
