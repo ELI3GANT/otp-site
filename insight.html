@@ -94,6 +94,7 @@
         border-radius: 8px;
         background: rgba(var(--accent2-rgb), 0.05);
       }
+
       .post-img { 
         width: 100%; 
         max-height: 60vh;
@@ -164,6 +165,27 @@
           color: #fff;
       }
       [data-theme="light"] blockquote { background: #f9f9fb; color: #333; }
+  
+      /* CONTENT RESET FOR INJECTED POSTS */
+      .post-content img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 12px;
+          margin: 30px 0;
+      }
+      .post-content pre, .post-content code {
+          background: rgba(255,255,255,0.03);
+          padding: 15px;
+          border-radius: 12px;
+          overflow-x: auto;
+          font-family: 'Space Grotesk', monospace;
+          font-size: 0.9rem;
+      }
+      .post-content pre code { padding: 0; background: transparent; }
+      @media (max-width: 600px) {
+          .post-header h1 { font-size: 3rem; letter-spacing: -2px; }
+          .post-content { padding: 0 20px; font-size: 1rem; }
+      }
   
     </style>
   
