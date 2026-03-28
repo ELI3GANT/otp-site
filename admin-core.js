@@ -658,6 +658,9 @@
             submitBtn.style.background = "var(--admin-success)";
             submitBtn.style.color = "#000";
         }
+        
+        // Reset Previews
+        if(window.updateSocialPreview) window.updateSocialPreview();
     };
 
     // --- CATEGORY & ARCHETYPE MANAGEMENT ---
@@ -2245,9 +2248,18 @@
     };
 
     window.updateSocialPreview = function() {
-        const title = document.getElementById('titleInput').value || "Headline Appears Here";
-        const desc = document.getElementById('seoDesc').value || document.getElementById('excerptInput').value || "Description appears here...";
-        const img = document.getElementById('imageUrl').value || document.getElementById('urlInput').value;
+        const titleEl = document.getElementById('titleInput');
+        const seoTitleEl = document.getElementById('seoTitle');
+        const seoDescEl = document.getElementById('seoDesc');
+        const excerptEl = document.getElementById('excerptInput');
+        const urlEl = document.getElementById('urlInput');
+        const imgEl = document.getElementById('imageUrl');
+        
+        if(!titleEl) return;
+
+        const title = seoTitleEl?.value || titleEl.value || "Headline Appears Here";
+        const desc = seoDescEl?.value || excerptEl?.value || "Description appears here...";
+        const img = imgEl?.value || urlEl?.value;
         
         // Update All Platforms
         const platforms = ['x', 'ios', 'search'];
@@ -2272,7 +2284,7 @@
     
     // Attach listeners
     document.addEventListener('input', (e) => {
-        if(['titleInput', 'seoDesc', 'excerptInput', 'imageUrl', 'urlInput'].includes(e.target.id)) {
+        if(['titleInput', 'seoTitle', 'seoDesc', 'excerptInput', 'imageUrl', 'urlInput'].includes(e.target.id)) {
             window.updateSocialPreview();
         }
     });
@@ -2564,6 +2576,9 @@
                 
                 // Update Word Count UI
                 if(window.updateWordCount) window.updateWordCount(document.getElementById('contentArea'));
+                
+                // Update Social Previews
+                if(window.updateSocialPreview) window.updateSocialPreview();
             }
 
         } catch (err) {
@@ -2604,6 +2619,10 @@
                     prevImg.src = data.url;
                     prevDiv.style.display = 'block';
                 }
+                
+                // Update Social Previews
+                if(window.updateSocialPreview) window.updateSocialPreview();
+                
                 trackAICost('openai', 2000); 
                 showToast("VISUAL SYNTHESIS COMPLETE");
             } else {
@@ -2707,9 +2726,10 @@
     window.openDraftPreview = function() {
         const title = document.getElementById('titleInput').value || "UNTITLED BROADCAST";
         let content = document.getElementById('contentArea').value || "_No content captured._";
-        const image = document.getElementById('imageUrl').value;
+        const image = document.getElementById('imageUrl').value || document.getElementById('urlInput').value;
+        const excerpt = document.getElementById('excerptInput').value;
         
-        // --- 1. Markdown Parsing (Using marked.js for safety and 1:1 public parity) ---
+        // --- 1. Markdown Parsing ---
         let parsedHtml = content;
         if (typeof marked !== 'undefined') {
             parsedHtml = marked.parse(content);
@@ -2719,16 +2739,23 @@
         }
 
         // --- 2. Construct Preview HTML ---
-        const imageHtml = image ? `<img src="${image}" style="width:100%; border-radius:12px; margin-bottom:20px; border:1px solid #333;" />` : '';
+        const imageHtml = image ? `<div style="margin-bottom: 30px;"><img src="${image}" style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3);" /></div>` : '';
+        const excerptHtml = excerpt ? `<p style="font-size: 1.2rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${excerpt}</p>` : '';
+        
         const html = `
-            <div style="max-width: 680px; margin: 0 auto; font-family: 'Georgia', serif; font-size: 1.1rem; line-height: 1.8;">
+            <div style="max-width: 720px; margin: 0 auto; font-family: 'Inter', sans-serif; color: var(--admin-text);">
                 ${imageHtml}
-                <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; line-height: 1.1; margin-bottom: 30px; border-bottom: 1px solid var(--admin-border); padding-bottom: 20px; color: var(--admin-text);">${title}</h1>
-                <div class="otp-content blog-content">${parsedHtml}</div>
+                <div style="border-bottom: 1px solid var(--admin-border); margin-bottom: 35px; padding-bottom: 25px;">
+                    <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; line-height: 1.1; margin-bottom: 15px; color: #fff; font-weight: 700;">${title}</h1>
+                    ${excerptHtml}
+                </div>
+                <div class="otp-content blog-content" style="font-size: 1.1rem; line-height: 1.8;">
+                    ${parsedHtml}
+                </div>
             </div>
         `;
 
-        document.getElementById('previewTitleDisplay').textContent = "DEEP PREVIEW // " + title;
+        document.getElementById('previewTitleDisplay').innerHTML = `<span style="opacity:0.5;">PREVIEW //</span> ${title}`;
         document.getElementById('previewBodyDisplay').innerHTML = html;
         document.getElementById('previewModal').style.display = 'flex';
     };

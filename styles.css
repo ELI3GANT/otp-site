@@ -7679,6 +7679,10 @@ input:focus, select:focus, textarea:focus {
     border-color: #eee !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.04) !important;
 }
+[data-theme="light"] .package-static.featured {
+    border-color: var(--accent2) !important;
+    box-shadow: 0 0 30px rgba(var(--accent2-rgb), 0.15) !important;
+}
 [data-theme="light"] .package-static:hover {
     border-color: var(--accent2) !important;
     transform: translateY(-4px) !important;
@@ -7696,6 +7700,8 @@ input:focus, select:focus, textarea:focus {
 }
 [data-theme="light"] .pkg-select-btn { background: #000 !important; color: #fff !important; transition: background 0.3s ease, color 0.3s ease !important; }
 [data-theme="light"] .pkg-select-btn:hover { background: var(--accent2) !important; color: #000 !important; }
+[data-theme="light"] .featured .pkg-select-btn { background: var(--accent2) !important; color: #000 !important; }
+[data-theme="light"] .featured .pkg-select-btn:hover { background: #000 !important; color: #fff !important; }
 [data-theme="light"] .pkg-buy-btn { background: #f5f5f7 !important; color: #000 !important; border: 1px solid #ddd !important; transition: all 0.3s ease !important; }
 [data-theme="light"] .pkg-buy-btn:hover { background: var(--accent2) !important; border-color: var(--accent2) !important; color: #000 !important; transform: translateY(-2px) !important; box-shadow: 0 5px 20px rgba(var(--accent2-rgb), 0.2) !important; }
 
