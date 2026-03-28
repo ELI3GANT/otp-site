@@ -388,6 +388,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             if (!geminiKey) throw new Error("Gemini Key not configured on server or terminal.");
             
             const candidates = model ? [model] : ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+            const versions = ['v1beta', 'v1'];
             
             // Map standard OpenAI-style model configs to Gemini format
             const geminiConfig = { response_mime_type: "application/json" };
@@ -409,46 +410,50 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             let lastErr = "";
             let success = false;
 
-            for (const m of candidates) {
+            for (const v of versions) {
                 if(success) break;
-                try {
-                    console.log(`🤖 Gemini Probing Model: ${m}...`);
-                    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${geminiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    const data = await apiRes.json();
-                    
-                    if (data.error) {
-                        lastErr = `${m}: ${data.error.message}`; 
-                        console.warn(`⚠️ ${m} Failed: ${data.error.message}`);
-                        continue;
-                    }
-
-                    if (data.candidates && data.candidates[0].finishReason === 'SAFETY') {
-                        lastErr = `${m}: NEURAL BLOCK: Content flagged by safety filter.`;
-                        console.warn(`⚠️ ${m} SAFETY BLOCK.`);
-                        continue;
-                    }
-
-                    if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text) {
-                        let text = data.candidates[0].content.parts[0].text;
-                        // Robust JSON Extraction
-                        const jsonMatch = text.match(/\{[\s\S]*\}/);
-                        if (jsonMatch) text = jsonMatch[0];
+                for (const m of candidates) {
+                    if(success) break;
+                    try {
+                        const cleanModel = m.includes('models/') ? m : `models/${m}`;
+                        console.log(`🤖 Gemini [${v}] Probing: ${cleanModel}...`);
+                        const apiRes = await fetch(`https://generativelanguage.googleapis.com/${v}/${cleanModel}:generateContent?key=${geminiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
                         
-                        result = JSON.parse(text);
-                        usage = data.usageMetadata ? { total_tokens: data.usageMetadata.totalTokenCount } : null;
-                        success = true;
-                        console.log(`✅ Success via ${m}`);
-                    } else { 
-                        lastErr = `${m}: Unexpected response structure.`;
-                        console.warn(`⚠️ ${m} Unexpected format:`, JSON.stringify(data).substring(0, 100));
+                        const data = await apiRes.json();
+                        
+                        if (data.error) {
+                            lastErr = `${m} [${v}]: ${data.error.message}`; 
+                            console.warn(`⚠️ ${m} [${v}] Failed: ${data.error.message}`);
+                            continue;
+                        }
+
+                        if (data.candidates && data.candidates[0].finishReason === 'SAFETY') {
+                            lastErr = `${m} [${v}]: NEURAL BLOCK: Content flagged by safety filter.`;
+                            console.warn(`⚠️ ${m} [${v}] SAFETY BLOCK.`);
+                            continue;
+                        }
+
+                        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0].text) {
+                            let text = data.candidates[0].content.parts[0].text;
+                            // Robust JSON Extraction
+                            const jsonMatch = text.match(/\{[\s\S]*\}/);
+                            if (jsonMatch) text = jsonMatch[0];
+                            
+                            result = JSON.parse(text);
+                            usage = data.usageMetadata ? { total_tokens: data.usageMetadata.totalTokenCount } : null;
+                            success = true;
+                            console.log(`✅ Success via ${m} [${v}]`);
+                        } else { 
+                            lastErr = `${m} [${v}]: Unexpected response structure.`;
+                            console.warn(`⚠️ ${m} [${v}] Unexpected format:`, JSON.stringify(data).substring(0, 100));
+                        }
+                    } catch (e) {
+                        lastErr = `${m} [${v}]: ${e.message}`;
                     }
-                } catch (e) { 
-                    lastErr = `${m}: ${e.message}`; 
                 }
             }
             if(!success) throw new Error(`Gemini Probe Failed: ${lastErr}`);
@@ -726,16 +731,40 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
             }
         }
 
-        // 2. Flux Image Proxy Failover (Completely Free, No API Key)
+        // 2. Flux Image Proxy Failover (High-Speed Cinematic Engine)
         if (!usedOpenAI) {
-            const width = aspect_ratio === 'landscape' ? 1792 : 1024;
-            const height = 1024;
-            const safePrompt = encodeURIComponent(`High-tech, cinematic, professional render. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. Title reference: ${title}`);
-            const fluxUrl = `https://image.pollinations.ai/prompt/${safePrompt}?width=${width}&height=${height}&nologo=true&seed=${Date.now()}`;
+            const width = aspect_ratio === 'landscape' ? 1280 : 1024; // slightly smaller for speed/stability
+            const height = aspect_ratio === 'landscape' ? 720 : 1024;
+            
+            // Modern Pollinations URL pattern + Model variety fallback
+            const models = ['flux', 'flux-pro', 'flux-realism'];
+            const selectedModel = models[Math.floor(Date.now() / 1000) % models.length];
+            
+            // Randomize style slightly to prevent "exhaustion" feel
+            const variations = [
+                'cinematic lighting, ultra-detailed',
+                'atmospheric depth, volumetric fog',
+                'minimalist tech, clean lines',
+                'noir aesthetic, high contrast'
+            ];
+            const variant = variations[Math.floor(Date.now() / 5000) % variations.length];
+
+            const enhancedPrompt = `${prompt}. ${variant}. Style: Dark, futuristic, Only True Perspective brand identity.`;
+            const safePrompt = encodeURIComponent(enhancedPrompt);
+            const fluxUrl = `https://image.pollinations.ai/prompt/${safePrompt}?width=${width}&height=${height}&nologo=true&seed=${Date.now()}&model=${selectedModel}`;
+            
+            console.log(`🎨 Flux Synthesis (${selectedModel}): ${fluxUrl.substring(0, 100)}...`);
             
             const fluxRes = await fetch(fluxUrl);
-            if (!fluxRes.ok) throw new Error("Emergency Flux Link offline. All Visual Engines exhausted.");
-            buffer = Buffer.from(await fluxRes.arrayBuffer());
+            if (!fluxRes.ok) {
+                // Final Emergency: Random prompt bypass
+                const bypassUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&seed=${Date.now()}`;
+                const bypassRes = await fetch(bypassUrl);
+                if (!bypassRes.ok) throw new Error("Emergency Flux Link offline. All Visual Engines exhausted.");
+                buffer = Buffer.from(await bypassRes.arrayBuffer());
+            } else {
+                buffer = Buffer.from(await fluxRes.arrayBuffer());
+            }
         }
 
         // 3. Upload to Supabase Storage (Permanent)

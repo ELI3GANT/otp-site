@@ -2634,15 +2634,15 @@ html {
 
 /* HERO */
 .hero {
-  min-height: 90vh;
+  min-height: 75vh;
   height: 100%; 
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   text-align: center;
-  /* Relaxed padding */
-  padding: 85px 20px 30px; 
+  /* Relaxed padding - adjusted for speed/punchiness */
+  padding: 85px 20px 0px; 
   overflow: hidden; 
 }
 

@@ -2283,6 +2283,33 @@
     };
     
     // Attach listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        ['titleInput', 'seoTitle', 'seoDesc', 'excerptInput', 'imageUrl', 'urlInput'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', () => {
+                    // Sync internal imageUrl with visual urlInput if needed
+                    if(id === 'urlInput' && document.getElementById('imageUrl')) {
+                         document.getElementById('imageUrl').value = el.value;
+                    }
+
+                    // Update Image Preview Container
+                    if(id === 'urlInput' || id === 'imageUrl') {
+                         const prevDiv = document.getElementById('imagePreview');
+                         const prevImg = document.getElementById('previewImg');
+                         if(prevDiv && prevImg && el.value) {
+                             prevImg.src = el.value;
+                             prevDiv.style.display = 'block';
+                         } else if (prevDiv && !el.value) {
+                             prevDiv.style.display = 'none';
+                         }
+                    }
+
+                    window.updateSocialPreview();
+                });
+            }
+        });
+    });
     document.addEventListener('input', (e) => {
         if(['titleInput', 'seoTitle', 'seoDesc', 'excerptInput', 'imageUrl', 'urlInput'].includes(e.target.id)) {
             window.updateSocialPreview();
@@ -2401,7 +2428,21 @@
                     const res = await fetch(base + '/api/ai/generate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
-                        body: JSON.stringify({ prompt, archetype: archetypeInput ? archetypeInput.value : 'technical', provider: provider || 'openai', model, title: currentTitle, systemPrompt: sysPrompt, modelConfig })
+                        body: JSON.stringify({ 
+                            prompt, 
+                            archetype: archetypeInput ? archetypeInput.value : 'technical', 
+                            provider: provider || 'openai', 
+                            model, 
+                            title: currentTitle, 
+                            systemPrompt: sysPrompt, 
+                            modelConfig,
+                            keys: {
+                                openai: personalKeys.openai,
+                                gemini: personalKeys.gemini,
+                                anthropic: personalKeys.anthropic,
+                                groq: personalKeys.groq
+                            }
+                        })
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
