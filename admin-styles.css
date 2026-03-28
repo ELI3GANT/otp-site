@@ -10,6 +10,7 @@
     --admin-success: #00ffaa;
     --admin-danger: #ff4444;
     --admin-text: #ffffff;
+    --admin-white: #ffffff;
     --admin-muted: #888;
     --radius: 12px;
 }
@@ -24,7 +25,8 @@ html[data-theme="light"] {
     --admin-success: #34c759;
     --admin-danger: #ff3b30;
     --admin-text: #000000;
-    --admin-muted: #8e8e93;
+    --admin-white: #000000;
+    --admin-muted: #6e6e73;
 }
 
 * { box-sizing: border-box; }
