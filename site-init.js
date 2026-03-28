@@ -289,32 +289,30 @@ window.OTP.initTheme = function() {
               filter: drop-shadow(0 0 10px var(--accent2)) brightness(1.2) !important;
               opacity: 1 !important;
               visibility: visible !important;
+              display: block !important;
             }
             .spectral-v-sync .title,
-            .spectral-v-sync .luxe-title .title,
-            .spectral-v-sync .result-value {
-              background: ${activeGradient} !important;
+            .spectral-v-sync .luxe-title .title {
+              background-image: ${activeGradient} !important;
               background-size: 400% 400% !important;
               -webkit-background-clip: text !important;
               background-clip: text !important;
               -webkit-text-fill-color: transparent !important;
-              color: var(--accent2) !important; 
+              color: transparent !important;
               animation: spectral-flow 8s ease infinite !important;
               opacity: 1 !important;
               visibility: visible !important;
               display: block !important;
-              overflow: visible !important;
               position: relative !important;
-              z-index: 100 !important;
+              z-index: 1000 !important;
               -webkit-text-stroke: 0px transparent !important;
+              text-shadow: none !important;
             }
-            .spectral-v-sync h1, .spectral-v-sync h2 {
+            .spectral-v-sync .luxe-title {
               background: none !important;
-              -webkit-text-fill-color: initial !important;
               overflow: visible !important;
-            }
-            .spectral-v-sync .title:last-child {
-              -webkit-text-stroke: 1px rgba(255,255,255,0.1) !important; /* SUBTLE HINT */
+              opacity: 1 !important;
+              visibility: visible !important;
             }
         `;
         document.head.appendChild(style);
