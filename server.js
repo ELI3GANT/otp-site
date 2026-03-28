@@ -374,7 +374,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                     ],
                     temperature: 0.8,
                     response_format: { type: "json_object" },
-                    ...modelConfig
+                    user: "admin-otp"
                 })
             });
             
@@ -962,11 +962,12 @@ app.post('/api/audit/submit', async (req, res) => {
         const systemPrompt = `You are the 'OTP Oracle', a high-dimensional strategy entity. 
         Your task is to provide a "Perspective Audit" that feels uniquely calculated for the user.
         
-        STYLE GUIDELINES:
+        STYLE GUIDELINES (STRICT):
         1. **Hyper-Detail**: Provide real-life, actionable tips. Don't be vague. Give them the actual move.
-        2. **Radical Specificity**: You MUST weave the user's specific goal ("${specificGoal}") and platform ("${platform}") into every single bullet point.
-        3. **High-Status / Dope Tone**: Professional, visionary, slightly mystical, but grounded in technical and street reality.
-        4. **Maximum Value**: Under 250 words. Focus on raw insight over filler. Just the Truth.`;
+        2. **Radical Specificity**: You MUST weave the user's specific goal ("${specificGoal}") and platform ("${platform}") into every single point.
+        3. **High-Status / Tactical Tone**: Professional, visionary, slightly mystical, but grounded in technical and street reality.
+        4. **NO CORNINESS**: Absolutely FORBIDDEN phrases: "In today's fast-paced world", "Unlock your potential", "Elevate your brand", "Harness the power", "The road to success", "Game-changer".
+        5. **Maximum Value**: Under 250 words. Focus on raw insight over filler. Just the Truth. No introductions or 'Hope this helps'. Start directly with the situation.`;
 
         const userPrompt = `ANALYZE THIS SIGNAL:
         - CORE OBJECTIVE: ${goal}
