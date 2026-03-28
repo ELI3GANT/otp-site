@@ -2704,13 +2704,22 @@
             const base = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || window.location.origin);
             const localKeyBackup = localStorage.getItem('cloud_openai');
             
+            // --- ENHANCE PROMPT FOR CINEMATIC FIDELITY ---
+            const enhancedPrompt = `[CINEMATIC ORACLE V5 STYLE]: ${prompt}. High-contrast, tactical lighting, dark moody atmosphere, hyper-realistic photography, 8k resolution, industrial aesthetics, sharp detail, professional color grading, realistic textures, cinematic composition. No cartoons, no 3D render look. RAW photography style.`;
+
             const res = await fetch(base + '/api/ai/generate-image', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + state.token
                 },
-                body: JSON.stringify({ prompt, title, aspect_ratio: 'landscape', cloud_key: localKeyBackup })
+                body: JSON.stringify({ 
+                    prompt: enhancedPrompt, 
+                    title, 
+                    aspect_ratio: 'landscape', 
+                    quality: 'hd',
+                    cloud_key: localKeyBackup 
+                })
             });
 
             const data = await res.json();
