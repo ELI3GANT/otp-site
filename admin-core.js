@@ -1318,13 +1318,22 @@
         document.getElementById('replyDraftContent').value = c.draft_reply || '';
         
         // Render Analysis if present
+        // Render Analysis Agent (High-Density View)
         const analysisDiv = document.getElementById('replyAnalysis');
-        if(c.ai_analysis || c.advice) {
-             const analysisData = c.ai_analysis || { tactical_advice: c.advice };
+        if(c.ai_analysis || c.advice || c.neural_meta) {
+             const analysisData = c.ai_analysis || { tactical_advice: c.advice, neural_meta: c.neural_meta };
              const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
-             analysisDiv.innerHTML = `<pre style="white-space:pre-wrap; font-family:monospace; font-size:0.75rem; color:var(--admin-cyan); background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; border: 1px solid var(--admin-border);">${window.escapeHtml ? window.escapeHtml(analysisText) : analysisText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`;
+             analysisDiv.innerHTML = `
+                <div style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: 160px; overflow-y: auto;">
+                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">NEURAL_ANALYSIS_DATA</div>
+                    <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.72rem; color: var(--admin-text); line-height: 1.4; margin: 0;">${window.escapeHtml ? window.escapeHtml(analysisText) : analysisText}</pre>
+                </div>`;
         } else {
-             analysisDiv.innerHTML = `<div style="text-align:center; padding:20px; color:var(--admin-muted); font-size:0.75rem; border: 1px dashed var(--admin-border); border-radius:8px;">SIGNAL DATA NOT ANALYZED</div>`;
+             analysisDiv.innerHTML = `
+                <div style="text-align: center; padding: 25px; color: var(--admin-muted); font-size: 0.7rem; border: 1px dashed var(--admin-border); border-radius: 8px; background: rgba(0,0,0,0.02);">
+                    <div style="font-size: 1.2rem; margin-bottom: 8px; opacity: 0.5;">📡</div>
+                    SIGNAL DATA NOT ANALYZED
+                </div>`;
         }
         
         const modal = document.getElementById('replyModal');
