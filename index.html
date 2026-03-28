@@ -1148,21 +1148,55 @@
         window.location.href = 'portal-gate.html';
       }
     });
-    // GHOST TRIGGER: Triple-click invisible area in footer to reveal the gate
+    // --- GHOST SIGNAL V2: TACTICAL SEQUENCE ---
+    // Protocol: Double-Click, then Long-Press (1.5s) on the same spot.
     let ghostClicks = 0;
     let ghostTimer = null;
+    let longPressTimer = null;
     const ghost = document.getElementById('ghost-trigger');
-    if(ghost) {
-      ghost.addEventListener('click', (e) => {
+
+    if (ghost) {
+      // 1. CLICK HANDLING
+      ghost.addEventListener('mousedown', (e) => {
         ghostClicks++;
-        if(ghostTimer) clearTimeout(ghostTimer);
+        if (ghostTimer) clearTimeout(ghostTimer);
         
-        if(ghostClicks === 3) { 
-            window.location.href = 'portal-gate.html'; 
-            ghostClicks = 0;
+        // Start long-press detection on the 3rd attempt if double-clicked first
+        if (ghostClicks === 3) {
+            // Visual feedback: Subtle cursor change
+            document.body.style.cursor = 'crosshair';
+            
+            longPressTimer = setTimeout(() => {
+                // AUTH SUCCESS: Trigger system glitch
+                document.body.classList.add('terminal-auth-glitch');
+                // Play subtle beep if possible (optional, but keep it silent for stealth)
+                setTimeout(() => {
+                    window.location.href = 'portal-gate.html';
+                }, 400);
+            }, 1500);
         } else {
-            ghostTimer = setTimeout(() => { ghostClicks = 0; }, 1500);
+            ghostTimer = setTimeout(() => { 
+                ghostClicks = 0; 
+                document.body.style.cursor = '';
+            }, 1500);
         }
+      });
+
+      ghost.addEventListener('mouseup', () => {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            if (ghostClicks === 3) {
+                // Interrupted long-press
+                ghostClicks = 0;
+                document.body.style.cursor = '';
+            }
+        }
+      });
+
+      ghost.addEventListener('mouseleave', () => {
+        if (longPressTimer) clearTimeout(longPressTimer);
+        ghostClicks = 0;
+        document.body.style.cursor = '';
       });
     }
   </script>
@@ -1282,5 +1316,15 @@
       revealItems.forEach(item => observer.observe(item));
     })();
   </script>
+  <style>
+    /* SYSTEM AUTH GLITCH */
+    .terminal-auth-glitch { animation: auth-glitch-active 0.4s ease-in-out; pointer-events: none; }
+    @keyframes auth-glitch-active {
+      0% { filter: none; transform: scale(1); }
+      30% { filter: hue-rotate(90deg) contrast(1.5); transform: scale(0.99) skew(1deg); }
+      60% { filter: invert(1) contrast(2); transform: scale(1.01) skew(-1deg); }
+      100% { filter: none; transform: scale(1); }
+    }
+  </style>
 </body>
 </html>
