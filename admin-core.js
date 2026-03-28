@@ -553,10 +553,14 @@
             const optimizedSize = (optimizedFile.size / 1024 / 1024).toFixed(2);
             document.getElementById('fileSizeDisplay').textContent = `${optimizedSize} MB (Saved ${((1 - optimizedFile.size/file.size)*100).toFixed(0)}%)`;
             
-            const prevImg = document.getElementById('previewImg');
-            if(prevImg) {
-                prevImg.src = publicUrl;
-                document.getElementById('imagePreview').style.display = 'block';
+            const prevDiv = document.getElementById('imagePreview');
+            const urlIn = document.getElementById('urlInput');
+            if(urlIn) urlIn.value = publicUrl;
+            
+            if(prevDiv) {
+                // Referrer privacy ensures that storage CDNs (Supabase) don't block the request based on referer-policy
+                prevDiv.innerHTML = `<img id="previewImg" src="${publicUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
+                prevDiv.style.display = 'block';
             }
             
             showToast("MEDIA OPTIMIZED & UPLOADED");
@@ -595,10 +599,9 @@
             document.getElementById('urlInput').value = img;
             
             // Show Preview if image exists
-            const prevImg = document.getElementById('previewImg');
             const prevDiv = document.getElementById('imagePreview');
-            if(img && prevImg && prevDiv) {
-                 prevImg.src = img;
+            if(img && prevDiv) {
+                 prevDiv.innerHTML = `<img id="previewImg" src="${img}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
                  prevDiv.style.display = 'block';
             }
 
