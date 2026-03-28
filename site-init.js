@@ -264,49 +264,43 @@ window.OTP.initTheme = function() {
     }, 5 * 60 * 1000);
 
     // 4. SPECTRAL REVELATION (Probability Aura)
-    // Locked to session storage to ensure consistency across internal navigation
-    let isSpectral = sessionStorage.getItem('otp_spectral_active') === 'true';
-    if (!isSpectral) {
-        // 5% chance on the FIRST page load of the session
-        const spectralRoll = Math.random();
-        if (spectralRoll < 0.05) {
-            isSpectral = true;
-            sessionStorage.setItem('otp_spectral_active', 'true');
-        }
-    }
+    // PROBABILITY RE-ROLL: Evaluation occurs on every refresh (Session Lock Purged)
+    const spectralRoll = Math.random();
+    let variant = '';
+    
+    // 6% Total Chance (2% each variant)
+    if (spectralRoll < 0.02) variant = 'spectral-revelation'; // V1: Iridescent
+    else if (spectralRoll < 0.04) variant = 'spectral-revelation-gold'; // V2: Gold
+    else if (spectralRoll < 0.06) variant = 'spectral-revelation-neon'; // V3: Neon
 
-    if (isSpectral) {
-        document.documentElement.classList.add('spectral-revelation');
+    if (variant) {
+        document.documentElement.classList.add(variant, 'spectral-v-sync');
+        console.log(`[OTP] SYSTEM_STATE: ${variant.toUpperCase()}_ACTIVE`);
+        
         const style = document.createElement('style');
         style.textContent = `
-            .spectral-revelation .nav-logo,
-            .spectral-revelation .hero-logo-wrap,
-            .spectral-revelation .hero-eye-3d {
-              filter: drop-shadow(0 0 10px #ff00cc) brightness(1.2) !important;
+            .spectral-v-sync .nav-logo,
+            .spectral-v-sync .hero-logo-wrap,
+            .spectral-v-sync .hero-eye-3d {
+              filter: drop-shadow(0 0 10px var(--accent2)) brightness(1.2) !important;
               opacity: 1 !important;
               visibility: visible !important;
             }
-
-            .spectral-revelation .nav-logo img,
-            .spectral-revelation .hero-eye-3d {
-              filter: hue-rotate(160deg) saturate(1.5) contrast(1.1) !important;
-              opacity: 1 !important;
-              visibility: visible !important;
-            }
-            
-            .spectral-revelation .title,
-            .spectral-revelation .hero-title-adjust {
+            .spectral-v-sync .title,
+            .spectral-v-sync .hero-title-adjust {
               background: var(--spectral-gradient) !important;
               background-size: var(--spectral-size) !important;
               -webkit-background-clip: text !important;
               -webkit-text-fill-color: transparent !important;
+              -webkit-box-decoration-break: clone;
+              box-decoration-break: clone;
               animation: spectral-flow 8s ease infinite !important;
               opacity: 1 !important;
               visibility: visible !important;
+              display: inline-block;
             }
         `;
         document.head.appendChild(style);
-        console.log('[OTP] SYSTEM_STATE: SPECTRAL_REVELATION_ACTIVE');
     }
 
     return targetTheme;

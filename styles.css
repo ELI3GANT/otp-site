@@ -8883,3 +8883,42 @@ section[id] {
   color: #ffcc00 !important;
   text-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
 }
+
+/* --- SPECTRAL MULTI-VARIANTS: PROBABILITY RE-ROLL ENGINE --- */
+.spectral-revelation-gold {
+  --spectral-gradient: linear-gradient(90deg, #ffcc00, #ff8800, #ffffff, #ffcc00);
+  --accent2: #ffcc00;
+  --accent2-rgb: 255, 204, 0;
+}
+
+.spectral-revelation-neon {
+  --spectral-gradient: linear-gradient(90deg, #00ffaa, #00ecff, #ffffff, #00ffaa);
+  --accent2: #00ffaa;
+  --accent2-rgb: 0, 255, 170;
+}
+
+.spectral-v-sync .title,
+.spectral-v-sync .hero-title-adjust,
+.spectral-v-sync .syne-bold,
+.spectral-v-sync h1,
+.spectral-v-sync h2,
+.spectral-v-sync .result-value {
+  background: var(--spectral-gradient) !important;
+  background-size: var(--spectral-size) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: spectral-flow 8s ease infinite !important;
+  display: inline-block; /* Fix for background clipping bug */
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.spectral-revelation-gold .nav-logo img,
+.spectral-revelation-gold .hero-eye-3d {
+  filter: hue-rotate(45deg) saturate(2) brightness(1.2) !important;
+}
+
+.spectral-revelation-neon .nav-logo img,
+.spectral-revelation-neon .hero-eye-3d {
+  filter: hue-rotate(-90deg) saturate(2) brightness(1.2) !important;
+}
