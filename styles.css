@@ -2634,7 +2634,7 @@ html {
 
 /* HERO */
 .hero {
-  min-height: 100dvh;
+  min-height: 90vh;
   height: 100%; 
   display: flex;
   align-items: center;
@@ -8433,6 +8433,7 @@ input:focus, select:focus, textarea:focus {
     left: 50%;
     width: 2px;
     height: 90px;
+    height: 80px;
     background: linear-gradient(180deg, var(--accent2), transparent);
     transform: translateX(-50%);
     z-index: 10;
@@ -8442,7 +8443,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .section-results-enhanced {
-    padding-top: 120px !important;
+    padding-top: 80px !important;
     background: #030305;
     position: relative;
     contain: paint;
