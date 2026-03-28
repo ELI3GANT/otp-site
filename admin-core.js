@@ -2830,20 +2830,26 @@
                 parsedHtml = content.replace(/\n/g, '<br>');
             }
 
-            // --- 2. Construct Preview HTML ---
-            const imageHtml = image ? `<div style="margin-bottom: 30px;"><img src="${image}" style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3);" /></div>` : '';
-            const excerptHtml = excerpt ? `<p style="font-size: 1.2rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${excerpt}</p>` : '';
-            
             const isOracle = document.getElementById('aiDraftSource')?.value === 'true' || content.includes('// NEURAL_DRAFT');
+            const isVideo = image && image.match(/\.(mp4|webm|mov)$/i);
+            
+            const mediaHtml = image ? `
+                <div style="margin-bottom: 30px;">
+                    ${isVideo ? `
+                        <video src="${image}" controls style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3); max-height: 450px; display: block;"></video>
+                    ` : `
+                        <img src="${image}" style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3); display: block;" />
+                    `}
+                </div>` : '';
             
             const html = `
-                <div style="max-width: 720px; margin: 0px auto; font-family: 'Inter', sans-serif; color: var(--admin-text); padding: 40px; ${isOracle ? 'border-left: 2px solid var(--admin-cyan); background: rgba(0, 236, 255, 0.02);' : ''}">
-                    ${imageHtml}
+                <div style="max-width: 720px; margin: 0px auto; font-family: 'Inter', sans-serif; color: var(--admin-white); padding: 40px; ${isOracle ? 'border-left: 2px solid var(--admin-cyan); background: rgba(0, 236, 255, 0.02);' : ''}">
+                    ${mediaHtml}
                     <div style="border-bottom: 1px solid var(--admin-border); margin-bottom: 35px; padding-bottom: 25px;">
                         <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; line-height: 1.1; margin-bottom: 15px; color: var(--admin-white); font-weight: 700;">${title}</h1>
                         ${excerptHtml}
                     </div>
-                    <div class="otp-content blog-content ${isOracle ? 'oracle-text' : ''}" style="font-size: 1.1rem; line-height: 1.8;">
+                    <div class="otp-content blog-content ${isOracle ? 'oracle-text' : ''}" style="font-size: 1.1rem; line-height: 1.8; color: var(--admin-white);">
                         ${parsedHtml}
                     </div>
                 </div>
