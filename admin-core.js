@@ -2845,14 +2845,18 @@
             const isVideo = image && image.match(/\.(mp4|webm|mov)$/i);
             const excerptHtml = excerpt ? `<p style="font-size: 1.25rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${excerpt}</p>` : '';
             
-            const mediaHtml = image ? `
-                <div style="margin-bottom: 30px;">
+            const mediaHtml = (image && image.trim().length > 0) ? `
+                <div style="margin-bottom: 35px; background: rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; border: 1px solid var(--admin-border);">
                     ${isVideo ? `
-                        <video src="${image}" controls style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3); max-height: 450px; display: block;"></video>
+                        <video src="${image}" controls style="width:100%; display: block; max-height: 500px; object-fit: cover;"></video>
                     ` : `
-                        <img src="${image}" style="width:100%; border-radius:12px; border:1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3); display: block;" />
+                        <img src="${image}" style="width:100%; height: auto; display: block; max-height: 550px; object-fit: cover;" onerror="this.parentElement.style.display='none'" />
                     `}
-                </div>` : '';
+                </div>` : `
+                <div style="margin-bottom: 35px; padding: 60px; text-align: center; background: rgba(var(--accent2-rgb), 0.03); border: 2px dashed var(--admin-border); border-radius: 12px; color: var(--admin-muted);">
+                    <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;">🖼️</div>
+                    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;">NEURAL_VISUAL_SIGNAL_PENDING</div>
+                </div>`;
             
             const html = `
                 <div style="max-width: 720px; margin: 0px auto; font-family: 'Inter', sans-serif; color: var(--admin-white); padding: 40px; ${isOracle ? 'border-left: 2px solid var(--admin-cyan); background: rgba(0, 236, 255, 0.02);' : ''}">
