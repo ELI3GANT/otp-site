@@ -1140,12 +1140,12 @@
   <script src="site-init.js?v=15.1.1"></script>
   <script src="audit-engine.js?v=15.1.1"></script>
   <script>
-    // --- GHOST SIGNAL V3: THE EYE SYNCHRONIZATION ---
-    // Protocol: Hold 'CTRL' and Click the OTP EYE in the Hero section.
-    const otpEye = document.querySelector('.otp-eye-svg');
-    if (otpEye) {
-        otpEye.style.cursor = 'pointer'; // Subtle hint for the operator
-        otpEye.addEventListener('click', (e) => {
+    // --- GHOST SIGNAL V4: THE TOTAL LOGO ENCAPSULATION ---
+    // Protocol: Hold 'CTRL' or 'CMD' and Click any instance of the OTP Logo (Hero or Nav).
+    const otpLogos = document.querySelectorAll('.hero-eye-3d, .otp-mark, #nav-logo-neon');
+    otpLogos.forEach(logo => {
+        logo.style.cursor = 'pointer'; // Subtle signifier
+        logo.addEventListener('click', (e) => {
             if (e.ctrlKey || e.metaKey) {
                 // AUTH SUCCESS: Trigger system glitch
                 document.body.classList.add('terminal-auth-glitch');
@@ -1154,7 +1154,7 @@
                 }, 400);
             }
         });
-    }
+    });
 
     // Backup Shortcut: Ctrl + Shift + U (Legacy Support)
     document.addEventListener('keydown', (e) => {
