@@ -973,36 +973,36 @@
                 }
 
                 return `
-                <div class="post-row" style="display: block; padding: 15px; margin-bottom: 12px; cursor: default; border-left: 3px solid ${statusColor}; background: rgba(255,255,255,0.02); border-radius: 8px;">
+                <div class="post-row" style="display: block; padding: 15px; margin-bottom: 12px; cursor: default; border-left: 3px solid ${statusColor}; background: rgba(var(--accent2-rgb), 0.03); border-radius: 8px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: flex-start;">
                         <div>
-                             <div style="font-weight: 800; color: #fff; font-size: 1rem; letter-spacing: 0.5px; margin-bottom: 2px;">${window.escapeHtml(c.name)}</div>
+                             <div style="font-weight: 800; color: var(--admin-white); font-size: 1rem; letter-spacing: 0.5px; margin-bottom: 2px;">${window.escapeHtml(c.name)}</div>
                              <div style="color: var(--admin-cyan); font-size: 0.75rem; font-family: monospace;">&lt;${window.escapeHtml(c.email)}&gt;</div>
                              <div style="font-size: 0.6rem; color: var(--admin-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">LAST SIGNAL: ${new Date(c.created_at).toLocaleString()}</div>
                         </div>
                         <div style="display:flex; gap: 8px; align-items:center;">
-                            <div style="font-size: 0.65rem; font-family: 'Space Grotesk', sans-serif; font-weight: 900; color: ${statusColor}; border: 1px solid ${statusColor}; padding: 3px 8px; border-radius: 4px; background: rgba(${statusColor === 'var(--admin-success)' ? '0,255,170' : '255,170,0'}, 0.05);">${statusText}</div>
-                            <button type="button" onclick="return archiveContact('${c.id}', event)" title="Archive" style="background:transparent; border:none; color:var(--admin-muted); cursor:pointer; font-size: 1.1rem; transition: color 0.2s;">📦</button>
-                            <button type="button" onclick="return deleteContact('${c.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer; font-size: 1.1rem; transition: color 0.2s;">✖</button>
+                            <div style="font-size: 0.65rem; font-family: 'Space Grotesk', sans-serif; font-weight: 900; color: ${statusColor}; border: 1px solid ${statusColor}; padding: 3px 8px; border-radius: 4px; background: rgba(var(--accent2-rgb), 0.05);">${statusText}</div>
+                            <button type="button" onclick="return archiveContact('${c.id}', event)" title="Archive" class="btn-icon-mini">📦</button>
+                            <button type="button" onclick="return deleteContact('${c.id}', event)" title="Delete" class="btn-icon-mini danger">✖</button>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem; margin-bottom: 12px; color: var(--admin-text); padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">
-                        <div><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// SERVICE</span><br>${window.escapeHtml(c.service || 'N/A')}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem; margin-bottom: 12px; color: var(--admin-text); padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px;">
+                        <div><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// SERVICE</span><br>${window.escapeHtml(c.service || c.project_type || 'N/A')}</div>
                         <div><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// BUDGET</span><br>${window.escapeHtml(c.budget || 'N/A')}</div>
-                        <div style="grid-column: span 2;"><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// MESSAGE</span><br><span style="line-height: 1.6;">${window.escapeHtml(c.message || '')}</span></div>
+                        <div style="grid-column: span 2;"><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// MESSAGE</span><br><span style="line-height: 1.6;">${window.escapeHtml(c.message || c.project_details || '')}</span></div>
                     </div>
 
                     ${isDrafted ? `
                     <div style="background: rgba(var(--accent2-rgb), 0.05); border-left: 3px solid var(--admin-cyan); padding: 15px; margin-top: 10px; border-radius: 0 6px 6px 0;">
                         <div style="font-size: 0.65rem; color: var(--admin-cyan); margin-bottom: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px;">// AI NEURAL DRAFT</div>
-                        <div style="font-size: 0.85rem; color: #ccc; white-space: pre-wrap; margin-bottom: 15px; line-height: 1.5; font-style: italic;">"${c.draft_reply.substring(0, 200)}${c.draft_reply.length > 200 ? '...' : ''}"</div>
+                        <div style="font-size: 0.85rem; color: var(--admin-text); white-space: pre-wrap; margin-bottom: 15px; line-height: 1.5; font-style: italic;">"${c.draft_reply.substring(0, 200)}${c.draft_reply.length > 200 ? '...' : ''}"</div>
                         <div style="display:flex; gap:12px;">
-                            <button type="button" onclick="copyDraft('${c.id}')" style="background: var(--admin-cyan); color: #000; border: none; padding: 8px 16px; font-size: 0.75rem; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase;">COPY SIGNAL</button>
-                            <button type="button" onclick="openReplyManager('${c.id}')" style="background: transparent; border: 1px solid var(--admin-cyan); color: var(--admin-cyan); padding: 8px 16px; font-size: 0.75rem; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase;">MODULATE RESPONSE</button>
+                            <button type="button" onclick="copyDraft('${c.id}')" class="btn-action-mini">COPY SIGNAL</button>
+                            <button type="button" onclick="openReplyManager('${c.id}')" class="btn-action-mini outline">MODULATE RESPONSE</button>
                         </div>
                     </div>` : `
                     <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
-                        <button type="button" onclick="openReplyManager('${c.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid var(--admin-border); color: #fff; padding: 6px 12px; font-size: 0.7rem; cursor: pointer; border-radius: 4px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">GENERATE RESPONSE</button>
+                        <button type="button" onclick="openReplyManager('${c.id}')" class="btn-action-mini ghost">GENERATE RESPONSE</button>
                     </div>
                     `}
                 </div>
@@ -1446,18 +1446,36 @@
                     if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
                     if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
 
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cloudKey}`;
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: systemPrompt }] }],
-                            generationConfig: geminiConfig
-                        })
-                    });
-                    const data = await res.json();
-                    if(data.error) throw new Error(data.error.message);
-                    replyText = data.candidates[0].content.parts[0].text;
+                    const versions = ['v1', 'v1beta'];
+                    let success = false;
+                    let lastError = "Neural link failed.";
+
+                    for (const v of versions) {
+                        try {
+                            const url = `https://generativelanguage.googleapis.com/${v}/models/gemini-1.5-flash:generateContent?key=${cloudKey}`;
+                            const res = await fetch(url, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    contents: [{ parts: [{ text: systemPrompt }] }],
+                                    generationConfig: geminiConfig
+                                })
+                            });
+                            const data = await res.json();
+                            if(data.error) {
+                                lastError = data.error.message;
+                                continue;
+                            }
+                            if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+                                replyText = data.candidates[0].content.parts[0].text;
+                                success = true;
+                                break;
+                            }
+                        } catch (e) {
+                            lastError = e.message;
+                        }
+                    }
+                    if(!success) throw new Error(`GEMINI DEEP DIVE FAILED: ${lastError}`);
                 }
                 else if (provider === 'groq') {
                     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {

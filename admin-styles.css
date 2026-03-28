@@ -1584,3 +1584,49 @@ html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !im
     letter-spacing: 1px;
     text-shadow: 0 0 10px var(--admin-cyan);
 }
+
+/* --- TACTICAL BUTTONS (MINI) --- */
+.btn-icon-mini {
+    background: transparent;
+    border: none;
+    color: var(--admin-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-icon-mini:hover { color: var(--admin-cyan); background: rgba(0, 236, 255, 0.05); }
+.btn-icon-mini.danger:hover { color: var(--admin-danger); background: rgba(255, 68, 68, 0.05); }
+
+.btn-action-mini {
+    background: var(--admin-cyan);
+    color: #000;
+    border: none;
+    padding: 8px 16px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+}
+.btn-action-mini:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 236, 255, 0.25); }
+.btn-action-mini.outline { background: transparent; border: 1px solid var(--admin-cyan); color: var(--admin-cyan); }
+.btn-action-mini.outline:hover { background: rgba(0, 236, 255, 0.05); }
+.btn-action-mini.ghost { background: rgba(255,255,255,0.05); border: 1px solid var(--admin-border); color: var(--admin-white); }
+.btn-action-mini.ghost:hover { border-color: var(--admin-cyan); color: var(--admin-cyan); }
+
+/* --- THEME READABILITY FIXES --- */
+[data-theme="light"] .post-row { background: rgba(0,0,0,0.03) !important; color: #111 !important; border-color: #ddd !important; }
+[data-theme="light"] .btn-action-mini.ghost { color: #333; border-color: #ccc; }
+[data-theme="light"] .modal-content { background: #fff !important; color: #111 !important; border: 1px solid #ddd; }
+[data-theme="light"] .modal-content h3 { color: #111 !important; }
+[data-theme="light"] .modal-content p { color: #444 !important; }
+[data-theme="light"] .modal-overlay { background: rgba(255,255,255,0.85) !important; }
+[data-theme="light"] .post-row .post-details-grid { background: rgba(0,0,0,0.05) !important; color: #333 !important; }
+[data-theme="light"] select, [data-theme="light"] input, [data-theme="light"] textarea { background: #fff !important; color: #111 !important; border-color: #ccc !important; }

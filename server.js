@@ -388,7 +388,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             if (!geminiKey) throw new Error("Gemini Key not configured on server or terminal.");
             
             const candidates = model ? [model] : ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-            const versions = ['v1beta', 'v1'];
+            const versions = ['v1', 'v1beta'];
             
             // Map standard OpenAI-style model configs to Gemini format
             const geminiConfig = { response_mime_type: "application/json" };
@@ -902,16 +902,27 @@ app.post('/api/contact/submit', async (req, res) => {
         try {
             if (process.env.GEMINI_API_KEY) {
                 const geminiKey = (process.env.GEMINI_API_KEY || '').trim();
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }]
-                    })
-                });
-                const data = await response.json();
-                if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    draftReply = data.candidates[0].content.parts[0].text;
+                let data = null;
+                const endpoints = ['v1', 'v1beta'];
+                for (const v of endpoints) {
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/${v}/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: systemPrompt + "\n\n" + userPrompt }] }]
+                            })
+                        });
+                        data = await response.json();
+                        if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            draftReply = data.candidates[0].content.parts[0].text;
+                            break;
+                        } else if (data.error) {
+                            console.warn(`⚠️ Lead Draft Prompt [${v}] Error:`, data.error.message);
+                        }
+                    } catch (fetchErr) {
+                        console.warn(`⚠️ Lead Draft Prompt [${v}] Fetch Error:`, fetchErr.message);
+                    }
                 }
             } 
         } catch (aiError) {
