@@ -263,6 +263,14 @@ window.OTP.initTheme = function() {
         }
     }, 5 * 60 * 1000);
 
+    // 4. SPECTRAL REVELATION (Probability Aura)
+    // 5% chance of triggering the chromatic spectral state on refresh
+    const spectralRoll = Math.random();
+    if (spectralRoll < 0.05) {
+        document.documentElement.classList.add('spectral-revelation');
+        console.log('[OTP] SYSTEM_STATE: SPECTRAL_REVELATION_ACTIVE');
+    }
+
     return targetTheme;
 };
 

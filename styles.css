@@ -8829,3 +8829,57 @@ body {
 section[id] {
   scroll-margin-top: 100px !important;
 }
+
+/* --- SPECTRAL REVELATION: SYSTEM WIDE AURA --- */
+:root {
+  --spectral-gradient: linear-gradient(90deg, #00ecff, #ff00cc, #ffcc00, #00ecff);
+  --spectral-size: 400% 400%;
+}
+
+@keyframes spectral-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.spectral-revelation {
+  --accent2: #ff00cc;
+  --accent2-rgb: 255, 0, 204;
+}
+
+.spectral-revelation .syne-bold,
+.spectral-revelation h1,
+.spectral-revelation h2,
+.spectral-revelation .result-value {
+  background: var(--spectral-gradient);
+  background-size: var(--spectral-size);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: spectral-flow 8s ease infinite;
+  filter: drop-shadow(0 0 10px rgba(255, 0, 204, 0.3));
+}
+
+.spectral-revelation .dot-circle,
+.spectral-revelation .pipeline-node,
+.spectral-revelation .card-meter-fill {
+  background: var(--spectral-gradient) !important;
+  background-size: var(--spectral-size) !important;
+  animation: spectral-flow 8s ease infinite !important;
+  box-shadow: 0 0 20px rgba(0, 236, 255, 0.5) !important;
+}
+
+.spectral-revelation .nav-logo {
+  filter: drop-shadow(0 0 8px #ff00cc);
+}
+
+.spectral-revelation .kursor-child {
+  background-color: #ff00cc !important;
+  box-shadow: 0 0 15px #00ecff !important;
+}
+
+.spectral-revelation .status-visuals,
+.spectral-revelation .ticker-label,
+.spectral-revelation .card-meta-hud {
+  color: #ffcc00 !important;
+  text-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
+}
