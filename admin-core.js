@@ -2729,7 +2729,9 @@
                 
                 const prevDiv = document.getElementById('imagePreview');
                 if (prevDiv) {
-                    prevDiv.innerHTML = `<img id="previewImg" src="${data.url}" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">`;
+                    // Referrer privacy ensures that storage CDNs (Supabase) don't block the request based on referer-policy
+                    const cleanUrl = new URL(data.url).href;
+                    prevDiv.innerHTML = `<img id="previewImg" src="${cleanUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
                     prevDiv.style.display = 'block';
                 }
                 
