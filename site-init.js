@@ -291,13 +291,18 @@ window.OTP.initTheme = function() {
               background: var(--spectral-gradient) !important;
               background-size: var(--spectral-size) !important;
               -webkit-background-clip: text !important;
+              color: var(--accent2) !important; /* FALLBACK IF CLIP FAILS */
               -webkit-text-fill-color: transparent !important;
               -webkit-box-decoration-break: clone;
               box-decoration-break: clone;
               animation: spectral-flow 8s ease infinite !important;
               opacity: 1 !important;
               visibility: visible !important;
-              display: inline-block;
+              display: block !important; /* MATCH ORIG STYLE */
+              -webkit-text-stroke: 0px transparent !important; /* OVERRIDE PERSPECTIVE OUTLINE */
+            }
+            .spectral-v-sync .title:last-child {
+              -webkit-text-stroke: 1px rgba(255,255,255,0.2) !important;
             }
         `;
         document.head.appendChild(style);
