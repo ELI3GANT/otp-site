@@ -2511,7 +2511,7 @@
                 }
                 else if (provider === 'gemini') {
                     const gemModel = model || 'gemini-2.0-flash';
-                    const endpoints = ['v1beta', 'v1'];
+                    const endpoints = ['v1', 'v1beta'];
                     let gemSuccess = false;
                     let gemError = "Unknown Gemini error.";
                     
@@ -2577,7 +2577,20 @@
 
             if (aiResult) {
                 // 1. Populate Text Fields
-                if(aiResult.content) document.getElementById('contentArea').value = aiResult.content;
+                if(aiResult.content) {
+                    const contentArea = document.getElementById('contentArea');
+                    contentArea.value = aiResult.content;
+                    
+                    if (selectedArchSlug === 'oracle' || selectedArchSlug === 'visionary') {
+                        contentArea.classList.add('oracle-text');
+                        contentArea.style.borderLeft = '2px solid var(--admin-cyan)';
+                        contentArea.style.background = 'rgba(0, 236, 255, 0.02)';
+                    } else {
+                        contentArea.classList.remove('oracle-text');
+                        contentArea.style.borderLeft = 'none';
+                        contentArea.style.background = 'transparent';
+                    }
+                }
                 if(aiResult.excerpt) document.getElementById('excerptInput').value = aiResult.excerpt;
                 if(aiResult.seo_title) document.getElementById('seoTitle').value = aiResult.seo_title;
                 if(aiResult.seo_desc) document.getElementById('seoDesc').value = aiResult.seo_desc;

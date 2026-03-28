@@ -1567,3 +1567,20 @@ html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !im
     font-size: 16px !important;
   }
 }
+/* --- ORACLE / VISIONARY AI STYLING --- */
+.oracle-text {
+    font-family: 'Syne', sans-serif !important;
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+    text-shadow: 0 0 15px rgba(0, 236, 255, 0.1);
+}
+
+.blink { animation: admin-blink 1.5s infinite; }
+@keyframes admin-blink { 50% { opacity: 0.3; } }
+
+/* Fix for glitchy neural variant inputs */
+#aiStatus span.blink {
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px var(--admin-cyan);
+}
