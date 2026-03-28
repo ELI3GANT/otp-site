@@ -1750,7 +1750,76 @@ document.addEventListener('DOMContentLoaded', () => {
              // Broadcast internal event for logic that listens
              window.dispatchEvent(new CustomEvent('otp-fx-change', { detail: { intensity: config.visuals } }));
         }
+
+        // E. STATUS (Global Message)
+        if (config.status) {
+            const statusEls = document.querySelectorAll('.status-text, #footer-status');
+            statusEls.forEach(el => {
+                el.innerHTML = `<span style="opacity:0.5;">SYSTEM:</span> ${config.status.toUpperCase()}`;
+                el.style.color = 'var(--accent2)';
+                setTimeout(() => el.style.color = '', 2000);
+            });
+        }
+
+        // F. ALERT (Emergency Broadcast)
+        if (config.alert) {
+             showEmergencyBroadcast(config.alert);
+        }
     }
+
+    function showEmergencyBroadcast(msg) {
+        // Prevent dupes
+        const existing = document.getElementById('emergency-broadcast');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'emergency-broadcast';
+        overlay.style = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999999; width:90%; max-width:600px; background:rgba(0,0,0,0.9); border:1px solid var(--accent); padding:20px; border-radius:12px; box-shadow:0 0 50px rgba(0,255,255,0.2); backdrop-filter:blur(10px); display:flex; gap:20px; align-items:center; animation: broadcastSlideIn 0.5s cubic-bezier(0.2, 1, 0.3, 1) forwards;";
+        
+        overlay.innerHTML = `
+            <div style="font-size:1.5rem;">📡</div>
+            <div style="flex:1;">
+                <div style="font-size:0.6rem; color:var(--accent); text-transform:uppercase; letter-spacing:2px; margin-bottom:5px; font-weight:800;">BROADCAST // SECURE UPLINK</div>
+                <div style="font-family:'Space Grotesk', sans-serif; font-weight:500; color:#fff; line-height:1.4;">${msg}</div>
+            </div>
+            <button onclick="this.closest('#emergency-broadcast').remove()" style="background:transparent; border:none; color:rgba(255,255,255,0.3); cursor:pointer; font-size:1.2rem;">&times;</button>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // Add animation if not present
+        if (!document.getElementById('broadcast-anim')) {
+            const style = document.createElement('style');
+            style.id = 'broadcast-anim';
+            style.textContent = `
+                @keyframes broadcastSlideIn {
+                    from { transform: translate(-50%, -100px); opacity:0; }
+                    to { transform: translate(-50%, 0); opacity:1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Audio cue (optional, but cinematic)
+        try {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(440, context.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(880, context.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.05, context.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.2);
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.start();
+            oscillator.stop(context.currentTime + 0.2);
+        } catch(e) {}
+    }
+
+    // Expose for terminal use if on same origin
+    window.OTP = window.OTP || {};
+    window.OTP.showBroadcast = (msg) => showEmergencyBroadcast(msg);
 
     document.addEventListener('DOMContentLoaded', initializeCommandUplink);
 })();

@@ -2266,12 +2266,8 @@ html {
      position: absolute;
      left: 50%;
      transform: translateX(-50%);
-     top: 120px; /* Below nav? Or is nav icon the hero gif? User said 'Top center in the beginning'. */
-     /* Actually, user said 'icon on top center', '50% bigger'. 
-        I believe they mean the hero image or the nav logo. 
-        Given they said 'remove icon rotating top left', I will assume they want the main logo in the Hero to be the focus.
-        But let's look at the Hero image styles. 
-      */
+     top: 120px;
+     /* Logo focus in Hero */
   }
 
 /* HERO TITLE ADJUSTMENT - Ensuring large size is maintained */
@@ -2642,8 +2638,8 @@ html {
   justify-content: flex-start;
   position: relative;
   text-align: center;
-  /* Top-weighted padding for impact, tight bottom for flow */
-  padding: 180px 20px 20px; 
+  /* Ultra-tight transition strategy */
+  padding: 130px 20px 10px; 
   overflow: hidden; 
 }
 
@@ -2735,7 +2731,7 @@ html {
 }
 
 .hero-micro {
-  margin-top: 24px; /* More space for the footer elements */
+  margin-top: 12px; /* Tighter rhythm below CTAs */
   color: #fff; 
   font-size: 0.85rem; 
   letter-spacing: 0.6px;
@@ -8444,7 +8440,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .section-results-enhanced {
-    padding-top: 20px !important;
+    padding-top: 10px !important;
     background: #030305;
     position: relative;
     contain: paint;
