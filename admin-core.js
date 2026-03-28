@@ -2661,8 +2661,16 @@
                 if(status) { status.textContent = "CONTENT COMPLETE. SYNTHESIZING VISUALS..."; status.style.color = "var(--admin-cyan)"; }
 
                 // --- CHAIN IMAGE GENERATION ---
-                // Only generate if we have a prompt AND logic dictates (e.g. if we want to change it)
-                if (aiResult.image_prompt) {
+                // Support both direct URL returns and prompt-based generation
+                if (aiResult.image_url) {
+                    document.getElementById('imageUrl').value = aiResult.image_url;
+                    document.getElementById('urlInput').value = aiResult.image_url;
+                    const prevDiv = document.getElementById('imagePreview');
+                    if (prevDiv) {
+                        prevDiv.innerHTML = `<img id="previewImg" src="${aiResult.image_url}" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">`;
+                        prevDiv.style.display = 'block';
+                    }
+                } else if (aiResult.image_prompt) {
                     await triggerImageGenerator(aiResult.image_prompt, aiResult.title || currentTitle);
                 }
 
