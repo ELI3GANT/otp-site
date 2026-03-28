@@ -277,6 +277,11 @@ window.OTP.initTheme = function() {
         document.documentElement.classList.add(variant, 'spectral-v-sync');
         console.log(`[OTP] SYSTEM_STATE: ${variant.toUpperCase()}_ACTIVE`);
         
+        // Define the specific gradient for the variant to ENSURE inheritance
+        let activeGradient = 'linear-gradient(90deg, #00ecff, #ff00cc, #ffcc00, #00ecff)'; // V1 Default
+        if (variant === 'spectral-revelation-gold') activeGradient = 'linear-gradient(90deg, #ffcc00, #ff8800, #ffffff, #ffcc00)';
+        if (variant === 'spectral-revelation-neon') activeGradient = 'linear-gradient(90deg, #00ffaa, #00ecff, #ffffff, #00ffaa)';
+
         const style = document.createElement('style');
         style.textContent = `
             .spectral-v-sync .nav-logo,
@@ -287,22 +292,23 @@ window.OTP.initTheme = function() {
               visibility: visible !important;
             }
             .spectral-v-sync .title,
-            .spectral-v-sync .hero-title-adjust {
-              background: var(--spectral-gradient) !important;
-              background-size: var(--spectral-size) !important;
+            .spectral-v-sync h1,
+            .spectral-v-sync h2 {
+              background: ${activeGradient} !important;
+              background-size: 400% 400% !important;
               -webkit-background-clip: text !important;
-              color: var(--accent2) !important; /* FALLBACK IF CLIP FAILS */
+              background-clip: text !important;
               -webkit-text-fill-color: transparent !important;
-              -webkit-box-decoration-break: clone;
-              box-decoration-break: clone;
+              color: var(--accent2) !important; /* HARD FALLBACK */
               animation: spectral-flow 8s ease infinite !important;
               opacity: 1 !important;
               visibility: visible !important;
-              display: block !important; /* MATCH ORIG STYLE */
-              -webkit-text-stroke: 0px transparent !important; /* OVERRIDE PERSPECTIVE OUTLINE */
+              display: block !important;
+              position: relative !important;
+              z-index: 10 !important;
             }
             .spectral-v-sync .title:last-child {
-              -webkit-text-stroke: 1px rgba(255,255,255,0.2) !important;
+              -webkit-text-stroke: 0px transparent !important; /* OVERRIDE PERSPECTIVE OUTLINE */
             }
         `;
         document.head.appendChild(style);
