@@ -878,7 +878,10 @@
                     <label>DRAFT RESPONSE PROTOCOL</label>
                     <div style="display: flex; gap: 8px;">
                         <select id="replyArchetype" style="background: var(--admin-panel); color: var(--admin-cyan); border: 1px solid var(--admin-border); font-size: 0.65rem; padding: 4px; border-radius: 4px; max-width: 150px;">
-                            <option value="">Default Agent</option>
+                            <option value="oracle">ORACLE (Insightful)</option>
+                            <option value="visionary">VISIONARY (Premium)</option>
+                            <option value="technical">TECHNICAL (Detailed)</option>
+                            <option value="tactical">TACTICAL (Direct)</option>
                         </select>
                         <button type="button" onclick="generateReplyForLead()" style="background: var(--admin-accent); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                             <span>⚡</span> GEN AI REPLY
@@ -889,9 +892,9 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                <button onclick="saveDraftUpdate()" class="action-btn" style="background: transparent; border: 1px solid var(--admin-border);">SAVE DRAFT ONLY</button>
-                <button onclick="launchMailClient()" class="action-btn" style="background: var(--admin-accent); color: white;">LAUNCH MAIL CLIENT</button>
-                <button onclick="markAsReplied()" class="action-btn" style="background: var(--admin-success); color: black;">MARK PROCESSED</button>
+                <button onclick="saveDraftUpdate()" class="action-btn" style="background: transparent; border: 1px solid var(--admin-border);">CACHE DRAFT</button>
+                <button onclick="launchMailClient()" class="action-btn" style="background: var(--admin-accent); color: white;">LAUNCH CLIENT MAIL</button>
+                <button onclick="markAsReplied()" class="action-btn" style="background: var(--admin-success); color: black;">SYNCHRONIZE SIGNAL</button>
             </div>
         </div>
     </div>
