@@ -264,10 +264,34 @@ window.OTP.initTheme = function() {
     }, 5 * 60 * 1000);
 
     // 4. SPECTRAL REVELATION (Probability Aura)
-    // 5% chance of triggering the chromatic spectral state on refresh
-    const spectralRoll = Math.random();
-    if (spectralRoll < 0.05) {
+    // Locked to session storage to ensure consistency across internal navigation
+    let isSpectral = sessionStorage.getItem('otp_spectral_active') === 'true';
+    if (!isSpectral) {
+        // 5% chance on the FIRST page load of the session
+        const spectralRoll = Math.random();
+        if (spectralRoll < 0.05) {
+            isSpectral = true;
+            sessionStorage.setItem('otp_spectral_active', 'true');
+        }
+    }
+
+    if (isSpectral) {
         document.documentElement.classList.add('spectral-revelation');
+        const style = document.createElement('style');
+        style.textContent = `
+            .spectral-revelation .nav-logo {
+              filter: drop-shadow(0 0 10px #ff00cc) brightness(1.1);
+              opacity: 1 !important;
+              visibility: visible !important;
+            }
+
+            .spectral-revelation .nav-logo img {
+              filter: hue-rotate(160deg) saturate(1.5) contrast(1.1) !important;
+              opacity: 1 !important;
+              visibility: visible !important;
+            }
+        `;
+        document.head.appendChild(style);
         console.log('[OTP] SYSTEM_STATE: SPECTRAL_REVELATION_ACTIVE');
     }
 
