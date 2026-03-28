@@ -279,14 +279,28 @@ window.OTP.initTheme = function() {
         document.documentElement.classList.add('spectral-revelation');
         const style = document.createElement('style');
         style.textContent = `
-            .spectral-revelation .nav-logo {
-              filter: drop-shadow(0 0 10px #ff00cc) brightness(1.1);
+            .spectral-revelation .nav-logo,
+            .spectral-revelation .hero-logo-wrap,
+            .spectral-revelation .hero-eye-3d {
+              filter: drop-shadow(0 0 10px #ff00cc) brightness(1.2) !important;
               opacity: 1 !important;
               visibility: visible !important;
             }
 
-            .spectral-revelation .nav-logo img {
+            .spectral-revelation .nav-logo img,
+            .spectral-revelation .hero-eye-3d {
               filter: hue-rotate(160deg) saturate(1.5) contrast(1.1) !important;
+              opacity: 1 !important;
+              visibility: visible !important;
+            }
+            
+            .spectral-revelation .title,
+            .spectral-revelation .hero-title-adjust {
+              background: var(--spectral-gradient) !important;
+              background-size: var(--spectral-size) !important;
+              -webkit-background-clip: text !important;
+              -webkit-text-fill-color: transparent !important;
+              animation: spectral-flow 8s ease infinite !important;
               opacity: 1 !important;
               visibility: visible !important;
             }
