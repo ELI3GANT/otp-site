@@ -16,15 +16,19 @@ window.OTP_CONFIG = {
     supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNrdW1ob3dodWNiYm1wZGVxa3JsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NzQ3NjcsImV4cCI6MjA4MzQ1MDc2N30.yIJ1diGLWjtLWm8P2D5flF2nd0xPKn_8x2RR3DlIrag',
     apiBase: _OTP_VERCEL_API,
 };
+Object.freeze(window.OTP_CONFIG);
 
 // Global helper — resolves the correct API base for every environment
 window.OTP = window.OTP || {};
 window.OTP.getApiBase = function() {
     const h = window.location.hostname;
 
-    // 1. Localhost dev: use same-origin (server.js runs on :3000 / :8080)
+    // 1. Localhost dev: use same-origin ONLY if on a port that typically runs server.js (3000 or 8080)
+    // Otherwise, use the live Vercel API so that AI/Stripe works during local front-end dev (e.g. port 5500)
     if (h === 'localhost' || h === '127.0.0.1') {
-        return window.location.origin;
+        const p = window.location.port;
+        if (p === '3000' || p === '8080') return window.location.origin;
+        return _OTP_VERCEL_API;
     }
 
     // 2. On Vercel preview/prod (*.vercel.app or the main deployment):

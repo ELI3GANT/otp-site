@@ -16,6 +16,7 @@ window.AuditEngine = {
         this.isNavigating = true;
 
         const steps = document.querySelectorAll('.audit-step');
+        if (!steps[this.currentStep]) return;
         steps[this.currentStep].classList.remove('active');
         this.currentStep++;
         if (steps[this.currentStep]) {
@@ -34,7 +35,7 @@ window.AuditEngine = {
     },
 
     prevStep: function() {
-        if (this.isNavigating || this.currentStep <= 0) return;
+        if (this.isNavigating || this.isSubmitting || this.currentStep <= 0) return;
         this.isNavigating = true;
 
         const steps = document.querySelectorAll('.audit-step');
@@ -58,12 +59,15 @@ window.AuditEngine = {
         
         // Visual feedback
         const currentStepEl = document.getElementById(`audit-step-${step}`);
+        if (!currentStepEl) return;
         const buttons = currentStepEl.querySelectorAll('.audit-opt');
         buttons.forEach(btn => {
             if (btn.textContent === value) {
+                btn.classList.add('selected');
                 btn.style.borderColor = 'var(--accent2)';
                 btn.style.background = 'rgba(var(--accent2-rgb), 0.1)';
             } else {
+                btn.classList.remove('selected');
                 btn.style.borderColor = '';
                 btn.style.background = '';
             }
@@ -106,10 +110,12 @@ window.AuditEngine = {
         this.isSubmitting = true;
 
         const btn = document.getElementById('audit-submit-btn');
+        const card = document.getElementById('audit-container');
         const originalText = btn.textContent;
-        btn.textContent = 'CONNECTING...';
+        btn.textContent = 'ANALYZING...';
         btn.disabled = true;
-
+        if (card) card.classList.add('processing');
+        
         try {
             // Clear any existing errors
             if (errorEl) errorEl.style.opacity = '0';
@@ -159,55 +165,54 @@ window.AuditEngine = {
                 const platform = this.answers.q3 || 'The Network';
                 const vibe = this.answers.q4 || 'Cinematic';
                 const goalText = this.answers.q5_goal || 'Excellence';
-
                 const templates = [
-                    // VARIANT 1: THE TACTICAL DECONSTRUCTION
-                    `**THE DIAGNOSIS.**
-Your mission for **${obj}** is currently being throttled by **${hurdle}**. To reach the objective of "${goalText}", we must optimize your presence on **${platform}** using a **${vibe}** aesthetic.
+                    // VARIANT 1: THE DIRECT BREAKDOWN
+                    `**YOUR SITUATION.**
+Your focus on **${obj}** is being slowed down by **${hurdle}**. To hit your goal of "${goalText}", we need to sharpen your presence on **${platform}** with a **${vibe}** look and feel.
 
-**THE PLAN.**
-1. **The Signal**: Focus exclusively on **${platform}**. It is the highest leverage point for your current status.
-2. **The Visuals**: Double down on the **${vibe}** vibe. It cuts through the noise of your competitors who are stuck in "Standard" mode.
-3. **The Solve**: To bypass **${hurdle}**, you must simplify your production workflow. Quality is non-negotiable, but velocity is your primary weapon.
+**THE MOVE.**
+1. **The Focus**: Put your energy into **${platform}**. It's the best place for you to grow right now based on your inputs.
+2. **The Look**: Lean into the **${vibe}** style. Most of your competitors are playing it safe; this is how you stand out.
+3. **The Fix**: To get past **${hurdle}**, you need a simpler way to create. Focus on consistent quality rather than over-complicating the setup.
 
-**THE STRATEGY.**
-- Leverage the 'Scarcity' protocol on **${platform}**. 
-- Use the **${vibe}** filter to mask high-velocity production as intentional aesthetic.
+**THE CORE.**
+- Aim for high-retention content on **${platform}**. 
+- Let the **${vibe}** aesthetic lead all your creative choices. 
 
-**THE FORTUNE.**
-"Tactics without strategy is the noise before defeat. Your strategy is now clear."`,
+**THE TAKE.**
+"A clear plan makes every decision easier. This is yours."`,
 
-                    // VARIANT 2: THE NEURAL ROADMAP
-                    `**THE DIAGNOSIS.**
-Neural analysis complete. Your struggle with **${hurdle}** is a symptom of fragmented focus. Your true path to "${goalText}" requires a hard pivot toward **${obj}**.
+                    // VARIANT 2: THE MODERN GROWTH MAP
+                    `**YOUR SITUATION.**
+It's clear that **${hurdle}** is holding your vision back. To reach "${goalText}", we need to realign your **${obj}** strategy.
 
-**THE PLAN.**
-1. **The Platform**: Stop treating **${platform}** as an afterthought. It is your primary base of operations.
-2. **The Style**: The **${vibe}** direction isn't just a look; it's a statement of authority. Own it.
-3. **The Action**: Dedicate the next 14 days to solving **${hurdle}** through aggressive content testing.
+**THE MOVE.**
+1. **The Base**: **${platform}** should be your home base. Stop treating it like a secondary channel.
+2. **The Style**: The **${vibe}** direction isn't just for show—it's how you build authority and trust with your audience.
+3. **The Action**: Take the next two weeks to tackle **${hurdle}** head-on with a focused set of new experiments.
 
-**THE STRATEGY.**
-- Your specific mission of "${goalText}" requires a high-intensity content batching session. 
-- Use **${vibe}** as your north star for all creative decisions.
+**THE CORE.**
+- Your goal of "${goalText}" is achievable if you batch your process. 
+- Stick to the **${vibe}** vibe for everything you publish.
 
-**THE FORTUNE.**
-"The secret of getting ahead is getting started. The secret of getting started is breaking your complex overwhelming tasks into small manageable tasks."`,
+**THE TAKE.**
+"The secret of getting ahead is simply getting started. You're already ahead by knowing your path."`,
 
-                    // VARIANT 3: THE STRATEGIC OVERRIDE
-                    `**THE DIAGNOSIS.**
-System override engaged. Standard advice for **${obj}** is insufficient for your specific hurdle: **${hurdle}**. We are initiating a high-intensity protocol to hit "${goalText}".
+                    // VARIANT 3: THE CREATIVE OVERRIDE
+                    `**YOUR SITUATION.**
+Standard growth tips won't work for **${obj}** when you're dealing with **${hurdle}**. We've built a specific blueprint to help you hit "${goalText}".
 
-**THE PLAN.**
-1. **The Core**: Your **${vibe}** vision is the differentiator. Don't water it down for **${platform}**.
-2. **The Method**: Address **${hurdle}** by documenting the process, not just the result. 
-3. **The Lockdown**: Focus 90% of your creative energy on achieving "${goalText}" through the lens of **${obj}**.
+**THE MOVE.**
+1. **The Standard**: Don't water down your **${vibe}** vision. **${platform}** needs that raw perspective to react.
+2. **The Method**: Beat **${hurdle}** by showing people how you work. Transparency builds more engagement than perfection.
+3. **The Target**: Focus 90% of your time on "${goalText}" using the **${obj}** framework we discussed.
 
-**THE STRATEGY.**
-- Prioritize depth over breadth on **${platform}**. 
-- The **${vibe}** aesthetic isn't a filter; it's a code. Follow it.
+**THE CORE.**
+- Quality over quantity on **${platform}**. 
+- The **${vibe}** style is your signature. Use it.
 
-**THE FORTUNE.**
-"Precision is the difference between a signal and noise."`
+**THE TAKE.**
+"Perspective is everything. Yours is ready to be shared."`
                 ];
 
                 advice = templates[Math.floor(Math.random() * templates.length)];
@@ -247,6 +252,16 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
                 const backBtn = captureStep.querySelector('.audit-back-btn');
                 if(backBtn) backBtn.style.display = 'none';
 
+                // DYNAMIC TITLE ALIGNMENT
+                const primaryGoal = this.answers.q1 || 'Strategy';
+                const resultTitleEl = document.getElementById('audit-result-title');
+                if (resultTitleEl) {
+                    if (primaryGoal.includes('Video')) resultTitleEl.textContent = 'Production Roadmap';
+                    else if (primaryGoal.includes('Brand')) resultTitleEl.textContent = 'Identity Roadmap';
+                    else if (primaryGoal.includes('Growth')) resultTitleEl.textContent = 'Growth Roadmap';
+                    else resultTitleEl.textContent = 'Project Roadmap';
+                }
+
                 tl.to(captureStep, { 
                     opacity: 0, 
                     y: -40, 
@@ -285,6 +300,8 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
             this.isSubmitting = false;
             btn.textContent = originalText;
             btn.disabled = false;
+            const card = document.getElementById('audit-container');
+            if (card) card.classList.remove('processing');
             if (progressBar) progressBar.style.width = '0%';
         }
     },
@@ -396,7 +413,7 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
             const upper = safeLine.toUpperCase();
 
             // Headers
-            if (upper.includes('THE DIAGNOSIS') || upper.includes('THE PLAN') || upper.includes('THE STRATEGY') || upper.includes('THE FORTUNE') || upper.includes('THE TRUTH')) {
+            if (upper.includes('YOUR SITUATION') || upper.includes('THE MOVE') || upper.includes('THE CORE') || upper.includes('THE FINAL TAKE') || upper.includes('THE TAKE')) {
                 html += `<div class="advice-header">${safeLine}</div>`;
             } 
             // List Items
@@ -409,11 +426,11 @@ System override engaged. Standard advice for **${obj}** is insufficient for your
             }
         });
 
-        // Tactical Badge
+        // Status Badge
         const bonusBadge = `
             <div class="audit-badge-transmission">
                 <span style="width: 6px; height: 6px; background: var(--accent2); border-radius: 50%; box-shadow: 0 0 5px var(--accent2);"></span>
-                Start Transmission
+                Analysis Stream Active
             </div>
         `;
         
@@ -508,3 +525,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+    // --- COPY UTILITY ---
+    window.AuditEngine.copyResults = function(btn) {
+        const content = document.getElementById('audit-advice-content');
+        if (!content) return;
+        
+        const rawText = content.innerText;
+        navigator.clipboard.writeText(rawText).then(() => {
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'COPIED TO CLIPBOARD //';
+            btn.style.borderColor = 'white';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.borderColor = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Clipboard Error:', err);
+        });
+    };

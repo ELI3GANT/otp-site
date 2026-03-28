@@ -72,6 +72,7 @@ if (!process.env.JWT_SECRET) {
 }
 
 // --- SECURITY & OPTIMIZATION MIDDLEWARE ---
+app.use(compression());
 
 // 1. Helmet: Sets various HTTP headers for security
 app.use(helmet({
@@ -923,19 +924,20 @@ app.post('/api/audit/submit', async (req, res) => {
          
         OUTPUT STRUCTURE (Strictly enforce):
         
-        **THE DIAGNOSIS.**
-        (Surgical analysis of how "${hurdle}" is corrupting the path to "${specificGoal}".)
+        **YOUR SITUATION.**
+        (Briefly explain why "${hurdle}" is the main blocker for "${specificGoal}". Be direct.)
         
-        **THE PLAN.**
-        1. **The Tactical Pivot**: (Actionable move involving ${platform} and ${specificGoal}.)
-        2. **Visual Rebranding**: (How to achieve the "${vibe}" look immediately.)
-        3. **The Daily Protocol**: (The repeating habit for long-term dominance.)
+        **THE MOVE.**
+        1. **The Tactical Pivot**: (One specific action for ${platform} to hit "${specificGoal}".)
+        2. **Visual Rebranding**: (How to achieve the "${vibe}" look right now.)
+        3. **The Habit**: (A simple daily rule to ensure success.)
         
-        **THE STRATEGY.**
-        (Provide 2-3 specific, real-life industry tips or "insider" advice that applies to "${platform}" and the objective of "${specificGoal}". Be blunt and effective.)
+        **THE CORE.**
+        (Give 2 specific insider tips for "${platform}" that directly help achieve "${specificGoal}". No filler.)
 
-        **THE FORTUNE.**
-        (A short, unique, powerful quote that sounds like it was written for a cyberpunk philosopher.)`;
+        **THE TAKE.**
+        (A short, powerful closing thought for the creator.)`;
+ powerful quote that sounds like it was written for a cyberpunk philosopher.)`;
 
         let advice = "";
 
@@ -1207,17 +1209,13 @@ app.route('/api/create-checkout-session')
     // Using lowercase keys for robust matching
     // Pricing Map (In cents) - Synchronized with index.html
     const prices = {
-        'the drop': 5000,           // $50.00
-        'the vision': 10000,         // $100.00
-        'the campaign': 20000,       // $200.00
-        'the visualizer': 15000,     // $150.00
-        'the identity': 25000,       // $250.00
-        'the stack': 30000,          // $300.00
-        'the rollout': 40000,        // $400.00
-        'the official video': 50000, // $500.00
-        'the digital hq': 75000,     // $750.00
-        'the rebrand': 100000,       // $1,000.00
-        'the partner': 150000        // $1,500.00
+        'the signal': 10000,         // $100.00
+        'the perspective': 40000,    // $400.00
+        'the alliance': 150000,      // $1,500.00
+        // Legacy Support
+        'the drop': 10000,
+        'the vision': 40000,
+        'the campaign': 150000
     };
 
     // Normalize input to lowercase to avoid case-mismatch fallbacks

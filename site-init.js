@@ -1,3 +1,4 @@
+gsap.ticker.fps(60); gsap.config({ force3D: true });
 /**
  * site-init.js [SIG:2026-01-10-04-58]
  * Centralized initialization for Kursor, Year, and Scroll Progress.
@@ -55,19 +56,17 @@
     const navEl = document.querySelector('.nav');
     window.addEventListener('scroll', () => {
         if (!isScrolling) {
+            isScrolling = true;
             window.requestAnimationFrame(() => {
                 const scrollTop = window.scrollY || document.documentElement.scrollTop;
-                const docHeight = Math.max(
-                    document.body.scrollHeight, document.documentElement.scrollHeight,
-                    document.body.offsetHeight, document.documentElement.offsetHeight,
-                    document.body.clientHeight, document.documentElement.clientHeight
-                );
-                const winHeight = window.innerHeight || document.documentElement.clientHeight;
+                // Calculate scroll depth for progress indicators
+                const docHeight = document.documentElement.scrollHeight;
+                const winHeight = window.innerHeight;
                 const max = docHeight - winHeight;
                 const scrollPercent = max > 0 ? (scrollTop / max) * 100 : 0;
                 document.body.style.setProperty('--scroll', `${scrollPercent}%`);
 
-                // Nav scroll-shrink
+                // Nav scroll-shrink logic
                 if (navEl) {
                     if (scrollTop > 20) {
                         navEl.classList.add('scrolled');
@@ -75,10 +74,21 @@
                         navEl.classList.remove('scrolled');
                     }
                 }
-
                 isScrolling = false;
             });
-            isScrolling = true;
+        }
+    }, { passive: true });
+
+    // --- GLOBAL RESIZE THROTTLER ---
+    let isResizing = false;
+    window.addEventListener('resize', () => {
+        if (!isResizing) {
+            isResizing = true;
+            window.requestAnimationFrame(() => {
+                // Global resize events can be handled here if needed (e.g. killing/refreshing GSAP)
+                if (window.ScrollTrigger) ScrollTrigger.refresh();
+                isResizing = false;
+            });
         }
     }, { passive: true });
 
@@ -299,13 +309,29 @@ window.OTP.showBroadcast = function(message) {
         overflow: hidden; pointer-events: auto;
     `;
 
+    // Fix for mobile horizontal scroll & iOS auto-zoom on forms
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+        body, html {
+            overflow-x: hidden;
+            position: relative;
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            input, select, textarea, button {
+                font-size: 16px !important;
+            }
+        }
+    `;
+    document.head.appendChild(styleElement);
+
     overlay.innerHTML = `
         <!-- Scanlines -->
         <div style="position:absolute; inset:0; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.1) 50%), linear-gradient(90deg, rgba(255,0,0,0.03), rgba(0,255,0,0.01), rgba(0,0,255,0.03)); background-size: 100% 4px, 3px 100%; pointer-events:none; z-index:1;"></div>
         
         <div class="bc-container" style="position:relative; z-index:2; padding: 60px; max-width: 900px; width: 90%;">
             <!-- Close Button -->
-            <button onclick="this.closest('#otp-broadcast-overlay').remove()" style="position:fixed; top:40px; right:40px; background:transparent; border:1px solid rgba(255,255,255,0.2); color:#fff; width:40px; height:40px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:0.3s; z-index:10;">×</button>
+            <button onclick="this.closest('#otp-broadcast-overlay').remove()" style="position:fixed; top:40px; right:40px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:#fff; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:0.3s; z-index:100; backdrop-filter:blur(10px);">×</button>
 
             <div class="bc-eyebrow" style="font-size: 0.7rem; letter-spacing: 0.5em; color: var(--accent2); margin-bottom: 30px; font-weight: 700; opacity: 0; transform: translateY(20px);">
                 <span style="display:inline-block; padding: 4px 12px; border: 1px solid var(--accent2); border-radius: 4px; background: rgba(0,195,255,0.05);">SYSTEM UPLINK ACTIVE</span>
@@ -1118,9 +1144,8 @@ function initSite() {
     projectCards.forEach(pCard => {
         const video = pCard.querySelector('.video-preview');
         if (video) {
-            const source = video.querySelector('source');
-            // Only enable video behavior if we actually have a source
-            if (source && source.src && source.src.trim() !== '' && !source.src.endsWith(window.location.href)) {
+            const source = pCard.querySelector('video source');
+            if (source && source.src && source.src.trim() !== '' && !source.src.endsWith(window.location.pathname) && !source.src.endsWith(window.location.href)) {
                  pCard.classList.add('has-video'); 
             }
 
@@ -1495,9 +1520,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     class NeonController {
-        constructor(elementId) {
-            this.el = document.getElementById(elementId);
+        constructor(id) {
+            this.el = document.getElementById(id);
             if (!this.el) return;
+            this.id = id;
             
             // Wait for GSAP intro animation to finish before applying neon effects
             setTimeout(() => {
@@ -1568,6 +1594,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.setStaticOff(); // <--- LEAVE IT OFF
             
             // Queue next sequence with random delay
+            if (this.timer) clearTimeout(this.timer);
             const nextInterval = this.interval + (Math.random() * 4000);
             this.timer = setTimeout(() => this.runSequence(), nextInterval);
         }
@@ -1577,7 +1604,73 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    new NeonController('perspective-neon');
-    new NeonController('nav-logo-neon');
-    new NeonController('footer-logo-neon');
+    // --- NEON LOGO DRIVER (Synchronized across UI) ---
+    try {
+        new NeonController('perspective-neon');
+        new NeonController('nav-logo-neon');
+        new NeonController('footer-logo-neon');
+    } catch(e) {
+        console.warn("⚠️ [OTP_VISUALS] Structural element missing for Neon Pulse logic.");
+    }
 });
+
+// --- END OF CORE SYSTEM INITIALIZATION ---
+
+// --- SCROLL REVEAL (Visual Success Engineering) ---
+(function() {
+    document.addEventListener('DOMContentLoaded', () => {
+        const resultsSection = document.getElementById('results');
+        if (!resultsSection) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    resultsSection.classList.add('reveal');
+                    // Once revealed, no need to track
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        observer.observe(resultsSection);
+    });
+})();
+
+// --- UNIFIED NAVIGATION & PERFORMANCE HARDENING ---
+(function() {
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.querySelector('.nav-toggle');
+        const drawer = document.querySelector('.nav-drawer');
+        const navLinks = document.querySelectorAll('.nav-drawer a');
+        
+        if (toggle && drawer) {
+            toggle.addEventListener('click', () => {
+                const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+                toggle.setAttribute('aria-expanded', !isExpanded);
+                drawer.classList.toggle('active');
+                document.body.classList.toggle('no-scroll');
+            });
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    toggle.setAttribute('aria-expanded', 'false');
+                    drawer.classList.remove('active');
+                    document.body.classList.remove('no-scroll');
+                });
+            });
+        }
+
+        // --- CURSOR CANVAS OPTIMIZATION ---
+        const cursorCanvas = document.getElementById('cursor-canvas');
+        if (cursorCanvas) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    cursorCanvas.style.display = entry.isIntersecting ? 'block' : 'none';
+                });
+            });
+            observer.observe(cursorCanvas);
+        }
+
+        console.log("✅ [OTP_PRODUCTION] SYSTEM_HEALTH: OPTIMAL // PERFORMANCE_LOAD: LOW");
+    });
+})();

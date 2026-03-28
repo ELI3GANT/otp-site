@@ -41,6 +41,7 @@ if (document.readyState === 'loading') {
 
 // CONFIG: Defined packages eligible for direct payment
 const VALID_PAY_PACKAGES = [
+    'The Signal', 'The Perspective', 'The Alliance',
     'The Drop', 'The Vision', 'The Campaign', 'The Visualizer', 'The Official Video',
     'The Rollout', 'The Identity', 'The Digital HQ', 'The Rebrand', 
     'The Stack', 'The Partner'
@@ -130,13 +131,7 @@ async function initPaymentSystem() {
         // Listen for service changes to update button text
         serviceSelect.addEventListener('change', () => {
             const val = serviceSelect.value;
-            const validPayPackages = [
-                'The Drop', 'The Vision', 'The Campaign', 'The Visualizer', 'The Official Video',
-                'The Rollout', 'The Identity', 'The Digital HQ', 'The Rebrand', 
-                'The Stack', 'The Partner'
-            ];
-
-            if (validPayPackages.includes(val)) {
+            if (VALID_PAY_PACKAGES.includes(val)) {
                 // Find corresponding price from the grid if possible, otherwise rely on backend sync
                 submitBtn.innerHTML = `SECURE YOUR SLOT // PAY NOW <span style="font-size:0.8em; opacity:0.8">(${val})</span>`;
                 submitBtn.style.background = 'var(--accent2)';
@@ -274,7 +269,17 @@ window.handleDirectPayStatic = function(title, btn) {
     if (window.stripeInstance) {
         handleDirectPay(new Event('click'), title, window.stripeInstance, btn);
     } else {
-        showToast("Payment System Syncing...", "info");
-        console.warn("💰 StripeInstance not ready for DirectPayStatic");
+        // Fallback: Try to init if missing
+        if (typeof Stripe !== 'undefined') {
+            try {
+                const STRIPE_PK = 'pk_live_51SqqA9Pux5EhFZOuR0oo7VsFZrKoebiaWLXHNTZPx2kpa3w9kmqgUCtmEN4sY9LPW80UyfjBIfZkIfnPQW0Ba5MC007yWafN6y';
+                window.stripeInstance = Stripe(STRIPE_PK);
+                handleDirectPay(new Event('click'), title, window.stripeInstance, btn);
+            } catch(e) {
+                showToast("Payment Connectivity Error", "error");
+            }
+        } else {
+            showToast("Syncing with Stripe Gate...", "info");
+        }
     }
 }

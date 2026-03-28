@@ -28,6 +28,12 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="manifest" href="site.webmanifest" />
 
+  <!-- Preloads & Prefetch -->
+  <link rel="preload" href="assets/otp.gif" as="image" fetchpriority="high" />
+  <link rel="dns-prefetch" href="https://js.stripe.com" />
+  <link rel="dns-prefetch" href="https://ckumhowhucbbmpdeqkrl.supabase.co" />
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
 
   <!-- Font (optional but makes it instantly cleaner) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -64,7 +70,6 @@
             { dark: '0, 236, 255', light: '0, 170, 204' }, // Cyan
             { dark: '170, 0, 255', light: '120, 0, 200' }, // Purple
             { dark: '255, 0, 170', light: '200, 0, 120' }, // Pink
-            { dark: '0, 255, 170', light: '0, 180, 120' }, // Green
             { dark: '255, 215, 0', light: '184, 134, 11' }, // Gold
             { dark: '255, 60, 0',  light: '200, 40, 0' }    // Neon Orange
         ];
@@ -129,12 +134,12 @@
   <header class="nav nav-split" id="top">
     <!-- Logo Left -->
     <a href="index.html" class="nav-logo" aria-label="OTP">
-      <img src="assets/otp.gif" alt="OTP" class="otp-mark" id="nav-logo-neon" />
+      <img src="assets/otp.gif" alt="OTP" class="otp-mark" id="nav-logo-neon" style="opacity: 1 !important; visibility: visible !important;" />
     </a>
 
     <nav class="nav-links" aria-label="Primary">
       <a href="#work" class="active k-hover">Work</a>
-      <a href="#services" class="k-hover">Services</a>
+      <a href="#packages" class="k-hover">Packages</a>
       <a href="#about" class="k-hover">About</a>
       <a href="#contact" class="k-hover">Contact</a>
       <a href="insights.html" class="k-hover nav-secondary">Insights</a>
@@ -147,11 +152,11 @@
 
     <nav class="nav-drawer" aria-label="Mobile">
       <a href="#work">Work</a>
-      <a href="archive.html">Archive</a>
-      <a href="insights.html">Insights</a>
-      <a href="#services">Services</a>
+      <a href="#packages">Packages</a>
       <a href="#about">About</a>
       <a href="#contact">Contact</a>
+      <a href="archive.html">Archive</a>
+      <a href="insights.html">Insights</a>
     </nav>
   </header>
 
@@ -160,8 +165,8 @@
     <div class="hero-bg" aria-hidden="true"></div>
 
     <div class="hero-content">
-      <div class="hero-logo-wrap">
-        <img src="assets/otp.gif" alt="OTP Hero Eye" class="hero-eye-3d" fetchpriority="high" />
+      <div class="hero-logo-wrap" style="will-change: transform;">
+        <img src="assets/otp.gif" alt="OTP Hero Eye" class="hero-eye-3d" fetchpriority="high" loading="eager" style="opacity: 1 !important; visibility: visible !important;">
       </div>
       <h1 class="hero-title-adjust luxe-title">
         <span class="title">ONLY TRUE</span>
@@ -172,11 +177,12 @@
       
       <div class="hero-cta">
         <a href="#services" class="book-btn magnetic-btn">Start a Project</a>
-        <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" rel="noopener noreferrer" class="book-btn-ghost magnetic-btn resonate">
+        <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" rel="noopener noreferrer" class="book-btn-ghost magnetic-btn">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           Vision Session
         </a>
       </div>
+
 
       <div class="hero-micro">
         <span class="scarcity-badge"><span class="pulse-dot"></span> <span id="scarcity-text" data-editable="true">1 Slot Remaining for March</span></span>
@@ -192,48 +198,44 @@
     </div>
   </main>
   
-  <!-- NETWORK / COLLABORATIONS (Tactical Text Cloud) -->
-  <div class="network-row section-alt">
-    <div class="network-scroll">
-      <div class="network-track">
-        <span class="network-item">ELITE_RECORDS</span>
-        <span class="network-item">NEXT_GEN_CO</span>
-        <span class="network-item">CREATIVE_LABS</span>
-        <span class="network-item">STUDIO_V</span>
-        <span class="network-item">TECH_ART_SOLUTIONS</span>
-        <span class="network-item">GLOBAL_CREATORS</span>
-        <!-- Duplicate for loop -->
-        <span class="network-item">ELITE_RECORDS</span>
-        <span class="network-item">NEXT_GEN_CO</span>
-        <span class="network-item">CREATIVE_LABS</span>
-        <span class="network-item">STUDIO_V</span>
-        <span class="network-item">TECH_ART_SOLUTIONS</span>
-        <span class="network-item">GLOBAL_CREATORS</span>
-      </div>
-    </div>
-  </div>
-
   <!-- PROVEN RESULTS (ROI MAPPING) -->
-  <section class="section section-alt">
-    <div class="wrap">
-      <header class="section-head center-text">
-        <span class="eyebrow-mini">THE IMPACT</span>
-        <h2>PROVEN RESULTS</h2>
-        <p>Visuals that don't just look good—they perform. We map every asset to a measurable outcome.</p>
+  <section id="results" class="section section-results-enhanced" style="margin-top: 0; padding-top: 120px; scroll-margin-top: 100px;">
+    <div class="wrap" style="position: relative;">
+      
+      <!-- FLOW CONNECTOR -->
+      <div class="pulse-beam-connector" style="top: -120px; height: 120px;"></div>
+
+      <header class="section-head center-text" style="margin-bottom: 40px;">
+        <h2 class="syne-bold" style="font-size: 2.2rem; margin-bottom: 10px;">Visual Success Engineering</h2>
+        <p style="font-size: 1rem; opacity: 0.7;">High-retention stories for the digital-first era.</p>
       </header>
 
       <div class="results-grid">
         <div class="result-card k-hover">
           <div class="result-value">3X</div>
-          <div class="result-label">Higher Viewer Engagement</div>
+          <div class="result-label">Viewer Engagement Growth</div>
+          <div class="card-meter-wrap">
+             <div class="card-meter-fill gradient-accent" style="width: 85%;"></div>
+          </div>
+          <div class="card-meta-hud">[ENGAGEMENT_SYNC_COMPLETE]</div>
         </div>
+        
         <div class="result-card k-hover">
           <div class="result-value">24h</div>
           <div class="result-label">Shortest Asset Turnaround</div>
+          <div class="card-meter-wrap">
+             <div class="card-meter-fill gradient-accent" style="width: 100%;"></div>
+          </div>
+          <div class="card-meta-hud">[DELIVERY_READY]</div>
         </div>
+        
         <div class="result-card k-hover">
           <div class="result-value">20+</div>
           <div class="result-label">Visions Delivered Globally</div>
+          <div class="card-meter-wrap">
+             <div class="card-meter-fill gradient-accent" style="width: 70%;"></div>
+          </div>
+          <div class="card-meta-hud">[NETWORK_ONLINE]</div>
         </div>
       </div>
     </div>
@@ -256,7 +258,7 @@
         <!-- Project 01: The Froze Tour -->
         <a href="https://www.youtube.com/watch?v=oFM_roer79A" target="_blank" rel="noopener noreferrer" class="work-card-mini k-hover">
           <div class="work-thumb-visual portfolio-visual">
-            <img src="https://i.ytimg.com/vi/oFM_roer79A/maxresdefault.jpg" alt="THE FROZE TOUR" class="work-img-full" loading="lazy" />
+            <img loading="lazy" src="https://i.ytimg.com/vi/oFM_roer79A/maxresdefault.jpg" alt="THE FROZE TOUR" class="work-img-full" loading="lazy" />
             <div class="scanline-overlay"></div>
             <div class="work-overlay-info">
               <span class="work-type-tag">CINEMATIC_VLOG</span>
@@ -276,7 +278,7 @@
         <!-- Project 02: Fame and Fortune -->
         <a href="https://www.youtube.com/watch?v=vNxUzSmr7x0" target="_blank" rel="noopener noreferrer" class="work-card-mini k-hover">
           <div class="work-thumb-visual portfolio-visual">
-            <img src="https://i.ytimg.com/vi/vNxUzSmr7x0/maxresdefault.jpg" alt="FAME & FORTUNE" class="work-img-full" loading="lazy" />
+            <img loading="lazy" src="https://i.ytimg.com/vi/vNxUzSmr7x0/maxresdefault.jpg" alt="FAME & FORTUNE" class="work-img-full" loading="lazy" />
             <div class="scanline-overlay"></div>
             <div class="work-overlay-info">
               <span class="work-type-tag">MUSIC_VIDEO</span>
@@ -296,7 +298,7 @@
         <!-- Project 03: State of Mind -->
         <a href="https://www.youtube.com/watch?v=KYVTqzsovU8" target="_blank" rel="noopener noreferrer" class="work-card-mini k-hover">
           <div class="work-thumb-visual portfolio-visual">
-            <img src="https://i.ytimg.com/vi/KYVTqzsovU8/maxresdefault.jpg" alt="STATE OF MIND" class="work-img-full" loading="lazy" />
+            <img loading="lazy" src="https://i.ytimg.com/vi/KYVTqzsovU8/maxresdefault.jpg" alt="STATE OF MIND" class="work-img-full" loading="lazy" />
             <div class="scanline-overlay"></div>
             <div class="work-overlay-info">
               <span class="work-type-tag">BRAND_DIRECTION</span>
@@ -387,8 +389,8 @@
           
           <h2 class="syne-bold studio-title">ELI3GANT<br>DIRECTED.</h2>
           <div class="studio-body">
-            <p id="studio-text-1" data-editable="true">Only True Perspective is the creative laboratory of ELI3GANT. Based on the principle of finding the angle that is true to you, we don't just edit video; we build visual worlds that command attention.</p>
-            <p id="studio-text-2" data-editable="true">High-end creative direction. Tactical execution. Direct collaboration with ELI3GANT.</p>
+            <p id="studio-text-1" data-editable="true">Only True Perspective is the creative laboratory of ELI3GANT. Beyond cinematic video and high-end content work, we architect real-world solutions for creators and professionals. We don't just edit visuals; we build the infrastructure for projects that move the needle.</p>
+            <p id="studio-text-2" data-editable="true">Creative Architecture. Tactical Direction. Helping others scale their unique perspective through direct collaboration with ELI3GANT.</p>
             
             <div class="capabilities-list">
               <span class="cap-tag">Creative Direction</span>
@@ -416,102 +418,65 @@
       </header>
 
       <div class="services-list">
-        <!-- 01 Video & Motion -->
-        <article class="service-item">
-          <div class="service-head">
-            <span class="service-tag">01 / PRODUCTION</span>
-            <h3>Video & Motion</h3>
-            <div class="service-icons">
-               <!-- Camera -->
-               <svg viewBox="0 0 24 24" class="svc-icon"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-               <!-- Timeline -->
-               <svg viewBox="0 0 24 24" class="svc-icon"><path d="M3 3h18v18H3zM8 8h8v2H8zm0 6h8v2H8z"/></svg>
-               <!-- Wave -->
-               <svg viewBox="0 0 24 24" class="svc-icon"><path d="M2 12h2v3H2zm4-4h2v11H6zm4-6h2v19h-2zm4 4h2v11h-2zm4 5h2v6h-2z"/></svg>
+        <!-- 01 Visual Ops -->
+        <article class="service-item k-hover" style="padding: 45px; border-radius: 20px;">
+          <div class="service-head" style="margin-bottom: 30px;">
+            <span class="service-tag">UPLINK_01 / VISUALS</span>
+            <h3>Visual Operations</h3>
+            <div class="service-icons" style="display: flex; gap: 12px;">
+               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16v-7H4v7zm0-11h16V3H4v5zM9 20h6v-2H9v2z"/></svg>
             </div>
           </div>
           <div class="service-body">
-            <p>From music videos to brand commercials, we handle the edit, the effects, and the color. We blend technical skill with the right energy to make sure your content connects.</p>
+            <p>From narrative music videos to high-conversion commercial ads. We handle the full spectrum: cinematic editing, visual effects, and master-level color grading. Built for high-retention and maximum impact.</p>
             <ul class="service-details">
-              <li>Music Videos (VFX, Sky Swaps, Color)</li>
-              <li>Viral Short-Form (Reels/TikTok)</li>
-              <li>Commercial Ad Creatives</li>
-              <li>Dynamic Storytelling & SFX</li>
+              <li>Cinematic Music Videos (VFX / SFX)</li>
+              <li>Viral Short-Form & Vertical Content</li>
+              <li>Experimental Motion Graphics</li>
+              <li>Directorial Editing & Narrative Polish</li>
             </ul>
           </div>
         </article>
 
-        <!-- 02 Creative Direction -->
-        <article class="service-item">
-          <div class="service-head">
-            <span class="service-tag">02 / CREATIVE DIRECTION</span>
+        <!-- 02 Creative Architecture -->
+        <article class="service-item k-hover" style="padding: 45px; border-radius: 20px;">
+          <div class="service-head" style="margin-bottom: 30px;">
+            <span class="service-tag">STRATEGY_02 / ARCHITECTURE</span>
             <h3>Creative Direction</h3>
-            <div class="service-icons">
-              <!-- Eye -->
-              <svg viewBox="0 0 24 24" class="svc-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              <!-- Compass -->
-              <svg viewBox="0 0 24 24" class="svc-icon"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-              <!-- Star -->
-              <svg viewBox="0 0 24 24" class="svc-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <div class="service-icons" style="display: flex; gap: 12px;">
+               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2A10 10 0 1 0 22 12 10 10 0 0 0 12 2zm1 14h-2v-2h2zm0-4h-2V7h2z"/></svg>
+               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             </div>
           </div>
           <div class="service-body">
-            <p>The blueprint for your image. We handle the aesthetic—from wardrobe choices to set design—ensuring you look professional and consistent everywhere.</p>
+            <p>The blue-print for your brand's true perspective. We bridge the gap between abstract vision and tactical reality—defining the aesthetic markers that set your project apart from the collective.</p>
             <ul class="service-details">
-              <li>Editorial Photography & Retouching</li>
-              <li>Campaign Strategy & Rollout</li>
-              <li>Aesthetic Curation (Wardrobe/Set)</li>
-              <li>Album Art & Mixed Media</li>
+              <li>Visual World-Building & Mood</li>
+              <li>Brand Identity Strategy</li>
+              <li>Social Presence Architecture</li>
+              <li>Aesthetic Quality Control</li>
             </ul>
           </div>
         </article>
 
-        <!-- 03 Brand Identity -->
-        <article class="service-item">
-          <div class="service-head">
-            <span class="service-tag">03 / DESIGN</span>
-            <h3>Brand Identity</h3>
-            <div class="service-icons">
-              <!-- Fingerprint -->
-              <svg viewBox="0 0 24 24" class="svc-icon"><path d="M2 12C2 6.48 6.48 2 12 2s10 4.48 10 10v.5a3.5 3.5 0 0 1-4.7 3.2 4.48 4.48 0 0 0-4.6-1.7 5.5 5.5 0 0 0-3.2 2.7 6.33 6.33 0 0 0-.5 3.3V21"/></svg>
-              <!-- Pen Tool -->
-              <svg viewBox="0 0 24 24" class="svc-icon"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
-              <!-- Layout -->
-              <svg viewBox="0 0 24 24" class="svc-icon"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <!-- 03 Technical Deployment -->
+        <article class="service-item k-hover" style="padding: 45px; border-radius: 20px;">
+          <div class="service-head" style="margin-bottom: 30px;">
+            <span class="service-tag">SYSTEMS_03 / EXECUTION</span>
+            <h3>Technical Execution</h3>
+            <div class="service-icons" style="display: flex; gap: 12px;">
+               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
             </div>
           </div>
           <div class="service-body">
-            <p>A look that builds trust instantly. We design more than just logos; we build full visual systems with fonts and motion that give your brand authority.</p>
+            <p>Direct implementation and technical builds. We ensure your assets aren't just produced, but correctly deployed across all platforms—handling the master files, technical specs, and help others scale their unique rollouts.</p>
             <ul class="service-details">
-              <li>Logo Systems & Typography</li>
-              <li>Motion Branding (Intro/Outro)</li>
-              <li>Social Media Kits & Templates</li>
-              <li>Merch & Deck Design</li>
-            </ul>
-          </div>
-        </article>
-
-        <!-- 04 Web & Digital -->
-        <article class="service-item">
-          <div class="service-head">
-            <span class="service-tag">04 / DEVELOPMENT</span>
-            <h3>Web & Digital</h3>
-             <div class="service-icons">
-              <!-- Code -->
-              <svg viewBox="0 0 24 24" class="svc-icon"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-              <!-- Laptop -->
-              <svg viewBox="0 0 24 24" class="svc-icon"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="21" x2="22" y2="21"/></svg>
-              <!-- Smartphone -->
-              <svg viewBox="0 0 24 24" class="svc-icon"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            </div>
-          </div>
-          <div class="service-body">
-            <p>Your digital home base. We build fast, clean websites that look perfect on mobile and are designed to turn visitors into business.</p>
-            <ul class="service-details">
-              <li>High-Conversion Landing Sites</li>
-              <li>Booking & Automation Systems</li>
-              <li>SEO Optimization & Analytics</li>
-              <li>Mobile-First Responsive Design</li>
+              <li>Project Lifecycle Management</li>
+              <li>High-End Asset Distribution</li>
+              <li>Technical Asset Packaging</li>
+              <li>Full System Implementation</li>
             </ul>
           </div>
         </article>
@@ -528,9 +493,9 @@
       <div class="audit-card glass-panel" id="audit-container">
         <!-- Intro State -->
         <div id="audit-intro" class="audit-step active">
-          <div class="audit-badge">BETA ACCESS</div>
+          <div class="audit-badge" style="background: rgba(var(--accent2-rgb), 0.1); color: var(--accent2); border: 1px solid rgba(var(--accent2-rgb), 0.2); font-size: 0.65rem; padding: 4px 10px; border-radius: 4px; letter-spacing: 2px; display: inline-block; margin-bottom: 20px;">V1.5 ACCESS</div>
           <h2 class="syne-bold">The Perspective Audit<sup>™</sup></h2>
-          <p>Get a high-end tactical strategy for your brand identity. AI-powered. Human-calibrated.</p>
+          <p>Get a direct creative strategy for your brand. Built for creators and professionals.</p>
           <div class="audit-visual-decor">
             <div class="decor-circle"></div>
             <div class="decor-line"></div>
@@ -594,32 +559,32 @@
         <div id="audit-step-5" class="audit-step">
           <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
           <span class="step-indicator">05 / 05</span>
-          <h3>What is your definitive growth goal?</h3>
+          <h3>What is your main goal for this year?</h3>
           <div class="audit-input-wrap">
             <textarea id="audit-goal-input" class="audit-textarea" placeholder="e.g. Hit 100k subscribers, Launch my mentorship, Rebrand for high-ticket clients..."></textarea>
           </div>
-          <button class="book-btn k-hover" onclick="window.AuditEngine.submitGoal()" style="margin-top: 20px; width: 100%;">Confirm Objective</button>
+          <button class="book-btn k-hover" onclick="window.AuditEngine.submitGoal()" style="margin-top: 20px; width: 100%;">Analyze My Intent</button>
         </div>
 
         <div id="audit-capture" class="audit-step">
           <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
           <div class="decryption-status">
-            <div class="status-text">Decrypting Strategy...</div>
-            <div class="decryption-bar">
-              <div class="decryption-progress" id="audit-progress-bar"></div>
+            <div class="status-text" style="font-family: monospace; letter-spacing: 2px;">Processing Your Input...</div>
+            <div class="decryption-bar" style="background: rgba(255,255,255,0.05); height: 4px; border-radius: 2px;">
+              <div class="decryption-progress" id="audit-progress-bar" style="background: var(--accent2); height: 100%; width: 0%; box-shadow: 0 0 10px var(--accent2);"></div>
             </div>
           </div>
           <div class="processing-glow"></div>
           <div class="capture-inner">
 
-            <h3>Access Tactical Response</h3>
-            <p>Enter your authorization email to decrypt the perspective analysis.</p>
+            <h3>Get Your Analysis</h3>
+            <p>Enter your email to receive your custom brand roadmap.</p>
             <div class="audit-form">
-              <input type="email" id="audit-email" placeholder="ACCESS_CODE@CLIENT.OTP" class="audit-input" autocomplete="off" />
-              <button onclick="window.AuditEngine.submit()" id="audit-submit-btn" class="book-btn k-hover magnetic-btn">Reveal Strategy</button>
+              <input type="email" id="audit-email" placeholder="your@email.com" class="audit-input" autocomplete="off" />
+              <button onclick="window.AuditEngine.submit()" id="audit-submit-btn" class="book-btn k-hover magnetic-btn">View My Strategy</button>
               <div id="audit-error-msg" style="opacity:0; transition: opacity 0.3s; color:#ff4444; font-size:0.75rem; margin-top:8px; font-weight:700;"></div>
-              <p class="audit-privacy-text">
-                <span class="privacy-icon">🔒</span> <strong>Access Key:</strong> Unlocks your strategy and exclusive deals. Your data is secure. No spam, ever.
+              <p class="audit-privacy-text" style="margin-top: 15px; font-size: 0.75rem; opacity: 0.5;">
+                <span class="privacy-icon">🔒</span> Your roadmap is private. No spam, ever.
               </p>
             </div>
           </div>
@@ -628,21 +593,18 @@
         <!-- Result State -->
         <div id="audit-result" class="audit-step">
           <div class="result-header">
-            <span class="eyebrow-mini">TACTICAL RESPONSE</span>
-            <h3 id="audit-result-title">Strategy Decrypted</h3>
+            <span class="eyebrow-mini" style="color: var(--accent2); letter-spacing: 3px;">YOUR_RESULT</span>
+            <h3 id="audit-result-title">Strategy Complete</h3>
           </div>
           <div id="audit-advice-content" class="advice-text">
             <!-- AI Content Injected Here -->
           </div>
-          <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" class="book-btn magnetic-btn pulse-glow" style="display: block; text-align: center; margin-bottom: 12px; background: linear-gradient(135deg, var(--accent2), #0051ff); color: white; text-transform: uppercase;">Lock In Your Solution</a>
-          <button onclick="window.AuditEngine.reset()" class="audit-reset-btn">Run Another Audit</button>
+          <button class="audit-reset-btn" onclick="window.AuditEngine.reset()" style="margin-top:20px;">RUN ANOTHER AUDIT</button>
         </div>
+
       </div>
     </div>
   </section>
-
-  
-
 
   <!-- HOW WE WORK (Process) -->
   <section id="process" class="section section-alt">
@@ -652,29 +614,42 @@
         <h2>How We Work</h2>
         <p>From concept to completion in three clear steps.</p>
       </header>
-      <div class="process-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px;">
-        <div class="process-card" style="padding: 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 12px;">
-          <span class="step-num" style="display: block; font-size: 3rem; color: var(--accent); font-weight: 700; opacity: 0.3; margin-bottom: 10px;">01</span>
-          <div class="step-content">
-            <h4 style="margin-bottom: 10px;">Vision & Strategy</h4>
-            <p style="color: var(--muted); font-size: 0.95rem;">We start by breaking down your goal. Whether it's a music video or a business site, we get on the same page with examples and deadlines. One chat to lock in the vision.</p>
+      <!-- NEW: Perspective Pipeline -->
+      <div class="perspective-pipeline">
+        <div class="pipeline-track"></div>
+        
+        <!-- Step 1: STRATEGY -->
+        <article class="pipeline-step">
+          <div class="pipeline-node"></div>
+          <div class="pipeline-content k-hover">
+            <span class="step-meta">PHASE_01 // STRATEGY</span>
+            <h4>Vision & Architecture</h4>
+            <p>We define your goal and build the tactical blueprint. Whether it's a cinematic music video or a high-end brand rollout, we lock in the aesthetic markers and business objectives in a single session.</p>
+            <a href="#contact" onclick="document.getElementById('project_type').value='The Signal'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="lock-in-link resonate k-hover">LOCK IN STRATEGY //</a>
           </div>
-        </div>
-        <div class="process-card" style="padding: 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 12px;">
-          <span class="step-num" style="display: block; font-size: 3rem; color: var(--accent); font-weight: 700; opacity: 0.3; margin-bottom: 10px;">02</span>
-          <div class="step-content">
-            <h4 style="margin-bottom: 10px;">Production & Polish</h4>
-            <p style="color: var(--muted); font-size: 0.95rem;">The lab phase. We edit, design, and refine the work. You get updates at key moments so you're never guessing. We move with purpose.</p>
-          </div>
-        </div>
+        </article>
 
-        <div class="process-card" style="padding: 30px; background: rgba(255,255,255,0.03); border: 1px solid var(--stroke); border-radius: 12px;">
-          <span class="step-num" style="display: block; font-size: 3rem; color: var(--accent); font-weight: 700; opacity: 0.3; margin-bottom: 10px;">03</span>
-          <div class="step-content">
-            <h4 style="margin-bottom: 10px;">Delivery & Launch</h4>
-            <p style="color: var(--muted); font-size: 0.95rem;">Final delivery in top quality. Organized folders, all formats (vertical and horizontal). You get the keys to your new digital world.</p>
+        <!-- Step 2: EXECUTION -->
+        <article class="pipeline-step">
+          <div class="pipeline-node"></div>
+          <div class="pipeline-content k-hover">
+            <span class="step-meta">PHASE_02 // EXECUTION</span>
+            <h4>Production & Polish</h4>
+            <p>The lab phase. From shooting to detailed post-production, we engineer every visual asset. You'll receive real-time updates as we build the narrative and ensure the technical quality is absolute.</p>
+            <a href="#contact" onclick="document.getElementById('project_type').value='The Perspective'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="lock-in-link resonate k-hover">LOCK IN PRODUCTION //</a>
           </div>
-        </div>
+        </article>
+
+        <!-- Step 3: DELIVERY -->
+        <article class="pipeline-step">
+          <div class="pipeline-node"></div>
+          <div class="pipeline-content k-hover">
+            <span class="step-meta">PHASE_03 // DELIVERY</span>
+            <h4>Technical Rollout</h4>
+            <p>Final systems are deployed. We hand over the master files and a custom implementation guide to ensure your content hits the industry with maximum force and consistent authority.</p>
+            <a href="#contact" onclick="document.getElementById('project_type').value='The Alliance'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="lock-in-link resonate k-hover">LOCK IN DELIVERY //</a>
+          </div>
+        </article>
       </div>
     </div>
 
@@ -682,8 +657,7 @@
 
   
 
-      <!-- PACKAGES MENU -->
-  <section id="packages" class="section section-alt">
+      <section id="packages" class="section section-alt">
     <div class="wrap">
       <header class="section-head center-text">
         <span class="eyebrow-mini">THE MENU</span>
@@ -694,10 +668,10 @@
       <!-- DYNAMIC GRID: Rebuilt for 3 powerful tiers -->
       <div class="pkg-grid-dynamic" id="pkgGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 50px;">
         
-        <!-- PACKAGE 1: THE DROP -->
+        <!-- PACKAGE 1: THE SIGNAL -->
         <article class="package-static">
           <div class="package-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Drop</h4>
+            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Signal</h4>
             <div class="pkg-icon-wrap" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(var(--accent2-rgb), 0.1); border-radius: 12px;">
               <svg class="pkg-neon-icon icon-content" viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--accent2); fill: none; stroke-width: 2;">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -706,29 +680,29 @@
               </svg>
             </div>
           </div>
-          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">Precision editing and retouching for creators who move fast. We take your raw files and turn them into high-retention assets.</p>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">High-end visual refinement for focused deployments. We take your raw content and engineer it into a singular, high-retention world-moving asset.</p>
           <ul class="check-list" style="list-style: none; padding: 0; margin-bottom: 40px; flex-grow: 1;">
-            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 1x Short-Form Video (Reels/TikTok)</li>
-            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Advanced Color Grading</li>
-            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 24-48 Hour Rapid Delivery</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 1x High-End Tactical Asset (Viral/Ad)</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Advanced VFX & SFX Design</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 24-48 Hour Rapid Extraction</li>
           </ul>
           <div class="pkg-meta" style="margin-top: auto;">
             <div class="pkg-price" style="margin-bottom: 20px;">
               <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Tier 01</span>
-              <div class="pkg-amount-wrapper" >
-                <span class="pkg-currency" >$</span><span class="pkg-amount" >50</span>
+              <div class="pkg-amount-wrapper">
+                <span class="pkg-currency">$</span><span class="pkg-amount">100</span>
               </div>
             </div>
-            <button class="pkg-select-btn" data-package="The Drop" >SELECT PLAN</button>
-            <button class="pkg-buy-btn" data-package="The Drop" onclick="window.handleDirectPayStatic('The Drop', this)"><span>⚡ PAY NOW — $50</span></button>
+            <button class="pkg-select-btn" data-package="The Signal">SELECT PLAN</button>
+            <button class="pkg-buy-btn" data-package="The Signal" onclick="window.handleDirectPayStatic('The Signal', this)"><span>⚡ PAY NOW — $100</span></button>
           </div>
         </article>
 
-        <!-- PACKAGE 2: THE VISION -->
+        <!-- PACKAGE 2: THE PERSPECTIVE -->
         <article class="package-static featured">
-          <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent2); color: #000; padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;">MOST POPULAR</div>
+          <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent2); color: #000; padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;">THE CONTENT ENGINE</div>
           <div class="package-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Vision</h4>
+            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Perspective</h4>
             <div class="pkg-icon-wrap" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(var(--accent2-rgb), 0.2); border-radius: 12px;">
               <svg class="pkg-neon-icon icon-photo" viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--accent2); fill: none; stroke-width: 2;">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -736,49 +710,49 @@
               </svg>
             </div>
           </div>
-          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">Full-scale creative production. From lighting to composition, we capture the visuals that define your brand's true perspective.</p>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">Full-scale production environment. We architect your monthly visual infrastructure—from brand shoots to cinematic content batches.</p>
           <ul class="check-list" style="list-style: none; padding: 0; margin-bottom: 40px; flex-grow: 1;">
-            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> On-Location Shoot (Up to 2 Hours)</li>
-            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 20+ High-End Retouched Images</li>
-            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Creative Direction & Lighting</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> On-Location Production (3 Hours)</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 4x High-End Tactical Assets (Reels/Ads)</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 20+ Premium Retouched Deliverables</li>
           </ul>
           <div class="pkg-meta" style="margin-top: auto;">
             <div class="pkg-price" style="margin-bottom: 20px;">
               <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Tier 02</span>
-              <div class="pkg-amount-wrapper" >
-                <span class="pkg-currency" >$</span><span class="pkg-amount" >100</span>
+              <div class="pkg-amount-wrapper">
+                <span class="pkg-currency">$</span><span class="pkg-amount">400</span>
               </div>
             </div>
-            <button class="pkg-select-btn" data-package="The Vision" >SELECT PLAN</button>
-            <button class="pkg-buy-btn" data-package="The Vision" onclick="window.handleDirectPayStatic('The Vision', this)"><span>⚡ PAY NOW — $100</span></button>
+            <button class="pkg-select-btn" data-package="The Perspective">SELECT PLAN</button>
+            <button class="pkg-buy-btn" data-package="The Perspective" onclick="window.handleDirectPayStatic('The Perspective', this)"><span>⚡ PAY NOW — $400</span></button>
           </div>
         </article>
 
-        <!-- PACKAGE 3: THE CAMPAIGN -->
+        <!-- PACKAGE 3: THE ALLIANCE -->
         <article class="package-static">
           <div class="package-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Campaign</h4>
+            <h4 class="syne-bold" style="font-size: 1.5rem; margin: 0;">The Alliance</h4>
             <div class="pkg-icon-wrap" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(var(--accent2-rgb), 0.1); border-radius: 12px;">
               <svg class="pkg-neon-icon icon-business" viewBox="0 0 24 24" style="width: 24px; height: 24px; stroke: var(--accent2); fill: none; stroke-width: 2;">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
               </svg>
             </div>
           </div>
-          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">The total rollout. Complete commercial rights and master files for a campaign that dominates the digital landscape.</p>
+          <p class="pkg-desc" style="color: var(--muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6;">Strategic creative partnership. Elite brand management for projects requiring master-level coordination and complete rollout ownership.</p>
           <ul class="check-list" style="list-style: none; padding: 0; margin-bottom: 40px; flex-grow: 1;">
-            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Full Shoot + Premium Editing Suite</li>
-            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> BTS Assets & All Raw Deliverables</li>
-            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 100% Commercial Usage Rights</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> Retainer-Based Creative Direction</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 10x Cinematic Assets + Master Files</li>
+            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: #fff;"><span style="color: var(--accent2);">✓</span> 100% Agency-Level Support & SFX</li>
           </ul>
           <div class="pkg-meta" style="margin-top: auto;">
             <div class="pkg-price" style="margin-bottom: 20px;">
               <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">Tier 03</span>
-              <div class="pkg-amount-wrapper" >
-                <span class="pkg-currency" >$</span><span class="pkg-amount" >200</span>
+              <div class="pkg-amount-wrapper">
+                <span class="pkg-currency">$</span><span class="pkg-amount">1,500</span>
               </div>
             </div>
-            <button class="pkg-select-btn" data-package="The Campaign" >SELECT PLAN</button>
-            <button class="pkg-buy-btn" data-package="The Campaign" onclick="window.handleDirectPayStatic('The Campaign', this)"><span>⚡ PAY NOW — $200</span></button>
+            <button class="pkg-select-btn" data-package="The Alliance">SELECT PLAN</button>
+            <button class="pkg-buy-btn" data-package="The Alliance" onclick="window.handleDirectPayStatic('The Alliance', this)"><span>⚡ PAY NOW — $1,500</span></button>
           </div>
         </article>
 
@@ -786,9 +760,9 @@
       
       <!-- Network Section -->
       <div class="network-pkg">
-        <h4 class="syne-bold custom-builds-title">Custom Builds & Large Scale Production</h4>
-        <p style="color: var(--muted); max-width: 700px; margin: 0 auto 30px auto; font-size: 1rem; line-height: 1.6;">Music videos, documentaries, or enterprise-level rollouts. Book a session to architect a custom solution for your unique requirements.</p>
-        <button class="pkg-select-btn" data-package="Custom Build">BOOK STRATEGY SESSION</button>
+        <h4 class="syne-bold custom-builds-title">Project Management & Creative Consulting</h4>
+        <p style="color: var(--muted); max-width: 700px; margin: 0 auto 30px auto; font-size: 1rem; line-height: 1.6;">Helping artists, creators, and professionals architect their vision. From project strategy to technical implementation and helping others scale their unique rollouts.</p>
+        <button class="pkg-select-btn" data-package="Project Consult">BOOK CONSULTATION</button>
       </div>
 
     </div>
@@ -842,7 +816,7 @@
         </div>
         <div class="faq-item">
           <h4>How do payments work?</h4>
-          <p>We typically require a 50% deposit to secure your start date, with the balance due upon delivery of the final assets.</p>
+          <p>You can pay in full via the "Pay Now" buttons for instant project activation. For custom strategies, we typically require a 50% deposit to secure your start date, with the balance due upon delivery.</p>
         </div>
         <div class="faq-item">
           <h4>Can we do a custom package?</h4>
@@ -905,9 +879,10 @@
             <label for="project_type">Project Type</label>
             <select id="project_type" name="project_type" required>
               <option value="" disabled selected>Select a package</option>
-              <option value="The Drop">The Drop ($50)</option>
-              <option value="The Vision">The Vision ($100)</option>
-              <option value="The Campaign">The Campaign ($200)</option>
+              <option value="The Signal">The Signal ($100)</option>
+              <option value="The Perspective">The Perspective ($400)</option>
+              <option value="The Alliance">The Alliance ($1,500+)</option>
+              <option value="Strategy">Creative Consulting / Project Strategy</option>
               <option value="Custom Build">Custom Production / Other</option>
             </select>
           </div>
@@ -926,9 +901,9 @@
               <select id="budget" name="budget">
                 <option value="" disabled selected>Select range</option>
                 <option value="<500">< $500</option>
-                <option value="500-1500">$500 - $1,500</option>
-                <option value="1500-3000">$1,500 - $3,000</option>
-                <option value="3000+">$3,000+</option>
+                <option value="500-1500">$500 — $2,500</option>
+                <option value="2500-5000">$2,500 — $5,000</option>
+                <option value="5000+">$5,000+</option>
               </select>
             </div>
             <div class="form-group">
@@ -961,7 +936,7 @@
         <!-- CINEMATIC SUCCESS STATE (Hidden by default) -->
         <div id="successState" class="success-state" style="display: none; text-align: center; padding: 40px;">
            <div class="success-icon" style="opacity: 0; transform: scale(0.5);">
-             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events: none;>
                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                <polyline points="22 4 12 14.01 9 11.01"></polyline>
              </svg>
@@ -977,7 +952,7 @@
         <div class="contact-sidebar">
           <div class="contact-icons">
             <a href="https://instagram.com/onlytrueperspective" target="_blank" rel="noreferrer" aria-label="Instagram" class="icon-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events: none;>
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                 <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
@@ -985,14 +960,14 @@
             </a>
             
             <a href="mailto:contact@onlytrueperspective.tech" aria-label="Email" class="icon-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events: none;>
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                 <polyline points="22,6 12,13 2,6"></polyline>
               </svg>
             </a>
 
             <a href="https://youtube.com/@onlytrueperspective" target="_blank" rel="noreferrer" aria-label="YouTube" class="icon-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events: none;>
                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
                  <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
               </svg>
@@ -1013,7 +988,7 @@
     <div class="wrap footer-inner">
       <div class="footer-left">
         <div class="footer-brand">
-          <img src="assets/otp.gif" alt="OTP logo" class="nav-gif" id="footer-logo-neon" loading="lazy" />
+          <img src="assets/otp.gif" alt="OTP logo" class="nav-gif" id="footer-logo-neon" loading="lazy" decoding="async" style="opacity: 1 !important; visibility: visible !important; backface-visibility: hidden; transform: translateZ(0);" />
           <span class="brand-name">Only True Perspective</span>
         </div>
         <div class="footer-status" id="siteStatus">
@@ -1026,10 +1001,13 @@
                       <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Email</a>        </div>
         <div class="fineprint">© <span id="year">2026</span> Only True Perspective. Directed by ELI3GANT.</div>
         <div class="footer-legal">
-                      <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>          <span class="dot">•</span>
+          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>
+          <span class="dot">•</span>
           <a href="terms.html">Terms</a>
           <span class="dot">•</span>
           <a href="privacy.html">Privacy</a>
+          <span class="dot">•</span>
+          <a href="portal-gate.html" rel="nofollow" style="opacity: 0.15; letter-spacing: 2px;">ACCESS</a>
         </div>
       </div>
 
@@ -1048,30 +1026,38 @@
   <!-- Canvas for Cursor & Debris -->
   <canvas id="cursor-canvas"></canvas>
 
-  <!-- SCRIPTS (Moved to bottom for reliable loading) -->
-  <script src="site-config.js?v=15.1.1" defer></script>
-  <script src="https://js.stripe.com/v3/" defer></script>
-  <script src="pay_v2.js?v=10.5.3" defer></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
-  <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js" defer></script>
-  <script src="https://unpkg.com/split-type" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js" defer></script>
+  <!-- SCRIPTS -->
+  <script src="site-config.js?v=15.1.1"></script>
+  <script src="pay_v2.js?v=10.5.3"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+  <script src="https://unpkg.com/split-type"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
 
   
   <!-- PAY NOW STATIC HANDLER: Runs synchronously so baked-in buttons always work -->
   <script>
     window.handleDirectPayStatic = function(title, btn) {
-      const waitForStripe = (attempts) => {
-        if (typeof Stripe !== 'undefined') {
-          btn.disabled = true;
-          btn.style.opacity = '0.7';
-          const orig = btn.innerHTML;
-          btn.innerHTML = '<span>SECURING...</span>';
+      const loadStripeScript = (callback) => {
+        if (typeof Stripe !== 'undefined') return callback();
+        const script = document.createElement('script');
+        script.src = 'https://js.stripe.com/v3/';
+        script.onload = callback;
+        document.head.appendChild(script);
+      };
 
-          const stripe = Stripe('pk_live_51SqqA9Pux5EhFZOuR0oo7VsFZrKoebiaWLXHNTZPx2kpa3w9kmqgUCtmEN4sY9LPW80UyfjBIfZkIfnPQW0Ba5MC007yWafN6y');
+      loadStripeScript(() => {
+        const waitForStripe = (attempts) => {
+          if (typeof Stripe !== 'undefined') {
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<span>SECURING...</span>';
+
+            const stripe = Stripe('pk_live_51SqqA9Pux5EhFZOuR0oo7VsFZrKoebiaWLXHNTZPx2kpa3w9kmqgUCtmEN4sY9LPW80UyfjBIfZkIfnPQW0Ba5MC007yWafN6y');
           const API_BASE = window.OTP.getApiBase();
 
           fetch(API_BASE + '/api/create-checkout-session', {
@@ -1102,7 +1088,8 @@
         }
       };
       waitForStripe(20); // Retry up to 20 times (6 seconds total)
-    };
+    });
+  };
   </script>
 
   <!-- GSAP & SPLIT TYPE (Keep these active) -->
@@ -1138,10 +1125,12 @@
         });
     });
   </script>
-  <script src="https://unpkg.com/kursor" defer></script>
-  <script src="stars-v2.js" defer></script>
-  <script src="site-init.js?v=15.1.1" defer></script>
-  <script src="audit-engine.js?v=15.1.1" defer></script>
+  <script src="https://unpkg.com/kursor"></script>
+  <script src="stars-v2.js"></script>
+  <script src="site-init.js?v=15.1.1"></script>
+  <script src="audit-engine.js?v=15.1.1"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="pay_v2.js?v=15.1.1"></script>
   <script>
     // PRELOADER LOGIC
     window.addEventListener('load', () => {
