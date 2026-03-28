@@ -314,8 +314,6 @@ window.OTP.showBroadcast = function(message) {
     styleElement.textContent = `
         body, html {
             overflow-x: hidden;
-            position: relative;
-            width: 100%;
         }
         @media (max-width: 768px) {
             input, select, textarea, button {
@@ -898,16 +896,9 @@ function initSite() {
                 if (targetEl) {
                     e.preventDefault();
                     
-                    // Smooth Scroll
-                    const offset = 80; // Nav height offset
-                    const elementPosition = targetEl.getBoundingClientRect().top;
-                    const offsetPosition = elementPosition + window.pageYOffset - offset;
-
+                    // Smooth Scroll leveraging native CSS scroll-margin-top
                     setTimeout(() => {
-                        window.scrollTo({
-                            top: offsetPosition,
-                            behavior: 'smooth'
-                        });
+                        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }, 10); // Tiny delay to ensure layout unlocks
 
                     // Update Active State

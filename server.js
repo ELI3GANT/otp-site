@@ -1235,7 +1235,10 @@ app.route('/api/create-checkout-session')
                     product_data: {
                         name: `OTP // ${(packageName || 'CREATIVE SERVICE').toUpperCase()}`,
                         // Dynamic Description based on package
-                        description: normalizedName === 'the drop' ? '1 High-End Vertical Edit (Algorithm Friendly)' :
+                        description: normalizedName === 'the signal' ? '1x Tactical Asset (Viral/Ad) + Advanced VFX - 24/48H Delivery' :
+                                     normalizedName === 'the perspective' ? 'On-Location Production (3h) + 4x Tactical Assets + 20 Premium Deliverables' :
+                                     normalizedName === 'the alliance' ? 'Retainer Creative Direction + 10x Cinematic Assets + Agency-Level Support' :
+                                     normalizedName === 'the drop' ? '1 High-End Vertical Edit (Algorithm Friendly)' :
                                      normalizedName === 'the vision' ? 'Editorial/Studio Shoot (4h) - 15 High-End Retouched Images' :
                                      normalizedName === 'the campaign' ? 'Comprehensive Production Package (Shoot + Full High-End Edit Bundle)' :
                                      normalizedName === 'the visualizer' ? 'Perfect Loop + Lyric Integration for Audio' :

@@ -357,10 +357,11 @@ section, .section-studio, .section-work, #services, #contact {
 }
 [data-theme="light"] .nav-links a.active,
 [data-theme="light"] .nav-links a:hover {
-  color: var(--accent);
+  color: #000;
+  opacity: 1;
 }
 [data-theme="light"] .nav-links a.active::after {
-  background: var(--accent); /* Black indicator */
+  background: #000; /* Black indicator */
 }
 
 /* FAQ & REVIEWS (Light Mode Fixes) */
@@ -8814,3 +8815,8 @@ body {
     box-shadow: 0 30px 60px rgba(0,0,0,0.06);
 }
 
+
+/* FIXED NAV SCROLL MARGIN FOR ALL ANCHORS */
+section[id] {
+  scroll-margin-top: 100px !important;
+}
