@@ -283,6 +283,11 @@ window.OTP.initTheme = function() {
 
         const style = document.createElement('style');
         style.textContent = `
+            @keyframes spectral-flow-force {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
             .spectral-v-sync .nav-logo,
             .spectral-v-sync .hero-logo-wrap,
             .spectral-v-sync .hero-eye-3d {
@@ -290,29 +295,34 @@ window.OTP.initTheme = function() {
               opacity: 1 !important;
               visibility: visible !important;
               display: block !important;
+              pointer-events: none !important;
+              z-index: 9999 !important;
             }
             .spectral-v-sync .title,
             .spectral-v-sync .luxe-title .title {
               background-image: ${activeGradient} !important;
               background-size: 400% 400% !important;
+              background-position: 0% 50% !important;
               -webkit-background-clip: text !important;
               background-clip: text !important;
               -webkit-text-fill-color: transparent !important;
               color: transparent !important;
-              animation: spectral-flow 8s ease infinite !important;
+              animation: spectral-flow-force 8s ease infinite !important;
               opacity: 1 !important;
               visibility: visible !important;
               display: block !important;
               position: relative !important;
-              z-index: 1000 !important;
+              z-index: 10000 !important;
               -webkit-text-stroke: 0px transparent !important;
               text-shadow: none !important;
+              will-change: background-position;
             }
             .spectral-v-sync .luxe-title {
               background: none !important;
               overflow: visible !important;
               opacity: 1 !important;
               visibility: visible !important;
+              pointer-events: auto !important;
             }
         `;
         document.head.appendChild(style);
