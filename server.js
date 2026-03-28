@@ -937,7 +937,6 @@ app.post('/api/audit/submit', async (req, res) => {
 
         **THE TAKE.**
         (A short, powerful closing thought for the creator.)`;
- powerful quote that sounds like it was written for a cyberpunk philosopher.)`;
 
         let advice = "";
 
