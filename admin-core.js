@@ -2199,9 +2199,9 @@
                 div.onclick = () => selectMedia(publicUrl, file.name);
                 
                 if (isVideo || likelyVideo) {
-                     div.innerHTML = `<video src="${publicUrl}#t=0.5" muted preload="metadata" onmouseover="this.play()" onmouseout="this.pause()"></video>`;
+                     div.innerHTML = `<video src="${publicUrl}#t=0.5" muted preload="metadata" referrerpolicy="no-referrer" onmouseover="this.play()" onmouseout="this.pause()"></video>`;
                 } else {
-                     div.innerHTML = `<img src="${publicUrl}" loading="lazy" alt="${file.name}">`;
+                     div.innerHTML = `<img src="${publicUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" loading="lazy" alt="${file.name}">`;
                 }
                 grid.appendChild(div);
             });
@@ -2223,9 +2223,9 @@
         
         if(previewDiv) {
              if(url.match(/\.(mp4|webm|mov)$/i)) {
-                 previewDiv.innerHTML = `<video src="${url}" controls style="width: 100%; height: auto; max-height: 400px; display: block; border-radius: 12px;"></video>`;
+                 previewDiv.innerHTML = `<video src="${url}" controls referrerpolicy="no-referrer" style="width: 100%; height: auto; max-height: 400px; display: block; border-radius: 12px;"></video>`;
              } else {
-                 previewDiv.innerHTML = `<img id="previewImg" src="${url}" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">`;
+                 previewDiv.innerHTML = `<img id="previewImg" src="${url}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
              }
              previewDiv.style.display = 'block';
         }
@@ -2663,11 +2663,12 @@
                 // --- CHAIN IMAGE GENERATION ---
                 // Support both direct URL returns and prompt-based generation
                 if (aiResult.image_url) {
-                    document.getElementById('imageUrl').value = aiResult.image_url;
-                    document.getElementById('urlInput').value = aiResult.image_url;
+                    const cleanUrl = aiResult.image_url.trim();
+                    document.getElementById('imageUrl').value = cleanUrl;
+                    document.getElementById('urlInput').value = cleanUrl;
                     const prevDiv = document.getElementById('imagePreview');
                     if (prevDiv) {
-                        prevDiv.innerHTML = `<img id="previewImg" src="${aiResult.image_url}" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;">`;
+                        prevDiv.innerHTML = `<img id="previewImg" src="${cleanUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
                         prevDiv.style.display = 'block';
                     }
                 } else if (aiResult.image_prompt) {
@@ -2874,9 +2875,9 @@
             const mediaHtml = (image && image.trim().length > 0) ? `
                 <div style="margin-bottom: 35px; background: rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; border: 1px solid var(--admin-border);">
                     ${isVideo ? `
-                        <video src="${image}" controls style="width:100%; display: block; max-height: 500px; object-fit: cover;"></video>
+                        <video src="${image}" controls referrerpolicy="no-referrer" style="width:100%; display: block; max-height: 500px; object-fit: cover;"></video>
                     ` : `
-                        <img src="${image}" style="width:100%; height: auto; display: block; max-height: 550px; object-fit: cover;" onerror="this.parentElement.style.display='none'" />
+                        <img src="${image}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width:100%; height: auto; display: block; max-height: 550px; object-fit: cover;" onerror="this.parentElement.style.display='none'" />
                     `}
                 </div>` : `
                 <div style="margin-bottom: 35px; padding: 60px; text-align: center; background: rgba(var(--accent2-rgb), 0.03); border: 2px dashed var(--admin-border); border-radius: 12px; color: var(--admin-muted);">
