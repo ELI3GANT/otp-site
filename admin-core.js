@@ -2591,17 +2591,24 @@
                                 const jsonMatch = text.match(/\{[\s\S]*\}/);
                                 if (jsonMatch) text = jsonMatch[0];
                                 
-                                // FIX: Protect against "Bad escaped character" (LLM often returns literal \ or bad escapes)
-                                // We replace illegal backslashes (those not followed by valid JSON escape chars)
-                                let sanitizedText = text
-                                    .replace(/\r?\n/g, "\\n") // Fix raw newlines in strings
-                                    .replace(/\\(?!["\\\/bfnrtu]|u[0-9a-fA-F]{4})/g, "\\\\"); // Fix illegal backslashes
+                                // NORMALIZATION LAYER: Fix common LLM JSON errors
+                                let repairedText = text
+                                    .replace(/(\r\n|\n|\r)/gm, " ") // Remove hard newlines
+                                    .replace(/'([^']*)':/g, '"$1":') // Convert single-quoted keys to double
+                                    .replace(/:\s*'([^']*)'/g, ': "$1"') // Convert single-quoted values to double
+                                    .replace(/,\s*([\}\]])/g, "$1") // Strip trailing commas
+                                    .replace(/\\(?!["\\\/bfnrtu]|u[0-9a-fA-F]{4})/g, "\\\\"); // Fix illegal escapes
                                 
                                 try {
-                                    aiResult = JSON.parse(sanitizedText);
-                                } catch(parseErr) {
-                                    console.warn("Retrying with raw text escape fallback...");
-                                    aiResult = JSON.parse(text.replace(/\r?\n/g, "\\n"));
+                                    aiResult = JSON.parse(repairedText);
+                                } catch(e) {
+                                    console.warn("REPAIR FAILED, TRYING RELAXED PARSE...");
+                                    try {
+                                        // Attempt to parse text with escaped newlines but without brittle quote-swapping
+                                        aiResult = JSON.parse(text.replace(/\r?\n/g, "\\n"));
+                                    } catch(f) {
+                                        throw new Error(`JSON_MALFORMED: ${f.message}`);
+                                    }
                                 }
                                 
                                 // Gemini token tracking
