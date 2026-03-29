@@ -1010,16 +1010,16 @@ function initSite() {
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
-            // AGGRESSIVE TILT: Increased multiplier for maximum impact
-            targetX = ((y - centerY) / centerY) * -30; 
-            targetY = ((x - centerX) / centerX) * 30;
+            // STABILIZED TILT: 15 for responsive but non-jittery impact
+            targetX = ((y - centerY) / centerY) * -15; 
+            targetY = ((x - centerX) / centerX) * 15;
             bgTargetX = (x / rect.width) * 100;
             bgTargetY = (y / rect.height) * 100;
 
             const ex = x - centerX;
             const ey = y - centerY;
-            targetEyeX = (ex / rect.width) * 50; 
-            targetEyeY = (ey / rect.height) * 40;
+            targetEyeX = (ex / rect.width) * 25; 
+            targetEyeY = (ey / rect.height) * 20;
         });
 
         card.addEventListener('mouseleave', () => {
@@ -1063,13 +1063,13 @@ function initSite() {
             // RESTORED FLOAT AMPLITUDE
             const floatY = Math.sin(elapsed * 1.0) * 8; 
             
-            // AGGRESSIVE RESPONSIVENESS: 0.15 for tactical response
-            currentX = lerp(currentX, targetX, 0.15);
-            currentY = lerp(currentY, targetY, 0.15);
-            bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.15);
-            bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.15);
-            currentEyeX = lerp(currentEyeX, targetEyeX, 0.15);
-            currentEyeY = lerp(currentEyeY, targetEyeY, 0.15);
+            // STABILIZED RESPONSIVENESS: 0.10 for tactile, non-glitch response
+            currentX = lerp(currentX, targetX, 0.10);
+            currentY = lerp(currentY, targetY, 0.10);
+            bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.10);
+            bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.10);
+            currentEyeX = lerp(currentEyeX, targetEyeX, 0.10);
+            currentEyeY = lerp(currentEyeY, targetEyeY, 0.10);
 
             // Apply to CSS variables
             card.style.setProperty('--rotateX', `${currentX}deg`);
