@@ -1010,16 +1010,16 @@ function initSite() {
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
-            // RESTORED PREMIUM TILT (12)
-            targetX = ((y - centerY) / centerY) * -12; 
-            targetY = ((x - centerX) / centerX) * 12;
+            // AGGRESSIVE TILT: Increased multiplier for maximum impact
+            targetX = ((y - centerY) / centerY) * -30; 
+            targetY = ((x - centerX) / centerX) * 30;
             bgTargetX = (x / rect.width) * 100;
             bgTargetY = (y / rect.height) * 100;
 
             const ex = x - centerX;
             const ey = y - centerY;
-            targetEyeX = (ex / rect.width) * 20; 
-            targetEyeY = (ey / rect.height) * 15;
+            targetEyeX = (ex / rect.width) * 50; 
+            targetEyeY = (ey / rect.height) * 40;
         });
 
         card.addEventListener('mouseleave', () => {
@@ -1063,13 +1063,13 @@ function initSite() {
             // RESTORED FLOAT AMPLITUDE
             const floatY = Math.sin(elapsed * 1.0) * 8; 
             
-            // RESTORED PREMIUM SMOOTHNESS: 0.1 -> 0.05
-            currentX = lerp(currentX, targetX, 0.05);
-            currentY = lerp(currentY, targetY, 0.05);
-            bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.05);
-            bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.05);
-            currentEyeX = lerp(currentEyeX, targetEyeX, 0.05);
-            currentEyeY = lerp(currentEyeY, targetEyeY, 0.05);
+            // AGGRESSIVE RESPONSIVENESS: 0.15 for tactical response
+            currentX = lerp(currentX, targetX, 0.15);
+            currentY = lerp(currentY, targetY, 0.15);
+            bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.15);
+            bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.15);
+            currentEyeX = lerp(currentEyeX, targetEyeX, 0.15);
+            currentEyeY = lerp(currentEyeY, targetEyeY, 0.15);
 
             // Apply to CSS variables
             card.style.setProperty('--rotateX', `${currentX}deg`);
