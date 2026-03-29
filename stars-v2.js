@@ -308,7 +308,20 @@ for (let i = 0; i < STAR_COUNT; i++) {
     stars.push(new Star());
 }
 
+let isPaused = false;
+const visibilityObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        isPaused = !entry.isIntersecting;
+        if (!isPaused) {
+            requestAnimationFrame(animate); 
+        }
+    });
+}, { threshold: 0.01 });
+visibilityObserver.observe(canvas);
+
 function animate() {
+    if (isPaused) return; // Halt loop
+    
     ctx.clearRect(0, 0, width, height);
 
     if (attractor.active) {

@@ -220,12 +220,9 @@ async function handleDirectPay(e, title, stripe, btn) {
     btn.disabled = true;
     
     showToast(`Securing ${title}...`);
-    // SECURE BACKEND BRIDGE: Point to same origin by default
-    let API_BASE = (window.OTP_CONFIG && typeof window.OTP_CONFIG.apiBase === 'string') ? window.OTP_CONFIG.apiBase : '';
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        API_BASE = window.location.origin;
-    }
+    const API_BASE = (window.OTP && window.OTP.getApiBase) ? window.OTP.getApiBase() : '';
     console.log(`🔌 Payment Uplink: ${API_BASE}/api/create-checkout-session`);
+
 
     try {
         const response = await fetch(`${API_BASE}/api/create-checkout-session`, {

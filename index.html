@@ -890,6 +890,7 @@
               <option value="The Signal">The Signal ($100)</option>
               <option value="The Perspective">The Perspective ($400)</option>
               <option value="The Alliance">The Alliance ($1,500+)</option>
+              <option value="Project Consult">Project Consult / Strategy ($49)</option>
               <option value="Strategy">Creative Consulting / Project Strategy</option>
               <option value="Custom Build">Custom Production / Other</option>
             </select>
@@ -1197,50 +1198,8 @@
       }
     });
   </script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // SUPABASE INIT (Using centralized config)
-        let supabase;
-        try {
-            if (window.OTP_CONFIG) {
-                const SUPABASE_URL = window.OTP_CONFIG.supabaseUrl;
-                const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
-                
-                if (window.supabase && SUPABASE_URL) {
-                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                } else {
-                    console.error("Supabase library not loaded");
-                }
-            }
-        } catch(e) { console.error("Supabase Init Error", e); }
-
-        // PACKAGE SELECTION BRIDGE
-        const pkgBtns = document.querySelectorAll('.pkg-select-btn');
-        const serviceSelect = document.getElementById('project_type');
-        if(pkgBtns.length) {
-            pkgBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const pkg = btn.dataset.package;
-                    if(serviceSelect) {
-                        serviceSelect.value = pkg;
-                        // Trigger change event for pay_v2.js to update payment buttons
-                        serviceSelect.dispatchEvent(new Event('change'));
-                        
-                        // Scroll to contact
-                        const contactSection = document.getElementById('contact');
-                        if(contactSection) {
-                            contactSection.scrollIntoView({ behavior: 'smooth' });
-                            // Highlight the select
-                            serviceSelect.style.borderColor = 'var(--accent2)';
-                            setTimeout(() => serviceSelect.style.borderColor = '', 2000);
-                        }
-                    }
-                });
-            });
-        }
-
     /* 
-       FORM HANDLING MOVED TO: site-init.js?v=15.1.1 
+       FORM HANDLING & PACKAGE SELECTION MOVED TO: site-init.js?v=15.15.0
        (Prevents double submission & enables AI Agent Logic via /api)
     */
 

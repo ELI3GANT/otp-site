@@ -326,7 +326,7 @@
         try {
             if (!window.supabase || !window.OTP_CONFIG) throw new Error('CONFIG_MISSING');
 
-            const supabase = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+            const supabase = window.OTP.getSupabase();
             const { data: post, error } = await supabase
                 .from('posts')
                 .select('*')

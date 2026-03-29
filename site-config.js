@@ -20,7 +20,31 @@ Object.freeze(window.OTP_CONFIG);
 
 // Global helper — resolves the correct API base for every environment
 window.OTP = window.OTP || {};
+
+/**
+ * Shared Supabase Client (Singleton)
+ * Prevents "Multiple GoTrueClient instances" warnings.
+ */
+window.OTP.getSupabase = function() {
+    if (window.OTP._supabaseClient) return window.OTP._supabaseClient;
+    
+    if (typeof window.supabase === 'undefined') {
+        console.warn("[OTP] Supabase library not loaded yet.");
+        return null;
+    }
+
+    window.OTP._supabaseClient = window.supabase.createClient(
+        window.OTP_CONFIG.supabaseUrl, 
+        window.OTP_CONFIG.supabaseKey
+    );
+    return window.OTP._supabaseClient;
+};
+
 window.OTP.getApiBase = function() {
+    // 0. Manual Override (For advanced development & satellite testing)
+    const stored = localStorage.getItem('otp_api_base');
+    if (stored && stored.startsWith('http')) return stored;
+
     const h = window.location.hostname;
 
     // 1. Localhost dev: use same-origin ONLY if on a port that typically runs server.js (3000 or 8080)

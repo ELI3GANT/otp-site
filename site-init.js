@@ -268,65 +268,75 @@ window.OTP.initTheme = function() {
     const spectralRoll = Math.random();
     let variant = '';
     
-    // 6% Total Chance (2% each variant)
+    // 6% Total Chance (2% each variant) for SITE-WIDE effects
     if (spectralRoll < 0.02) variant = 'spectral-revelation'; // V1: Iridescent
     else if (spectralRoll < 0.04) variant = 'spectral-revelation-gold'; // V2: Gold
     else if (spectralRoll < 0.06) variant = 'spectral-revelation-neon'; // V3: Neon
 
+    // CORE BRANDING FIX: "ONLY TRUE PERSPECTIVE" ALWAYS SHOWS SPECIAL COLOR
+    // We add a permanent class for the brand itself to ensure it's always high-status.
+    document.documentElement.classList.add('otp-brand-synced');
+
     if (variant) {
         document.documentElement.classList.add(variant, 'spectral-v-sync');
         console.log(`[OTP] SYSTEM_STATE: ${variant.toUpperCase()}_ACTIVE`);
-        
-        let activeGradient = 'linear-gradient(90deg, #00ecff, #ff00cc, #ffcc00, #00ecff)'; 
-        if (variant === 'spectral-revelation-gold') activeGradient = 'linear-gradient(90deg, #ffcc00, #ff8800, #ffffff, #ffcc00)';
-        if (variant === 'spectral-revelation-neon') activeGradient = 'linear-gradient(90deg, #00ffaa, #00ecff, #ffffff, #00ffaa)';
-
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spectral-flow-force {
-              0% { background-position: 0% 50%; }
-              50% { background-position: 100% 50%; }
-              100% { background-position: 0% 50%; }
-            }
-            .spectral-v-sync .nav-logo,
-            .spectral-v-sync .hero-logo-wrap,
-            .spectral-v-sync .hero-eye-3d {
-              filter: drop-shadow(0 0 10px var(--accent2)) brightness(1.2) !important;
-              opacity: 1 !important;
-              visibility: visible !important;
-              display: block !important;
-              pointer-events: none !important;
-              z-index: 9999 !important;
-            }
-            .spectral-v-sync .title,
-            .spectral-v-sync .luxe-title .title {
-              background-image: ${activeGradient} !important;
-              background-size: 400% 400% !important;
-              background-position: 0% 50% !important;
-              -webkit-background-clip: text !important;
-              background-clip: text !important;
-              -webkit-text-fill-color: transparent !important;
-              color: transparent !important;
-              animation: spectral-flow-force 8s ease infinite !important;
-              opacity: 1 !important;
-              visibility: visible !important;
-              display: block !important;
-              position: relative !important;
-              z-index: 10000 !important;
-              -webkit-text-stroke: 0px transparent !important;
-              text-shadow: none !important;
-              will-change: background-position;
-            }
-            .spectral-v-sync .luxe-title {
-              background: none !important;
-              overflow: visible !important;
-              opacity: 1 !important;
-              visibility: visible !important;
-              pointer-events: auto !important;
-            }
-        `;
-        document.head.appendChild(style);
     }
+
+    // Determine the active brand gradient (Default to Iridescent if no site-wide variant is active)
+    let brandGradient = 'linear-gradient(135deg, #00ecff, #ff00cc, #ffcc00, #00ecff)'; 
+    if (variant === 'spectral-revelation-gold') brandGradient = 'linear-gradient(135deg, #ffcc00, #ff8800, #ffffff, #ffcc00)';
+    if (variant === 'spectral-revelation-neon') brandGradient = 'linear-gradient(135deg, #00ffaa, #00ecff, #ffffff, #00ffaa)';
+
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spectral-flow-force {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        /* 1. PERMANENT BRANDING SYNC (Always On for Hero) */
+        /* Targets .title AND any SplitType spans (.char, .line, .word) */
+        .otp-brand-synced .luxe-title .title,
+        .otp-brand-synced .luxe-title .title *,
+        .otp-brand-synced .luxe-title .title div {
+          background-image: ${brandGradient} !important;
+          background-size: 300% 300% !important;
+          background-attachment: ${window.innerWidth > 1024 ? 'fixed' : 'scroll'} !important; 
+          -webkit-background-clip: text !important;
+          background-clip: text !important;
+          -webkit-text-fill-color: transparent !important;
+          color: transparent !important;
+          animation: spectral-flow-force 12s linear infinite !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          -webkit-text-stroke: 0px transparent !important;
+          text-shadow: none !important;
+          will-change: background-position;
+        }
+
+        /* Ensure parent spans don't hide children */
+        .otp-brand-synced .luxe-title .title {
+           display: block !important;
+           overflow: visible !important;
+        }
+
+        /* 2. CONDITIONAL AURA (SITE-WIDE SECTOR)
+           Removed logo/eye glow so 'special color' is unique to brand text */
+        .spectral-v-sync .bg-fixed {
+          background: radial-gradient(circle at 50% 50%, rgba(var(--accent2-rgb), 0.05), transparent 70%) !important;
+        }
+
+        /* Mobile Compatibility Fallback */
+        @media (max-width: 768px) {
+          .otp-brand-synced .luxe-title .title,
+          .otp-brand-synced .luxe-title .title * {
+            background-attachment: scroll !important;
+            background-size: 200% 200% !important;
+          }
+        }
+    `;
+    document.head.appendChild(style);
 
     return targetTheme;
 };
@@ -500,7 +510,11 @@ window.OTP.initRealtimeState = async function() {
         return;
     }
 
-    const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+    const client = window.OTP.getSupabase();
+    if (!client) {
+        console.warn("📡 REALTIME: Supabase Client offline.");
+        return;
+    }
     
     // 8.1 Fetch Remote State on Load (Sticky Config)
     try {
@@ -646,7 +660,8 @@ window.OTP.initRealtimeState = async function() {
 window.OTP.initLiveEditor = async function() {
     if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
     
-    const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+    const client = window.OTP.getSupabase();
+    if (!client) return;
     const params = new URLSearchParams(window.location.search);
     const isEditMode = params.get('mode') === 'edit';
     const token = localStorage.getItem('otp_admin_token');
@@ -943,6 +958,7 @@ function initSite() {
             // GLOBAL MOBILE FIX: Always unlock body on any drawer link click
             if (document.body.classList.contains('nav-open')) {
                  document.body.classList.remove('nav-open');
+                document.documentElement.classList.remove('nav-open');
                  const drawer = document.querySelector('.nav-drawer');
                  if (drawer) drawer.classList.remove('open');
                  const btn = document.querySelector('.nav-toggle');
@@ -1104,10 +1120,12 @@ function initSite() {
             if (isOpen) {
                 drawer.classList.remove('open');
                 document.body.classList.remove('nav-open');
+                document.documentElement.classList.remove('nav-open');
                 btn.setAttribute('aria-expanded', 'false');
             } else {
                 drawer.classList.add('open');
                 document.body.classList.add('nav-open');
+                document.documentElement.classList.add('nav-open');
                 btn.setAttribute('aria-expanded', 'true');
             }
             return; // Don't fall through to close-outside check
@@ -1117,6 +1135,7 @@ function initSite() {
         if (link && drawer && drawer.classList.contains('open')) {
             drawer.classList.remove('open');
             document.body.classList.remove('nav-open');
+            document.documentElement.classList.remove('nav-open');
             if (btn) btn.setAttribute('aria-expanded', 'false');
             return;
         }
@@ -1128,18 +1147,13 @@ function initSite() {
             if (!clickedInsideDrawer && !clickedToggle) {
                 drawer.classList.remove('open');
                 document.body.classList.remove('nav-open');
+                document.documentElement.classList.remove('nav-open');
                 if (btn) btn.setAttribute('aria-expanded', 'false');
             }
         }
     };
 
     document.body.addEventListener('click', handleMenuToggle);
-    // touchstart only for toggle button — passive to avoid blocking scroll
-    document.body.addEventListener('touchstart', (e) => {
-        if (e.target.closest('.nav-toggle')) {
-            handleMenuToggle(e);
-        }
-    }, { passive: true });
 
     // Keyboard: close drawer on Escape
     document.addEventListener('keydown', (e) => {
@@ -1149,6 +1163,7 @@ function initSite() {
             if (drawer && drawer.classList.contains('open')) {
                 drawer.classList.remove('open');
                 document.body.classList.remove('nav-open');
+                document.documentElement.classList.remove('nav-open');
                 if (btn) btn.setAttribute('aria-expanded', 'false');
                 btn?.focus();
             }
@@ -1162,6 +1177,7 @@ function initSite() {
             const btn = document.querySelector('.nav-toggle');
             if (drawer) drawer.classList.remove('open');
             document.body.classList.remove('nav-open');
+            document.documentElement.classList.remove('nav-open');
             if (btn) btn.setAttribute('aria-expanded', 'false');
         }
     });
@@ -1349,6 +1365,9 @@ function initSite() {
                 } else {
                     contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
+
+                // Important: Trigger change event so pay_v2.js can update the 'PAY NOW' button
+                serviceSelect.dispatchEvent(new Event('change'));
             });
         });
     }
@@ -1422,7 +1441,8 @@ function initSite() {
         const statusEl = document.getElementById('siteStatus');
         if (!statusEl || typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
         
-        const client = window.supabase.createClient(window.OTP_CONFIG.supabaseUrl, window.OTP_CONFIG.supabaseKey);
+        const client = window.OTP.getSupabase();
+        if (!client) return;
         
         try {
             const { data } = await client.from('posts').select('content').eq('slug', 'system-global-state').single();
@@ -1690,41 +1710,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 })();
 
-// --- UNIFIED NAVIGATION & PERFORMANCE HARDENING ---
-(function() {
-    document.addEventListener('DOMContentLoaded', () => {
-        const toggle = document.querySelector('.nav-toggle');
-        const drawer = document.querySelector('.nav-drawer');
-        const navLinks = document.querySelectorAll('.nav-drawer a');
-        
-        if (toggle && drawer) {
-            toggle.addEventListener('click', () => {
-                const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
-                toggle.setAttribute('aria-expanded', !isExpanded);
-                drawer.classList.toggle('active');
-                document.body.classList.toggle('no-scroll');
+    // --- CURSOR CANVAS OPTIMIZATION (Consolidated) ---
+    const cursorCanvas = document.getElementById('cursor-canvas');
+    if (cursorCanvas) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                cursorCanvas.style.display = entry.isIntersecting ? 'block' : 'none';
             });
-            
-            navLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    toggle.setAttribute('aria-expanded', 'false');
-                    drawer.classList.remove('active');
-                    document.body.classList.remove('no-scroll');
-                });
-            });
-        }
-
-        // --- CURSOR CANVAS OPTIMIZATION ---
-        const cursorCanvas = document.getElementById('cursor-canvas');
-        if (cursorCanvas) {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    cursorCanvas.style.display = entry.isIntersecting ? 'block' : 'none';
-                });
-            });
-            observer.observe(cursorCanvas);
-        }
-    });
+        });
+        observer.observe(cursorCanvas);
+    }
 })();
 
 // --- SITE COMMAND PRO (Real-Time Terminal Sync) ---
@@ -1741,7 +1736,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
 
         if (typeof window.supabase !== 'undefined') {
-            window.OTP_STATE.client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            window.OTP_STATE.client = window.OTP.getSupabase();
             
             // 1. Fetch Initial Global State
             try {

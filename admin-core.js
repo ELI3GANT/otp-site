@@ -136,21 +136,14 @@
             return;
         }
 
-        // ---[ CORE BUGFIX: MULTIPLE SUPABASE CLIENTS ]---
-        if (window.OTP && window.OTP.supabase) {
-            console.warn("[AUTH_FIX] Detected and neutralizing conflicting Supabase client.");
-            // Overwrite the conflicting client's methods to be inert.
-            window.OTP.supabase.from = () => ({
-                select: () => Promise.resolve({ error: { message: "Client Neutralized" } }),
-                insert: () => Promise.resolve({ error: { message: "Client Neutralized" } }),
-                update: () => Promise.resolve({ error: { message: "Client Neutralized" } }),
-                delete: () => Promise.resolve({ error: { message: "Client Neutralized" } }),
-            });
-            window.OTP.supabase.channel = () => ({
-                on: () => ({ subscribe: () => {} }),
-            });
+        // Singleton Supabase Client (Consolidated)
+        state.client = window.OTP.getSupabase();
+        window.sb = state.client; 
+        
+        if (!state.client) {
+            updateDiagnostics('db', 'LIB MISSING', '#ff4444');
+            return;
         }
-        // ---[ END BUGFIX ]---
 
 
             // ═══════════════════════════════════════════════════════
@@ -216,9 +209,9 @@
             console.log("🔌 Connecting to Supabase KERNEL...");
             updateDiagnostics('db', 'CONNECTING...', 'var(--admin-muted)');
             
-            state.client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+            // Connection validated via Singleton
+            state.client = window.OTP.getSupabase();
             window.sb = state.client; 
-
             // --- AUTH HARDENING: INJECT SESSION TOKEN ---
             if (state.token && state.token !== 'static-bypass-token') {
                 console.log("🔑 Injecting secure session token...");
@@ -259,13 +252,15 @@
                 fetchArchetypes()
             ]);
             
-            // Backup Polling (30s) - Realtime handles immediate updates
-            setInterval(() => fetchPosts(false), 30000);
+            // Backup Polling (30s) - Clear existing to prevent duplicates
+            if (window.otpPollInterval) clearInterval(window.otpPollInterval);
+            window.otpPollInterval = setInterval(() => fetchPosts(false), 30000);
+
 
             // Live Clock System
             const clockEl = document.getElementById('liveClock');
             if (clockEl) {
-                const apiBase = localStorage.getItem('otp_api_base') || '';
+                const apiBase = (window.OTP && window.OTP.getApiBase) ? window.OTP.getApiBase() : (localStorage.getItem('otp_api_base') || '');
                 const token = localStorage.getItem('otp_admin_token') || '';
                 const isStatic = token === 'static-bypass-token';
                 const isRemote = apiBase.startsWith('http') && !apiBase.includes('localhost');
@@ -472,15 +467,13 @@
     const CACHE_TTL = 60000; // 60s Cache
 
     // 4.6 FILE UPLOAD LOGIC
-    async function optimizeImage(file) {
+    function optimizeImage(file) {
         return new Promise((resolve) => {
-            if (!file.type.startsWith('image/')) return resolve(file); // Don't optimize non-images
+            if (!file || !file.type.startsWith('image/')) return resolve(file); 
             
             const reader = new FileReader();
-            reader.readAsDataURL(file);
             reader.onload = (event) => {
                 const img = new Image();
-                img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 1920;
@@ -493,11 +486,9 @@
                             height *= MAX_WIDTH / width;
                             width = MAX_WIDTH;
                         }
-                    } else {
-                        if (height > MAX_HEIGHT) {
-                            width *= MAX_HEIGHT / height;
-                            height = MAX_HEIGHT;
-                        }
+                    } else if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
                     }
 
                     canvas.width = width;
@@ -506,14 +497,28 @@
                     ctx.drawImage(img, 0, 0, width, height);
 
                     canvas.toBlob((blob) => {
-                        const optimizedFile = new File([blob], file.name, {
-                            type: 'image/jpeg',
-                            lastModified: Date.now(),
-                        });
-                        resolve(optimizedFile);
-                    }, 'image/jpeg', 0.8);
+                        if (blob) {
+                            const optimizedFile = new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now(),
+                            });
+                            resolve(optimizedFile);
+                        } else {
+                            resolve(file);
+                        }
+                    }, 'image/jpeg', 0.85);
                 };
+                img.onerror = () => {
+                   console.error("Neural Error: Visual deconstruction failed.");
+                   resolve(file);
+                };
+                img.src = event.target.result;
             };
+            reader.onerror = () => {
+               console.error("Neural Error: File signal corrupted.");
+               resolve(file);
+            };
+            reader.readAsDataURL(file);
         });
     }
 
@@ -1970,11 +1975,7 @@
             `PERMANENTLY DELETE: ${slug}?`,
             async () => {
                 try {
-                    const apiBase = (function() {
-                        const stored = localStorage.getItem('otp_api_base');
-                        if (stored && stored.startsWith('http') && !stored.includes('localhost')) return stored;
-                        return window.OTP_CONFIG?.apiBase || '';
-                    })();
+                    const apiBase = window.OTP ? window.OTP.getApiBase() : '';
                     const res = await fetch(`${apiBase}/api/admin/delete-post`, {
                         method: 'POST',
                         headers: { 

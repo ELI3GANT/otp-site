@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [15.15.0] - 2026-03-29
+
+### Added
+- **Smart Animation Throttling:** Implemented `IntersectionObserver` in `stars-v2.js` to automatically pause the starfield's `requestAnimationFrame` loop when the canvas is hidden, saving battery on mobile.
+- **Adaptive Spectral Aura:** Injected `background-attachment: scroll` fallback for mobile devices to prevent pixelation in iridescent branding.
+- **Project Consult Integration:** Formalized the 'Project Consult' service tier across the UI and contact form mapping.
+- **Stripe Webhook Prototype:** Added architectural foundation for real-time payment synchronization in `server.js`.
+
+### Fixed
+- **Mobile Scroll Shifting:** Eradicated "ghost scrolling" by enforcing dual-layer `html` + `body` locking with `scrollbar-gutter: stable`.
+- **API Centralization:** Unified all frontend fetch requests to use `window.OTP.getApiBase()`, resolving environmental inconsistencies between local dev and live gateway.
+- **Audit Engine Hardening:** Integrated email regex validation and smooth "Scroll to Hero" transitions on success.
+- **Realtime Stability:** Prevented redundant polling intervals and hardened database connection diagnostics in the Admin Terminal.
+
+
 ## [1.5.0] - 2026-03-24
 
 ### Added

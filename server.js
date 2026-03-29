@@ -1383,5 +1383,31 @@ if (require.main === module) {
     });
 }
 
+
+// --- STRIPE WEBHOOK GATEWAY (PROTOTYPE) ---
+// Note: Requires STRIPE_WEBHOOK_SECRET to be configured in Vercel for production use.
+app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+
+    try {
+        if (!process.env.STRIPE_WEBHOOK_SECRET) throw new Error("Webhook secret missing");
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    } catch (err) {
+        console.warn(`⚠️ Webhook Signature Error: ${err.message}`);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        console.log(`✅ Payment Success Signal: ${session.id}`);
+        // Handle database update here (e.g., mark lead as PAID)
+    }
+
+    res.json({ received: true });
+});
+
 // Export for Vercel Serverless Function
+
 module.exports = app;

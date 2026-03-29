@@ -95,6 +95,18 @@ window.AuditEngine = {
         const emailInput = document.getElementById('audit-email');
         const email = emailInput.value.trim();
         const errorEl = document.getElementById('audit-error-msg');
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+             if(errorEl) {
+                 errorEl.textContent = "Please enter a valid neural address (email).";
+                 errorEl.classList.add('active');
+             }
+             emailInput.focus();
+             return;
+        }
+
+        this.isSubmitting = true;
         const statusOverlay = document.querySelector('.decryption-status');
         const progressBar = document.getElementById('audit-progress-bar');
 
@@ -248,6 +260,9 @@ Standard growth tips won't work for **${obj}** when you're dealing with **${hurd
             if (window.gsap) {
                 const tl = gsap.timeline();
                 
+                // Ensure results are at the top for visibility
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
                 // Hide back button on result
                 const backBtn = captureStep.querySelector('.audit-back-btn');
                 if(backBtn) backBtn.style.display = 'none';
