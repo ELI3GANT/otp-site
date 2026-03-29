@@ -1196,7 +1196,9 @@
       if (loader) {
         loader.style.opacity = '0';
         loader.style.visibility = 'hidden';
-      } 
+      }
+
+      /* 
        FORM HANDLING & PACKAGE SELECTION MOVED TO: site-init.js?v=15.15.0
        (Prevents double submission & enables AI Agent Logic via /api)
     */
@@ -1218,7 +1220,7 @@
               once: true
             },
             y: 30,
-            /* opacity: 0.1 removed */
+            opacity: 0,
             duration: 0.6,
             ease: "power2.out"
           });
@@ -1232,7 +1234,7 @@
               once: true
             },
             y: 30,
-            /* opacity: 0.1 removed */
+            opacity: 0,
             duration: 0.6,
             stagger: 0.05,
             ease: "power2.out"
