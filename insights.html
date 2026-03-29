@@ -350,7 +350,7 @@
               <span class="status-dot-mini" style="width: 8px; height: 8px; background: var(--accent2); border-radius: 50%; box-shadow: 0 0 10px var(--accent2); animation: pulse-cyan 1.5s infinite alternate;"></span>
               <span class="status-label">Live Network Signal</span>
           </div>
-          <div class="secondary-header">
+          <div class="secondary-header" onmouseenter="if(window.setAttractor) { const r=this.getBoundingClientRect(); window.setAttractor(r.left+r.width/2, r.top+r.height/2); }" onmouseleave="if(window.clearAttractor) window.clearAttractor()">
             <h1>THE VAULT</h1>
           </div>
           <p class="intro-text">

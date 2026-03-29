@@ -1054,22 +1054,27 @@ function initSite() {
 
         let startTime = Date.now();
         let animationFrameId = null;
-        let isCardVisible = false;
+        let isCardVisible = true; // Always live
 
         function update() {
-            if (!isCardVisible) return;
-
             const elapsed = (Date.now() - startTime) / 1000;
+            
+            // CINEMATIC DRIFT: Add a base idle rotation so it feels alive even without mouse
+            const idleX = Math.sin(elapsed * 0.5) * 2;
+            const idleY = Math.cos(elapsed * 0.5) * 2;
+            
             // CALMER FLOAT: Slower frequency, smaller amplitude
             const floatY = Math.sin(elapsed * 1.0) * 8; 
+            
             // SMOOTHER EASING: 0.1 -> 0.05
-            currentX = lerp(currentX, targetX, 0.05);
-            currentY = lerp(currentY, targetY, 0.05);
+            currentX = lerp(currentX, targetX + idleX, 0.05);
+            currentY = lerp(currentY, targetY + idleY, 0.05);
             bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.05);
             bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.05);
             currentEyeX = lerp(currentEyeX, targetEyeX, 0.05);
             currentEyeY = lerp(currentEyeY, targetEyeY, 0.05);
 
+            // Apply to CSS variables
             card.style.setProperty('--rotateX', `${currentX}deg`);
             card.style.setProperty('--rotateY', `${currentY}deg`);
             card.style.setProperty('--bgX', `${bgCurrentX}%`);
@@ -1077,27 +1082,10 @@ function initSite() {
             card.style.setProperty('--floatY', `${floatY}px`);
             card.style.setProperty('--eyeX', `${currentEyeX}px`);
             card.style.setProperty('--eyeY', `${currentEyeY}px`);
+            
             animationFrameId = requestAnimationFrame(update);
         }
-
-        const cardObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                isCardVisible = entry.isIntersecting;
-                if (isCardVisible) {
-                    if (!animationFrameId) {
-                        startTime = Date.now(); // Reset sync
-                        update();
-                    }
-                } else {
-                    if (animationFrameId) {
-                        cancelAnimationFrame(animationFrameId);
-                        animationFrameId = null;
-                    }
-                }
-            });
-        }, { threshold: 0.1 });
-
-        cardObserver.observe(card);
+        update();
     }
 
     const handleMenuToggle = (e) => {
