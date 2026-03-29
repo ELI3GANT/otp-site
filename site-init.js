@@ -1001,28 +1001,27 @@ function initSite() {
         let bgCurrentX = 50, bgCurrentY = 50;
         
         const isMobileDevice = window.matchMedia("(hover: none)").matches;
-        const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
+        const lerp = (start, end, amt) => start * (1 - amt) + end * amt;
 
-        const updateTarget = (e) => {
+        card.addEventListener('mousemove', (e) => {
             const rect = card.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
-            // RESTORED HIGH SENSITIVITY (20x)
-            targetX = ((y - centerY) / centerY) * -20; 
-            targetY = ((x - centerX) / centerX) * 20;
+            // RESTORED PREMIUM TILT (12)
+            targetX = ((y - centerY) / centerY) * -12; 
+            targetY = ((x - centerX) / centerX) * 12;
             bgTargetX = (x / rect.width) * 100;
             bgTargetY = (y / rect.height) * 100;
 
             const ex = x - centerX;
             const ey = y - centerY;
-            targetEyeX = (ex / rect.width) * 40; 
-            targetEyeY = (ey / rect.height) * 30;
-        };
+            targetEyeX = (ex / rect.width) * 20; 
+            targetEyeY = (ey / rect.height) * 15;
+        });
 
-        card.addEventListener('mousemove', updateTarget);
         card.addEventListener('mouseleave', () => {
             targetX = 0; targetY = 0;
             bgTargetX = 50; bgTargetY = 50;
@@ -1032,11 +1031,11 @@ function initSite() {
         const handleOrientation = (e) => {
             const gamma = e.gamma || 0; 
             const beta = e.beta || 0;
-            // RESTORED SENSITIVITY
-            targetX = Math.min(Math.max(beta / 3.5, -15), 15) * -1; 
-            targetY = Math.min(Math.max(gamma / 3.5, -15), 15);     
-            bgTargetX = 50 + (gamma / 90 * 40); 
-            bgTargetY = 50 + (beta / 90 * 40);
+            // RESTORED PREMIUM SENSITIVITY
+            targetX = Math.min(Math.max(beta / 3, -12), 12) * -1; 
+            targetY = Math.min(Math.max(gamma / 3, -12), 12);     
+            bgTargetX = 50 + (gamma / 90 * 30); 
+            bgTargetY = 50 + (beta / 90 * 30);
         };
 
         const enableGyro = async () => {
@@ -1061,16 +1060,16 @@ function initSite() {
         function update() {
             const elapsed = (Date.now() - startTime) / 1000;
             
-            // CALMER FLOAT: Slower frequency, smaller amplitude
-            const floatY = Math.sin(elapsed * 1.5) * 10; 
+            // RESTORED FLOAT AMPLITUDE
+            const floatY = Math.sin(elapsed * 1.0) * 8; 
             
-            // FASTER RESPONSE: 0.05 -> 0.1
-            currentX = lerp(currentX, targetX, 0.1);
-            currentY = lerp(currentY, targetY, 0.1);
-            bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.1);
-            bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.1);
-            currentEyeX = lerp(currentEyeX, targetEyeX, 0.1);
-            currentEyeY = lerp(currentEyeY, targetEyeY, 0.1);
+            // RESTORED PREMIUM SMOOTHNESS: 0.1 -> 0.05
+            currentX = lerp(currentX, targetX, 0.05);
+            currentY = lerp(currentY, targetY, 0.05);
+            bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.05);
+            bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.05);
+            currentEyeX = lerp(currentEyeX, targetEyeX, 0.05);
+            currentEyeY = lerp(currentEyeY, targetEyeY, 0.05);
 
             // Apply to CSS variables
             card.style.setProperty('--rotateX', `${currentX}deg`);
