@@ -6551,7 +6551,7 @@ input:focus, select:focus, textarea:focus {
 /* Pupil tracking is handled via JS CSS vars */
 .eye-pupil-group {
   transform: translate(var(--eyeX, 0px), var(--eyeY, 0px));
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* No transition = instant response */
 }
 
 /* Mobile styles moved to bottom */
