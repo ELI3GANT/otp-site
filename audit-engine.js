@@ -92,6 +92,9 @@ window.AuditEngine = {
     },
 
     submit: async function() {
+        if (this.isSubmitting) return;
+        this.isSubmitting = true;
+
         const emailInput = document.getElementById('audit-email');
         const email = emailInput.value.trim();
         const errorEl = document.getElementById('audit-error-msg');
@@ -103,23 +106,12 @@ window.AuditEngine = {
                  errorEl.classList.add('active');
              }
              emailInput.focus();
+             this.isSubmitting = false;
              return;
         }
 
-        this.isSubmitting = true;
         const statusOverlay = document.querySelector('.decryption-status');
         const progressBar = document.getElementById('audit-progress-bar');
-
-        // Strict Email Validation Regex
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!email || !emailRegex.test(email)) {
-            this.showError('PROTOCOL ERROR: Invalid Email Signal');
-            return;
-        }
-
-        if (this.isSubmitting) return;
-        this.isSubmitting = true;
 
         const btn = document.getElementById('audit-submit-btn');
         const card = document.getElementById('audit-container');

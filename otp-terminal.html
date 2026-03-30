@@ -402,6 +402,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px;">
                     <button type="button" onclick="openCategoryManager()" class="btn-secondary" style="font-size: 0.65rem; padding: 10px;">MANAGE CATEGORIES</button>
                     <button type="button" onclick="openArchetypeManager()" class="btn-secondary" style="font-size: 0.65rem; padding: 10px;">MANAGE ARCHETYPES</button>
+                    <button type="button" onclick="openVersionManager()" class="btn-secondary" style="font-size: 0.65rem; padding: 10px; grid-column: span 2; background: rgba(0, 255, 170, 0.05); color: var(--admin-success); border-color: rgba(0, 255, 170, 0.3);">VERSION CONTROL / ROLLBACK</button>
                 </div>
             </section>
   
@@ -753,6 +754,22 @@
             </div>
             <div style="padding: 15px; border-top: 1px solid var(--admin-border); text-align: right; background: rgba(255,255,255,0.02);">
                 <button onclick="copySqlToClipboard()" style="background: var(--admin-accent); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">COPY SQL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VERSION MANAGER MODAL -->
+    <div id="versionModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3>// VERSION ADMIN / ROLLBACK SYSTEM</h3>
+                <button onclick="document.getElementById('versionModal').style.display='none'" class="close-icon">✕</button>
+            </div>
+            <div style="padding: 20px;">
+                <p style="font-size: 0.8rem; color: var(--admin-muted); margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 15px;">Review past system states and trigger an emergency rollback if stability is compromised. Note: Restarting the neural server takes ~3 seconds.</p>
+                <div id="versionList" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="text-align: center; color: var(--admin-muted); padding: 20px; font-size: 0.8rem;">ESTABLISHING VERSION UPLINK...</div>
+                </div>
             </div>
         </div>
     </div>

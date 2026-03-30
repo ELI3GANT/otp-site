@@ -1345,6 +1345,37 @@ app.route('/api/create-checkout-session')
 })
 .all((req, res) => res.status(405).json({ error: "Method Not Allowed. Use POST." }));
 
+// --- VERSION CONTROL LOGIC ---
+app.get('/api/admin/versions', verifyToken, (req, res) => {
+    const { exec } = require('child_process');
+    exec('git log -n 15 --pretty=format:"%H|%s|%ad"', { cwd: __dirname }, (error, stdout) => {
+        if (error) return res.status(500).json({ success: false, message: error.message });
+        const versions = stdout.split('\\n').filter(Boolean).map(line => {
+            const [hash, message, date] = line.split('|');
+            return { hash, message, date };
+        });
+        res.json({ success: true, versions });
+    });
+});
+
+app.post('/api/admin/rollback', verifyToken, (req, res) => {
+    const { version } = req.body;
+    if (!version) return res.status(400).json({ success: false, message: "Version hash required" });
+    
+    console.log(`[SYSTEM] Authorized Rollback Initiated for commit: ${version}`);
+    const { exec } = require('child_process');
+    // Stash any uncommitted changes, then checkout the specific version
+    exec(`git stash && git checkout ${version}`, { cwd: __dirname }, (error, stdout, stderr) => {
+        if (error) {
+            console.error("[SYSTEM] Rollback Error:", error.message);
+            return res.status(500).json({ success: false, message: error.message });
+        }
+        res.json({ success: true, message: `System rolled back to ${version.substring(0, 7)}.` });
+        
+        // gracefully restart server assuming a process manager like pm2/nodemon or Vercel
+        setTimeout(() => process.exit(0), 2000);
+    });
+});
 
 // --- FALLBACK ROUTE ---
 // Serve 404 for any unknown API routes specifically

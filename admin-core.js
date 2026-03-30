@@ -41,7 +41,7 @@
      * Prevents XSS in innerHTML injections
      */
     window.escapeHtml = function(text) {
-        if (!text) return '';
+        if (typeof text !== 'string') return text || '';
         return text
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
@@ -2242,17 +2242,7 @@
         closeMediaLibrary();
     }
 
-    // 7. SECURE AI NEURAL GENERATOR
-    // 3. UTILITIES
-    window.escapeHtml = function(unsafe) {
-        if (typeof unsafe !== 'string') return unsafe;
-        return unsafe
-             .replace(/&/g, "&amp;")
-             .replace(/</g, "&lt;")
-             .replace(/>/g, "&gt;")
-             .replace(/"/g, "&quot;")
-             .replace(/'/g, "&#039;");
-    };
+
 
     // SOCIAL PREVIEW UPDATER (Multi-Platform)
     window.switchPreviewTab = function(platform) {
@@ -3667,6 +3657,104 @@ Lang: ${u.lang || 'Unknown'}</div>
 
     // DELAYED TRAFFIC BOOT
     setTimeout(initTrafficUplink, 2000);
+
+    // --- VERSION SYSTEM LOGIC ---
+    window.openVersionManager = function() {
+        const modal = document.getElementById('versionModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            window.fetchVersions();
+        }
+    };
+
+    window.fetchVersions = async function() {
+        const list = document.getElementById('versionList');
+        if (!list) return;
+
+        list.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px; font-size: 0.8rem;">ESTABLISHING VERSION UPLINK...</div>';
+
+        try {
+            const API_BASE = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || '');
+            const fetchUrl = `${API_BASE}/api/admin/versions`;
+            const token = localStorage.getItem('otp_admin_token') || 'local-fallback';
+
+            const res = await fetch(fetchUrl, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error("API Offline or Token Expired");
+
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || "Failed to parse versions");
+
+            list.innerHTML = '';
+            if (data.versions && data.versions.length > 0) {
+                data.versions.forEach((v, index) => {
+                    const dateRaw = new Date(v.date);
+                    const isCurrent = index === 0;
+
+                    const item = document.createElement('div');
+                    item.style.cssText = `padding: 15px; border: 1px solid ${isCurrent ? 'var(--admin-success)' : 'var(--admin-border)'}; border-radius: 8px; background: rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center;`;
+
+                    const hashShort = v.hash.substring(0, 7);
+
+                    item.innerHTML = `
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <span style="font-size: 0.8rem; color: ${isCurrent ? '#00ffaa' : '#fff'}; font-weight: bold;">
+                                ${isCurrent ? '🟢 CURRENT_STATE: ' : ''}${v.message}
+                            </span>
+                            <div style="font-family: monospace; font-size: 0.65rem; color: var(--admin-muted);">
+                                <span>COMMIT: ${hashShort}</span> |
+                                <span>${dateRaw.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="triggerRollback('${v.hash}')" class="btn-secondary" style="font-size: 0.65rem; padding: 6px 15px; ${isCurrent ? 'display:none;' : ''} border-color: var(--admin-danger); color: var(--admin-danger);">ROLLBACK</button>
+                    `;
+                    list.appendChild(item);
+                });
+            } else {
+                list.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO VERSIONS FOUND IN GIT MATRIX.</div>';
+            }
+
+        } catch (e) {
+            list.innerHTML = `<div style="text-align: center; color: var(--admin-danger); padding: 20px; font-size: 0.8rem; font-weight: bold;">SYSTEM ERROR: ${e.message}</div>`;
+        }
+    };
+
+    window.triggerRollback = function(hash) {
+        if (!hash) return;
+        confirmAction("EMERGENCY ROLLBACK INITIATED", "WARNING: This will rewrite the active system state to commit " + hash.substring(0,7) + ". Unsaved progress will be destroyed. Are you absolutely certain?", async () => {
+            showToast("ROLLBACK TRANSMISSION SENT. AWAITING FEEDBACK.");
+
+            try {
+                const API_BASE = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || '');
+                const fetchUrl = `${API_BASE}/api/admin/rollback`;
+                const token = localStorage.getItem('otp_admin_token') || 'local-fallback';
+
+                const res = await fetch(fetchUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ version: hash })
+                });
+
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || "Rollback execution failed at proxy.");
+
+                showToast("ROLLBACK SUCCESS! REBOOTING IN 3 SECONDS...");
+                window.logAdminAction(`SYSTEM PURGED AND ROLLED BACK TO ${hash.substring(0,7)}`, "danger");
+
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 3000);
+
+            } catch (e) {
+                showToast("ROLLBACK FAILURE: " + (e.message || "Network Timeout"), "error");
+            }
+        });
+    };
 
     // GLOBAL LOGOUT
     window.logout = function() {

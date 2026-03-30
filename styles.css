@@ -6416,8 +6416,8 @@ input:focus, select:focus, textarea:focus {
   /* 3D Physics */
   transform-style: preserve-3d;
   transform: perspective(1200px) rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg)) translateY(var(--floatY, 0px));
-  /* Essential transition to smooth out JS-driven 3D transforms */
-  transition: all 0.1s linear;
+  /* Essential transition to smooth out JS-driven 3D transforms - snappier for 8D impact */
+  transition: transform 0.05s ease-out, box-shadow 0.3s ease, background 0.3s ease;
   will-change: transform;
   
   touch-action: pan-y; 

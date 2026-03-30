@@ -1010,16 +1010,16 @@ function initSite() {
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
-            // STABILIZED TILT: 15 for responsive but non-jittery impact
-            targetX = ((y - centerY) / centerY) * -15; 
-            targetY = ((x - centerX) / centerX) * 15;
+            // RESTORED ULTRA-TILT: 30 for the "8D" high-status impact
+            targetX = ((y - centerY) / centerY) * -30; 
+            targetY = ((x - centerX) / centerX) * 30;
             bgTargetX = (x / rect.width) * 100;
             bgTargetY = (y / rect.height) * 100;
 
             const ex = x - centerX;
             const ey = y - centerY;
-            targetEyeX = (ex / rect.width) * 25; 
-            targetEyeY = (ey / rect.height) * 20;
+            targetEyeX = (ex / rect.width) * 45; 
+            targetEyeY = (ey / rect.height) * 40;
         });
 
         card.addEventListener('mouseleave', () => {
@@ -1055,9 +1055,28 @@ function initSite() {
 
         let startTime = Date.now();
         let animationFrameId = null;
-        let isCardVisible = true; // Always live
+        let isCardVisible = false;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                isCardVisible = entry.isIntersecting;
+                if (isCardVisible && !animationFrameId) {
+                    update();
+                } else if (!isCardVisible && animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            });
+        }, { threshold: 0.1 });
+
+        observer.observe(card);
 
         function update() {
+            if (!isCardVisible) {
+                animationFrameId = null;
+                return;
+            }
+            
             const elapsed = (Date.now() - startTime) / 1000;
             
             // RESTORED FLOAT AMPLITUDE
@@ -1082,7 +1101,6 @@ function initSite() {
             
             animationFrameId = requestAnimationFrame(update);
         }
-        update();
     }
 
     const handleMenuToggle = (e) => {
@@ -1705,7 +1723,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         observer.observe(cursorCanvas);
     }
-})();
+
 
 // --- SITE COMMAND PRO (Real-Time Terminal Sync) ---
 (function() {
