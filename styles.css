@@ -4894,9 +4894,7 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--accent2);
   color: var(--accent2-text) !important;
 }
-  color: #fff;
-  box-shadow: 0 8px 25px rgba(var(--accent2-rgb), 0.3);
-}
+
 
 .archive-grid {
   display: grid;
