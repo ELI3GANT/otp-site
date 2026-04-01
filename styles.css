@@ -2597,9 +2597,11 @@ html {
   pointer-events: none;
   transform: translateY(-12px) scale(0.97);
   transform-origin: top right;
+  clip-path: inset(0 0 100% 0); /* Prevent any rendering when closed */
   transition: 
     opacity 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    clip-path 0s linear 0.25s,
     visibility 0s linear 0.25s;
   will-change: transform, opacity;
 }
@@ -2610,9 +2612,11 @@ html {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0) scale(1);
+  clip-path: none; /* Allow full rendering when open */
   transition: 
     opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+    clip-path 0s linear 0s,
     visibility 0s linear 0s;
 }
 
