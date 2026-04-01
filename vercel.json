@@ -1,13 +1,11 @@
 {
   "version": 2,
+  "functions": {
+    "server.js": { "runtime": "@vercel/node" }
+  },
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/server.js"
-    },
-    {
-      "source": "/ping",
-      "destination": "/server.js"
-    }
+    { "source": "/api/(.*)", "destination": "/server.js" },
+    { "source": "/api", "destination": "/server.js" },
+    { "source": "/ping", "destination": "/server.js" }
   ]
 }
