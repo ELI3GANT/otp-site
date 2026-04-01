@@ -152,6 +152,35 @@ app.use((req, res, next) => {
 // 2. Compression: Gzip/Brotli for text assets
 app.use(compression());
 
+// --- [CORE] STRIPE WEBHOOK GATEWAY ---
+// CRITICAL: This MUST be defined before bodyParser.json() to capture raw buffer
+app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    let event;
+    try {
+        if (!process.env.STRIPE_WEBHOOK_SECRET) throw new Error("Webhook secret missing (STRIPE_WEBHOOK_SECRET)");
+        if (!stripe) return res.status(500).send("Stripe not initialized");
+
+        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    } catch (err) {
+        console.warn(`⚠️ Webhook Signature Error: ${err.message}`);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    if (event.type === 'checkout.session.completed') {
+        const session = event.data.object;
+        const email = session.customer_details ? session.customer_details.email : session.customer_email;
+        console.log(`✅ Payment Success Signal: ${session.id} for ${email}`);
+        if (supabaseAdmin && email) {
+            try {
+                await supabaseAdmin.from('contacts').update({ ai_status: 'paid' }).eq('email', email);
+                await supabaseAdmin.from('leads').update({ status: 'paid' }).eq('email', email);
+            } catch (dbErr) { console.warn("⚠️ CRM Update failed:", dbErr.message); }
+        }
+    }
+    res.json({ received: true });
+});
+
 // --- STATIC ASSETS (CRITICAL FIX) ---
 const staticPath = __dirname;
 console.log("Static Path Configured:", staticPath);
@@ -180,15 +209,40 @@ app.get('/:file', (req, res, next) => {
     next();
 });
 
+app.get('/api/webhook', (req, res) => res.send("OTP WEBHOOK GATEWAY ONLINE. USE POST FOR STRIPE."));
 
 app.get('/api/status', async (req, res) => {
     try {
-        if (!supabaseAdmin) return res.json({ status: 'ERR', database: 'DISCONNECTED', message: 'No Service Key' });
+        if (!supabaseAdmin) {
+            return res.json({
+                status: 'ERR',
+                database: 'DISCONNECTED',
+                message: 'No Service Key',
+                version: 'v10.5.1',
+                env: process.env.NODE_ENV,
+                stripe: !!stripe
+            });
+        }
         const { error } = await supabaseAdmin.from('posts').select('id', { head: true, count: 'exact' }).limit(1);
         if (error) throw error;
-        res.json({ status: 'UP', database: 'CONNECTED', timestamp: new Date().toISOString() });
+        res.json({
+            status: 'UP',
+            database: 'CONNECTED',
+            timestamp: new Date().toISOString(),
+            version: 'v10.5.1',
+            env: process.env.NODE_ENV,
+            stripe: !!stripe
+        });
     } catch (e) {
-        res.status(500).json({ status: 'ERR', database: 'DISCONNECTED', message: e.message });
+        // Keep this endpoint stable for clients (avoid HTTP 500 on DB/network issues)
+        res.status(200).json({
+            status: 'ERR',
+            database: 'DISCONNECTED',
+            message: e.message,
+            version: 'v10.5.1',
+            env: process.env.NODE_ENV,
+            stripe: !!stripe
+        });
     }
 });
 
@@ -233,17 +287,9 @@ app.use((req, res, next) => {
     next();
 });
 
-// 4. Rate Limiting: Prevent abuse
-app.set('trust proxy', 1); // Trust Vercel Proxy
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // Increased from 50 to 500 to support high-traffic drops
-    message: { success: false, message: "Too many requests, please try again later." }
-});
-app.use('/api/', limiter); 
 
-// 5. Body Parsing
-app.use(bodyParser.json());
+// 5. Body Parsing - MOVED BELOW WEBHOOK FOR RAW BUFFER SUPPORT
+// app.use(bodyParser.json()); 
 
 // --- VERBOSE REQUEST LOGGING ---
 // --- VERBOSE REQUEST LOGGING ---
@@ -289,10 +335,6 @@ app.get('/api/health', async (req, res) => {
     } catch(e) { health.integrations.supabase = 'ERROR'; }
 
     res.json(health);
-});
-
-app.get('/api/status', (req, res) => {
-    res.json({ version: 'v10.5.1', env: process.env.NODE_ENV, stripe: !!stripe });
 });
 
 app.all('/api/diag', (req, res) => {
@@ -1293,7 +1335,7 @@ app.route('/api/create-checkout-session')
 
     try {
         const sessionConfig = {
-            payment_method_types: ['card'],
+            automatic_payment_methods: { enabled: true }, 
             line_items: [{
                 price_data: {
                     currency: 'usd',
@@ -1350,7 +1392,7 @@ app.get('/api/admin/versions', verifyToken, (req, res) => {
     const { exec } = require('child_process');
     exec('git log -n 15 --pretty=format:"%H|%s|%ad"', { cwd: __dirname }, (error, stdout) => {
         if (error) return res.status(500).json({ success: false, message: error.message });
-        const versions = stdout.split('\\n').filter(Boolean).map(line => {
+        const versions = stdout.split('\n').filter(Boolean).map(line => {
             const [hash, message, date] = line.split('|');
             return { hash, message, date };
         });
@@ -1377,16 +1419,6 @@ app.post('/api/admin/rollback', verifyToken, (req, res) => {
     });
 });
 
-// --- FALLBACK ROUTE ---
-// Serve 404 for any unknown API routes specifically
-app.use('/api', (req, res) => {
-    res.status(404).json({ success: false, message: "API Endpoint Not Found" });
-});
-
-// Serve 404.html for any unknown frontend routes
-app.use((req, res) => {
-    res.status(404).sendFile(path.join(staticPath, '404.html'));
-});
 
 // --- GLOBAL ERROR HANDLER ---
 // --- GLOBAL ERROR HANDLER ---
@@ -1415,28 +1447,28 @@ if (require.main === module) {
 }
 
 
-// --- STRIPE WEBHOOK GATEWAY (PROTOTYPE) ---
-// Note: Requires STRIPE_WEBHOOK_SECRET to be configured in Vercel for production use.
-app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-    const sig = req.headers['stripe-signature'];
-    let event;
 
-    try {
-        if (!process.env.STRIPE_WEBHOOK_SECRET) throw new Error("Webhook secret missing");
-        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-        event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    } catch (err) {
-        console.warn(`⚠️ Webhook Signature Error: ${err.message}`);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
+// Now apply global JSON parsing for all other routes
+app.use(bodyParser.json());
 
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        console.log(`✅ Payment Success Signal: ${session.id}`);
-        // Handle database update here (e.g., mark lead as PAID)
-    }
+// 4. Rate Limiting: Prevent abuse
+app.set('trust proxy', 1); // Trust Vercel Proxy
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 500, // Increased from 50 to 500 to support high-traffic drops
+    message: { success: false, message: "Too many requests, please try again later." }
+});
+app.use('/api/', limiter); 
 
-    res.json({ received: true });
+// --- FALLBACK ROUTE ---
+// Serve 404 for any unknown API routes specifically
+app.use('/api', (req, res) => {
+    res.status(404).json({ success: false, message: "API Endpoint Not Found" });
+});
+
+// Serve 404.html for any unknown frontend routes
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(staticPath, '404.html'));
 });
 
 // Export for Vercel Serverless Function

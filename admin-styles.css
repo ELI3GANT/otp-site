@@ -6,7 +6,7 @@
     --admin-panel: #0a0a10;
     --admin-border: rgba(255,255,255,0.08);
     --admin-accent: #7000ff;
-    --admin-cyan: var(--accent2, var(--accent2));
+    --admin-cyan: var(--accent2, #00ecff);
     --admin-success: #00ffaa;
     --admin-danger: #ff4444;
     --admin-text: #ffffff;

@@ -20,6 +20,16 @@ gsap.ticker.fps(60); gsap.config({ force3D: true });
             loader.style.pointerEvents = 'none';
         }
     });
+    
+    // FAILSAFE: Hide loader after 3s regardless of window.load performance
+    setTimeout(() => {
+        const loader = document.getElementById('page-loader');
+        if (loader && loader.style.visibility !== 'hidden') {
+            loader.style.opacity = '0';
+            loader.style.visibility = 'hidden';
+            console.warn("[OTP] Loading timeout reached. Bypassing preloader.");
+        }
+    }, 3000);
 
     // 1.5 Lenis Smooth Scroll REMOVED for native feel.
 
@@ -1031,11 +1041,11 @@ function initSite() {
         const handleOrientation = (e) => {
             const gamma = e.gamma || 0; 
             const beta = e.beta || 0;
-            // RESTORED PREMIUM SENSITIVITY
-            targetX = Math.min(Math.max(beta / 3, -12), 12) * -1; 
-            targetY = Math.min(Math.max(gamma / 3, -12), 12);     
-            bgTargetX = 50 + (gamma / 90 * 30); 
-            bgTargetY = 50 + (beta / 90 * 30);
+            // RESTORED PREMIUM SENSITIVITY (8D FOR MOBILE)
+            targetX = Math.min(Math.max(beta / 1.5, -30), 30) * -1; 
+            targetY = Math.min(Math.max(gamma / 1.5, -30), 30);     
+            bgTargetX = 50 + (gamma / 90 * 45); 
+            bgTargetY = 50 + (beta / 90 * 45);
         };
 
         const enableGyro = async () => {

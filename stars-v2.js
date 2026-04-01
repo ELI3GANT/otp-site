@@ -309,6 +309,12 @@ for (let i = 0; i < STAR_COUNT; i++) {
 }
 
 function animate() {
+    // Performance Optimization: Check if tab is active
+    if (document.visibilityState !== 'visible') {
+        requestAnimationFrame(animate);
+        return;
+    }
+    
     ctx.clearRect(0, 0, width, height);
 
     if (attractor.active) {

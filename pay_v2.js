@@ -49,7 +49,8 @@ const VALID_PAY_PACKAGES = [
 
 async function initPaymentSystem() {
     console.log('💰 Init Payment System...');
-    const STRIPE_PK = 'pk_live_51SqqA9Pux5EhFZOuR0oo7VsFZrKoebiaWLXHNTZPx2kpa3w9kmqgUCtmEN4sY9LPW80UyfjBIfZkIfnPQW0Ba5MC007yWafN6y'; 
+    // OTP // STRIPE REVELATION (Replace pk_live_... with your new key after rotation)
+    const STRIPE_PK = 'pk_live_51SqqA9Pux5EhFZOuyV2f7Po5dc4kUveKWBCMLX4Rg5MKBhk6V5Kq7OILkAVLUMR1MkXl0sBKDg3AqyTZMVREykrW00A6K9CYXU'; 
 
     if (typeof Stripe === 'undefined') {
         setTimeout(initPaymentSystem, 500); // Retry if Stripe JS slow

@@ -346,13 +346,9 @@
                     
                     // Dashboard Theme Sync (Apply theme to self)
                     if (type === 'theme') {
-                        const html = document.documentElement;
-                        const isLight = value === 'light';
-                        if (isLight) html.setAttribute('data-theme', 'light');
-                        else html.removeAttribute('data-theme');
-                        
+                        syncDashboardElement('theme', value);
                         const btns = document.querySelectorAll('.theme-btn');
-                        btns.forEach(btn => btn.textContent = isLight ? '☀️' : '🌗');
+                        btns.forEach(btn => btn.textContent = (value === 'light') ? '☀️' : '🌗');
                     }
                     
                     showToast(`CONTROL SYNCED: ${type.toUpperCase()}`);
@@ -425,6 +421,22 @@
             el.textContent = isDay ? 'DAY-MODE' : 'NIGHT-MODE';
             el.style.color = isDay ? '#ffaa00' : 'var(--accent2)';
             if (tile) tile.classList.toggle('cmd-tile-active', isDay);
+            
+            // Sync Vars for the Admin UI itself
+            const html = document.documentElement;
+            const hues = window.OTP_HUES || [{ dark: '0, 236, 255', light: '0, 170, 204' }];
+            const i = window.OTP_HUE_INDEX !== undefined ? window.OTP_HUE_INDEX : 0;
+            const selected = hues[i];
+            
+            if (isDay) {
+                html.setAttribute('data-theme', 'light');
+                html.style.setProperty('--accent2-rgb', selected.light);
+                html.style.setProperty('--accent2', `rgb(${selected.light})`);
+            } else {
+                html.removeAttribute('data-theme');
+                html.style.setProperty('--accent2-rgb', selected.dark);
+                html.style.setProperty('--accent2', `rgb(${selected.dark})`);
+            }
         } else if (type === 'status') {
             el.textContent = value.toUpperCase();
             el.style.color = 'var(--admin-success)';
@@ -1747,13 +1759,10 @@
         // Gradient Build
         const cvs = ctx.getContext('2d');
         const gradient = cvs.createLinearGradient(0, 0, 0, 400);
-        if(isLight) {
-            gradient.addColorStop(0, 'rgba(88, 86, 214, 0.9)');
-            gradient.addColorStop(1, 'rgba(88, 86, 214, 0.2)');
-        } else {
-            gradient.addColorStop(0, 'rgba(112, 0, 255, 0.9)');
-            gradient.addColorStop(1, 'rgba(112, 0, 255, 0.2)');
-        }
+        const accentRGB = getComputedStyle(document.documentElement).getPropertyValue('--accent2-rgb').trim() || (isLight ? '0, 100, 140' : '0, 236, 255');
+        
+        gradient.addColorStop(0, `rgba(${accentRGB}, 0.9)`);
+        gradient.addColorStop(1, `rgba(${accentRGB}, 0.2)`);
 
         activityChartInstance = new Chart(ctx, {
             type: 'bar',
@@ -1766,7 +1775,7 @@
                     borderRadius: 6,
                     barThickness: 'flex',
                     maxBarThickness: 40,
-                    hoverBackgroundColor: isLight ? '#5856d6' : '#9d4dff'
+                    hoverBackgroundColor: `rgb(${accentRGB})`
                 }]
             },
             options: {
@@ -1862,8 +1871,13 @@
         if(event) event.stopPropagation(); // Don't trigger edit
         const modal = document.getElementById('deleteModal');
         if(modal) {
+            // Update modal text for Post context
+            const titleEl = modal.querySelector('h3');
+            const descEl = modal.querySelector('p');
+            if(titleEl) titleEl.textContent = "TERMINATE TRANSMISSION?";
+            if(descEl) descEl.innerHTML = "This will permanently remove the broadcast from the live grid.<br>This cannot be undone.";
+
             modal.style.display = 'flex';
-            // Enforce proper centering for posts as well
             modal.style.position = 'fixed';
             modal.style.inset = '0';
             modal.style.zIndex = '10000';

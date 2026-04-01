@@ -257,12 +257,14 @@
   <script>
     (function() {
         window.OTP_HUES = [
-            { dark: '0, 236, 255', light: '0, 170, 204' }, // Cyan
-            { dark: '170, 0, 255', light: '120, 0, 200' }, // Purple
-            { dark: '255, 0, 170', light: '200, 0, 120' }, // Pink
-            { dark: '0, 255, 170', light: '0, 180, 120' }, // Green
-            { dark: '255, 215, 0', light: '184, 134, 11' }, // Gold
-            { dark: '255, 60, 0',  light: '200, 40, 0' }    // Neon Orange
+            { dark: '0, 236, 255', light: '0, 100, 140' }, // Cyan
+            { dark: '170, 0, 255', light: '90, 0, 150' },  // Purple
+            { dark: '255, 0, 170', light: '160, 0, 90' },  // Pink
+            { dark: '255, 215, 0', light: '130, 90, 0' },  // Gold
+            { dark: '255, 60, 0',  light: '160, 30, 0' },  // Neon Orange
+            { dark: '50, 255, 126', light: '0, 100, 60' },  // Elite Emerald
+            { dark: '30, 144, 255', light: '20, 70, 160' }, // Royal Blue
+            { dark: '255, 50, 50',  light: '140, 10, 10' }  // Deep Crimson
         ];
         
         // Always randomize hue on every load for a fresh feel
@@ -410,7 +412,7 @@
         <p class="muted" style="max-width: 500px; margin: 0 auto 40px; font-size: 1.1rem;">Get strategic deconstructions and visual systems delivered directly to your terminal.</p>
         <form action="https://formspree.io/f/mwvprvll" method="POST" class="subscribe-form" style="display: flex; gap: 10px; max-width: 500px; margin: 0 auto;">
           <input type="email" name="email" placeholder="neural@uplink.io" required style="flex-grow: 1; padding: 18px 24px; border-radius: 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: 'Space Grotesk', sans-serif;">
-          <button type="submit" class="k-hover" style="background: var(--accent2); color: #000; border: none; padding: 0 30px; border-radius: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;">Join</button>
+          <button type="submit" class="k-hover" style="background: var(--accent2); color: var(--accent2-text); border: none; padding: 0 30px; border-radius: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;">Join</button>
         </form>
       </section>
 

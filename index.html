@@ -67,11 +67,14 @@
   <script>
     (function() {
         window.OTP_HUES = [
-            { dark: '0, 236, 255', light: '0, 170, 204' }, // Cyan
-            { dark: '170, 0, 255', light: '120, 0, 200' }, // Purple
-            { dark: '255, 0, 170', light: '200, 0, 120' }, // Pink
-            { dark: '255, 215, 0', light: '184, 134, 11' }, // Gold
-            { dark: '255, 60, 0',  light: '200, 40, 0' }    // Neon Orange
+            { dark: '0, 236, 255', light: '0, 100, 140' }, // Cyan
+            { dark: '170, 0, 255', light: '90, 0, 150' },  // Purple
+            { dark: '255, 0, 170', light: '160, 0, 90' },  // Pink
+            { dark: '255, 215, 0', light: '130, 90, 0' },  // Gold
+            { dark: '255, 60, 0',  light: '160, 30, 0' },  // Neon Orange
+            { dark: '50, 255, 126', light: '0, 100, 60' },  // Elite Emerald
+            { dark: '30, 144, 255', light: '20, 70, 160' }, // Royal Blue
+            { dark: '255, 50, 50',  light: '140, 10, 10' }  // Deep Crimson
         ];
         
         // Always randomize hue on every load for a fresh feel
@@ -123,7 +126,7 @@
   <div class="bg-grain"></div>
   
   <!-- PREMIUM PRELOADER -->
-  <div id="page-loader" style="position:fixed;inset:0;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;">
+  <div id="page-loader" style="position:fixed;inset:0;background:var(--bg, #000);z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;">
     <div class="loader-pulse" style="width:40px;height:40px;border-radius:50%;background:var(--accent2);animation:pulse-cyan 1.5s infinite alternate;"></div>
   </div>
 
@@ -1040,7 +1043,6 @@
 
   <!-- SCRIPTS -->
   <script src="site-config.js?v=15.1.1"></script>
-  <script src="pay_v2.js?v=10.5.3"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/lenis@1.0.45/dist/lenis.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -1048,61 +1050,6 @@
   <script src="https://unpkg.com/split-type"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
-
-  
-  <!-- PAY NOW STATIC HANDLER: Runs synchronously so baked-in buttons always work -->
-  <script>
-    window.handleDirectPayStatic = function(title, btn) {
-      const loadStripeScript = (callback) => {
-        if (typeof Stripe !== 'undefined') return callback();
-        const script = document.createElement('script');
-        script.src = 'https://js.stripe.com/v3/';
-        script.onload = callback;
-        document.head.appendChild(script);
-      };
-
-      loadStripeScript(() => {
-        const waitForStripe = (attempts) => {
-          if (typeof Stripe !== 'undefined') {
-            btn.disabled = true;
-            btn.style.opacity = '0.7';
-            const orig = btn.innerHTML;
-            btn.innerHTML = '<span>SECURING...</span>';
-
-            const stripe = Stripe('pk_live_51SqqA9Pux5EhFZOuR0oo7VsFZrKoebiaWLXHNTZPx2kpa3w9kmqgUCtmEN4sY9LPW80UyfjBIfZkIfnPQW0Ba5MC007yWafN6y');
-          const API_BASE = window.OTP.getApiBase();
-
-          fetch(API_BASE + '/api/create-checkout-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ packageName: title })
-          })
-          .then(r => r.json())
-          .then(session => {
-            if (session.error) throw new Error(session.error);
-            btn.innerHTML = '<span>REDIRECTING...</span>';
-            return stripe.redirectToCheckout({ sessionId: session.id });
-          })
-          .then(result => {
-            if (result && result.error) throw new Error(result.error.message);
-          })
-          .catch(err => {
-            console.error('Pay Now Error:', err);
-            alert('Payment Error: ' + err.message);
-            btn.innerHTML = orig;
-            btn.disabled = false;
-            btn.style.opacity = '1';
-          });
-        } else if (attempts > 0) {
-          setTimeout(() => waitForStripe(attempts - 1), 300);
-        } else {
-          alert('Payment system is loading, please try again in a moment.');
-        }
-      };
-      waitForStripe(20); // Retry up to 20 times (6 seconds total)
-    });
-  };
-  </script>
 
   <!-- GSAP & SPLIT TYPE (Keep these active) -->
   <script>

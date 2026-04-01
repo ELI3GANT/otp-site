@@ -52,14 +52,20 @@ html.nav-open, body.nav-open {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #030305;
+  background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: #333;
+  background: var(--stroke);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: var(--accent2);
+}
+
+.nav-drawer a.active {
+  background: rgba(var(--accent2-rgb), 0.1);
+  color: var(--accent2) !important;
+  border-left: 2px solid var(--accent2);
 }
 .nav-gif {
   width: 36px;
@@ -116,7 +122,8 @@ html.nav-open, body.nav-open {
 
   --accent: #111111;      /* Tactical Tactical Black */
   --accent2: #00ecff;
-  --accent2-rgb: 0, 236, 255;     /* High-Visual Cyan */
+  --accent2-rgb: 0, 236, 255;
+  --accent2-text: #000;
   --accent-glow: rgba(var(--accent2-rgb), 0.35);
 
   --card: rgba(20, 20, 40, 0.4);
@@ -138,7 +145,8 @@ html.nav-open, body.nav-open {
 
   --accent: #000000;
   --accent2: #00aacc;
-  --accent2-rgb: 0, 170, 204;
+  --accent2-rgb: 0, 100, 140; 
+  --accent2-text: #fff;
   --accent-glow: rgba(var(--accent2-rgb), 0.1);
 
   --card: #ffffff;
@@ -2650,6 +2658,8 @@ html {
   /* Ultra-tight transition strategy */
   padding: 130px 20px 10px; 
   overflow: hidden; 
+  content-visibility: auto; /* Performance: Skip heavy 3D compute until visible */
+  contain-intrinsic-size: 100vh;
 }
 
 /* Tighten the rhythm */
@@ -2852,7 +2862,7 @@ html {
   padding: 8px 16px;
   border-radius: 8px;
   background: var(--accent2);
-  color: #000;
+  color: var(--accent2-text);
   font-weight: 700;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -4871,8 +4881,28 @@ input:focus, select:focus, textarea:focus {
 }
 
 .filter-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: var(--accent2-text) !important;
+}
+
+[data-theme="light"] .filter-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #333;
+}
+
+[data-theme="light"] .filter-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #000;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .filter-btn.active {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: var(--accent2-text) !important;
+}
   color: #fff;
   box-shadow: 0 8px 25px rgba(var(--accent2-rgb), 0.3);
 }
@@ -5976,7 +6006,7 @@ input:focus, select:focus, textarea:focus {
   flex-direction: column;
   gap: 0;
   text-align: center;
-  align-items: center; /* Center them perfectly */
+  align-items: center; 
 }
 
 .luxe-title .title {
@@ -5984,32 +6014,53 @@ input:focus, select:focus, textarea:focus {
   font-weight: 800;
   text-transform: uppercase;
   display: block;
-  white-space: nowrap; /* FORCE ONE LINE */
+  white-space: nowrap; 
+  color: transparent !important;
+  -webkit-text-stroke: 2px var(--accent2) !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+}
+
+/* Character-level inheritance for SplitType */
+.luxe-title .title * {
+  display: inline-block !important; /* PREVENT VERTICAL STACKING */
+  color: inherit !important;
+  -webkit-text-stroke: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  letter-spacing: inherit !important;
 }
 
 .luxe-title .title:first-child {
-  font-size: clamp(2.2rem, 7vw, 4.5rem); /* Reduced for 10/10 fit */
+  font-size: clamp(2.2rem, 7vw, 4.5rem); 
   line-height: 0.85;
   letter-spacing: -3px;
-  color: #fff;
-  text-shadow: 0 0 40px rgba(255, 255, 255, 0.05);
+  animation: title-neon-cycle 12s infinite linear !important;
 }
 
 .luxe-title .title:last-child {
-  font-size: clamp(1.8rem, 8.5vw, 6.2rem); /* Smaller based on feedback */
+  font-size: clamp(1.8rem, 8.5vw, 6.2rem); 
   line-height: 0.8;
-  letter-spacing: -4px; /* Slightly more letter-spacing for better legibility at smaller size */
+  letter-spacing: -4px;
   margin-top: -5px;
-  color: transparent !important;
-  -webkit-text-stroke: 1px var(--accent2);
-  opacity: 1;
-  filter: drop-shadow(0 0 10px var(--accent-glow));
-  white-space: nowrap;
-  transition: all 0.4s ease;
+  animation: title-neon-cycle 12s infinite linear -6s !important; 
 }
 
-[data-theme="light"] .luxe-title .title:first-child {
-  color: #000;
+
+
+@keyframes title-neon-cycle {
+  0%, 100% { -webkit-text-stroke: 2px rgb(0, 236, 255); filter: drop-shadow(0 0 20px rgba(0, 236, 255, 0.4)); color: transparent !important; }
+  12% { -webkit-text-stroke: 2px rgb(170, 0, 255); filter: drop-shadow(0 0 20px rgba(170, 0, 255, 0.4)); color: transparent !important; }
+  25% { -webkit-text-stroke: 2px rgb(255, 0, 170); filter: drop-shadow(0 0 20px rgba(255, 0, 170, 0.4)); color: transparent !important; }
+  37% { -webkit-text-stroke: 2px rgb(50, 255, 126); filter: drop-shadow(0 0 20px rgba(50, 255, 126, 0.4)); color: transparent !important; }
+  50% { -webkit-text-stroke: 2px rgb(255, 215, 0); filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4)); color: transparent !important; }
+  62% { -webkit-text-stroke: 2px rgb(255, 60, 0); filter: drop-shadow(0 0 20px rgba(255, 60, 0, 0.4)); color: transparent !important; }
+  75% { -webkit-text-stroke: 2px rgb(30, 144, 255); filter: drop-shadow(0 0 20px rgba(30, 144, 255, 0.4)); color: transparent !important; }
+  87% { -webkit-text-stroke: 2px rgb(255, 50, 50); filter: drop-shadow(0 0 20px rgba(255, 50, 50, 0.4)); color: transparent !important; }
+}
+
+[data-theme="light"] .luxe-title .title {
+  -webkit-text-stroke: 1.5px var(--accent2) !important; 
 }
 
 .nav-logo {
@@ -6415,10 +6466,11 @@ input:focus, select:focus, textarea:focus {
   
   /* 3D Physics */
   transform-style: preserve-3d;
+  backface-visibility: hidden; /* Prevent flicker during high-amplitude tilt */
   transform: perspective(1200px) rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg)) translateY(var(--floatY, 0px));
   /* Essential transition to smooth out JS-driven 3D transforms - snappier for 8D impact */
-  transition: transform 0.05s ease-out, box-shadow 0.3s ease, background 0.3s ease;
-  will-change: transform;
+  transition: transform 0.05s ease-out, box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+  will-change: transform, box-shadow;
   
   touch-action: pan-y; 
   overflow: hidden;
@@ -7421,7 +7473,7 @@ input:focus, select:focus, textarea:focus {
 
 .pkg-buy-btn:hover {
   background: var(--accent2);
-  color: #000;
+  color: var(--accent2-text);
   border-color: var(--accent2);
   transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(var(--accent2-rgb), 0.5);
@@ -7706,11 +7758,11 @@ input:focus, select:focus, textarea:focus {
     color: #333 !important; 
 }
 [data-theme="light"] .pkg-select-btn { background: #000 !important; color: #fff !important; transition: background 0.3s ease, color 0.3s ease !important; }
-[data-theme="light"] .pkg-select-btn:hover { background: var(--accent2) !important; color: #000 !important; }
-[data-theme="light"] .featured .pkg-select-btn { background: var(--accent2) !important; color: #000 !important; }
+[data-theme="light"] .pkg-select-btn:hover { background: var(--accent2) !important; color: var(--accent2-text) !important; }
+[data-theme="light"] .featured .pkg-select-btn { background: var(--accent2) !important; color: var(--accent2-text) !important; }
 [data-theme="light"] .featured .pkg-select-btn:hover { background: #000 !important; color: #fff !important; }
 [data-theme="light"] .pkg-buy-btn { background: #f5f5f7 !important; color: #000 !important; border: 1px solid #ddd !important; transition: all 0.3s ease !important; }
-[data-theme="light"] .pkg-buy-btn:hover { background: var(--accent2) !important; border-color: var(--accent2) !important; color: #000 !important; transform: translateY(-2px) !important; box-shadow: 0 5px 20px rgba(var(--accent2-rgb), 0.2) !important; }
+[data-theme="light"] .pkg-buy-btn:hover { background: var(--accent2) !important; border-color: var(--accent2) !important; color: var(--accent2-text) !important; transform: translateY(-2px) !important; box-shadow: 0 5px 20px rgba(var(--accent2-rgb), 0.2) !important; }
 
 /* Custom Builds Section */
 .network-pkg {
@@ -8994,7 +9046,6 @@ section[id] {
   --accent2-rgb: 0, 255, 170;
 }
 
-.spectral-v-sync .title,
 .spectral-v-sync .hero-title-adjust,
 .spectral-v-sync .syne-bold,
 .spectral-v-sync h1,
