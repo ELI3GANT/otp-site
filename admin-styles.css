@@ -1636,3 +1636,130 @@ html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !im
 [data-theme="light"] select, [data-theme="light"] input, [data-theme="light"] textarea, [data-theme="light"] .input-field { background: #fff !important; color: #111 !important; border-color: #ccc !important; }
 [data-theme="light"] .input-group label { color: #333 !important; }
 [data-theme="light"] .section-label { color: var(--admin-cyan) !important; filter: brightness(0.8); }
+
+/* ============================================= */
+/* LIGHT MODE: CMD-TILE CONTRAST FIX (V15.2.1)  */
+/* ============================================= */
+
+/* Force dark text on all cmd-tile status values in light mode */
+[data-theme="light"] .cmd-tile {
+    background: #fff !important;
+    border-color: #d1d1d6 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+[data-theme="light"] .cmd-tile:hover {
+    border-color: var(--admin-accent) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+/* Override ALL green/cyan status text to dark equivalents */
+[data-theme="light"] .cmd-tile [style*="color: var(--admin-success)"],
+[data-theme="light"] .cmd-tile [style*="color: var(--admin-cyan)"],
+[data-theme="light"] .cmd-tile [style*="color: var(--accent2)"],
+[data-theme="light"] .cmd-tile [style*="color: var(--accent)"] {
+    color: #1a1a2e !important;
+    font-weight: 800 !important;
+}
+
+/* Keep danger text readable but muted */
+[data-theme="light"] .cmd-tile [style*="color: var(--admin-danger)"] {
+    color: #cc2222 !important;
+}
+
+/* Muted text in tiles */
+[data-theme="light"] .cmd-tile [style*="color: var(--admin-muted)"] {
+    color: #555 !important;
+}
+
+/* System status bar light mode */
+[data-theme="light"] .system-status-bar {
+    background: #f0f0f5 !important;
+    border-color: #d1d1d6 !important;
+    color: #333 !important;
+}
+
+[data-theme="light"] .system-status-bar span {
+    color: #555 !important;
+}
+
+/* Chart empty state */
+[data-theme="light"] #activityChart {
+    filter: none;
+}
+
+/* Stat card values in light mode */
+[data-theme="light"] .stat-card .stat-num {
+    color: #1a1a2e !important;
+}
+
+[data-theme="light"] .stat-card .stat-change {
+    color: #555 !important;
+}
+
+/* ============================================= */
+/* MOBILE: CMD-TILE GRID REFINEMENT              */
+/* ============================================= */
+@media (max-width: 480px) {
+    /* Force 2-column grid on small mobile to prevent cramped 3-col */
+    .admin-section [style*="grid-template-columns: repeat(auto-fit"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+    
+    .cmd-tile {
+        padding: 12px 8px !important;
+    }
+    
+    .cmd-tile [style*="font-size: 1.2rem"] {
+        font-size: 1rem !important;
+    }
+    
+    .cmd-tile [style*="font-size: 0.65rem"] {
+        font-size: 0.6rem !important;
+    }
+    
+    .cmd-tile [style*="font-size: 0.75rem"] {
+        font-size: 0.65rem !important;
+    }
+}
+
+/* ============================================= */
+/* ADMIN: DIAGNOSTICS PANEL LIGHT MODE           */
+/* ============================================= */
+[data-theme="light"] #diagnosticsPanel {
+    background: #f9f9fb !important;
+    border-color: #d1d1d6 !important;
+}
+
+[data-theme="light"] #diagnosticsPanel h4 {
+    color: #333 !important;
+}
+
+[data-theme="light"] #diagnosticsPanel span {
+    color: #333 !important;
+}
+
+/* AI Section light mode */
+[data-theme="light"] .ai-tips {
+    background: linear-gradient(180deg, rgba(88,86,214,0.05), transparent);
+    border-color: #d1d1d6;
+}
+
+[data-theme="light"] #neuralLinkStatus {
+    background: rgba(0,0,0,0.04) !important;
+    color: #444 !important;
+}
+
+[data-theme="light"] #cloudSettings {
+    background: rgba(0,0,0,0.03) !important;
+    border-color: #d1d1d6 !important;
+}
+
+/* Session Log light mode */
+[data-theme="light"] #sessionLog {
+    background: #f5f5f7 !important;
+    border-color: #d1d1d6 !important;
+    color: #333 !important;
+}
+

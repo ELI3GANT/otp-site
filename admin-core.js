@@ -150,59 +150,89 @@
             // SECURE PROXY HELPERS — defined before try block so they
             // are always available even if Supabase connection fails.
             // ═══════════════════════════════════════════════════════
-                        // SECURE WRITE PROXY HELPER
-                        window.secureWrite = async function(table, payload, id = null) {
-                            const apiBase = window.OTP.getApiBase();
-                            const res = await fetch(`${apiBase}/api/admin/write-data`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${state.token}`
-                    },
-                    body: JSON.stringify({ id, payload, table })
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || `Write Failed (${res.status})`);
+            // SECURE WRITE PROXY HELPER
+            window.secureWrite = async function(table, payload, id = null) {
+                const apiBase = window.OTP.getApiBase();
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+                
+                try {
+                    const res = await fetch(`${apiBase}/api/admin/write-data`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${state.token}`
+                        },
+                        body: JSON.stringify({ id, payload, table }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.message || `Write Failed (${res.status})`);
+                    }
+                    return await res.json();
+                } catch (err) {
+                    clearTimeout(timeoutId);
+                    throw err;
                 }
-                return await res.json();
             };
 
             // SECURE READ PROXY HELPER (Bypass browser-blockages/RLS mismatch)
             window.secureRead = async function(table, config = {}) {
                 const apiBase = window.OTP.getApiBase();
-                const res = await fetch(`${apiBase}/api/admin/fetch-data`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${state.token}`
-                    },
-                    body: JSON.stringify({ table, ...config })
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || `Read Failed (${res.status})`);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+                
+                try {
+                    const res = await fetch(`${apiBase}/api/admin/fetch-data`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${state.token}`
+                        },
+                        body: JSON.stringify({ table, ...config }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.message || `Read Failed (${res.status})`);
+                    }
+                    const json = await res.json();
+                    return json.data;
+                } catch (err) {
+                    clearTimeout(timeoutId);
+                    throw err;
                 }
-                const json = await res.json();
-                return json.data;
             };
 
             // SECURE DELETE PROXY HELPER
             window.secureDelete = async function(table, id) {
                 const apiBase = window.OTP.getApiBase();
-                const res = await fetch(`${apiBase}/api/admin/delete-post`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${state.token}`
-                    },
-                    body: JSON.stringify({ id, table })
-                });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.message || `Delete Failed (${res.status})`);
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+                
+                try {
+                    const res = await fetch(`${apiBase}/api/admin/delete-post`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${state.token}`
+                        },
+                        body: JSON.stringify({ id, table }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.message || `Delete Failed (${res.status})`);
+                    }
+                    return await res.json();
+                } catch (err) {
+                    clearTimeout(timeoutId);
+                    throw err;
                 }
-                return await res.json();
             };
 
         try {
@@ -939,7 +969,7 @@
             if (err.message && (err.message.includes('401') || err.message.toLowerCase().includes('permission') || err.message.toLowerCase().includes('jwt'))) {
                 updateDiagnostics('auth', 'RLS BLOCK', 'var(--danger)');
             }
-            if (list.children.length === 0) {
+            if (list.innerHTML.includes('LOADING') || list.children.length <= 1) {
                  list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">LINK ERROR: ${err.message}</div>`;
             }
         }
@@ -1124,13 +1154,18 @@
                      showToast("INITIATING ADMIN FORCE PURGE...");
                      try {
                          const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+                         const controller = new AbortController();
+                         const timeoutId = setTimeout(() => controller.abort(), 15000);
+                         
                          const res = await fetch(`${apiBase}/api/admin/purge-leads`, {
                             method: 'POST',
                             headers: { 
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${state.token}`
-                            }
+                            },
+                            signal: controller.signal
                          });
+                         clearTimeout(timeoutId);
                          
                          if(!res.ok) throw new Error("Purge Request Failed");
                 
@@ -1189,13 +1224,18 @@
 
                 try {
                     const apiBase = window.OTP.getApiBase();
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000);
+                    
                     const res = await fetch(`${apiBase}/api/admin/purge-contacts`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${state.token}`
-                        }
+                        },
+                        signal: controller.signal
                     });
+                    clearTimeout(timeoutId);
                     if (!res.ok) {
                         const err = await res.json().catch(() => ({}));
                         throw new Error(err.message || err.error || `Purge failed (${res.status})`);
@@ -1737,6 +1777,23 @@
         const labels = sorted.map(p => (p.title || 'Untitled').substring(0, 12) + ((p.title && p.title.length > 12) ? '...' : ''));
         const data = sorted.map(p => p.views || 0);
 
+        // EMPTY STATE: Show fallback if no data
+        const chartContainer = ctx.parentElement;
+        let emptyMsg = chartContainer.querySelector('.chart-empty-state');
+        if (!data.length || data.every(v => v === 0)) {
+            if (!emptyMsg) {
+                emptyMsg = document.createElement('div');
+                emptyMsg.className = 'chart-empty-state';
+                emptyMsg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--admin-muted);font-size:0.8rem;text-transform:uppercase;letter-spacing:1px;';
+                emptyMsg.innerHTML = '<div style="font-size:2rem;opacity:0.3;">📊</div><div>NO VIEW DATA AVAILABLE</div><div style="font-size:0.65rem;opacity:0.5;">Publish content to see analytics</div>';
+                chartContainer.appendChild(emptyMsg);
+            }
+            emptyMsg.style.display = 'flex';
+            return;
+        }
+        if (emptyMsg) emptyMsg.style.display = 'none';
+
+
         // Check if we can just update existing chart
         if (activityChartInstance) {
             // Check for identical data to avoid redraw flicker (simple JSON check)
@@ -1990,14 +2047,20 @@
             async () => {
                 try {
                     const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000);
+                    
                     const res = await fetch(`${apiBase}/api/admin/delete-post`, {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${state.token}`
                         },
-                        body: JSON.stringify({ slug })
+                        body: JSON.stringify({ slug }),
+                        signal: controller.signal
                     });
+                    clearTimeout(timeoutId);
+
                     if (res.ok) {
                         showToast(`RELEASE KILLED: ${slug}`);
                         if(input) input.value = '';
