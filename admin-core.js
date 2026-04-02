@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V15.10.3 STABLE
+ * ADMIN CORE V15.11.2 STABLE
  * Centralized logic for the OTP Admin Panel.
  * Handles: Session Persistence, JWT decoding, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V15.10.3 STABLE: ONLINE.");
+    console.log("🚀 ADMIN CORE V15.11.2 STABLE: ONLINE.");
 
     // GLOBAL ERROR TRAP
     /**
@@ -3807,14 +3807,20 @@ Lang: ${u.lang || 'Unknown'}</div>
                 const fetchUrl = `${API_BASE}/api/admin/rollback`;
                 const token = localStorage.getItem('otp_admin_token') || 'local-fallback';
 
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
                 const res = await fetch(fetchUrl, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ version: hash })
+                    body: JSON.stringify({ version: hash }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
+
 
                 const data = await res.json();
                 if (!data.success) throw new Error(data.message || "Rollback execution failed at proxy.");

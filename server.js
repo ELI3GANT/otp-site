@@ -1389,9 +1389,24 @@ app.route('/api/create-checkout-session')
 
 // --- VERSION CONTROL LOGIC ---
 app.get('/api/admin/versions', verifyToken, (req, res) => {
+    if (process.env.VERCEL) {
+        return res.json({ 
+            success: true, 
+            versions: [{ 
+                hash: 'VERCEL_PROD', 
+                message: 'MANAGED ROLLBACK: Use Vercel Dashboard for production rollbacks.', 
+                date: new Date().toISOString() 
+            }] 
+        });
+    }
+
     const { exec } = require('child_process');
+    // Using --date=iso for easier parsing if needed, but keeping current format for compatibility
     exec('git log -n 15 --pretty=format:"%H|%s|%ad"', { cwd: __dirname }, (error, stdout) => {
-        if (error) return res.status(500).json({ success: false, message: error.message });
+        if (error) {
+            console.error("[SYSTEM] Version Fetch Error:", error.message);
+            return res.status(500).json({ success: false, message: "GIT_LOG_FAILURE: Verify repo is initialized." });
+        }
         const versions = stdout.split('\n').filter(Boolean).map(line => {
             const [hash, message, date] = line.split('|');
             return { hash, message, date };
@@ -1404,18 +1419,27 @@ app.post('/api/admin/rollback', verifyToken, (req, res) => {
     const { version } = req.body;
     if (!version) return res.status(400).json({ success: false, message: "Version hash required" });
     
+    if (process.env.VERCEL) {
+        return res.status(403).json({ success: false, message: "PROHIBITED: Git Checkout disabled on Vercel nodes. Access restricted." });
+    }
+
     console.log(`[SYSTEM] Authorized Rollback Initiated for commit: ${version}`);
     const { exec } = require('child_process');
-    // Stash any uncommitted changes, then checkout the specific version
-    exec(`git stash && git checkout ${version}`, { cwd: __dirname }, (error, stdout, stderr) => {
+    
+    // Hard reset + clean: Ensures filesystem maps exactly to the requested hash
+    const cmd = `git stash --include-untracked && git reset --hard ${version} && git clean -fd`;
+    
+    exec(cmd, { cwd: __dirname }, (error, stdout, stderr) => {
         if (error) {
             console.error("[SYSTEM] Rollback Error:", error.message);
-            return res.status(500).json({ success: false, message: error.message });
+            return res.status(500).json({ success: false, message: `Git Error: ${error.message}` });
         }
-        res.json({ success: true, message: `System rolled back to ${version.substring(0, 7)}.` });
+
+        console.log(`[SYSTEM] Successful rollback to ${version.substring(0, 7)}. Rebooting...`);
+        res.json({ success: true, message: `System state synchronized to ${version.substring(0, 7)}. Rebooting in 3s.` });
         
-        // gracefully restart server assuming a process manager like pm2/nodemon or Vercel
-        setTimeout(() => process.exit(0), 2000);
+        // Signal process manager to restart
+        setTimeout(() => process.exit(0), 3000);
     });
 });
 

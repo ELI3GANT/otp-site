@@ -50,9 +50,7 @@ window.OTP.getApiBase = function() {
     // 1. Localhost dev: use same-origin ONLY if on a port that typically runs server.js (3000 or 8080)
     // Otherwise, use the live Vercel API so that AI/Stripe works during local front-end dev (e.g. port 5500)
     if (h === 'localhost' || h === '127.0.0.1') {
-        const p = window.location.port;
-        if (p === '3000' || p === '8080') return window.location.origin;
-        return _OTP_VERCEL_API;
+        return window.location.origin;
     }
 
     // 2. On Vercel preview/prod (*.vercel.app or the main deployment):
