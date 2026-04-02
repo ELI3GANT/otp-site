@@ -1105,8 +1105,10 @@ h1, h2, h3 {
   background: transparent;
   border: 1px solid rgba(255,255,255,0.1);
   color: var(--text);
-  width: 44px;
-  height: 44px;
+  width: 44px !important; /* Force interactive size */
+  height: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1115,8 +1117,9 @@ h1, h2, h3 {
   transition: all 0.3s ease;
   margin-left: 20px;
   position: relative;
-  z-index: 100;
+  z-index: 10001; /* Above almost everything */
   overflow: hidden;
+  pointer-events: auto !important;
 }
 
 [data-theme="light"] .theme-toggle-btn {
