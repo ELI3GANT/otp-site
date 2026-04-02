@@ -8,6 +8,81 @@
     console.log("🚀 ADMIN CORE V15.10.3 STABLE: ONLINE.");
 
     // GLOBAL ERROR TRAP
+    /**
+     * SECURE PROXY HELPERS
+     * Defined at the very top of the scope so they are available
+     * immediately to all dashboard components.
+     */
+    window.secureWrite = async function(table, payload, id = null) {
+        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); 
+        try {
+            const res = await fetch(`${apiBase}/api/admin/write-data`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ id, payload, table }),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.message || `Write Failed (${res.status})`);
+            }
+            return await res.json();
+        } catch (err) {
+            clearTimeout(timeoutId);
+            throw err;
+        }
+    };
+
+    window.secureRead = async function(table, config = {}) {
+        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        try {
+            const res = await fetch(`${apiBase}/api/admin/fetch-data`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ table, ...config }),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.message || `Read Failed (${res.status})`);
+            }
+            const json = await res.json();
+            return json.data;
+        } catch (err) {
+            clearTimeout(timeoutId);
+            throw err;
+        }
+    };
+
+    window.secureDelete = async function(table, id) {
+        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        try {
+            const res = await fetch(`${apiBase}/api/admin/delete-post`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ id, table }),
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.message || `Delete Failed (${res.status})`);
+            }
+            return await res.json();
+        } catch (err) {
+            clearTimeout(timeoutId);
+            throw err;
+        }
+    };
+
     window.addEventListener('unhandledrejection', function(event) {
         console.error('Unhandled Rejection:', event.reason);
         if (window.showToast) {
@@ -137,103 +212,26 @@
         }
 
         // Singleton Supabase Client (Consolidated)
-        state.client = window.OTP.getSupabase();
+        // --- AUTH HARDENING: INJECT SESSION TOKEN ---
+        if (state.token && state.token !== 'static-bypass-token') {
+            console.log("🔑 Injecting secure session token...");
+            try {
+                // Singleton handle
+                const sb = window.OTP.getSupabase();
+                sb.auth.setSession({
+                    access_token: state.token,
+                    refresh_token: state.token 
+                });
+            } catch (authErr) {
+                console.warn("⚠️ Session injection skipped:", authErr.message);
+            }
+        }
         window.sb = state.client; 
         
         if (!state.client) {
             updateDiagnostics('db', 'LIB MISSING', '#ff4444');
             return;
         }
-
-
-            // ═══════════════════════════════════════════════════════
-            // SECURE PROXY HELPERS — defined before try block so they
-            // are always available even if Supabase connection fails.
-            // ═══════════════════════════════════════════════════════
-            // SECURE WRITE PROXY HELPER
-            window.secureWrite = async function(table, payload, id = null) {
-                const apiBase = window.OTP.getApiBase();
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
-                
-                try {
-                    const res = await fetch(`${apiBase}/api/admin/write-data`, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${state.token}`
-                        },
-                        body: JSON.stringify({ id, payload, table }),
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    if (!res.ok) {
-                        const err = await res.json().catch(() => ({}));
-                        throw new Error(err.message || `Write Failed (${res.status})`);
-                    }
-                    return await res.json();
-                } catch (err) {
-                    clearTimeout(timeoutId);
-                    throw err;
-                }
-            };
-
-            // SECURE READ PROXY HELPER (Bypass browser-blockages/RLS mismatch)
-            window.secureRead = async function(table, config = {}) {
-                const apiBase = window.OTP.getApiBase();
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
-                
-                try {
-                    const res = await fetch(`${apiBase}/api/admin/fetch-data`, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${state.token}`
-                        },
-                        body: JSON.stringify({ table, ...config }),
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    if (!res.ok) {
-                        const err = await res.json().catch(() => ({}));
-                        throw new Error(err.message || `Read Failed (${res.status})`);
-                    }
-                    const json = await res.json();
-                    return json.data;
-                } catch (err) {
-                    clearTimeout(timeoutId);
-                    throw err;
-                }
-            };
-
-            // SECURE DELETE PROXY HELPER
-            window.secureDelete = async function(table, id) {
-                const apiBase = window.OTP.getApiBase();
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
-                
-                try {
-                    const res = await fetch(`${apiBase}/api/admin/delete-post`, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${state.token}`
-                        },
-                        body: JSON.stringify({ id, table }),
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    if (!res.ok) {
-                        const err = await res.json().catch(() => ({}));
-                        throw new Error(err.message || `Delete Failed (${res.status})`);
-                    }
-                    return await res.json();
-                } catch (err) {
-                    clearTimeout(timeoutId);
-                    throw err;
-                }
-            };
 
         try {
             console.log("🔌 Connecting to Supabase KERNEL...");
@@ -242,6 +240,7 @@
             // Connection validated via Singleton
             state.client = window.OTP.getSupabase();
             window.sb = state.client; 
+            
             // --- AUTH HARDENING: INJECT SESSION TOKEN ---
             if (state.token && state.token !== 'static-bypass-token') {
                 console.log("🔑 Injecting secure session token...");
@@ -251,7 +250,7 @@
                         refresh_token: state.token 
                     });
                 } catch (authErr) {
-                    console.warn("⚠️ Session injection skipped:", authErr.message);
+                    console.warn("⚠️ Session injection skipped (init):", authErr.message);
                 }
             }
             
