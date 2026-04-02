@@ -256,7 +256,7 @@ const allowedOrigins = [
     'http://localhost:8080',
     'http://localhost:5500' // Local dev (Live Server)
 ];
-app.use(cors({
+const corsOptions = {
     origin: (origin, callback) => {
         if (!origin) return callback(null, true);
         
@@ -276,8 +276,9 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     credentials: true,
     optionsSuccessStatus: 200
-}));
-app.options('*', cors()); // Enable pre-flight for all routes
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Ensure pre-flight uses same origin restrictions
 
 // LOG OPTIONS REQUESTS (DEBUGGING 405)
 app.use((req, res, next) => {
@@ -288,8 +289,18 @@ app.use((req, res, next) => {
 });
 
 
-// 5. Body Parsing - MOVED BELOW WEBHOOK FOR RAW BUFFER SUPPORT
-// app.use(bodyParser.json()); 
+// 5. Body Parsing
+// Must be after webhook raw parser so Stripe signature verification still works.
+app.use(bodyParser.json()); 
+
+// 4. Rate Limiting: Prevent abuse
+app.set('trust proxy', 1); // Trust Vercel Proxy
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 500, // Increased from 50 to 500 to support high-traffic drops
+    message: { success: false, message: "Too many requests, please try again later." }
+});
+app.use('/api/', limiter); 
 
 // --- VERBOSE REQUEST LOGGING ---
 // --- VERBOSE REQUEST LOGGING ---
@@ -1469,21 +1480,6 @@ if (require.main === module) {
         console.error("SERVER STARTUP ERROR:", e);
     });
 }
-
-
-
-// Now apply global JSON parsing for all other routes
-app.use(bodyParser.json());
-
-// 4. Rate Limiting: Prevent abuse
-app.set('trust proxy', 1); // Trust Vercel Proxy
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // Increased from 50 to 500 to support high-traffic drops
-    message: { success: false, message: "Too many requests, please try again later." }
-});
-app.use('/api/', limiter); 
-
 // --- FALLBACK ROUTE ---
 // Serve 404 for any unknown API routes specifically
 app.use('/api', (req, res) => {
