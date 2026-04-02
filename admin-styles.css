@@ -26,7 +26,7 @@ html[data-theme="light"] {
     --admin-danger: #ff3b30;
     --admin-text: #000000;
     --admin-white: #000000;
-    --admin-muted: #6e6e73;
+    --admin-muted: #4a4a4e;
 }
 
 * { box-sizing: border-box; }

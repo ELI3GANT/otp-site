@@ -17,10 +17,10 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="manifest" href="site.webmanifest" />
 
-  <link rel="stylesheet" href="./styles.css?v=15.10.3" />
-  <link rel="stylesheet" href="./admin-styles.css?v=15.10.3" />
+  <link rel="stylesheet" href="./styles.css?v=15.11.2" />
+  <link rel="stylesheet" href="./admin-styles.css?v=15.11.2" />
   <link rel="stylesheet" href="./blog-enhancements.css" />
-  <!--/* ADMIN COMMAND CENTER STYLES - V15.10.3 STABLE */-->
+  <!--/* ADMIN COMMAND CENTER STYLES - V15.11.2 STABLE */-->
   <style>
     .post-row.row-active-live, .post-row.live-row {
         border-left: 3px solid #00ffaa !important;
@@ -34,15 +34,13 @@
     // IMMEDIATE LOCK CHECK & THEME LOAD
     (function() {
         // 1. Check Auth
-        const token = localStorage.getItem('otp_admin_token');
-        console.log(`[AUTH_DEBUG] Terminal loaded. Token: ${token ? token.substring(0, 20) + '...' : 'null'}`);
         if(!token) {
             console.log("[AUTH_DEBUG] No token found, redirecting to portal gate.");
             window.location.href = 'portal-gate.html';
         }
         
         if(token === 'static-bypass-token') {
-             console.log("🚀 ADMIN CORE V15.10.3 STABLE: ONLINE.");
+             console.log("🚀 ADMIN CORE V15.11.2 STABLE: ONLINE.");
              // Will handle UI updates in body
         }
 
@@ -169,7 +167,7 @@
     </div>
 
     <header class="admin-header" id="adminHeader">
-        <h1><div class="status-dot"></div> OTP COMMAND <span style="font-size: 0.5em; opacity: 0.5; margin-left: 10px; border: 1px solid var(--admin-border); padding: 2px 6px; border-radius: 4px;">V15.10.3 STABLE</span></h1>
+        <h1><div class="status-dot"></div> OTP COMMAND <span style="font-size: 0.5em; opacity: 0.5; margin-left: 10px; border: 1px solid var(--admin-border); padding: 2px 6px; border-radius: 4px;">V15.11.2 STABLE</span></h1>
         
         <div class="admin-nav-actions" style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
             <div id="systemHeartbeat" style="font-size: 0.6rem; color: var(--admin-muted); letter-spacing: 1px; margin-right: 15px; display: flex; gap: 12px; font-family: monospace;">
@@ -208,7 +206,7 @@
              </div>
              <div class="stat-card">
                  <h3>SYSTEM</h3>
-                 <p class="stat-num" style="color:var(--admin-muted)">V15.0.0 FORCE-DATA</p>
+                 <p class="stat-num" style="color:var(--admin-muted)">V15.11.2 STABLE</p>
                  <span class="stat-change">STABLE</span>
              </div>
         </section>
@@ -391,11 +389,11 @@
                 <div id="diagnosticsPanel" style="background: var(--admin-panel); border: 1px solid var(--admin-border); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
                     <h4 style="margin: 0 0 10px 0; color: var(--admin-muted); font-size: 0.75rem; text-transform: uppercase;">System Diagnostics</h4>
                     <div style="display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 0.8rem; font-family: monospace;">
-                        <div id="diagDB" style="display: flex; justify-content: space-between;"><span>DATABASE:</span> <span style="color: yellow;">CONNECTING...</span></div>
-                        <div id="diagAuth" style="display: flex; justify-content: space-between;"><span>GATEKEEPER:</span> <span style="color: var(--admin-danger);">LOCKED</span></div>
-                        <div id="diagUpload" style="display: flex; justify-content: space-between;"><span>STORAGE:</span> <span style="color: var(--admin-muted);">OFFLINE</span></div>
-                        <div style="display: flex; justify-content: space-between;"><span>PROCESSOR:</span> <span id="diagCPU" style="color: var(--admin-success);">0.0%</span></div>
-                        <div style="display: flex; justify-content: space-between;"><span>MEM_BUFFER:</span> <span id="diagRAM" style="color: var(--admin-cyan);">0MB / 512MB</span></div>
+                        <div id="diagDB" style="display: flex; justify-content: space-between;"><span style="color: var(--admin-muted);">DATABASE:</span> <span style="color: yellow;">CONNECTING...</span></div>
+                        <div id="diagAuth" style="display: flex; justify-content: space-between;"><span style="color: var(--admin-muted);">GATEKEEPER:</span> <span style="color: var(--admin-danger);">LOCKED</span></div>
+                        <div id="diagUpload" style="display: flex; justify-content: space-between;"><span style="color: var(--admin-muted);">STORAGE:</span> <span style="color: var(--admin-muted);">OFFLINE</span></div>
+                        <div style="display: flex; justify-content: space-between;"><span style="color: var(--admin-muted);">PROCESSOR:</span> <span id="diagCPU" style="color: var(--admin-success);">0.0%</span></div>
+                        <div style="display: flex; justify-content: space-between;"><span style="color: var(--admin-muted);">MEM_BUFFER:</span> <span id="diagRAM" style="color: var(--admin-cyan);">0MB / 512MB</span></div>
                     </div>
                 </div>
 
@@ -927,7 +925,7 @@
     <script src="site-config.js?v=15.10.3"></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=15.10.3"></script>
+    <script src="admin-core.js?v=15.11.2"></script>
     <div></div>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>

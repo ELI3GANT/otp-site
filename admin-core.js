@@ -144,17 +144,18 @@
 
     // 2. DIAGNOSTICS UI UPDATE
     const updateDiagnostics = (key, status, color) => {
+        const labelStyle = 'color: var(--admin-muted); margin-right: 15px;';
         if(key === 'db') {
             const el = document.getElementById('diagDB');
-            if(el) el.innerHTML = `<span>DATABASE:</span> <span style="color: ${color};">${status}</span>`;
+            if(el) el.innerHTML = `<span style="${labelStyle}">DATABASE:</span> <span style="color: ${color}; font-weight: bold;">${status}</span>`;
         }
         if(key === 'auth') {
             const el = document.getElementById('diagAuth');
-            if(el) el.innerHTML = `<span>GATEKEEPER:</span> <span style="color: ${color};">${status}</span>`;
+            if(el) el.innerHTML = `<span style="${labelStyle}">GATEKEEPER:</span> <span style="color: ${color}; font-weight: bold;">${status}</span>`;
         }
         if(key === 'storage') {
             const el = document.getElementById('diagUpload');
-            if(el) el.innerHTML = `<span>STORAGE:</span> <span style="color: ${color};">${status}</span>`;
+            if(el) el.innerHTML = `<span style="${labelStyle}">STORAGE:</span> <span style="color: ${color}; font-weight: bold;">${status}</span>`;
         }
     };
 
@@ -180,7 +181,8 @@
                          const now = Math.floor(Date.now() / 1000);
                          if (payload.exp && payload.exp < now) {
                              console.warn("Session Expired");
-                             window.logout();
+                             localStorage.removeItem('otp_admin_token');
+                             window.location.href = 'portal-gate.html?reason=expired';
                              return;
                          }
                          console.log("🔄 Existing session verified.");
