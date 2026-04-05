@@ -31,8 +31,6 @@ html.nav-open, body.nav-open {
     padding-right: 0 !important; /* Managed by scrollbar-gutter */
     touch-action: none; /* Fully lock background scroll during menu interaction */
     overscroll-behavior: contain;
-    height: 100vh;
-    height: 100dvh;
 }
 
 
@@ -6026,15 +6024,15 @@ input:focus, select:focus, textarea:focus {
 
 .luxe-title .title:first-child {
   font-size: clamp(2.2rem, 7vw, 4.5rem); 
-  line-height: 0.85;
-  letter-spacing: -3px;
+  line-height: 0.95;
+  letter-spacing: -1px;
   animation: title-neon-cycle 12s infinite linear !important;
 }
 
 .luxe-title .title:last-child {
   font-size: clamp(1.8rem, 8.5vw, 6.2rem); 
-  line-height: 0.8;
-  letter-spacing: -4px;
+  line-height: 0.9;
+  letter-spacing: -2px;
   margin-top: -5px;
   animation: title-neon-cycle 12s infinite linear -6s !important; 
 }

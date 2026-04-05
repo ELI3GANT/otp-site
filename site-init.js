@@ -844,7 +844,7 @@ function initSite() {
                 btn.style.transform = 'scale(0.8) rotate(90deg)';
                 setTimeout(() => {
                     if (isMobileBtn) {
-                        btn.innerHTML = icon + '<span style="margin-left:10px; font-weight:600; font-size: 0.9rem;">Switch Theme</span>';
+                        btn.innerHTML = icon + '<span style="margin-left:10px; font-weight:600; font-size: 0.9rem; white-space: nowrap;">Switch Theme</span>';
                         btn.style.background = theme === 'light' ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
                     } else {
                         btn.innerHTML = icon;
@@ -889,11 +889,11 @@ function initSite() {
             // Inline styles for mobile layout
             mobileToggle.style.marginLeft = '0';
             mobileToggle.style.marginTop = '10px';
-            mobileToggle.style.width = '100%';
+            mobileToggle.style.setProperty('width', '100%', 'important');
             mobileToggle.style.borderRadius = '12px';
             mobileToggle.style.justifyContent = 'center';
             mobileToggle.style.background = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-            mobileToggle.innerHTML = window.OTP.getThemeIcon(currentTheme) + '<span style="margin-left:10px; font-weight:600; font-size: 0.9rem;">Switch Theme</span>';
+            mobileToggle.innerHTML = window.OTP.getThemeIcon(currentTheme) + '<span style="margin-left:10px; font-weight:600; font-size: 0.9rem; white-space: nowrap;">Switch Theme</span>';
             
             mobileToggle.addEventListener('click', handleToggle);
             navDrawer.appendChild(mobileToggle);

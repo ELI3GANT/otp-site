@@ -81,7 +81,7 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://unpkg.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://assets.calendly.com", "https://js.stripe.com"],
             scriptSrcAttr: ["'unsafe-inline'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://assets.calendly.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://assets.calendly.com", "https://unpkg.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
             connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://api.openai.com", "https://generativelanguage.googleapis.com", "https://calendly.com", "https://api.stripe.com", "https://onlytrueperspective.tech", "https://otp-site.vercel.app"],
@@ -291,7 +291,8 @@ app.use((req, res, next) => {
 
 // 5. Body Parsing
 // Must be after webhook raw parser so Stripe signature verification still works.
-app.use(bodyParser.json()); 
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 
 // 4. Rate Limiting: Prevent abuse
 app.set('trust proxy', 1); // Trust Vercel Proxy
@@ -300,7 +301,7 @@ const limiter = rateLimit({
     max: 500, // Increased from 50 to 500 to support high-traffic drops
     message: { success: false, message: "Too many requests, please try again later." }
 });
-app.use('/api/', limiter); 
+app.use('/api/', limiter);
 
 // --- VERBOSE REQUEST LOGGING ---
 // --- VERBOSE REQUEST LOGGING ---
@@ -904,6 +905,11 @@ app.post('/api/contact/submit', async (req, res) => {
 
         if (dbError) throw dbError;
 
+        // RESPOND QUICKLY TO PREVENT CLIENT-SIDE HANG
+        res.json({ success: true, message: "Contact workflow initiated successfully." });
+
+        // BACKGROUND PROCESSING FOR HEAVY TASKS
+        Promise.resolve().then(async () => {
         // 3. INTERNAL NOTIFICATION (Forward to contact@)
         await sendSecureEmail({
             to: BUSINESS_EMAILS.CONTACT,
@@ -994,7 +1000,7 @@ app.post('/api/contact/submit', async (req, res) => {
                 .eq('id', contactData.id);
         }
 
-        res.json({ success: true, message: "Contact workflow initiated successfully." });
+        }).catch(bgErr => console.error("Background Contact Processing Error:", bgErr));
 
     } catch (error) {
         console.error("Agent Error:", error);
