@@ -1352,7 +1352,7 @@ app.route('/api/create-checkout-session')
 
     try {
         const sessionConfig = {
-            automatic_payment_methods: { enabled: true }, 
+            payment_method_types: ["card"],
             line_items: [{
                 price_data: {
                     currency: 'usd',
