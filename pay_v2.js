@@ -162,8 +162,10 @@ async function initPaymentSystem() {
                 const data = Object.fromEntries(formData.entries());
 
                 try {
-        // Resolve API base
-        const API_BASE = window.OTP.getApiBase();
+        // Resolve API base strictly to avoid 405 on static domains
+        const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+            ? 'http://localhost:3000' 
+            : 'https://otp-site.vercel.app';
 
         // 2. Fetch checkout session if payment is enabled
         let sessionId = null;
@@ -221,7 +223,9 @@ async function handleDirectPay(e, title, stripe, btn) {
     btn.disabled = true;
     
     showToast(`Securing ${title}...`);
-    const API_BASE = (window.OTP && window.OTP.getApiBase) ? window.OTP.getApiBase() : '';
+    const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
+        ? 'http://localhost:3000' 
+        : 'https://otp-site.vercel.app';
     console.log(`🔌 Payment Uplink: ${API_BASE}/api/create-checkout-session`);
 
 

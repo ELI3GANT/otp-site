@@ -1402,7 +1402,6 @@ app.route('/api/create-checkout-session')
         res.status(500).json({ error: e.message });
     }
 })
-.all((req, res) => res.status(405).json({ error: "Method Not Allowed. Use POST." }));
 
 // --- VERSION CONTROL LOGIC ---
 app.get('/api/admin/versions', verifyToken, (req, res) => {
