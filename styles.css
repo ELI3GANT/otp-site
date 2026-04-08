@@ -101,6 +101,10 @@ html.nav-open, body.nav-open {
   90% { transform:translate(-10%, 10%); }
 }
 
+.muted {
+  color: var(--muted);
+}
+
 .hero-gif {
   width: 420px;
   max-width: 90vw;
@@ -532,13 +536,13 @@ h1, h2, h3 {
   box-shadow: var(--shadowSoft);
 }
 [data-theme="light"] .subscribe-form input {
-  background: #f2f2f5;
-  border-color: #d1d1d6;
-  color: #111;
+  background: #f2f2f5 !important;
+  border-color: #d1d1d6 !important;
+  color: #111 !important;
 }
 [data-theme="light"] .subscribe-form button {
-  background: #111;
-  color: #fff;
+  background: #111 !important;
+  color: #fff !important;
 }
 
 /* DAY MODE: STATS & TABLES */
@@ -623,6 +627,12 @@ h1, h2, h3 {
 [data-theme="light"] .nav-drawer a:hover {
     background: var(--accent2);
     color: #fff !important;
+}
+
+[data-theme="light"] .nav-drawer a.active {
+    background: rgba(var(--accent2-rgb), 0.1) !important;
+    color: var(--accent2) !important;
+    border-left: 2px solid var(--accent2) !important;
 }
 
 /* Ensure Contact Button stays readable in Light Mode drawer */
@@ -981,6 +991,11 @@ h1, h2, h3 {
   box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
   /* Review & FAQ Light Mode Fixes */
 }
+[data-theme="light"] .contact-form input::placeholder,
+[data-theme="light"] .contact-form select::placeholder,
+[data-theme="light"] .contact-form textarea::placeholder {
+  color: #999;
+}
 [data-theme="light"] .review-text {
   color: #333;
 }
@@ -1031,8 +1046,20 @@ h1, h2, h3 {
 [data-theme="light"] .post-header {
   border-bottom-color: #e0e0e5;
 }
-[data-theme="light"] .post-content h2 {
+[data-theme="light"] .post-header h1 {
   color: #000;
+}
+[data-theme="light"] .post-header .muted {
+  color: #666;
+}
+[data-theme="light"] .post-content h1,
+[data-theme="light"] .post-content h2,
+[data-theme="light"] .post-content h3 {
+  color: #000;
+}
+[data-theme="light"] .post-content strong {
+  color: #000;
+  font-weight: 700;
 }
 [data-theme="light"] .post-content blockquote {
   background: #f8f5ff;
@@ -5910,15 +5937,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 [data-theme="light"] .book-btn-ghost {
-  color: #1a1a2e;
-  border-color: #1a1a2e;
-  background: rgba(0, 0, 0, 0.04);
+  color: #1a1a2e !important;
+  border-color: #1a1a2e !important;
+  background: rgba(0, 0, 0, 0.04) !important;
 }
 
 [data-theme="light"] .book-btn-ghost:hover {
   background: #1a1a2e;
   border-color: #1a1a2e;
-  color: #fff;
+  color: #fff !important;
 }
 
 .footer-brand {

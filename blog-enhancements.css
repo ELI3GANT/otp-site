@@ -242,3 +242,25 @@
     color: #032f62;
     text-shadow: none;
 }
+
+[data-theme="light"] .blog-content p.lead {
+    color: #111;
+    border-bottom-color: rgba(0,0,0,0.1);
+}
+
+[data-theme="light"] .blog-content li {
+    color: #444;
+}
+
+[data-theme="light"] .stat-label {
+    color: #555;
+}
+
+[data-theme="light"] .feature-card {
+    background: #fbfbfb;
+    border-color: rgba(0,0,0,0.08);
+}
+[data-theme="light"] .feature-card:hover {
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
