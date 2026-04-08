@@ -1332,10 +1332,12 @@ app.route('/api/create-checkout-session')
     // Using lowercase keys for robust matching
     // Pricing Map (In cents) - Synchronized with index.html
     const prices = {
-        'the signal': 10000,         // $100.00
-        'the perspective': 40000,    // $400.00
-        'the alliance': 150000,      // $1,500.00
+        'the signal': 25000,         // $250.00
+        'the engine': 50000,         // $500.00
+        'the system': 90000,         // $900.00
         // Legacy Support
+        'the perspective': 40000,
+        'the alliance': 150000,
         'the drop': 10000,
         'the vision': 40000,
         'the campaign': 150000
@@ -1360,8 +1362,8 @@ app.route('/api/create-checkout-session')
                         name: `OTP // ${(packageName || 'CREATIVE SERVICE').toUpperCase()}`,
                         // Dynamic Description based on package
                         description: normalizedName === 'the signal' ? '1x Tactical Asset (Viral/Ad) + Advanced VFX - 24/48H Delivery' :
-                                     normalizedName === 'the perspective' ? 'On-Location Production (3h) + 4x Tactical Assets + 20 Premium Deliverables' :
-                                     normalizedName === 'the alliance' ? 'Retainer Creative Direction + 10x Cinematic Assets + Agency-Level Support' :
+                                     normalizedName === 'the engine' ? 'Full Production Infrastructure + 4x Cinematic Assets + Complete Brand Motion Suite' :
+                                     normalizedName === 'the system' ? 'Retainer Creative Direction + 10x Technical Assets + Digital HQ Architecture' :
                                      normalizedName === 'the drop' ? '1 High-End Vertical Edit (Algorithm Friendly)' :
                                      normalizedName === 'the vision' ? 'Editorial/Studio Shoot (4h) - 15 High-End Retouched Images' :
                                      normalizedName === 'the campaign' ? 'Comprehensive Production Package (Shoot + Full High-End Edit Bundle)' :
