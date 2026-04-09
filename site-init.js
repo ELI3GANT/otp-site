@@ -4,7 +4,25 @@ gsap.ticker.fps(60); gsap.config({ force3D: true });
  * Centralized initialization for Kursor, Year, and Scroll Progress.
  */
 
-(function() {
+    /* NUCLEAR CACHE PURGE & DOM PROTECTION (v16.1.0) */
+    (function() {
+        // 1. Force unregister all Service Workers to eliminate sticky cache bugs
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (let registration of registrations) {
+                    registration.unregister();
+                    console.log('📡 [OTP] ServiceWorker: PURGED');
+                }
+            });
+        }
+        // 2. Force DOM Update for Scarcity (Bypass HTML/CDN Cache)
+        const scarcityText = document.getElementById('scarcity-text');
+        if (scarcityText) {
+            scarcityText.textContent = "2 Open Slots for April";
+            console.log('📡 [OTP] Scarcity Badge Sync: APRIL_FIX_v16');
+        }
+    })();
+
     // 1. Footer Year
     const yearEl = document.getElementById('year');
     if (yearEl) {

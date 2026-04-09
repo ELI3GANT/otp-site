@@ -48,7 +48,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=16.0.0-PRO" />
+  <link rel="stylesheet" href="./styles.css?v=16.1.0" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -1078,8 +1078,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
   <script src="https://unpkg.com/kursor" defer></script>
   <script src="stars-v2.js?v=16.0.0" defer></script>
-  <script src="site-init.js?v=16.0.0" defer></script>
-  <script src="audit-engine.js?v=16.0.0" defer></script>
+  <script src="site-init.js?v=16.1.0" defer></script>
+  <script src="audit-engine.js?v=16.1.0" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
     // Protocol: Desktop (Ctrl/Cmd + Click Logo) or Mobile (2s Long Press Logo).
@@ -1209,19 +1209,5 @@
       100% { filter: none; transform: scale(1); }
     }
   </style>
-  <script>
-    /* SERVICE WORKER: Network-First Cache Engine */
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => {
-            // Force immediate update check on every page load
-            reg.update();
-            console.log('[OTP] Cache Engine: ONLINE');
-          })
-          .catch(err => console.warn('[OTP] Cache Engine offline:', err));
-      });
-    }
-  </script>
 </body>
 </html>
