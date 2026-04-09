@@ -1,11 +1,11 @@
 /**
- * ADMIN CORE V15.11.2 STABLE
+ * ADMIN CORE V15.15.2 STABLE
  * Centralized logic for the OTP Admin Panel.
  * Handles: Session Persistence, JWT decoding, Supabase Connection.
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V15.11.2 STABLE: ONLINE.");
+    console.log("🚀 ADMIN CORE V15.15.2 STABLE: ONLINE.");
 
     // GLOBAL ERROR TRAP
     /**
