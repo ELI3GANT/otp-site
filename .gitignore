@@ -1,8 +1,15 @@
 node_modules
 .env
-
+.env.*
 startup.log
 .DS_Store
 my.env
 *.log
+
+# Test output — keep sitemap in repo (exception below)
 *.xml
+!sitemap.xml
+
+# Cursor: only share worktree setup hints (optional)
+.cursor/*
+!.cursor/worktrees.json

@@ -81,6 +81,7 @@ const watcher = chokidar.watch('.', {
     '**/.DS_Store',
     '**/*.log',
     '**/.env',
+    '**/.env.*',
     '**/test-report.xml'
   ],
   ignoreInitial: true

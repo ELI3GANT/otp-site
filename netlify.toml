@@ -1,16 +1,8 @@
+# Optional alternate static deploy. Primary production flow: Framer (marketing) +
+# this repo on GitHub → Vercel (API). See README.
+
 [build]
-  command = "npm install"
-  publish = "public"
+  command = "npm ci || npm install"
+  publish = "."
 
-[functions]
-  directory = "functions"
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/server"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Do not SPA-rewrite /* → index.html — real pages are *.html (archive, insights, etc.).

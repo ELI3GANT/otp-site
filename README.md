@@ -4,8 +4,8 @@ A high-end, AI-integrated web platform for creative visionaries. Features includ
 
 ## Tech stack
 
-- **Frontend**: Vanilla JS, Chart.js, Supabase client (static hosting, e.g. GitHub Pages → custom domain).
-- **Backend**: Node/Express on Vercel (`/api/*`), Supabase (PostgreSQL), OpenAI/Gemini APIs.
+- **Frontend**: Vanilla JS, Chart.js, Supabase client. Marketing site may live on **Framer** (`onlytrueperspective.tech`); repo files can be mirrored from Git for admin HTML/JS or pasted/synced manually.
+- **Backend**: Node/Express on **Vercel** (`/api/*`, schema SQL endpoints), Supabase (PostgreSQL), OpenAI/Gemini APIs.
 - **Performance**: IntersectionObserver-based lazy loading, compression, client-side image optimization.
 
 ## Directory layout
@@ -15,20 +15,32 @@ A high-end, AI-integrated web platform for creative visionaries. Features includ
 | **Root** (`*.html`, `site-*.js`, `*.css`) | Public site, shared scripts, and styles. Kept at root so asset URLs stay simple for static hosting. |
 | **`assets/`** | Brand media (e.g. animated logo). |
 | **`docs/business/`** | Internal business documents (MSA, onboarding questionnaire). |
-| **`scripts/`** | Node utilities (deploy prep, content bake, local helpers). |
-| **`supabase/migrations/`** | SQL you run in the Supabase SQL editor (schema, hardening, seeds). |
+| **`scripts/`** | Node utilities: `prepare_deploy.js`, `bake_insights.js`, `watch_push.js`, etc. |
+| **`supabase/migrations/`** | SQL to run in the Supabase SQL editor (schema, hardening, seeds). |
 | **`supabase/functions/`** | Supabase Edge Function sources (when used). |
 | **`tests/`** | Automated checks; run via `npm run master_test`. |
 
 ## Setup
 
 1. Clone the repository.
-2. Install dependencies: `npm install`
-3. Configure `.env` with Supabase, OpenAI, and Gemini keys (for local API).
-4. Start the API locally: `npm start` or `npm run dev` (nodemon).
+2. `npm install`
+3. Copy env: create `.env` from your secrets (Supabase, JWT, AI keys, Stripe, etc. — never commit `.env`).
+4. Local API: `npm start` or `npm run dev` (nodemon).
+
+## Daily workflow (push → Vercel)
+
+1. **`npm run watch:push`** — leave running; after you save, it debounces, then **commit + push** to the current branch.  
+   - Detached Cursor worktree: `WATCH_PUSH_TARGET=main npm run watch:push`
+2. **Vercel** rebuilds from **`main`** (or your connected branch).
+3. **Framer** — publish there when you change what Framer serves; Git does not replace Framer publish.
 
 ## Admin
 
 - Secure login with JWT.
 - Post/broadcast management, analytics, and client auditing from the terminal UI.
-- Schema SQL in the admin modal is loaded from **`GET /api/schema-migration`** on your Vercel API (`getApiBase()`), so it works even when the terminal UI is on Framer. Static path `supabase/migrations/DEPLOY_V1.3.sql` is still the source file in the repo.
+- Schema SQL modal: **`GET /api/schema-migration`** (alias **`/api/deploy-sql`**) on your Vercel app, via `getApiBase()`. Source file: `supabase/migrations/DEPLOY_V1.3.sql`.
+
+## Optional hosts
+
+- **Netlify**: `netlify.toml` publishes repo **root** as static only (no API — use Vercel for `/api`).
+- **GitHub Pages**: `CNAME` + `.nojekyll` present if you point DNS/repo pages here.

@@ -4,9 +4,9 @@
  * Loaded before other scripts to ensure window.OTP_CONFIG is available.
  *
  * ARCHITECTURE:
- *   - Frontend (static): GitHub Pages → onlytrueperspective.tech
- *   - Backend (API):     Vercel Node  → otp-site.vercel.app
- *   - The /api/* routes ONLY work on Vercel, not on the GitHub Pages custom domain.
+ *   - Public / admin UI: hosted where you publish (e.g. Framer on onlytrueperspective.tech).
+ *   - Backend (API):    Vercel Node → otp-site.vercel.app (all /api/* and schema SQL proxy).
+ *   - Static mirror:    optional GitHub Pages / Netlify from this repo; /api still targets Vercel.
  */
 
 const _OTP_VERCEL_API = 'https://otp-site.vercel.app';
