@@ -41,7 +41,7 @@ async function runAll() {
         let output = '';
 
         try {
-            output = execSync(`node ${test.path}`).toString();
+            output = execSync(`"${process.execPath}" ${test.path}`).toString();
             console.log(`   ✅ PASSED (${Date.now() - start}ms)`);
         } catch (e) {
             status = 'failed';
