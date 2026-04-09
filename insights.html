@@ -517,7 +517,9 @@
 
             if (!hasBakedContent) setStatus("SCANNING FOR SIGNALS...");
 
-            const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            const client = (window.OTP && typeof window.OTP.getSupabase === 'function')
+                ? window.OTP.getSupabase()
+                : window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
             const { data: posts, error } = await Promise.race([
                 client.from('posts')

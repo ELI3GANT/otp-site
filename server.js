@@ -195,6 +195,21 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));
 });
 
+// Clean URL aliases for static pages (works on desktop/mobile and shared links).
+const staticAliases = {
+    '/privacy': 'privacy.html',
+    '/terms': 'terms.html',
+    '/archive': 'archive.html',
+    '/insights': 'insights.html',
+    '/insight': 'insight.html',
+    '/portal-gate': 'portal-gate.html',
+    '/otp-terminal': 'otp-terminal.html',
+    '/payment-success': 'payment_success.html'
+};
+Object.entries(staticAliases).forEach(([route, file]) => {
+    app.get(route, (req, res) => res.sendFile(path.join(staticPath, file)));
+});
+
 // Static Fallback for Vercel
 app.get('/:file', (req, res, next) => {
     const file = req.params.file;
@@ -259,7 +274,11 @@ const allowedOrigins = [
 const corsOptions = {
     origin: (origin, callback) => {
         if (!origin) return callback(null, true);
-        
+
+        // Local dev support across arbitrary ports (Cursor previews, alt local servers).
+        const isLocalOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+        if (isLocalOrigin) return callback(null, true);
+
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
