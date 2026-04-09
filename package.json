@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "watch:push": "node scripts/watch_push.js",
     "master_test": "node tests/master_runner.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -28,6 +29,7 @@
   },
   "devDependencies": {
     "autocannon": "^8.0.0",
+    "chokidar": "^4.0.3",
     "jsdom": "^27.4.0",
     "nodemon": "^3.1.11"
   }
