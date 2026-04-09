@@ -6007,15 +6007,26 @@ input:focus, select:focus, textarea:focus {
 }
 
 [data-theme="light"] .book-btn-ghost {
-  color: #1a1a2e !important;
-  border-color: #1a1a2e !important;
-  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+  color: #555 !important;
+  background: transparent !important;
 }
 
 [data-theme="light"] .book-btn-ghost:hover {
-  background: #1a1a2e;
-  border-color: #1a1a2e;
+  border-color: #000 !important;
+  color: #000 !important;
+  background: rgba(0,0,0,0.02) !important;
+}
+
+[data-theme="light"] .package-static.featured .book-btn {
+  background: #000 !important;
   color: #fff !important;
+}
+
+[data-theme="light"] .package-static .book-btn {
+  background: #f4f4f7 !important;
+  color: #000 !important;
+  border: 1px solid #ddd !important;
 }
 
 .footer-brand {
