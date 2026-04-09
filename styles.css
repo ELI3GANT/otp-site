@@ -26,6 +26,15 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* ZERO-BLUR THEME SWITCHING (Hardened for Mobile) */
+html.is-theme-switching,
+html.is-theme-switching * {
+    transition: none !important;
+    animation-duration: 0s !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
 html.nav-open, body.nav-open {
     overflow: hidden !important;
     padding-right: 0 !important; /* Managed by scrollbar-gutter */
@@ -1184,8 +1193,8 @@ h1, h2, h3 {
   bottom: 30px !important;
   right: 30px !important;
   z-index: 10001 !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 15px 35px rgba(0,0,0,0.3), 0 0 20px rgba(var(--accent2-rgb), 0.2);
   pointer-events: auto !important;
 }
@@ -2162,8 +2171,8 @@ html {
   z-index: 10000; /* Increased to stay above all content */
 
   background: rgba(10,10,18,0.30);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   transition: padding 0.3s ease, background 0.3s ease; /* Smooth out any dynamic changes */
 }
@@ -2176,8 +2185,8 @@ html {
 .nav.scrolled {
   padding: 12px 48px;
   background: rgba(10,10,18,0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom-color: rgba(255,255,255,0.1);
 }
 @media (max-width: 768px) {
@@ -2677,8 +2686,8 @@ html {
   background: rgba(10,10,18,0.99);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 20px;
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 11000;
   box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,236,255,0.04);
   max-height: calc(100vh - 90px);

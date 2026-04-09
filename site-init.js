@@ -193,6 +193,9 @@ window.OTP.setTheme = function(theme, isManual = false) {
     let hueIndex = window.OTP_HUE_INDEX !== undefined ? window.OTP_HUE_INDEX : 0;
     let selectedHue = hues[hueIndex];
 
+    // ZERO-BLUR PROTOCOL: Freeze transitions/filters during swap
+    html.classList.add('is-theme-switching');
+
     if (theme === 'light') {
         html.setAttribute('data-theme', 'light');
         rootStyle.setProperty('--accent2-rgb', selectedHue.light);
@@ -202,6 +205,13 @@ window.OTP.setTheme = function(theme, isManual = false) {
         rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
         rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
     }
+
+    // Release freeze after brief frame delay
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            html.classList.remove('is-theme-switching');
+        }, 50);
+    });
     
     // Save to local storage
     localStorage.setItem('theme', theme);
