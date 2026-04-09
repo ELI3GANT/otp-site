@@ -870,17 +870,10 @@ function initSite() {
         toggleBtn.innerHTML = window.OTP.getThemeIcon(currentTheme);
         toggleBtn.addEventListener('click', handleToggle);
 
-        // Inject Desktop
-        const navLinks = document.querySelector('.nav-links');
-        if (navLinks) {
-            navLinks.appendChild(toggleBtn);
-        } else {
-             // Fallback
-             const nav = document.querySelector('nav') || document.querySelector('header');
-             if (nav && !navLinks) nav.appendChild(toggleBtn);
-        }
+        // Inject Desktop Toggle as Fixed FAB (Bottom-Right)
+        document.body.appendChild(toggleBtn);
 
-        // Inject Mobile Drawer Toggle
+        // Inject Mobile Drawer Toggle (Legacy inside Drawer)
         const navDrawer = document.querySelector('.nav-drawer');
         if (navDrawer) {
             const mobileToggle = document.createElement('button');
