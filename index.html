@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Only True Perspective | Tactical Visual Intelligence</title>
   <meta name="version" content="16.0.0-PULSE-APRIL" />
+  <!-- CACHE CONTROL: Force browsers to always re-validate this document -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <meta name="description" content="Tactical Visual Intelligence for high-status brands. Professional creative direction, cinematic production, and technical visual architecture." />
   <meta name="keywords" content="creative studio, cinematic editing, technical production, creative direction, high-retention video, brand identity, motion graphics" />
 
@@ -1205,5 +1209,19 @@
       100% { filter: none; transform: scale(1); }
     }
   </style>
+  <script>
+    /* SERVICE WORKER: Network-First Cache Engine */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => {
+            // Force immediate update check on every page load
+            reg.update();
+            console.log('[OTP] Cache Engine: ONLINE');
+          })
+          .catch(err => console.warn('[OTP] Cache Engine offline:', err));
+      });
+    }
+  </script>
 </body>
 </html>
