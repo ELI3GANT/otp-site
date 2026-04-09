@@ -163,8 +163,10 @@
     async function init() {
         console.log("🛠️ INITIALIZING TERMINAL ENGINE...");
         updateDiagnostics('auth', 'INITIALIZING...', 'var(--admin-muted)');
-        
-        if (!state.token && window.location.hostname !== 'localhost') {
+
+        const localHosts = new Set(['localhost', '127.0.0.1', '::1']);
+        const isLocalHost = localHosts.has(window.location.hostname);
+        if (!state.token && !isLocalHost) {
             window.location.href = 'portal-gate.html?reason=missing_token';
             return;
         }

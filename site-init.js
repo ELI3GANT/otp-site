@@ -1,4 +1,7 @@
-gsap.ticker.fps(60); gsap.config({ force3D: true });
+if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
+    window.gsap.ticker.fps(60);
+    window.gsap.config({ force3D: true });
+}
 /**
  * site-init.js [SIG:2026-01-10-04-58]
  * Centralized initialization for Kursor, Year, and Scroll Progress.
@@ -184,8 +187,6 @@ gsap.ticker.fps(60); gsap.config({ force3D: true });
     bindBlackHole();
 
     // 6. Portal Dropdown Logic (Removed)
-
-})();
 
 // 7. Site-Wide Initialization
 
