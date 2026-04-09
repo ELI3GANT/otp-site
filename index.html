@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Only True Perspective | Tactical Visual Intelligence</title>
-  <meta name="description" content="Tactical Visual Intelligence for high-status brands. Professional creative direction, cinematic production, and technical visual architecture." />
+  <meta name="version" content="16.0.0-PULSE-APRIL" />  <meta name="description" content="Tactical Visual Intelligence for high-status brands. Professional creative direction, cinematic production, and technical visual architecture." />
   <meta name="keywords" content="creative studio, cinematic editing, technical production, creative direction, high-retention video, brand identity, motion graphics" />
 
   <meta name="theme-color" content="#030305" />
@@ -43,7 +42,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=15.15.0" />
+  <link rel="stylesheet" href="./styles.css?v=16.0.0-PRO" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -1065,51 +1064,16 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS -->
-  <script src="site-config.js?v=15.15.0" defer></script>
+  <script src="site-config.js?v=16.0.0" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js" defer></script>
   <script src="https://unpkg.com/split-type" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-
-
-  <!-- GSAP & SPLIT TYPE (Keep these active) -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const heroTitle = new SplitType('.hero .title', { types: 'lines, chars' });
-        const heroSubtitle = new SplitType('.hero .subtitle', { types: 'lines, words' });
-        
-        gsap.from(heroTitle.chars, {
-          opacity: 0,
-          y: 20,
-          stagger: 0.01,
-          duration: 0.8,
-          ease: 'power2.out',
-          delay: 0.1
-        });
-
-        gsap.from('.subtitle-lead, .hero-value', {
-          /* opacity: 0.1 removed */
-          y: 20,
-          duration: 0.8,
-          stagger: 0.1,
-          ease: 'power2.out',
-          delay: 0.3
-        });
-
-        gsap.from('.hero-cta, .hero-micro', {
-          /* opacity: 0.1 removed */
-          y: 20,
-          duration: 0.6,
-          ease: 'power2.out',
-          delay: 0.6
-        });
-    });
-  </script>
   <script src="https://unpkg.com/kursor" defer></script>
-  <script src="stars-v2.js" defer></script>
-  <script src="site-init.js?v=15.15.0" defer></script>
-  <script src="audit-engine.js?v=15.15.0" defer></script>
+  <script src="stars-v2.js?v=16.0.0" defer></script>
+  <script src="site-init.js?v=16.0.0" defer></script>
+  <script src="audit-engine.js?v=16.0.0" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
     // Protocol: Desktop (Ctrl/Cmd + Click Logo) or Mobile (2s Long Press Logo).
