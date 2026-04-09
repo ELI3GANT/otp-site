@@ -3308,7 +3308,15 @@
         content.textContent = "FETCHING SCHEMA...";
 
         try {
-            const res = await fetch('/DEPLOY_V1.3.sql');
+            const base = (window.OTP && typeof window.OTP.getApiBase === 'function')
+                ? window.OTP.getApiBase().replace(/\/$/, '')
+                : '';
+            let url = base ? `${base}/api/schema-migration` : '/supabase/migrations/DEPLOY_V1.3.sql';
+            let res = await fetch(url);
+            if (!res.ok && base) {
+                url = `${base}/api/deploy-sql`;
+                res = await fetch(url);
+            }
             if(!res.ok) throw new Error("Failed to load schema file.");
             cachedSqlSchema = await res.text();
             content.textContent = cachedSqlSchema;

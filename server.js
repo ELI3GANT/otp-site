@@ -280,6 +280,21 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Ensure pre-flight uses same origin restrictions
 
+function sendSchemaMigrationSql(res) {
+    const migrationPath = path.join(__dirname, 'supabase', 'migrations', 'DEPLOY_V1.3.sql');
+    try {
+        const sql = fs.readFileSync(migrationPath, 'utf8');
+        res.type('text/plain; charset=utf-8').send(sql);
+    } catch (err) {
+        console.error('schema-migration:', err.message);
+        res.status(404).type('text/plain').send('Schema migration file not available.');
+    }
+}
+
+// Before rate limiter — public read-only DDL for admin modal (Framer UI → Vercel API).
+app.get('/api/schema-migration', (req, res) => sendSchemaMigrationSql(res));
+app.get('/api/deploy-sql', (req, res) => sendSchemaMigrationSql(res));
+
 // LOG OPTIONS REQUESTS (DEBUGGING 405)
 app.use((req, res, next) => {
     if (req.method === 'OPTIONS') {
