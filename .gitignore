@@ -13,3 +13,5 @@ my.env
 # Cursor: only share worktree setup hints (optional)
 .cursor/*
 !.cursor/worktrees.json
+.playwright-cli/
+output/playwright/

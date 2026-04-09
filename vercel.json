@@ -12,6 +12,7 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "/server.js" },
     { "src": "/api", "dest": "/server.js" },
-    { "src": "/ping", "dest": "/server.js" }
+    { "src": "/ping", "dest": "/server.js" },
+    { "src": "/(.*)", "dest": "/server.js" }
   ]
 }
