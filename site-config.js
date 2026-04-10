@@ -64,7 +64,12 @@ window.OTP.getApiBase = function() {
         return window.location.origin;
     }
 
-    // 3. Custom domain (GitHub Pages — static only, no Node backend):
-    //    Must proxy all API calls to the Vercel backend
+    // 2b. App subdomain on same Vercel project (Node + static together).
+    if (h === 'app.onlytrueperspective.tech') {
+        return window.location.origin;
+    }
+
+    // 3. Custom domain (Framer marketing, GitHub Pages, etc. — no /api on host):
+    //    Proxy API calls to the canonical Vercel deployment.
     return _OTP_VERCEL_API;
 };

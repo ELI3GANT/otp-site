@@ -300,7 +300,7 @@
                 
                 let statusTag = '<span style="color:var(--admin-success)">[NODE:LIVE]</span>';
                 if (isStatic) statusTag = '<span style="color:#ff8800">[NODE:LEGACY]</span>';
-                else if (isRemote || window.location.hostname.endsWith('.vercel.app') || window.location.hostname === 'onlytrueperspective.tech') statusTag = '<span style="color:#00ffaa; filter: drop-shadow(0 0 5px #00ffaa); font-weight:bold;">[NODE:SECURE]</span>';
+                else if (isRemote || window.location.hostname.endsWith('.vercel.app') || window.location.hostname === 'onlytrueperspective.tech' || window.location.hostname === 'app.onlytrueperspective.tech') statusTag = '<span style="color:#00ffaa; filter: drop-shadow(0 0 5px #00ffaa); font-weight:bold;">[NODE:SECURE]</span>';
 
                 // Update only time every second, not status checks
                 setInterval(() => {
