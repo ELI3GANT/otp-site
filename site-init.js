@@ -246,54 +246,68 @@ window.OTP.setTheme = function(theme, isManual = false) {
 };
 
 window.OTP.initTheme = function() {
-    const savedTheme = localStorage.getItem('theme');
-    const isManual = localStorage.getItem('theme_manual') === 'true';
-    const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
-    
-    // If manual override is older than 12 hours, expire it to allow auto-chrono again
-    const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
-    
-    let targetTheme;
+    const resolveAuto = () => {
+        if (typeof window.OTP.getEffectiveThemeForPaint === 'function') {
+            return window.OTP.getEffectiveThemeForPaint();
+        }
+        if (typeof window.OTP.calculateChronoTheme === 'function') {
+            return window.OTP.calculateChronoTheme();
+        }
+        const h = new Date().getHours();
+        return h >= 7 && h < 20 ? 'light' : 'dark';
+    };
 
-    // 1. Check for manual user preference that hasn't expired
-    if (isManual && !isExpired) {
-        targetTheme = savedTheme;
-        console.log(`[OTP] Theme: ${targetTheme} (Manual Override Active)`);
-    } else {
-        // 2. Chrono-Logic (World Time Sync)
-        targetTheme = window.OTP.calculateChronoTheme();
-        console.log(`[OTP] Theme: ${targetTheme} (World Timing Sync)`);
-    }
-    
+    const targetTheme = resolveAuto();
+    const isManual = localStorage.getItem('theme_manual') === 'true';
+    const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
+    const manualActive = isManual && manualTime && Date.now() - manualTime <= 12 * 60 * 60 * 1000;
+    console.log(manualActive
+        ? `[OTP] Theme: ${targetTheme} (Manual Override Active)`
+        : `[OTP] Theme: ${targetTheme} (World Timing Sync)`);
+
     window.OTP.setTheme(targetTheme);
 
     if (window.matchMedia && !window.OTP._themeListenerBound) {
         window.OTP._themeListenerBound = true;
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            const isManual = localStorage.getItem('theme_manual') === 'true';
-            const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
-            const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
-            if (!isManual || (isManual && isExpired)) {
-                const newTheme = e.matches ? 'dark' : 'light';
-                window.OTP.setTheme(newTheme);
+        const onSchemeChange = () => {
+            const m = localStorage.getItem('theme_manual') === 'true';
+            const t = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
+            const expired = !t || Date.now() - t > 12 * 60 * 60 * 1000;
+            if (m && !expired) return;
+            if (m && expired) {
+                try {
+                    localStorage.removeItem('theme_manual');
+                    localStorage.removeItem('theme_manual_time');
+                } catch (e) { /* ignore */ }
             }
-        });
+            const next = resolveAuto();
+            window.OTP.setTheme(next);
+        };
+        try {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', onSchemeChange);
+            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', onSchemeChange);
+        } catch (e) {
+            try {
+                window.matchMedia('(prefers-color-scheme: dark)').addListener(onSchemeChange);
+            } catch (e2) { /* ignore */ }
+        }
     }
 
     // 3. Start Live Sync (Check every 5 minutes)
     setInterval(() => {
         const isManual = localStorage.getItem('theme_manual') === 'true';
-        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0');
-        const isExpired = Date.now() - manualTime > 12 * 60 * 60 * 1000;
+        const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
+        const isExpired = !manualTime || Date.now() - manualTime > 12 * 60 * 60 * 1000;
 
         if (!isManual || (isManual && isExpired)) {
-            // Clear expired flag if needed
             if (isManual && isExpired) {
-                localStorage.removeItem('theme_manual');
-                localStorage.removeItem('theme_manual_time');
+                try {
+                    localStorage.removeItem('theme_manual');
+                    localStorage.removeItem('theme_manual_time');
+                } catch (e) { /* ignore */ }
             }
 
-            const nextTheme = window.OTP.calculateChronoTheme();
+            const nextTheme = resolveAuto();
             const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
             if (nextTheme !== currentTheme) {
                 console.log(`[OTP] World Timing Sync: Auto-Switching to ${nextTheme}`);
@@ -380,12 +394,7 @@ window.OTP.initTheme = function() {
     return targetTheme;
 };
 
-window.OTP.calculateChronoTheme = function() {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
-    const hour = new Date().getHours();
-    return (hour >= 6 && hour < 18) ? 'light' : 'dark';
-};
+// calculateChronoTheme + getEffectiveThemeForPaint: theme-chrono.js (head)
 
 window.OTP.trackView = async function(slug) {
     if (typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
