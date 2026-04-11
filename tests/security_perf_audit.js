@@ -5,6 +5,10 @@ async function runSecurityPerfAudit() {
     console.log('🛡️ STARTING SECURITY & PERFORMANCE AUDIT...');
     const PORT = process.env.PORT || 3000;
     const liveApi = (process.env.LIVE_API_URL || '').replace(/\/$/, '');
+    if (process.env.REQUIRE_LIVE_API_AUDIT === '1' && !liveApi) {
+        console.error('❌ REQUIRE_LIVE_API_AUDIT=1 but LIVE_API_URL is not set.');
+        process.exit(1);
+    }
     const url = liveApi
         ? `${liveApi}/api/health`
         : `http://127.0.0.1:${PORT}/api/health`;

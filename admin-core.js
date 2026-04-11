@@ -2459,7 +2459,7 @@
         const status = document.getElementById('aiStatus');
         const btn = document.getElementById('magicBtn');
 
-        if(!state.token && state.token !== 'static-bypass-token') {
+        if (!state.token) {
             if(status) { status.textContent = "SESSION EXPIRED. PLEASE RE-LOGIN."; status.style.color = "#ff4444"; }
             showToast("SESSION EXPIRED");
             return;

@@ -193,7 +193,7 @@
 
 
       <div class="hero-micro">
-        <span class="scarcity-badge"><span class="pulse-dot"></span> <span id="scarcity-text" data-editable="true">2 Open Slots for April</span></span>
+        <span class="scarcity-badge"><span class="pulse-dot"></span> <span id="scarcity-text" data-editable="true">Limited openings — inquire for availability</span></span>
         <span class="dot-circle">•</span>
         <span>Fast Turnaround</span>
         <span class="dot-circle">•</span>
@@ -738,10 +738,11 @@
           </ul>
           <div class="pkg-meta" style="margin-top: auto;">
             <div class="pkg-price" style="margin-bottom: 20px;">
-              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">ESTIMATED RANGE</span>
+              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">STARTING AT</span>
               <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">500–800</span>
+                <span class="pkg-currency">$</span><span class="pkg-amount">500</span>
               </div>
+              <p style="font-size: 0.75rem; color: var(--muted); opacity: 0.85; margin: 8px 0 0 0; line-height: 1.4;">Full scope often lands in the ~$500–$800 band after review — same deposit tier as checkout.</p>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
               <a href="#contact" onclick="document.getElementById('project_type').value='The Engine'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="book-btn k-hover" style="text-decoration: none;">START PROJECT</a>
@@ -770,10 +771,11 @@
           </ul>
           <div class="pkg-meta" style="margin-top: auto;">
             <div class="pkg-price" style="margin-bottom: 20px;">
-              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">ESTIMATED RANGE</span>
+              <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">STARTING AT</span>
               <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">900–1500+</span>
+                <span class="pkg-currency">$</span><span class="pkg-amount">900</span>
               </div>
+              <p style="font-size: 0.75rem; color: var(--muted); opacity: 0.85; margin: 8px 0 0 0; line-height: 1.4;">Retainers and expanded builds are quoted from this floor; totals depend on scope.</p>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
               <a href="#contact" onclick="document.getElementById('project_type').value='The System'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="book-btn k-hover" style="text-decoration: none;">START PROJECT</a>
@@ -788,6 +790,7 @@
       <div class="center-text" style="margin-top: 40px;">
         <p class="pricing-disclaimer" style="font-family: monospace; font-size: 0.85rem; color: var(--muted); opacity: 0.8; letter-spacing: 0.5px;">
           “Projects are scoped individually. Final pricing confirmed after review. Deposit required to begin.”
+          <br /><span style="display: inline-block; margin-top: 10px;">Card checkout uses the published tier minimums ($250 / $500 / $900); any uplift is agreed before work starts.</span>
         </p>
       </div>
       
@@ -920,9 +923,9 @@
             <label for="project_type">Project Type</label>
             <select id="project_type" name="project_type" required>
               <option value="" disabled selected>Select a package</option>
-              <option value="The Signal">The Signal (Starting at $250)</option>
-              <option value="The Engine">The Engine ($500–$800)</option>
-              <option value="The System">The System ($900–$1,500+)</option>
+              <option value="The Signal">The Signal (from $250)</option>
+              <option value="The Engine">The Engine (from $500)</option>
+              <option value="The System">The System (from $900)</option>
               <option value="Strategy">Creative Consulting / Project Strategy</option>
               <option value="Custom Build">Custom Production / Other</option>
             </select>
@@ -981,12 +984,12 @@
         <!-- CINEMATIC SUCCESS STATE (Hidden by default) -->
         <div id="successState" class="success-state" style="display: none; text-align: center; padding: 40px;">
            <div class="success-icon" style="opacity: 0; transform: scale(0.5);">
-             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events: none;>
+             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                <polyline points="22 4 12 14.01 9 11.01"></polyline>
              </svg>
            </div>
-           <h3 class="syne-bold" style="font-size: 2/ Users/elijah/otp-site-1/index.html;5rem; margin: 20px 0 10px; opacity: 0; transform: translateY(10px);">LOCKED IN.</h3>
+           <h3 class="syne-bold" style="font-size: 2.5rem; margin: 20px 0 10px; opacity: 0; transform: translateY(10px);">LOCKED IN.</h3>
            <p style="color: var(--muted); opacity: 0; transform: translateY(10px); max-width: 440px; margin: 0 auto; line-height: 1.6;">
              Your project architecture has been submitted. Our team is reviewing your requirements and will follow up shortly to discuss scope, timeline, and next steps.
              <br><br>
@@ -997,7 +1000,7 @@
         <div class="contact-sidebar">
           <div class="contact-icons">
             <a href="https://instagram.com/onlytrueperspective" target="_blank" rel="noreferrer" aria-label="Instagram" class="icon-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events: none;>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                 <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
@@ -1005,14 +1008,14 @@
             </a>
             
             <a href="mailto:contact@onlytrueperspective.tech" aria-label="Email" class="icon-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events: none;>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                 <polyline points="22,6 12,13 2,6"></polyline>
               </svg>
             </a>
 
             <a href="https://youtube.com/@onlytrueperspective" target="_blank" rel="noreferrer" aria-label="YouTube" class="icon-link">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events: none;>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
                  <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
               </svg>
@@ -1070,7 +1073,8 @@
   <canvas id="cursor-canvas"></canvas>
 
   <!-- SCRIPTS -->
-  <script src="site-config.js?v=16.0.0" defer></script>
+  <script src="site-config.js?v=16.1.1" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js" defer></script>
@@ -1078,7 +1082,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
   <script src="https://unpkg.com/kursor" defer></script>
   <script src="stars-v2.js?v=16.0.0" defer></script>
-  <script src="site-init.js?v=16.1.0" defer></script>
+  <script src="site-init.js?v=16.1.3" defer></script>
   <script src="audit-engine.js?v=16.1.0" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
@@ -1138,7 +1142,7 @@
       }
 
       /* 
-       FORM HANDLING & PACKAGE SELECTION MOVED TO: site-init.js?v=15.15.0
+       FORM HANDLING & PACKAGE SELECTION MOVED TO: site-init.js
        (Prevents double submission & enables AI Agent Logic via /api)
     */
 

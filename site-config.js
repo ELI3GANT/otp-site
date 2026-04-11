@@ -40,6 +40,20 @@ window.OTP.getSupabase = function() {
     return window.OTP._supabaseClient;
 };
 
+/**
+ * Sanitize HTML for safe innerHTML (CMS / markdown output).
+ * Uses DOMPurify when present; otherwise escapes to plain text.
+ */
+window.OTP.sanitizeHtml = function(html) {
+    const raw = String(html ?? '');
+    if (typeof window.DOMPurify !== 'undefined') {
+        return window.DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
+    }
+    const t = document.createElement('template');
+    t.textContent = raw;
+    return t.innerHTML;
+};
+
 window.OTP.getApiBase = function() {
     // 0. Manual Override (For advanced development & satellite testing)
     const stored = localStorage.getItem('otp_api_base');

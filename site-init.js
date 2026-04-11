@@ -21,8 +21,8 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         // 2. Force DOM Update for Scarcity (Bypass HTML/CDN Cache)
         const scarcityText = document.getElementById('scarcity-text');
         if (scarcityText) {
-            scarcityText.textContent = "2 Open Slots for April";
-            console.log('📡 [OTP] Scarcity Badge Sync: APRIL_FIX_v16');
+            const month = new Date().toLocaleString('en-US', { month: 'long' });
+            scarcityText.textContent = `Limited openings — ${month}`;
         }
     })();
 
@@ -711,7 +711,7 @@ window.OTP.initLiveEditor = async function() {
         if (!error && contentRows) {
             contentRows.forEach(row => {
                 const el = document.getElementById(row.key);
-                if (el) el.innerHTML = row.content;
+                if (el) el.innerHTML = window.OTP.sanitizeHtml(row.content);
             });
             console.log(`[OTP] Loaded ${contentRows.length} dynamic content blocks.`);
         }
@@ -846,9 +846,6 @@ window.OTP.initLiveEditor = async function() {
         };
     }
 };
-
-// Initialize Live Editor
-setTimeout(window.OTP.initLiveEditor, 500);
 
 function initSite() {
 
@@ -1498,7 +1495,9 @@ function initSite() {
                 if (textEl) textEl.textContent = `SYSTEM: ${msg.payload.value.toUpperCase()}`;
                 
                 // Visual Flash for New Update
-                gsap.fromTo(statusEl, { opacity: 0.3 }, { opacity: 1, duration: 0.5, repeat: 3, yoyo: true });
+                if (window.gsap) {
+                    window.gsap.fromTo(statusEl, { opacity: 0.3 }, { opacity: 1, duration: 0.5, repeat: 3, yoyo: true });
+                }
             }
         }).subscribe();
     })();

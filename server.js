@@ -22,6 +22,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
+const sanitizeHtml = require('sanitize-html');
 
 // Safe Stripe Init
 let stripe = null;
@@ -614,7 +615,7 @@ app.post('/api/admin/delete-post', verifyToken, async (req, res) => {
         return res.status(500).json({ success: false, message: "Server misconfiguration: Missing Supabase Service Key" });
     }
 
-    const allowedTables = ['posts', 'broadcasts', 'leads', 'contacts', 'categories', 'ai_archetypes'];
+    const allowedTables = ['posts', 'broadcasts', 'leads', 'contacts', 'site_content', 'categories', 'ai_archetypes'];
     if (!allowedTables.includes(targetTable)) {
         return res.status(403).json({ success: false, message: "Restricted table access denied" });
     }
@@ -657,18 +658,40 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
         return res.status(403).json({ success: false, message: "Restricted table access denied" });
     }
 
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return res.status(400).json({ success: false, message: "Invalid payload" });
+    }
+
+    const siteContentKeyPattern = /^[a-zA-Z][\w.-]{0,119}$/;
+    const row = { ...payload };
+
+    if (targetTable === 'site_content') {
+        if (typeof row.content === 'string') {
+            row.content = sanitizeHtml(row.content);
+        }
+        if (row.key !== undefined && row.key !== null) {
+            const k = String(row.key).trim();
+            if (!siteContentKeyPattern.test(k)) {
+                return res.status(400).json({ success: false, message: 'Invalid site_content key' });
+            }
+            row.key = k;
+        } else if (!id) {
+            return res.status(400).json({ success: false, message: 'site_content insert requires key' });
+        }
+    }
+
     try {
         let query;
         if (id) {
             // Ensure updated_at is set for tracking
-            if (!payload.updated_at) payload.updated_at = new Date().toISOString();
-            query = supabaseAdmin.from(targetTable).update(payload).eq('id', id);
+            if (!row.updated_at) row.updated_at = new Date().toISOString();
+            query = supabaseAdmin.from(targetTable).update(row).eq('id', id);
         } else {
             // INSERT
             // Ensure created/updated timestamps exist
-            if (!payload.created_at) payload.created_at = new Date().toISOString();
-            if (!payload.updated_at) payload.updated_at = payload.created_at;
-            query = supabaseAdmin.from(targetTable).insert([payload]);
+            if (!row.created_at) row.created_at = new Date().toISOString();
+            if (!row.updated_at) row.updated_at = row.created_at;
+            query = supabaseAdmin.from(targetTable).insert([row]);
         }
 
         const { data, error } = await query.select();
@@ -685,19 +708,30 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
 // 2.7 Secure Multi-Table Data Fetching (Bypass RLS via Service Key)
 app.post('/api/admin/fetch-data', verifyToken, async (req, res) => {
     const { table, select = '*', order = 'created_at', descending = true, filters = [], limit } = req.body;
+
+    const allowedTables = ['posts', 'broadcasts', 'leads', 'contacts', 'site_content', 'categories', 'ai_archetypes'];
+    if (!table || !allowedTables.includes(table)) {
+        return res.status(403).json({ success: false, message: "Restricted table access denied" });
+    }
+
+    const ident = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    const safeOrder = typeof order === 'string' && ident.test(order) ? order : 'created_at';
+    const rawSel = typeof select === 'string' ? select.trim() : '*';
+    const safeSelect = !rawSel || rawSel.length > 2000 || /[;]|--|\/\*|\*\/|%\s*or|union\s+select/i.test(rawSel) ? '*' : rawSel;
     
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
 
     try {
-        let query = supabaseAdmin.from(table).select(select);
+        let query = supabaseAdmin.from(table).select(safeSelect);
         
         // Apply basic filters if any
-        filters.forEach(f => {
+        (Array.isArray(filters) ? filters : []).forEach(f => {
+            if (!f || typeof f.column !== 'string' || !ident.test(f.column)) return;
             if (f.op === 'eq') query = query.eq(f.column, f.value);
             if (f.op === 'neq') query = query.neq(f.column, f.value);
         });
 
-        query = query.order(order, { ascending: !descending });
+        query = query.order(safeOrder, { ascending: !descending });
 
         // Apply limit if provided
         if (limit && Number.isInteger(limit) && limit > 0) {
@@ -1330,13 +1364,23 @@ app.post('/api/content/update', verifyToken, async (req, res) => {
 
     try {
         console.log(`📝 Secure Content Update: ${updates.length} items from ${req.auth?.role || 'admin'}`);
-        
-        const { error } = await supabaseAdmin.from('site_content').upsert(updates.map(u => ({
-            key: u.key,
-            content: u.content,
-            updated_by: 'admin-proxy',
-            updated_at: new Date().toISOString()
-        })));
+
+        const keyPattern = /^[a-zA-Z][\w.-]{0,119}$/;
+        const rows = updates.map((u) => {
+            const key = typeof u.key === 'string' ? u.key.trim() : '';
+            if (!keyPattern.test(key)) {
+                throw new Error(`Invalid content key: ${JSON.stringify(u.key)}`);
+            }
+            const raw = typeof u.content === 'string' ? u.content : '';
+            return {
+                key,
+                content: sanitizeHtml(raw),
+                updated_by: 'admin-proxy',
+                updated_at: new Date().toISOString()
+            };
+        });
+
+        const { error } = await supabaseAdmin.from('site_content').upsert(rows);
 
         if (error) throw error;
         
@@ -1344,7 +1388,11 @@ app.post('/api/content/update', verifyToken, async (req, res) => {
 
     } catch (e) {
         console.error("Content Update Error:", e);
-        res.status(500).json({ error: e.message });
+        const msg = e.message || String(e);
+        if (msg.includes('Invalid content key')) {
+            return res.status(400).json({ success: false, message: msg });
+        }
+        res.status(500).json({ error: msg });
     }
 });
 
@@ -1365,7 +1413,7 @@ app.route('/api/create-checkout-session')
 
     // Pricing Map (In cents) - Customize these values
     // Using lowercase keys for robust matching
-    // Pricing Map (In cents) - Synchronized with index.html
+    // Pricing Map (In cents) — must match public "from $X" copy on index.html (#packages + contact form)
     const prices = {
         'the signal': 25000,         // $250.00
         'the engine': 50000,         // $500.00

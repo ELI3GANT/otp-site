@@ -9,6 +9,7 @@
     "watch:push": "node scripts/watch_push.js",
     "master_test": "node tests/master_runner.js",
     "master_test:live": "LIVE_API_URL=https://otp-site.vercel.app node tests/master_runner.js",
+    "master_test:ci": "LIVE_API_URL=https://www.onlytrueperspective.tech node tests/master_runner.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -26,6 +27,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "node-fetch": "^3.3.2",
+    "sanitize-html": "^2.17.2",
     "stripe": "^14.25.0"
   },
   "devDependencies": {
