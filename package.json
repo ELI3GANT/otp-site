@@ -10,6 +10,7 @@
     "master_test": "node tests/master_runner.js",
     "master_test:live": "LIVE_API_URL=https://otp-site.vercel.app node tests/master_runner.js",
     "master_test:ci": "LIVE_API_URL=https://www.onlytrueperspective.tech node tests/master_runner.js",
+    "build:speed-insights": "npx --yes esbuild@0.24.2 speed-insights-entry.mjs --bundle --platform=browser --format=esm --outfile=speed-insights-bundle.js --define:process.env.NODE_ENV=\\\"production\\\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -18,6 +19,7 @@
   "dependencies": {
     "@google/gemini-cli": "^0.23.0",
     "@supabase/supabase-js": "^2.90.1",
+    "@vercel/speed-insights": "^2.0.0",
     "body-parser": "^1.20.3",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
