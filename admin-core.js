@@ -215,49 +215,32 @@
             return;
         }
 
-        // Singleton Supabase Client (Consolidated)
-        // --- AUTH HARDENING: INJECT SESSION TOKEN ---
-        if (state.token && state.token !== 'static-bypass-token') {
-            console.log("🔑 Injecting secure session token...");
-            try {
-                // Singleton handle
-                const sb = window.OTP.getSupabase();
-                sb.auth.setSession({
-                    access_token: state.token,
-                    refresh_token: state.token 
-                });
-            } catch (authErr) {
-                console.warn("⚠️ Session injection skipped:", authErr.message);
-            }
-        }
-        window.sb = state.client; 
-        
+        // Singleton Supabase client — must be assigned before any guard or DB calls.
+        state.client = window.OTP.getSupabase();
+        window.sb = state.client;
+
         if (!state.client) {
             updateDiagnostics('db', 'LIB MISSING', '#ff4444');
             return;
         }
 
+        // --- AUTH HARDENING: INJECT SESSION TOKEN ---
+        if (state.token && state.token !== 'static-bypass-token') {
+            console.log("🔑 Injecting secure session token...");
+            try {
+                state.client.auth.setSession({
+                    access_token: state.token,
+                    refresh_token: state.token
+                });
+            } catch (authErr) {
+                console.warn("⚠️ Session injection skipped:", authErr.message);
+            }
+        }
+
         try {
             console.log("🔌 Connecting to Supabase KERNEL...");
             updateDiagnostics('db', 'CONNECTING...', 'var(--admin-muted)');
-            
-            // Connection validated via Singleton
-            state.client = window.OTP.getSupabase();
-            window.sb = state.client; 
-            
-            // --- AUTH HARDENING: INJECT SESSION TOKEN ---
-            if (state.token && state.token !== 'static-bypass-token') {
-                console.log("🔑 Injecting secure session token...");
-                try {
-                    state.client.auth.setSession({
-                        access_token: state.token,
-                        refresh_token: state.token 
-                    });
-                } catch (authErr) {
-                    console.warn("⚠️ Session injection skipped (init):", authErr.message);
-                }
-            }
-            
+
             // Connection Test (Uses Real Query to verify RLS/Key)
             let testRes = await state.client.from('posts').select('id').limit(1);
             
