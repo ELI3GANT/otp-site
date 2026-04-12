@@ -7,10 +7,18 @@
     <meta name="description" content="Priority activation successful. Your perspective is being calculated.">
     <meta name="theme-color" content="#030305" />
     <title>Priority Activation | Only True Perspective</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+    <!-- First-paint accent + theme (before page CSS uses --accent2-rgb) -->
+    <script src="theme-chrono.js?v=1"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
         :root {
-            --accent2: var(--accent2);
+            /* Fallbacks if theme-chrono is blocked; otherwise theme-chrono sets accent on the root element. */
+            --accent2: rgb(0, 236, 255);
+            --accent2-rgb: 0, 236, 255;
             --bg: #030305;
         }
 
@@ -23,7 +31,8 @@
             color: #fff;
             text-align: center;
             font-family: 'Space Grotesk', sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             margin: 0;
             padding: 20px;
         }
@@ -286,13 +295,44 @@
             margin-bottom: 10px;
         }
 
+        html[data-theme="light"] body {
+            color: #0c0c12;
+        }
+        html[data-theme="light"] .mesh-bg {
+            background:
+                radial-gradient(circle at 10% 20%, rgba(var(--accent2-rgb), 0.12) 0%, transparent 42%),
+                radial-gradient(circle at 90% 80%, rgba(var(--accent2-rgb), 0.1) 0%, transparent 42%),
+                #eceef2;
+        }
+        html[data-theme="light"] .success-card {
+            background: rgba(255, 255, 255, 0.94);
+            border-color: rgba(var(--accent2-rgb), 0.22);
+            color: #0c0c12;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08), 0 0 30px rgba(var(--accent2-rgb), 0.08);
+        }
+        html[data-theme="light"] h1 { color: #0a0a0f; }
+        html[data-theme="light"] .step strong { color: #111; }
+        html[data-theme="light"] .step span { color: rgba(0, 0, 0, 0.55); }
+        html[data-theme="light"] .step { border-left-color: rgba(0, 0, 0, 0.12); }
+        html[data-theme="light"] .upload-zone {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        html[data-theme="light"] .upload-label { color: rgba(0, 0, 0, 0.45); }
+        html[data-theme="light"] input[type="text"] {
+            background: #fff;
+            border-color: rgba(0, 0, 0, 0.12);
+            color: #111;
+        }
+        html[data-theme="light"] .email-alt { color: rgba(0, 0, 0, 0.45); }
+        html[data-theme="light"] .email-alt a { color: #0a0a0f; }
+        html[data-theme="light"] #finalMsg p { color: rgba(0, 0, 0, 0.62) !important; }
+
         @media (max-width: 480px) {
             h1 { font-size: 2.8rem; }
             .success-card { padding: 40px 20px; }
         }
     </style>
-  <!-- THEME GUARD: first-paint theme + accent (theme-chrono.js) -->
-  <script src="theme-chrono.js?v=1"></script>
 </head>
 <body>
     <div class="mesh-bg"></div>
