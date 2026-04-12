@@ -42,6 +42,24 @@ html.nav-open, body.nav-open {
     overscroll-behavior: contain;
 }
 
+/* iOS Safari: sub-16px inputs trigger zoom-on-focus */
+@media (max-width: 768px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-pulse,
+  .bg-grain {
+    animation: none !important;
+  }
+  .bg-grain {
+    opacity: 0.02;
+  }
+}
 
 /* SMART CONTAINMENT (High-Performance Rendering) */
 .section-studio, .section-work, #services, #contact {
@@ -1190,8 +1208,8 @@ h1, h2, h3 {
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   position: fixed !important;
-  bottom: 30px !important;
-  right: 30px !important;
+  bottom: calc(30px + env(safe-area-inset-bottom, 0px)) !important;
+  right: calc(30px + env(safe-area-inset-right, 0px)) !important;
   z-index: 10001 !important;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -1275,7 +1293,11 @@ body::before {
   pointer-events: none;
   transform: translate3d(0,0,0); /* Force hardware accel */
   backface-visibility: hidden;
-  height: 100vh; /* Force height to viewport, ignore address bar shifts */
+  /* dvh: mobile URL bar; vh: fallback for older browsers */
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 html, body {
@@ -2165,6 +2187,7 @@ html {
   top: 0;
   width: 100%;
   padding: 24px 48px;
+  padding-top: calc(24px + env(safe-area-inset-top, 0px));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2184,13 +2207,17 @@ html {
 /* Scroll-shrink: nav compacts when page is scrolled */
 .nav.scrolled {
   padding: 12px 48px;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
   background: rgba(10,10,18,0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom-color: rgba(255,255,255,0.1);
 }
 @media (max-width: 768px) {
-  .nav.scrolled { padding: 10px 20px; }
+  .nav.scrolled {
+    padding: 10px 20px;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  }
 }
 
 .nav-logo .otp-mark {
@@ -2457,8 +2484,14 @@ html {
 @media (max-width: 768px) {
   .nav {
     padding: 12px 20px;
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
     justify-content: space-between;
-    height: 70px;
+    min-height: calc(70px + env(safe-area-inset-top, 0px));
+    height: auto;
+    box-sizing: border-box;
+  }
+  .nav-drawer {
+    top: calc(70px + env(safe-area-inset-top, 0px));
   }
   .nav-links {
     display: none !important;
@@ -2677,8 +2710,8 @@ html {
 .nav-drawer {
   position: fixed;
   top: 70px;
-  right: 15px;
-  left: 15px;
+  right: max(15px, env(safe-area-inset-right, 0px));
+  left: max(15px, env(safe-area-inset-left, 0px));
   padding: 12px;
   display: none; /* NUCLEAR: completely remove from render tree when closed */
   gap: 8px;
@@ -2690,10 +2723,7 @@ html {
   -webkit-backdrop-filter: blur(10px);
   z-index: 11000;
   box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,236,255,0.04);
-  max-height: calc(100vh - 90px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  max-height: calc(100dvh - 80px);
+  max-height: calc(100dvh - 88px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -2758,6 +2788,7 @@ html {
   overflow: hidden; 
   content-visibility: auto; /* Performance: Skip heavy 3D compute until visible */
   contain-intrinsic-size: 100vh;
+  contain-intrinsic-size: 100dvh;
 }
 
 /* Tighten the rhythm */
@@ -9308,4 +9339,11 @@ section[id] {
 .spectral-revelation-neon .nav-logo img,
 .spectral-revelation-neon .hero-eye-3d {
   filter: hue-rotate(-90deg) saturate(2) brightness(1.2) !important;
+}
+
+/* prefers-reduced-motion: after mobile .hero-eye-3d rules so animation stays off */
+@media (prefers-reduced-motion: reduce) {
+  .hero-eye-3d {
+    animation: none !important;
+  }
 }
