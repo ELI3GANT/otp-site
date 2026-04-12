@@ -141,12 +141,16 @@ BODY: ${text || 'HTML Content Sent'}
     }
 }
 
-// 3. Global Cache Protocol (BREAK PERSISTENT BROWSER CACHING)
+// 3. API Cache Protocol
+// API responses should not be browser/CDN cached.
+// Static files and HTML are handled by explicit per-route/per-extension policies below.
 app.use((req, res, next) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-    res.set('Surrogate-Control', 'no-store');
+    if (req.path.startsWith('/api')) {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        res.set('Surrogate-Control', 'no-store');
+    }
     next();
 });
 
