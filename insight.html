@@ -42,6 +42,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <script src="theme-chrono.js?v=1"></script>
   <style>
     body { background: #030305; color: #fff; margin: 0 !important; font-family: 'Inter', sans-serif; }
       
@@ -165,6 +166,11 @@
           color: #fff;
       }
       [data-theme="light"] blockquote { background: #f9f9fb; color: #333; }
+      [data-theme="light"] .post-content pre,
+      [data-theme="light"] .post-content code {
+          background: rgba(0, 0, 0, 0.06);
+          color: #111;
+      }
   
       /* CONTENT RESET FOR INJECTED POSTS */
       .post-content img {
@@ -193,8 +199,6 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
-    <!-- THEME GUARD: first-paint theme + accent (theme-chrono.js) -->
-  <script src="theme-chrono.js?v=1"></script>
 </head>
 <body class="k-cursor-ready">
   <canvas id="cursor-canvas"></canvas>

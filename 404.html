@@ -9,16 +9,26 @@
     <title>404 | Perspective Lost</title>
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <script src="theme-chrono.js?v=1"></script>
     <link rel="stylesheet" href="styles.css">
     <style>
+        :root {
+            --accent2: rgb(0, 236, 255);
+            --accent2-rgb: 0, 236, 255;
+        }
         .error-page {
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
             text-align: center;
             background: #030305;
+            padding: 24px 16px;
+            box-sizing: border-box;
         }
         .error-code {
             font-family: 'Syne', sans-serif;
@@ -27,6 +37,7 @@
             line-height: 1;
             background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.1) 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 20px;
         }
@@ -36,9 +47,19 @@
             margin-bottom: 40px;
             max-width: 40ch;
         }
+        html[data-theme="light"] .error-page {
+            background: #eceef2;
+        }
+        html[data-theme="light"] .error-code {
+            background: linear-gradient(180deg, #0a0a0f 0%, rgba(10,10,15,0.35) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        html[data-theme="light"] .error-message {
+            color: #444;
+        }
     </style>
-  <!-- THEME GUARD: first-paint theme + accent (theme-chrono.js) -->
-  <script src="theme-chrono.js?v=1"></script>
 </head>
 <body class="error-page k-cursor-ready">
     <canvas id="cursor-canvas"></canvas>
