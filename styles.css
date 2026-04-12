@@ -9190,10 +9190,23 @@ section[id] {
   filter: none !important;
   text-shadow: none !important;
   -webkit-text-stroke: 0 !important;
+  transform: none !important;
+  will-change: auto !important;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
 [data-theme="light"] .visual-success-heading {
   color: #000 !important;
+}
+
+.visual-success-heading .visual-success-accent {
+  color: var(--accent2) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background: none !important;
+  animation: none !important;
+  filter: none !important;
 }
 
 .spectral-revelation .visual-success-heading,
@@ -9216,6 +9229,14 @@ section[id] {
   -webkit-text-fill-color: transparent !important;
   animation: spectral-flow 8s linear infinite !important;
   display: inline !important;
+}
+
+.spectral-revelation .visual-success-heading .visual-success-accent,
+.spectral-v-sync .visual-success-heading .visual-success-accent {
+  color: var(--accent2) !important;
+  -webkit-text-fill-color: currentColor !important;
+  background: none !important;
+  animation: none !important;
 }
 
 .spectral-revelation .kursor-child {
