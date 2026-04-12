@@ -9098,8 +9098,8 @@ body {
 }
 
 [data-theme="light"] .spectral-text {
-    /* Prevent spectral vibration from being too light in Day mode */
-    -webkit-text-stroke: 1px rgba(0,0,0,0.05);
+    /* Keep gradients crisp; stroke caused soft/blurred edges on toggle. */
+    -webkit-text-stroke: 0;
 }
 
 [data-theme="light"] .result-card {
@@ -9153,8 +9153,6 @@ section[id] {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-  100% { background-position: 0% 50%; }
-}
 
 .spectral-revelation {
   --accent2: #ff00cc;
@@ -9184,6 +9182,40 @@ section[id] {
 
 .spectral-revelation .nav-logo {
   filter: drop-shadow(0 0 8px #ff00cc);
+}
+
+/* Keep this specific heading crisp when theme/aura switches occur. */
+.visual-success-heading,
+.visual-success-heading .spectral-text {
+  filter: none !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+[data-theme="light"] .visual-success-heading {
+  color: #000 !important;
+}
+
+.spectral-revelation .visual-success-heading,
+.spectral-v-sync .visual-success-heading {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--text) !important;
+  animation: none !important;
+  display: block !important;
+}
+
+.spectral-revelation .visual-success-heading .spectral-text,
+.spectral-v-sync .visual-success-heading .spectral-text {
+  background: var(--spectral-gradient) !important;
+  background-size: var(--spectral-size) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: spectral-flow 8s linear infinite !important;
+  display: inline !important;
 }
 
 .spectral-revelation .kursor-child {
