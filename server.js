@@ -186,17 +186,16 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
 const staticPath = __dirname;
 console.log("Static Path Configured:", staticPath);
 
-app.use(express.static(staticPath, {
-    maxAge: '1d',
-    etag: true
-}));
+/** HTML documents must not be cached long at CDN/browser (avoids stale shell after deploy). */
+function noStoreHtml(res) {
+    res.set('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
+}
 
-// Root Route
+// Root + clean URL aliases BEFORE express.static so `/` is not served as a long-cache static file.
 app.get('/', (req, res) => {
+    noStoreHtml(res);
     res.sendFile(path.join(staticPath, 'index.html'));
 });
-
-// Clean URL aliases for static pages (works on desktop/mobile and shared links).
 const staticAliases = {
     '/privacy': 'privacy.html',
     '/terms': 'terms.html',
@@ -208,8 +207,26 @@ const staticAliases = {
     '/payment-success': 'payment_success.html'
 };
 Object.entries(staticAliases).forEach(([route, file]) => {
-    app.get(route, (req, res) => res.sendFile(path.join(staticPath, file)));
+    app.get(route, (req, res) => {
+        noStoreHtml(res);
+        res.sendFile(path.join(staticPath, file));
+    });
 });
+
+app.use(express.static(staticPath, {
+    etag: true,
+    setHeaders: (res, filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+        if (ext === '.html') {
+            res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
+        } else if (ext === '.js' || ext === '.css') {
+            // HTML uses ?v= cache-bust; short TTL + must-revalidate picks up new deploys quickly.
+            res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+        } else if (['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.webmanifest', '.xml', '.txt'].includes(ext)) {
+            res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+        }
+    }
+}));
 
 // Static Fallback for Vercel
 app.get('/:file', (req, res, next) => {
@@ -218,6 +235,12 @@ app.get('/:file', (req, res, next) => {
     const allowed = ['.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.webmanifest', '.xml', '.txt'];
     
     if (allowed.includes(ext)) {
+        if (ext === '.html') noStoreHtml(res);
+        else if (ext === '.js' || ext === '.css') {
+            res.set('Cache-Control', 'public, max-age=300, must-revalidate');
+        } else {
+            res.set('Cache-Control', 'public, max-age=604800, immutable');
+        }
         return res.sendFile(path.join(staticPath, file), (err) => {
             if (err) next();
         });
@@ -348,10 +371,10 @@ app.use((req, res, next) => {
     next();
 });
 
-// --- CACHE CONTROL HELPER ---
+// --- DEFAULT CACHE (handlers that do not set Cache-Control themselves) ---
 app.use((req, res, next) => {
-    if (req.method === 'GET' && !req.path.startsWith('/api')) {
-        res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400'); // Cache static for 1hr browser, 24hr CDN
+    if (req.method === 'GET' && !req.path.startsWith('/api') && !res.get('Cache-Control')) {
+        res.set('Cache-Control', 'private, max-age=0, must-revalidate');
     }
     next();
 });
@@ -1578,6 +1601,7 @@ app.use('/api', (req, res) => {
 
 // Serve 404.html for any unknown frontend routes
 app.use((req, res) => {
+    noStoreHtml(res);
     res.status(404).sendFile(path.join(staticPath, '404.html'));
 });
 
