@@ -9244,9 +9244,9 @@ section[id] {
 }
 
 .spectral-v-sync .hero-title-adjust,
-.spectral-v-sync .syne-bold:not(.luxe-title .title),
+.spectral-v-sync .syne-bold:not(.visual-success-heading):not(.title),
 .spectral-v-sync h1:not(.luxe-title),
-.spectral-v-sync h2,
+.spectral-v-sync h2:not(.visual-success-heading),
 .spectral-v-sync .result-value {
   background: var(--spectral-gradient) !important;
   background-size: var(--spectral-size) !important;
@@ -9256,6 +9256,18 @@ section[id] {
   display: inline-block; /* Fix for background clipping bug */
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+/* Hard guard: keep this heading crisp even during spectral variants. */
+.spectral-v-sync h2.visual-success-heading {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--text) !important;
+  filter: none !important;
+  text-shadow: none !important;
+  animation: none !important;
 }
 
 /* Explicitly force outline for luxe-title even during spectral events */
