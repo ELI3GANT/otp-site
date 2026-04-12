@@ -26,7 +26,7 @@
     "@type": "Organization",
     "name": "Only True Perspective",
     "url": "https://onlytrueperspective.tech",
-    "logo": "https://onlytrueperspective.tech/otp-logo.png",
+    "logo": "https://www.onlytrueperspective.tech/icon.png",
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "Customer Service",
@@ -304,8 +304,8 @@
 
             // Dynamically update OG tags for proper social sharing
             const postExcerpt = (post.excerpt || post.content || '').replace(/<[^>]*>/g, '').substring(0, 160);
-            const postImage = post.image_url || 'https://onlytrueperspective.tech/og.jpg';
-            const postUrl = `https://onlytrueperspective.tech/insight.html?slug=${encodeURIComponent(slug)}`;
+            const postImage = post.image_url || 'https://www.onlytrueperspective.tech/og.jpg';
+            const postUrl = `https://www.onlytrueperspective.tech/insight.html?slug=${encodeURIComponent(slug)}`;
             document.querySelector('meta[property="og:title"]')?.setAttribute('content', `${post.title} | Only True Perspective`);
             document.querySelector('meta[property="og:description"]')?.setAttribute('content', postExcerpt);
             document.querySelector('meta[property="og:image"]')?.setAttribute('content', postImage);
@@ -355,11 +355,19 @@
             const titleEl = document.getElementById('postTitle');
             
             const body = document.getElementById('postBody');
-            if (titleEl) titleEl.innerText = e.message === 'POST_NOT_FOUND' ? "SIGNAL NOT FOUND" : "UPLINK ERROR";
+            if (titleEl) {
+                titleEl.innerText = e.message === 'POST_NOT_FOUND' ? "SIGNAL NOT FOUND"
+                    : e.message === 'CONFIG_MISSING' ? "CONFIGURATION ERROR" : "UPLINK ERROR";
+            }
             if (body) {
                 body.style.display = 'block';
+                const detail = e.message === 'POST_NOT_FOUND'
+                    ? 'This transmission has been archived or does not exist.'
+                    : e.message === 'CONFIG_MISSING'
+                    ? 'Required scripts did not load. Try a hard refresh or disable extensions that block CDNs.'
+                    : 'Connection lost. Please try again.';
                 body.innerHTML = `<div style='text-align:center; padding: 60px 40px;'>
-                    <p style='color:var(--muted); margin-bottom:30px;'>${e.message === 'POST_NOT_FOUND' ? 'This transmission has been archived or does not exist.' : 'Connection lost. Please try again.'}</p>
+                    <p style='color:var(--muted); margin-bottom:30px;'>${detail}</p>
                     <a href='insights.html' style='color:var(--accent2); text-decoration:none; font-weight:bold; letter-spacing:2px; font-family:\'Space Grotesk\',sans-serif; border:1px solid rgba(var(--accent2-rgb), 0.35); padding:12px 24px; border-radius:8px;'>↩ RETURN TO VAULT</a>
                 </div>`;
             }

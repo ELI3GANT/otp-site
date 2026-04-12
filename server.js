@@ -46,6 +46,23 @@ const app = express();
 app.disable('x-powered-by'); // Hide stack details
 const port = process.env.PORT || 3000;
 
+/** Slug / post_slug for RPC and filters: capped length, no control chars or angle brackets. */
+function sanitizeSlugInput(raw) {
+    const slug = String(raw ?? '').trim().slice(0, 256);
+    if (!slug || /[\x00-\x08\x0b\x0c\x0e-\x1f<>\\]/.test(slug)) return null;
+    return slug;
+}
+
+/** Escape user text for safe interpolation into HTML email bodies. */
+function escapeHtmlForEmail(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Initialize Supabase Admin Client (Service Role)
 // Only needed if performing admin actions like Delete/Update on restricted tables
 const supabaseAdmin = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY 
@@ -154,9 +171,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// 2. Compression: Gzip/Brotli for text assets
-app.use(compression());
-
 // --- [CORE] STRIPE WEBHOOK GATEWAY ---
 // CRITICAL: This MUST be defined before bodyParser.json() to capture raw buffer
 app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -193,6 +207,8 @@ console.log("Static Path Configured:", staticPath);
 /** HTML documents must not be cached long at CDN/browser (avoids stale shell after deploy). */
 function noStoreHtml(res) {
     res.set('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
 }
 
 // Root + clean URL aliases BEFORE express.static so `/` is not served as a long-cache static file.
@@ -221,13 +237,20 @@ app.use(express.static(staticPath, {
     etag: true,
     setHeaders: (res, filePath) => {
         const ext = path.extname(filePath).toLowerCase();
+        const base = path.basename(filePath).toLowerCase();
         if (ext === '.html') {
             res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
         } else if (ext === '.js' || ext === '.css') {
-            // HTML uses ?v= cache-bust; short TTL + must-revalidate picks up new deploys quickly.
+            // Query ?v= busts deploys; short TTL limits stale JS/CSS without SW.
             res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
-        } else if (['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.webmanifest', '.xml', '.txt'].includes(ext)) {
-            res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+        } else if (ext === '.xml' || ext === '.txt' || ext === '.webmanifest') {
+            // Never immutable: sitemap/robots/manifest must reflect deploys quickly.
+            const short = base === 'robots.txt' || base === 'sitemap.xml';
+            const maxAge = short ? 120 : 600;
+            res.setHeader('Cache-Control', `public, max-age=${maxAge}, must-revalidate`);
+        } else if (['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico'].includes(ext)) {
+            // Avoid immutable without content hashes — og/favicon updates otherwise lag a week at CDNs.
+            res.setHeader('Cache-Control', 'public, max-age=86400, must-revalidate');
         }
     }
 }));
@@ -239,11 +262,16 @@ app.get('/:file', (req, res, next) => {
     const allowed = ['.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico', '.webmanifest', '.xml', '.txt'];
     
     if (allowed.includes(ext)) {
+        const base = path.basename(file).toLowerCase();
         if (ext === '.html') noStoreHtml(res);
         else if (ext === '.js' || ext === '.css') {
             res.set('Cache-Control', 'public, max-age=300, must-revalidate');
+        } else if (ext === '.xml' || ext === '.txt' || ext === '.webmanifest') {
+            const short = base === 'robots.txt' || base === 'sitemap.xml';
+            const maxAge = short ? 120 : 600;
+            res.set('Cache-Control', `public, max-age=${maxAge}, must-revalidate`);
         } else {
-            res.set('Cache-Control', 'public, max-age=604800, immutable');
+            res.set('Cache-Control', 'public, max-age=86400, must-revalidate');
         }
         return res.sendFile(path.join(staticPath, file), (err) => {
             if (err) next();
@@ -367,7 +395,6 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // --- VERBOSE REQUEST LOGGING ---
-// --- VERBOSE REQUEST LOGGING ---
 app.use((req, res, next) => {
     const log = `[${new Date().toISOString()}] ${req.method} ${req.url} - IP: ${req.ip}\n`;
     // fs.appendFile removed for Vercel
@@ -426,10 +453,15 @@ const authLimiter = rateLimit({
 app.post('/api/auth/login', authLimiter, (req, res) => {
     let { passcode } = req.body;
     const envPass = (process.env.ADMIN_PASSCODE || '').trim();
+    const jwtSecret = (process.env.JWT_SECRET || '').trim();
+    if (!envPass || !jwtSecret) {
+        console.warn('🔓 Login rejected: ADMIN_PASSCODE or JWT_SECRET not configured');
+        return res.status(503).json({ success: false, message: 'Admin login is not configured on this server.' });
+    }
     // Robust comparison with trimming and case-insensitivity
     if (passcode && passcode.trim().toLowerCase() === envPass.toLowerCase()) {
         // Issue JWT
-        const token = jwt.sign({ role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '12h' });
+        const token = jwt.sign({ role: 'admin' }, jwtSecret, { expiresIn: '12h' });
         return res.json({ success: true, token });
     }
     
@@ -455,7 +487,12 @@ const verifyToken = (req, res, next) => {
             return next();
         }
 
-        jwt.verify(bearerToken, process.env.JWT_SECRET, (err, authData) => {
+        const jwtSecret = (process.env.JWT_SECRET || '').trim();
+        if (!jwtSecret) {
+            return res.status(503).json({ success: false, message: 'Server authentication is not configured.' });
+        }
+
+        jwt.verify(bearerToken, jwtSecret, (err, authData) => {
             if (err) return res.status(403).json({ success: false, message: "Invalid or expired token" });
             req.auth = authData;
             next();
@@ -649,10 +686,16 @@ app.post('/api/admin/delete-post', verifyToken, async (req, res) => {
 
     try {
         let query = supabaseAdmin.from(targetTable).delete();
-        
-        if (id) query = query.eq('id', id);
-        else if (slug) query = query.eq('slug', slug);
-        else return res.status(400).json({ success: false, message: "Missing ID or Slug" });
+        const idStr = id === undefined || id === null ? '' : String(id).trim();
+        if (idStr) {
+            query = query.eq('id', idStr);
+        } else {
+            const safeSlug = sanitizeSlugInput(slug);
+            if (!safeSlug) {
+                return res.status(400).json({ success: false, message: "Missing or invalid ID or Slug" });
+            }
+            query = query.eq('slug', safeSlug);
+        }
 
         const { data, error } = await query.select();
 
@@ -967,17 +1010,28 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
 
 // 5. CONTACT AGENT (AI Auto-Draft)
 app.post('/api/contact/submit', async (req, res) => {
-    const { name, email, project_type, project_details, budget, timeline, _gotcha } = req.body;
-    
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const { name, email, project_type, project_details, budget, timeline, _gotcha } = body;
+
     // 0. Honeypot Spam Check
     if (_gotcha) {
         console.warn(`🛑 Spam caught by honeypot: ${email}`);
         return res.status(200).json({ success: true, message: "Contact received." }); // Fake success for bots
     }
 
+    const nameT = name != null ? String(name).trim().slice(0, 200) : '';
+    const emailT = email != null ? String(email).trim().slice(0, 254) : '';
+    const projectTypeT = project_type != null ? String(project_type).trim().slice(0, 200) : '';
+    const projectDetailsT = project_details != null ? String(project_details).trim().slice(0, 12000) : '';
+    const budgetT = budget != null ? String(budget).trim().slice(0, 200) : '';
+    const timelineT = timeline != null ? String(timeline).trim().slice(0, 200) : '';
+
     // 1. Basic Validation
-    if (!name || !email) {
+    if (!nameT || !emailT) {
         return res.status(400).json({ success: false, message: "Name and Email are required." });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailT)) {
+        return res.status(400).json({ success: false, message: "Please provide a valid email address." });
     }
 
     try {
@@ -988,12 +1042,12 @@ app.post('/api/contact/submit', async (req, res) => {
         const { data: contactData, error: dbError } = await adminClient
             .from('contacts')
             .insert([{ 
-                name, 
-                email, 
-                service: project_type, // Map to DB column
-                message: project_details, // Map to DB column
-                budget, 
-                timeline, 
+                name: nameT, 
+                email: emailT, 
+                service: projectTypeT, // Map to DB column
+                message: projectDetailsT, // Map to DB column
+                budget: budgetT, 
+                timeline: timelineT, 
                 ai_status: 'processing' 
             }])
             .select()
@@ -1009,28 +1063,28 @@ app.post('/api/contact/submit', async (req, res) => {
         // 3. INTERNAL NOTIFICATION (Forward to contact@)
         await sendSecureEmail({
             to: BUSINESS_EMAILS.CONTACT,
-            subject: `[NEW LEAD] ${name} // OTP`,
+            subject: `[NEW LEAD] ${nameT.replace(/[\r\n]/g, ' ').slice(0, 120)} // OTP`,
             html: `
                 <div style="font-family: sans-serif; padding: 20px; background: #000; color: #fff;">
                     <h2 style="color: #00ffaa; border-bottom: 1px solid #333; padding-bottom: 10px;">TACTICAL LEAD ACQUISITION</h2>
-                    <p><strong>NAME:</strong> ${name}</p>
-                    <p><strong>EMAIL:</strong> ${email}</p>
-                    <p><strong>PROJECT TYPE:</strong> ${project_type}</p>
-                    <p><strong>BUDGET:</strong> ${budget || 'N/A'}</p>
-                    <p><strong>TIMELINE:</strong> ${timeline || 'N/A'}</p>
-                    <p><strong>DETAILS:</strong><br>${project_details}</p>
+                    <p><strong>NAME:</strong> ${escapeHtmlForEmail(nameT)}</p>
+                    <p><strong>EMAIL:</strong> ${escapeHtmlForEmail(emailT)}</p>
+                    <p><strong>PROJECT TYPE:</strong> ${escapeHtmlForEmail(projectTypeT || 'N/A')}</p>
+                    <p><strong>BUDGET:</strong> ${escapeHtmlForEmail(budgetT || 'N/A')}</p>
+                    <p><strong>TIMELINE:</strong> ${escapeHtmlForEmail(timelineT || 'N/A')}</p>
+                    <p><strong>DETAILS:</strong><br>${escapeHtmlForEmail(projectDetailsT || '')}</p>
                     <div style="margin-top: 20px; font-size: 0.8rem; color: #666;">
                         Generated via OTP Portal System // ID: ${contactData.id}
                     </div>
                 </div>
             `,
-            text: `NEW LEAD: ${name}\nEmail: ${email}\nProject Type: ${project_type}\nBudget: ${budget}\nTimeline: ${timeline}\n\nMessage:\n${project_details}`,
+            text: `NEW LEAD: ${nameT}\nEmail: ${emailT}\nProject Type: ${projectTypeT}\nBudget: ${budgetT}\nTimeline: ${timelineT}\n\nMessage:\n${projectDetailsT}`,
             from: BUSINESS_EMAILS.CONTACT
         });
 
         // 4. AUTO-RESPONSE (Send to Lead)
         await sendSecureEmail({
-            to: email,
+            to: emailT,
             subject: 'We got your request — OnlyTruePerspective',
             text: `Hey — appreciate you reaching out to OnlyTruePerspective.\n\nWe just received your request and we’re reviewing it now.\n\nIf you want to speed things up, reply with your timeline, budget range, and any references or examples.\n\nWe’ll get back to you shortly.\n\n– ELI\nOnlyTruePerspective`,
             html: `
@@ -1048,10 +1102,10 @@ app.post('/api/contact/submit', async (req, res) => {
 
         // 5. TRIGGER AI AGENT (Content Analysis & Draft Generation)
         const systemPrompt = `You are the Studio Manager for 'Only True Perspective' (OTP), a high-end creative agency.
-        Draft a high-status, professional reply email for ${name}.
+        Draft a high-status, professional reply email for ${nameT}.
         Sign off with "OTP // Visual Division".`;
 
-        const userPrompt = `Lead: ${name}\nService: ${project_type}\nBudget: ${budget}\nDetails: ${project_details}`;
+        const userPrompt = `Lead: ${nameT}\nService: ${projectTypeT}\nBudget: ${budgetT}\nDetails: ${projectDetailsT}`;
         
         let draftReply = "";
         try {
@@ -1335,38 +1389,33 @@ app.post('/api/admin/purge-contacts', verifyToken, async (req, res) => {
 
 // 6.1 Secure Analytics Tracking
 app.post('/api/analytics/view', async (req, res) => {
-    const { slug } = req.body;
-    if (!slug) return res.status(400).json({ success: false, message: "Missing Slug" });
+    const slug = sanitizeSlugInput(req.body?.slug);
+    if (!slug) {
+        return res.status(400).json({ success: false, message: "Invalid or missing slug" });
+    }
 
     // Prevent direct spamming by checking simple rate limit (already applied globally, but logic here helps too)
     // We strictly use the Service Key here to bypass "Anonymous" RLS restrictions on UPDATES.
     if (!supabaseAdmin) return res.status(500).json({ success: false, message: "Server Analytics Config Missing" });
 
     try {
-        // 1. Try Posts Table
-        // We use the RPC if possible, otherwise manual select+update
-        // RPC is preferred for atomicity: create function increment_view_count(post_slug text) ...
-        
+        // increment_view_count() is void and returns no error when zero rows match — do not treat RPC success as "handled".
         let handled = false;
 
-        // Try RPC first (Atomic)
-        const { error: rpcError } = await supabaseAdmin.rpc('increment_view_count', { post_slug: slug });
-        if (!rpcError) {
-            handled = true;
-        } else {
-            // Fallback: Manual Update (Race conditions possible but rare for this scale)
-            // Check Posts
-            const { data: pData } = await supabaseAdmin.from('posts').select('views, id').eq('slug', slug).single();
-            if (pData) {
-                await supabaseAdmin.from('posts').update({ views: (pData.views || 0) + 1 }).eq('id', pData.id);
+        const { data: postRow } = await supabaseAdmin.from('posts').select('id, views').eq('slug', slug).maybeSingle();
+        if (postRow) {
+            const { error: rpcError } = await supabaseAdmin.rpc('increment_view_count', { post_slug: slug });
+            if (!rpcError) {
                 handled = true;
             } else {
-                // Check Broadcasts
-                const { data: bData } = await supabaseAdmin.from('broadcasts').select('views, id').eq('slug', slug).single();
-                if (bData) {
-                    await supabaseAdmin.from('broadcasts').update({ views: (parseInt(bData.views) || 0) + 1 }).eq('id', bData.id);
-                    handled = true;
-                }
+                await supabaseAdmin.from('posts').update({ views: (postRow.views || 0) + 1 }).eq('id', postRow.id);
+                handled = true;
+            }
+        } else {
+            const { data: bData } = await supabaseAdmin.from('broadcasts').select('views, id').eq('slug', slug).maybeSingle();
+            if (bData) {
+                await supabaseAdmin.from('broadcasts').update({ views: (parseInt(bData.views) || 0) + 1 }).eq('id', bData.id);
+                handled = true;
             }
         }
 

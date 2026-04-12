@@ -21,6 +21,7 @@ const tests = [
     { name: 'Email Link Logic', path: 'tests/email_link_test.js' },
     { name: 'Theme Logic', path: 'tests/theme.test.js' },
     { name: 'Menu Logic', path: 'tests/menu_logic_test.js' },
+    { name: 'Live API Analytics Slug', path: 'tests/live_analytics_slug.test.js' },
     { name: 'Security & Performance', path: 'tests/security_perf_audit.js' },
     // Stress test is excluded from default run due to duration/load
     // { name: 'Stress Test', path: 'tests/stress_test.js' } 

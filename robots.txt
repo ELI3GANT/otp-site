@@ -4,4 +4,4 @@ Disallow: /otp-terminal.html
 Disallow: /portal-gate.html
 Disallow: /admin-core.js
 Disallow: /admin-styles.css
-Sitemap: https://onlytrueperspective.tech/sitemap.xml
+Sitemap: https://www.onlytrueperspective.tech/sitemap.xml

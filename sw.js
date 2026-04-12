@@ -3,7 +3,7 @@
  * Always serve HTML fresh from network. Never cache HTML.
  */
 
-const SW_VERSION = 'otp-sw-v16.0.0';
+const SW_VERSION = 'otp-sw-v16.1.0';
 
 self.addEventListener('install', () => {
   self.skipWaiting(); // Activate immediately
@@ -25,9 +25,14 @@ self.addEventListener('fetch', (event) => {
   // Only intercept same-origin GET requests
   if (request.method !== 'GET' || url.origin !== location.origin) return;
 
-  const isHTML = url.pathname === '/' ||
-    url.pathname.endsWith('.html') ||
-    !url.pathname.includes('.');
+  // Do not intercept API or health checks — paths without "." are not always HTML.
+  const pathName = url.pathname;
+  const isApiOrPing = pathName.startsWith('/api') || pathName === '/ping';
+  const isHTML = !isApiOrPing && (
+    pathName === '/' ||
+    pathName.endsWith('.html') ||
+    !pathName.includes('.')
+  );
 
   if (isHTML) {
     // HTML: ALWAYS fetch from network, never cache

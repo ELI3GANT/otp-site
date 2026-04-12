@@ -13,5 +13,8 @@ my.env
 # Cursor: only share worktree setup hints (optional)
 .cursor/*
 !.cursor/worktrees.json
+
+# Google Gemini / Antigravity local tool settings (regenerated per machine)
+.gemini/
 .playwright-cli/
 output/playwright/
