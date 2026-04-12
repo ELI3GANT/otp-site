@@ -85,7 +85,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://assets.calendly.com", "https://unpkg.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://api.openai.com", "https://generativelanguage.googleapis.com", "https://calendly.com", "https://api.stripe.com", "https://onlytrueperspective.tech", "https://app.onlytrueperspective.tech", "https://otp-site.vercel.app", "https://vitals.vercel-insights.com"],
+            connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://api.openai.com", "https://generativelanguage.googleapis.com", "https://calendly.com", "https://api.stripe.com", "https://onlytrueperspective.tech", "https://www.onlytrueperspective.tech", "https://app.onlytrueperspective.tech", "https://otp-site.vercel.app", "https://vitals.vercel-insights.com"],
             mediaSrc: ["'self'", "https:"],
             frameSrc: ["'self'", "https://calendly.com", "https://open.spotify.com", "https://embed.music.apple.com", "https://music.apple.com", "https://www.youtube.com", "https://w.soundcloud.com", "https://js.stripe.com", "https://hooks.stripe.com"],
             objectSrc: ["'none'"],

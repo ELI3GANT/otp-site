@@ -17,7 +17,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google/gemini-cli": "^0.23.0",
     "@supabase/supabase-js": "^2.90.1",
     "@vercel/speed-insights": "^2.0.0",
     "body-parser": "^1.20.3",
@@ -33,6 +32,7 @@
     "stripe": "^14.25.0"
   },
   "devDependencies": {
+    "@google/gemini-cli": "^0.23.0",
     "autocannon": "^8.0.0",
     "chokidar": "^4.0.3",
     "jsdom": "^27.4.0",
