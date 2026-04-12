@@ -1,15 +1,17 @@
 /**
- * OTP Site Configuration — v15.1.1
+ * OTP Site Configuration — v15.2.0
  * Centralized credentials and settings.
  * Loaded before other scripts to ensure window.OTP_CONFIG is available.
  *
  * ARCHITECTURE:
- *   - Public / admin UI: hosted where you publish (e.g. Framer on onlytrueperspective.tech).
- *   - Backend (API):    Vercel Node → otp-site.vercel.app (all /api/* and schema SQL proxy).
- *   - Static mirror:    optional GitHub Pages / Netlify from this repo; /api still targets Vercel.
+ *   - Public / admin UI: Vercel (this repo) on www / preview URLs; optional mirrors (Framer, Pages).
+ *   - Backend (API): same deployment on Vercel; apex may redirect /api → www (POST body unsafe on redirect).
+ *   - Fallback API host: otp-site.vercel.app when origin is not this project.
  */
 
 const _OTP_VERCEL_API = 'https://otp-site.vercel.app';
+/** Production site + API live on www (same Vercel project); apex redirects API to www. */
+const _OTP_CANONICAL_WWW = 'https://www.onlytrueperspective.tech';
 
 window.OTP_CONFIG = {
     supabaseUrl: 'https://ckumhowhucbbmpdeqkrl.supabase.co',
@@ -83,7 +85,17 @@ window.OTP.getApiBase = function() {
         return window.location.origin;
     }
 
-    // 3. Custom domain (Framer marketing, GitHub Pages, etc. — no /api on host):
-    //    Proxy API calls to the canonical Vercel deployment.
+    // 2c. Primary marketing + API on www (same origin — avoids cross-origin + CORS on every call).
+    if (h === 'www.onlytrueperspective.tech') {
+        return window.location.origin;
+    }
+
+    // 2d. Apex redirects /api to www; call www directly so POST /api/auth/login etc. are not broken by 307.
+    if (h === 'onlytrueperspective.tech') {
+        return _OTP_CANONICAL_WWW;
+    }
+
+    // 3. Other hosts (Framer-only, GitHub Pages, etc. — no /api on origin):
+    //    Use canonical Vercel deployment.
     return _OTP_VERCEL_API;
 };
