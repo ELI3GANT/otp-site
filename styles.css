@@ -2885,11 +2885,23 @@ html {
   letter-spacing: 0.6px;
   font-weight: 600; 
   display: inline-flex;
-  gap: 16px; /* Widen the gap between badge and text */
+  column-gap: 14px;
+  row-gap: 8px;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  line-height: 1.2;
+}
+
+.hero-micro > span {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.hero-micro .scarcity-badge {
+  white-space: normal;
 }
 
 /* Custom separator dot for hero micro (Circle Style) */
@@ -5497,10 +5509,17 @@ input:focus, select:focus, textarea:focus {
   
   .hero-micro {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px 12px;
     align-items: center;
+    justify-content: center;
+    text-align: center;
     font-size: 0.9rem;
+  }
+  .hero-micro .scarcity-badge {
+    width: 100%;
+    justify-content: center;
   }
   .dot-circle { display: none; }
   
@@ -6158,6 +6177,10 @@ input:focus, select:focus, textarea:focus {
   -webkit-text-stroke: 2px var(--accent2) !important;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   text-align: center;
+  text-shadow: none !important;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
 /* Character-level inheritance for SplitType */
@@ -6188,18 +6211,20 @@ input:focus, select:focus, textarea:focus {
 
 
 @keyframes title-neon-cycle {
-  0%, 100% { -webkit-text-stroke: 2px rgb(0, 236, 255); filter: drop-shadow(0 0 20px rgba(0, 236, 255, 0.4)); color: transparent !important; }
-  12% { -webkit-text-stroke: 2px rgb(170, 0, 255); filter: drop-shadow(0 0 20px rgba(170, 0, 255, 0.4)); color: transparent !important; }
-  25% { -webkit-text-stroke: 2px rgb(255, 0, 170); filter: drop-shadow(0 0 20px rgba(255, 0, 170, 0.4)); color: transparent !important; }
-  37% { -webkit-text-stroke: 2px rgb(50, 255, 126); filter: drop-shadow(0 0 20px rgba(50, 255, 126, 0.4)); color: transparent !important; }
-  50% { -webkit-text-stroke: 2px rgb(255, 215, 0); filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.4)); color: transparent !important; }
-  62% { -webkit-text-stroke: 2px rgb(255, 60, 0); filter: drop-shadow(0 0 20px rgba(255, 60, 0, 0.4)); color: transparent !important; }
-  75% { -webkit-text-stroke: 2px rgb(30, 144, 255); filter: drop-shadow(0 0 20px rgba(30, 144, 255, 0.4)); color: transparent !important; }
-  87% { -webkit-text-stroke: 2px rgb(255, 50, 50); filter: drop-shadow(0 0 20px rgba(255, 50, 50, 0.4)); color: transparent !important; }
+  0%, 100% { -webkit-text-stroke: 2px rgb(0, 236, 255); filter: drop-shadow(0 0 8px rgba(0, 236, 255, 0.28)); color: transparent !important; }
+  12% { -webkit-text-stroke: 2px rgb(170, 0, 255); filter: drop-shadow(0 0 8px rgba(170, 0, 255, 0.28)); color: transparent !important; }
+  25% { -webkit-text-stroke: 2px rgb(255, 0, 170); filter: drop-shadow(0 0 8px rgba(255, 0, 170, 0.28)); color: transparent !important; }
+  37% { -webkit-text-stroke: 2px rgb(50, 255, 126); filter: drop-shadow(0 0 8px rgba(50, 255, 126, 0.28)); color: transparent !important; }
+  50% { -webkit-text-stroke: 2px rgb(255, 215, 0); filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.28)); color: transparent !important; }
+  62% { -webkit-text-stroke: 2px rgb(255, 60, 0); filter: drop-shadow(0 0 8px rgba(255, 60, 0, 0.28)); color: transparent !important; }
+  75% { -webkit-text-stroke: 2px rgb(30, 144, 255); filter: drop-shadow(0 0 8px rgba(30, 144, 255, 0.28)); color: transparent !important; }
+  87% { -webkit-text-stroke: 2px rgb(255, 50, 50); filter: drop-shadow(0 0 8px rgba(255, 50, 50, 0.28)); color: transparent !important; }
 }
 
 [data-theme="light"] .luxe-title .title {
   -webkit-text-stroke: 1.5px var(--accent2) !important; 
+  animation: none !important;
+  filter: none !important;
 }
 
 .nav-logo {
