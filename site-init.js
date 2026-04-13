@@ -1163,11 +1163,13 @@ function initSite() {
                 document.body.classList.remove('nav-open');
                 document.documentElement.classList.remove('nav-open');
                 btn.setAttribute('aria-expanded', 'false');
+                btn.setAttribute('aria-label', 'Open primary navigation menu');
             } else {
                 drawer.classList.add('open');
                 document.body.classList.add('nav-open');
                 document.documentElement.classList.add('nav-open');
                 btn.setAttribute('aria-expanded', 'true');
+                btn.setAttribute('aria-label', 'Close primary navigation menu');
             }
             return; // Don't fall through to close-outside check
         }
@@ -1177,7 +1179,10 @@ function initSite() {
             drawer.classList.remove('open');
             document.body.classList.remove('nav-open');
             document.documentElement.classList.remove('nav-open');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
+            if (btn) {
+                btn.setAttribute('aria-expanded', 'false');
+                btn.setAttribute('aria-label', 'Open primary navigation menu');
+            }
             return;
         }
 
@@ -1189,7 +1194,10 @@ function initSite() {
                 drawer.classList.remove('open');
                 document.body.classList.remove('nav-open');
                 document.documentElement.classList.remove('nav-open');
-                if (btn) btn.setAttribute('aria-expanded', 'false');
+                if (btn) {
+                    btn.setAttribute('aria-expanded', 'false');
+                    btn.setAttribute('aria-label', 'Open primary navigation menu');
+                }
             }
         }
     };
@@ -1205,7 +1213,10 @@ function initSite() {
                 drawer.classList.remove('open');
                 document.body.classList.remove('nav-open');
                 document.documentElement.classList.remove('nav-open');
-                if (btn) btn.setAttribute('aria-expanded', 'false');
+                if (btn) {
+                    btn.setAttribute('aria-expanded', 'false');
+                    btn.setAttribute('aria-label', 'Open primary navigation menu');
+                }
                 btn?.focus();
             }
         }
@@ -1219,7 +1230,10 @@ function initSite() {
             if (drawer) drawer.classList.remove('open');
             document.body.classList.remove('nav-open');
             document.documentElement.classList.remove('nav-open');
-            if (btn) btn.setAttribute('aria-expanded', 'false');
+            if (btn) {
+                btn.setAttribute('aria-expanded', 'false');
+                btn.setAttribute('aria-label', 'Open primary navigation menu');
+            }
         }
     });
 
@@ -1452,6 +1466,9 @@ function initSite() {
                             // Fallback simple fade
                             successDiv.style.opacity = 1; 
                         }
+                    }
+                    if (typeof window.gtag === 'function') {
+                        window.gtag('event', 'generate_lead', { value: 0, currency: 'USD' });
                     }
                 } else {
                     throw new Error(result.message);
@@ -1927,64 +1944,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('DOMContentLoaded', initializeCommandUplink);
 })();
 
-// ==========================================
-// 12. CONTACT FORM HANDLER (LEAD-GEN FLOW)
-// ==========================================
-(function() {
-    document.addEventListener('DOMContentLoaded', () => {
-        const contactForm = document.getElementById('contactForm');
-        if (!contactForm) return;
-
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const submitBtn = contactForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn ? submitBtn.innerHTML : 'START PROJECT';
-            
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<span class="status-indicator" style="background:#fff; box-shadow:0 0 10px #fff;"></span> UPLINKING...';
-            }
-
-            try {
-                // Collect Form Data
-                const formData = new FormData(contactForm);
-                const payload = {
-                    name: formData.get('name'),
-                    email: formData.get('email'),
-                    service: formData.get('project_type'), // Mapped to 'service' in DB
-                    message: `[BUDGET: ${formData.get('budget') || 'N/A'}] [TIMELINE: ${formData.get('timeline') || 'N/A'}]\n\nDETAILS:\n${formData.get('project_details')}`,
-                    created_at: new Date().toISOString()
-                };
-
-                // Get Supabase Client from window.OTP
-                const supabase = window.OTP.getSupabase();
-                const { error } = await supabase.from('contacts').insert([payload]);
-
-                if (error) throw error;
-
-                // SUCCESS STATE
-                contactForm.innerHTML = `
-                    <div style="text-align:center; padding:60px 20px; animation: fadeIn 0.8s ease;">
-                        <h3 class="syne-bold" style="font-size:2.5rem; margin-bottom:15px; color:var(--accent2);">SIGNAL RECEIVED.</h3>
-                        <p style="color:var(--muted); max-width:400px; margin:0 auto 30px; font-size:1.1rem;">Your brief has reached the terminal. We are reviewing the scope and will initiate a connection shortly.</p>
-                        <button onclick="window.location.reload()" class="book-btn-ghost k-hover" style="border-radius:12px; padding:12px 30px;">Return to Terminal</button>
-                    </div>
-                `;
-                
-                // Track Success if Analytics active
-                if (window.gtag) gtag('event', 'generate_lead', { 'value': 0, 'currency': 'USD' });
-
-            } catch (err) {
-                console.error("Uplink Failure:", err);
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                }
-                alert("Neural Uplink Failure: " + (err.message || "Connection Interrupted. Please try again or email directly."));
-            }
-        });
-    });
-})();
+// Contact form: single handler in initSite() posts to /api/contact/submit (server: honeypot, validation, email, AI draft).
 
 console.log("✅ [OTP_PRODUCTION] SYSTEM_HEALTH: OPTIMAL // PERFORMANCE_LOAD: LOW");
