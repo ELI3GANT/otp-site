@@ -455,6 +455,8 @@
 
                         <p style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 10px; font-weight: bold;">DIRECT NEURAL CLOUD (If server is offline)</p>
                         <form id="cloudKeyForm" onsubmit="event.preventDefault();" autocomplete="off">
+                            <!-- Hidden username field improves password manager + accessibility heuristics -->
+                            <input type="text" name="username" autocomplete="username" value="otp-admin" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;" tabindex="-1" aria-hidden="true" />
                             <div class="row" style="gap: 10px;">
                                 <div class="input-group" style="flex: 1;">
                                     <label style="font-size: 0.6rem;">OPENAI KEY</label>
