@@ -1191,7 +1191,10 @@
                             ${(file.source_type || 'unknown').toUpperCase()} • ${file.chunk_count || 0} chunks • ${new Date(file.updated_at || Date.now()).toLocaleString()}
                         </div>
                     </div>
-                    <button type="button" onclick="window.deleteKnowledgeFile('${window.escapeHtml(file.file_id)}')" style="background:transparent;border:1px solid rgba(255,90,90,0.4);color:#ff8f8f;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">REMOVE</button>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button type="button" onclick="window.archiveKnowledgeFile('${window.escapeHtml(file.file_id)}')" style="background:transparent;border:1px solid rgba(255,170,0,0.45);color:#ffd37a;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">ARCHIVE</button>
+                        <button type="button" onclick="window.deleteKnowledgeFile('${window.escapeHtml(file.file_id)}')" style="background:transparent;border:1px solid rgba(255,90,90,0.4);color:#ff8f8f;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">DELETE</button>
+                    </div>
                 </div>
             `).join('');
         } catch (e) {
@@ -1236,10 +1239,31 @@
         }
     };
 
+    window.archiveKnowledgeFile = async function(fileId) {
+        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        if (!fileId) return;
+        if (!confirm(`Archive indexed file ${fileId} (remove from active brain)?`)) return;
+        const res = await fetch(`${apiBase}/api/admin/knowledge/archive`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.token}`
+            },
+            body: JSON.stringify({ fileId, archivedPath: 'archive/old_versions/' })
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok || !payload.success) {
+            showToast(`ARCHIVE FAILED: ${(payload && payload.message) || res.status}`);
+            return;
+        }
+        showToast('KNOWLEDGE FILE ARCHIVED');
+        await window.fetchKnowledgeFiles();
+    };
+
     window.deleteKnowledgeFile = async function(fileId) {
         const apiBase = window.OTP ? window.OTP.getApiBase() : '';
         if (!fileId) return;
-        if (!confirm(`Remove indexed file ${fileId}?`)) return;
+        if (!confirm(`DELETE indexed file ${fileId} forever? This cannot be undone.`)) return;
         const res = await fetch(`${apiBase}/api/admin/knowledge/delete`, {
             method: 'POST',
             headers: {
@@ -1253,7 +1277,7 @@
             showToast(`DELETE FAILED: ${(payload && payload.message) || res.status}`);
             return;
         }
-        showToast('KNOWLEDGE FILE REMOVED');
+        showToast('KNOWLEDGE FILE DELETED');
         await window.fetchKnowledgeFiles();
     };
 

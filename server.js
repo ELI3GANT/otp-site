@@ -1207,6 +1207,7 @@ app.post('/api/admin/fetch-data', verifyToken, async (req, res) => {
 app.get('/api/admin/knowledge/files', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
+        const includeArchived = String(req.query?.includeArchived || '').trim() === '1';
         const { data, error } = await supabaseAdmin
             .from('site_content')
             .select('key, content, updated_at, created_at')
@@ -1215,7 +1216,10 @@ app.get('/api/admin/knowledge/files', verifyToken, async (req, res) => {
             .limit(300);
         if (error) throw error;
 
-        const files = (data || []).map(row => {
+        const files = (data || [])
+            .map(row => ({ row, payload: safeJsonParse(row.content, {}) || {} }))
+            .filter(({ payload }) => includeArchived ? true : !payload.archived)
+            .map(({ row, payload }) => {
             const payload = safeJsonParse(row.content, {}) || {};
             return {
                 file_id: payload.file_id || row.key.replace(KNOWLEDGE_PREFIX.file, ''),
@@ -1223,6 +1227,9 @@ app.get('/api/admin/knowledge/files', verifyToken, async (req, res) => {
                 source_type: payload.source_type || 'unknown',
                 chunk_count: payload.chunk_count || 0,
                 char_count: payload.char_count || 0,
+                archived: !!payload.archived,
+                archived_at: payload.archived_at || null,
+                archived_path: payload.archived_path || null,
                 created_at: row.created_at,
                 updated_at: row.updated_at
             };
@@ -1347,6 +1354,65 @@ app.post('/api/admin/knowledge/delete', verifyToken, async (req, res) => {
     }
 });
 
+// 2.10.1 OTP Knowledge Brain: archive indexed file (de-index, keep data)
+app.post('/api/admin/knowledge/archive', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const fileId = String(req.body?.fileId || '').trim();
+    const archivedPath = String(req.body?.archivedPath || 'archive/old_versions/').trim() || 'archive/old_versions/';
+    if (!fileId) return res.status(400).json({ success: false, message: "Missing fileId." });
+    try {
+        const nowIso = new Date().toISOString();
+
+        // Update file metadata row
+        const { data: fileRow, error: fileFetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('content')
+            .eq('key', `${KNOWLEDGE_PREFIX.file}${fileId}`)
+            .maybeSingle();
+        if (fileFetchError) throw fileFetchError;
+        if (!fileRow) return res.status(404).json({ success: false, message: "File not found." });
+
+        const meta = safeJsonParse(fileRow.content, {}) || {};
+        meta.archived = true;
+        meta.archived_at = nowIso;
+        meta.archived_path = archivedPath;
+
+        const { error: metaUpdateError } = await supabaseAdmin
+            .from('site_content')
+            .update({ content: JSON.stringify(meta), updated_at: nowIso })
+            .eq('key', `${KNOWLEDGE_PREFIX.file}${fileId}`);
+        if (metaUpdateError) throw metaUpdateError;
+
+        // Update chunk rows so recommend can ignore them
+        const { data: chunkRows, error: chunkFetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('key, content')
+            .ilike('key', `${KNOWLEDGE_PREFIX.chunk}${fileId}%`)
+            .limit(5000);
+        if (chunkFetchError) throw chunkFetchError;
+
+        const updates = (chunkRows || []).map(row => {
+            const chunk = safeJsonParse(row.content, {}) || {};
+            chunk.archived = true;
+            chunk.archived_at = nowIso;
+            chunk.archived_path = archivedPath;
+            return { key: row.key, content: JSON.stringify(chunk), updated_at: nowIso };
+        });
+
+        const batchSize = 120;
+        for (let i = 0; i < updates.length; i += batchSize) {
+            const batch = updates.slice(i, i + batchSize);
+            const { error: batchError } = await supabaseAdmin.from('site_content').upsert(batch, { onConflict: 'key' });
+            if (batchError) throw batchError;
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error("knowledge-archive:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // 2.11 OTP Knowledge Brain: lead recommendation
 app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
@@ -1387,6 +1453,7 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
         const scored = chunkRows
             .map(row => safeJsonParse(row.content, null))
             .filter(Boolean)
+            .filter(chunk => !chunk.archived)
             .map(chunk => ({
                 file_name: chunk.file_name,
                 chunk_index: chunk.chunk_index,
