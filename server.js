@@ -1220,20 +1220,19 @@ app.get('/api/admin/knowledge/files', verifyToken, async (req, res) => {
             .map(row => ({ row, payload: safeJsonParse(row.content, {}) || {} }))
             .filter(({ payload }) => includeArchived ? true : !payload.archived)
             .map(({ row, payload }) => {
-            const payload = safeJsonParse(row.content, {}) || {};
-            return {
-                file_id: payload.file_id || row.key.replace(KNOWLEDGE_PREFIX.file, ''),
-                file_name: payload.file_name || 'Untitled',
-                source_type: payload.source_type || 'unknown',
-                chunk_count: payload.chunk_count || 0,
-                char_count: payload.char_count || 0,
-                archived: !!payload.archived,
-                archived_at: payload.archived_at || null,
-                archived_path: payload.archived_path || null,
-                created_at: row.created_at,
-                updated_at: row.updated_at
-            };
-        });
+                return {
+                    file_id: payload.file_id || row.key.replace(KNOWLEDGE_PREFIX.file, ''),
+                    file_name: payload.file_name || 'Untitled',
+                    source_type: payload.source_type || 'unknown',
+                    chunk_count: payload.chunk_count || 0,
+                    char_count: payload.char_count || 0,
+                    archived: !!payload.archived,
+                    archived_at: payload.archived_at || null,
+                    archived_path: payload.archived_path || null,
+                    created_at: row.created_at,
+                    updated_at: row.updated_at
+                };
+            });
         res.json({ success: true, files });
     } catch (error) {
         console.error("knowledge-files:", error.message);
