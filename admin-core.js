@@ -7,6 +7,21 @@
 (function() {
     console.log("🚀 ADMIN CORE V15.15.2 STABLE: ONLINE.");
 
+    /** Never fetch `${undefined}/api/...` — fall back to same-origin or OTP_CONFIG. */
+    const resolveApiBase = () => {
+        try {
+            if (window.OTP && typeof window.OTP.getApiBase === 'function') {
+                const b = String(window.OTP.getApiBase() || '').trim();
+                if (b) return b.replace(/\/$/, '');
+            }
+            const cfg = (typeof window.OTP_CONFIG !== 'undefined' && window.OTP_CONFIG)
+                ? String(window.OTP_CONFIG.apiBase || '').trim()
+                : '';
+            if (cfg) return cfg.replace(/\/$/, '');
+        } catch (e) { /* ignore */ }
+        return String(window.location.origin || '').replace(/\/$/, '');
+    };
+
     // GLOBAL ERROR TRAP
     /**
      * SECURE PROXY HELPERS
@@ -14,7 +29,7 @@
      * immediately to all dashboard components.
      */
     window.secureWrite = async function(table, payload, id = null) {
-        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const apiBase = resolveApiBase();
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); 
         try {
@@ -37,7 +52,7 @@
     };
 
     window.secureRead = async function(table, config = {}) {
-        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const apiBase = resolveApiBase();
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
@@ -61,7 +76,7 @@
     };
 
     window.secureDelete = async function(table, id) {
-        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const apiBase = resolveApiBase();
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
@@ -387,7 +402,7 @@
             // Live Clock System
             const clockEl = document.getElementById('liveClock');
             if (clockEl) {
-                const apiBase = (window.OTP && window.OTP.getApiBase) ? window.OTP.getApiBase() : (localStorage.getItem('otp_api_base') || '');
+                const apiBase = resolveApiBase();
                 const token = localStorage.getItem('otp_admin_token') || '';
                 const isStatic = token === 'static-bypass-token';
                 const isRemote = apiBase.startsWith('http') && !apiBase.includes('localhost');
@@ -448,7 +463,7 @@
             // Satellite URL: Load & Validate
             if(satUrl) {
                 // Always hydrate from resolver so localhost cannot stay pinned to stale remote base.
-                const storedUrl = window.OTP.getApiBase();
+                const storedUrl = resolveApiBase();
                 localStorage.setItem('otp_api_base', storedUrl);
                 satUrl.value = storedUrl;
                 
@@ -1203,7 +1218,7 @@
             container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">SYNCING KNOWLEDGE INDEX...</div>';
         }
         try {
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/admin/knowledge/files`, {
                 headers: { 'Authorization': `Bearer ${state.token}` }
             });
@@ -1220,9 +1235,9 @@
             }
 
             container.innerHTML = files.map(file => `
-                <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:8px;background:rgba(0,0,0,0.2);">
+                <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:8px;background:var(--admin-panel);">
                     <div style="min-width:0;">
-                        <div style="font-size:0.8rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${window.escapeHtml(file.file_name || 'Untitled')}</div>
+                        <div style="font-size:0.8rem;font-weight:700;color:var(--admin-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${window.escapeHtml(file.file_name || 'Untitled')}</div>
                         <div style="font-size:0.65rem;color:var(--admin-muted);margin-top:3px;">
                             ${(file.source_type || 'unknown').toUpperCase()} • ${file.chunk_count || 0} chunks • ${new Date(file.updated_at || Date.now()).toLocaleString()}
                         </div>
@@ -1250,7 +1265,7 @@
             showToast('LOGIN REQUIRED FOR KNOWLEDGE INGEST');
             return;
         }
-        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const apiBase = resolveApiBase();
         showToast(`INDEXING ${files.length} FILE${files.length === 1 ? '' : 'S'}...`);
         let duplicateCount = 0;
         for (const file of files) {
@@ -1276,7 +1291,7 @@
     };
 
     window.archiveKnowledgeFile = async function(fileId) {
-        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const apiBase = resolveApiBase();
         if (!fileId) return;
         if (!confirm(`Archive indexed file ${fileId} (remove from active brain)?`)) return;
         const res = await fetch(`${apiBase}/api/admin/knowledge/archive`, {
@@ -1297,7 +1312,7 @@
     };
 
     window.deleteKnowledgeFile = async function(fileId) {
-        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const apiBase = resolveApiBase();
         if (!fileId) return;
         if (!confirm(`DELETE indexed file ${fileId} forever? This cannot be undone.`)) return;
         const res = await fetch(`${apiBase}/api/admin/knowledge/delete`, {
@@ -1320,7 +1335,7 @@
     window.requestLeadBrain = async function(leadId, sourceTable = 'leads') {
         if (!state.token) throw new Error('LOGIN REQUIRED');
         if (!leadId) throw new Error('MISSING LEAD ID');
-        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const apiBase = resolveApiBase();
         const res = await fetch(`${apiBase}/api/admin/knowledge/recommend`, {
             method: 'POST',
             headers: {
@@ -1341,7 +1356,7 @@
 
     window.loadLeadBrainCache = async function(leadIds) {
         if (!Array.isArray(leadIds) || !leadIds.length) return;
-        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const apiBase = resolveApiBase();
         try {
             const res = await fetch(`${apiBase}/api/admin/knowledge/recommendations`, {
                 method: 'POST',
@@ -1460,7 +1475,7 @@
                 <div class="post-row" style="display: block; padding: 18px; margin-bottom: 12px; cursor: default; border-left: 3px solid var(--admin-cyan); background: rgba(var(--accent2-rgb), 0.03); border-radius: 8px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center;">
                         <div>
-                             <div style="font-weight: 800; color: #fff; font-size: 0.95rem; letter-spacing: 0.5px;">${escape(l.email)}</div>
+                             <div style="font-weight: 800; color: var(--admin-text); font-size: 0.95rem; letter-spacing: 0.5px;">${escape(l.email)}</div>
                              <div style="font-size: 0.6rem; color: var(--admin-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px;">SIGNAL CAPTURED: ${new Date(l.created_at).toLocaleString()}</div>
                         </div>
                         <div style="display:flex; gap: 8px; align-items:center;">
@@ -1475,11 +1490,11 @@
                         <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">BARRIER:</span><br>${escape(answers.q2 || 'N/A')}</div>
                         <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">DOMAIN:</span><br>${escape(answers.q3 || 'N/A')}</div>
                         <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">AESTHETIC:</span><br>${escape(answers.q4 || 'N/A')}</div>
-                        <div style="grid-column: 1 / -1; margin-top: 5px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);"><span style="color: var(--admin-success); font-weight:900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">PRIMARY TARGET:</span><br><span style="font-size: 0.9rem; font-weight: 700; color: #fff;">"${escape(answers.q5_goal || 'Not specified')}"</span></div>
+                        <div style="grid-column: 1 / -1; margin-top: 5px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);"><span style="color: var(--admin-success); font-weight:900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">PRIMARY TARGET:</span><br><span style="font-size: 0.9rem; font-weight: 700; color: var(--admin-text);">"${escape(answers.q5_goal || 'Not specified')}"</span></div>
                     </div>
                     <div style="background: rgba(0,0,0,0.5); border-left: 3px solid var(--admin-accent); padding: 15px; border-radius: 0 8px 8px 0; font-size: 0.85rem; line-height: 1.6; border: 1px solid rgba(112,0,255,0.1); border-left-width: 3px;">
                         <div style="font-size: 0.6rem; color: var(--admin-accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; font-weight: 900;">// ORACLE TRANSMISSION</div>
-                        <div style="color: #eee; font-style: italic;">${window.escapeHtml(l.advice || '').replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--admin-cyan);">$1</strong>').replace(/\n/g, '<br>')}</div>
+                        <div style="color: var(--admin-text); font-style: italic;">${window.escapeHtml(l.advice || '').replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--admin-cyan);">$1</strong>').replace(/\n/g, '<br>')}</div>
                     </div>
                     ${window.renderLeadBrainCard(l.id)}
                 </div>
@@ -1521,7 +1536,7 @@
                 const executePurge = async () => {
                      showToast("INITIATING ADMIN FORCE PURGE...");
                      try {
-                         const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+                         const apiBase = resolveApiBase();
                          const controller = new AbortController();
                          const timeoutId = setTimeout(() => controller.abort(), 15000);
                          
@@ -1591,7 +1606,7 @@
                 showToast("INITIATING SECURE INBOX PURGE...");
 
                 try {
-                    const apiBase = window.OTP.getApiBase();
+                    const apiBase = resolveApiBase();
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 15000);
                     
@@ -2059,7 +2074,7 @@
         if (format === 'docx' && !doc?.docx) { showToast('DOCX NOT READY'); return; }
         if (format === 'html' && !doc?.html) { showToast('HTML NOT READY'); return; }
         try {
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const url = format === 'docx'
                 ? `${apiBase}/api/admin/docs/download-docx/${encodeURIComponent(s.packetId)}/${encodeURIComponent(docType)}`
                 : format === 'pdf'
@@ -2102,7 +2117,7 @@
         const orig = btn ? btn.textContent : '';
         try {
             if (btn) { btn.disabled = true; btn.textContent = 'GENERATING...'; }
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/admin/docs/packet`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
@@ -2132,7 +2147,7 @@
         if (!file) return;
         if (!['proposal', 'agreement'].includes(docType)) { showToast('INVALID TEMPLATE TYPE'); return; }
         try {
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const fd = new FormData();
             fd.append('docType', docType);
             fd.append('file', file);
@@ -2167,7 +2182,7 @@
         const orig = btn ? btn.textContent : '';
         try {
             if (btn) { btn.disabled = true; btn.textContent = 'APPLYING...'; }
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/admin/docs/approve`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
@@ -2198,7 +2213,7 @@
         if (!state.token) return;
         if (!s.packetId) return;
         try {
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/admin/docs/audit/${encodeURIComponent(s.packetId)}`, {
                 headers: { 'Authorization': `Bearer ${state.token}` }
             });
@@ -2228,7 +2243,7 @@
         const orig = btn ? btn.textContent : '';
         try {
             if (btn) { btn.disabled = true; btn.textContent = 'SENDING...'; }
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/admin/docs/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
@@ -2251,7 +2266,7 @@
         if (!state.token) { showToast('LOGIN REQUIRED'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         try {
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/admin/docs/send-status`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
@@ -2276,7 +2291,7 @@
         if (!lastSend || !lastSend.id) { showToast('NO SEND EVENT FOUND'); return; }
         if (lastSend.success) { showToast('LAST SEND WAS SUCCESS'); return; }
         try {
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/admin/docs/send-retry`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
@@ -2374,7 +2389,7 @@
         if (!state.token) { out.textContent = 'Login required.'; return; }
         try {
             out.textContent = 'Loading template status...';
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/admin/docs/templates/status`, {
                 headers: { 'Authorization': `Bearer ${state.token}` }
             });
@@ -2401,7 +2416,7 @@
                 opsBtn.textContent = 'RUNNING...';
                 opsBtn.style.opacity = '0.7';
             }
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const analysisDiv = document.getElementById('replyAnalysis');
             if (analysisDiv) {
                 analysisDiv.innerHTML = '<div style="font-size:0.75rem;color:var(--admin-muted);">Running OTP Ops Brain...</div>';
@@ -2486,7 +2501,7 @@
         btn.disabled = true;
 
         try {
-            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const apiBase = resolveApiBase();
             const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
             const leadId = document.getElementById('replyContactId')?.value || null;
 
@@ -3229,7 +3244,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
             `PERMANENTLY DELETE: ${slug}?`,
             async () => {
                 try {
-                    const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+                    const apiBase = resolveApiBase();
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 15000);
                     
@@ -3702,7 +3717,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
             if (authToken !== 'static-bypass-token') {
                 try {
                     if(status) { status.innerHTML = `<span class="blink">📡 CONTACTING SECURE HUB...</span>`; }
-                    const base = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || window.location.origin);
+                    const base = resolveApiBase();
                     const res = await fetch(base + '/api/ai/generate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + authToken },
@@ -3959,7 +3974,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
     async function triggerImageGenerator(prompt, title) {
         // All generation MUST be routed through the server to bypass CORS fetching restrictions from OpenAI blobs
         try {
-            const base = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || window.location.origin);
+            const base = resolveApiBase();
             const localKeyBackup = localStorage.getItem('cloud_openai');
             
             // --- ENHANCE PROMPT FOR CINEMATIC FIDELITY ---
@@ -4493,9 +4508,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
         content.textContent = "FETCHING SCHEMA...";
 
         try {
-            const base = (window.OTP && typeof window.OTP.getApiBase === 'function')
-                ? window.OTP.getApiBase().replace(/\/$/, '')
-                : '';
+            const base = resolveApiBase();
             let url = base ? `${base}/api/schema-migration` : '/supabase/migrations/DEPLOY_V1.3.sql';
             let res = await fetch(url);
             if (!res.ok && base) {
@@ -4746,7 +4759,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                     <div class="active-user-card" style="padding: 10px; border: 1px solid rgba(0, 255, 170, 0.2); border-radius: 8px; background: rgba(0, 255, 170, 0.02); display: flex; flex-direction: column; gap: 6px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-family: monospace; font-size: 0.7rem; color: #00ffaa; font-weight: bold;">[${ts}] ⚡ ${displayId.toUpperCase()}</span>
-                            <span style="font-size: 0.6rem; color: #fff; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">${pageLabel}</span>
+                            <span style="font-size: 0.6rem; color: var(--admin-text); background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">${pageLabel}</span>
                         </div>
                         <div style="font-size: 0.65rem; color: var(--admin-muted); display: flex; justify-content: space-between;">
                             <span>🌐 ${browser} on ${os}</span>
@@ -4853,7 +4866,7 @@ Lang: ${u.lang || 'Unknown'}</div>
                     <span style="color:var(--admin-muted)">[${ts}]${typeTag}</span>
                     ${views !== undefined ? `<span style="color:var(--admin-success); font-family:monospace; font-size:0.6rem;">${views.toLocaleString()} VIEWS</span>` : ''}
                 </div>
-                <div style="font-size:0.72rem; color:${isReal ? '#fff' : 'var(--admin-text)'}; font-weight:${isReal ? '700' : '400'};">${label}</div>
+                <div style="font-size:0.72rem; color:var(--admin-text); font-weight:${isReal ? '700' : '400'};">${label}</div>
                 ${sub ? `<div style="font-size:0.6rem; color:var(--admin-muted); margin-top:2px;">${sub}</div>` : ''}
                 ${slug ? `<div style="font-size:0.55rem; color:var(--admin-muted); font-family:monospace; margin-top:1px; opacity:0.6;">/insight.html?slug=${slug}</div>` : ''}
             `;
@@ -4886,7 +4899,7 @@ Lang: ${u.lang || 'Unknown'}</div>
     // EXPOSE SYSTEM HEALTH TO WINDOW
     window.checkSystemHealth = async function() {
         try {
-            const API_BASE = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || '');
+            const API_BASE = resolveApiBase();
             const res = await fetch(`${API_BASE}/api/health`);
             if (!res.ok) throw new Error();
             const data = await res.json();
@@ -4947,7 +4960,7 @@ Lang: ${u.lang || 'Unknown'}</div>
         list.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px; font-size: 0.8rem;">ESTABLISHING VERSION UPLINK...</div>';
 
         try {
-            const API_BASE = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || '');
+            const API_BASE = resolveApiBase();
             const fetchUrl = `${API_BASE}/api/admin/versions`;
             const token = localStorage.getItem('otp_admin_token') || 'local-fallback';
 
@@ -4991,7 +5004,7 @@ Lang: ${u.lang || 'Unknown'}</div>
 
                     item.innerHTML = `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <span style="font-size: 0.8rem; color: ${isCurrent ? '#00ffaa' : '#fff'}; font-weight: bold;">
+                            <span style="font-size: 0.8rem; color: ${isCurrent ? '#00ffaa' : 'var(--admin-text)'}; font-weight: bold;">
                                 ${isCurrent ? '🟢 CURRENT_STATE: ' : ''}${window.escapeHtml(v.message || '')}
                             </span>
                             <div style="font-family: monospace; font-size: 0.65rem; color: var(--admin-muted);">
@@ -5019,7 +5032,7 @@ Lang: ${u.lang || 'Unknown'}</div>
             showToast("ROLLBACK TRANSMISSION SENT. AWAITING FEEDBACK.");
 
             try {
-                const API_BASE = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || '');
+                const API_BASE = resolveApiBase();
                 const fetchUrl = `${API_BASE}/api/admin/rollback`;
                 const token = localStorage.getItem('otp_admin_token') || 'local-fallback';
 

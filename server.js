@@ -1117,7 +1117,14 @@ app.get('/api/health', async (req, res) => {
         integrations: {
             supabase: 'UNKNOWN',
             stripe: !!stripe ? 'CONFIGURED' : 'DISCONNECTED',
-            ai: (!!process.env.GEMINI_API_KEY || !!process.env.OPENAI_API_KEY || !!process.env.ANTHROPIC_API_KEY || !!process.env.GROQ_API_KEY) ? 'CONFIGURED' : 'UNAVAILABLE'
+            ai: (!!process.env.GEMINI_API_KEY || !!process.env.OPENAI_API_KEY || !!process.env.ANTHROPIC_API_KEY || !!process.env.GROQ_API_KEY) ? 'CONFIGURED' : 'UNAVAILABLE',
+            // Presence-only flags (never values) — helps verify Vercel env wiring after deploy.
+            ai_providers: {
+                gemini: !!String(process.env.GEMINI_API_KEY || '').trim(),
+                openai: !!String(process.env.OPENAI_API_KEY || '').trim(),
+                anthropic: !!String(process.env.ANTHROPIC_API_KEY || '').trim(),
+                groq: !!String(process.env.GROQ_API_KEY || '').trim()
+            }
         }
     };
     

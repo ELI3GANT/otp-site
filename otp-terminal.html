@@ -914,12 +914,12 @@
                     <button id="docPacketGenerateBtn" type="button" onclick="generateDocPacket()" class="btn-secondary" style="width:auto;font-size:0.7rem;">GENERATE PACKET</button>
                     <button id="docPacketApproveBtn" type="button" onclick="approveDocPacket()" class="btn-secondary" style="width:auto;font-size:0.7rem;">APPLY APPROVALS</button>
                     <div style="font-size:0.66rem;color:var(--admin-muted);line-height:1.35;flex:1;min-width:220px;">
-                        <strong style="color:#fff;">Workflow</strong>: Generate → Preview → Approve → Download
+                        <strong style="color:var(--admin-text);">Workflow</strong>: Generate → Preview → Approve → Download
                     </div>
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;border:1px dashed var(--admin-border);border-radius:10px;padding:10px 12px;background:rgba(0,0,0,0.12);">
                     <div style="font-size:0.7rem;color:var(--admin-muted);flex:1;min-width:240px;line-height:1.45;">
-                        <strong style="color:#fff;">Master Templates (Global)</strong><br/>
+                        <strong style="color:var(--admin-text);">Master Templates (Global)</strong><br/>
                         These templates apply across <strong>all</strong> leads/packets. Upload your branded master-final DOCX files once, then generate lead-specific packets below.
                         Placeholders use <span style="color:var(--admin-cyan);font-family:monospace;">{{field_name}}</span>.
                     </div>
@@ -1033,7 +1033,7 @@
     <script src="site-config.js?v=16.4.6"></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.4.7"></script>
+    <script src="admin-core.js?v=16.4.8"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)
