@@ -1525,7 +1525,7 @@ html {
   display: block;
   font-size: 0.8rem;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent2);
   letter-spacing: 2px;
   margin-bottom: 12px;
   text-transform: uppercase;
@@ -9096,9 +9096,9 @@ body {
 }
 
 .section-results-enhanced .result-card {
-    background: rgba(10, 10, 20, 0.4);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(10, 10, 20, 0.72);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     border: 1px solid rgba(var(--accent2-rgb), 0.1);
     border-radius: 20px;
     padding: 50px 30px;
