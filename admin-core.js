@@ -156,6 +156,8 @@
         archetypes: []
     };
     window.state = state; // Expose to window for inline scripts
+    /** Ops Brain results keyed as `leads:<uuid>` / `contacts:<uuid>` for reply modal + AI reply flow. */
+    if (typeof window.replyOpsBrainCache === 'undefined') window.replyOpsBrainCache = {};
     const getProviderLocalKey = (provider) => {
         if (provider === 'anthropic') {
             return (localStorage.getItem('cloud_claude') || localStorage.getItem('cloud_anthropic') || '').trim();
@@ -168,6 +170,13 @@
             || msg.includes('rate limit')
             || msg.includes('rate-limit')
             || msg.includes('current quota');
+    };
+    const isOpenAIQuotaIssue = (message) => {
+        const msg = String(message || '').toLowerCase();
+        return msg.includes('exceeded your current quota')
+            || msg.includes('insufficient_quota')
+            || msg.includes('billing')
+            || msg.includes('rate limit');
     };
     const truncateForPrompt = (text, maxChars = 2200) => {
         const s = String(text || '').trim();
@@ -209,7 +218,51 @@
         if (isGeminiQuotaIssue(message)) {
             return 'GEMINI QUOTA LIMIT HIT. SWITCH PROVIDER (GROQ/OPENAI/ANTHROPIC) OR UPGRADE GEMINI BILLING.';
         }
+        if (isOpenAIQuotaIssue(message)) {
+            return 'OPENAI QUOTA / BILLING LIMIT. ADD CREDITS, SWITCH PROVIDER, OR USE TERMINAL CLOUD KEYS.';
+        }
         return String(message || 'Unknown AI error');
+    };
+
+    /** Stable cache key for Ops Brain results in the reply modal (contacts + leads). */
+    const replyOpsBrainKey = (sourceTable, id) => `${sourceTable === 'leads' ? 'leads' : 'contacts'}:${String(id || '').trim()}`;
+
+    /** Shared HTML for Ops Brain summary (reply modal + hydrate on reopen). */
+    const buildOpsBrainPanelHtml = (recommendation) => {
+        const rec = recommendation || {};
+        const docs = Array.isArray(rec.required_documents) ? Array.from(new Set(rec.required_documents)) : [];
+        const statusFlags = Array.isArray(rec.status_flags) ? rec.status_flags : [];
+        const kbHits = Array.isArray(rec.knowledge_basis) ? rec.knowledge_basis : [];
+        const statusMap = {
+            ready: 'READY',
+            manual_review: 'MANUAL REVIEW',
+            missing_data: 'MISSING DATA',
+            confidential: 'CONFIDENTIAL',
+            media: 'MEDIA INVOLVED',
+            tax: 'TAX WORKFLOW'
+        };
+        const statusBadges = (statusFlags.length ? statusFlags : ['ready'])
+            .map(flag => statusMap[flag])
+            .filter(Boolean)
+            .map(label => `<span style="font-size:0.56rem;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:var(--admin-muted);font-weight:800;">${window.escapeHtml(label)}</span>`)
+            .join(' ');
+        const nextActionLabel = rec.next_action === 'manual_scope_review_required_before_quote'
+            ? 'Manual scope review required before quoting'
+            : rec.next_action === 'send_intake_confirmation_and_prepare_agreement_invoice'
+                ? 'Proceed with intake confirmation and agreement/invoice prep'
+                : (rec.next_action || 'manual_review_required');
+        return `
+                    <div style="background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.25); border-radius: 8px; padding: 12px;">
+                        <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.4px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP OPS BRAIN (MANUAL APPROVAL REQUIRED)</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${statusBadges}</div>
+                        <div style="font-size:0.85rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
+                        <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:4px;">${window.escapeHtml(rec.quote_range || 'Scope-based')}</div>
+                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;line-height:1.45;">Why package: ${window.escapeHtml(rec.package_reason || 'Scope and pricing signals used.')}</div>
+                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(rec.documents_reason || 'OTP safety docs selected from context.')}</div>
+                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">${window.escapeHtml(docs.join(', ') || 'Manual document review required')}</div>
+                        <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">Knowledge hits: ${window.escapeHtml(kbHits.length ? kbHits.map(hit => `${hit.file_name}#${hit.chunk_index} (${Math.round((Number(hit.similarity || 0)) * 100)}%)`).join(' | ') : 'No indexed file citations available.')}</div>
+                        <div style="font-size:0.67rem;color:var(--admin-muted);margin-top:7px;">${window.escapeHtml(nextActionLabel)}</div>
+                    </div>`;
     };
     const getGeminiModelCandidates = (preferredModel) => {
         const candidates = [
@@ -1377,7 +1430,7 @@
         const cache = window.leadBrainCache[leadId];
         if (!cache || !cache.recommendation) {
             return `
-            <div style="margin-top:12px;padding:12px;border:1px dashed var(--admin-border);border-radius:8px;background:rgba(0,0,0,0.2);">
+            <div style="margin-top:12px;padding:12px;border:1px dashed var(--admin-border);border-radius:8px;background:var(--admin-panel);">
                 <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
                     <div style="font-size:0.67rem;color:var(--admin-muted);text-transform:uppercase;letter-spacing:1.4px;">OTP OPS BRAIN // MANUAL REVIEW GATE</div>
                     <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:rgba(var(--accent2-rgb),0.15);border:1px solid var(--admin-cyan);color:var(--admin-cyan);font-size:0.65rem;padding:6px 10px;border-radius:6px;cursor:pointer;">ANALYZE LEAD</button>
@@ -1439,6 +1492,14 @@
         try {
             showToast('RUNNING OPS BRAIN...');
             await window.requestLeadBrain(leadId, 'leads');
+            const cached = window.leadBrainCache && window.leadBrainCache[leadId];
+            if (cached && cached.recommendation) {
+                window.replyOpsBrainCache[replyOpsBrainKey('leads', leadId)] = {
+                    recommendation: cached.recommendation,
+                    confidence: cached.confidence,
+                    updated_at: cached.updated_at || new Date().toISOString()
+                };
+            }
             await window.fetchLeads();
             showToast('OPS BRAIN READY');
         } catch (e) {
@@ -1784,23 +1845,41 @@
             syncBtn.textContent = isLeadsSource ? 'LOG LEAD REVIEW' : 'SYNCHRONIZE SIGNAL';
         }
         
-        // Render Analysis if present
-        // Render Analysis Agent (High-Density View)
+        // Analysis + Ops Brain: show neural JSON when present; always hydrate Ops Brain from cache (lead list or prior modal run).
         const analysisDiv = document.getElementById('replyAnalysis');
-        if(c.ai_analysis || c.advice || c.neural_meta) {
-             const analysisData = c.ai_analysis || { tactical_advice: c.advice, neural_meta: c.neural_meta };
-             const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
-             analysisDiv.innerHTML = `
-                <div style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: 160px; overflow-y: auto;">
+        if (analysisDiv) {
+            const srcTable = source === 'leads' ? 'leads' : 'contacts';
+            const rbKey = replyOpsBrainKey(srcTable, c.id);
+            let opsRec = null;
+            const replyCached = window.replyOpsBrainCache[rbKey];
+            if (replyCached && replyCached.recommendation) opsRec = replyCached.recommendation;
+            else if (srcTable === 'leads' && window.leadBrainCache && window.leadBrainCache[c.id] && window.leadBrainCache[c.id].recommendation) {
+                opsRec = window.leadBrainCache[c.id].recommendation;
+            }
+            if (window.__replyContext) window.__replyContext.recommendation = opsRec;
+
+            const sections = [];
+            if (c.ai_analysis || c.advice || c.neural_meta) {
+                const analysisData = c.ai_analysis || { tactical_advice: c.advice, neural_meta: c.neural_meta };
+                const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
+                sections.push(`
+                <div style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: 200px; overflow-y: auto;">
                     <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">NEURAL_ANALYSIS_DATA</div>
                     <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.72rem; color: var(--admin-text); line-height: 1.4; margin: 0;">${window.escapeHtml ? window.escapeHtml(analysisText) : analysisText}</pre>
-                </div>`;
-        } else {
-             analysisDiv.innerHTML = `
-                <div style="text-align: center; padding: 25px; color: var(--admin-muted); font-size: 0.7rem; border: 1px dashed var(--admin-border); border-radius: 8px; background: rgba(0,0,0,0.02);">
+                </div>`);
+            }
+            if (opsRec) {
+                sections.push(buildOpsBrainPanelHtml(opsRec));
+            }
+            if (!sections.length) {
+                sections.push(`
+                <div style="text-align: center; padding: 25px; color: var(--admin-muted); font-size: 0.7rem; border: 1px dashed var(--admin-border); border-radius: 8px; background: var(--admin-panel);">
                     <div style="font-size: 1.2rem; margin-bottom: 8px; opacity: 0.5;">📡</div>
-                    SIGNAL DATA NOT ANALYZED
-                </div>`;
+                    <div>SIGNAL DATA NOT ANALYZED</div>
+                    <div style="margin-top:10px;font-size:0.65rem;line-height:1.45;">Run <strong style="color:var(--admin-cyan);">OPS BRAIN</strong> for package, documents, and knowledge hits — then use <strong style="color:var(--admin-cyan);">GENERATE RESPONSE</strong>.</div>
+                </div>`);
+            }
+            analysisDiv.innerHTML = sections.join('<div style="height:12px;"></div>');
         }
         
         const modal = document.getElementById('replyModal');
@@ -2432,40 +2511,38 @@
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Ops Brain failed (${res.status})`);
             const recommendation = payload.recommendation || {};
-            if (analysisDiv) {
-                const docs = Array.isArray(recommendation.required_documents) ? Array.from(new Set(recommendation.required_documents)) : [];
-                const statusFlags = Array.isArray(recommendation.status_flags) ? recommendation.status_flags : [];
-                const kbHits = Array.isArray(recommendation.knowledge_basis) ? recommendation.knowledge_basis : [];
-                const statusMap = {
-                    ready: 'READY',
-                    manual_review: 'MANUAL REVIEW',
-                    missing_data: 'MISSING DATA',
-                    confidential: 'CONFIDENTIAL',
-                    media: 'MEDIA INVOLVED',
-                    tax: 'TAX WORKFLOW'
+            const cacheKey = replyOpsBrainKey(sourceTable, leadId);
+            window.replyOpsBrainCache[cacheKey] = {
+                recommendation,
+                confidence: payload.confidence,
+                updated_at: new Date().toISOString()
+            };
+            if (sourceTable === 'leads') {
+                window.leadBrainCache = window.leadBrainCache || {};
+                window.leadBrainCache[leadId] = {
+                    recommendation,
+                    confidence: payload.confidence,
+                    updated_at: new Date().toISOString()
                 };
-                const statusBadges = (statusFlags.length ? statusFlags : ['ready'])
-                    .map(flag => statusMap[flag])
-                    .filter(Boolean)
-                    .map(label => `<span style="font-size:0.56rem;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:var(--admin-muted);font-weight:800;">${label}</span>`)
-                    .join(' ');
-                const nextActionLabel = recommendation.next_action === 'manual_scope_review_required_before_quote'
-                    ? 'Manual scope review required before quoting'
-                    : recommendation.next_action === 'send_intake_confirmation_and_prepare_agreement_invoice'
-                        ? 'Proceed with intake confirmation and agreement/invoice prep'
-                        : (recommendation.next_action || 'manual_review_required');
-                analysisDiv.innerHTML = `
-                    <div style="background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.25); border-radius: 8px; padding: 12px;">
-                        <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.4px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP OPS BRAIN (MANUAL APPROVAL REQUIRED)</div>
-                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${statusBadges}</div>
-                        <div style="font-size:0.85rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(recommendation.recommended_package || 'Manual Review')}</div>
-                        <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:4px;">${window.escapeHtml(recommendation.quote_range || 'Scope-based')}</div>
-                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;line-height:1.45;">Why package: ${window.escapeHtml(recommendation.package_reason || 'Scope and pricing signals used.')}</div>
-                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(recommendation.documents_reason || 'OTP safety docs selected from context.')}</div>
-                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">${window.escapeHtml(docs.join(', ') || 'Manual document review required')}</div>
-                        <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">Knowledge hits: ${window.escapeHtml(kbHits.length ? kbHits.map(hit => `${hit.file_name}#${hit.chunk_index} (${Math.round((Number(hit.similarity || 0)) * 100)}%)`).join(' | ') : 'No indexed file citations available.')}</div>
-                        <div style="font-size:0.67rem;color:var(--admin-muted);margin-top:7px;">${window.escapeHtml(nextActionLabel)}</div>
-                    </div>`;
+            }
+            if (window.__replyContext) window.__replyContext.recommendation = recommendation;
+
+            if (analysisDiv) {
+                const sections = [];
+                const raw = window.__replyContext && window.__replyContext.analysis;
+                if (raw) {
+                    const analysisData = (typeof raw === 'object' && raw !== null && !Array.isArray(raw))
+                        ? raw
+                        : { tactical_advice: String(raw) };
+                    const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
+                    sections.push(`
+                <div style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: 200px; overflow-y: auto;">
+                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">NEURAL_ANALYSIS_DATA</div>
+                    <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.72rem; color: var(--admin-text); line-height: 1.4; margin: 0;">${window.escapeHtml ? window.escapeHtml(analysisText) : analysisText}</pre>
+                </div>`);
+                }
+                sections.push(buildOpsBrainPanelHtml(recommendation));
+                analysisDiv.innerHTML = sections.join('<div style="height:12px;"></div>');
             }
             showToast("OPS BRAIN READY");
             if (sourceTable === 'leads') await window.fetchLeads();
@@ -2543,6 +2620,19 @@
             }
 
             if (window.__replyContext) window.__replyContext.recommendation = opsRec;
+            if (opsRec && leadId) {
+                window.replyOpsBrainCache[replyOpsBrainKey(sourceTable, leadId)] = {
+                    recommendation: opsRec,
+                    confidence: null,
+                    updated_at: new Date().toISOString()
+                };
+                if (sourceTable === 'leads') {
+                    window.leadBrainCache = window.leadBrainCache || {};
+                    window.leadBrainCache[leadId] = window.leadBrainCache[leadId] || {};
+                    window.leadBrainCache[leadId].recommendation = opsRec;
+                    window.leadBrainCache[leadId].updated_at = new Date().toISOString();
+                }
+            }
             const analysisRaw = (window.__replyContext && window.__replyContext.analysis) ? window.__replyContext.analysis : null;
             const analysisText = analysisRaw
                 ? (typeof analysisRaw === 'string' ? analysisRaw : JSON.stringify(analysisRaw, null, 2))
@@ -2757,6 +2847,12 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                     <div style="background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.35); border-radius: 8px; padding: 10px;">
                         <div style="font-size:0.62rem;color:#ffd37a;letter-spacing:1.2px;text-transform:uppercase;font-weight:900;margin-bottom:6px;">Analysis Agent Alert</div>
                         <div style="font-size:0.72rem;color:var(--admin-text);line-height:1.45;">Gemini quota is exhausted. Switch Intelligence Engine to Groq/OpenAI/Anthropic or add a billed Gemini key.</div>
+                    </div>`;
+            } else if (analysisDiv && isOpenAIQuotaIssue(e.message)) {
+                analysisDiv.innerHTML = `
+                    <div style="background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.35); border-radius: 8px; padding: 10px;">
+                        <div style="font-size:0.62rem;color:#ffd37a;letter-spacing:1.2px;text-transform:uppercase;font-weight:900;margin-bottom:6px;">Analysis Agent Alert</div>
+                        <div style="font-size:0.72rem;color:var(--admin-text);line-height:1.45;">OpenAI quota or billing blocked this request. Add credits, switch engine to Gemini/Groq, or paste a cloud key under Direct Neural Cloud.</div>
                     </div>`;
             }
             showToast("GEN FAILED: " + friendlyError);
