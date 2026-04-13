@@ -569,11 +569,14 @@ function buildLeadText(lead = {}, sourceTable = 'leads') {
             `Advice: ${lead.advice || ''}`
         );
     } else {
+        const contactBody = normalizeWhitespace(
+            [lead.message, lead.project_details].filter(Boolean).join('\n\n')
+        );
         parts.push(
             `Service: ${lead.service || ''}`,
             `Budget: ${lead.budget || ''}`,
             `Timeline: ${lead.timeline || ''}`,
-            `Message: ${lead.message || ''}`
+            `Message: ${contactBody}`
         );
     }
     return normalizeWhitespace(parts.filter(Boolean).join('\n'));
@@ -593,7 +596,9 @@ function evaluateLeadDataCompleteness(lead = {}, sourceTable = 'leads') {
         };
     }
     const service = normalizeWhitespace(lead.service);
-    const message = normalizeWhitespace(lead.message);
+    const message = normalizeWhitespace(
+        [lead.message, lead.project_details].filter(Boolean).join('\n\n')
+    );
     const budget = normalizeWhitespace(lead.budget);
     const sufficient = Boolean(service || message);
     const missing = [];

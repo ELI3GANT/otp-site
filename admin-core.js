@@ -1833,8 +1833,8 @@
             if(subjectInput) subjectInput.value = `Inquiry Reply: Only True Perspective // ${name}`;
         }
 
-        // Context formatting
-        let messageContext = c.message || '';
+        // Context formatting (contacts may store brief in message and/or project_details)
+        let messageContext = [c.message, c.project_details].filter(Boolean).join('\n\n') || '';
         if (source === 'leads' && c.answers) {
             let answers = c.answers;
             if (typeof answers === 'string') try { answers = JSON.parse(answers); } catch(e) {}
@@ -2004,6 +2004,10 @@
         if (!modal) return;
         // Use current reply context as source of truth
         const leadId = document.getElementById('replyContactId')?.value || '';
+        if (!String(leadId).trim()) {
+            showToast('OPEN A THREAD FIRST (INBOX OR LEAD)');
+            return;
+        }
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
         const nextKey = `${sourceTable}:${leadId}`;
         // Hard reset on open (reopen) and when switching leads
@@ -2052,7 +2056,7 @@
             <div><strong>Lead ID</strong>: ${window.escapeHtml(String(s.leadId || ''))}</div>
             <div><strong>Source</strong>: ${window.escapeHtml(String(s.sourceTable || 'contacts'))}</div>
             <div><strong>Packet</strong>: ${window.escapeHtml(String(s.packetId || 'NOT GENERATED'))}</div>
-            ${s.notice ? `<div style="margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid rgba(var(--accent2-rgb),0.25);background:rgba(var(--accent2-rgb),0.07);color:var(--admin-text);font-size:0.72rem;line-height:1.4;">${window.escapeHtml(String(s.notice))}</div>` : `<div style="margin-top:6px;">Generate → preview → approve → download.</div>`}
+            ${s.notice ? `<div style="margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid rgba(var(--accent2-rgb),0.25);background:rgba(var(--accent2-rgb),0.07);color:var(--admin-text);font-size:0.72rem;line-height:1.4;">${window.escapeHtml(String(s.notice))}</div>` : `<div style="margin-top:6px;">Tip: run <strong style="color:var(--admin-cyan);">OPS BRAIN</strong> in the reply window first so packages and required docs match the thread. Then generate → preview → approve → download / send.</div>`}
         `;
 
         // Send block (only after packet exists)
