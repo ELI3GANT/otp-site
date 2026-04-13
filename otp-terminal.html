@@ -913,9 +913,10 @@
                     </div>
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;border:1px dashed var(--admin-border);border-radius:10px;padding:10px 12px;background:rgba(0,0,0,0.12);">
-                    <div style="font-size:0.7rem;color:var(--admin-muted);flex:1;min-width:220px;line-height:1.45;">
-                        <strong style="color:#fff;">Master templates (DOCX)</strong><br/>
-                        Upload your branded master-final templates so OTP can merge real client-ready docs. Required placeholders use <span style="color:var(--admin-cyan);font-family:monospace;">{{field_name}}</span>.
+                    <div style="font-size:0.7rem;color:var(--admin-muted);flex:1;min-width:240px;line-height:1.45;">
+                        <strong style="color:#fff;">Master Templates (Global)</strong><br/>
+                        These templates apply across <strong>all</strong> leads/packets. Upload your branded master-final DOCX files once, then generate lead-specific packets below.
+                        Placeholders use <span style="color:var(--admin-cyan);font-family:monospace;">{{field_name}}</span>.
                     </div>
                     <input id="docTemplateProposal" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;" onchange="uploadDocTemplate('proposal', this.files?.[0])"/>
                     <input id="docTemplateAgreement" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;" onchange="uploadDocTemplate('agreement', this.files?.[0])"/>

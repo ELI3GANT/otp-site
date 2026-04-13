@@ -1760,7 +1760,60 @@
     };
 
     // --- DOC PACKET (DYNAMIC DOCUMENT ENGINE) ---
-    window.__docPacketState = { packetId: null, docs: {}, leadId: null, sourceTable: 'contacts', contextKey: null, docxErrors: null };
+    window.__docPacketState = {
+        packetId: null,
+        docs: {},
+        leadId: null,
+        sourceTable: 'contacts',
+        contextKey: null,
+        docxErrors: null,
+        approvalsBaseline: null,
+        notice: null
+    };
+
+    window.__resetDocPacketState = function(keepContext = false) {
+        const s = window.__docPacketState || {};
+        const next = {
+            packetId: null,
+            docs: {},
+            docxErrors: null,
+            approvalsBaseline: null,
+            notice: null
+        };
+        if (!keepContext) {
+            next.leadId = null;
+            next.sourceTable = 'contacts';
+            next.contextKey = null;
+        }
+        Object.assign(s, next);
+        window.__docPacketState = s;
+    };
+
+    window.__docPacketApprovalsChanged = function() {
+        const s = window.__docPacketState || {};
+        if (!s.packetId) return false;
+        const baseline = s.approvalsBaseline && typeof s.approvalsBaseline === 'object' ? s.approvalsBaseline : null;
+        if (!baseline) return false;
+        const toggles = Array.from(document.querySelectorAll('#docPacketList .doc-approve-toggle'));
+        for (const t of toggles) {
+            const k = String(t.dataset.doc || '');
+            const cur = !!t.checked;
+            const base = !!baseline[k];
+            if (cur !== base) return true;
+        }
+        return false;
+    };
+
+    window.__updateDocPacketApproveBtn = function() {
+        const s = window.__docPacketState || {};
+        const approveBtn = document.getElementById('docPacketApproveBtn');
+        if (!approveBtn) return;
+        const enabled = !!s.packetId && window.__docPacketApprovalsChanged();
+        approveBtn.disabled = !enabled;
+        approveBtn.style.opacity = enabled ? '1' : '0.6';
+        approveBtn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+        approveBtn.title = !s.packetId ? 'Generate a packet first.' : (enabled ? '' : 'No approval changes to apply.');
+    };
 
     window.openDocPacket = function() {
         const modal = document.getElementById('docPacketModal');
@@ -1769,12 +1822,8 @@
         const leadId = document.getElementById('replyContactId')?.value || '';
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
         const nextKey = `${sourceTable}:${leadId}`;
-        // Reset state when switching threads to prevent stale packet approvals/downloads
-        if (window.__docPacketState.contextKey && window.__docPacketState.contextKey !== nextKey) {
-            window.__docPacketState.packetId = null;
-            window.__docPacketState.docs = {};
-            window.__docPacketState.docxErrors = null;
-        }
+        // Hard reset on open (reopen) and when switching leads
+        window.__resetDocPacketState(true);
         window.__docPacketState.contextKey = nextKey;
         window.__docPacketState.leadId = leadId;
         window.__docPacketState.sourceTable = sourceTable;
@@ -1799,29 +1848,23 @@
         const list = document.getElementById('docPacketList');
         const errBox = document.getElementById('docPacketErrors');
         const genBtn = document.getElementById('docPacketGenerateBtn');
-        const approveBtn = document.getElementById('docPacketApproveBtn');
         if (!meta || !list) return;
         const s = window.__docPacketState || {};
         const hasPacket = !!s.packetId;
 
-        if (approveBtn) {
-            approveBtn.disabled = !hasPacket;
-            approveBtn.style.opacity = hasPacket ? '1' : '0.6';
-            approveBtn.style.cursor = hasPacket ? 'pointer' : 'not-allowed';
-            approveBtn.title = hasPacket ? '' : 'Generate a packet first.';
-        }
         if (genBtn) {
             genBtn.disabled = !s.leadId;
             genBtn.style.opacity = s.leadId ? '1' : '0.6';
             genBtn.style.cursor = s.leadId ? 'pointer' : 'not-allowed';
             genBtn.title = s.leadId ? '' : 'Open a thread first.';
         }
+        window.__updateDocPacketApproveBtn();
 
         meta.innerHTML = `
             <div><strong>Lead ID</strong>: ${window.escapeHtml(String(s.leadId || ''))}</div>
             <div><strong>Source</strong>: ${window.escapeHtml(String(s.sourceTable || 'contacts'))}</div>
             <div><strong>Packet</strong>: ${window.escapeHtml(String(s.packetId || 'NOT GENERATED'))}</div>
-            <div style="margin-top:6px;">Generate → review → approve → download.</div>
+            ${s.notice ? `<div style="margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid rgba(var(--accent2-rgb),0.25);background:rgba(var(--accent2-rgb),0.07);color:#dffbff;font-size:0.72rem;line-height:1.4;">${window.escapeHtml(String(s.notice))}</div>` : `<div style="margin-top:6px;">Generate → preview → approve → download.</div>`}
         `;
 
         const docOrder = [
@@ -1832,12 +1875,35 @@
             ['media_release', 'Media Release']
         ];
 
-        list.innerHTML = docOrder.map(([key, label]) => {
-            const doc = (s.docs && s.docs[key]) ? s.docs[key] : { approved: false };
+        const statusFor = (key) => {
+            if (!hasPacket) return { label: 'NOT GENERATED', color: '#8892a0' };
+            const doc = (s.docs && s.docs[key]) ? s.docs[key] : null;
+            if (!doc) return { label: 'NOT GENERATED', color: '#8892a0' };
             const approved = !!doc.approved;
+            const docxErr = (s.docxErrors && typeof s.docxErrors === 'object') ? s.docxErrors[key] : null;
+            const isDocxType = (key === 'proposal' || key === 'agreement');
+            if (isDocxType && docxErr) return { label: 'ERROR', color: '#ffb86b' };
+            if (approved) {
+                if (key === 'invoice') return { label: 'READY TO DOWNLOAD', color: 'var(--admin-success)' };
+                if (key === 'nda' || key === 'media_release') return { label: 'READY TO DOWNLOAD', color: 'var(--admin-success)' };
+                if (isDocxType) return doc.docx ? { label: 'READY TO DOWNLOAD', color: 'var(--admin-success)' } : { label: 'APPROVED', color: 'var(--admin-success)' };
+                return { label: 'APPROVED', color: 'var(--admin-success)' };
+            }
+            return { label: 'GENERATED', color: '#ffaa00' };
+        };
+
+        list.innerHTML = docOrder.map(([key, label]) => {
+            const doc = (s.docs && s.docs[key]) ? s.docs[key] : null;
+            const generated = !!(hasPacket && doc);
+            const approved = !!(doc && doc.approved);
             const disabled = !s.packetId;
             const previewDisabled = disabled;
             const previewStyle = previewDisabled ? 'opacity:0.6;cursor:not-allowed;' : '';
+            const st = statusFor(key);
+
+            const canDownloadHtml = generated && approved && !!doc?.html;
+            const canDownloadDocx = generated && approved && (key === 'proposal' || key === 'agreement') && !!doc?.docx;
+            const canDownloadPdf = generated && approved && key === 'invoice';
             return `
                 <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:rgba(0,0,0,0.18);">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
@@ -1849,16 +1915,23 @@
                     </div>
                     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
                         <button type="button" onclick="previewDocHtml('${window.escapeHtml(key)}')" class="btn-secondary" style="width:auto;font-size:0.68rem;${previewStyle}" ${previewDisabled ? 'disabled' : ''}>PREVIEW</button>
-                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'docx')" class="btn-secondary" style="width:auto;font-size:0.68rem;${(approved && (key === 'proposal' || key === 'agreement')) ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${(approved && (key === 'proposal' || key === 'agreement')) ? '' : 'disabled'}>DOWNLOAD DOCX</button>
-                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'pdf')" class="btn-secondary" style="width:auto;font-size:0.68rem;${(approved && key === 'invoice') ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${(approved && key === 'invoice') ? '' : 'disabled'}>DOWNLOAD PDF</button>
-                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'html')" class="btn-secondary" style="width:auto;font-size:0.68rem;${approved ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${approved ? '' : 'disabled'}>DOWNLOAD HTML</button>
+                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'docx')" class="btn-secondary" style="width:auto;font-size:0.68rem;${canDownloadDocx ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${canDownloadDocx ? '' : 'disabled'} title="${canDownloadDocx ? '' : (generated ? 'DOCX not ready (template missing/merge failed) or not approved' : 'Generate a packet first')}">DOWNLOAD DOCX</button>
+                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'pdf')" class="btn-secondary" style="width:auto;font-size:0.68rem;${canDownloadPdf ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${canDownloadPdf ? '' : 'disabled'} title="${canDownloadPdf ? '' : (generated ? 'Approve invoice to download' : 'Generate a packet first')}">DOWNLOAD PDF</button>
+                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'html')" class="btn-secondary" style="width:auto;font-size:0.68rem;${canDownloadHtml ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${canDownloadHtml ? '' : 'disabled'} title="${canDownloadHtml ? '' : (generated ? 'Approve to download' : 'Generate a packet first')}">DOWNLOAD HTML</button>
                     </div>
-                    <div style="margin-top:10px;font-size:0.66rem;color:${approved ? 'var(--admin-success)' : '#ffaa00'};font-weight:800;letter-spacing:1px;text-transform:uppercase;">
-                        ${approved ? 'APPROVED' : 'PENDING APPROVAL'}
+                    <div style="margin-top:10px;font-size:0.66rem;color:${st.color};font-weight:900;letter-spacing:1px;text-transform:uppercase;">
+                        ${window.escapeHtml(st.label)}
                     </div>
                 </div>
             `;
         }).join('');
+
+        // Approval button should only enable when a toggle differs from baseline
+        const toggles = Array.from(document.querySelectorAll('#docPacketList .doc-approve-toggle'));
+        for (const t of toggles) {
+            t.addEventListener('change', () => window.__updateDocPacketApproveBtn(), { passive: true });
+        }
+        window.__updateDocPacketApproveBtn();
 
         if (errBox) {
             const errs = s.docxErrors && typeof s.docxErrors === 'object' ? s.docxErrors : null;
@@ -1890,10 +1963,15 @@
         const s = window.__docPacketState || {};
         if (!state.token) { showToast('LOGIN REQUIRED'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
-        const approved = !!(s.docs?.[docType]?.approved);
+        const doc = s.docs?.[docType];
+        const generated = !!doc;
+        const approved = !!(doc?.approved);
         if (!approved) { showToast('APPROVAL REQUIRED'); return; }
+        if (!generated) { showToast('DOC NOT GENERATED'); return; }
         if (format === 'docx' && !['proposal', 'agreement'].includes(docType)) { showToast('DOCX NOT AVAILABLE'); return; }
         if (format === 'pdf' && docType !== 'invoice') { showToast('PDF NOT AVAILABLE'); return; }
+        if (format === 'docx' && !doc?.docx) { showToast('DOCX NOT READY'); return; }
+        if (format === 'html' && !doc?.html) { showToast('HTML NOT READY'); return; }
         try {
             const apiBase = window.OTP ? window.OTP.getApiBase() : '';
             const url = format === 'docx'
@@ -1949,8 +2027,11 @@
             window.__docPacketState.packetId = payload.packet_id;
             window.__docPacketState.docs = payload.docs || {};
             window.__docPacketState.docxErrors = payload.docx_errors || null;
+            window.__docPacketState.approvalsBaseline = Object.fromEntries(Object.entries(window.__docPacketState.docs || {}).map(([k, v]) => [k, !!v?.approved]));
+            window.__docPacketState.notice = 'Packet generated. Preview each doc, then approve to unlock downloads.';
             showToast('DOC PACKET GENERATED (REVIEW REQUIRED)');
         } catch (e) {
+            window.__docPacketState.notice = `Packet generation failed: ${e.message}`;
             showToast(`DOC PACKET FAILED: ${e.message}`);
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = orig || 'GENERATE PACKET'; }
@@ -1990,6 +2071,7 @@
         const s = window.__docPacketState || {};
         if (!state.token) { showToast('LOGIN REQUIRED'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
+        if (!window.__docPacketApprovalsChanged()) { showToast('NO CHANGES TO APPLY'); return; }
         const toggles = Array.from(document.querySelectorAll('#docPacketList .doc-approve-toggle'));
         const approvals = {};
         for (const t of toggles) approvals[t.dataset.doc] = !!t.checked;
@@ -2011,8 +2093,11 @@
                 if (!window.__docPacketState.docs[k]) window.__docPacketState.docs[k] = {};
                 window.__docPacketState.docs[k].approved = !!v.approved;
             }
+            window.__docPacketState.approvalsBaseline = Object.fromEntries(Object.entries(approvals || {}).map(([k, v]) => [k, !!v]));
+            window.__docPacketState.notice = 'Approvals applied. Approved documents are now download-ready.';
             showToast('APPROVALS APPLIED');
         } catch (e) {
+            window.__docPacketState.notice = `Approval failed: ${e.message}`;
             showToast(`APPROVAL FAILED: ${e.message}`);
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = orig || 'APPLY APPROVALS'; }
