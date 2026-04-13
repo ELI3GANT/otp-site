@@ -15,11 +15,6 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
                 }
             });
         }
-        const scarcityText = document.getElementById('scarcity-text');
-        if (scarcityText) {
-            const month = new Date().toLocaleString('en-US', { month: 'long' });
-            scarcityText.textContent = `Limited openings — ${month}`;
-        }
     })();
 
     // 1. Footer Year
