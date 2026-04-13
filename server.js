@@ -358,6 +358,13 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
         Math.max(0.05, Math.min(0.99, ((Number(packageResult?.package_confidence) || 0.5) * 0.55) + (Number(confidence) * 0.45)))
             .toFixed(4)
     );
+    const knowledgeBasis = (Array.isArray(topMatches) ? topMatches : [])
+        .slice(0, 3)
+        .map(match => ({
+            file_name: match.file_name || 'unknown',
+            chunk_index: Number.isFinite(Number(match.chunk_index)) ? Number(match.chunk_index) : 0,
+            similarity: Number(Number(match.similarity || 0).toFixed(3))
+        }));
 
     return {
         lead_summary: leadText.slice(0, 700),
@@ -369,6 +376,7 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
         documents_reason: requiredDocs?.documents_reason || 'Document set generated from onboarding and risk controls.',
         next_action: nextAction,
         status_flags: uniqueStatusFlags,
+        knowledge_basis: knowledgeBasis,
         admin_notes: [
             `Confidence: ${confidenceLabel} (${confidence.toFixed(2)})`,
             'Default workflow enforces agreement + invoice + 50% deposit before work begins.',
@@ -1409,7 +1417,8 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
             success: true,
             leadId,
             confidence: Number(confidence.toFixed(4)),
-            recommendation
+            recommendation,
+            top_matches: topMatches.slice(0, 6)
         });
     } catch (error) {
         console.error("knowledge-recommend:", error.message);

@@ -1296,7 +1296,8 @@
             manual_review: { label: 'MANUAL REVIEW', bg: 'rgba(255,170,0,0.12)', border: 'rgba(255,170,0,0.45)', color: '#ffd37a' },
             missing_data: { label: 'MISSING DATA', bg: 'rgba(255,100,120,0.12)', border: 'rgba(255,100,120,0.45)', color: '#ff9fb0' },
             confidential: { label: 'CONFIDENTIAL', bg: 'rgba(170,130,255,0.12)', border: 'rgba(170,130,255,0.45)', color: '#d0bcff' },
-            media: { label: 'MEDIA INVOLVED', bg: 'rgba(120,210,255,0.12)', border: 'rgba(120,210,255,0.45)', color: '#9ce6ff' }
+            media: { label: 'MEDIA INVOLVED', bg: 'rgba(120,210,255,0.12)', border: 'rgba(120,210,255,0.45)', color: '#9ce6ff' },
+            tax: { label: 'TAX WORKFLOW', bg: 'rgba(215,190,120,0.12)', border: 'rgba(215,190,120,0.4)', color: '#e9d79a' }
         };
         const badges = (statusFlags.length ? statusFlags : ['ready'])
             .filter(flag => badgeMap[flag])
@@ -1306,6 +1307,10 @@
             }).join(' ');
         const docs = Array.isArray(rec.required_documents) ? Array.from(new Set(rec.required_documents)) : [];
         const docsLabel = docs.length ? docs.join(', ') : 'Manual document selection required';
+        const kbHits = Array.isArray(rec.knowledge_basis) ? rec.knowledge_basis : [];
+        const kbLabel = kbHits.length
+            ? kbHits.map(hit => `${hit.file_name}#${hit.chunk_index} (${Math.round((Number(hit.similarity || 0)) * 100)}%)`).join(' | ')
+            : 'No indexed file citations available.';
         const quoteLabel = rec.quote_range || (rec.recommended_package ? 'Scope-based estimate' : 'Manual quote review');
         const reviewTone = statusFlags.includes('manual_review') || statusFlags.includes('missing_data');
         const nextActionLabel = rec.next_action === 'manual_scope_review_required_before_quote'
@@ -1328,6 +1333,7 @@
             <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(rec.documents_reason || 'Document stack selected from OTP onboarding safeguards.')}</div>
             <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Next: ${window.escapeHtml(nextActionLabel)}</div>
             <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;word-break:break-word;">Docs: ${window.escapeHtml(docsLabel)}</div>
+            <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;word-break:break-word;">Knowledge hits: ${window.escapeHtml(kbLabel)}</div>
         </div>`;
     };
 
@@ -1738,6 +1744,7 @@
             if (analysisDiv) {
                 const docs = Array.isArray(recommendation.required_documents) ? Array.from(new Set(recommendation.required_documents)) : [];
                 const statusFlags = Array.isArray(recommendation.status_flags) ? recommendation.status_flags : [];
+                const kbHits = Array.isArray(recommendation.knowledge_basis) ? recommendation.knowledge_basis : [];
                 const statusMap = {
                     ready: 'READY',
                     manual_review: 'MANUAL REVIEW',
@@ -1765,6 +1772,7 @@
                         <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;line-height:1.45;">Why package: ${window.escapeHtml(recommendation.package_reason || 'Scope and pricing signals used.')}</div>
                         <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(recommendation.documents_reason || 'OTP safety docs selected from context.')}</div>
                         <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">${window.escapeHtml(docs.join(', ') || 'Manual document review required')}</div>
+                        <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">Knowledge hits: ${window.escapeHtml(kbHits.length ? kbHits.map(hit => `${hit.file_name}#${hit.chunk_index} (${Math.round((Number(hit.similarity || 0)) * 100)}%)`).join(' | ') : 'No indexed file citations available.')}</div>
                         <div style="font-size:0.67rem;color:var(--admin-muted);margin-top:7px;">${window.escapeHtml(nextActionLabel)}</div>
                     </div>`;
             }
@@ -1790,6 +1798,7 @@
         const draftBox = document.getElementById('replyDraftContent');
         
         if(!msg) { showToast("NO MESSAGE CONTEXT FOUND"); return; }
+        if (!email || !String(email).includes('@')) { showToast("VALID CONTACT EMAIL REQUIRED"); return; }
         
         const btn = document.getElementById('replyGenBtn');
         if (!btn) {
@@ -1895,7 +1904,7 @@
                     if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
 
                     const versions = ['v1', 'v1beta'];
-                    const modelCandidates = ['gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
+                    const modelCandidates = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'];
                     let success = false;
                     let lastError = "Neural link failed.";
 
@@ -1931,6 +1940,27 @@
                     }
                     if(!success) throw new Error(`GEMINI DEEP DIVE FAILED: ${lastError}`);
                 }
+                else if (provider === 'anthropic') {
+                    const res = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': cloudKey,
+                            'anthropic-version': '2023-06-01',
+                            'anthropic-dangerous-direct-browser-access': 'true'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-5-sonnet-20240620',
+                            max_tokens: 1200,
+                            system: 'You represent a high-end agency.',
+                            messages: [{ role: 'user', content: systemPrompt }],
+                            ...modelConfig
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error.message);
+                    replyText = data?.content?.[0]?.text || '';
+                }
                 else if (provider === 'groq') {
                     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
@@ -1945,6 +1975,10 @@
                     if(data.error) throw new Error(data.error.message);
                     replyText = data.choices[0].message.content;
                 }
+            }
+
+            if (!String(replyText || '').trim()) {
+                throw new Error('EMPTY RESPONSE FROM AI ENGINE');
             }
 
             // Stream simulation or just paste
@@ -2007,6 +2041,11 @@
         if (sourceTable !== 'contacts') {
             showToast("LEAD REVIEW LOGGED (NO AUTO-SYNC)");
             window.closeReplyManager();
+            return;
+        }
+        const draftContent = document.getElementById('replyDraftContent')?.value || '';
+        if (!String(draftContent).trim()) {
+            showToast("ADD OR GENERATE A DRAFT BEFORE SYNCHRONIZING");
             return;
         }
         const id = document.getElementById('replyContactId').value;
