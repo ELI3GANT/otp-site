@@ -1759,6 +1759,154 @@
         setTimeout(() => document.getElementById('replyDraftContent').focus(), 100);
     };
 
+    // --- DOC PACKET (DYNAMIC DOCUMENT ENGINE) ---
+    window.__docPacketState = { packetId: null, docs: {}, leadId: null, sourceTable: 'contacts' };
+
+    window.openDocPacket = function() {
+        const modal = document.getElementById('docPacketModal');
+        if (!modal) return;
+        // Use current reply context as source of truth
+        const leadId = document.getElementById('replyContactId')?.value || '';
+        const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
+        window.__docPacketState.leadId = leadId;
+        window.__docPacketState.sourceTable = sourceTable;
+        modal.style.display = 'flex';
+        modal.style.position = 'fixed';
+        modal.style.inset = '0';
+        modal.style.zIndex = '10000';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.background = 'rgba(0,0,0,0.85)';
+        modal.style.backdropFilter = 'blur(5px)';
+        window.renderDocPacketUI();
+    };
+
+    window.closeDocPacket = function() {
+        const modal = document.getElementById('docPacketModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.renderDocPacketUI = function() {
+        const meta = document.getElementById('docPacketMeta');
+        const list = document.getElementById('docPacketList');
+        if (!meta || !list) return;
+        const s = window.__docPacketState || {};
+        meta.innerHTML = `
+            <div><strong>Lead ID</strong>: ${window.escapeHtml(String(s.leadId || ''))}</div>
+            <div><strong>Source</strong>: ${window.escapeHtml(String(s.sourceTable || 'contacts'))}</div>
+            <div><strong>Packet</strong>: ${window.escapeHtml(String(s.packetId || 'NOT GENERATED'))}</div>
+            <div style="margin-top:6px;">Generate → review → approve → download.</div>
+        `;
+
+        const docOrder = [
+            ['proposal', 'Proposal'],
+            ['agreement', 'Agreement'],
+            ['invoice', 'Invoice'],
+            ['nda', 'NDA'],
+            ['media_release', 'Media Release']
+        ];
+
+        list.innerHTML = docOrder.map(([key, label]) => {
+            const doc = (s.docs && s.docs[key]) ? s.docs[key] : { approved: false };
+            const approved = !!doc.approved;
+            const disabled = !s.packetId;
+            const downloadHref = s.packetId ? `${(window.OTP ? window.OTP.getApiBase() : '')}/api/admin/docs/download/${encodeURIComponent(s.packetId)}/${encodeURIComponent(key)}` : '#';
+            return `
+                <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:rgba(0,0,0,0.18);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                        <div style="font-weight:800;color:#fff;">${window.escapeHtml(label)}</div>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--admin-muted);">
+                            <input type="checkbox" class="doc-approve-toggle" data-doc="${window.escapeHtml(key)}" ${approved ? 'checked' : ''} ${disabled ? 'disabled' : ''}/>
+                            APPROVE
+                        </label>
+                    </div>
+                    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button type="button" onclick="previewDocHtml('${window.escapeHtml(key)}')" class="btn-secondary" style="width:auto;font-size:0.68rem;" ${disabled ? 'disabled style="opacity:0.6;cursor:not-allowed;"' : ''}>PREVIEW</button>
+                        <a href="${approved ? downloadHref : '#'}" ${approved ? '' : 'onclick="return false;"'} style="text-decoration:none;">
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;${approved ? '' : 'opacity:0.6;cursor:not-allowed;'}">DOWNLOAD HTML</button>
+                        </a>
+                    </div>
+                    <div style="margin-top:10px;font-size:0.66rem;color:${approved ? 'var(--admin-success)' : '#ffaa00'};font-weight:800;letter-spacing:1px;text-transform:uppercase;">
+                        ${approved ? 'APPROVED' : 'PENDING APPROVAL'}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    };
+
+    window.previewDocHtml = function(docType) {
+        const s = window.__docPacketState || {};
+        if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
+        const html = s.docs?.[docType]?.html || '';
+        if (!html) { showToast('NO PREVIEW AVAILABLE'); return; }
+        const w = window.open('', '_blank');
+        if (!w) { showToast('POPUP BLOCKED'); return; }
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+    };
+
+    window.generateDocPacket = async function() {
+        const s = window.__docPacketState || {};
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!s.leadId) { showToast('OPEN A THREAD FIRST'); return; }
+        const btn = document.getElementById('docPacketGenerateBtn');
+        const orig = btn ? btn.textContent : '';
+        try {
+            if (btn) { btn.disabled = true; btn.textContent = 'GENERATING...'; }
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const res = await fetch(`${apiBase}/api/admin/docs/packet`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ leadId: s.leadId, sourceTable: s.sourceTable })
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Packet failed (${res.status})`);
+            window.__docPacketState.packetId = payload.packet_id;
+            window.__docPacketState.docs = payload.docs || {};
+            showToast('DOC PACKET GENERATED (REVIEW REQUIRED)');
+        } catch (e) {
+            showToast(`DOC PACKET FAILED: ${e.message}`);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = orig || 'GENERATE PACKET'; }
+            window.renderDocPacketUI();
+        }
+    };
+
+    window.approveDocPacket = async function() {
+        const s = window.__docPacketState || {};
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
+        const toggles = Array.from(document.querySelectorAll('#docPacketList .doc-approve-toggle'));
+        const approvals = {};
+        for (const t of toggles) approvals[t.dataset.doc] = !!t.checked;
+        const btn = document.getElementById('docPacketApproveBtn');
+        const orig = btn ? btn.textContent : '';
+        try {
+            if (btn) { btn.disabled = true; btn.textContent = 'APPLYING...'; }
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const res = await fetch(`${apiBase}/api/admin/docs/approve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ packetId: s.packetId, approvals })
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Approve failed (${res.status})`);
+            // Merge approval statuses
+            const next = payload.docs || {};
+            for (const [k, v] of Object.entries(next)) {
+                if (!window.__docPacketState.docs[k]) window.__docPacketState.docs[k] = {};
+                window.__docPacketState.docs[k].approved = !!v.approved;
+            }
+            showToast('APPROVALS APPLIED');
+        } catch (e) {
+            showToast(`APPROVAL FAILED: ${e.message}`);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = orig || 'APPLY APPROVALS'; }
+            window.renderDocPacketUI();
+        }
+    };
+
     window.runBrainForReplyContext = async function() {
         const leadId = document.getElementById('replyContactId')?.value;
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';

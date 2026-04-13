@@ -61,10 +61,131 @@ function escapeHtmlForEmail(str) {
         .replace(/'/g, '&#39;');
 }
 
+function escapeHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function moneyFromRange(rangeText) {
+    const txt = String(rangeText || '');
+    const matches = txt.match(/\$[\d,]+/g) || [];
+    const nums = matches.map(m => Number(m.replace(/[^0-9]/g, ''))).filter(n => Number.isFinite(n) && n > 0);
+    if (!nums.length) return null;
+    return { low: Math.min(...nums), high: Math.max(...nums) };
+}
+
+function buildDocFields({ lead, sourceTable, recommendation }) {
+    const rec = recommendation || {};
+    const docs = Array.isArray(rec.required_documents) ? rec.required_documents : [];
+    const pkg = String(rec.recommended_package || '').trim();
+    const quoteRange = String(rec.quote_range || '').trim();
+    const quote = moneyFromRange(quoteRange);
+    const low = quote ? quote.low : null;
+    const depositDue = low ? Math.round(low * 0.5) : null;
+
+    const name = String(lead?.name || (sourceTable === 'leads' ? 'Valued Lead' : 'Client') || '').trim();
+    const email = String(lead?.email || '').trim();
+    const createdAt = lead?.created_at ? new Date(lead.created_at) : new Date();
+    const leadSummary = sourceTable === 'contacts'
+        ? String(lead?.message || lead?.project_details || '').trim()
+        : String(lead?.message || '').trim();
+
+    return {
+        generated_at: new Date().toISOString(),
+        client_name: name,
+        client_email: email,
+        lead_created_at: createdAt.toISOString(),
+        lead_summary: leadSummary,
+        recommended_package: pkg || 'Manual Review',
+        quote_range: quoteRange || 'Scope-based',
+        required_documents: docs,
+        deposit_due_cents: depositDue ? (depositDue * 100) : null,
+        invoice_total_cents: low ? (low * 100) : null,
+        invoice_currency: 'USD',
+        sender_email: 'bookings@onlytrueperspective.tech',
+        sender_company: 'Only True Perspective LLC'
+    };
+}
+
+function renderHtmlDoc(docType, fields) {
+    const f = fields || {};
+    const titleMap = {
+        proposal: 'Project Proposal',
+        agreement: 'Client Service Agreement',
+        invoice: 'Invoice (50% Deposit)',
+        nda: 'Mutual NDA',
+        media_release: 'Media Release'
+    };
+    const title = titleMap[docType] || 'Document';
+    const docsLine = Array.isArray(f.required_documents) && f.required_documents.length
+        ? f.required_documents.join(', ')
+        : 'Manual document selection required';
+
+    return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(title)} — ${escapeHtml(f.client_name || '')}</title>
+  <style>
+    body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Arial; margin: 40px; color: #111; }
+    .meta { color: #555; font-size: 12px; margin-bottom: 18px; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    h2 { font-size: 16px; margin: 22px 0 8px; }
+    p, li { font-size: 13px; line-height: 1.6; }
+    .box { border: 1px solid #ddd; border-radius: 10px; padding: 14px 16px; background: #fafafa; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; }
+    .col { flex: 1; min-width: 220px; }
+    .sign { margin-top: 28px; }
+    .sign .line { margin-top: 40px; border-top: 1px solid #111; width: 260px; }
+    .small { font-size: 12px; color: #444; }
+  </style>
+</head>
+<body>
+  <div class="meta">${escapeHtml(f.sender_company || '')} • ${escapeHtml(f.sender_email || '')}<br/>Generated: ${escapeHtml(f.generated_at || '')}</div>
+  <h1>${escapeHtml(title)}</h1>
+  <div class="box">
+    <div class="row">
+      <div class="col"><div class="small">Client</div><div><strong>${escapeHtml(f.client_name || '')}</strong></div><div class="small">${escapeHtml(f.client_email || '')}</div></div>
+      <div class="col"><div class="small">Recommended package</div><div><strong>${escapeHtml(f.recommended_package || '')}</strong></div><div class="small">${escapeHtml(f.quote_range || '')}</div></div>
+    </div>
+  </div>
+
+  <h2>Lead summary</h2>
+  <p>${escapeHtml(f.lead_summary || 'N/A')}</p>
+
+  <h2>Required documents</h2>
+  <p>${escapeHtml(docsLine)}</p>
+
+  ${docType === 'invoice' ? `
+    <h2>Invoice details</h2>
+    <ul>
+      <li>Currency: ${escapeHtml(f.invoice_currency || 'USD')}</li>
+      <li>Estimated total (based on range floor): ${f.invoice_total_cents ? ('$' + (f.invoice_total_cents/100).toFixed(0)) : 'Scope-based'}</li>
+      <li>Deposit due (50%): ${f.deposit_due_cents ? ('$' + (f.deposit_due_cents/100).toFixed(0)) : 'Scope-based'}</li>
+    </ul>
+  ` : ''}
+
+  <h2>Terms (placeholder)</h2>
+  <p>This is an OTP-generated draft for admin review. Final terms must be approved before export/send.</p>
+
+  <div class="sign">
+    <div class="small">Approved by</div>
+    <div class="line"></div>
+  </div>
+</body>
+</html>`;
+}
+
 const KNOWLEDGE_PREFIX = {
     file: 'kb_file::',
     chunk: 'kb_chunk::',
-    leadRec: 'kb_lead_rec::'
+    leadRec: 'kb_lead_rec::',
+    docPacket: 'kb_doc_packet::'
 };
 const VERSION_PREFIX = 'version_event::';
 const MAX_VERSION_EVENTS = 20;
@@ -1504,6 +1625,161 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
     } catch (error) {
         console.error("knowledge-recommend:", error.message);
         res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// --- OTP Dynamic Document Generation (Admin Approval Gate) ---
+// 2.12 Generate a doc packet (HTML previews) from Ops Brain output
+app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const sourceTable = req.body?.sourceTable === 'contacts' ? 'contacts' : 'leads';
+        const leadId = String(req.body?.leadId || '').trim();
+        if (!leadId) return res.status(400).json({ success: false, message: "Missing leadId." });
+
+        const { data: lead, error: leadError } = await supabaseAdmin
+            .from(sourceTable)
+            .select('*')
+            .eq('id', leadId)
+            .maybeSingle();
+        if (leadError) throw leadError;
+        if (!lead) return res.status(404).json({ success: false, message: "Lead not found." });
+
+        // Run Ops Brain recommendation (reuse internal logic by calling the same function path)
+        const leadText = buildLeadText(lead, sourceTable);
+        const completeness = evaluateLeadDataCompleteness(lead, sourceTable);
+        const leadVector = textToVector(leadText, KB_VECTOR_DIMS);
+        const { data: chunkRows, error: chunkError } = await supabaseAdmin
+            .from('site_content')
+            .select('content')
+            .ilike('key', `${KNOWLEDGE_PREFIX.chunk}%`)
+            .limit(3000);
+        if (chunkError) throw chunkError;
+        const scored = (chunkRows || [])
+            .map(row => safeJsonParse(row.content, null))
+            .filter(Boolean)
+            .filter(chunk => !chunk.archived)
+            .map(chunk => ({
+                file_name: chunk.file_name,
+                chunk_index: chunk.chunk_index,
+                similarity: cosineSimilarity(leadVector, Array.isArray(chunk.vector) ? chunk.vector : textToVector(chunk.text, KB_VECTOR_DIMS))
+            }))
+            .sort((a, b) => b.similarity - a.similarity);
+        const topMatches = scored.slice(0, 6);
+        const topConfidence = topMatches.slice(0, 3);
+        const confidence = topConfidence.length
+            ? Math.max(0.05, Math.min(0.95, topConfidence.reduce((sum, item) => sum + item.similarity, 0) / topConfidence.length))
+            : 0.12;
+        const packageResult = inferPackageAndRange(leadText);
+        const requiredDocs = computeRequiredDocuments(leadText);
+        const recommendation = buildBrainResponse({
+            leadText,
+            packageResult,
+            requiredDocs,
+            confidence,
+            topMatches,
+            completeness
+        });
+
+        const fields = buildDocFields({ lead, sourceTable, recommendation });
+        const docTypes = ['proposal', 'agreement', 'invoice', 'nda', 'media_release'];
+        const docs = {};
+        for (const t of docTypes) docs[t] = { html: renderHtmlDoc(t, fields), approved: false };
+
+        const packetId = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+        const nowIso = new Date().toISOString();
+        const key = `${KNOWLEDGE_PREFIX.docPacket}${packetId}`;
+        const record = {
+            schema: 'otp-doc-packet-v1',
+            packet_id: packetId,
+            source_table: sourceTable,
+            lead_id: leadId,
+            generated_at: nowIso,
+            fields,
+            docs
+        };
+
+        const { error: upsertError } = await supabaseAdmin
+            .from('site_content')
+            .upsert([{ key, content: JSON.stringify(record), updated_at: nowIso }], { onConflict: 'key' });
+        if (upsertError) throw upsertError;
+
+        res.json({
+            success: true,
+            packet_id: packetId,
+            fields,
+            recommendation,
+            docs
+        });
+    } catch (error) {
+        console.error("docs-packet:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2.13 Approve one or more docs in a packet (manual gate)
+app.post('/api/admin/docs/approve', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.body?.packetId || '').trim();
+    const approvals = req.body?.approvals || {};
+    if (!packetId) return res.status(400).json({ success: false, message: "Missing packetId." });
+    try {
+        const key = `${KNOWLEDGE_PREFIX.docPacket}${packetId}`;
+        const { data: row, error: fetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('content')
+            .eq('key', key)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!row) return res.status(404).json({ success: false, message: "Packet not found." });
+        const packet = safeJsonParse(row.content, null);
+        if (!packet || typeof packet !== 'object') return res.status(500).json({ success: false, message: "Packet corrupted." });
+
+        const docs = packet.docs && typeof packet.docs === 'object' ? packet.docs : {};
+        for (const [docType, isApproved] of Object.entries(approvals || {})) {
+            if (!docs[docType]) continue;
+            docs[docType].approved = !!isApproved;
+            docs[docType].approved_at = !!isApproved ? new Date().toISOString() : null;
+        }
+        packet.docs = docs;
+        const nowIso = new Date().toISOString();
+        const { error: updateError } = await supabaseAdmin
+            .from('site_content')
+            .update({ content: JSON.stringify(packet), updated_at: nowIso })
+            .eq('key', key);
+        if (updateError) throw updateError;
+        res.json({ success: true, packet_id: packetId, docs: Object.fromEntries(Object.entries(docs).map(([k, v]) => [k, { approved: !!v.approved }])) });
+    } catch (error) {
+        console.error("docs-approve:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2.14 Download an approved doc (HTML)
+app.get('/api/admin/docs/download/:packetId/:docType', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.params?.packetId || '').trim();
+    const docType = String(req.params?.docType || '').trim();
+    if (!packetId || !docType) return res.status(400).send('Missing packetId/docType');
+    try {
+        const key = `${KNOWLEDGE_PREFIX.docPacket}${packetId}`;
+        const { data: row, error: fetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('content')
+            .eq('key', key)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!row) return res.status(404).send('Packet not found');
+        const packet = safeJsonParse(row.content, null);
+        const doc = packet?.docs?.[docType];
+        if (!doc) return res.status(404).send('Doc not found');
+        if (!doc.approved) return res.status(403).send('Doc not approved');
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${docType}-${packetId}.html"`);
+        res.send(String(doc.html || ''));
+    } catch (error) {
+        console.error("docs-download:", error.message);
+        res.status(500).send('Download failed');
     }
 });
 

@@ -878,6 +878,9 @@
                         <button id="replyGenBtn" type="button" onclick="generateReplyForLead()" style="background: var(--admin-accent); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                             <span>⚡</span> GEN AI REPLY
                         </button>
+                        <button id="replyDocsBtn" type="button" onclick="openDocPacket()" style="background: rgba(255,255,255,0.06); color: var(--admin-text); border: 1px solid var(--admin-border); padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <span>📄</span> DOC PACKET
+                        </button>
                     </div>
                 </div>
                 <textarea id="replyDraftContent" class="input-field" rows="12" style="font-family: monospace; line-height: 1.4;"></textarea>
@@ -887,6 +890,27 @@
                 <button id="replyCacheBtn" onclick="saveDraftUpdate()" class="action-btn" style="background: transparent; border: 1px solid var(--admin-border);">CACHE DRAFT</button>
                 <button onclick="launchMailClient()" class="action-btn" style="background: var(--admin-accent); color: white;">LAUNCH CLIENT MAIL</button>
                 <button id="replySyncBtn" onclick="markAsReplied()" class="action-btn" style="background: var(--admin-success); color: black;">SYNCHRONIZE SIGNAL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOC PACKET MODAL -->
+    <div id="docPacketModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width: 980px; width: min(94vw, 980px); display:block; max-height: 90vh; overflow-y:auto;">
+            <div class="modal-header">
+                <h3>// DOCUMENT GENERATION PACKET (ADMIN APPROVAL)</h3>
+                <button onclick="closeDocPacket()" style="background:none; border:none; color:var(--admin-muted); cursor:pointer;">X</button>
+            </div>
+            <div style="padding: 14px 4px 6px;">
+                <div id="docPacketMeta" style="font-size:0.72rem;color:var(--admin-muted);line-height:1.5;margin-bottom:12px;">
+                    No packet generated yet.
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+                    <button id="docPacketGenerateBtn" type="button" onclick="generateDocPacket()" class="btn-secondary" style="width:auto;font-size:0.7rem;">GENERATE PACKET</button>
+                    <button id="docPacketApproveBtn" type="button" onclick="approveDocPacket()" class="btn-secondary" style="width:auto;font-size:0.7rem;">APPLY APPROVALS</button>
+                </div>
+                <div id="docPacketList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+                </div>
             </div>
         </div>
     </div>
