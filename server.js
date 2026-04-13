@@ -1,15 +1,10 @@
 const fs = require('fs');
-// CRASH DEBUGGING
-// CRASH DEBUGGING (Console Only for Vercel/ReadOnly FS)
 process.on('uncaughtException', (err) => {
-    console.error('CRASH (Uncaught):', err);
+    console.error('Uncaught exception:', err);
     process.exit(1);
 });
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('CRASH (Unhandled Rejection):', reason);
-});
-process.on('exit', (code) => {
-    console.log(`EXIT CODE: ${code}`);
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled rejection:', reason);
 });
 
 // Load environment variables (Standard)
@@ -317,8 +312,7 @@ app.get('/api/status', async (req, res) => {
     }
 });
 
-// 3. CORS: Allow same-origin (adjust if frontend is separate)
-// 3. CORS: Restrict to main domain and known satellites
+// CORS: production domains + local dev + Vercel previews
 const allowedOrigins = [
     'https://onlytrueperspective.tech',
     'https://www.onlytrueperspective.tech',
@@ -371,21 +365,11 @@ function sendSchemaMigrationSql(res) {
 app.get('/api/schema-migration', (req, res) => sendSchemaMigrationSql(res));
 app.get('/api/deploy-sql', (req, res) => sendSchemaMigrationSql(res));
 
-// LOG OPTIONS REQUESTS (DEBUGGING 405)
-app.use((req, res, next) => {
-    if (req.method === 'OPTIONS') {
-        console.log(`📡 OPTIONS PREFLIGHT: ${req.url} | Origin: ${req.headers.origin}`);
-    }
-    next();
-});
-
-
-// 5. Body Parsing
-// Must be after webhook raw parser so Stripe signature verification still works.
+// Body parsing (after Stripe webhook raw handler)
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
 
-// 4. Rate Limiting: Prevent abuse
+// API rate limiting
 app.set('trust proxy', 1); // Trust Vercel Proxy
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -394,13 +378,12 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// --- VERBOSE REQUEST LOGGING ---
-app.use((req, res, next) => {
-    const log = `[${new Date().toISOString()}] ${req.method} ${req.url} - IP: ${req.ip}\n`;
-    // fs.appendFile removed for Vercel
-    console.log(log.trim());
-    next();
-});
+if (process.env.OTP_VERBOSE_HTTP === '1') {
+    app.use((req, res, next) => {
+        console.log(`[http] ${new Date().toISOString()} ${req.method} ${req.url} ${req.ip}`);
+        next();
+    });
+}
 
 // --- DEFAULT CACHE (handlers that do not set Cache-Control themselves) ---
 app.use((req, res, next) => {
@@ -1003,10 +986,6 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
-
-
-// --- ANALYTICS UPLINK (Bypasses RLS to increment views) ---
-// MOVED TO /api/analytics/view (Line 1145) for better robustness.
 
 // 5. CONTACT AGENT (AI Auto-Draft)
 app.post('/api/contact/submit', async (req, res) => {

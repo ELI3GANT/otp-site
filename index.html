@@ -1032,8 +1032,8 @@
   <script src="https://unpkg.com/split-type" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
   <script src="https://unpkg.com/kursor" defer></script>
-  <script src="stars-v2.js?v=16.3.0" defer></script>
-  <script src="site-init.js?v=16.3.3" defer></script>
+  <script src="stars-v2.js?v=16.3.4" defer></script>
+  <script src="site-init.js?v=16.3.4" defer></script>
   <script src="audit-engine.js?v=16.3.0" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
@@ -1082,7 +1082,7 @@
     });
   </script>
   <script src="https://js.stripe.com/v3/" defer></script>
-  <script src="pay_v2.js?v=16.3.0" defer></script>
+  <script src="pay_v2.js?v=16.3.4" defer></script>
   <script>
     // PRELOADER LOGIC
     window.addEventListener('load', () => {
@@ -1091,11 +1091,6 @@
         loader.style.opacity = '0';
         loader.style.visibility = 'hidden';
       }
-
-      /* 
-       FORM HANDLING & PACKAGE SELECTION MOVED TO: site-init.js
-       (Prevents double submission & enables AI Agent Logic via /api)
-    */
 
     // SCROLL REVEALS
     if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {

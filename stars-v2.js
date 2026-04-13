@@ -70,7 +70,6 @@ window.setAttractor = (x, y) => {
 // Allows site-init.js to force a starfield reset when theme toggles
 window.resetStars = () => {
     stars.forEach(s => s.reset());
-    console.log('[Stars] Force Reset for Theme Sync');
 };
 
 // Theme State Cache (Performance Optimization)

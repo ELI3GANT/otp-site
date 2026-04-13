@@ -42,14 +42,8 @@
 
         // 1. Check Auth
         if(!token && !isLocalHost) {
-            console.log("[AUTH_DEBUG] No token found, redirecting to portal gate.");
             window.location.href = 'portal-gate.html';
             return;
-        }
-        
-        if(token === 'static-bypass-token') {
-             console.log("🚀 ADMIN CORE V15.15.2 STABLE: ONLINE.");
-             // Will handle UI updates in body
         }
 
         // 2. Load Theme Immediately (Prevents FOUC)

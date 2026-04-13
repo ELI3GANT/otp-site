@@ -7,18 +7,14 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
  * Centralized initialization for Kursor, Year, and Scroll Progress.
  */
 
-    /* NUCLEAR CACHE PURGE & DOM PROTECTION (v16.1.0) */
     (function() {
-        // 1. Force unregister all Service Workers to eliminate sticky cache bugs
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(registrations => {
-                for (let registration of registrations) {
+                for (const registration of registrations) {
                     registration.unregister();
-                    console.log('📡 [OTP] ServiceWorker: PURGED');
                 }
             });
         }
-        // 2. Force DOM Update for Scarcity (Bypass HTML/CDN Cache)
         const scarcityText = document.getElementById('scarcity-text');
         if (scarcityText) {
             const month = new Date().toLocaleString('en-US', { month: 'long' });
@@ -72,7 +68,7 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
     if (isMobile) {
         // Ensure kursor elements are hidden if they were somehow injected
         const kursorNodes = document.querySelectorAll('.kursor, .kursor-child');
-        kursorNodes.forEach(n => n.remove()); // NUCLEAR OPTION: Remove them entirely
+        kursorNodes.forEach(n => n.remove());
         
         // Force Starfield Canvas to be visible
         const canvas = document.getElementById('cursor-canvas');
@@ -1944,6 +1940,3 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('DOMContentLoaded', initializeCommandUplink);
 })();
 
-// Contact form: single handler in initSite() posts to /api/contact/submit (server: honeypot, validation, email, AI draft).
-
-console.log("✅ [OTP_PRODUCTION] SYSTEM_HEALTH: OPTIMAL // PERFORMANCE_LOAD: LOW");
