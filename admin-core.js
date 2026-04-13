@@ -506,7 +506,7 @@
                     // Keep both keys in sync for backward compatibility with older builds.
                     localStorage.setItem('cloud_claude', value);
                     localStorage.setItem('cloud_anthropic', value);
-                    const currentProvider = document.getElementById('aiProvider')?.value || 'groq';
+                    const currentProvider = document.getElementById('aiProvider')?.value || 'gemini';
                     checkNeuralLink(currentProvider);
                 });
             }
@@ -564,11 +564,22 @@
             // 7. SYNC SYSTEM STATE (Persistence)
             fetchSystemState();
 
-            // 8. INITIAL LINK CHECK
-            const defaultProvider = localStorage.getItem('ai_provider') || 'groq';
+            // 8. INITIAL LINK CHECK (default: Gemini server hub; show model picker)
+            const allowedAi = ['gemini', 'groq', 'openai', 'anthropic'];
+            let defaultProvider = localStorage.getItem('ai_provider') || 'gemini';
+            if (!allowedAi.includes(defaultProvider)) defaultProvider = 'gemini';
             const providerSel = document.getElementById('aiProvider');
-            if (providerSel) providerSel.value = defaultProvider;
-            checkNeuralLink(defaultProvider);
+            if (providerSel) {
+                const hasOpt = Array.from(providerSel.options || []).some(o => o.value === defaultProvider);
+                if (!hasOpt) defaultProvider = 'gemini';
+                providerSel.value = defaultProvider;
+                localStorage.setItem('ai_provider', defaultProvider);
+            }
+            if (typeof window.switchProvider === 'function') {
+                window.switchProvider(defaultProvider);
+            } else {
+                checkNeuralLink(defaultProvider);
+            }
 
             // 9. LIVE STATUS TOGGLE UX
             const pubToggle = document.getElementById('pubToggle');
@@ -2585,7 +2596,7 @@
             // Get Config
             const providerSel = document.getElementById('aiProvider'); // Use global selector
             const modelSel = document.getElementById('geminiModel');
-            const provider = providerSel ? providerSel.value : 'openai';
+            const provider = providerSel ? providerSel.value : 'gemini';
             const model = (provider === 'gemini' && modelSel) ? modelSel.value : null;
             const personalKeys = {
                 openai: getProviderLocalKey('openai'),
@@ -2702,9 +2713,9 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
             if (!replyText) {
                 const attemptOrder = [
                     provider,
-                    // Smart fallback when Gemini quota/model issues happen
-                    ...(provider === 'gemini' ? ['groq', 'openai', 'anthropic'] : []),
-                    ...(provider !== 'gemini' ? ['openai', 'groq', 'anthropic', 'gemini'] : [])
+                    // Gemini failures: try other engines with personal keys (OpenAI last — optional).
+                    ...(provider === 'gemini' ? ['groq', 'anthropic', 'openai'] : []),
+                    ...(provider !== 'gemini' ? ['gemini', 'groq', 'anthropic', 'openai'] : [])
                 ];
                 const tried = new Set();
                 let lastDirectErr = '';

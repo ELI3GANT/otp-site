@@ -380,7 +380,7 @@
                     </div>
                 </div>
 
-                <div id="neuralLinkStatus" style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                <div id="neuralLinkStatus" style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; background: var(--admin-panel); padding: 8px; border-radius: 6px;">
                     <span id="hubIndicator" class="status-dot-mini" style="width: 8px; height: 8px; background: var(--admin-success); box-shadow: 0 0 10px var(--admin-success);"></span>
                     <span id="hubText" style="letter-spacing: 0.5px;">UPLINK: SECURE SERVER HUB (NO KEY REQUIRED)</span>
                 </div>
@@ -998,10 +998,10 @@
                             <div style="font-size:0.72rem;color:var(--admin-muted);margin-bottom:6px;">Default intelligence engine</div>
                             <select id="settingsDefaultAiProvider" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;">
                                 <option value="">(no override)</option>
-                                <option value="openai">OpenAI</option>
                                 <option value="gemini">Google Gemini</option>
-                                <option value="anthropic">Anthropic</option>
                                 <option value="groq">Groq</option>
+                                <option value="anthropic">Anthropic</option>
+                                <option value="openai">OpenAI</option>
                             </select>
                         </div>
                         <div>
@@ -1033,7 +1033,7 @@
     <script src="site-config.js?v=16.4.6"></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.4.9"></script>
+    <script src="admin-core.js?v=16.5.0"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)
