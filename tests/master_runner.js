@@ -19,6 +19,7 @@ const tests = [
     { name: 'Authentication Logic', path: 'tests/auth_flow_test.js' },
     { name: 'Post Management Logic', path: 'tests/manage_post_test.js' },
     { name: 'Email Link Logic', path: 'tests/email_link_test.js' },
+    { name: 'Doc Packet Logic', path: 'tests/doc_packet_logic.test.js' },
     { name: 'Theme Logic', path: 'tests/theme.test.js' },
     { name: 'Menu Logic', path: 'tests/menu_logic_test.js' },
     { name: 'Live API Analytics Slug', path: 'tests/live_analytics_slug.test.js' },

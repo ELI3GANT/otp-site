@@ -2234,6 +2234,14 @@ function safeEmail(s) {
     return v;
 }
 
+/** Only workspace addresses may appear in Resend `from` (domain is verified there). */
+function resolveDocPacketFrom(raw) {
+    const allowed = new Set(Object.values(BUSINESS_EMAILS).map((e) => String(e).toLowerCase()));
+    const r = safeEmail(raw);
+    if (r && allowed.has(r.toLowerCase())) return r;
+    return BUSINESS_EMAILS.BOOKINGS;
+}
+
 function base64FromBuffer(buf) {
     return Buffer.isBuffer(buf) ? buf.toString('base64') : Buffer.from(buf).toString('base64');
 }
@@ -2280,7 +2288,7 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     const packetId = String(req.body?.packetId || '').trim();
     const to = safeEmail(req.body?.to);
-    const from = safeEmail(req.body?.from) || BUSINESS_EMAILS.BOOKINGS;
+    const from = resolveDocPacketFrom(req.body?.from);
     const replyTo = BUSINESS_EMAILS.BOOKINGS; // Default replies to Google Workspace bookings inbox
     const include = Array.isArray(req.body?.include) ? req.body.include.map(v => String(v).trim()).filter(Boolean) : [];
     if (!packetId) return res.status(400).json({ success: false, message: 'Missing packetId' });
@@ -2522,7 +2530,7 @@ app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
         const allowedDocs = new Set(['proposal', 'agreement', 'invoice', 'nda', 'media_release']);
         const toSend = (Array.isArray(req.body.include) ? req.body.include : []).filter(d => allowedDocs.has(String(d)));
         const to = safeEmail(base.to);
-        const from = safeEmail(base.from) || BUSINESS_EMAILS.BOOKINGS;
+        const from = resolveDocPacketFrom(base.from);
         const replyTo = BUSINESS_EMAILS.BOOKINGS;
         if (!to || !toSend.length) return res.status(400).json({ success: false, message: 'Retry payload invalid' });
 
@@ -2583,7 +2591,24 @@ app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
             packet_version: packetMeta
         });
 
-        res.json({ success: true, message: emailResult?.simulated ? 'Email simulated (no RESEND_API_KEY configured)' : 'Email sent', resend_email_id: resendId, audit_last_hash: auditRecord?.last_hash || null, missing });
+        if (!emailResult?.success) {
+            const msg = String(emailResult?.data?.message || emailResult?.error || 'Email failed');
+            return res.status(502).json({
+                success: false,
+                message: msg,
+                resend_email_id: resendId,
+                audit_last_hash: auditRecord?.last_hash || null,
+                missing
+            });
+        }
+
+        res.json({
+            success: true,
+            message: emailResult?.simulated ? 'Email simulated (no RESEND_API_KEY configured)' : 'Email sent',
+            resend_email_id: resendId,
+            audit_last_hash: auditRecord?.last_hash || null,
+            missing
+        });
     } catch (error) {
         console.error("docs-send-retry:", error.message);
         res.status(500).json({ success: false, message: error.message });

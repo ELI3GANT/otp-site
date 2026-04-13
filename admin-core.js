@@ -1909,6 +1909,37 @@
     };
 
     // --- DOC PACKET (DYNAMIC DOCUMENT ENGINE) ---
+    /** Newest doc_packet_send that failed, unless a newer send succeeded (then null). */
+    function pickLatestFailedDocPacketSend(events) {
+        if (!Array.isArray(events)) return null;
+        for (let i = events.length - 1; i >= 0; i--) {
+            const e = events[i];
+            if (!e || e.type !== 'doc_packet_send') continue;
+            if (e.success) return null;
+            if (e.id) return e;
+        }
+        return null;
+    }
+
+    function formatDocPacketAuditLine(ev) {
+        if (!ev) return '';
+        const at = String(ev.at || '').replace('T', ' ').replace('Z', ' UTC');
+        if (ev.type === 'doc_packet_delivery_update') {
+            const st = ev.status != null ? String(ev.status) : 'unknown';
+            const ok = ev.success ? 'OK' : 'ERR';
+            return `[DELIVERY ${ok}] ${at}\nRESEND: ${String(ev.resend_email_id || '')}\nSTATUS: ${st}\n`;
+        }
+        if (ev.type === 'doc_packet_send') {
+            const ok = ev.success ? 'SENT' : (ev.simulated ? 'SIMULATED' : 'FAILED');
+            const docs = Array.isArray(ev.include) ? ev.include.join(', ') : '';
+            const to = ev.to || '';
+            const retry = ev.retry_of_event_id ? `RETRY_OF: ${ev.retry_of_event_id}\n` : '';
+            return `[${ok}] ${at}\n${retry}TO: ${to}\nDOCS: ${docs}\n`;
+        }
+        const t = String(ev.type || 'event').toUpperCase();
+        return `[${t}] ${at}\n`;
+    }
+
     window.__docPacketState = {
         packetId: null,
         docs: {},
@@ -2120,21 +2151,35 @@
             if (!hasPacket) {
                 auditLog.textContent = '';
             } else if (!events.length) {
-                auditLog.textContent = 'Audit: no sends logged yet.';
+                auditLog.textContent = 'Audit: no events logged yet.';
             } else {
                 const lines = events
                     .slice()
                     .reverse()
-                    .slice(0, 8)
-                    .map(ev => {
-                        const at = String(ev.at || '').replace('T', ' ').replace('Z', ' UTC');
-                        const ok = ev.success ? 'SENT' : 'FAILED';
-                        const docs = Array.isArray(ev.include) ? ev.include.join(', ') : '';
-                        const to = ev.to || '';
-                        return `[${ok}] ${at}\nTO: ${to}\nDOCS: ${docs}\n`;
-                    });
+                    .slice(0, 14)
+                    .map((ev) => formatDocPacketAuditLine(ev));
                 auditLog.textContent = lines.join('\n');
             }
+        }
+
+        const sendBtn = document.getElementById('docPacketSendBtn');
+        if (sendBtn) {
+            const anyApproved = Object.values(s.docs || {}).some((d) => d && d.approved);
+            const canSend = hasPacket && anyApproved;
+            sendBtn.disabled = !canSend;
+            sendBtn.style.opacity = canSend ? '1' : '0.6';
+            sendBtn.style.cursor = canSend ? 'pointer' : 'not-allowed';
+            sendBtn.title = !hasPacket ? 'Generate a packet first.' : (!anyApproved ? 'Approve at least one document before sending.' : '');
+        }
+
+        const retryBtn = document.getElementById('docPacketRetryBtn');
+        if (retryBtn) {
+            const events = Array.isArray(s.auditEvents) ? s.auditEvents : [];
+            const failed = pickLatestFailedDocPacketSend(events);
+            retryBtn.disabled = !hasPacket || !failed;
+            retryBtn.style.opacity = !hasPacket || !failed ? '0.55' : '1';
+            retryBtn.style.cursor = !hasPacket || !failed ? 'not-allowed' : 'pointer';
+            retryBtn.title = failed ? `Retry failed send (${failed.id})` : 'No failed send in the audit trail.';
         }
     };
 
@@ -2289,6 +2334,7 @@
             window.__docPacketState.approvalsBaseline = Object.fromEntries(Object.entries(approvals || {}).map(([k, v]) => [k, !!v]));
             window.__docPacketState.notice = 'Approvals applied. Approved documents are now download-ready.';
             showToast('APPROVALS APPLIED');
+            await window.refreshDocPacketAudit();
         } catch (e) {
             window.__docPacketState.notice = `Approval failed: ${e.message}`;
             showToast(`APPROVAL FAILED: ${e.message}`);
@@ -2311,7 +2357,7 @@
             if (!res.ok || !payload.success) throw new Error(payload.message || `Audit failed (${res.status})`);
             window.__docPacketState.auditEvents = Array.isArray(payload.events) ? payload.events : [];
         } catch (e) {
-            window.__docPacketState.auditEvents = [];
+            showToast(`AUDIT REFRESH FAILED: ${e.message}`);
         } finally {
             window.renderDocPacketUI();
         }
@@ -2340,10 +2386,16 @@
                 body: JSON.stringify({ packetId: s.packetId, to, from, include })
             });
             const payload = await res.json().catch(() => ({}));
-            if (!res.ok || !payload.success) throw new Error(payload.message || `Send failed (${res.status})`);
-            showToast('EMAIL SENT');
-            window.__docPacketState.notice = 'Email sent. Audit trail updated.';
+            if (!res.ok || !payload.success) {
+                const miss = Array.isArray(payload.details?.missing) && payload.details.missing.length
+                    ? ` — ${payload.details.missing.join(', ')}`
+                    : (Array.isArray(payload.missing) && payload.missing.length ? ` — ${payload.missing.join(', ')}` : '');
+                throw new Error((payload.message || `Send failed (${res.status})`) + miss);
+            }
+            showToast(payload.message && String(payload.message).toLowerCase().includes('simulated') ? 'EMAIL SIMULATED (NO API KEY)' : 'EMAIL SENT');
+            window.__docPacketState.notice = String(payload.message || 'Email sent. Audit trail updated.');
         } catch (e) {
+            window.__docPacketState.notice = `Send failed: ${e.message}`;
             showToast(`SEND FAILED: ${e.message}`);
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = orig || 'SEND APPROVED DOCS'; }
@@ -2377,20 +2429,21 @@
         if (!state.token) { showToast('LOGIN REQUIRED'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         const events = Array.isArray(s.auditEvents) ? s.auditEvents : [];
-        const lastSend = events.slice().reverse().find(e => e && e.type === 'doc_packet_send');
-        if (!lastSend || !lastSend.id) { showToast('NO SEND EVENT FOUND'); return; }
-        if (lastSend.success) { showToast('LAST SEND WAS SUCCESS'); return; }
+        const failedSend = pickLatestFailedDocPacketSend(events);
+        if (!failedSend || !failedSend.id) { showToast('NO FAILED SEND TO RETRY'); return; }
         try {
             const apiBase = resolveApiBase();
             const res = await fetch(`${apiBase}/api/admin/docs/send-retry`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
-                body: JSON.stringify({ packetId: s.packetId, retry_of_event_id: lastSend.id })
+                body: JSON.stringify({ packetId: s.packetId, retry_of_event_id: failedSend.id })
             });
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Retry failed (${res.status})`);
-            showToast('RETRY SENT');
+            showToast(payload.message && String(payload.message).toLowerCase().includes('simulated') ? 'RETRY SIMULATED (NO API KEY)' : 'RETRY SENT');
+            window.__docPacketState.notice = String(payload.message || 'Retry send completed. Audit updated.');
         } catch (e) {
+            window.__docPacketState.notice = `Retry failed: ${e.message}`;
             showToast(`RETRY FAILED: ${e.message}`);
         } finally {
             window.refreshDocPacketAudit?.();
