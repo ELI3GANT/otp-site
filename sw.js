@@ -1,9 +1,9 @@
 /**
- * OTP SERVICE WORKER v16.0.0
+ * OTP SERVICE WORKER v16.2.0
  * Always serve HTML fresh from network. Never cache HTML.
  */
 
-const SW_VERSION = 'otp-sw-v16.1.0';
+const SW_VERSION = 'otp-sw-v16.2.0';
 
 self.addEventListener('install', () => {
   self.skipWaiting(); // Activate immediately
@@ -16,6 +16,12 @@ self.addEventListener('activate', (event) => {
       Promise.all(keys.map((key) => caches.delete(key)))
     ).then(() => self.clients.claim())
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event && event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (event) => {

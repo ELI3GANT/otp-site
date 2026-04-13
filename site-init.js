@@ -8,13 +8,29 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
  */
 
     (function() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(registrations => {
-                for (const registration of registrations) {
-                    registration.unregister();
-                }
-            });
-        }
+        if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
+        window.addEventListener('load', async () => {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    if (!newWorker) return;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                        }
+                    });
+                });
+            } catch (err) {
+                console.warn('[OTP] Service worker registration failed:', err);
+            }
+        });
+
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (window.__otpSwRefreshing) return;
+            window.__otpSwRefreshing = true;
+            window.location.reload();
+        });
     })();
 
     // 1. Footer Year
@@ -194,6 +210,19 @@ window.OTP.getThemeIcon = function(theme) {
     }
 };
 
+window.OTP.normalizeScarcityCopy = function() {
+    const scarcityEl = document.getElementById('scarcity-text');
+    if (!scarcityEl) return;
+
+    const text = (scarcityEl.textContent || '').trim();
+    const hasMonthSlotCopy = /\bslot\s+remaining\s+for\s+(january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(text);
+    const hasMonthLimitedOpenings = /\blimited\s+openings\s*[—-]\s*(january|february|march|april|may|june|july|august|september|october|november|december)\b/i.test(text);
+
+    if (hasMonthSlotCopy || hasMonthLimitedOpenings) {
+        scarcityEl.textContent = 'Limited openings — inquire for the next available slot';
+    }
+};
+
 window.OTP.setTheme = function(theme, isManual = false) {
     const html = document.documentElement;
     const rootStyle = html.style;
@@ -215,6 +244,15 @@ window.OTP.setTheme = function(theme, isManual = false) {
         rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
         rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
     }
+
+    // Keep browser chrome and native controls aligned with active theme.
+    try {
+        html.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+            metaTheme.setAttribute('content', theme === 'light' ? '#eceef2' : '#030305');
+        }
+    } catch (e) { /* ignore */ }
 
     // Release freeze after brief frame delay
     requestAnimationFrame(() => {
@@ -713,6 +751,9 @@ window.OTP.initLiveEditor = async function() {
                 const el = document.getElementById(row.key);
                 if (el) el.innerHTML = window.OTP.sanitizeHtml(row.content);
             });
+            if (typeof window.OTP.normalizeScarcityCopy === 'function') {
+                window.OTP.normalizeScarcityCopy();
+            }
             console.log(`[OTP] Loaded ${contentRows.length} dynamic content blocks.`);
         }
     } catch (e) {
@@ -848,6 +889,37 @@ window.OTP.initLiveEditor = async function() {
 };
 
 function initSite() {
+    if (window.OTP && typeof window.OTP.normalizeScarcityCopy === 'function') {
+        window.OTP.normalizeScarcityCopy();
+    }
+
+    (function initLazyEmbeds() {
+        const embeds = document.querySelectorAll('iframe[data-src]');
+        if (!embeds.length) return;
+
+        const loadEmbed = (iframe) => {
+            if (!iframe || iframe.dataset.loaded === 'true') return;
+            const src = iframe.getAttribute('data-src');
+            if (!src) return;
+            iframe.src = src;
+            iframe.dataset.loaded = 'true';
+        };
+
+        if (!('IntersectionObserver' in window)) {
+            embeds.forEach(loadEmbed);
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                loadEmbed(entry.target);
+                obs.unobserve(entry.target);
+            });
+        }, { rootMargin: '250px 0px', threshold: 0.01 });
+
+        embeds.forEach((iframe) => observer.observe(iframe));
+    })();
 
     (function injectThemeToggle() {
         if (window.OTP_THEME_TOGGLE_INJECTED) return;

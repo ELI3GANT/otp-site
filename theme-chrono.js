@@ -4,6 +4,16 @@
  */
 (function () {
     window.OTP = window.OTP || {};
+    function applyBrowserThemeHints(theme) {
+        try {
+            document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+            var metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) {
+                metaTheme.setAttribute('content', theme === 'light' ? '#eceef2' : '#030305');
+            }
+        } catch (e) { /* ignore */ }
+    }
+
 
     var MANUAL_TTL_MS = 12 * 60 * 60 * 1000;
 
@@ -78,4 +88,5 @@
         rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
         rootStyle.setProperty('--accent2', 'rgb(' + selectedHue.dark + ')');
     }
+    applyBrowserThemeHints(theme);
 })();
