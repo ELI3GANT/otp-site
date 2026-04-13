@@ -147,6 +147,29 @@
         }
         return (localStorage.getItem(`cloud_${provider}`) || '').trim();
     };
+    const isGeminiQuotaIssue = (message) => {
+        const msg = String(message || '').toLowerCase();
+        return msg.includes('quota exceeded')
+            || msg.includes('rate limit')
+            || msg.includes('rate-limit')
+            || msg.includes('current quota');
+    };
+    const formatNeuralError = (message) => {
+        if (isGeminiQuotaIssue(message)) {
+            return 'GEMINI QUOTA LIMIT HIT. SWITCH PROVIDER (GROQ/OPENAI/ANTHROPIC) OR UPGRADE GEMINI BILLING.';
+        }
+        return String(message || 'Unknown AI error');
+    };
+    const getGeminiModelCandidates = (preferredModel) => {
+        const candidates = [
+            preferredModel,
+            'gemini-2.5-flash',
+            'gemini-flash-latest',
+            'gemini-2.5-flash-lite',
+            'gemini-2.0-flash'
+        ].filter(Boolean);
+        return Array.from(new Set(candidates));
+    };
     const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
     const isLocalRuntime = () => LOCAL_HOSTS.has(window.location.hostname);
     const isLocalApiBase = (url) => {
@@ -1904,7 +1927,7 @@
                     if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
 
                     const versions = ['v1', 'v1beta'];
-                    const modelCandidates = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'];
+                    const modelCandidates = getGeminiModelCandidates(model);
                     let success = false;
                     let lastError = "Neural link failed.";
 
@@ -1990,7 +2013,16 @@
 
         } catch(e) {
             console.error("GEN ERROR:", e);
-            showToast("GEN FAILED: " + e.message);
+            const friendlyError = formatNeuralError(e.message);
+            const analysisDiv = document.getElementById('replyAnalysis');
+            if (analysisDiv && isGeminiQuotaIssue(e.message)) {
+                analysisDiv.innerHTML = `
+                    <div style="background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.35); border-radius: 8px; padding: 10px;">
+                        <div style="font-size:0.62rem;color:#ffd37a;letter-spacing:1.2px;text-transform:uppercase;font-weight:900;margin-bottom:6px;">Analysis Agent Alert</div>
+                        <div style="font-size:0.72rem;color:var(--admin-text);line-height:1.45;">Gemini quota is exhausted. Switch Intelligence Engine to Groq/OpenAI/Anthropic or add a billed Gemini key.</div>
+                    </div>`;
+            }
+            showToast("GEN FAILED: " + friendlyError);
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
@@ -3043,7 +3075,7 @@
                     if (raw.usage) trackAICost('groq', raw.usage.total_tokens);
                 }
                 else if (provider === 'gemini') {
-                    const gemModel = model || 'gemini-2.0-flash';
+                    const modelCandidates = getGeminiModelCandidates(model || 'gemini-2.5-flash');
                     const endpoints = ['v1', 'v1beta'];
                     let gemSuccess = false;
                     let gemError = "Unknown Gemini error.";
@@ -3054,76 +3086,78 @@
                     if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
                     if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
 
-                    for (const v of endpoints) {
-                        try {
-                            const payload = { 
-                                systemInstruction: {
-                                    parts: [{ text: sysPrompt }]
-                                },
-                                contents: [{ 
-                                    role: 'user',
-                                    parts: [{ text: userPrompt }] 
-                                }],
-                                generationConfig: geminiConfig
-                            };
+                    for (const gemModel of modelCandidates) {
+                        if (gemSuccess) break;
+                        for (const v of endpoints) {
+                            if (gemSuccess) break;
+                            try {
+                                const payload = { 
+                                    systemInstruction: {
+                                        parts: [{ text: sysPrompt }]
+                                    },
+                                    contents: [{ 
+                                        role: 'user',
+                                        parts: [{ text: userPrompt }] 
+                                    }],
+                                    generationConfig: geminiConfig
+                                };
 
-                            const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudKey}`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(payload)
-                            });
-                            const raw = await res.json();
-                            
-                            if (raw.error) {
-                                gemError = `${raw.error.message} (${raw.error.status || 'ERROR'})`;
-                                console.warn(`⚠️ Gemini ${v} failed:`, raw.error.message);
-                                continue;
-                            }
-
-                            if (raw.candidates && raw.candidates[0].finishReason === 'SAFETY') {
-                                gemError = "NEURAL BLOCK: Content flagged by safety filter. Try a different concept.";
-                                break;
-                            }
-
-                            if (raw.candidates && raw.candidates[0].content && raw.candidates[0].content.parts) {
-                                let text = raw.candidates[0].content.parts[0].text;
-                                // Robust JSON Extraction
-                                const jsonMatch = text.match(/\{[\s\S]*\}/);
-                                if (jsonMatch) text = jsonMatch[0];
+                                const res = await fetch(`https://generativelanguage.googleapis.com/${v}/models/${gemModel}:generateContent?key=${cloudKey}`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(payload)
+                                });
+                                const raw = await res.json();
                                 
-                                // NORMALIZATION LAYER: Fix common LLM JSON errors
-                                let repairedText = text
-                                    .replace(/(\r\n|\n|\r)/gm, " ") // Remove hard newlines
-                                    .replace(/'([^']*)':/g, '"$1":') // Convert single-quoted keys to double
-                                    .replace(/:\s*'([^']*)'/g, ': "$1"') // Convert single-quoted values to double
-                                    .replace(/,\s*([\}\]])/g, "$1") // Strip trailing commas
-                                    .replace(/\\(?!["\\\/bfnrtu]|u[0-9a-fA-F]{4})/g, "\\\\"); // Fix illegal escapes
-                                
-                                try {
-                                    aiResult = JSON.parse(repairedText);
-                                } catch(e) {
-                                    console.warn("REPAIR FAILED, TRYING RELAXED PARSE...");
-                                    try {
-                                        // Attempt to parse text with escaped newlines but without brittle quote-swapping
-                                        aiResult = JSON.parse(text.replace(/\r?\n/g, "\\n"));
-                                    } catch(f) {
-                                        throw new Error(`JSON_MALFORMED: ${f.message}`);
-                                    }
+                                if (raw.error) {
+                                    gemError = `${raw.error.message} (${raw.error.status || 'ERROR'})`;
+                                    console.warn(`⚠️ Gemini ${v} ${gemModel} failed:`, raw.error.message);
+                                    continue;
                                 }
-                                
-                                // Gemini token tracking
-                                if (raw.usageMetadata) trackAICost('gemini', raw.usageMetadata.totalTokenCount);
-                                else trackAICost('gemini', 1500); 
-                                gemSuccess = true; 
-                                break;
-                            } else {
-                                gemError = "Unexpected Gemini response format.";
+
+                                if (raw.candidates && raw.candidates[0].finishReason === 'SAFETY') {
+                                    gemError = "NEURAL BLOCK: Content flagged by safety filter. Try a different concept.";
+                                    break;
+                                }
+
+                                if (raw.candidates && raw.candidates[0].content && raw.candidates[0].content.parts) {
+                                    let text = raw.candidates[0].content.parts[0].text;
+                                    // Robust JSON Extraction
+                                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                                    if (jsonMatch) text = jsonMatch[0];
+                                    
+                                    // NORMALIZATION LAYER: Fix common LLM JSON errors
+                                    let repairedText = text
+                                        .replace(/(\r\n|\n|\r)/gm, " ")
+                                        .replace(/'([^']*)':/g, '"$1":')
+                                        .replace(/:\s*'([^']*)'/g, ': "$1"')
+                                        .replace(/,\s*([\}\]])/g, "$1")
+                                        .replace(/\\(?!["\\\/bfnrtu]|u[0-9a-fA-F]{4})/g, "\\\\");
+                                    
+                                    try {
+                                        aiResult = JSON.parse(repairedText);
+                                    } catch(e) {
+                                        console.warn("REPAIR FAILED, TRYING RELAXED PARSE...");
+                                        try {
+                                            aiResult = JSON.parse(text.replace(/\r?\n/g, "\\n"));
+                                        } catch(f) {
+                                            throw new Error(`JSON_MALFORMED: ${f.message}`);
+                                        }
+                                    }
+                                    
+                                    if (raw.usageMetadata) trackAICost('gemini', raw.usageMetadata.totalTokenCount);
+                                    else trackAICost('gemini', 1500); 
+                                    gemSuccess = true; 
+                                    break;
+                                } else {
+                                    gemError = "Unexpected Gemini response format.";
+                                }
+                            } catch(e) {
+                                gemError = e.message;
                             }
-                        } catch(e) {
-                            gemError = e.message;
                         }
                     }
-                    if(!gemSuccess) throw new Error(`Gemini Neural Bridge Failed: ${gemError}`);
+                    if(!gemSuccess) throw new Error(formatNeuralError(`Gemini Neural Bridge Failed: ${gemError}`));
                 }
             }
 
@@ -3189,8 +3223,9 @@
 
         } catch (err) {
             console.error("AI ERROR:", err);
-            if(status) { status.textContent = "ERROR: " + err.message; status.style.color = "#ff4444"; }
-            showToast("AI ERROR: " + err.message);
+            const friendlyError = formatNeuralError(err.message);
+            if(status) { status.textContent = "ERROR: " + friendlyError; status.style.color = "#ff4444"; }
+            showToast("AI ERROR: " + friendlyError);
         } finally {
             if (btn) {
                 btn.textContent = "⚡ TRANSMIT";
@@ -3272,7 +3307,7 @@
         const status = document.getElementById('aiStatus');
         if (status) {
             const limits = {
-                'gemini': 'LIMITS: 15 req/min (Oracle V2.5 Tier)',
+                'gemini': 'LIMITS: Usage-based (Gemini Adaptive)',
                 'groq': 'LIMITS: 30 req/min (Extreme Speed)',
                 'openai': 'LIMITS: Usage-based (GPT-4o Premium)',
                 'anthropic': 'LIMITS: Usage-based (Claude 3.5 Sonnet)'

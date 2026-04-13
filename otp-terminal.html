@@ -371,7 +371,7 @@
                     <div class="input-group" style="flex: 1;">
                         <label for="aiProvider">Intelligence Engine</label>
                         <select id="aiProvider" onchange="window.switchProvider(this.value);" style="background: var(--admin-panel); font-weight: bold; color: var(--accent2);">
-                            <option value="gemini">Google Gemini 2.0 (Oracle Flagship)</option>
+                            <option value="gemini">Google Gemini (Adaptive)</option>
                             <option value="groq">Groq Llama 3.3 (Extreme Speed)</option>
                             <option value="openai">OpenAI (GPT-4o) [PAID / PREMIUM]</option>
                             <option value="anthropic">Anthropic Claude 3.5 [PAID / PREMIUM]</option>
@@ -388,16 +388,13 @@
                     <div class="input-group">
                         <label for="geminiModel">Gemini Neural Variant</label>
                         <select id="geminiModel" style="background: var(--admin-panel); font-weight: bold; color: var(--accent2);">
-                            <optgroup label="GEMINI 2.5 (2026 STABLE)">
-                                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Ultra Fast)</option>
-                                <option value="gemini-2.0-pro-exp-02-05">Gemini 2.0 Pro (Extreme Logic)</option>
+                            <optgroup label="GEMINI 2.5 (RECOMMENDED)">
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Balanced)</option>
+                                <option value="gemini-flash-latest">Gemini Flash Latest (Adaptive)</option>
+                                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (Fastest)</option>
                             </optgroup>
-                            <optgroup label="GEMINI 2.0 (LEGACY)">
+                            <optgroup label="GEMINI 2.0 (FALLBACK)">
                                 <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                            </optgroup>
-                            <optgroup label="GEMINI 1.5 (CLASSIC)">
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
                             </optgroup>
                         </select>
                     </div>
@@ -847,13 +844,13 @@
             <input type="hidden" id="replySourceTable" value="contacts">
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 20px;">
-                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                <div style="background: rgba(0,0,0,0.22); padding: 15px; border-radius: 8px; border: 1px solid rgba(var(--accent2-rgb),0.18);">
                     <label style="color: var(--admin-cyan); font-size: 0.7rem; display: block; margin-bottom: 5px;">INCOMING SIGNAL</label>
-                    <div id="replyIncomingMsg" style="font-size: 0.85rem; color: var(--admin-text); white-space: pre-wrap; max-height: 150px; overflow-y: auto;"></div>
+                    <div id="replyIncomingMsg" style="font-size: 0.83rem; color: var(--admin-text); white-space: pre-wrap; max-height: 180px; min-height: 120px; overflow-y: auto; line-height: 1.5; background: rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 10px;"></div>
                 </div>
-                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                <div style="background: rgba(0,0,0,0.22); padding: 15px; border-radius: 8px; border: 1px solid rgba(var(--accent2-rgb),0.18);">
                     <label style="color: var(--admin-cyan); font-size: 0.7rem; display: block; margin-bottom: 5px;">ANALYSIS AGENT</label>
-                    <div id="replyAnalysis" style="font-size: 0.85rem; color: var(--admin-muted); word-break: break-word;">No analysis data active.</div>
+                    <div id="replyAnalysis" style="font-size: 0.8rem; color: var(--admin-muted); word-break: break-word; max-height: 180px; min-height: 120px; overflow-y: auto; line-height: 1.45; background: rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 10px;">No analysis data active.</div>
                 </div>
             </div>
 

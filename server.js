@@ -132,6 +132,21 @@ function chunkText(text, maxChars = 1200, overlap = 200) {
     return chunks;
 }
 
+function normalizeGeminiRuntimeError(message) {
+    const msg = String(message || '');
+    const lower = msg.toLowerCase();
+    if (
+        lower.includes('quota exceeded')
+        || lower.includes('rate limit')
+        || lower.includes('rate-limit')
+        || lower.includes('high demand')
+        || lower.includes('current quota')
+    ) {
+        return 'Gemini capacity limit reached. Switch provider or use a billed Gemini key, then retry in ~20 seconds.';
+    }
+    return msg || 'Gemini request failed.';
+}
+
 async function extractTextFromKnowledgeFile(file) {
     if (!file || !file.buffer) throw new Error('Missing file buffer.');
     const ext = path.extname(file.originalname || '').toLowerCase();
@@ -948,7 +963,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
                     }
                 }
             }
-            if(!success) throw new Error(`Gemini Probe Failed: ${lastErr}`);
+            if(!success) throw new Error(`Gemini Probe Failed: ${normalizeGeminiRuntimeError(lastErr)}`);
 
         } else if (provider === 'anthropic') {
             const anthropicKey = resolveKey(keys.anthropic, process.env.ANTHROPIC_API_KEY);
@@ -1536,7 +1551,7 @@ app.post('/api/ai/chat', verifyToken, async (req, res) => {
                 }
                 lastErr = 'Unexpected Gemini response format';
             }
-            if (!result) throw new Error(lastErr);
+            if (!result) throw new Error(normalizeGeminiRuntimeError(lastErr));
 
         } else if (provider === 'anthropic') {
             const anthropicKey = resolveKey(keys.anthropic, process.env.ANTHROPIC_API_KEY);
