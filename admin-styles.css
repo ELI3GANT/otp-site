@@ -1660,6 +1660,17 @@ html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !im
 [data-theme="light"] .modal-content { background: #fff !important; color: #111 !important; border: 1px solid #ddd; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
 [data-theme="light"] .modal-header { background: #f9f9fb !important; border-bottom: 1px solid #eee !important; color: #111 !important; }
 [data-theme="light"] .modal-header h3 { color: #111 !important; }
+
+/* DOC PACKET: ensure toggles remain clickable + visible */
+.doc-approve-toggle {
+    pointer-events: auto;
+    cursor: pointer;
+    accent-color: var(--admin-cyan);
+}
+.doc-approve-toggle:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
 [data-theme="light"] .modal-content p, [data-theme="light"] .modal-content span { color: #444 !important; }
 [data-theme="light"] .modal-overlay { background: rgba(255,255,255,0.95) !important; backdrop-filter: blur(5px); }
 [data-theme="light"] .close-icon { color: #333 !important; }

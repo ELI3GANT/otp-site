@@ -1372,7 +1372,7 @@
                 <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:transparent;border:1px solid var(--admin-border);color:var(--admin-muted);font-size:0.62rem;padding:5px 8px;border-radius:6px;cursor:pointer;">RE-RUN</button>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${badges}</div>
-            <div style="font-size:0.88rem;color:#fff;font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
+                        <div style="font-size:0.88rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
             <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:3px;">${window.escapeHtml(quoteLabel)}</div>
             <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;">Confidence: ${(confidence * 100).toFixed(0)}%</div>
             <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:2px;">Package confidence: ${(packageConfidence * 100).toFixed(0)}%</div>
@@ -1905,9 +1905,9 @@
             const canDownloadDocx = generated && approved && (key === 'proposal' || key === 'agreement') && !!doc?.docx;
             const canDownloadPdf = generated && approved && key === 'invoice';
             return `
-                <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:rgba(0,0,0,0.18);">
+                <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-panel);">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-                        <div style="font-weight:800;color:#fff;">${window.escapeHtml(label)}</div>
+                        <div style="font-weight:800;color:var(--admin-text);">${window.escapeHtml(label)}</div>
                         <label style="display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--admin-muted);">
                             <input type="checkbox" class="doc-approve-toggle" data-doc="${window.escapeHtml(key)}" ${approved ? 'checked' : ''} ${disabled ? 'disabled' : ''}/>
                             APPROVE
@@ -2160,7 +2160,7 @@
                     <div style="background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.25); border-radius: 8px; padding: 12px;">
                         <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.4px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP OPS BRAIN (MANUAL APPROVAL REQUIRED)</div>
                         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${statusBadges}</div>
-                        <div style="font-size:0.85rem;color:#fff;font-weight:700;">${window.escapeHtml(recommendation.recommended_package || 'Manual Review')}</div>
+                        <div style="font-size:0.85rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(recommendation.recommended_package || 'Manual Review')}</div>
                         <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:4px;">${window.escapeHtml(recommendation.quote_range || 'Scope-based')}</div>
                         <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;line-height:1.45;">Why package: ${window.escapeHtml(recommendation.package_reason || 'Scope and pricing signals used.')}</div>
                         <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(recommendation.documents_reason || 'OTP safety docs selected from context.')}</div>
