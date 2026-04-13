@@ -1648,7 +1648,7 @@
             modal.style.zIndex = '10000';
             modal.style.alignItems = 'center';
             modal.style.justifyContent = 'center';
-            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.background = 'var(--admin-modal-scrim)';
             modal.style.backdropFilter = 'blur(5px)';
         }
     };
@@ -1713,7 +1713,7 @@
             modal.style.zIndex = '10000';
             modal.style.alignItems = 'center';
             modal.style.justifyContent = 'center';
-            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.background = 'var(--admin-modal-scrim)';
             modal.style.backdropFilter = 'blur(5px)';
         }
     };
@@ -1765,7 +1765,7 @@
             modal.style.zIndex = '10000';
             modal.style.alignItems = 'center';
             modal.style.justifyContent = 'center';
-            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.background = 'var(--admin-modal-scrim)';
             modal.style.backdropFilter = 'blur(5px)';
         }
         return false;
@@ -1901,7 +1901,7 @@
         modal.style.zIndex = '10000';
         modal.style.alignItems = 'center';
         modal.style.justifyContent = 'center';
-        modal.style.background = 'rgba(0,0,0,0.85)';
+        modal.style.background = 'var(--admin-modal-scrim)';
         modal.style.backdropFilter = 'blur(5px)';
 
     // Focus the first actionable button or input
@@ -1986,7 +1986,7 @@
         modal.style.zIndex = '10000';
         modal.style.alignItems = 'center';
         modal.style.justifyContent = 'center';
-        modal.style.background = 'rgba(0,0,0,0.85)';
+        modal.style.background = 'var(--admin-modal-scrim)';
         modal.style.backdropFilter = 'blur(5px)';
         window.renderDocPacketUI();
     };
@@ -2428,7 +2428,7 @@
         modal.style.zIndex = '10000';
         modal.style.alignItems = 'center';
         modal.style.justifyContent = 'center';
-        modal.style.background = 'rgba(0,0,0,0.85)';
+        modal.style.background = 'var(--admin-modal-scrim)';
         modal.style.backdropFilter = 'blur(5px)';
 
         const prov = document.getElementById('settingsDefaultAiProvider');
@@ -2977,7 +2977,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
             modal.style.zIndex = '10000';
             modal.style.alignItems = 'center';
             modal.style.justifyContent = 'center';
-            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.background = 'var(--admin-modal-scrim)';
             modal.style.backdropFilter = 'blur(5px)';
         }
         return false;
@@ -3028,7 +3028,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
             modal.style.zIndex = '10000';
             modal.style.alignItems = 'center';
             modal.style.justifyContent = 'center';
-            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.background = 'var(--admin-modal-scrim)';
             modal.style.backdropFilter = 'blur(5px)';
         }
         return false;
@@ -3245,7 +3245,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
             modal.style.zIndex = '10000';
             modal.style.alignItems = 'center';
             modal.style.justifyContent = 'center';
-            modal.style.background = 'rgba(0,0,0,0.85)';
+            modal.style.background = 'var(--admin-modal-scrim)';
             modal.style.backdropFilter = 'blur(5px)';
 
             const confirmBtn = document.getElementById('confirmDeleteBtn');
@@ -4252,7 +4252,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
             const excerptHtml = excerpt ? `<p style="font-size: 1.25rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${excerpt}</p>` : '';
             
             const mediaHtml = (image && image.trim().length > 0) ? `
-                <div style="margin-bottom: 35px; background: rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; border: 1px solid var(--admin-border);">
+                <div style="margin-bottom: 35px; background: var(--admin-surface-inset-strong); border-radius: 12px; overflow: hidden; border: 1px solid var(--admin-border);">
                     ${isVideo ? `
                         <video src="${image}" controls referrerpolicy="no-referrer" style="width:100%; display: block; max-height: 500px; object-fit: cover;"></video>
                     ` : `

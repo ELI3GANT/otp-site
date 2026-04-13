@@ -21,7 +21,7 @@
   <link rel="manifest" href="site.webmanifest" />
 
   <link rel="stylesheet" href="./styles.css?v=16.3.6" />
-  <link rel="stylesheet" href="./admin-styles.css?v=16.3.6" />
+  <link rel="stylesheet" href="./admin-styles.css?v=16.5.2" />
   <link rel="stylesheet" href="./blog-enhancements.css?v=16.3.0" />
   <!--/* ADMIN COMMAND CENTER STYLES - V15.15.2 STABLE */-->
   <style>
@@ -419,7 +419,7 @@
                 <div id="aiStatus" role="status" aria-live="polite" style="font-size: 0.75rem; color: var(--accent2); margin-top: 10px; min-height: 15px; font-weight: bold;"></div>
 
                 <!-- COST TRACKING UI -->
-                <div id="aiCostTracking" style="display: none; margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--admin-border); font-family: monospace; font-size: 0.65rem;">
+                <div id="aiCostTracking" style="display: none; margin-top: 12px; padding: 10px; background: var(--admin-surface-inset-strong); border-radius: 8px; border: 1px solid var(--admin-border); font-family: monospace; font-size: 0.65rem;">
                     <div style="display: flex; justify-content: space-between; color: var(--admin-muted); margin-bottom: 4px;">
                         <span>EST. SESSION COST:</span>
                         <span id="sessionCost" style="color: var(--admin-success);">$0.0000</span>
@@ -431,18 +431,18 @@
                 </div>
 
                 <!-- SYSTEM & NEURAL SETTINGS (For Mobile/Live) -->
-                <div style="margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
-                    <button type="button" id="toggleSettingsBtn" onclick="toggleCloudSettings()" class="settings-toggle-btn" style="background: rgba(255,255,255,0.03); border: 1px solid var(--admin-border); color: var(--admin-text); font-size: 0.65rem; padding: 8px 12px; width: 100%; text-align: left; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: space-between; align-items: center;">
+                <div style="margin-top: 20px; border-top: 1px dashed var(--admin-border); padding-top: 15px;">
+                    <button type="button" id="toggleSettingsBtn" onclick="toggleCloudSettings()" class="settings-toggle-btn" style="background: var(--admin-surface-muted); border: 1px solid var(--admin-border); color: var(--admin-text); font-size: 0.65rem; padding: 8px 12px; width: 100%; text-align: left; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: space-between; align-items: center;">
                         <span style="letter-spacing: 1px;">🛰️ SYSTEM & NEURAL SETTINGS</span>
                         <span class="toggle-icon" style="transition: transform 0.2s ease;">▼</span>
                     </button>
-                    <div id="cloudSettings" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
+                    <div id="cloudSettings" style="display: none; margin-top: 10px; background: var(--admin-surface-inset-strong); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
                         
                         <!-- NEW: SATELLITE SERVER LINK -->
-                        <div style="margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                        <div style="margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 15px;">
                             <label style="font-size: 0.65rem; color: var(--accent); display: block; margin-bottom: 6px; font-weight: bold;">SECURE SATELLITE URL (REMOTE BACKEND)</label>
                             <div style="display: flex; gap: 8px;">
-                                <input type="text" id="satelliteUrl" placeholder="https://your-api.vercel.app" style="font-size: 0.7rem; padding: 8px; flex: 1; color: var(--admin-success); font-family: monospace; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
+                                <input type="text" id="satelliteUrl" placeholder="https://your-api.vercel.app" style="font-size: 0.7rem; padding: 8px; flex: 1; color: var(--admin-success); font-family: monospace; background: var(--admin-surface-inset-strong); border: 1px solid var(--admin-border); border-radius: 4px;">
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 5px;">
                                 <p style="font-size: 0.55rem; color: var(--admin-muted); margin: 0; flex: 1;">Link your Vercel/Node backend to exit Legacy Mode on mobile.</p>
@@ -460,21 +460,21 @@
                             <div class="row" style="gap: 10px;">
                                 <div class="input-group" style="flex: 1;">
                                     <label style="font-size: 0.6rem;">OPENAI KEY</label>
-                                    <input type="password" id="cloudOpenAI" autocomplete="new-password" placeholder="sk-..." style="font-size: 0.7rem; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
+                                    <input type="password" id="cloudOpenAI" autocomplete="new-password" placeholder="sk-..." style="font-size: 0.7rem; padding: 8px; background: var(--admin-surface-inset-strong); border: 1px solid var(--admin-border); border-radius: 4px;">
                                 </div>
                                 <div class="input-group" style="flex: 1;">
                                     <label style="font-size: 0.6rem;">GEMINI KEY</label>
-                                    <input type="password" id="cloudGemini" autocomplete="new-password" placeholder="AIza..." style="font-size: 0.7rem; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
+                                    <input type="password" id="cloudGemini" autocomplete="new-password" placeholder="AIza..." style="font-size: 0.7rem; padding: 8px; background: var(--admin-surface-inset-strong); border: 1px solid var(--admin-border); border-radius: 4px;">
                                 </div>
                             </div>
                             <div class="row" style="gap: 10px; margin-top: 10px;">
                                 <div class="input-group" style="flex: 1;">
                                     <label style="font-size: 0.6rem;">ANTHROPIC KEY</label>
-                                    <input type="password" id="cloudClaude" autocomplete="new-password" placeholder="sk-ant-..." style="font-size: 0.7rem; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
+                                    <input type="password" id="cloudClaude" autocomplete="new-password" placeholder="sk-ant-..." style="font-size: 0.7rem; padding: 8px; background: var(--admin-surface-inset-strong); border: 1px solid var(--admin-border); border-radius: 4px;">
                                 </div>
                                 <div class="input-group" style="flex: 1;">
                                     <label style="font-size: 0.6rem;">GROQ KEY</label>
-                                    <input type="password" id="cloudGroq" autocomplete="new-password" placeholder="gsk_..." style="font-size: 0.7rem; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--admin-border); border-radius: 4px;">
+                                    <input type="password" id="cloudGroq" autocomplete="new-password" placeholder="gsk_..." style="font-size: 0.7rem; padding: 8px; background: var(--admin-surface-inset-strong); border: 1px solid var(--admin-border); border-radius: 4px;">
                                 </div>
                             </div>
                         </form>
@@ -662,7 +662,7 @@
             <!-- SECTION: SESSION LOG -->
             <section class="input-section">
                 <div class="section-label">07 // Session Activity Log</div>
-                <div id="sessionLog" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace; background: rgba(0,0,0,0.4);">
+                <div id="sessionLog" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace;">
                     <div style="text-align: center; color: var(--admin-muted); padding: 20px; font-size: 0.7rem;">LOG INITIALIZING...</div>
                 </div>
             </section>
@@ -707,7 +707,7 @@
             <p id="actionModalText" style="font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5;">Are you sure you want to proceed?</p>
             
             <div id="actionModalInputVars" style="display: none; margin-bottom: 20px;">
-                <input type="text" id="actionModalInput" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); background: rgba(0,0,0,0.05); color: inherit; font-family: monospace;" placeholder="Enter value...">
+                <input type="text" id="actionModalInput" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); background: var(--admin-surface-inset); color: inherit; font-family: monospace;" placeholder="Enter value...">
             </div>
 
             <div style="display: flex; gap: 12px; justify-content: center;">
@@ -724,10 +724,10 @@
                 <h3>DATABASE SCHEMA (DEPLOY_V1.3.sql)</h3>
                 <button onclick="document.getElementById('sqlModal').style.display='none'" class="close-icon">×</button>
             </div>
-            <div style="padding: 0; overflow: hidden; flex: 1; background: #0a0a0a;">
+            <div style="padding: 0; overflow: hidden; flex: 1; background: var(--admin-bg);">
                 <pre id="sqlContent" style="width: 100%; height: 100%; padding: 20px; overflow-y: auto; color: var(--admin-success); font-family: 'Courier New', monospace; font-size: 0.8rem; margin: 0; white-space: pre-wrap;"></pre>
             </div>
-            <div style="padding: 15px; border-top: 1px solid var(--admin-border); text-align: right; background: rgba(255,255,255,0.02);">
+            <div style="padding: 15px; border-top: 1px solid var(--admin-border); text-align: right; background: var(--admin-surface-muted);">
                 <button onclick="copySqlToClipboard()" style="background: var(--admin-accent); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">COPY SQL</button>
             </div>
         </div>
@@ -849,13 +849,13 @@
             <input type="hidden" id="replySourceTable" value="contacts">
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 20px;">
-                <div style="background: rgba(0,0,0,0.22); padding: 15px; border-radius: 8px; border: 1px solid rgba(var(--accent2-rgb),0.18);">
+                <div style="background: var(--admin-surface-inset-strong); padding: 15px; border-radius: 8px; border: 1px solid rgba(var(--accent2-rgb),0.18);">
                     <label style="color: var(--admin-cyan); font-size: 0.7rem; display: block; margin-bottom: 5px;">INCOMING SIGNAL</label>
-                    <div id="replyIncomingMsg" style="font-size: 0.83rem; color: var(--admin-text); white-space: pre-wrap; max-height: 180px; min-height: 120px; overflow-y: auto; line-height: 1.5; background: rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 10px;"></div>
+                    <div id="replyIncomingMsg" style="font-size: 0.83rem; color: var(--admin-text); white-space: pre-wrap; max-height: 180px; min-height: 120px; overflow-y: auto; line-height: 1.5; background: var(--admin-surface-inset); border: 1px solid var(--admin-border); border-radius: 6px; padding: 10px;"></div>
                 </div>
-                <div style="background: rgba(0,0,0,0.22); padding: 15px; border-radius: 8px; border: 1px solid rgba(var(--accent2-rgb),0.18);">
+                <div style="background: var(--admin-surface-inset-strong); padding: 15px; border-radius: 8px; border: 1px solid rgba(var(--accent2-rgb),0.18);">
                     <label style="color: var(--admin-cyan); font-size: 0.7rem; display: block; margin-bottom: 5px;">ANALYSIS AGENT</label>
-                    <div id="replyAnalysis" style="font-size: 0.8rem; color: var(--admin-muted); word-break: break-word; max-height: 180px; min-height: 120px; overflow-y: auto; line-height: 1.45; background: rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 10px;">No analysis data active.</div>
+                    <div id="replyAnalysis" style="font-size: 0.8rem; color: var(--admin-muted); word-break: break-word; max-height: 180px; min-height: 120px; overflow-y: auto; line-height: 1.45; background: var(--admin-surface-inset); border: 1px solid var(--admin-border); border-radius: 6px; padding: 10px;">No analysis data active.</div>
                 </div>
             </div>
 
@@ -864,7 +864,7 @@
                     <label>BUSINESS SUBJECT LINE</label>
                     <span id="senderAliasLabel" style="font-size: 0.65rem; color: var(--admin-cyan); font-weight: 900; letter-spacing: 1px;">SENDER: contact@...</span>
                 </div>
-                <input type="text" id="replySubject" class="input-field" placeholder="Inquiry Reply: Only True Perspective..." style="width: 100%; padding: 10px; background: rgba(0,0,0,0.05); border: 1px solid var(--admin-border); border-radius: 4px; color: inherit;">
+                <input type="text" id="replySubject" class="input-field" placeholder="Inquiry Reply: Only True Perspective..." style="width: 100%; padding: 10px; background: var(--admin-surface-inset); border: 1px solid var(--admin-border); border-radius: 4px; color: inherit;">
             </div>
 
             <div class="form-group" style="position: relative;">
@@ -917,7 +917,7 @@
                         <strong style="color:var(--admin-text);">Workflow</strong>: Generate → Preview → Approve → Download
                     </div>
                 </div>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;border:1px dashed var(--admin-border);border-radius:10px;padding:10px 12px;background:rgba(0,0,0,0.12);">
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;border:1px dashed var(--admin-border);border-radius:10px;padding:10px 12px;background:var(--admin-surface-inset-strong);">
                     <div style="font-size:0.7rem;color:var(--admin-muted);flex:1;min-width:240px;line-height:1.45;">
                         <strong style="color:var(--admin-text);">Master Templates (Global)</strong><br/>
                         These templates apply across <strong>all</strong> leads/packets. Upload your branded master-final DOCX files once, then generate lead-specific packets below.
@@ -929,7 +929,7 @@
                     <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="document.getElementById('docTemplateAgreement').click()">UPLOAD AGREEMENT</button>
                 </div>
                 <div id="docPacketErrors" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,170,0,0.35);background:rgba(255,170,0,0.08);color:#ffd37a;font-size:0.72rem;line-height:1.45;"></div>
-                <div id="docPacketSend" style="display:none;margin-bottom:12px;padding:12px 12px;border-radius:12px;border:1px solid var(--admin-border);background:rgba(0,0,0,0.10);">
+                <div id="docPacketSend" style="display:none;margin-bottom:12px;padding:12px 12px;border-radius:12px;border:1px solid var(--admin-border);background:var(--admin-surface-inset);">
                     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
                         <div style="font-size:0.72rem;color:var(--admin-muted);line-height:1.45;flex:1;min-width:260px;">
                             <strong style="color:var(--admin-text);">Send to client (Approval-gated)</strong><br/>
@@ -1033,7 +1033,7 @@
     <script src="site-config.js?v=16.4.6"></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.5.1"></script>
+    <script src="admin-core.js?v=16.5.2"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

@@ -13,6 +13,11 @@
     --admin-white: #ffffff;
     --admin-muted: #888;
     --radius: 12px;
+    /* Modal backdrop + nested UI (avoid hardcoded black in HTML/JS) */
+    --admin-modal-scrim: rgba(0, 0, 0, 0.85);
+    --admin-surface-inset: rgba(255, 255, 255, 0.06);
+    --admin-surface-inset-strong: rgba(255, 255, 255, 0.12);
+    --admin-surface-muted: rgba(255, 255, 255, 0.04);
 }
 
 /* LIGHT MODE OVERRIDE (Specific HTML selector needed for mobile) */
@@ -27,6 +32,10 @@ html[data-theme="light"] {
     --admin-text: #000000;
     --admin-white: #000000;
     --admin-muted: #4a4a4e;
+    --admin-modal-scrim: rgba(255, 255, 255, 0.95);
+    --admin-surface-inset: rgba(0, 0, 0, 0.04);
+    --admin-surface-inset-strong: rgba(0, 0, 0, 0.08);
+    --admin-surface-muted: rgba(0, 0, 0, 0.03);
 }
 
 * { box-sizing: border-box; }
@@ -835,7 +844,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     bottom: 0;
     width: 100%;
     height: 100vh;
-    background: rgba(0,0,0,0.85); /* Darker backdrop */
+    background: var(--admin-modal-scrim);
     backdrop-filter: blur(8px);
     z-index: 20000;
     display: flex;
@@ -1274,7 +1283,7 @@ input:focus + .slider {
     display: none; /* Toggled via JS */
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85); /* Dark dim */
+    background: var(--admin-modal-scrim);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     z-index: 20000;
@@ -1284,7 +1293,7 @@ input:focus + .slider {
 }
 
 .modal-content {
-    background: rgba(15, 15, 20, 0.95);
+    background: var(--admin-panel);
     border: 1px solid var(--admin-border);
     width: 90%;
     max-width: 600px;
@@ -1679,7 +1688,7 @@ html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !im
     opacity: 0.6;
 }
 [data-theme="light"] .modal-content p, [data-theme="light"] .modal-content span { color: #444 !important; }
-[data-theme="light"] .modal-overlay { background: rgba(255,255,255,0.95) !important; backdrop-filter: blur(5px); }
+[data-theme="light"] .modal-overlay { background: var(--admin-modal-scrim) !important; backdrop-filter: blur(5px); }
 [data-theme="light"] .close-icon { color: #333 !important; }
 [data-theme="light"] .post-row .post-details-grid { background: rgba(0,0,0,0.05) !important; color: #333 !important; }
 [data-theme="light"] select, [data-theme="light"] input, [data-theme="light"] textarea, [data-theme="light"] .input-field { background: #fff !important; color: #111 !important; border-color: #ccc !important; }
