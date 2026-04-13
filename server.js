@@ -312,21 +312,17 @@ app.get('/api/status', async (req, res) => {
     }
 });
 
-// CORS: production domains + local dev + Vercel previews
+// CORS: production domains + Vercel previews; localhost allowed via regex below (any port).
 const allowedOrigins = [
     'https://onlytrueperspective.tech',
     'https://www.onlytrueperspective.tech',
     'https://app.onlytrueperspective.tech',
-    'https://otp-site.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:8080',
-    'http://localhost:5500' // Local dev (Live Server)
+    'https://otp-site.vercel.app'
 ];
 const corsOptions = {
     origin: (origin, callback) => {
         if (!origin) return callback(null, true);
 
-        // Local dev: localhost, 127.0.0.1, IPv6 literal [::1] (any port).
         const isLocalOrigin = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin);
         if (isLocalOrigin) return callback(null, true);
 
@@ -1618,7 +1614,7 @@ if (require.main === module) {
         console.log(`🔒 Security Headers: ENABLED`);
         console.log(`📦 Compression: ENABLED`);
         console.log(`🔑 Auth System: JWT ENABLED`);
-        console.log(`📡 Local: http://localhost:${port}\n`);
+        console.log(`📡 Dev listen: http://127.0.0.1:${port} (not production)\n`);
     });
 
     server.on('error', (e) => {

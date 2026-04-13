@@ -1,17 +1,16 @@
 /**
- * OTP Site Configuration — v16.4.0
+ * OTP Site Configuration — v16.4.2
  * Centralized credentials and settings.
  * Loaded before other scripts to ensure window.OTP_CONFIG is available.
  *
- * ARCHITECTURE:
- *   - Public / admin UI: Vercel (this repo) on www / preview URLs; optional mirrors (Framer, Pages).
- *   - Backend (API): same deployment on Vercel; apex may redirect /api → www (POST body unsafe on redirect).
- *   - Fallback API host: otp-site.vercel.app when origin is not this project.
+ * LIVE (primary):
+ *   - Marketing + API: https://www.onlytrueperspective.tech (same origin on www).
+ *   - Apex onlytrueperspective.tech redirects /api → www; clients on apex use www for POST /api.
+ *   - Previews: *.vercel.app and otp-site.vercel.app; mirrors without /api fall back to otp-site.vercel.app.
  *
- * LOCALHOST vs LIVE (getApiBase):
- *   - http://localhost:3000 or :8080 with `npm start` / Node: same-origin → YOUR local server.js + .env (not Vercel’s env).
- *   - Other localhost ports (e.g. Live Server 5500): no /api on that origin → requests go to otp-site.vercel.app.
- *   - Force live API from any page: localStorage.setItem('otp_api_base', 'https://www.onlytrueperspective.tech'); reload. Clear key to undo.
+ * Optional local Node (`npm start` on localhost:3000 or :8080): same-origin → local server.js + .env.
+ * Other localhost ports (e.g. static Live Server): no /api → deployed API (otp-site.vercel.app).
+ * Override: localStorage.setItem('otp_api_base', 'https://www.onlytrueperspective.tech'); reload. Remove key to undo.
  */
 
 const _OTP_VERCEL_API = 'https://otp-site.vercel.app';
@@ -62,14 +61,27 @@ window.OTP.sanitizeHtml = function(html) {
 };
 
 window.OTP.getApiBase = function() {
-    // 0. Manual Override (For advanced development & satellite testing)
     const stored = localStorage.getItem('otp_api_base');
     if (stored && stored.startsWith('http')) return stored;
 
     const h = window.location.hostname;
 
-    // 1. Localhost dev: same-origin only when Node/server.js is actually serving /api (3000 or 8080).
-    // Static servers (e.g. 5500) have no backend — must hit the deployed Vercel API.
+    // Live / preview: same-origin API (Vercel serverless + static).
+    if (h.endsWith('.vercel.app')) {
+        return window.location.origin;
+    }
+    if (h === 'app.onlytrueperspective.tech') {
+        return window.location.origin;
+    }
+    if (h === 'www.onlytrueperspective.tech') {
+        return window.location.origin;
+    }
+    // Apex redirects /api → www; use www for POST /api so bodies are not lost on 307.
+    if (h === 'onlytrueperspective.tech') {
+        return _OTP_CANONICAL_WWW;
+    }
+
+    // Local Node only when server.js actually serves /api (other localhost ports → deployed API).
     if (h === 'localhost' || h === '127.0.0.1' || h === '::1') {
         const port = window.location.port;
         const localApiPorts = new Set(['3000', '8080']);
@@ -79,28 +91,6 @@ window.OTP.getApiBase = function() {
         return _OTP_VERCEL_API;
     }
 
-    // 2. On Vercel preview/prod (*.vercel.app or the main deployment):
-    //    API is same-origin — server.js is the serverless handler
-    if (h.endsWith('.vercel.app')) {
-        return window.location.origin;
-    }
-
-    // 2b. App subdomain on same Vercel project (Node + static together).
-    if (h === 'app.onlytrueperspective.tech') {
-        return window.location.origin;
-    }
-
-    // 2c. Primary marketing + API on www (same origin — avoids cross-origin + CORS on every call).
-    if (h === 'www.onlytrueperspective.tech') {
-        return window.location.origin;
-    }
-
-    // 2d. Apex redirects /api to www; call www directly so POST /api/auth/login etc. are not broken by 307.
-    if (h === 'onlytrueperspective.tech') {
-        return _OTP_CANONICAL_WWW;
-    }
-
-    // 3. Other hosts (Framer-only, GitHub Pages, etc. — no /api on origin):
-    //    Use canonical Vercel deployment.
+    // Mirrors / static hosts without /api on this origin.
     return _OTP_VERCEL_API;
 };
