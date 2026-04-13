@@ -878,8 +878,8 @@
                         <button id="replyGenBtn" type="button" onclick="generateReplyForLead()" style="background: var(--admin-accent); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                             <span>⚡</span> GEN AI REPLY
                         </button>
-                        <button id="replyDocsBtn" type="button" onclick="openDocPacket()" style="background: rgba(255,255,255,0.06); color: var(--admin-text); border: 1px solid var(--admin-border); padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                            <span>📄</span> DOC PACKET
+                        <button id="replyDocsBtn" type="button" onclick="openDocPacket()" style="background: rgba(255,255,255,0.06); color: var(--admin-text); border: 1px solid var(--admin-border); padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            <span>📄</span> DOC PACKET <span style="font-size:0.58rem;letter-spacing:1px;opacity:0.75;">(APPROVAL)</span>
                         </button>
                     </div>
                 </div>
@@ -908,6 +908,9 @@
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
                     <button id="docPacketGenerateBtn" type="button" onclick="generateDocPacket()" class="btn-secondary" style="width:auto;font-size:0.7rem;">GENERATE PACKET</button>
                     <button id="docPacketApproveBtn" type="button" onclick="approveDocPacket()" class="btn-secondary" style="width:auto;font-size:0.7rem;">APPLY APPROVALS</button>
+                    <div style="font-size:0.66rem;color:var(--admin-muted);line-height:1.35;flex:1;min-width:220px;">
+                        <strong style="color:#fff;">Workflow</strong>: Generate → Preview → Approve → Download
+                    </div>
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;border:1px dashed var(--admin-border);border-radius:10px;padding:10px 12px;background:rgba(0,0,0,0.12);">
                     <div style="font-size:0.7rem;color:var(--admin-muted);flex:1;min-width:220px;line-height:1.45;">

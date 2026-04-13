@@ -1760,7 +1760,7 @@
     };
 
     // --- DOC PACKET (DYNAMIC DOCUMENT ENGINE) ---
-    window.__docPacketState = { packetId: null, docs: {}, leadId: null, sourceTable: 'contacts' };
+    window.__docPacketState = { packetId: null, docs: {}, leadId: null, sourceTable: 'contacts', contextKey: null, docxErrors: null };
 
     window.openDocPacket = function() {
         const modal = document.getElementById('docPacketModal');
@@ -1768,6 +1768,14 @@
         // Use current reply context as source of truth
         const leadId = document.getElementById('replyContactId')?.value || '';
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
+        const nextKey = `${sourceTable}:${leadId}`;
+        // Reset state when switching threads to prevent stale packet approvals/downloads
+        if (window.__docPacketState.contextKey && window.__docPacketState.contextKey !== nextKey) {
+            window.__docPacketState.packetId = null;
+            window.__docPacketState.docs = {};
+            window.__docPacketState.docxErrors = null;
+        }
+        window.__docPacketState.contextKey = nextKey;
         window.__docPacketState.leadId = leadId;
         window.__docPacketState.sourceTable = sourceTable;
         modal.style.display = 'flex';
@@ -1790,8 +1798,25 @@
         const meta = document.getElementById('docPacketMeta');
         const list = document.getElementById('docPacketList');
         const errBox = document.getElementById('docPacketErrors');
+        const genBtn = document.getElementById('docPacketGenerateBtn');
+        const approveBtn = document.getElementById('docPacketApproveBtn');
         if (!meta || !list) return;
         const s = window.__docPacketState || {};
+        const hasPacket = !!s.packetId;
+
+        if (approveBtn) {
+            approveBtn.disabled = !hasPacket;
+            approveBtn.style.opacity = hasPacket ? '1' : '0.6';
+            approveBtn.style.cursor = hasPacket ? 'pointer' : 'not-allowed';
+            approveBtn.title = hasPacket ? '' : 'Generate a packet first.';
+        }
+        if (genBtn) {
+            genBtn.disabled = !s.leadId;
+            genBtn.style.opacity = s.leadId ? '1' : '0.6';
+            genBtn.style.cursor = s.leadId ? 'pointer' : 'not-allowed';
+            genBtn.title = s.leadId ? '' : 'Open a thread first.';
+        }
+
         meta.innerHTML = `
             <div><strong>Lead ID</strong>: ${window.escapeHtml(String(s.leadId || ''))}</div>
             <div><strong>Source</strong>: ${window.escapeHtml(String(s.sourceTable || 'contacts'))}</div>
@@ -1811,6 +1836,8 @@
             const doc = (s.docs && s.docs[key]) ? s.docs[key] : { approved: false };
             const approved = !!doc.approved;
             const disabled = !s.packetId;
+            const previewDisabled = disabled;
+            const previewStyle = previewDisabled ? 'opacity:0.6;cursor:not-allowed;' : '';
             return `
                 <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:rgba(0,0,0,0.18);">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
@@ -1821,7 +1848,7 @@
                         </label>
                     </div>
                     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-                        <button type="button" onclick="previewDocHtml('${window.escapeHtml(key)}')" class="btn-secondary" style="width:auto;font-size:0.68rem;" ${disabled ? 'disabled style="opacity:0.6;cursor:not-allowed;"' : ''}>PREVIEW</button>
+                        <button type="button" onclick="previewDocHtml('${window.escapeHtml(key)}')" class="btn-secondary" style="width:auto;font-size:0.68rem;${previewStyle}" ${previewDisabled ? 'disabled' : ''}>PREVIEW</button>
                         <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'docx')" class="btn-secondary" style="width:auto;font-size:0.68rem;${(approved && (key === 'proposal' || key === 'agreement')) ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${(approved && (key === 'proposal' || key === 'agreement')) ? '' : 'disabled'}>DOWNLOAD DOCX</button>
                         <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'pdf')" class="btn-secondary" style="width:auto;font-size:0.68rem;${(approved && key === 'invoice') ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${(approved && key === 'invoice') ? '' : 'disabled'}>DOWNLOAD PDF</button>
                         <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'html')" class="btn-secondary" style="width:auto;font-size:0.68rem;${approved ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${approved ? '' : 'disabled'}>DOWNLOAD HTML</button>
@@ -1951,6 +1978,11 @@
             showToast(`${docType.toUpperCase()} TEMPLATE UPLOADED`);
         } catch (e) {
             showToast(`TEMPLATE UPLOAD FAILED: ${e.message}`);
+        } finally {
+            // Allow re-uploading the same file (onchange won't fire if value doesn't change)
+            const inputId = docType === 'proposal' ? 'docTemplateProposal' : 'docTemplateAgreement';
+            const input = document.getElementById(inputId);
+            if (input) input.value = '';
         }
     };
 
