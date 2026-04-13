@@ -152,9 +152,16 @@ h1, h2, h3, h4 {
 /* LAYOUT */
 .admin-wrap {
     width: 100%;
-    max-width: 1000px;
+    max-width: 1320px;
     margin: 0 auto;
     padding: 20px 15px 120px;
+}
+
+/* Default stack layout; grid activates on desktop breakpoint */
+.admin-main-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
 }
 
 /* HEADER */

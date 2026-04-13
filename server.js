@@ -2122,6 +2122,32 @@ app.post('/api/admin/docs/templates/upload', verifyToken, docTemplateUpload.sing
     }
 });
 
+// 2.16 Template status (global)
+app.get('/api/admin/docs/templates/status', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        await ensureDocTemplateBucket();
+        const { data, error } = await supabaseAdmin.storage
+            .from(DOC_TEMPLATE_BUCKET)
+            .list(DOC_TEMPLATE_PREFIX, { limit: 100, offset: 0, sortBy: { column: 'name', order: 'asc' } });
+        if (error) throw error;
+        const files = Array.isArray(data) ? data : [];
+        const has = (name) => files.some(f => String(f?.name || '').toLowerCase() === name.toLowerCase());
+        res.json({
+            success: true,
+            bucket: DOC_TEMPLATE_BUCKET,
+            prefix: DOC_TEMPLATE_PREFIX,
+            templates: {
+                proposal: { key: `${DOC_TEMPLATE_PREFIX}proposal.docx`, present: has('proposal.docx') },
+                agreement: { key: `${DOC_TEMPLATE_PREFIX}agreement.docx`, present: has('agreement.docx') }
+            }
+        });
+    } catch (error) {
+        console.error("docs-templates-status:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // 2.12 OTP Knowledge Brain: retrieve saved recommendations for lead cards
 app.post('/api/admin/knowledge/recommendations', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });

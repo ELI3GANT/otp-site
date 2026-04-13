@@ -2105,6 +2105,102 @@
         }
     };
 
+    // Apply saved admin defaults on load (best effort)
+    (function applyAdminDefaultsOnce() {
+        try {
+            const defaultProvider = localStorage.getItem('otp_admin_default_ai_provider') || '';
+            const defaultArch = localStorage.getItem('otp_admin_default_archetype') || '';
+            if (defaultArch) {
+                const replyArch = document.getElementById('replyArchetype');
+                if (replyArch) replyArch.value = defaultArch;
+            }
+            if (defaultProvider) {
+                const providerSel = document.getElementById('providerSelect') || document.getElementById('aiProvider');
+                if (providerSel) providerSel.value = defaultProvider;
+            }
+        } catch (e) {}
+    })();
+
+    // --- SETTINGS (ADMIN) ---
+    const SETTINGS_KEYS = {
+        aiProvider: 'otp_admin_default_ai_provider',
+        archetype: 'otp_admin_default_archetype'
+    };
+
+    window.openAdminSettings = function() {
+        const modal = document.getElementById('settingsModal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        modal.style.position = 'fixed';
+        modal.style.inset = '0';
+        modal.style.zIndex = '10000';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.background = 'rgba(0,0,0,0.85)';
+        modal.style.backdropFilter = 'blur(5px)';
+
+        const prov = document.getElementById('settingsDefaultAiProvider');
+        const arch = document.getElementById('settingsDefaultArchetype');
+        if (prov) prov.value = localStorage.getItem(SETTINGS_KEYS.aiProvider) || '';
+        if (arch) arch.value = localStorage.getItem(SETTINGS_KEYS.archetype) || '';
+        const status = document.getElementById('settingsSaveStatus');
+        if (status) status.textContent = '';
+        window.refreshDocTemplateStatus?.();
+    };
+
+    window.closeAdminSettings = function() {
+        const modal = document.getElementById('settingsModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    window.saveAdminSettings = function() {
+        const prov = document.getElementById('settingsDefaultAiProvider');
+        const arch = document.getElementById('settingsDefaultArchetype');
+        const p = prov ? String(prov.value || '') : '';
+        const a = arch ? String(arch.value || '') : '';
+        if (p) localStorage.setItem(SETTINGS_KEYS.aiProvider, p); else localStorage.removeItem(SETTINGS_KEYS.aiProvider);
+        if (a) localStorage.setItem(SETTINGS_KEYS.archetype, a); else localStorage.removeItem(SETTINGS_KEYS.archetype);
+        const status = document.getElementById('settingsSaveStatus');
+        if (status) status.textContent = 'Saved.';
+
+        // Apply defaults immediately if the controls exist
+        const replyArch = document.getElementById('replyArchetype');
+        if (replyArch && a) replyArch.value = a;
+        const providerSel = document.getElementById('providerSelect') || document.getElementById('aiProvider');
+        if (providerSel && p) providerSel.value = p;
+    };
+
+    window.resetAdminSettings = function() {
+        localStorage.removeItem(SETTINGS_KEYS.aiProvider);
+        localStorage.removeItem(SETTINGS_KEYS.archetype);
+        const prov = document.getElementById('settingsDefaultAiProvider');
+        const arch = document.getElementById('settingsDefaultArchetype');
+        if (prov) prov.value = '';
+        if (arch) arch.value = '';
+        const status = document.getElementById('settingsSaveStatus');
+        if (status) status.textContent = 'Reset.';
+    };
+
+    window.refreshDocTemplateStatus = async function() {
+        const out = document.getElementById('docTemplateStatus');
+        if (!out) return;
+        if (!state.token) { out.textContent = 'Login required.'; return; }
+        try {
+            out.textContent = 'Loading template status...';
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const res = await fetch(`${apiBase}/api/admin/docs/templates/status`, {
+                headers: { 'Authorization': `Bearer ${state.token}` }
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Status failed (${res.status})`);
+            const t = payload.templates || {};
+            const line = (k) => `${k}: ${t[k]?.present ? 'READY' : 'MISSING'}`;
+            out.textContent = `${line('proposal')} | ${line('agreement')}`;
+        } catch (e) {
+            out.textContent = `Status error: ${e.message}`;
+        }
+    };
+
     window.runBrainForReplyContext = async function() {
         const leadId = document.getElementById('replyContactId')?.value;
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';

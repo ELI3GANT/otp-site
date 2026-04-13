@@ -131,6 +131,7 @@
                 <span>STRIPE: <span id="status-pay" style="color: var(--admin-success);">Ready</span></span>
                 <span>AI: <span id="status-ai" style="color: var(--accent2);">Oracle V2.5</span></span>
             </div>
+            <button onclick="openAdminSettings()" aria-label="Settings" title="Settings" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.7rem; padding: 8px 12px; width: auto;">SETTINGS</button>
             <button onclick="logout()" aria-label="Logout" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); font-size: 0.7rem; padding: 8px 12px; width: auto;">LOGOUT</button>
         </div>
     </header>
@@ -925,6 +926,64 @@
                 </div>
                 <div id="docPacketErrors" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,170,0,0.35);background:rgba(255,170,0,0.08);color:#ffd37a;font-size:0.72rem;line-height:1.45;"></div>
                 <div id="docPacketList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width: 980px; width: min(94vw, 980px); display:block; max-height: 90vh; overflow-y:auto;">
+            <div class="modal-header">
+                <h3>// SETTINGS (ADMIN)</h3>
+                <button onclick="closeAdminSettings()" style="background:none; border:none; color:var(--admin-muted); cursor:pointer;">X</button>
+            </div>
+            <div style="padding: 14px 4px 6px;">
+                <div class="input-section" style="margin-bottom:14px;">
+                    <div class="section-label" style="margin-top:0;">DOC PACKET ADMIN</div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+                        <div style="flex:1;min-width:260px;font-size:0.78rem;color:var(--admin-muted);line-height:1.5;">
+                            <strong style="color:var(--admin-text);">Master Templates (Global)</strong><br/>
+                            These apply across <strong>all</strong> leads/packets. Upload once to enable DOCX merges for Proposal + Agreement.
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="document.getElementById('docTemplateProposal').click()">UPLOAD PROPOSAL</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="document.getElementById('docTemplateAgreement').click()">UPLOAD AGREEMENT</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="refreshDocTemplateStatus()">REFRESH STATUS</button>
+                        </div>
+                    </div>
+                    <div id="docTemplateStatus" style="margin-top:10px;font-family:monospace;font-size:0.72rem;color:var(--admin-text);opacity:0.9;"></div>
+                </div>
+
+                <div class="input-section" style="margin-bottom:14px;">
+                    <div class="section-label" style="margin-top:0;">AI BRAIN DEFAULTS</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--admin-muted);margin-bottom:6px;">Default intelligence engine</div>
+                            <select id="settingsDefaultAiProvider" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;">
+                                <option value="">(no override)</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="gemini">Google Gemini</option>
+                                <option value="anthropic">Anthropic</option>
+                                <option value="groq">Groq</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--admin-muted);margin-bottom:6px;">Default reply archetype</div>
+                            <select id="settingsDefaultArchetype" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;">
+                                <option value="">(no override)</option>
+                                <option value="oracle">Oracle</option>
+                                <option value="visionary">Visionary</option>
+                                <option value="technical">Technical</option>
+                                <option value="tactical">Tactical</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="saveAdminSettings()">SAVE SETTINGS</button>
+                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="resetAdminSettings()">RESET</button>
+                    </div>
+                    <div id="settingsSaveStatus" style="margin-top:10px;font-size:0.72rem;color:var(--admin-muted);"></div>
                 </div>
             </div>
         </div>
