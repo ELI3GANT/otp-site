@@ -1199,7 +1199,7 @@
                     statusText = 'ACTIVE CLIENT'; 
                 }
                 else if (c.ai_status === 'archived') { 
-                    statusColor = '#666'; 
+                    statusColor = 'var(--admin-muted)'; 
                     statusText = 'ARCHIVED'; 
                 }
                 else if (isDrafted) { 
@@ -1221,7 +1221,7 @@
                             <button type="button" onclick="return deleteContact('${c.id}', event)" title="Delete" class="btn-icon-mini danger">✖</button>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem; margin-bottom: 12px; color: var(--admin-text); padding: 10px; background: rgba(0,0,0,0.15); border-radius: 6px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem; margin-bottom: 12px; color: var(--admin-text); padding: 10px; background: var(--admin-panel); border: 1px solid var(--admin-border); border-radius: 6px;">
                         <div><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// SERVICE</span><br>${window.escapeHtml(c.service || c.project_type || 'N/A')}</div>
                         <div><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// BUDGET</span><br>${window.escapeHtml(c.budget || 'N/A')}</div>
                         <div style="grid-column: span 2;"><span style="color: var(--admin-muted); font-weight: bold; font-size: 0.7rem;">// MESSAGE</span><br><span style="line-height: 1.6;">${window.escapeHtml(c.message || c.project_details || '')}</span></div>
@@ -1556,7 +1556,7 @@
                             <button type="button" onclick="return deleteLead('${l.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer; font-size: 1.1rem;">✖</button>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 0.8rem; margin-bottom: 15px; color: var(--admin-text); background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 0.8rem; margin-bottom: 15px; color: var(--admin-text); background: var(--admin-panel); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
                         <div style="grid-column: 1 / -1; margin-bottom: 5px;"><span style="color: var(--admin-cyan); font-weight:900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px;">// MISSION PARAMETERS</span></div>
                         <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">OBJECTIVE:</span><br>${escape(answers.q1 || 'N/A')}</div>
                         <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">BARRIER:</span><br>${escape(answers.q2 || 'N/A')}</div>
@@ -1564,7 +1564,7 @@
                         <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">AESTHETIC:</span><br>${escape(answers.q4 || 'N/A')}</div>
                         <div style="grid-column: 1 / -1; margin-top: 5px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1);"><span style="color: var(--admin-success); font-weight:900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">PRIMARY TARGET:</span><br><span style="font-size: 0.9rem; font-weight: 700; color: var(--admin-text);">"${escape(answers.q5_goal || 'Not specified')}"</span></div>
                     </div>
-                    <div style="background: rgba(0,0,0,0.5); border-left: 3px solid var(--admin-accent); padding: 15px; border-radius: 0 8px 8px 0; font-size: 0.85rem; line-height: 1.6; border: 1px solid rgba(112,0,255,0.1); border-left-width: 3px;">
+                    <div style="background: var(--admin-panel); border-left: 3px solid var(--admin-accent); padding: 15px; border-radius: 0 8px 8px 0; font-size: 0.85rem; line-height: 1.6; border: 1px solid var(--admin-border); border-left-width: 3px;">
                         <div style="font-size: 0.6rem; color: var(--admin-accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; font-weight: 900;">// ORACLE TRANSMISSION</div>
                         <div style="color: var(--admin-text); font-style: italic;">${window.escapeHtml(l.advice || '').replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--admin-cyan);">$1</strong>').replace(/\n/g, '<br>')}</div>
                     </div>
@@ -5096,7 +5096,7 @@ Lang: ${u.lang || 'Unknown'}</div>
                     const isManaged = !!v.managed || v.rollback_mode === 'vercel';
 
                     const item = document.createElement('div');
-                    item.style.cssText = `padding: 15px; border: 1px solid ${isCurrent ? 'var(--admin-success)' : 'var(--admin-border)'}; border-radius: 8px; background: rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center;`;
+                    item.style.cssText = `padding: 15px; border: 1px solid ${isCurrent ? 'var(--admin-success)' : 'var(--admin-border)'}; border-radius: 8px; background: var(--admin-panel); display: flex; justify-content: space-between; align-items: center;`;
 
                     const hashShort = v.hash.substring(0, 7);
 
