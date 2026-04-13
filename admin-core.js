@@ -1789,6 +1789,7 @@
     window.renderDocPacketUI = function() {
         const meta = document.getElementById('docPacketMeta');
         const list = document.getElementById('docPacketList');
+        const errBox = document.getElementById('docPacketErrors');
         if (!meta || !list) return;
         const s = window.__docPacketState || {};
         meta.innerHTML = `
@@ -1830,6 +1831,19 @@
                 </div>
             `;
         }).join('');
+
+        if (errBox) {
+            const errs = s.docxErrors && typeof s.docxErrors === 'object' ? s.docxErrors : null;
+            if (errs && Object.keys(errs).length) {
+                errBox.style.display = 'block';
+                errBox.innerHTML = `<strong>DOCX merge is not ready yet.</strong><br/>` + Object.entries(errs)
+                    .map(([k, v]) => `${window.escapeHtml(k)}: ${window.escapeHtml(String(v || ''))}`)
+                    .join('<br/>');
+            } else {
+                errBox.style.display = 'none';
+                errBox.textContent = '';
+            }
+        }
     };
 
     window.previewDocHtml = function(docType) {
@@ -1901,12 +1915,36 @@
             if (!res.ok || !payload.success) throw new Error(payload.message || `Packet failed (${res.status})`);
             window.__docPacketState.packetId = payload.packet_id;
             window.__docPacketState.docs = payload.docs || {};
+            window.__docPacketState.docxErrors = payload.docx_errors || null;
             showToast('DOC PACKET GENERATED (REVIEW REQUIRED)');
         } catch (e) {
             showToast(`DOC PACKET FAILED: ${e.message}`);
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = orig || 'GENERATE PACKET'; }
             window.renderDocPacketUI();
+        }
+    };
+
+    window.uploadDocTemplate = async function(docType, file) {
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!file) return;
+        if (!['proposal', 'agreement'].includes(docType)) { showToast('INVALID TEMPLATE TYPE'); return; }
+        try {
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const fd = new FormData();
+            fd.append('docType', docType);
+            fd.append('file', file);
+            showToast(`UPLOADING ${docType.toUpperCase()} TEMPLATE...`);
+            const res = await fetch(`${apiBase}/api/admin/docs/templates/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${state.token}` },
+                body: fd
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Upload failed (${res.status})`);
+            showToast(`${docType.toUpperCase()} TEMPLATE UPLOADED`);
+        } catch (e) {
+            showToast(`TEMPLATE UPLOAD FAILED: ${e.message}`);
         }
     };
 
