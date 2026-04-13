@@ -21,6 +21,8 @@ const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const sanitizeHtml = require('sanitize-html');
 const mammoth = require('mammoth');
+const PizZip = require('pizzip');
+const Docxtemplater = require('docxtemplater');
 
 // Safe Stripe Init
 let stripe = null;
@@ -181,6 +183,47 @@ function renderHtmlDoc(docType, fields) {
 </html>`;
 }
 
+async function ensureDocTemplateBucket() {
+    if (!supabaseAdmin?.storage) return;
+    try {
+        const { data: buckets } = await supabaseAdmin.storage.listBuckets();
+        const exists = Array.isArray(buckets) && buckets.some(b => b?.name === DOC_TEMPLATE_BUCKET);
+        if (!exists) {
+            await supabaseAdmin.storage.createBucket(DOC_TEMPLATE_BUCKET, { public: false });
+        }
+    } catch (e) {
+        // non-fatal: may already exist or be restricted
+    }
+}
+
+function normalizeDocxData(fields) {
+    const flat = { ...(fields || {}) };
+    if (flat.invoice_total_cents != null) flat.invoice_total = `$${(Number(flat.invoice_total_cents) / 100).toFixed(0)}`;
+    if (flat.deposit_due_cents != null) flat.deposit_due = `$${(Number(flat.deposit_due_cents) / 100).toFixed(0)}`;
+    if (Array.isArray(flat.required_documents)) flat.required_documents_csv = flat.required_documents.join(', ');
+    return flat;
+}
+
+async function getTemplateBuffer(templateKey) {
+    await ensureDocTemplateBucket();
+    const { data, error } = await supabaseAdmin.storage.from(DOC_TEMPLATE_BUCKET).download(templateKey);
+    if (error) throw error;
+    const ab = await data.arrayBuffer();
+    return Buffer.from(ab);
+}
+
+function renderDocxFromTemplate(templateBuffer, fields) {
+    const zip = new PizZip(templateBuffer);
+    const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+        delimiters: { start: '{{', end: '}}' }
+    });
+    doc.setData(normalizeDocxData(fields));
+    doc.render();
+    return doc.getZip().generate({ type: 'nodebuffer' });
+}
+
 const KNOWLEDGE_PREFIX = {
     file: 'kb_file::',
     chunk: 'kb_chunk::',
@@ -194,6 +237,15 @@ const knowledgeUpload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 12 * 1024 * 1024 } // 12MB per file
 });
+
+const docTemplateUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 12 * 1024 * 1024 } // 12MB per template
+});
+
+const DOC_TEMPLATE_BUCKET = process.env.DOC_TEMPLATE_BUCKET || 'otp-doc-templates';
+const DOC_TEMPLATE_PREFIX = 'master/';
+const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 function safeJsonParse(raw, fallback = null) {
     if (raw == null) return fallback;
@@ -1684,7 +1736,24 @@ app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
         const fields = buildDocFields({ lead, sourceTable, recommendation });
         const docTypes = ['proposal', 'agreement', 'invoice', 'nda', 'media_release'];
         const docs = {};
-        for (const t of docTypes) docs[t] = { html: renderHtmlDoc(t, fields), approved: false };
+        for (const t of docTypes) {
+            docs[t] = { html: renderHtmlDoc(t, fields), approved: false };
+        }
+
+        // DOCX generation for master templates (proposal + agreement)
+        // Templates are stored in Supabase Storage bucket: DOC_TEMPLATE_BUCKET at DOC_TEMPLATE_PREFIX
+        const docxErrors = {};
+        for (const t of ['proposal', 'agreement']) {
+            try {
+                const templateKey = `${DOC_TEMPLATE_PREFIX}${t}.docx`;
+                const templateBuf = await getTemplateBuffer(templateKey);
+                const outBuf = renderDocxFromTemplate(templateBuf, fields);
+                docs[t].docx = outBuf.toString('base64');
+                docs[t].docx_template = templateKey;
+            } catch (e) {
+                docxErrors[t] = String(e?.message || e);
+            }
+        }
 
         const packetId = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
         const nowIso = new Date().toISOString();
@@ -1709,7 +1778,8 @@ app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
             packet_id: packetId,
             fields,
             recommendation,
-            docs
+            docs,
+            docx_errors: Object.keys(docxErrors).length ? docxErrors : null
         });
     } catch (error) {
         console.error("docs-packet:", error.message);
@@ -1780,6 +1850,59 @@ app.get('/api/admin/docs/download/:packetId/:docType', verifyToken, async (req, 
     } catch (error) {
         console.error("docs-download:", error.message);
         res.status(500).send('Download failed');
+    }
+});
+
+// 2.15 Download an approved doc as DOCX (proposal/agreement)
+app.get('/api/admin/docs/download-docx/:packetId/:docType', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.params?.packetId || '').trim();
+    const docType = String(req.params?.docType || '').trim();
+    if (!packetId || !docType) return res.status(400).json({ success: false, message: 'Missing packetId/docType' });
+    if (!['proposal', 'agreement'].includes(docType)) return res.status(400).json({ success: false, message: 'DOCX export not enabled for this doc type' });
+    try {
+        const key = `${KNOWLEDGE_PREFIX.docPacket}${packetId}`;
+        const { data: row, error: fetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('content')
+            .eq('key', key)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!row) return res.status(404).json({ success: false, message: 'Packet not found' });
+        const packet = safeJsonParse(row.content, null);
+        const doc = packet?.docs?.[docType];
+        if (!doc) return res.status(404).json({ success: false, message: 'Doc not found' });
+        if (!doc.approved) return res.status(403).json({ success: false, message: 'Doc not approved' });
+        if (!doc.docx) return res.status(400).json({ success: false, message: 'DOCX template not configured or merge failed' });
+        const buf = Buffer.from(String(doc.docx), 'base64');
+        res.setHeader('Content-Type', DOCX_MIME);
+        res.setHeader('Content-Disposition', `attachment; filename="${docType}-${packetId}.docx"`);
+        res.send(buf);
+    } catch (error) {
+        console.error("docs-download-docx:", error.message);
+        res.status(500).json({ success: false, message: 'Download failed' });
+    }
+});
+
+// 2.16 Upload master DOCX templates (admin-only)
+app.post('/api/admin/docs/templates/upload', verifyToken, docTemplateUpload.single('file'), async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const docType = String(req.body?.docType || '').trim();
+        if (!['proposal', 'agreement'].includes(docType)) {
+            return res.status(400).json({ success: false, message: "docType must be proposal or agreement" });
+        }
+        if (!req.file || !req.file.buffer) return res.status(400).json({ success: false, message: "Missing file upload." });
+        await ensureDocTemplateBucket();
+        const key = `${DOC_TEMPLATE_PREFIX}${docType}.docx`;
+        const { error } = await supabaseAdmin.storage
+            .from(DOC_TEMPLATE_BUCKET)
+            .upload(key, req.file.buffer, { upsert: true, contentType: DOCX_MIME });
+        if (error) throw error;
+        res.json({ success: true, template_key: key });
+    } catch (error) {
+        console.error("docs-template-upload:", error.message);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
