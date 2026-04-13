@@ -1602,6 +1602,8 @@
     window.closeReplyManager = function() {
         const modal = document.getElementById('replyModal');
         modal.style.display = 'none';
+        const analysisDiv = document.getElementById('replyAnalysis');
+        if (analysisDiv) analysisDiv.textContent = 'No analysis data active.';
         // Focus back to inbox container to prevent jump
         window.refocusInbox();
     };
@@ -1636,11 +1638,23 @@
         if (source === 'leads' && c.answers) {
             let answers = c.answers;
             if (typeof answers === 'string') try { answers = JSON.parse(answers); } catch(e) {}
-            messageContext = `AUDIT GOAL: ${answers.q1}\nHURDLE: ${answers.q2}\nPLATFORM: ${answers.q3}\nVIBE: ${answers.q4}\nTARGET: ${answers.q5_goal}`;
+            messageContext = `AUDIT GOAL: ${answers.q1 || 'N/A'}\nHURDLE: ${answers.q2 || 'N/A'}\nPLATFORM: ${answers.q3 || 'N/A'}\nVIBE: ${answers.q4 || 'N/A'}\nTARGET: ${answers.q5_goal || 'N/A'}`;
         }
         
         document.getElementById('replyIncomingMsg').textContent = messageContext;
         document.getElementById('replyDraftContent').value = c.draft_reply || '';
+        const cacheBtn = document.getElementById('replyCacheBtn');
+        const syncBtn = document.getElementById('replySyncBtn');
+        const isLeadsSource = source === 'leads';
+        if (cacheBtn) {
+            cacheBtn.disabled = isLeadsSource;
+            cacheBtn.style.opacity = isLeadsSource ? '0.55' : '1';
+            cacheBtn.style.cursor = isLeadsSource ? 'not-allowed' : 'pointer';
+            cacheBtn.title = isLeadsSource ? 'Draft cache is available for inbox threads.' : '';
+        }
+        if (syncBtn) {
+            syncBtn.textContent = isLeadsSource ? 'LOG LEAD REVIEW' : 'SYNCHRONIZE SIGNAL';
+        }
         
         // Render Analysis if present
         // Render Analysis Agent (High-Density View)
@@ -1681,7 +1695,14 @@
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
         if (!leadId) { showToast("NO THREAD SELECTED"); return; }
         if (!state.token) { showToast("LOGIN REQUIRED"); return; }
+        const opsBtn = document.getElementById('replyOpsBrainBtn');
+        const originalOpsText = opsBtn ? opsBtn.textContent : '';
         try {
+            if (opsBtn) {
+                opsBtn.disabled = true;
+                opsBtn.textContent = 'RUNNING...';
+                opsBtn.style.opacity = '0.7';
+            }
             const apiBase = window.OTP ? window.OTP.getApiBase() : '';
             const analysisDiv = document.getElementById('replyAnalysis');
             if (analysisDiv) {
@@ -1733,8 +1754,15 @@
             }
             showToast("OPS BRAIN READY");
             if (sourceTable === 'leads') await window.fetchLeads();
+            else await window.fetchInbox();
         } catch (e) {
             showToast(`OPS BRAIN FAILED: ${e.message}`);
+        } finally {
+            if (opsBtn) {
+                opsBtn.disabled = false;
+                opsBtn.textContent = originalOpsText || '🧠 OPS BRAIN';
+                opsBtn.style.opacity = '1';
+            }
         }
     };
 
@@ -1747,7 +1775,11 @@
         
         if(!msg) { showToast("NO MESSAGE CONTEXT FOUND"); return; }
         
-        const btn = document.querySelector('button[onclick="generateReplyForLead()"]');
+        const btn = document.getElementById('replyGenBtn');
+        if (!btn) {
+            showToast("GENERATOR BUTTON UNAVAILABLE");
+            return;
+        }
         const originalText = btn.innerHTML;
         btn.innerHTML = "<span>⏳</span> THINKING...";
         btn.disabled = true;
@@ -1912,6 +1944,11 @@
     };
 
     window.saveDraftUpdate = async function() {
+        const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
+        if (sourceTable !== 'contacts') {
+            showToast("DRAFT CACHE AVAILABLE FOR INBOX THREADS");
+            return;
+        }
         const id = document.getElementById('replyContactId').value;
         const content = document.getElementById('replyDraftContent').value;
         
@@ -1946,6 +1983,12 @@
 };
 
     window.markAsReplied = function() {
+        const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
+        if (sourceTable !== 'contacts') {
+            showToast("LEAD REVIEW LOGGED (NO AUTO-SYNC)");
+            window.closeReplyManager();
+            return;
+        }
         const id = document.getElementById('replyContactId').value;
         confirmAction("SENT REPLY?", "Confirm you have sent the reply. This will mark the thread as completed.", async () => {
             try {
