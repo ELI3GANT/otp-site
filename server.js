@@ -1582,7 +1582,7 @@ app.post('/api/admin/fetch-data', verifyToken, async (req, res) => {
     }
 });
 
-// 2.8 OTP Knowledge Brain: list indexed files
+// 2.8 OTP Oracle — knowledge: list indexed files
 app.get('/api/admin/knowledge/files', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
@@ -1619,7 +1619,7 @@ app.get('/api/admin/knowledge/files', verifyToken, async (req, res) => {
     }
 });
 
-// 2.9 OTP Knowledge Brain: upload + index PDF/DOCX
+// 2.9 OTP Oracle — knowledge: upload + index PDF/DOCX
 app.post('/api/admin/knowledge/upload', verifyToken, knowledgeUpload.single('file'), async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
@@ -1715,7 +1715,7 @@ app.post('/api/admin/knowledge/upload', verifyToken, knowledgeUpload.single('fil
     }
 });
 
-// 2.10 OTP Knowledge Brain: delete indexed file and chunks
+// 2.10 OTP Oracle — knowledge: delete indexed file and chunks
 app.post('/api/admin/knowledge/delete', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     const fileId = String(req.body?.fileId || '').trim();
@@ -1732,7 +1732,7 @@ app.post('/api/admin/knowledge/delete', verifyToken, async (req, res) => {
     }
 });
 
-// 2.10.1 OTP Knowledge Brain: archive indexed file (de-index, keep data)
+// 2.10.1 OTP Oracle — knowledge: archive indexed file (de-index, keep data)
 app.post('/api/admin/knowledge/archive', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     const fileId = String(req.body?.fileId || '').trim();
@@ -1791,7 +1791,7 @@ app.post('/api/admin/knowledge/archive', verifyToken, async (req, res) => {
     }
 });
 
-// 2.11 OTP Knowledge Brain: lead recommendation
+// 2.11 OTP Oracle — knowledge: lead/contact recommendation
 app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
@@ -1887,7 +1887,7 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
 });
 
 // --- OTP Dynamic Document Generation (Admin Approval Gate) ---
-// 2.12 Generate a doc packet (HTML previews) from Ops Brain output
+// 2.12 Generate a doc packet (HTML previews) from Oracle recommendation path
 app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
@@ -1903,7 +1903,7 @@ app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
         if (leadError) throw leadError;
         if (!lead) return res.status(404).json({ success: false, message: "Lead not found." });
 
-        // Run Ops Brain recommendation (reuse internal logic by calling the same function path)
+        // Run Oracle-style recommendation (same internal path as /knowledge/recommend)
         const leadText = buildLeadText(lead, sourceTable);
         const completeness = evaluateLeadDataCompleteness(lead, sourceTable);
         const leadVector = textToVector(leadText, KB_VECTOR_DIMS);
@@ -2620,7 +2620,7 @@ app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
     }
 });
 
-// 2.12 OTP Knowledge Brain: retrieve saved recommendations for lead cards
+// 2.12 OTP Oracle — knowledge: retrieve saved recommendations for lead cards
 app.post('/api/admin/knowledge/recommendations', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {

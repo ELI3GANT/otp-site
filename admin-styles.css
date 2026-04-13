@@ -1804,7 +1804,7 @@ html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !im
     border-color: #d1d1d6;
 }
 
-[data-theme="light"] #neuralLinkStatus {
+[data-theme="light"] #oracleUplinkStatus {
     background: rgba(0,0,0,0.04) !important;
     color: #444 !important;
 }

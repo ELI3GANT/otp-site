@@ -5,7 +5,7 @@
  */
 
 (function() {
-    console.log("🚀 ADMIN CORE V15.15.2 STABLE: ONLINE.");
+    console.log("🚀 ADMIN CORE (OTP Oracle): ONLINE.");
 
     /** Never fetch `${undefined}/api/...` — fall back to same-origin or OTP_CONFIG. */
     const resolveApiBase = () => {
@@ -182,8 +182,9 @@
         archetypes: []
     };
     window.state = state; // Expose to window for inline scripts
-    /** Ops Brain results keyed as `leads:<uuid>` / `contacts:<uuid>` for reply modal + AI reply flow. */
-    if (typeof window.replyOpsBrainCache === 'undefined') window.replyOpsBrainCache = {};
+    /** OTP Oracle (knowledge + recommendations) cache: `leads:<uuid>` / `contacts:<uuid>` for reply + AI flows. */
+    if (typeof window.replyOracleCache === 'undefined') window.replyOracleCache = {};
+    window.replyOpsBrainCache = window.replyOracleCache;
     const getProviderLocalKey = (provider) => {
         if (provider === 'anthropic') {
             return (localStorage.getItem('cloud_claude') || localStorage.getItem('cloud_anthropic') || '').trim();
@@ -250,11 +251,11 @@
         return String(message || 'Unknown AI error');
     };
 
-    /** Stable cache key for Ops Brain results in the reply modal (contacts + leads). */
-    const replyOpsBrainKey = (sourceTable, id) => `${sourceTable === 'leads' ? 'leads' : 'contacts'}:${String(id || '').trim()}`;
+    /** Stable cache key for OTP Oracle results in the reply modal (contacts + leads). */
+    const replyOracleKey = (sourceTable, id) => `${sourceTable === 'leads' ? 'leads' : 'contacts'}:${String(id || '').trim()}`;
 
-    /** Shared HTML for Ops Brain summary (reply modal + hydrate on reopen). */
-    const buildOpsBrainPanelHtml = (recommendation) => {
+    /** Shared HTML for OTP Oracle summary (reply modal + hydrate on reopen). */
+    const buildOraclePanelHtml = (recommendation) => {
         const rec = recommendation || {};
         const docs = Array.isArray(rec.required_documents) ? Array.from(new Set(rec.required_documents)) : [];
         const statusFlags = Array.isArray(rec.status_flags) ? rec.status_flags : [];
@@ -279,7 +280,7 @@
                 : (rec.next_action || 'manual_review_required');
         return `
                     <div style="background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.25); border-radius: 8px; padding: 12px;">
-                        <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.4px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP OPS BRAIN (MANUAL APPROVAL REQUIRED)</div>
+                        <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.4px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP ORACLE (MANUAL APPROVAL REQUIRED)</div>
                         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${statusBadges}</div>
                         <div style="font-size:0.85rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
                         <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:4px;">${window.escapeHtml(rec.quote_range || 'Scope-based')}</div>
@@ -1255,7 +1256,7 @@
 
                     ${isDrafted ? `
                     <div style="background: rgba(var(--accent2-rgb), 0.05); border-left: 3px solid var(--admin-cyan); padding: 15px; margin-top: 10px; border-radius: 0 6px 6px 0;">
-                        <div style="font-size: 0.65rem; color: var(--admin-cyan); margin-bottom: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px;">// AI NEURAL DRAFT</div>
+                        <div style="font-size: 0.65rem; color: var(--admin-cyan); margin-bottom: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px;">// OTP ORACLE DRAFT</div>
                         <div style="font-size: 0.85rem; color: var(--admin-text); white-space: pre-wrap; margin-bottom: 15px; line-height: 1.5; font-style: italic;">"${c.draft_reply.substring(0, 200)}${c.draft_reply.length > 200 ? '...' : ''}"</div>
                         <div style="display:flex; gap:12px;">
                             <button type="button" onclick="copyDraft('${c.id}')" class="btn-action-mini">COPY SIGNAL</button>
@@ -1279,7 +1280,15 @@
     };
     
     window.knowledgeFilesCache = [];
-    window.leadBrainCache = {};
+    window.leadOracleCache = {};
+    try {
+        Object.defineProperty(window, 'leadBrainCache', {
+            configurable: true,
+            enumerable: false,
+            get() { return window.leadOracleCache; },
+            set(v) { window.leadOracleCache = v; }
+        });
+    } catch (e) { /* property may already exist on hot reload */ }
 
     window.setupKnowledgeBrainUploader = function() {
         const input = document.getElementById('knowledgeFileInput');
@@ -1383,7 +1392,7 @@
     window.archiveKnowledgeFile = async function(fileId) {
         const apiBase = resolveApiBase();
         if (!fileId) return;
-        if (!confirm(`Archive indexed file ${fileId} (remove from active brain)?`)) return;
+        if (!confirm(`Archive indexed file ${fileId} (remove from active Oracle index)?`)) return;
         const res = await fetch(`${apiBase}/api/admin/knowledge/archive`, {
             method: 'POST',
             headers: {
@@ -1436,8 +1445,8 @@
         }, 50000);
         const payload = await res.json().catch(() => ({}));
         if (!res.ok || !payload.success) throw new Error(payload.message || `Recommendation failed (${res.status})`);
-        window.leadBrainCache = window.leadBrainCache || {};
-        window.leadBrainCache[leadId] = {
+        window.leadOracleCache = window.leadOracleCache || {};
+        window.leadOracleCache[leadId] = {
             recommendation: payload.recommendation,
             confidence: payload.confidence,
             updated_at: new Date().toISOString()
@@ -1459,19 +1468,19 @@
             }, 45000);
             const payload = await res.json();
             if (res.ok && payload.success && payload.recommendations) {
-                window.leadBrainCache = { ...(window.leadBrainCache || {}), ...payload.recommendations };
+                window.leadOracleCache = { ...(window.leadOracleCache || {}), ...payload.recommendations };
             }
         } catch (e) { /* non-blocking */ }
     };
 
     window.renderLeadBrainCard = function(leadId) {
-        const cache = window.leadBrainCache[leadId];
+        const cache = window.leadOracleCache[leadId];
         if (!cache || !cache.recommendation) {
             return `
             <div style="margin-top:12px;padding:12px;border:1px dashed var(--admin-border);border-radius:8px;background:var(--admin-panel);">
                 <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
-                    <div style="font-size:0.67rem;color:var(--admin-muted);text-transform:uppercase;letter-spacing:1.4px;">OTP OPS BRAIN // MANUAL REVIEW GATE</div>
-                    <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:rgba(var(--accent2-rgb),0.15);border:1px solid var(--admin-cyan);color:var(--admin-cyan);font-size:0.65rem;padding:6px 10px;border-radius:6px;cursor:pointer;">ANALYZE LEAD</button>
+                    <div style="font-size:0.67rem;color:var(--admin-muted);text-transform:uppercase;letter-spacing:1.4px;">OTP ORACLE // MANUAL REVIEW GATE</div>
+                    <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:rgba(var(--accent2-rgb),0.15);border:1px solid var(--admin-cyan);color:var(--admin-cyan);font-size:0.65rem;padding:6px 10px;border-radius:6px;cursor:pointer;">RUN ORACLE</button>
                 </div>
             </div>`;
         }
@@ -1510,7 +1519,7 @@
         return `
         <div style="margin-top:12px;padding:12px;border:1px solid ${reviewTone ? 'rgba(255,190,90,0.35)' : 'rgba(0,255,170,0.3)'};border-radius:8px;background:${reviewTone ? 'rgba(255,170,0,0.05)' : 'rgba(0,255,170,0.04)'};">
             <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;">
-                <div style="font-size:0.67rem;color:${reviewTone ? '#ffd37a' : 'var(--admin-success)'};text-transform:uppercase;letter-spacing:1.4px;font-weight:900;">OTP OPS BRAIN // MANUAL APPROVAL REQUIRED</div>
+                <div style="font-size:0.67rem;color:${reviewTone ? '#ffd37a' : 'var(--admin-success)'};text-transform:uppercase;letter-spacing:1.4px;font-weight:900;">OTP ORACLE // MANUAL APPROVAL REQUIRED</div>
                 <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:transparent;border:1px solid var(--admin-border);color:var(--admin-muted);font-size:0.62rem;padding:5px 8px;border-radius:6px;cursor:pointer;">RE-RUN</button>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${badges}</div>
@@ -1528,20 +1537,20 @@
 
     window.runLeadBrain = async function(leadId) {
         try {
-            showToast('RUNNING OPS BRAIN...');
+            showToast('RUNNING OTP ORACLE…');
             await window.requestLeadBrain(leadId, 'leads');
-            const cached = window.leadBrainCache && window.leadBrainCache[leadId];
+            const cached = window.leadOracleCache && window.leadOracleCache[leadId];
             if (cached && cached.recommendation) {
-                window.replyOpsBrainCache[replyOpsBrainKey('leads', leadId)] = {
+                window.replyOracleCache[replyOracleKey('leads', leadId)] = {
                     recommendation: cached.recommendation,
                     confidence: cached.confidence,
                     updated_at: cached.updated_at || new Date().toISOString()
                 };
             }
             await window.fetchLeads();
-            showToast('OPS BRAIN READY');
+            showToast('OTP ORACLE READY');
         } catch (e) {
-            showToast(`OPS BRAIN FAILED: ${e.message}`);
+            showToast(`OTP ORACLE FAILED: ${e.message}`);
         }
     };
 
@@ -1909,16 +1918,16 @@
             syncBtn.textContent = isLeadsSource ? 'LOG LEAD REVIEW' : 'SYNCHRONIZE SIGNAL';
         }
         
-        // Analysis + Ops Brain: show neural JSON when present; always hydrate Ops Brain from cache (lead list or prior modal run).
+        // Analysis + OTP Oracle: show saved analysis JSON when present; hydrate Oracle panel from cache (list or prior modal).
         const analysisDiv = document.getElementById('replyAnalysis');
         if (analysisDiv) {
             const srcTable = source === 'leads' ? 'leads' : 'contacts';
-            const rbKey = replyOpsBrainKey(srcTable, c.id);
+            const rbKey = replyOracleKey(srcTable, c.id);
             let opsRec = null;
-            const replyCached = window.replyOpsBrainCache[rbKey];
+            const replyCached = window.replyOracleCache[rbKey];
             if (replyCached && replyCached.recommendation) opsRec = replyCached.recommendation;
-            else if (srcTable === 'leads' && window.leadBrainCache && window.leadBrainCache[c.id] && window.leadBrainCache[c.id].recommendation) {
-                opsRec = window.leadBrainCache[c.id].recommendation;
+            else if (srcTable === 'leads' && window.leadOracleCache && window.leadOracleCache[c.id] && window.leadOracleCache[c.id].recommendation) {
+                opsRec = window.leadOracleCache[c.id].recommendation;
             }
             if (window.__replyContext) window.__replyContext.recommendation = opsRec;
 
@@ -1928,19 +1937,19 @@
                 const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
                 sections.push(`
                 <div style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: 200px; overflow-y: auto;">
-                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">NEURAL_ANALYSIS_DATA</div>
+                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">ORACLE_CONTEXT_DATA</div>
                     <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.72rem; color: var(--admin-text); line-height: 1.4; margin: 0;">${window.escapeHtml ? window.escapeHtml(analysisText) : analysisText}</pre>
                 </div>`);
             }
             if (opsRec) {
-                sections.push(buildOpsBrainPanelHtml(opsRec));
+                sections.push(buildOraclePanelHtml(opsRec));
             }
             if (!sections.length) {
                 sections.push(`
                 <div style="text-align: center; padding: 25px; color: var(--admin-muted); font-size: 0.7rem; border: 1px dashed var(--admin-border); border-radius: 8px; background: var(--admin-panel);">
                     <div style="font-size: 1.2rem; margin-bottom: 8px; opacity: 0.5;">📡</div>
                     <div>SIGNAL DATA NOT ANALYZED</div>
-                    <div style="margin-top:10px;font-size:0.65rem;line-height:1.45;">Run <strong style="color:var(--admin-cyan);">OPS BRAIN</strong> for package, documents, and knowledge hits — then use <strong style="color:var(--admin-cyan);">GENERATE RESPONSE</strong>.</div>
+                    <div style="margin-top:10px;font-size:0.65rem;line-height:1.45;">Run <strong style="color:var(--admin-cyan);">OTP ORACLE</strong> for package, documents, and knowledge hits — then use <strong style="color:var(--admin-cyan);">GENERATE RESPONSE</strong>.</div>
                 </div>`);
             }
             analysisDiv.innerHTML = sections.join('<div style="height:12px;"></div>');
@@ -2109,7 +2118,7 @@
             <div><strong>Lead ID</strong>: ${window.escapeHtml(String(s.leadId || ''))}</div>
             <div><strong>Source</strong>: ${window.escapeHtml(String(s.sourceTable || 'contacts'))}</div>
             <div><strong>Packet</strong>: ${window.escapeHtml(String(s.packetId || 'NOT GENERATED'))}</div>
-            ${s.notice ? `<div style="margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid rgba(var(--accent2-rgb),0.25);background:rgba(var(--accent2-rgb),0.07);color:var(--admin-text);font-size:0.72rem;line-height:1.4;">${window.escapeHtml(String(s.notice))}</div>` : `<div style="margin-top:6px;">Tip: run <strong style="color:var(--admin-cyan);">OPS BRAIN</strong> in the reply window first so packages and required docs match the thread. Then generate → preview → approve → download / send.</div>`}
+            ${s.notice ? `<div style="margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid rgba(var(--accent2-rgb),0.25);background:rgba(var(--accent2-rgb),0.07);color:var(--admin-text);font-size:0.72rem;line-height:1.4;">${window.escapeHtml(String(s.notice))}</div>` : `<div style="margin-top:6px;">Tip: run <strong style="color:var(--admin-cyan);">OTP ORACLE</strong> in the reply window first so packages and required docs match the thread. Then generate → preview → approve → download / send.</div>`}
         `;
 
         // Send block (only after packet exists)
@@ -2603,12 +2612,12 @@
         }
     };
 
-    window.runBrainForReplyContext = async function() {
+    window.runOracleForReplyContext = async function() {
         const leadId = document.getElementById('replyContactId')?.value;
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
         if (!leadId) { showToast("NO THREAD SELECTED"); return; }
         if (!state.token || state.token === 'static-bypass-token') { showToast("LOGIN REQUIRED (REAL JWT)"); return; }
-        const opsBtn = document.getElementById('replyOpsBrainBtn');
+        const opsBtn = document.getElementById('replyOracleBtn');
         const originalOpsText = opsBtn ? opsBtn.textContent : '';
         try {
             if (opsBtn) {
@@ -2619,7 +2628,7 @@
             const apiBase = resolveApiBase();
             const analysisDiv = document.getElementById('replyAnalysis');
             if (analysisDiv) {
-                analysisDiv.innerHTML = '<div style="font-size:0.75rem;color:var(--admin-muted);">Running OTP Ops Brain...</div>';
+                analysisDiv.innerHTML = '<div style="font-size:0.75rem;color:var(--admin-muted);">Running OTP Oracle…</div>';
             }
             const res = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/recommend`, {
                 method: 'POST',
@@ -2630,17 +2639,17 @@
                 body: JSON.stringify({ leadId, sourceTable })
             }, 50000);
             const payload = await res.json().catch(() => ({}));
-            if (!res.ok || !payload.success) throw new Error(payload.message || `Ops Brain failed (${res.status})`);
+            if (!res.ok || !payload.success) throw new Error(payload.message || `OTP Oracle failed (${res.status})`);
             const recommendation = payload.recommendation || {};
-            const cacheKey = replyOpsBrainKey(sourceTable, leadId);
-            window.replyOpsBrainCache[cacheKey] = {
+            const cacheKey = replyOracleKey(sourceTable, leadId);
+            window.replyOracleCache[cacheKey] = {
                 recommendation,
                 confidence: payload.confidence,
                 updated_at: new Date().toISOString()
             };
             if (sourceTable === 'leads') {
-                window.leadBrainCache = window.leadBrainCache || {};
-                window.leadBrainCache[leadId] = {
+                window.leadOracleCache = window.leadOracleCache || {};
+                window.leadOracleCache[leadId] = {
                     recommendation,
                     confidence: payload.confidence,
                     updated_at: new Date().toISOString()
@@ -2658,26 +2667,27 @@
                     const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
                     sections.push(`
                 <div style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: 200px; overflow-y: auto;">
-                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">NEURAL_ANALYSIS_DATA</div>
+                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">ORACLE_CONTEXT_DATA</div>
                     <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.72rem; color: var(--admin-text); line-height: 1.4; margin: 0;">${window.escapeHtml ? window.escapeHtml(analysisText) : analysisText}</pre>
                 </div>`);
                 }
-                sections.push(buildOpsBrainPanelHtml(recommendation));
+                sections.push(buildOraclePanelHtml(recommendation));
                 analysisDiv.innerHTML = sections.join('<div style="height:12px;"></div>');
             }
-            showToast("OPS BRAIN READY");
+            showToast("OTP ORACLE READY");
             if (sourceTable === 'leads') await window.fetchLeads();
             else await window.fetchInbox();
         } catch (e) {
-            showToast(`OPS BRAIN FAILED: ${formatNetworkError(e)}`);
+            showToast(`OTP ORACLE FAILED: ${formatNetworkError(e)}`);
         } finally {
             if (opsBtn) {
                 opsBtn.disabled = false;
-                opsBtn.textContent = originalOpsText || '🧠 OPS BRAIN';
+                opsBtn.textContent = originalOpsText || '🔮 OTP ORACLE';
                 opsBtn.style.opacity = '1';
             }
         }
     };
+    window.runBrainForReplyContext = window.runOracleForReplyContext;
 
     // NEW: Generate AI Reply for Lead
     window.generateReplyForLead = async function() {
@@ -2724,7 +2734,7 @@
             const baseSystemPrompt = archetype ? archetype.system_prompt : `You are an elite business consultant and executive assistant. 
             Your task is to draft a professional, warm, and high-conversion reply to a potential lead.`;
 
-            // Pull Ops Brain recommendation (best effort) so replies match the packet workflow
+            // Pull OTP Oracle recommendation (best effort) so replies match the packet workflow
             let opsRec = null;
             try {
                 if (state.token && leadId) {
@@ -2737,21 +2747,21 @@
                     if (recRes.ok && recPayload.success) opsRec = recPayload.recommendation || null;
                 }
             } catch (e) {
-                // Non-fatal: reply generation can proceed without Ops Brain context
+                // Non-fatal: reply generation can proceed without Oracle context
             }
 
             if (window.__replyContext) window.__replyContext.recommendation = opsRec;
             if (opsRec && leadId) {
-                window.replyOpsBrainCache[replyOpsBrainKey(sourceTable, leadId)] = {
+                window.replyOracleCache[replyOracleKey(sourceTable, leadId)] = {
                     recommendation: opsRec,
                     confidence: null,
                     updated_at: new Date().toISOString()
                 };
                 if (sourceTable === 'leads') {
-                    window.leadBrainCache = window.leadBrainCache || {};
-                    window.leadBrainCache[leadId] = window.leadBrainCache[leadId] || {};
-                    window.leadBrainCache[leadId].recommendation = opsRec;
-                    window.leadBrainCache[leadId].updated_at = new Date().toISOString();
+                    window.leadOracleCache = window.leadOracleCache || {};
+                    window.leadOracleCache[leadId] = window.leadOracleCache[leadId] || {};
+                    window.leadOracleCache[leadId].recommendation = opsRec;
+                    window.leadOracleCache[leadId].updated_at = new Date().toISOString();
                 }
             }
             const analysisRaw = (window.__replyContext && window.__replyContext.analysis) ? window.__replyContext.analysis : null;
@@ -2770,7 +2780,7 @@ Hard rules:
 - Ask exactly 3 crisp questions at the end (bulleted).
 - Close with: "Best," then "Only True Perspective".
 
-If Ops Brain recommends a package or safety docs, align your reply with that workflow (proposal + agreement + invoice/deposit).
+If the OTP Oracle recommends a package or safety docs, align your reply with that workflow (proposal + agreement + invoice/deposit).
 `;
 
             const userPrompt = [
@@ -2781,8 +2791,8 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                 `INCOMING MESSAGE`,
                 truncateForPrompt(msg, 1600),
                 ``,
-                opsRec ? `OPS BRAIN RECOMMENDATION\nPackage: ${opsRec.recommended_package || 'Manual review'}\nQuote: ${opsRec.quote_range || 'Scope-based'}\nRequired docs: ${requiredDocs || 'Manual doc review'}\nNext action: ${opsRec.next_action || 'manual_review_required'}` : '',
-                analysisText ? `\nNEURAL ANALYSIS DATA\n${truncateForPrompt(analysisText, 900)}` : '',
+                opsRec ? `OTP ORACLE RECOMMENDATION\nPackage: ${opsRec.recommended_package || 'Manual review'}\nQuote: ${opsRec.quote_range || 'Scope-based'}\nRequired docs: ${requiredDocs || 'Manual doc review'}\nNext action: ${opsRec.next_action || 'manual_review_required'}` : '',
+                analysisText ? `\nORACLE CONTEXT DATA\n${truncateForPrompt(analysisText, 900)}` : '',
                 ``,
                 `Write the reply now.`
             ].filter(Boolean).join('\n');
@@ -2938,7 +2948,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                 }
 
                 if (!String(replyText || '').trim()) {
-                    throw new Error(hubError ? `NEURAL LINK FAILED: ${hubError}` : (lastDirectErr || `NO API KEY FOUND FOR ${provider.toUpperCase()}`));
+                    throw new Error(hubError ? `ORACLE UPLINK FAILED: ${hubError}` : (lastDirectErr || `NO API KEY FOUND FOR ${provider.toUpperCase()}`));
                 }
             }
 
@@ -3860,7 +3870,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
         if (tokenDisp) tokenDisp.textContent = aiSessionTokens.toLocaleString();
     }
 
-    // 7. SECURE AI NEURAL GENERATOR
+    // 7. SECURE OTP ORACLE GENERATOR (AI POST COMPOSER)
     async function triggerAIGenerator() {
         const providerSel = document.getElementById('aiProvider');
         const promptInput = document.getElementById('aiPrompt');
@@ -3975,7 +3985,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                 const cloudKey = personalKeys[provider];
                 if (!cloudKey) {
                     const msg = hubError ? `Server Hub Error: ${hubError}` : "No personal key found in Cloud Settings.";
-                    throw new Error(`NEURAL LINK BLOCKED: ${msg}`);
+                    throw new Error(`ORACLE UPLINK BLOCKED: ${msg}`);
                 }
                 
                 if(status) { status.innerHTML = `<span class="blink">🚀 DIRECT CLOUD LINK ACTIVE...</span>`; }
@@ -4070,7 +4080,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                                 }
 
                                 if (raw.candidates && raw.candidates[0].finishReason === 'SAFETY') {
-                                    gemError = "NEURAL BLOCK: Content flagged by safety filter. Try a different concept.";
+                                    gemError = "ORACLE SAFETY BLOCK: Content flagged by filter. Try a different concept.";
                                     break;
                                 }
 
@@ -4145,7 +4155,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                     tagsInput.value = aiResult.tags.join(', ');
                 }
 
-                showToast(usedDirect ? "NEURAL BRIDGE: DIRECT CLOUD" : "NEURAL BRIDGE: SECURE HUB");
+                showToast(usedDirect ? "ORACLE: DIRECT CLOUD" : "ORACLE: SECURE HUB");
                 if(status) { status.textContent = "CONTENT COMPLETE. SYNTHESIZING VISUALS..."; status.style.color = "var(--admin-cyan)"; }
 
                 // --- CHAIN IMAGE GENERATION ---
@@ -4281,15 +4291,15 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
 
         if (personalKey) {
             hubDot.style.background = 'var(--admin-cyan)';
-            hubText.textContent = `UPLINK: DIRECT CLOUD (USING PERSONAL KEY)`;
+            hubText.textContent = `OTP ORACLE · DIRECT CLOUD (PERSONAL KEY)`;
             hubText.style.color = 'var(--admin-cyan)';
         } else if (hasServerKey) {
             hubDot.style.background = 'var(--admin-success)';
-            hubText.textContent = `UPLINK: SECURE SERVER HUB (NO KEY REQUIRED)`;
+            hubText.textContent = `OTP ORACLE · SECURE HUB (NO BROWSER KEY)`;
             hubText.style.color = 'var(--admin-success)';
         } else {
             hubDot.style.background = 'var(--admin-danger)';
-            hubText.textContent = `UPLINK: DISCONNECTED (KEY REQUIRED)`;
+            hubText.textContent = `OTP ORACLE · DISCONNECTED (LOGIN OR KEY REQUIRED)`;
             hubText.style.color = 'var(--admin-danger)';
         }
     }
@@ -4357,7 +4367,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                 parsedHtml = content.replace(/\n/g, '<br>');
             }
 
-            const isOracle = document.getElementById('aiDraftSource')?.value === 'true' || content.includes('// NEURAL_DRAFT');
+            const isOracle = document.getElementById('aiDraftSource')?.value === 'true' || content.includes('// NEURAL_DRAFT') || content.includes('// ORACLE_DRAFT');
             const isVideo = image && image.match(/\.(mp4|webm|mov)$/i);
             const excerptHtml = excerpt ? `<p style="font-size: 1.25rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${excerpt}</p>` : '';
             
@@ -4371,7 +4381,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                 </div>` : `
                 <div style="margin-bottom: 35px; padding: 60px; text-align: center; background: rgba(var(--accent2-rgb), 0.03); border: 2px dashed var(--admin-border); border-radius: 12px; color: var(--admin-muted);">
                     <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.3;">🖼️</div>
-                    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;">NEURAL_VISUAL_SIGNAL_PENDING</div>
+                    <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;">ORACLE_VISUAL_SIGNAL_PENDING</div>
                 </div>`;
             
             const html = `

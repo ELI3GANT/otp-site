@@ -1,9 +1,9 @@
-OTP Terminal Knowledge Brain
-============================
+OTP Oracle (Terminal knowledge layer)
+=====================================
 
 Purpose
 -------
-Private retrieval layer for OTP Terminal to support lead triage, package guidance, document routing, and manual-review-first operations.
+Private retrieval layer for **OTP Terminal** (branded **OTP Oracle**) to support lead triage, package guidance, document routing, and manual-review-first operations.
 
 Scope
 -----
@@ -13,7 +13,7 @@ Scope
 
 Current Pipeline
 ----------------
-1. Admin uploads PDF/DOCX in OTP Terminal Knowledge Brain panel.
+1. Admin uploads PDF/DOCX in OTP Terminal **OTP Oracle · Knowledge Index** panel.
 2. Server extracts text, chunks content, computes vectors, stores index records.
 3. Lead recommendation endpoint retrieves top-matching chunks by cosine similarity.
 4. Rule engine returns structured JSON for admin review:

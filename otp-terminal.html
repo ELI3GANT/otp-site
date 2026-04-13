@@ -21,7 +21,7 @@
   <link rel="manifest" href="site.webmanifest" />
 
   <link rel="stylesheet" href="./styles.css?v=16.3.6" />
-  <link rel="stylesheet" href="./admin-styles.css?v=16.5.2" />
+  <link rel="stylesheet" href="./admin-styles.css?v=16.6.0" />
   <link rel="stylesheet" href="./blog-enhancements.css?v=16.3.0" />
   <!--/* ADMIN COMMAND CENTER STYLES - V15.15.2 STABLE */-->
   <style>
@@ -363,10 +363,10 @@
                 </div>
             </section>
   
-            <!-- AI BRAIN (SECURE) -->
+            <!-- OTP ORACLE (SECURE AI) -->
             <section class="input-section ai-tips">
-                <div class="section-label">04 // Neural AI Generator</div>
-                <p style="font-size: 0.8rem; color: var(--admin-muted); margin-bottom: 20px;">Powered by Server-Side Proxy. Keys are hidden.</p>
+                <div class="section-label">04 // OTP Oracle (Post Composer)</div>
+                <p style="font-size: 0.8rem; color: var(--admin-muted); margin-bottom: 20px;">Official AI layer for OTP Terminal. Prefer the secure hub; keys stay off the client when logged in.</p>
   
                 <div class="row" style="gap: 12px; margin-bottom: 15px;">
                     <div class="input-group" style="flex: 1;">
@@ -380,14 +380,14 @@
                     </div>
                 </div>
 
-                <div id="neuralLinkStatus" style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; background: var(--admin-panel); padding: 8px; border-radius: 6px;">
+                <div id="oracleUplinkStatus" style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; background: var(--admin-panel); padding: 8px; border-radius: 6px;">
                     <span id="hubIndicator" class="status-dot-mini" style="width: 8px; height: 8px; background: var(--admin-success); box-shadow: 0 0 10px var(--admin-success);"></span>
-                    <span id="hubText" style="letter-spacing: 0.5px;">UPLINK: SECURE SERVER HUB (NO KEY REQUIRED)</span>
+                    <span id="hubText" style="letter-spacing: 0.5px;">OTP ORACLE · SECURE HUB (NO BROWSER KEY)</span>
                 </div>
 
                 <div id="geminiModelGroup" style="display: none; margin-bottom: 15px;">
                     <div class="input-group">
-                        <label for="geminiModel">Gemini Neural Variant</label>
+                        <label for="geminiModel">Gemini model (Oracle)</label>
                         <select id="geminiModel" style="background: var(--admin-panel); font-weight: bold; color: var(--accent2);">
                             <optgroup label="GEMINI 2.5 (RECOMMENDED)">
                                 <option value="gemini-2.5-flash">Gemini 2.5 Flash (Balanced)</option>
@@ -430,10 +430,10 @@
                     </div>
                 </div>
 
-                <!-- SYSTEM & NEURAL SETTINGS (For Mobile/Live) -->
+                <!-- BACKEND + ORACLE KEYS (mobile / offline) -->
                 <div style="margin-top: 20px; border-top: 1px dashed var(--admin-border); padding-top: 15px;">
                     <button type="button" id="toggleSettingsBtn" onclick="toggleCloudSettings()" class="settings-toggle-btn" style="background: var(--admin-surface-muted); border: 1px solid var(--admin-border); color: var(--admin-text); font-size: 0.65rem; padding: 8px 12px; width: 100%; text-align: left; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="letter-spacing: 1px;">🛰️ SYSTEM & NEURAL SETTINGS</span>
+                        <span style="letter-spacing: 1px;">🛰️ BACKEND & ORACLE KEYS</span>
                         <span class="toggle-icon" style="transition: transform 0.2s ease;">▼</span>
                     </button>
                     <div id="cloudSettings" style="display: none; margin-top: 10px; background: var(--admin-surface-inset-strong); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
@@ -453,7 +453,7 @@
                             </div>
                         </div>
 
-                        <p style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 10px; font-weight: bold;">DIRECT NEURAL CLOUD (If server is offline)</p>
+                        <p style="font-size: 0.65rem; color: var(--admin-muted); margin-bottom: 10px; font-weight: bold;">DIRECT PROVIDER KEYS (if hub offline)</p>
                         <form id="cloudKeyForm" onsubmit="event.preventDefault();" autocomplete="off">
                             <!-- Hidden username field improves password manager + accessibility heuristics -->
                             <input type="text" name="username" autocomplete="username" value="otp-admin" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;" tabindex="-1" aria-hidden="true" />
@@ -642,11 +642,11 @@
                 </div>
             </section>
 
-            <!-- SECTION: OTP KNOWLEDGE BRAIN -->
+            <!-- SECTION: OTP ORACLE KNOWLEDGE -->
             <section class="input-section">
-                <div class="section-label">06.5 // OTP Knowledge Brain</div>
+                <div class="section-label">06.5 // OTP Oracle · Knowledge Index</div>
                 <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.5;">
-                    Upload business source files (PDF/DOCX), index them for retrieval search, and run lead recommendations before any client response.
+                    Upload business PDFs/DOCX for the Oracle to cite. Indexed chunks power recommendations and reply context before you contact a client.
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
                     <button type="button" onclick="document.getElementById('knowledgeFileInput').click()" class="btn-secondary" style="width: auto; font-size: 0.7rem;">UPLOAD FILES</button>
@@ -877,8 +877,8 @@
                             <option value="technical">TECHNICAL (Detailed)</option>
                             <option value="tactical">TACTICAL (Direct)</option>
                         </select>
-                        <button id="replyOpsBrainBtn" type="button" onclick="runBrainForReplyContext()" style="background: rgba(var(--accent2-rgb),0.15); color: var(--admin-cyan); border: 1px solid var(--admin-cyan); padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer;">
-                            🧠 OPS BRAIN
+                        <button id="replyOracleBtn" type="button" onclick="runOracleForReplyContext()" style="background: rgba(var(--accent2-rgb),0.15); color: var(--admin-cyan); border: 1px solid var(--admin-cyan); padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer;">
+                            🔮 OTP ORACLE
                         </button>
                         <button id="replyGenBtn" type="button" onclick="generateReplyForLead()" style="background: var(--admin-accent); color: #fff; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                             <span>⚡</span> GEN AI REPLY
@@ -992,7 +992,7 @@
                 </div>
 
                 <div class="input-section" style="margin-bottom:14px;">
-                    <div class="section-label" style="margin-top:0;">AI BRAIN DEFAULTS</div>
+                    <div class="section-label" style="margin-top:0;">OTP ORACLE DEFAULTS</div>
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
                         <div>
                             <div style="font-size:0.72rem;color:var(--admin-muted);margin-bottom:6px;">Default intelligence engine</div>
@@ -1033,7 +1033,7 @@
     <script src="site-config.js?v=16.4.6"></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.5.5"></script>
+    <script src="admin-core.js?v=16.6.0"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)
