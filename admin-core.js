@@ -4196,7 +4196,7 @@ Lang: ${u.lang || 'Unknown'}</div>
                     item.innerHTML = `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
                             <span style="font-size: 0.8rem; color: ${isCurrent ? '#00ffaa' : '#fff'}; font-weight: bold;">
-                                ${isCurrent ? '🟢 CURRENT_STATE: ' : ''}${v.message}
+                                ${isCurrent ? '🟢 CURRENT_STATE: ' : ''}${window.escapeHtml(v.message || '')}
                             </span>
                             <div style="font-family: monospace; font-size: 0.65rem; color: var(--admin-muted);">
                                 <span>COMMIT: ${hashShort}</span> |

@@ -2314,7 +2314,7 @@ app.get('/api/admin/versions', verifyToken, async (req, res) => {
             }
 
             const limited = unique.slice(0, MAX_VERSION_EVENTS);
-            const staleKeys = parsed.slice(MAX_VERSION_EVENTS).map(v => v.key).filter(Boolean);
+            const staleKeys = unique.slice(MAX_VERSION_EVENTS).map(v => v.key).filter(Boolean);
             if (staleKeys.length) {
                 await supabaseAdmin.from('site_content').delete().in('key', staleKeys).throwOnError().catch(() => {});
             }
