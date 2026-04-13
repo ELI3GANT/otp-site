@@ -251,15 +251,14 @@ async function renderInvoicePdf(fields, packetId = '') {
     const margin = 54;
     const contentW = width - margin * 2;
 
-    // Try to embed a logo image from site (JPG); fallback to text mark if unavailable.
+    // Try to embed the official OTP eye emblem (JPG) from public assets; fallback to text mark if unavailable.
     let logoImage = null;
     try {
-        const logoUrl = 'https://onlytrueperspective.tech/og.jpg';
-        const res = await fetch(logoUrl);
-        if (res.ok) {
-            const ab = await res.arrayBuffer();
-            logoImage = await pdfDoc.embedJpg(ab);
-        }
+        const fs = require('fs');
+        const path = require('path');
+        const logoPath = path.join(__dirname, 'assets', 'otp-eye-emblem.jpg');
+        const buf = fs.readFileSync(logoPath);
+        logoImage = await pdfDoc.embedJpg(buf);
     } catch (e) {
         logoImage = null;
     }
@@ -274,12 +273,12 @@ async function renderInvoicePdf(fields, packetId = '') {
     const leftX = margin;
     const headerY = height - 34;
     if (logoImage) {
-        const targetH = 44;
+        const targetH = 46;
         const scale = targetH / logoImage.height;
         const drawW = logoImage.width * scale;
-        page.drawImage(logoImage, { x: leftX, y: height - headerH + 26, width: drawW, height: targetH, opacity: 0.92 });
-        page.drawText('ONLY TRUE PERSPECTIVE', { x: leftX + drawW + 10, y: height - headerH + 48, size: 10, font: fontBold, color: rgb(0.9, 0.93, 0.98) });
-        page.drawText('Tactical Visual Intelligence', { x: leftX + drawW + 10, y: height - headerH + 33, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
+        page.drawImage(logoImage, { x: leftX, y: height - headerH + 24, width: drawW, height: targetH, opacity: 0.96 });
+        page.drawText('ONLY TRUE PERSPECTIVE', { x: leftX + drawW + 12, y: height - headerH + 48, size: 10, font: fontBold, color: rgb(0.9, 0.93, 0.98) });
+        page.drawText('Tactical Visual Intelligence', { x: leftX + drawW + 12, y: height - headerH + 33, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
     } else {
         page.drawText('ONLY TRUE PERSPECTIVE', { x: leftX, y: height - headerH + 48, size: 12, font: fontBold, color: rgb(0.92, 0.94, 0.98) });
         page.drawText('Tactical Visual Intelligence', { x: leftX, y: height - headerH + 32, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
