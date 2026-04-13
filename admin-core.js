@@ -141,6 +141,12 @@
         archetypes: []
     };
     window.state = state; // Expose to window for inline scripts
+    const getProviderLocalKey = (provider) => {
+        if (provider === 'anthropic') {
+            return (localStorage.getItem('cloud_claude') || localStorage.getItem('cloud_anthropic') || '').trim();
+        }
+        return (localStorage.getItem(`cloud_${provider}`) || '').trim();
+    };
     const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
     const isLocalRuntime = () => LOCAL_HOSTS.has(window.location.hostname);
     const isLocalApiBase = (url) => {
@@ -365,8 +371,18 @@
 
             bindPersist(cloudOA, 'cloud_openai');
             bindPersist(cloudG, 'cloud_gemini');
-            bindPersist(cloudC, 'cloud_claude');
             bindPersist(cloudGr, 'cloud_groq');
+            if (cloudC) {
+                cloudC.value = getProviderLocalKey('anthropic');
+                cloudC.addEventListener('input', (e) => {
+                    const value = e.target.value.trim();
+                    // Keep both keys in sync for backward compatibility with older builds.
+                    localStorage.setItem('cloud_claude', value);
+                    localStorage.setItem('cloud_anthropic', value);
+                    const currentProvider = document.getElementById('aiProvider')?.value || 'groq';
+                    checkNeuralLink(currentProvider);
+                });
+            }
             
             // Resolve best API base: localStorage > OTP_CONFIG > canonical Vercel fallback
             
@@ -1787,12 +1803,14 @@
         try {
             // Get Config
             const providerSel = document.getElementById('aiProvider'); // Use global selector
+            const modelSel = document.getElementById('geminiModel');
             const provider = providerSel ? providerSel.value : 'openai';
+            const model = (provider === 'gemini' && modelSel) ? modelSel.value : null;
             const personalKeys = {
-                openai: localStorage.getItem('cloud_openai'),
-                gemini: localStorage.getItem('cloud_gemini'),
-                anthropic: localStorage.getItem('cloud_claude'),
-                groq: localStorage.getItem('cloud_groq')
+                openai: getProviderLocalKey('openai'),
+                gemini: getProviderLocalKey('gemini'),
+                anthropic: getProviderLocalKey('anthropic'),
+                groq: getProviderLocalKey('groq')
             };
 
             // DYNAMIC ARCHETYPE OVERRIDE
@@ -1833,7 +1851,9 @@
                             provider, 
                             systemPrompt, 
                             messages: [{ role: 'user', content: `Lead Name: ${name}. Context: ${msg}. Draft Reply.` }],
-                            modelConfig 
+                            model,
+                            modelConfig,
+                            keys: personalKeys
                         })
                     });
                     const data = await res.json();
@@ -1850,7 +1870,7 @@
             // 2. Failover: Try Direct Cloud Link
             if (!replyText) {
                 const cloudKey = personalKeys[provider];
-                if (!cloudKey && provider !== 'groq') {
+                if (!cloudKey) {
                     throw new Error(hubError ? `NEURAL LINK FAILED: ${hubError}` : `NO API KEY FOUND FOR ${provider.toUpperCase()}`);
                 }
 
@@ -2854,10 +2874,10 @@
         try {
             const authToken = state.token || 'static-bypass-token';
             const personalKeys = {
-                openai: localStorage.getItem('cloud_openai'),
-                gemini: localStorage.getItem('cloud_gemini'),
-                anthropic: localStorage.getItem('cloud_claude'),
-                groq: localStorage.getItem('cloud_groq')
+                openai: getProviderLocalKey('openai'),
+                gemini: getProviderLocalKey('gemini'),
+                anthropic: getProviderLocalKey('anthropic'),
+                groq: getProviderLocalKey('groq')
             };
             
             // DYNAMIC ARCHETYPE SYSTEM
@@ -2990,7 +3010,7 @@
                     let gemError = "Unknown Gemini error.";
                     
                     // Map common configs to Gemini specific
-                    const geminiConfig = { response_mime_type: "application/json" };
+                    const geminiConfig = { responseMimeType: "application/json" };
                     if (modelConfig.temperature !== undefined) geminiConfig.temperature = modelConfig.temperature;
                     if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
                     if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
@@ -3228,7 +3248,7 @@
         const hubText = document.getElementById('hubText');
         if (!hubDot || !hubText) return;
 
-        const personalKey = localStorage.getItem(`cloud_${provider}`);
+        const personalKey = getProviderLocalKey(provider);
         const hasServerKey = state.token && state.token !== 'static-bypass-token';
 
         if (personalKey) {
@@ -4090,9 +4110,9 @@ Lang: ${u.lang || 'Unknown'}</div>
                     ai.textContent = "SYNCED";
                     ai.style.color = "var(--admin-success)";
                 } else {
-                    const localGemini = localStorage.getItem('cloud_gemini');
-                    const localOpenAI = localStorage.getItem('cloud_openai');
-                    const localAnthropic = localStorage.getItem('cloud_anthropic');
+                    const localGemini = getProviderLocalKey('gemini');
+                    const localOpenAI = getProviderLocalKey('openai');
+                    const localAnthropic = getProviderLocalKey('anthropic');
                     if (localGemini || localOpenAI || localAnthropic) {
                         ai.textContent = "SYNCED (LOCAL)";
                         ai.style.color = "var(--admin-cyan)";
@@ -4145,15 +4165,33 @@ Lang: ${u.lang || 'Unknown'}</div>
             if (!data.success) throw new Error(data.message || "Failed to parse versions");
 
             list.innerHTML = '';
-            if (data.versions && data.versions.length > 0) {
-                data.versions.forEach((v, index) => {
+            const versions = Array.isArray(data.versions) ? data.versions.slice(0, 12) : [];
+            if (versions.length > 0) {
+                if ((data.versions || []).length > versions.length) {
+                    const notice = document.createElement('div');
+                    notice.style.cssText = 'font-size:0.68rem;color:var(--admin-muted);padding:8px 10px;border:1px dashed var(--admin-border);border-radius:6px;background:rgba(255,255,255,0.02);';
+                    notice.textContent = `SHOWING LATEST ${versions.length} VERSION SNAPSHOTS`;
+                    list.appendChild(notice);
+                }
+
+                versions.forEach((v, index) => {
                     const dateRaw = new Date(v.date);
                     const isCurrent = index === 0;
+                    const isManaged = !!v.managed || v.rollback_mode === 'vercel';
 
                     const item = document.createElement('div');
                     item.style.cssText = `padding: 15px; border: 1px solid ${isCurrent ? 'var(--admin-success)' : 'var(--admin-border)'}; border-radius: 8px; background: rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center;`;
 
                     const hashShort = v.hash.substring(0, 7);
+
+                    const deploymentLink = v.deployment_url
+                        ? `<div style="font-size:0.62rem;margin-top:4px;"><a href="${window.escapeHtml(v.deployment_url)}" target="_blank" rel="noopener noreferrer" style="color:var(--admin-cyan);text-decoration:none;">DEPLOYMENT ↗</a></div>`
+                        : '';
+                    const actionHtml = isCurrent
+                        ? ''
+                        : isManaged
+                            ? `<span style="font-size:0.62rem;padding:6px 10px;border-radius:6px;border:1px solid rgba(0,255,170,0.35);color:var(--admin-success);">MANAGED</span>`
+                            : `<button type="button" onclick="triggerRollback('${v.hash}')" class="btn-secondary" style="font-size: 0.65rem; padding: 6px 15px; border-color: var(--admin-danger); color: var(--admin-danger);">ROLLBACK</button>`;
 
                     item.innerHTML = `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -4164,8 +4202,9 @@ Lang: ${u.lang || 'Unknown'}</div>
                                 <span>COMMIT: ${hashShort}</span> |
                                 <span>${dateRaw.toLocaleString()}</span>
                             </div>
+                            ${deploymentLink}
                         </div>
-                        <button type="button" onclick="triggerRollback('${v.hash}')" class="btn-secondary" style="font-size: 0.65rem; padding: 6px 15px; ${isCurrent ? 'display:none;' : ''} border-color: var(--admin-danger); color: var(--admin-danger);">ROLLBACK</button>
+                        ${actionHtml}
                     `;
                     list.appendChild(item);
                 });

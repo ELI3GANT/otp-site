@@ -739,7 +739,7 @@
                 <button onclick="document.getElementById('versionModal').style.display='none'" class="close-icon">✕</button>
             </div>
             <div style="padding: 20px;">
-                <p style="font-size: 0.8rem; color: var(--admin-muted); margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 15px;">Review past system states and trigger an emergency rollback if stability is compromised. Note: Restarting the neural server takes ~3 seconds.</p>
+                <p style="font-size: 0.8rem; color: var(--admin-muted); margin-bottom: 15px; border-bottom: 1px solid var(--admin-border); padding-bottom: 15px;">Review recent release snapshots, keep rollback options ready, and avoid deep history bloat. Managed production deployments use Vercel rollback controls.</p>
                 <div id="versionList" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
                     <div style="text-align: center; color: var(--admin-muted); padding: 20px; font-size: 0.8rem;">ESTABLISHING VERSION UPLINK...</div>
                 </div>
@@ -902,7 +902,7 @@
     <script src="site-config.js?v=16.4.5"></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.4.5"></script>
+    <script src="admin-core.js?v=16.4.6"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)
