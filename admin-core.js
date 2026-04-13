@@ -154,6 +154,42 @@
             || msg.includes('rate-limit')
             || msg.includes('current quota');
     };
+    const truncateForPrompt = (text, maxChars = 2200) => {
+        const s = String(text || '').trim();
+        if (!s) return '';
+        if (s.length <= maxChars) return s;
+        return s.slice(0, Math.max(0, maxChars - 40)).trim() + '\n\n[TRUNCATED FOR LENGTH]';
+    };
+    const stripMarkdownFences = (text) => {
+        let s = String(text || '');
+        // Remove fenced code blocks (common model slip)
+        s = s.replace(/```[\s\S]*?```/g, '').trim();
+        // Remove inline backticks
+        s = s.replace(/`{1,3}([^`]+)`{1,3}/g, '$1');
+        return s.trim();
+    };
+    const extractSubjectAndBody = (text) => {
+        const raw = String(text || '').trim();
+        if (!raw) return { subject: '', body: '' };
+        const lines = raw.split(/\r?\n/);
+        const first = String(lines[0] || '').trim();
+        const subjectMatch = first.match(/^subject\s*:\s*(.+)$/i);
+        if (subjectMatch) {
+            const subject = subjectMatch[1].trim();
+            const body = lines.slice(1).join('\n').replace(/^\s*\n+/, '').trim();
+            return { subject, body };
+        }
+        return { subject: '', body: raw };
+    };
+    const normalizePlaintextEmail = (text) => {
+        let s = String(text || '').replace(/\r\n/g, '\n').trim();
+        s = stripMarkdownFences(s);
+        // Remove common "Email:" / "Body:" wrappers
+        s = s.replace(/^(email|body)\s*:\s*/i, '').trim();
+        // Avoid excessive blank lines
+        s = s.replace(/\n{4,}/g, '\n\n\n');
+        return s.trim();
+    };
     const formatNeuralError = (message) => {
         if (isGeminiQuotaIssue(message)) {
             return 'GEMINI QUOTA LIMIT HIT. SWITCH PROVIDER (GROQ/OPENAI/ANTHROPIC) OR UPGRADE GEMINI BILLING.';
@@ -1681,6 +1717,14 @@
         const cache = source === 'leads' ? (window.leadsCache || []) : (window.inboxCache || []);
         const c = cache.find(x => x.id == id);
         if(!c) return;
+
+        // Persist lightweight context for reply generation (avoids scraping DOM later)
+        window.__replyContext = {
+            id: c.id,
+            source: source === 'leads' ? 'leads' : 'contacts',
+            analysis: c.ai_analysis || c.advice || c.neural_meta || null,
+            recommendation: null
+        };
         
         document.getElementById('replyContactId').value = c.id;
         document.getElementById('replyContactEmail').value = c.email || '';
@@ -2442,6 +2486,10 @@
         btn.disabled = true;
 
         try {
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
+            const leadId = document.getElementById('replyContactId')?.value || null;
+
             // Get Config
             const providerSel = document.getElementById('aiProvider'); // Use global selector
             const modelSel = document.getElementById('geminiModel');
@@ -2463,17 +2511,55 @@
             const baseSystemPrompt = archetype ? archetype.system_prompt : `You are an elite business consultant and executive assistant. 
             Your task is to draft a professional, warm, and high-conversion reply to a potential lead.`;
 
+            // Pull Ops Brain recommendation (best effort) so replies match the packet workflow
+            let opsRec = null;
+            try {
+                if (state.token && leadId) {
+                    const recRes = await fetch(`${apiBase}/api/admin/knowledge/recommend`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                        body: JSON.stringify({ leadId, sourceTable })
+                    });
+                    const recPayload = await recRes.json().catch(() => ({}));
+                    if (recRes.ok && recPayload.success) opsRec = recPayload.recommendation || null;
+                }
+            } catch (e) {
+                // Non-fatal: reply generation can proceed without Ops Brain context
+            }
+
+            if (window.__replyContext) window.__replyContext.recommendation = opsRec;
+            const analysisRaw = (window.__replyContext && window.__replyContext.analysis) ? window.__replyContext.analysis : null;
+            const analysisText = analysisRaw
+                ? (typeof analysisRaw === 'string' ? analysisRaw : JSON.stringify(analysisRaw, null, 2))
+                : '';
+
+            const requiredDocs = Array.isArray(opsRec?.required_documents) ? Array.from(new Set(opsRec.required_documents)).join(', ') : '';
             const systemPrompt = `${baseSystemPrompt}
-            
-            Lead Name: ${name}
-            Lead Email: ${email}
-            Incoming Message: "${msg}"
-            
-            Guidelines:
-            - Tone: Professional, Confident, Welcoming, Premium.
-            - Focus: Acknowledge their specific request, offer to schedule a discovery call, and express excitement about potentially working together.
-            - Format: Plain text email body. Do not include subject line unless asked. Do not include placeholders like "[Your Name]" - sign off as "The Team" or just "Best,".
-            `;
+
+You are writing a plain-text email reply as Only True Perspective.
+Hard rules:
+- Output ONLY the email body (no markdown, no code fences).
+- Keep it short and high-status (120-220 words).
+- No subject line, unless the user explicitly asked for one.
+- Ask exactly 3 crisp questions at the end (bulleted).
+- Close with: "Best," then "Only True Perspective".
+
+If Ops Brain recommends a package or safety docs, align your reply with that workflow (proposal + agreement + invoice/deposit).
+`;
+
+            const userPrompt = [
+                `LEAD`,
+                `Name: ${String(name || '').trim() || 'Valued Lead'}`,
+                `Email: ${String(email || '').trim()}`,
+                ``,
+                `INCOMING MESSAGE`,
+                truncateForPrompt(msg, 1600),
+                ``,
+                opsRec ? `OPS BRAIN RECOMMENDATION\nPackage: ${opsRec.recommended_package || 'Manual review'}\nQuote: ${opsRec.quote_range || 'Scope-based'}\nRequired docs: ${requiredDocs || 'Manual doc review'}\nNext action: ${opsRec.next_action || 'manual_review_required'}` : '',
+                analysisText ? `\nNEURAL ANALYSIS DATA\n${truncateForPrompt(analysisText, 900)}` : '',
+                ``,
+                `Write the reply now.`
+            ].filter(Boolean).join('\n');
 
             let replyText = "";
             let hubError = null;
@@ -2481,7 +2567,6 @@
             // 1. Try Server Proxy First (Secure Hub)
             if (state.token && state.token !== 'static-bypass-token') {
                 try {
-                    const apiBase = window.OTP ? window.OTP.getApiBase() : (window.OTP_CONFIG?.apiBase || window.location.origin);
                     const res = await fetch(apiBase + '/api/ai/chat', {
                         method: 'POST',
                         headers: { 
@@ -2491,7 +2576,7 @@
                         body: JSON.stringify({ 
                             provider, 
                             systemPrompt, 
-                            messages: [{ role: 'user', content: `Lead Name: ${name}. Context: ${msg}. Draft Reply.` }],
+                            messages: [{ role: 'user', content: userPrompt }],
                             model,
                             modelConfig,
                             keys: personalKeys
@@ -2499,7 +2584,7 @@
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
-                        replyText = data.data;
+                        replyText = typeof data.data === 'string' ? data.data : JSON.stringify(data.data || '');
                     } else {
                         hubError = data.message || "Server Hub Refused Connection";
                     }
@@ -2510,102 +2595,124 @@
 
             // 2. Failover: Try Direct Cloud Link
             if (!replyText) {
-                const cloudKey = personalKeys[provider];
-                if (!cloudKey) {
-                    throw new Error(hubError ? `NEURAL LINK FAILED: ${hubError}` : `NO API KEY FOUND FOR ${provider.toUpperCase()}`);
-                }
+                const attemptOrder = [
+                    provider,
+                    // Smart fallback when Gemini quota/model issues happen
+                    ...(provider === 'gemini' ? ['groq', 'openai', 'anthropic'] : []),
+                    ...(provider !== 'gemini' ? ['openai', 'groq', 'anthropic', 'gemini'] : [])
+                ];
+                const tried = new Set();
+                let lastDirectErr = '';
+                for (const p of attemptOrder) {
+                    if (tried.has(p)) continue;
+                    tried.add(p);
+                    const cloudKey = personalKeys[p];
+                    if (!cloudKey) continue;
+                    try {
+                        if (p === 'openai') {
+                            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
+                                body: JSON.stringify({
+                                    model: 'gpt-4o',
+                                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                                    ...modelConfig
+                                })
+                            });
+                            const data = await res.json();
+                            if (data.error) throw new Error(data.error.message);
+                            replyText = data?.choices?.[0]?.message?.content || '';
+                        } else if (p === 'gemini') {
+                            const geminiConfig = {};
+                            if (modelConfig.temperature !== undefined) geminiConfig.temperature = modelConfig.temperature;
+                            if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
+                            if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
 
-                if (provider === 'openai') {
-                    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
-                        body: JSON.stringify({
-                            model: 'gpt-4o',
-                            messages: [{ role: 'system', content: "You represent a high-end agency." }, { role: 'user', content: systemPrompt }],
-                            ...modelConfig
-                        })
-                    });
-                    const data = await res.json();
-                    if(data.error) throw new Error(data.error.message);
-                    replyText = data.choices[0].message.content;
-                } 
-                else if (provider === 'gemini') {
-                    const geminiConfig = {};
-                    if (modelConfig.temperature !== undefined) geminiConfig.temperature = modelConfig.temperature;
-                    if (modelConfig.max_tokens !== undefined) geminiConfig.maxOutputTokens = modelConfig.max_tokens;
-                    if (modelConfig.top_p !== undefined) geminiConfig.topP = modelConfig.top_p;
+                            const versions = ['v1', 'v1beta'];
+                            const modelCandidates = getGeminiModelCandidates(model);
+                            let success = false;
+                            let lastError = "Neural link failed.";
 
-                    const versions = ['v1', 'v1beta'];
-                    const modelCandidates = getGeminiModelCandidates(model);
-                    let success = false;
-                    let lastError = "Neural link failed.";
-
-                    for (const v of versions) {
-                        if(success) break;
-                        for (const m of modelCandidates) {
-                            if(success) break;
-                            try {
-                                const url = `https://generativelanguage.googleapis.com/${v}/models/${m}:generateContent?key=${cloudKey}`;
-                                const res = await fetch(url, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        contents: [{ parts: [{ text: systemPrompt }] }],
-                                        generationConfig: geminiConfig
-                                    })
-                                });
-                                const data = await res.json();
-                                if(data.error) {
-                                    lastError = `${m} [${v}]: ${data.error.message}`;
-                                    console.warn(`⚠️ Deep Dive Probe Fail [${v}] [${m}]:`, data.error.message);
-                                    continue;
+                            for (const v of versions) {
+                                if (success) break;
+                                for (const m of modelCandidates) {
+                                    if (success) break;
+                                    try {
+                                        const url = `https://generativelanguage.googleapis.com/${v}/models/${m}:generateContent?key=${cloudKey}`;
+                                        const res = await fetch(url, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                systemInstruction: { parts: [{ text: systemPrompt }] },
+                                                contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+                                                generationConfig: geminiConfig
+                                            })
+                                        });
+                                        const data = await res.json();
+                                        if (data.error) {
+                                            lastError = `${m} [${v}]: ${data.error.message}`;
+                                            continue;
+                                        }
+                                        const txt = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                                        if (txt) {
+                                            replyText = txt;
+                                            success = true;
+                                            break;
+                                        }
+                                    } catch (e) {
+                                        lastError = e.message;
+                                    }
                                 }
-                                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
-                                    replyText = data.candidates[0].content.parts[0].text;
-                                    success = true;
-                                    break;
-                                }
-                            } catch (e) {
-                                lastError = e.message;
                             }
+                            if (!success) throw new Error(`GEMINI DEEP DIVE FAILED: ${lastError}`);
+                        } else if (p === 'anthropic') {
+                            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'x-api-key': cloudKey,
+                                    'anthropic-version': '2023-06-01',
+                                    'anthropic-dangerous-direct-browser-access': 'true'
+                                },
+                                body: JSON.stringify({
+                                    model: 'claude-3-5-sonnet-20240620',
+                                    max_tokens: 900,
+                                    system: systemPrompt,
+                                    messages: [{ role: 'user', content: userPrompt }],
+                                    ...modelConfig
+                                })
+                            });
+                            const data = await res.json();
+                            if (data.error) throw new Error(data.error.message);
+                            replyText = data?.content?.[0]?.text || '';
+                        } else if (p === 'groq') {
+                            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
+                                body: JSON.stringify({
+                                    model: 'llama-3.1-70b-versatile',
+                                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                                    ...modelConfig
+                                })
+                            });
+                            const data = await res.json();
+                            if (data.error) throw new Error(data.error.message);
+                            replyText = data?.choices?.[0]?.message?.content || '';
                         }
+                        if (String(replyText || '').trim()) break;
+                    } catch (e) {
+                        lastDirectErr = e?.message || String(e);
+                        // Try next provider if quota/model blowup
+                        if (p === 'gemini' && (isGeminiQuotaIssue(lastDirectErr) || String(lastDirectErr).toLowerCase().includes('not found'))) {
+                            continue;
+                        }
+                        // Otherwise continue only if another provider exists
+                        continue;
                     }
-                    if(!success) throw new Error(`GEMINI DEEP DIVE FAILED: ${lastError}`);
                 }
-                else if (provider === 'anthropic') {
-                    const res = await fetch('https://api.anthropic.com/v1/messages', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'x-api-key': cloudKey,
-                            'anthropic-version': '2023-06-01',
-                            'anthropic-dangerous-direct-browser-access': 'true'
-                        },
-                        body: JSON.stringify({
-                            model: 'claude-3-5-sonnet-20240620',
-                            max_tokens: 1200,
-                            system: 'You represent a high-end agency.',
-                            messages: [{ role: 'user', content: systemPrompt }],
-                            ...modelConfig
-                        })
-                    });
-                    const data = await res.json();
-                    if (data.error) throw new Error(data.error.message);
-                    replyText = data?.content?.[0]?.text || '';
-                }
-                else if (provider === 'groq') {
-                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cloudKey}` },
-                        body: JSON.stringify({
-                            model: 'llama-3.1-70b-versatile',
-                            messages: [{ role: 'system', content: "You are a professional assistant." }, { role: 'user', content: systemPrompt }],
-                            ...modelConfig
-                        })
-                    });
-                    const data = await res.json();
-                    if(data.error) throw new Error(data.error.message);
-                    replyText = data.choices[0].message.content;
+
+                if (!String(replyText || '').trim()) {
+                    throw new Error(hubError ? `NEURAL LINK FAILED: ${hubError}` : (lastDirectErr || `NO API KEY FOUND FOR ${provider.toUpperCase()}`));
                 }
             }
 
@@ -2614,7 +2721,13 @@
             }
 
             // Stream simulation or just paste
-             draftBox.value = replyText.trim();
+             const normalized = normalizePlaintextEmail(replyText);
+             const { subject, body } = extractSubjectAndBody(normalized);
+             const subjectInput = document.getElementById('replySubject');
+             if (subject && subjectInput && !String(subjectInput.value || '').trim()) {
+                 subjectInput.value = subject;
+             }
+             draftBox.value = (body || normalized).trim();
              showToast("REPLY GENERATED");
 
              // --- TRACK USAGE ---
