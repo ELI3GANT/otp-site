@@ -808,6 +808,7 @@ const verifyToken = (req, res, next) => {
 app.post('/api/ai/generate', verifyToken, async (req, res) => {
     // ... existing AI logic ...
     const { provider, prompt, title, systemPrompt, model, modelConfig = {}, keys = {} } = req.body;
+    const resolveKey = (providedKey, envKey) => (String(providedKey || '').trim() || String(envKey || '').trim());
     
     try {
         let result;
@@ -842,7 +843,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             }
         };
         if (provider === 'openai') {
-            const openaiKey = (process.env.OPENAI_API_KEY || keys.openai || '').trim();
+            const openaiKey = resolveKey(keys.openai, process.env.OPENAI_API_KEY);
             if (!openaiKey) throw new Error("OpenAI Key not configured on server or terminal.");
             
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -869,7 +870,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             usage = data.usage;
 
         } else if (provider === 'gemini') {
-            const geminiKey = (process.env.GEMINI_API_KEY || keys.gemini || '').trim();
+            const geminiKey = resolveKey(keys.gemini, process.env.GEMINI_API_KEY);
             if (!geminiKey) throw new Error("Gemini Key not configured on server or terminal.");
             
             const candidates = model
@@ -942,7 +943,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             if(!success) throw new Error(`Gemini Probe Failed: ${lastErr}`);
 
         } else if (provider === 'anthropic') {
-            const anthropicKey = (process.env.ANTHROPIC_API_KEY || keys.anthropic || '').trim();
+            const anthropicKey = resolveKey(keys.anthropic, process.env.ANTHROPIC_API_KEY);
             if (!anthropicKey) throw new Error("Claude Key not configured on server or terminal.");
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
@@ -964,7 +965,7 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
             usage = data.usage ? { total_tokens: data.usage.input_tokens + data.usage.output_tokens } : null;
 
         } else if (provider === 'groq') {
-            const groqKey = (process.env.GROQ_API_KEY || keys.groq || '').trim();
+            const groqKey = resolveKey(keys.groq, process.env.GROQ_API_KEY);
             if (!groqKey) throw new Error("Groq Key not configured on server.");
             const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
@@ -1436,13 +1437,14 @@ app.post('/api/admin/knowledge/recommendations', verifyToken, async (req, res) =
 // 2.5 Secure AI Chat Completion (Generic)
 app.post('/api/ai/chat', verifyToken, async (req, res) => {
     const { provider, messages, systemPrompt, model, modelConfig = {}, keys = {} } = req.body;
+    const resolveKey = (providedKey, envKey) => (String(providedKey || '').trim() || String(envKey || '').trim());
     
     try {
         const safeMessages = Array.isArray(messages) ? messages : [];
         const chatSystemPrompt = systemPrompt || "You are a professional assistant.";
         let result;
         if (provider === 'openai') {
-            const openaiKey = (process.env.OPENAI_API_KEY || keys.openai || '').trim();
+            const openaiKey = resolveKey(keys.openai, process.env.OPENAI_API_KEY);
             if (!openaiKey) throw new Error("OpenAI Key not configured on server.");
             
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -1466,7 +1468,7 @@ app.post('/api/ai/chat', verifyToken, async (req, res) => {
             result = data.choices[0].message.content;
 
         } else if (provider === 'gemini') {
-            const geminiKey = (process.env.GEMINI_API_KEY || keys.gemini || '').trim();
+            const geminiKey = resolveKey(keys.gemini, process.env.GEMINI_API_KEY);
             if (!geminiKey) throw new Error("Gemini Key not configured on server.");
             
             const modelsToTry = model
@@ -1509,7 +1511,7 @@ app.post('/api/ai/chat', verifyToken, async (req, res) => {
             if (!result) throw new Error(lastErr);
 
         } else if (provider === 'anthropic') {
-            const anthropicKey = (process.env.ANTHROPIC_API_KEY || keys.anthropic || '').trim();
+            const anthropicKey = resolveKey(keys.anthropic, process.env.ANTHROPIC_API_KEY);
             if (!anthropicKey) throw new Error("Anthropic Key not configured on server.");
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
@@ -1534,7 +1536,7 @@ app.post('/api/ai/chat', verifyToken, async (req, res) => {
             result = data?.content?.[0]?.text || '';
 
         } else if (provider === 'groq') {
-            const groqKey = (process.env.GROQ_API_KEY || keys.groq || '').trim();
+            const groqKey = resolveKey(keys.groq, process.env.GROQ_API_KEY);
             if (!groqKey) throw new Error("Groq Key not configured on server.");
             const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
