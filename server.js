@@ -20,7 +20,6 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
 const sanitizeHtml = require('sanitize-html');
-const pdfParseLib = require('pdf-parse');
 const mammoth = require('mammoth');
 
 // Safe Stripe Init
@@ -135,9 +134,20 @@ async function extractTextFromKnowledgeFile(file) {
     if (!file || !file.buffer) throw new Error('Missing file buffer.');
     const ext = path.extname(file.originalname || '').toLowerCase();
     if (ext === '.pdf') {
+        let pdfParseLib = null;
+        try {
+            pdfParseLib = require('pdf-parse');
+        } catch (e) {
+            throw new Error('PDF parser failed to load on server. Use DOCX or contact admin.');
+        }
+
+        const pdfParseCallable = typeof pdfParseLib === 'function'
+            ? pdfParseLib
+            : (pdfParseLib && typeof pdfParseLib.default === 'function' ? pdfParseLib.default : null);
+
         // pdf-parse v2 exposes PDFParse class; v1 exposed a callable function.
-        if (typeof pdfParseLib === 'function') {
-            const parsed = await pdfParseLib(file.buffer);
+        if (typeof pdfParseCallable === 'function') {
+            const parsed = await pdfParseCallable(file.buffer);
             return normalizeWhitespace(parsed.text);
         }
 
