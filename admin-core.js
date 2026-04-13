@@ -22,6 +22,25 @@
         return String(window.location.origin || '').replace(/\/$/, '');
     };
 
+    /** Live-safe fetch: aborts after `ms` unless caller passes their own `signal`. */
+    const fetchWithTimeout = async (url, init = {}, ms = 45000) => {
+        if (init && init.signal) return fetch(url, init);
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), ms);
+        try {
+            return await fetch(url, { ...init, signal: ctrl.signal });
+        } finally {
+            clearTimeout(tid);
+        }
+    };
+
+    const formatNetworkError = (err) => {
+        const name = err && err.name;
+        if (name === 'AbortError') return 'Request timed out — check connection or try again.';
+        const msg = String(err && err.message ? err.message : err || 'Unknown error');
+        return msg;
+    };
+
     // GLOBAL ERROR TRAP
     /**
      * SECURE PROXY HELPERS
@@ -47,7 +66,7 @@
             return await res.json();
         } catch (err) {
             clearTimeout(timeoutId);
-            throw err;
+            throw new Error(formatNetworkError(err));
         }
     };
 
@@ -67,11 +86,18 @@
                 const err = await res.json().catch(() => ({}));
                 throw new Error(err.message || `Read Failed (${res.status})`);
             }
-            const json = await res.json();
-            return json.data;
+            const raw = await res.text();
+            let json = {};
+            try {
+                json = raw ? JSON.parse(raw) : {};
+            } catch (e) {
+                throw new Error(`Invalid JSON from server (${res.status})`);
+            }
+            const d = json.data;
+            return Array.isArray(d) ? d : (d == null ? [] : d);
         } catch (err) {
             clearTimeout(timeoutId);
-            throw err;
+            throw new Error(formatNetworkError(err));
         }
     };
 
@@ -94,7 +120,7 @@
             return await res.json();
         } catch (err) {
             clearTimeout(timeoutId);
-            throw err;
+            throw new Error(formatNetworkError(err));
         }
     };
 
@@ -1213,7 +1239,7 @@
                         <div>
                              <div style="font-weight: 800; color: var(--admin-white); font-size: 1rem; letter-spacing: 0.5px; margin-bottom: 2px;">${window.escapeHtml(c.name)}</div>
                              <div style="color: var(--admin-cyan); font-size: 0.75rem; font-family: monospace;">&lt;${window.escapeHtml(c.email)}&gt;</div>
-                             <div style="font-size: 0.6rem; color: var(--admin-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">LAST SIGNAL: ${new Date(c.created_at).toLocaleString()}</div>
+                             <div style="font-size: 0.6rem; color: var(--admin-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">LAST SIGNAL: ${c.created_at ? new Date(c.created_at).toLocaleString() : '—'}</div>
                         </div>
                         <div style="display:flex; gap: 8px; align-items:center;">
                             <div style="font-size: 0.65rem; font-family: 'Space Grotesk', sans-serif; font-weight: 900; color: ${statusColor}; border: 1px solid ${statusColor}; padding: 3px 8px; border-radius: 4px; background: rgba(var(--accent2-rgb), 0.05);">${statusText}</div>
@@ -1400,16 +1426,17 @@
         if (!state.token) throw new Error('LOGIN REQUIRED');
         if (!leadId) throw new Error('MISSING LEAD ID');
         const apiBase = resolveApiBase();
-        const res = await fetch(`${apiBase}/api/admin/knowledge/recommend`, {
+        const res = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/recommend`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${state.token}`
             },
             body: JSON.stringify({ leadId, sourceTable })
-        });
+        }, 50000);
         const payload = await res.json().catch(() => ({}));
         if (!res.ok || !payload.success) throw new Error(payload.message || `Recommendation failed (${res.status})`);
+        window.leadBrainCache = window.leadBrainCache || {};
         window.leadBrainCache[leadId] = {
             recommendation: payload.recommendation,
             confidence: payload.confidence,
@@ -1422,14 +1449,14 @@
         if (!Array.isArray(leadIds) || !leadIds.length) return;
         const apiBase = resolveApiBase();
         try {
-            const res = await fetch(`${apiBase}/api/admin/knowledge/recommendations`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/recommendations`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${state.token}`
                 },
                 body: JSON.stringify({ leadIds })
-            });
+            }, 45000);
             const payload = await res.json();
             if (res.ok && payload.success && payload.recommendations) {
                 window.leadBrainCache = { ...(window.leadBrainCache || {}), ...payload.recommendations };
@@ -1800,10 +1827,36 @@
         window.refocusInbox();
     };
 
-    window.openReplyManager = function(id, source = 'contacts') {
+    window.openReplyManager = async function(id, source = 'contacts') {
+        const table = source === 'leads' ? 'leads' : 'contacts';
         const cache = source === 'leads' ? (window.leadsCache || []) : (window.inboxCache || []);
-        const c = cache.find(x => x.id == id);
-        if(!c) return;
+        let c = cache.find((x) => x.id == id);
+        if (!c && state.token && state.token !== 'static-bypass-token') {
+            try {
+                const rows = await window.secureRead(table, {
+                    filters: [{ column: 'id', op: 'eq', value: String(id) }],
+                    limit: 1
+                });
+                const list = Array.isArray(rows) ? rows : [];
+                c = list[0];
+                if (c && table === 'contacts') {
+                    const idx = (window.inboxCache || []).findIndex((x) => x.id == id);
+                    if (idx >= 0) window.inboxCache[idx] = c;
+                    else (window.inboxCache = window.inboxCache || []).push(c);
+                } else if (c && table === 'leads') {
+                    const idx = (window.leadsCache || []).findIndex((x) => x.id == id);
+                    if (idx >= 0) window.leadsCache[idx] = c;
+                    else (window.leadsCache = window.leadsCache || []).push(c);
+                }
+            } catch (e) {
+                showToast(`THREAD LOAD FAILED: ${e.message}`);
+                return;
+            }
+        }
+        if (!c) {
+            showToast('THREAD NOT FOUND — REFRESH LIST OR LOG IN');
+            return;
+        }
 
         // Persist lightweight context for reply generation (avoids scraping DOM later)
         window.__replyContext = {
@@ -2201,7 +2254,7 @@
 
     window.downloadApprovedDoc = async function(docType, format = 'html') {
         const s = window.__docPacketState || {};
-        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         const doc = s.docs?.[docType];
         const generated = !!doc;
@@ -2219,7 +2272,7 @@
                 : format === 'pdf'
                     ? `${apiBase}/api/admin/docs/download-pdf/${encodeURIComponent(s.packetId)}/${encodeURIComponent(docType)}`
                 : `${apiBase}/api/admin/docs/download/${encodeURIComponent(s.packetId)}/${encodeURIComponent(docType)}`;
-            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${state.token}` } });
+            const res = await fetchWithTimeout(url, { headers: { 'Authorization': `Bearer ${state.token}` } }, 90000);
             const ok = res.ok;
             if (!ok) {
                 const text = await res.text();
@@ -2244,24 +2297,24 @@
             }, 500);
             showToast('DOWNLOAD STARTED');
         } catch (e) {
-            showToast(`DOWNLOAD FAILED: ${e.message}`);
+            showToast(`DOWNLOAD FAILED: ${formatNetworkError(e)}`);
         }
     };
 
     window.generateDocPacket = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.leadId) { showToast('OPEN A THREAD FIRST'); return; }
         const btn = document.getElementById('docPacketGenerateBtn');
         const orig = btn ? btn.textContent : '';
         try {
             if (btn) { btn.disabled = true; btn.textContent = 'GENERATING...'; }
             const apiBase = resolveApiBase();
-            const res = await fetch(`${apiBase}/api/admin/docs/packet`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/docs/packet`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
                 body: JSON.stringify({ leadId: s.leadId, sourceTable: s.sourceTable })
-            });
+            }, 120000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Packet failed (${res.status})`);
             window.__docPacketState.packetId = payload.packet_id;
@@ -2282,7 +2335,7 @@
     };
 
     window.uploadDocTemplate = async function(docType, file) {
-        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!file) return;
         if (!['proposal', 'agreement'].includes(docType)) { showToast('INVALID TEMPLATE TYPE'); return; }
         try {
@@ -2291,11 +2344,11 @@
             fd.append('docType', docType);
             fd.append('file', file);
             showToast(`UPLOADING ${docType.toUpperCase()} TEMPLATE...`);
-            const res = await fetch(`${apiBase}/api/admin/docs/templates/upload`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/docs/templates/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${state.token}` },
                 body: fd
-            });
+            }, 120000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Upload failed (${res.status})`);
             showToast(`${docType.toUpperCase()} TEMPLATE UPLOADED`);
@@ -2311,7 +2364,7 @@
 
     window.approveDocPacket = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         if (!window.__docPacketApprovalsChanged()) { showToast('NO CHANGES TO APPLY'); return; }
         const toggles = Array.from(document.querySelectorAll('#docPacketList .doc-approve-toggle'));
@@ -2322,11 +2375,11 @@
         try {
             if (btn) { btn.disabled = true; btn.textContent = 'APPLYING...'; }
             const apiBase = resolveApiBase();
-            const res = await fetch(`${apiBase}/api/admin/docs/approve`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/docs/approve`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
                 body: JSON.stringify({ packetId: s.packetId, approvals })
-            });
+            }, 45000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Approve failed (${res.status})`);
             // Merge approval statuses
@@ -2350,13 +2403,13 @@
 
     window.refreshDocPacketAudit = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token) return;
+        if (!state.token || state.token === 'static-bypass-token') return;
         if (!s.packetId) return;
         try {
             const apiBase = resolveApiBase();
-            const res = await fetch(`${apiBase}/api/admin/docs/audit/${encodeURIComponent(s.packetId)}`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/docs/audit/${encodeURIComponent(s.packetId)}`, {
                 headers: { 'Authorization': `Bearer ${state.token}` }
-            });
+            }, 30000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Audit failed (${res.status})`);
             window.__docPacketState.auditEvents = Array.isArray(payload.events) ? payload.events : [];
@@ -2369,7 +2422,7 @@
 
     window.sendDocPacketEmail = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         const to = String(document.getElementById('docPacketSendTo')?.value || '').trim();
         const from = String(document.getElementById('docPacketSendFrom')?.value || '').trim();
@@ -2384,11 +2437,11 @@
         try {
             if (btn) { btn.disabled = true; btn.textContent = 'SENDING...'; }
             const apiBase = resolveApiBase();
-            const res = await fetch(`${apiBase}/api/admin/docs/send`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/docs/send`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
                 body: JSON.stringify({ packetId: s.packetId, to, from, include })
-            });
+            }, 90000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) {
                 const miss = Array.isArray(payload.details?.missing) && payload.details.missing.length
@@ -2409,15 +2462,15 @@
 
     window.refreshDocPacketDeliveryStatus = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         try {
             const apiBase = resolveApiBase();
-            const res = await fetch(`${apiBase}/api/admin/docs/send-status`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/docs/send-status`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
                 body: JSON.stringify({ packetId: s.packetId })
-            });
+            }, 45000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Status failed (${res.status})`);
             showToast('DELIVERY STATUS REFRESHED');
@@ -2430,18 +2483,18 @@
 
     window.retryLastDocPacketSend = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         const events = Array.isArray(s.auditEvents) ? s.auditEvents : [];
         const failedSend = pickLatestFailedDocPacketSend(events);
         if (!failedSend || !failedSend.id) { showToast('NO FAILED SEND TO RETRY'); return; }
         try {
             const apiBase = resolveApiBase();
-            const res = await fetch(`${apiBase}/api/admin/docs/send-retry`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/docs/send-retry`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
                 body: JSON.stringify({ packetId: s.packetId, retry_of_event_id: failedSend.id })
-            });
+            }, 90000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Retry failed (${res.status})`);
             showToast(payload.message && String(payload.message).toLowerCase().includes('simulated') ? 'RETRY SIMULATED (NO API KEY)' : 'RETRY SENT');
@@ -2537,9 +2590,9 @@
         try {
             out.textContent = 'Loading template status...';
             const apiBase = resolveApiBase();
-            const res = await fetch(`${apiBase}/api/admin/docs/templates/status`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/docs/templates/status`, {
                 headers: { 'Authorization': `Bearer ${state.token}` }
-            });
+            }, 30000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Status failed (${res.status})`);
             const t = payload.templates || {};
@@ -2554,7 +2607,7 @@
         const leadId = document.getElementById('replyContactId')?.value;
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
         if (!leadId) { showToast("NO THREAD SELECTED"); return; }
-        if (!state.token) { showToast("LOGIN REQUIRED"); return; }
+        if (!state.token || state.token === 'static-bypass-token') { showToast("LOGIN REQUIRED (REAL JWT)"); return; }
         const opsBtn = document.getElementById('replyOpsBrainBtn');
         const originalOpsText = opsBtn ? opsBtn.textContent : '';
         try {
@@ -2568,14 +2621,14 @@
             if (analysisDiv) {
                 analysisDiv.innerHTML = '<div style="font-size:0.75rem;color:var(--admin-muted);">Running OTP Ops Brain...</div>';
             }
-            const res = await fetch(`${apiBase}/api/admin/knowledge/recommend`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/recommend`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${state.token}`
                 },
                 body: JSON.stringify({ leadId, sourceTable })
-            });
+            }, 50000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Ops Brain failed (${res.status})`);
             const recommendation = payload.recommendation || {};
@@ -2616,7 +2669,7 @@
             if (sourceTable === 'leads') await window.fetchLeads();
             else await window.fetchInbox();
         } catch (e) {
-            showToast(`OPS BRAIN FAILED: ${e.message}`);
+            showToast(`OPS BRAIN FAILED: ${formatNetworkError(e)}`);
         } finally {
             if (opsBtn) {
                 opsBtn.disabled = false;
@@ -2675,11 +2728,11 @@
             let opsRec = null;
             try {
                 if (state.token && leadId) {
-                    const recRes = await fetch(`${apiBase}/api/admin/knowledge/recommend`, {
+                    const recRes = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/recommend`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
                         body: JSON.stringify({ leadId, sourceTable })
-                    });
+                    }, 50000);
                     const recPayload = await recRes.json().catch(() => ({}));
                     if (recRes.ok && recPayload.success) opsRec = recPayload.recommendation || null;
                 }
@@ -2740,7 +2793,7 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
             // 1. Try Server Proxy First (Secure Hub)
             if (state.token && state.token !== 'static-bypass-token') {
                 try {
-                    const res = await fetch(apiBase + '/api/ai/chat', {
+                    const res = await fetchWithTimeout(apiBase + '/api/ai/chat', {
                         method: 'POST',
                         headers: { 
                             'Content-Type': 'application/json',
@@ -2754,15 +2807,15 @@ If Ops Brain recommends a package or safety docs, align your reply with that wor
                             modelConfig,
                             keys: personalKeys
                         })
-                    });
-                    const data = await res.json();
+                    }, 120000);
+                    const data = await res.json().catch(() => ({}));
                     if (res.ok && data.success) {
                         replyText = typeof data.data === 'string' ? data.data : JSON.stringify(data.data || '');
                     } else {
                         hubError = data.message || "Server Hub Refused Connection";
                     }
                 } catch (e) {
-                    hubError = "Secure Hub Offline";
+                    hubError = formatNetworkError(e);
                 }
             }
 
