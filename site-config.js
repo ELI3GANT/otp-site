@@ -1,5 +1,5 @@
 /**
- * OTP Site Configuration — v15.2.0
+ * OTP Site Configuration — v16.4.0
  * Centralized credentials and settings.
  * Loaded before other scripts to ensure window.OTP_CONFIG is available.
  *
@@ -7,6 +7,11 @@
  *   - Public / admin UI: Vercel (this repo) on www / preview URLs; optional mirrors (Framer, Pages).
  *   - Backend (API): same deployment on Vercel; apex may redirect /api → www (POST body unsafe on redirect).
  *   - Fallback API host: otp-site.vercel.app when origin is not this project.
+ *
+ * LOCALHOST vs LIVE (getApiBase):
+ *   - http://localhost:3000 or :8080 with `npm start` / Node: same-origin → YOUR local server.js + .env (not Vercel’s env).
+ *   - Other localhost ports (e.g. Live Server 5500): no /api on that origin → requests go to otp-site.vercel.app.
+ *   - Force live API from any page: localStorage.setItem('otp_api_base', 'https://www.onlytrueperspective.tech'); reload. Clear key to undo.
  */
 
 const _OTP_VERCEL_API = 'https://otp-site.vercel.app';
@@ -65,7 +70,7 @@ window.OTP.getApiBase = function() {
 
     // 1. Localhost dev: same-origin only when Node/server.js is actually serving /api (3000 or 8080).
     // Static servers (e.g. 5500) have no backend — must hit the deployed Vercel API.
-    if (h === 'localhost' || h === '127.0.0.1') {
+    if (h === 'localhost' || h === '127.0.0.1' || h === '::1') {
         const port = window.location.port;
         const localApiPorts = new Set(['3000', '8080']);
         if (port && localApiPorts.has(port)) {

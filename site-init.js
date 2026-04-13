@@ -1417,7 +1417,7 @@ function initSite() {
                     contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
 
-                // Important: Trigger change event so pay_v2.js can update the 'PAY NOW' button
+                // Trigger change so any listeners on package/contact UI stay in sync
                 serviceSelect.dispatchEvent(new Event('change'));
             });
         });

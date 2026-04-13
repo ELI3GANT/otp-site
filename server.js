@@ -326,8 +326,8 @@ const corsOptions = {
     origin: (origin, callback) => {
         if (!origin) return callback(null, true);
 
-        // Local dev support across arbitrary ports (Cursor previews, alt local servers).
-        const isLocalOrigin = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+        // Local dev: localhost, 127.0.0.1, IPv6 literal [::1] (any port).
+        const isLocalOrigin = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin);
         if (isLocalOrigin) return callback(null, true);
 
         if (allowedOrigins.includes(origin)) {
