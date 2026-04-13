@@ -1053,14 +1053,18 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
     try {
         let query;
         if (id) {
-            // Ensure updated_at is set for tracking
-            if (!row.updated_at) row.updated_at = new Date().toISOString();
+            // Only enforce timestamps on site_content where we control schema.
+            if (targetTable === 'site_content' && !row.updated_at) {
+                row.updated_at = new Date().toISOString();
+            }
             query = supabaseAdmin.from(targetTable).update(row).eq('id', id);
         } else {
             // INSERT
-            // Ensure created/updated timestamps exist
-            if (!row.created_at) row.created_at = new Date().toISOString();
-            if (!row.updated_at) row.updated_at = row.created_at;
+            // Only enforce timestamps on site_content where we control schema.
+            if (targetTable === 'site_content') {
+                if (!row.created_at) row.created_at = new Date().toISOString();
+                if (!row.updated_at) row.updated_at = row.created_at;
+            }
             query = supabaseAdmin.from(targetTable).insert([row]);
         }
 
