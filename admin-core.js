@@ -1823,6 +1823,7 @@
                     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
                         <button type="button" onclick="previewDocHtml('${window.escapeHtml(key)}')" class="btn-secondary" style="width:auto;font-size:0.68rem;" ${disabled ? 'disabled style="opacity:0.6;cursor:not-allowed;"' : ''}>PREVIEW</button>
                         <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'docx')" class="btn-secondary" style="width:auto;font-size:0.68rem;${(approved && (key === 'proposal' || key === 'agreement')) ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${(approved && (key === 'proposal' || key === 'agreement')) ? '' : 'disabled'}>DOWNLOAD DOCX</button>
+                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'pdf')" class="btn-secondary" style="width:auto;font-size:0.68rem;${(approved && key === 'invoice') ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${(approved && key === 'invoice') ? '' : 'disabled'}>DOWNLOAD PDF</button>
                         <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'html')" class="btn-secondary" style="width:auto;font-size:0.68rem;${approved ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${approved ? '' : 'disabled'}>DOWNLOAD HTML</button>
                     </div>
                     <div style="margin-top:10px;font-size:0.66rem;color:${approved ? 'var(--admin-success)' : '#ffaa00'};font-weight:800;letter-spacing:1px;text-transform:uppercase;">
@@ -1865,10 +1866,13 @@
         const approved = !!(s.docs?.[docType]?.approved);
         if (!approved) { showToast('APPROVAL REQUIRED'); return; }
         if (format === 'docx' && !['proposal', 'agreement'].includes(docType)) { showToast('DOCX NOT AVAILABLE'); return; }
+        if (format === 'pdf' && docType !== 'invoice') { showToast('PDF NOT AVAILABLE'); return; }
         try {
             const apiBase = window.OTP ? window.OTP.getApiBase() : '';
             const url = format === 'docx'
                 ? `${apiBase}/api/admin/docs/download-docx/${encodeURIComponent(s.packetId)}/${encodeURIComponent(docType)}`
+                : format === 'pdf'
+                    ? `${apiBase}/api/admin/docs/download-pdf/${encodeURIComponent(s.packetId)}/${encodeURIComponent(docType)}`
                 : `${apiBase}/api/admin/docs/download/${encodeURIComponent(s.packetId)}/${encodeURIComponent(docType)}`;
             const res = await fetch(url, { headers: { 'Authorization': `Bearer ${state.token}` } });
             const ok = res.ok;
@@ -1881,10 +1885,12 @@
 
             const blob = format === 'docx'
                 ? new Blob([await res.arrayBuffer()], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' })
+                : format === 'pdf'
+                    ? new Blob([await res.arrayBuffer()], { type: 'application/pdf' })
                 : new Blob([await res.text()], { type: 'text/html;charset=utf-8' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = `${docType}-${s.packetId}.${format === 'docx' ? 'docx' : 'html'}`;
+            a.download = `${docType}-${s.packetId}.${format === 'docx' ? 'docx' : (format === 'pdf' ? 'pdf' : 'html')}`;
             document.body.appendChild(a);
             a.click();
             setTimeout(() => {

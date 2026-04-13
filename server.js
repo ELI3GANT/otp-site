@@ -23,6 +23,7 @@ const sanitizeHtml = require('sanitize-html');
 const mammoth = require('mammoth');
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 
 // Safe Stripe Init
 let stripe = null;
@@ -222,6 +223,76 @@ function renderDocxFromTemplate(templateBuffer, fields) {
     doc.setData(normalizeDocxData(fields));
     doc.render();
     return doc.getZip().generate({ type: 'nodebuffer' });
+}
+
+function dollarsFromCents(cents) {
+    const n = Number(cents);
+    if (!Number.isFinite(n)) return null;
+    return `$${(n / 100).toFixed(0)}`;
+}
+
+async function renderInvoicePdf(fields) {
+    const f = normalizeDocxData(fields || {});
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const page = pdfDoc.addPage([612, 792]); // US Letter
+    const { width, height } = page.getSize();
+
+    const margin = 54;
+    let y = height - margin;
+
+    const drawText = (text, size = 11, isBold = false, color = rgb(0.1, 0.1, 0.1)) => {
+        const useFont = isBold ? fontBold : font;
+        page.drawText(String(text || ''), { x: margin, y, size, font: useFont, color });
+        y -= Math.round(size * 1.6);
+    };
+
+    // Header
+    drawText(f.sender_company || 'Only True Perspective LLC', 18, true);
+    drawText(f.sender_email || 'bookings@onlytrueperspective.tech', 11, false, rgb(0.25, 0.25, 0.25));
+    y -= 8;
+    drawText('INVOICE (50% DEPOSIT)', 14, true);
+    drawText(`Generated: ${f.generated_at || ''}`, 10, false, rgb(0.35, 0.35, 0.35));
+
+    y -= 14;
+    // Client block
+    page.drawLine({ start: { x: margin, y: y }, end: { x: width - margin, y: y }, thickness: 1, color: rgb(0.85, 0.85, 0.85) });
+    y -= 18;
+    drawText('Bill to', 12, true);
+    drawText(f.client_name || '', 12, false);
+    if (f.client_email) drawText(f.client_email, 10, false, rgb(0.35, 0.35, 0.35));
+
+    y -= 8;
+    // Line item summary
+    drawText('Line items', 12, true);
+    const pkg = f.recommended_package || 'Services';
+    const range = f.quote_range || 'Scope-based';
+    const total = dollarsFromCents(f.invoice_total_cents);
+    const deposit = dollarsFromCents(f.deposit_due_cents);
+    drawText(`${pkg} — ${range}`, 11, false);
+    if (total) drawText(`Estimated total (range floor): ${total}`, 11, false);
+    if (deposit) drawText(`Deposit due (50%): ${deposit}`, 11, true);
+
+    y -= 10;
+    drawText('Notes', 12, true);
+    drawText('Deposit is required to begin. Remaining balance due prior to final delivery.', 10, false, rgb(0.25, 0.25, 0.25));
+
+    y -= 10;
+    drawText('Required documents', 12, true);
+    drawText(f.required_documents_csv || (Array.isArray(f.required_documents) ? f.required_documents.join(', ') : 'Manual document selection required'), 10, false, rgb(0.25, 0.25, 0.25));
+
+    // Footer
+    page.drawLine({ start: { x: margin, y: margin + 48 }, end: { x: width - margin, y: margin + 48 }, thickness: 1, color: rgb(0.9, 0.9, 0.9) });
+    page.drawText('OTP Generated Draft — Admin approval required before sending.', {
+        x: margin,
+        y: margin + 28,
+        size: 9,
+        font,
+        color: rgb(0.45, 0.45, 0.45)
+    });
+
+    return Buffer.from(await pdfDoc.save());
 }
 
 const KNOWLEDGE_PREFIX = {
@@ -1880,6 +1951,37 @@ app.get('/api/admin/docs/download-docx/:packetId/:docType', verifyToken, async (
         res.send(buf);
     } catch (error) {
         console.error("docs-download-docx:", error.message);
+        res.status(500).json({ success: false, message: 'Download failed' });
+    }
+});
+
+// 2.17 Download an approved invoice as PDF
+app.get('/api/admin/docs/download-pdf/:packetId/:docType', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.params?.packetId || '').trim();
+    const docType = String(req.params?.docType || '').trim();
+    if (!packetId || !docType) return res.status(400).json({ success: false, message: 'Missing packetId/docType' });
+    if (docType !== 'invoice') return res.status(400).json({ success: false, message: 'PDF export is only enabled for invoice' });
+    try {
+        const key = `${KNOWLEDGE_PREFIX.docPacket}${packetId}`;
+        const { data: row, error: fetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('content')
+            .eq('key', key)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!row) return res.status(404).json({ success: false, message: 'Packet not found' });
+        const packet = safeJsonParse(row.content, null);
+        const doc = packet?.docs?.[docType];
+        if (!doc) return res.status(404).json({ success: false, message: 'Doc not found' });
+        if (!doc.approved) return res.status(403).json({ success: false, message: 'Doc not approved' });
+        const fields = packet?.fields || {};
+        const pdfBuf = await renderInvoicePdf(fields);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="invoice-${packetId}.pdf"`);
+        res.send(pdfBuf);
+    } catch (error) {
+        console.error("docs-download-pdf:", error.message);
         res.status(500).json({ success: false, message: 'Download failed' });
     }
 });
