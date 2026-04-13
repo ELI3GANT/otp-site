@@ -853,7 +853,9 @@ ATTACHMENTS: ${Array.isArray(attachments) ? attachments.map(a => a?.filename).fi
             })
         });
         const data = await response.json();
-        return { success: response.ok, data };
+        const payloadStatus = Number(data?.statusCode);
+        const ok = response.ok && !(Number.isFinite(payloadStatus) && payloadStatus >= 400);
+        return { success: ok, data };
     } catch (e) {
         console.error("❌ Email Sending Failed:", e.message);
         return { success: false, error: e.message };
@@ -2371,6 +2373,18 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
             packet_version: packetMeta
         };
         const auditRecord = await appendDocAudit(packetId, event);
+
+        if (!emailResult?.success) {
+            const msg = String(emailResult?.data?.message || emailResult?.error || 'Email failed');
+            return res.status(502).json({
+                success: false,
+                message: msg,
+                sent: [],
+                missing,
+                resend_email_id: resendId,
+                audit_last_hash: auditRecord?.last_hash || null
+            });
+        }
 
         res.json({
             success: true,
