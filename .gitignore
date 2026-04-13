@@ -18,3 +18,4 @@ my.env
 .gemini/
 .playwright-cli/
 output/playwright/
+.vercel

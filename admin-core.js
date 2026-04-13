@@ -141,6 +141,33 @@
         archetypes: []
     };
     window.state = state; // Expose to window for inline scripts
+    const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
+    const isLocalRuntime = () => LOCAL_HOSTS.has(window.location.hostname);
+    const isLocalApiBase = (url) => {
+        try {
+            return LOCAL_HOSTS.has(new URL(url).hostname);
+        } catch (e) {
+            return false;
+        }
+    };
+    const decodeJwtPayload = (token) => {
+        if (!token || token === 'static-bypass-token') return null;
+        try {
+            const base64Url = token.split('.')[1];
+            if (!base64Url) return null;
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+        } catch (e) {
+            return null;
+        }
+    };
+    const isSupabaseSessionToken = (token) => {
+        const payload = decodeJwtPayload(token);
+        if (!payload) return false;
+        const aud = String(payload.aud || '').toLowerCase();
+        const iss = String(payload.iss || '').toLowerCase();
+        return aud === 'authenticated' || iss.includes('/auth/v1');
+    };
 
     // 2. DIAGNOSTICS UI UPDATE
     const updateDiagnostics = (key, status, color) => {
@@ -176,9 +203,7 @@
                  if (state.token !== 'static-bypass-token') {
                      // JWT tokens are base64url encoded. Standard atob() may fail on '-' and '_'.
                      try {
-                         const base64Url = state.token.split('.')[1];
-                         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                         const payload = JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+                        const payload = decodeJwtPayload(state.token) || {};
 
                          const now = Math.floor(Date.now() / 1000);
                          if (payload.exp && payload.exp < now) {
@@ -226,14 +251,18 @@
 
         // --- AUTH HARDENING: INJECT SESSION TOKEN ---
         if (state.token && state.token !== 'static-bypass-token') {
-            console.log("🔑 Injecting secure session token...");
-            try {
-                state.client.auth.setSession({
-                    access_token: state.token,
-                    refresh_token: state.token
-                });
-            } catch (authErr) {
-                console.warn("⚠️ Session injection skipped:", authErr.message);
+            if (isSupabaseSessionToken(state.token)) {
+                console.log("🔑 Injecting secure session token...");
+                try {
+                    await state.client.auth.setSession({
+                        access_token: state.token,
+                        refresh_token: state.token
+                    });
+                } catch (authErr) {
+                    console.warn("⚠️ Session injection skipped:", authErr.message);
+                }
+            } else {
+                console.log("ℹ️ OTP token detected; skipping Supabase auth session injection.");
             }
         }
 
@@ -259,18 +288,35 @@
             const dot = document.getElementById('dbStatusDot');
             if(dot) dot.classList.add('active');
 
-            // Load Data (Parallel)
-            await Promise.allSettled([
-                fetchPosts(true),
-                fetchInbox(),
-                fetchLeads(),
-                fetchCategories(),
-                fetchArchetypes()
-            ]);
+            const canUseSecureEndpoints = !!state.token;
+            if (canUseSecureEndpoints) {
+                // Load Data (Parallel)
+                await Promise.allSettled([
+                    fetchPosts(true),
+                    fetchInbox(),
+                    fetchLeads(),
+                    (typeof window.fetchKnowledgeFiles === 'function' ? window.fetchKnowledgeFiles() : Promise.resolve()),
+                    fetchCategories(),
+                    fetchArchetypes()
+                ]);
+                if (typeof window.setupKnowledgeBrainUploader === 'function') {
+                    window.setupKnowledgeBrainUploader();
+                }
+            } else {
+                updateDiagnostics('auth', 'LOGIN REQUIRED', 'var(--admin-danger)');
+                const inbox = document.getElementById('inboxManager');
+                const leads = document.getElementById('leadsManager');
+                const posts = document.getElementById('postManager');
+                if (inbox) inbox.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED FOR SECURE INBOX</div>';
+                if (leads) leads.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED FOR LEAD DATA</div>';
+                if (posts) posts.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED FOR POST MANAGEMENT</div>';
+            }
             
             // Backup Polling (30s) - Clear existing to prevent duplicates
             if (window.otpPollInterval) clearInterval(window.otpPollInterval);
-            window.otpPollInterval = setInterval(() => fetchPosts(false), 30000);
+            if (canUseSecureEndpoints) {
+                window.otpPollInterval = setInterval(() => fetchPosts(false), 30000);
+            }
 
 
             // Live Clock System
@@ -326,14 +372,9 @@
             
             // Satellite URL: Load & Validate
             if(satUrl) {
-                let storedUrl = localStorage.getItem('otp_api_base');
-                
-                // If nothing stored yet, resolve from site-config.js logic
-                if (!storedUrl) {
-                    storedUrl = window.OTP.getApiBase();
-                    localStorage.setItem('otp_api_base', storedUrl);
-                }
-                
+                // Always hydrate from resolver so localhost cannot stay pinned to stale remote base.
+                const storedUrl = window.OTP.getApiBase();
+                localStorage.setItem('otp_api_base', storedUrl);
                 satUrl.value = storedUrl;
                 
                 satUrl.addEventListener('change', (e) => {
@@ -480,9 +521,13 @@
 
             // Sync Satellite URL (API Base)
             if (config.api_base) {
-                localStorage.setItem('otp_api_base', config.api_base);
-                const satUrl = document.getElementById('satelliteUrl');
-                if (satUrl) satUrl.value = config.api_base;
+                // On localhost, keep local API routing stable and ignore remote state pushes.
+                const shouldApplyRemoteApi = !isLocalRuntime() || isLocalApiBase(config.api_base);
+                if (shouldApplyRemoteApi) {
+                    localStorage.setItem('otp_api_base', config.api_base);
+                    const satUrl = document.getElementById('satelliteUrl');
+                    if (satUrl) satUrl.value = config.api_base;
+                }
             }
         } catch (e) { console.error("Config Fetch Error:", e); }
     }
@@ -1053,6 +1098,234 @@
         }
     };
     
+    window.knowledgeFilesCache = [];
+    window.leadBrainCache = {};
+
+    window.setupKnowledgeBrainUploader = function() {
+        const input = document.getElementById('knowledgeFileInput');
+        if (!input || input.dataset.bound === '1') return;
+        input.dataset.bound = '1';
+        input.addEventListener('change', async (event) => {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+            await window.uploadKnowledgeFiles(files);
+            input.value = '';
+        });
+    };
+
+    window.fetchKnowledgeFiles = async function() {
+        const container = document.getElementById('knowledgeFilesManager');
+        const badge = document.getElementById('knowledgeStatusBadge');
+        if (!state.token) {
+            if (badge) badge.textContent = 'INDEX: AUTH REQUIRED';
+            if (container) {
+                container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED TO LOAD KNOWLEDGE INDEX</div>';
+            }
+            return;
+        }
+        if (badge) badge.textContent = 'INDEX: SYNCING...';
+        if (container) {
+            container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">SYNCING KNOWLEDGE INDEX...</div>';
+        }
+        try {
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const res = await fetch(`${apiBase}/api/admin/knowledge/files`, {
+                headers: { 'Authorization': `Bearer ${state.token}` }
+            });
+            const payload = await res.json();
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Index failed (${res.status})`);
+
+            window.knowledgeFilesCache = payload.files || [];
+            const files = window.knowledgeFilesCache;
+            if (badge) badge.textContent = `INDEX: ${files.length} FILE${files.length === 1 ? '' : 'S'}`;
+            if (!container) return;
+            if (!files.length) {
+                container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">NO FILE INDEX YET</div>';
+                return;
+            }
+
+            container.innerHTML = files.map(file => `
+                <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:8px;background:rgba(0,0,0,0.2);">
+                    <div style="min-width:0;">
+                        <div style="font-size:0.8rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${window.escapeHtml(file.file_name || 'Untitled')}</div>
+                        <div style="font-size:0.65rem;color:var(--admin-muted);margin-top:3px;">
+                            ${(file.source_type || 'unknown').toUpperCase()} • ${file.chunk_count || 0} chunks • ${new Date(file.updated_at || Date.now()).toLocaleString()}
+                        </div>
+                    </div>
+                    <button type="button" onclick="window.deleteKnowledgeFile('${window.escapeHtml(file.file_id)}')" style="background:transparent;border:1px solid rgba(255,90,90,0.4);color:#ff8f8f;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">REMOVE</button>
+                </div>
+            `).join('');
+        } catch (e) {
+            const authRequired = /invalid or expired token|authentication required|403/i.test(String(e.message || ''));
+            if (badge) badge.textContent = 'INDEX: ERROR';
+            if (container) {
+                container.innerHTML = authRequired
+                    ? '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED TO LOAD KNOWLEDGE INDEX</div>'
+                    : `<div style="text-align:center;color:#ff8888;padding:20px;">INDEX ERROR: ${window.escapeHtml(e.message)}</div>`;
+            }
+        }
+    };
+
+    window.uploadKnowledgeFiles = async function(files) {
+        if (!Array.isArray(files) || !files.length) return;
+        if (!state.token) {
+            showToast('LOGIN REQUIRED FOR KNOWLEDGE INGEST');
+            return;
+        }
+        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        showToast(`INDEXING ${files.length} FILE${files.length === 1 ? '' : 'S'}...`);
+        let duplicateCount = 0;
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await fetch(`${apiBase}/api/admin/knowledge/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${state.token}` },
+                body: formData
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) {
+                throw new Error(payload.message || `Upload failed for ${file.name}`);
+            }
+            if (payload.duplicate) duplicateCount += 1;
+        }
+        await window.fetchKnowledgeFiles();
+        if (duplicateCount > 0) {
+            showToast(`INDEX UPDATED (${duplicateCount} DUPLICATE${duplicateCount === 1 ? '' : 'S'} SKIPPED)`);
+        } else {
+            showToast('KNOWLEDGE INDEX UPDATED');
+        }
+    };
+
+    window.deleteKnowledgeFile = async function(fileId) {
+        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        if (!fileId) return;
+        if (!confirm(`Remove indexed file ${fileId}?`)) return;
+        const res = await fetch(`${apiBase}/api/admin/knowledge/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.token}`
+            },
+            body: JSON.stringify({ fileId })
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok || !payload.success) {
+            showToast(`DELETE FAILED: ${(payload && payload.message) || res.status}`);
+            return;
+        }
+        showToast('KNOWLEDGE FILE REMOVED');
+        await window.fetchKnowledgeFiles();
+    };
+
+    window.requestLeadBrain = async function(leadId, sourceTable = 'leads') {
+        if (!state.token) throw new Error('LOGIN REQUIRED');
+        if (!leadId) throw new Error('MISSING LEAD ID');
+        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        const res = await fetch(`${apiBase}/api/admin/knowledge/recommend`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.token}`
+            },
+            body: JSON.stringify({ leadId, sourceTable })
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok || !payload.success) throw new Error(payload.message || `Recommendation failed (${res.status})`);
+        window.leadBrainCache[leadId] = {
+            recommendation: payload.recommendation,
+            confidence: payload.confidence,
+            updated_at: new Date().toISOString()
+        };
+        return payload.recommendation;
+    };
+
+    window.loadLeadBrainCache = async function(leadIds) {
+        if (!Array.isArray(leadIds) || !leadIds.length) return;
+        const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+        try {
+            const res = await fetch(`${apiBase}/api/admin/knowledge/recommendations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.token}`
+                },
+                body: JSON.stringify({ leadIds })
+            });
+            const payload = await res.json();
+            if (res.ok && payload.success && payload.recommendations) {
+                window.leadBrainCache = { ...(window.leadBrainCache || {}), ...payload.recommendations };
+            }
+        } catch (e) { /* non-blocking */ }
+    };
+
+    window.renderLeadBrainCard = function(leadId) {
+        const cache = window.leadBrainCache[leadId];
+        if (!cache || !cache.recommendation) {
+            return `
+            <div style="margin-top:12px;padding:12px;border:1px dashed var(--admin-border);border-radius:8px;background:rgba(0,0,0,0.2);">
+                <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
+                    <div style="font-size:0.67rem;color:var(--admin-muted);text-transform:uppercase;letter-spacing:1.4px;">OTP OPS BRAIN // MANUAL REVIEW GATE</div>
+                    <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:rgba(var(--accent2-rgb),0.15);border:1px solid var(--admin-cyan);color:var(--admin-cyan);font-size:0.65rem;padding:6px 10px;border-radius:6px;cursor:pointer;">ANALYZE LEAD</button>
+                </div>
+            </div>`;
+        }
+
+        const rec = cache.recommendation;
+        const confidence = Number(cache.confidence || 0);
+        const packageConfidence = Number(rec.package_confidence || confidence || 0);
+        const statusFlags = Array.isArray(rec.status_flags) ? rec.status_flags : [];
+        const badgeMap = {
+            ready: { label: 'READY', bg: 'rgba(0,255,170,0.16)', border: 'rgba(0,255,170,0.45)', color: 'var(--admin-success)' },
+            manual_review: { label: 'MANUAL REVIEW', bg: 'rgba(255,170,0,0.12)', border: 'rgba(255,170,0,0.45)', color: '#ffd37a' },
+            missing_data: { label: 'MISSING DATA', bg: 'rgba(255,100,120,0.12)', border: 'rgba(255,100,120,0.45)', color: '#ff9fb0' },
+            confidential: { label: 'CONFIDENTIAL', bg: 'rgba(170,130,255,0.12)', border: 'rgba(170,130,255,0.45)', color: '#d0bcff' },
+            media: { label: 'MEDIA INVOLVED', bg: 'rgba(120,210,255,0.12)', border: 'rgba(120,210,255,0.45)', color: '#9ce6ff' }
+        };
+        const badges = (statusFlags.length ? statusFlags : ['ready'])
+            .filter(flag => badgeMap[flag])
+            .map(flag => {
+                const b = badgeMap[flag];
+                return `<span style="font-size:0.58rem;letter-spacing:1px;text-transform:uppercase;padding:3px 7px;border-radius:999px;border:1px solid ${b.border};background:${b.bg};color:${b.color};font-weight:800;">${b.label}</span>`;
+            }).join(' ');
+        const docs = Array.isArray(rec.required_documents) ? Array.from(new Set(rec.required_documents)) : [];
+        const docsLabel = docs.length ? docs.join(', ') : 'Manual document selection required';
+        const quoteLabel = rec.quote_range || (rec.recommended_package ? 'Scope-based estimate' : 'Manual quote review');
+        const reviewTone = statusFlags.includes('manual_review') || statusFlags.includes('missing_data');
+        const nextActionLabel = rec.next_action === 'manual_scope_review_required_before_quote'
+            ? 'Manual scope review required before quoting'
+            : rec.next_action === 'send_intake_confirmation_and_prepare_agreement_invoice'
+                ? 'Proceed with intake confirmation and agreement/invoice prep'
+                : 'Manual review required';
+        return `
+        <div style="margin-top:12px;padding:12px;border:1px solid ${reviewTone ? 'rgba(255,190,90,0.35)' : 'rgba(0,255,170,0.3)'};border-radius:8px;background:${reviewTone ? 'rgba(255,170,0,0.05)' : 'rgba(0,255,170,0.04)'};">
+            <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;">
+                <div style="font-size:0.67rem;color:${reviewTone ? '#ffd37a' : 'var(--admin-success)'};text-transform:uppercase;letter-spacing:1.4px;font-weight:900;">OTP OPS BRAIN // MANUAL APPROVAL REQUIRED</div>
+                <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:transparent;border:1px solid var(--admin-border);color:var(--admin-muted);font-size:0.62rem;padding:5px 8px;border-radius:6px;cursor:pointer;">RE-RUN</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${badges}</div>
+            <div style="font-size:0.88rem;color:#fff;font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
+            <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:3px;">${window.escapeHtml(quoteLabel)}</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;">Confidence: ${(confidence * 100).toFixed(0)}%</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:2px;">Package confidence: ${(packageConfidence * 100).toFixed(0)}%</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;">Why package: ${window.escapeHtml(rec.package_reason || 'Manual review based on available lead context.')}</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(rec.documents_reason || 'Document stack selected from OTP onboarding safeguards.')}</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Next: ${window.escapeHtml(nextActionLabel)}</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;word-break:break-word;">Docs: ${window.escapeHtml(docsLabel)}</div>
+        </div>`;
+    };
+
+    window.runLeadBrain = async function(leadId) {
+        try {
+            showToast('RUNNING OPS BRAIN...');
+            await window.requestLeadBrain(leadId, 'leads');
+            await window.fetchLeads();
+            showToast('OPS BRAIN READY');
+        } catch (e) {
+            showToast(`OPS BRAIN FAILED: ${e.message}`);
+        }
+    };
+
     // --- PERSPECTIVE AUDIT LEADS ---
     window.fetchLeads = async function() {
         const leads = document.getElementById('leadsManager');
@@ -1068,6 +1341,9 @@
                 leads.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO LEADS CAPTURED YET</div>';
                 return;
             }
+
+            const ids = data.map(l => l.id).filter(Boolean);
+            await window.loadLeadBrainCache(ids);
 
             leads.innerHTML = data.map(l => {
                 let answers = l.answers || {};
@@ -1100,6 +1376,7 @@
                         <div style="font-size: 0.6rem; color: var(--admin-accent); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; font-weight: 900;">// ORACLE TRANSMISSION</div>
                         <div style="color: #eee; font-style: italic;">${window.escapeHtml(l.advice || '').replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--admin-cyan);">$1</strong>').replace(/\n/g, '<br>')}</div>
                     </div>
+                    ${window.renderLeadBrainCard(l.id)}
                 </div>
                 `;
             }).join('');
@@ -1337,6 +1614,8 @@
         document.getElementById('replyContactId').value = c.id;
         document.getElementById('replyContactEmail').value = c.email || '';
         document.getElementById('replyContactName').value = c.name || (source === 'leads' ? 'Valued Lead' : 'Client');
+        const sourceInput = document.getElementById('replySourceTable');
+        if (sourceInput) sourceInput.value = source === 'leads' ? 'leads' : 'contacts';
         
         // --- NEW WORKFLOW LOGIC ---
         const aliasLabel = document.getElementById('senderAliasLabel');
@@ -1395,6 +1674,68 @@
 
     // Focus the first actionable button or input
         setTimeout(() => document.getElementById('replyDraftContent').focus(), 100);
+    };
+
+    window.runBrainForReplyContext = async function() {
+        const leadId = document.getElementById('replyContactId')?.value;
+        const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
+        if (!leadId) { showToast("NO THREAD SELECTED"); return; }
+        if (!state.token) { showToast("LOGIN REQUIRED"); return; }
+        try {
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const analysisDiv = document.getElementById('replyAnalysis');
+            if (analysisDiv) {
+                analysisDiv.innerHTML = '<div style="font-size:0.75rem;color:var(--admin-muted);">Running OTP Ops Brain...</div>';
+            }
+            const res = await fetch(`${apiBase}/api/admin/knowledge/recommend`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.token}`
+                },
+                body: JSON.stringify({ leadId, sourceTable })
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Ops Brain failed (${res.status})`);
+            const recommendation = payload.recommendation || {};
+            if (analysisDiv) {
+                const docs = Array.isArray(recommendation.required_documents) ? Array.from(new Set(recommendation.required_documents)) : [];
+                const statusFlags = Array.isArray(recommendation.status_flags) ? recommendation.status_flags : [];
+                const statusMap = {
+                    ready: 'READY',
+                    manual_review: 'MANUAL REVIEW',
+                    missing_data: 'MISSING DATA',
+                    confidential: 'CONFIDENTIAL',
+                    media: 'MEDIA INVOLVED',
+                    tax: 'TAX WORKFLOW'
+                };
+                const statusBadges = (statusFlags.length ? statusFlags : ['ready'])
+                    .map(flag => statusMap[flag])
+                    .filter(Boolean)
+                    .map(label => `<span style="font-size:0.56rem;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:var(--admin-muted);font-weight:800;">${label}</span>`)
+                    .join(' ');
+                const nextActionLabel = recommendation.next_action === 'manual_scope_review_required_before_quote'
+                    ? 'Manual scope review required before quoting'
+                    : recommendation.next_action === 'send_intake_confirmation_and_prepare_agreement_invoice'
+                        ? 'Proceed with intake confirmation and agreement/invoice prep'
+                        : (recommendation.next_action || 'manual_review_required');
+                analysisDiv.innerHTML = `
+                    <div style="background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.25); border-radius: 8px; padding: 12px;">
+                        <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.4px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP OPS BRAIN (MANUAL APPROVAL REQUIRED)</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${statusBadges}</div>
+                        <div style="font-size:0.85rem;color:#fff;font-weight:700;">${window.escapeHtml(recommendation.recommended_package || 'Manual Review')}</div>
+                        <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:4px;">${window.escapeHtml(recommendation.quote_range || 'Scope-based')}</div>
+                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;line-height:1.45;">Why package: ${window.escapeHtml(recommendation.package_reason || 'Scope and pricing signals used.')}</div>
+                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(recommendation.documents_reason || 'OTP safety docs selected from context.')}</div>
+                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">${window.escapeHtml(docs.join(', ') || 'Manual document review required')}</div>
+                        <div style="font-size:0.67rem;color:var(--admin-muted);margin-top:7px;">${window.escapeHtml(nextActionLabel)}</div>
+                    </div>`;
+            }
+            showToast("OPS BRAIN READY");
+            if (sourceTable === 'leads') await window.fetchLeads();
+        } catch (e) {
+            showToast(`OPS BRAIN FAILED: ${e.message}`);
+        }
     };
 
     // NEW: Generate AI Reply for Lead
@@ -3726,8 +4067,10 @@ Lang: ${u.lang || 'Unknown'}</div>
     setInterval(window.checkSystemHealth, 30000);
     window.checkSystemHealth();
 
-    // DELAYED TRAFFIC BOOT
-    setTimeout(initTrafficUplink, 2000);
+    // DELAYED TRAFFIC BOOT (secure mode only)
+    if (state.token) {
+        setTimeout(initTrafficUplink, 2000);
+    }
 
     // --- VERSION SYSTEM LOGIC ---
     window.openVersionManager = function() {

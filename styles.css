@@ -27,8 +27,16 @@ body {
 }
 
 /* ZERO-BLUR THEME SWITCHING (Hardened for Mobile) */
-html.is-theme-switching,
-html.is-theme-switching * {
+html.is-theme-switching body,
+html.is-theme-switching .bg-fixed,
+html.is-theme-switching .nav,
+html.is-theme-switching .card,
+html.is-theme-switching .service,
+html.is-theme-switching .result-card,
+html.is-theme-switching .package-static,
+html.is-theme-switching .hero-bg,
+html.is-theme-switching .luxe-title .title,
+html.is-theme-switching .luxe-title .title * {
     transition: none !important;
     animation-duration: 0s !important;
     backdrop-filter: none !important;
@@ -6224,14 +6232,14 @@ input:focus, select:focus, textarea:focus {
 
 
 @keyframes title-neon-cycle {
-  0%, 100% { -webkit-text-stroke: 2px rgb(0, 236, 255); filter: drop-shadow(0 0 8px rgba(0, 236, 255, 0.28)); color: transparent !important; }
-  12% { -webkit-text-stroke: 2px rgb(170, 0, 255); filter: drop-shadow(0 0 8px rgba(170, 0, 255, 0.28)); color: transparent !important; }
-  25% { -webkit-text-stroke: 2px rgb(255, 0, 170); filter: drop-shadow(0 0 8px rgba(255, 0, 170, 0.28)); color: transparent !important; }
-  37% { -webkit-text-stroke: 2px rgb(50, 255, 126); filter: drop-shadow(0 0 8px rgba(50, 255, 126, 0.28)); color: transparent !important; }
-  50% { -webkit-text-stroke: 2px rgb(255, 215, 0); filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.28)); color: transparent !important; }
-  62% { -webkit-text-stroke: 2px rgb(255, 60, 0); filter: drop-shadow(0 0 8px rgba(255, 60, 0, 0.28)); color: transparent !important; }
-  75% { -webkit-text-stroke: 2px rgb(30, 144, 255); filter: drop-shadow(0 0 8px rgba(30, 144, 255, 0.28)); color: transparent !important; }
-  87% { -webkit-text-stroke: 2px rgb(255, 50, 50); filter: drop-shadow(0 0 8px rgba(255, 50, 50, 0.28)); color: transparent !important; }
+  0%, 100% { -webkit-text-stroke: 2px rgb(0, 236, 255); filter: none; color: transparent !important; }
+  12% { -webkit-text-stroke: 2px rgb(170, 0, 255); filter: none; color: transparent !important; }
+  25% { -webkit-text-stroke: 2px rgb(255, 0, 170); filter: none; color: transparent !important; }
+  37% { -webkit-text-stroke: 2px rgb(50, 255, 126); filter: none; color: transparent !important; }
+  50% { -webkit-text-stroke: 2px rgb(255, 215, 0); filter: none; color: transparent !important; }
+  62% { -webkit-text-stroke: 2px rgb(255, 60, 0); filter: none; color: transparent !important; }
+  75% { -webkit-text-stroke: 2px rgb(30, 144, 255); filter: none; color: transparent !important; }
+  87% { -webkit-text-stroke: 2px rgb(255, 50, 50); filter: none; color: transparent !important; }
 }
 
 [data-theme="light"] .luxe-title .title {

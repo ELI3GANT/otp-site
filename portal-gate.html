@@ -209,7 +209,7 @@
             window.location.href = 'otp-terminal.html';
         }
     </script>
-    <script src="site-config.js?v=16.4.2"></script>
+    <script src="site-config.js?v=16.4.3"></script>
 
     <main class="terminal-container">
         <header class="term-header">
@@ -316,8 +316,29 @@
                             body: JSON.stringify({ passcode: pass })
                         }, 10000);
                     } catch (retryErr) {
-                        showError("ERROR: SERVER UNREACHABLE — CHECK CONNECTION");
-                        return;
+                        // Localhost rescue path: if a stale remote API base is saved,
+                        // retry directly against the current origin once.
+                        const localHosts = new Set(['localhost', '127.0.0.1', '::1']);
+                        const isLocal = localHosts.has(window.location.hostname);
+                        const localPorts = new Set(['3000', '8080']);
+                        const canUseLocalApi = isLocal && localPorts.has(window.location.port);
+                        if (!canUseLocalApi) {
+                            showError("ERROR: SERVER UNREACHABLE — CHECK CONNECTION");
+                            return;
+                        }
+
+                        try {
+                            const localBase = window.location.origin;
+                            localStorage.setItem('otp_api_base', localBase);
+                            res = await fetchWithTimeout(localBase + '/api/auth/login', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ passcode: pass })
+                            }, 10000);
+                        } catch (localErr) {
+                            showError("ERROR: SERVER UNREACHABLE — CHECK CONNECTION");
+                            return;
+                        }
                     }
                 }
 

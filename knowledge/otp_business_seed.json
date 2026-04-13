@@ -1,0 +1,42 @@
+{
+  "business_identity": {
+    "name": "OnlyTruePerspective LLC",
+    "owner": "Elijah Huertas",
+    "entity_type": "Single-member LLC",
+    "services": [
+      "websites",
+      "video editing",
+      "filming",
+      "photography",
+      "branding",
+      "AI creative work",
+      "digital services"
+    ]
+  },
+  "pricing_source_of_truth": {
+    "signature_packages": [
+      { "name": "The Signal", "range": "$250+" },
+      { "name": "The Engine", "range": "$500-$800", "default_for_growth_projects": true },
+      { "name": "The System", "range": "$1,200+" }
+    ],
+    "specialized_services": [
+      { "name": "Starter Website Build", "range": "From $199" },
+      { "name": "Business Website Pro", "range": "From $399" },
+      { "name": "Custom Website Architecture", "range": "From $750" },
+      { "name": "Video Editing Services", "range": "$50-$400+" },
+      { "name": "Filming / Production", "range": "$100/hour minimum" },
+      { "name": "Photography Sessions", "range": "From $125" },
+      { "name": "AI Promo / Digital Creative", "range": "From $150" }
+    ]
+  },
+  "document_logic": {
+    "standard_project": [
+      "Proposal",
+      "Client Service Agreement",
+      "Invoice"
+    ],
+    "confidential_project_add": ["Mutual NDA"],
+    "identifiable_adult_media_add": ["Adult Media Release"],
+    "tax_vendor_request_note": "Provide official W-9 workflow note"
+  }
+}

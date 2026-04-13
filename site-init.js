@@ -223,6 +223,20 @@ window.OTP.normalizeScarcityCopy = function() {
     }
 };
 
+window.OTP.isManualThemeActive = function() {
+    const isManual = localStorage.getItem('theme_manual') === 'true';
+    if (!isManual) return false;
+    const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
+    const active = !!manualTime && Date.now() - manualTime <= 12 * 60 * 60 * 1000;
+    if (!active) {
+        try {
+            localStorage.removeItem('theme_manual');
+            localStorage.removeItem('theme_manual_time');
+        } catch (e) { /* ignore */ }
+    }
+    return active;
+};
+
 window.OTP.setTheme = function(theme, isManual = false) {
     const html = document.documentElement;
     const rootStyle = html.style;
@@ -635,8 +649,10 @@ window.OTP.initRealtimeState = async function() {
             
             // Apply Theme
             if (config.theme && !window.location.pathname.includes('otp-terminal')) {
-                const isManual = localStorage.getItem('theme_manual') === 'true';
-                if (!isManual) {
+                const manualActive = typeof window.OTP.isManualThemeActive === 'function'
+                    ? window.OTP.isManualThemeActive()
+                    : (localStorage.getItem('theme_manual') === 'true');
+                if (!manualActive) {
                     window.OTP.setTheme(config.theme);
                 }
             }
@@ -668,7 +684,11 @@ window.OTP.initRealtimeState = async function() {
         }
 
         if (type === 'theme') {
-            window.OTP.setTheme(value, true);
+            // Respect active local manual choice; avoid remote flicker/override loops.
+            if (typeof window.OTP.isManualThemeActive === 'function' && window.OTP.isManualThemeActive()) {
+                return;
+            }
+            window.OTP.setTheme(value, false);
             localStorage.setItem('theme', value); // Force overwrite user pref
             localStorage.setItem('last_global_theme', value);
             
@@ -1890,8 +1910,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // A. THEME
         if (config.theme) {
+            const manualActive = typeof window.OTP.isManualThemeActive === 'function'
+                ? window.OTP.isManualThemeActive()
+                : (localStorage.getItem('theme_manual') === 'true');
+            if (manualActive) return;
             if (window.OTP && typeof window.OTP.setTheme === 'function') {
-                window.OTP.setTheme(config.theme, true);
+                window.OTP.setTheme(config.theme, false);
             } else {
                 if (config.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
                 else document.documentElement.removeAttribute('data-theme');

@@ -62,9 +62,23 @@ window.OTP.sanitizeHtml = function(html) {
 
 window.OTP.getApiBase = function() {
     const stored = localStorage.getItem('otp_api_base');
-    if (stored && stored.startsWith('http')) return stored;
-
     const h = window.location.hostname;
+    const isLocalHost = (h === 'localhost' || h === '127.0.0.1' || h === '::1');
+    const localApiPorts = new Set(['3000', '8080']);
+
+    if (stored && stored.startsWith('http')) {
+        // Safety: on localhost, stale remote overrides can break login with
+        // "server unreachable". Prefer local API unless override is local too.
+        if (!isLocalHost) return stored;
+        try {
+            const storedHost = new URL(stored).hostname;
+            if (storedHost === 'localhost' || storedHost === '127.0.0.1' || storedHost === '::1') {
+                return stored;
+            }
+        } catch (e) {
+            // ignore malformed override and continue with auto resolution
+        }
+    }
 
     // Live / preview: same-origin API (Vercel serverless + static).
     if (h.endsWith('.vercel.app')) {
@@ -82,9 +96,8 @@ window.OTP.getApiBase = function() {
     }
 
     // Local Node only when server.js actually serves /api (other localhost ports → deployed API).
-    if (h === 'localhost' || h === '127.0.0.1' || h === '::1') {
+    if (isLocalHost) {
         const port = window.location.port;
-        const localApiPorts = new Set(['3000', '8080']);
         if (port && localApiPorts.has(port)) {
             return window.location.origin;
         }
