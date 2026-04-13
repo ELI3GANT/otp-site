@@ -231,7 +231,7 @@ function dollarsFromCents(cents) {
     return `$${(n / 100).toFixed(0)}`;
 }
 
-async function renderInvoicePdf(fields) {
+async function renderInvoicePdf(fields, packetId = '') {
     const f = normalizeDocxData(fields || {});
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -239,59 +239,174 @@ async function renderInvoicePdf(fields) {
     const page = pdfDoc.addPage([612, 792]); // US Letter
     const { width, height } = page.getSize();
 
-    const margin = 54;
-    let y = height - margin;
+    // OTP brand palette (dark + cyan accent)
+    const ink = rgb(0.06, 0.07, 0.09);
+    const paper = rgb(0.98, 0.98, 0.99);
+    const muted = rgb(0.35, 0.38, 0.44);
+    const accent = rgb(0.0, 0.92, 1.0); // cyan
 
-    const drawText = (text, size = 11, isBold = false, color = rgb(0.1, 0.1, 0.1)) => {
-        const useFont = isBold ? fontBold : font;
-        page.drawText(String(text || ''), { x: margin, y, size, font: useFont, color });
-        y -= Math.round(size * 1.6);
+    // Background
+    page.drawRectangle({ x: 0, y: 0, width, height, color: paper });
+
+    const margin = 54;
+    const contentW = width - margin * 2;
+
+    // Try to embed a logo image from site (JPG); fallback to text mark if unavailable.
+    let logoImage = null;
+    try {
+        const logoUrl = 'https://onlytrueperspective.tech/og.jpg';
+        const res = await fetch(logoUrl);
+        if (res.ok) {
+            const ab = await res.arrayBuffer();
+            logoImage = await pdfDoc.embedJpg(ab);
+        }
+    } catch (e) {
+        logoImage = null;
+    }
+
+    // Header bar
+    const headerH = 96;
+    page.drawRectangle({ x: 0, y: height - headerH, width, height: headerH, color: ink });
+    // Accent line
+    page.drawRectangle({ x: 0, y: height - headerH, width, height: 3, color: accent });
+
+    // Logo / mark
+    const leftX = margin;
+    const headerY = height - 34;
+    if (logoImage) {
+        const targetH = 44;
+        const scale = targetH / logoImage.height;
+        const drawW = logoImage.width * scale;
+        page.drawImage(logoImage, { x: leftX, y: height - headerH + 26, width: drawW, height: targetH, opacity: 0.92 });
+        page.drawText('ONLY TRUE PERSPECTIVE', { x: leftX + drawW + 10, y: height - headerH + 48, size: 10, font: fontBold, color: rgb(0.9, 0.93, 0.98) });
+        page.drawText('Tactical Visual Intelligence', { x: leftX + drawW + 10, y: height - headerH + 33, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
+    } else {
+        page.drawText('ONLY TRUE PERSPECTIVE', { x: leftX, y: height - headerH + 48, size: 12, font: fontBold, color: rgb(0.92, 0.94, 0.98) });
+        page.drawText('Tactical Visual Intelligence', { x: leftX, y: height - headerH + 32, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
+    }
+
+    // Invoice meta (right)
+    const invNum = packetId ? `INV-${String(packetId).replace(/[^a-zA-Z0-9]/g, '').slice(-10).toUpperCase()}` : 'INV-DRAFT';
+    const invDate = String(f.generated_at || '').slice(0, 10) || '';
+    const rightX = width - margin;
+    const drawRight = (label, value, y) => {
+        const labelW = font.widthOfTextAtSize(label, 8);
+        const valueW = fontBold.widthOfTextAtSize(value, 10);
+        page.drawText(label, { x: rightX - Math.max(labelW, valueW), y, size: 8, font, color: rgb(0.7, 0.73, 0.8) });
+        page.drawText(value, { x: rightX - valueW, y: y - 14, size: 10, font: fontBold, color: rgb(0.92, 0.94, 0.98) });
+    };
+    drawRight('INVOICE #', invNum, headerY);
+    drawRight('DATE', invDate || '—', headerY - 34);
+
+    // Content start
+    let y = height - headerH - 28;
+
+    const drawSectionTitle = (title) => {
+        page.drawText(title, { x: margin, y, size: 11, font: fontBold, color: rgb(0.08, 0.09, 0.12) });
+        // subtle underline
+        page.drawRectangle({ x: margin, y: y - 6, width: 52, height: 2, color: accent, opacity: 0.55 });
+        y -= 22;
     };
 
-    // Header
-    drawText(f.sender_company || 'Only True Perspective LLC', 18, true);
-    drawText(f.sender_email || 'bookings@onlytrueperspective.tech', 11, false, rgb(0.25, 0.25, 0.25));
-    y -= 8;
-    drawText('INVOICE (50% DEPOSIT)', 14, true);
-    drawText(`Generated: ${f.generated_at || ''}`, 10, false, rgb(0.35, 0.35, 0.35));
+    const drawKV = (k, v, x, y0, kSize = 8, vSize = 10) => {
+        page.drawText(String(k || ''), { x, y: y0, size: kSize, font, color: muted });
+        page.drawText(String(v || ''), { x, y: y0 - 14, size: vSize, font: fontBold, color: rgb(0.08, 0.09, 0.12) });
+    };
 
-    y -= 14;
-    // Client block
-    page.drawLine({ start: { x: margin, y: y }, end: { x: width - margin, y: y }, thickness: 1, color: rgb(0.85, 0.85, 0.85) });
-    y -= 18;
-    drawText('Bill to', 12, true);
-    drawText(f.client_name || '', 12, false);
-    if (f.client_email) drawText(f.client_email, 10, false, rgb(0.35, 0.35, 0.35));
+    // Bill to / project
+    drawSectionTitle('BILL TO');
+    const colGap = 18;
+    const colW = (contentW - colGap) / 2;
+    drawKV('CLIENT', f.client_name || '—', margin, y);
+    drawKV('EMAIL', f.client_email || '—', margin, y - 40);
+    drawKV('PROJECT', f.recommended_package || '—', margin + colW + colGap, y);
+    drawKV('QUOTE RANGE', f.quote_range || 'Scope-based', margin + colW + colGap, y - 40);
+    y -= 86;
 
-    y -= 8;
-    // Line item summary
-    drawText('Line items', 12, true);
-    const pkg = f.recommended_package || 'Services';
-    const range = f.quote_range || 'Scope-based';
-    const total = dollarsFromCents(f.invoice_total_cents);
-    const deposit = dollarsFromCents(f.deposit_due_cents);
-    drawText(`${pkg} — ${range}`, 11, false);
-    if (total) drawText(`Estimated total (range floor): ${total}`, 11, false);
-    if (deposit) drawText(`Deposit due (50%): ${deposit}`, 11, true);
+    // Line items table
+    drawSectionTitle('LINE ITEMS');
+    const tableX = margin;
+    const tableW = contentW;
+    const rowH = 24;
+    const headerRowH = 26;
+    const cols = [
+        { key: 'desc', label: 'DESCRIPTION', w: Math.round(tableW * 0.54) },
+        { key: 'qty', label: 'QTY', w: Math.round(tableW * 0.10) },
+        { key: 'rate', label: 'RATE', w: Math.round(tableW * 0.18) },
+        { key: 'amt', label: 'AMOUNT', w: Math.round(tableW * 0.18) }
+    ];
+    // header background
+    page.drawRectangle({ x: tableX, y: y - headerRowH + 6, width: tableW, height: headerRowH, color: rgb(0.94, 0.95, 0.97) });
+    // header text
+    let cx = tableX + 10;
+    for (const c of cols) {
+        page.drawText(c.label, { x: cx, y: y, size: 8, font: fontBold, color: rgb(0.25, 0.28, 0.34) });
+        cx += c.w;
+    }
+    y -= headerRowH;
 
+    const totalCents = Number.isFinite(Number(f.invoice_total_cents)) ? Number(f.invoice_total_cents) : null;
+    const depositCents = Number.isFinite(Number(f.deposit_due_cents)) ? Number(f.deposit_due_cents) : null;
+    const remainingCents = (totalCents != null && depositCents != null) ? Math.max(0, totalCents - depositCents) : null;
+
+    const lineDesc = `${f.recommended_package || 'Services'} — ${String(f.lead_summary || '').trim().slice(0, 90) || 'Scope-based engagement'}`;
+    const rateLabel = totalCents != null ? dollarsFromCents(totalCents) : (f.quote_range || 'Scope-based');
+    const amtLabel = rateLabel;
+
+    // row background
+    page.drawRectangle({ x: tableX, y: y - rowH + 6, width: tableW, height: rowH, color: rgb(0.99, 0.99, 0.995) });
+    // row text
+    const drawCell = (text, x, y0, size = 9, bold = false, color = rgb(0.10, 0.11, 0.14)) => {
+        page.drawText(String(text || ''), { x, y: y0, size, font: bold ? fontBold : font, color });
+    };
+    cx = tableX + 10;
+    drawCell(lineDesc, cx, y, 9, false);
+    cx += cols[0].w;
+    drawCell('1', cx, y, 9, true);
+    cx += cols[1].w;
+    drawCell(rateLabel || '—', cx, y, 9, false);
+    cx += cols[2].w;
+    drawCell(amtLabel || '—', cx, y, 9, true);
+    y -= rowH + 10;
+
+    // Totals box (right aligned)
+    const totalsW = 220;
+    const totalsX = margin + contentW - totalsW;
+    const totalsYTop = y;
+    page.drawRectangle({ x: totalsX, y: totalsYTop - 86, width: totalsW, height: 86, color: rgb(0.94, 0.97, 0.99), borderColor: rgb(0.86, 0.9, 0.95), borderWidth: 1 });
+    const tRow = (label, value, yy, bold = false, color = rgb(0.12, 0.13, 0.16)) => {
+        page.drawText(label, { x: totalsX + 12, y: yy, size: 9, font: bold ? fontBold : font, color: muted });
+        const v = String(value || '—');
+        const vw = (bold ? fontBold : font).widthOfTextAtSize(v, 10);
+        page.drawText(v, { x: totalsX + totalsW - 12 - vw, y: yy, size: 10, font: bold ? fontBold : font, color });
+    };
+    tRow('Subtotal', totalCents != null ? dollarsFromCents(totalCents) : (f.quote_range || 'Scope-based'), totalsYTop - 20);
+    tRow('Deposit due', depositCents != null ? dollarsFromCents(depositCents) : (f.deposit_due || 'Scope-based'), totalsYTop - 42, true, rgb(0.0, 0.55, 0.62));
+    tRow('Remaining', remainingCents != null ? dollarsFromCents(remainingCents) : 'TBD', totalsYTop - 64);
+    y -= 104;
+
+    // Payment methods (client-ready)
+    drawSectionTitle('PAYMENT METHODS');
+    const payLines = [
+        'Stripe (Card): invoice link sent after approval (or request manual link).',
+        'ACH / Bank Transfer: available on request for business clients.',
+        'Email: bookings@onlytrueperspective.tech'
+    ];
+    for (const line of payLines) {
+        page.drawText(`• ${line}`, { x: margin, y, size: 9.5, font, color: rgb(0.18, 0.2, 0.25) });
+        y -= 16;
+    }
+
+    // Required docs (small)
     y -= 10;
-    drawText('Notes', 12, true);
-    drawText('Deposit is required to begin. Remaining balance due prior to final delivery.', 10, false, rgb(0.25, 0.25, 0.25));
-
-    y -= 10;
-    drawText('Required documents', 12, true);
-    drawText(f.required_documents_csv || (Array.isArray(f.required_documents) ? f.required_documents.join(', ') : 'Manual document selection required'), 10, false, rgb(0.25, 0.25, 0.25));
+    drawSectionTitle('ONBOARDING CHECKLIST');
+    const docsLine = f.required_documents_csv
+        || (Array.isArray(f.required_documents) ? f.required_documents.join(', ') : 'Manual document selection required');
+    page.drawText(docsLine, { x: margin, y, size: 9.2, font, color: rgb(0.18, 0.2, 0.25) });
 
     // Footer
-    page.drawLine({ start: { x: margin, y: margin + 48 }, end: { x: width - margin, y: margin + 48 }, thickness: 1, color: rgb(0.9, 0.9, 0.9) });
-    page.drawText('OTP Generated Draft — Admin approval required before sending.', {
-        x: margin,
-        y: margin + 28,
-        size: 9,
-        font,
-        color: rgb(0.45, 0.45, 0.45)
-    });
-
+    page.drawRectangle({ x: 0, y: 0, width, height: 28, color: rgb(0.97, 0.97, 0.98) });
+    page.drawText('Only True Perspective LLC • Admin-approved export', { x: margin, y: 10, size: 8.5, font, color: muted });
     return Buffer.from(await pdfDoc.save());
 }
 
@@ -1976,7 +2091,7 @@ app.get('/api/admin/docs/download-pdf/:packetId/:docType', verifyToken, async (r
         if (!doc) return res.status(404).json({ success: false, message: 'Doc not found' });
         if (!doc.approved) return res.status(403).json({ success: false, message: 'Doc not approved' });
         const fields = packet?.fields || {};
-        const pdfBuf = await renderInvoicePdf(fields);
+        const pdfBuf = await renderInvoicePdf(fields, packetId);
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="invoice-${packetId}.pdf"`);
         res.send(pdfBuf);
