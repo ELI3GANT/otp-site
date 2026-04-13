@@ -1134,26 +1134,45 @@ app.post('/api/admin/fetch-data', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
 
     try {
-        let query = supabaseAdmin.from(table).select(safeSelect);
-        
-        // Apply basic filters if any
-        (Array.isArray(filters) ? filters : []).forEach(f => {
-            if (!f || typeof f.column !== 'string' || !ident.test(f.column)) return;
-            if (f.op === 'eq') query = query.eq(f.column, f.value);
-            if (f.op === 'neq') query = query.neq(f.column, f.value);
-        });
+        const applyFilters = (q) => {
+            (Array.isArray(filters) ? filters : []).forEach(f => {
+                if (!f || typeof f.column !== 'string' || !ident.test(f.column)) return;
+                if (f.op === 'eq') q = q.eq(f.column, f.value);
+                if (f.op === 'neq') q = q.neq(f.column, f.value);
+            });
+            return q;
+        };
 
-        query = query.order(safeOrder, { ascending: !descending });
+        const applyLimit = (q) => {
+            if (limit && Number.isInteger(limit) && limit > 0) return q.limit(limit);
+            return q;
+        };
 
-        // Apply limit if provided
-        if (limit && Number.isInteger(limit) && limit > 0) {
-            query = query.limit(limit);
+        const buildQuery = ({ selectValue = safeSelect, orderValue = safeOrder, withOrder = true }) => {
+            let q = supabaseAdmin.from(table).select(selectValue);
+            q = applyFilters(q);
+            if (withOrder) q = q.order(orderValue, { ascending: !descending });
+            q = applyLimit(q);
+            return q;
+        };
+
+        const isMissingColumnError = (err) => {
+            const msg = String(err && err.message ? err.message : '').toLowerCase();
+            return msg.includes('column') && msg.includes('does not exist');
+        };
+
+        let result = await buildQuery({ selectValue: safeSelect, orderValue: safeOrder, withOrder: true });
+        if (result.error && isMissingColumnError(result.error)) {
+            // Schema drift safety: retry with broad select and stable ordering.
+            result = await buildQuery({ selectValue: '*', orderValue: 'created_at', withOrder: true });
+            if (result.error && isMissingColumnError(result.error)) {
+                // Last fallback for tables without created_at.
+                result = await buildQuery({ selectValue: '*', withOrder: false });
+            }
         }
 
-        const { data, error } = await query;
-        
-        if (error) throw error;
-        res.json({ success: true, data });
+        if (result.error) throw result.error;
+        res.json({ success: true, data: result.data });
 
     } catch (error) {
         console.error(`Fetch Error [${table}]:`, error.message);
