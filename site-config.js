@@ -69,7 +69,16 @@ window.OTP.getApiBase = function() {
     if (stored && stored.startsWith('http')) {
         // Safety: on localhost, stale remote overrides can break login with
         // "server unreachable". Prefer local API unless override is local too.
-        if (!isLocalHost) return stored;
+        try {
+            const storedUrl = new URL(stored);
+            // Apex can 307 /api requests to www, which breaks CORS preflights for POST.
+            if (storedUrl.hostname === 'onlytrueperspective.tech') {
+                return _OTP_CANONICAL_WWW;
+            }
+            if (!isLocalHost) return storedUrl.origin;
+        } catch (e) {
+            if (!isLocalHost) return stored;
+        }
         try {
             const storedHost = new URL(stored).hostname;
             if (storedHost === 'localhost' || storedHost === '127.0.0.1' || storedHost === '::1') {
