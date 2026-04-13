@@ -822,7 +822,7 @@ const BUSINESS_EMAILS = {
     INFO: 'info@onlytrueperspective.tech'
 };
 
-async function sendSecureEmail({ to, subject, html, text, from = BUSINESS_EMAILS.CONTACT, attachments = null }) {
+async function sendSecureEmail({ to, subject, html, text, from = BUSINESS_EMAILS.CONTACT, replyTo = null, attachments = null }) {
     const key = process.env.RESEND_API_KEY; // Recommended service
     
     // For local dev/demo, we log the intent if no key exists
@@ -849,6 +849,7 @@ ATTACHMENTS: ${Array.isArray(attachments) ? attachments.map(a => a?.filename).fi
             body: JSON.stringify({
                 from: `OnlyTruePerspective <${from}>`,
                 to: [to],
+                reply_to: replyTo ? String(replyTo) : undefined,
                 subject,
                 html,
                 text,
@@ -2273,6 +2274,7 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
     const packetId = String(req.body?.packetId || '').trim();
     const to = safeEmail(req.body?.to);
     const from = safeEmail(req.body?.from) || BUSINESS_EMAILS.BOOKINGS;
+    const replyTo = BUSINESS_EMAILS.BOOKINGS; // Default replies to Google Workspace bookings inbox
     const include = Array.isArray(req.body?.include) ? req.body.include.map(v => String(v).trim()).filter(Boolean) : [];
     if (!packetId) return res.status(400).json({ success: false, message: 'Missing packetId' });
     if (!to) return res.status(400).json({ success: false, message: 'Missing/invalid recipient email' });
@@ -2355,7 +2357,7 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
         `;
         const text = `Attached are your approved documents from Only True Perspective.\n\nIncluded: ${list}\n\nReply to this email if anything needs adjustment.\n\nOnly True Perspective\n${from}`;
 
-        const emailResult = await sendSecureEmail({ to, from, subject, html, text, attachments });
+        const emailResult = await sendSecureEmail({ to, from, replyTo, subject, html, text, attachments });
         const resendId = String(emailResult?.data?.id || '').trim() || null;
 
         // Audit trail (append-only)
@@ -2364,6 +2366,7 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
             actor: req.auth?.role || 'admin',
             to,
             from,
+            reply_to: replyTo,
             include: toSend,
             attachments: attachments.map(a => ({ filename: a.filename, content_type: a.content_type })),
             attachment_verification: verification,
@@ -2513,6 +2516,7 @@ app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
         const toSend = (Array.isArray(req.body.include) ? req.body.include : []).filter(d => allowedDocs.has(String(d)));
         const to = safeEmail(base.to);
         const from = safeEmail(base.from) || BUSINESS_EMAILS.BOOKINGS;
+        const replyTo = BUSINESS_EMAILS.BOOKINGS;
         if (!to || !toSend.length) return res.status(400).json({ success: false, message: 'Retry payload invalid' });
 
         const attachments = [];
@@ -2550,7 +2554,7 @@ app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
         const list = attachments.map(a => a.filename).join(', ');
         const html = `<div style="font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial; line-height:1.6; color:#111;"><p>Attached are your approved documents from Only True Perspective.</p><p style="margin:0 0 10px;"><strong>Included:</strong> ${escapeHtmlForEmail(list)}</p><p>If anything needs adjustment, reply to this email and we’ll handle it.</p><p style="margin-top:18px;"><strong>Only True Perspective</strong><br/>${escapeHtmlForEmail(from)}</p></div>`;
         const text = `Attached are your approved documents from Only True Perspective.\n\nIncluded: ${list}\n\nReply to this email if anything needs adjustment.\n\nOnly True Perspective\n${from}`;
-        const emailResult = await sendSecureEmail({ to, from, subject, html, text, attachments });
+        const emailResult = await sendSecureEmail({ to, from, replyTo, subject, html, text, attachments });
         const resendId = String(emailResult?.data?.id || '').trim() || null;
 
         const auditRecord = await appendDocAudit(packetId, {
@@ -2558,6 +2562,7 @@ app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
             actor: req.auth?.role || 'admin',
             to,
             from,
+            reply_to: replyTo,
             include: toSend,
             attachments: attachments.map(a => ({ filename: a.filename, content_type: a.content_type })),
             attachment_verification: verification,
