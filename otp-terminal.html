@@ -931,7 +931,11 @@
                             <strong style="color:var(--admin-text);">Send to client (Approval-gated)</strong><br/>
                             Only approved documents can be sent. Sending is logged to an audit trail.
                         </div>
-                        <button id="docPacketAuditRefreshBtn" type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="refreshDocPacketAudit()">REFRESH AUDIT</button>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+                            <button id="docPacketAuditRefreshBtn" type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="refreshDocPacketAudit()">REFRESH AUDIT</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="refreshDocPacketDeliveryStatus()">REFRESH DELIVERY</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="retryLastDocPacketSend()">RETRY FAILED SEND</button>
+                        </div>
                     </div>
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px;align-items:end;">
                         <div>

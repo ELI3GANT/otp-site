@@ -2155,7 +2155,7 @@ async function getDocPacketOrThrow(packetId) {
     const key = `${KNOWLEDGE_PREFIX.docPacket}${packetId}`;
     const { data: row, error: fetchError } = await supabaseAdmin
         .from('site_content')
-        .select('content')
+        .select('content, updated_at, key')
         .eq('key', key)
         .maybeSingle();
     if (fetchError) throw fetchError;
@@ -2170,7 +2170,17 @@ async function getDocPacketOrThrow(packetId) {
         e.statusCode = 500;
         throw e;
     }
-    return packet;
+    const raw = String(row.content || '');
+    const packet_sha256 = crypto.createHash('sha256').update(raw).digest('hex');
+    return {
+        packet,
+        meta: {
+            packet_id: packetId,
+            packet_key: String(row.key || key),
+            packet_updated_at: row.updated_at || null,
+            packet_sha256
+        }
+    };
 }
 
 async function appendDocAudit(packetId, entry) {
@@ -2184,11 +2194,19 @@ async function appendDocAudit(packetId, entry) {
     if (fetchError) throw fetchError;
     const existing = row ? safeJsonParse(row.content, null) : null;
     const events = Array.isArray(existing?.events) ? existing.events : [];
-    events.push({ ...entry, at: nowIso });
+    const lastHash = String(existing?.last_hash || '');
+    const eventId = crypto.randomBytes(6).toString('hex');
+    const payload = { id: eventId, ...entry, at: nowIso };
+    const nextHash = crypto
+        .createHash('sha256')
+        .update(`${lastHash}\n${JSON.stringify(payload)}`)
+        .digest('hex');
+    events.push({ ...payload, prev_hash: lastHash || null, hash: nextHash });
     const record = {
         schema: 'otp-doc-audit-v1',
         packet_id: packetId,
-        events
+        events,
+        last_hash: events.length ? events[events.length - 1].hash : lastHash || null
     };
     const { error: upsertError } = await supabaseAdmin
         .from('site_content')
@@ -2207,6 +2225,43 @@ function base64FromBuffer(buf) {
     return Buffer.isBuffer(buf) ? buf.toString('base64') : Buffer.from(buf).toString('base64');
 }
 
+function verifyAttachmentOrThrow(att) {
+    const name = String(att?.filename || '').toLowerCase();
+    const type = String(att?.content_type || '');
+    const contentB64 = String(att?.content || '');
+    if (!name || !type || !contentB64) throw new Error('Attachment invalid (missing fields)');
+    let buf;
+    try { buf = Buffer.from(contentB64, 'base64'); } catch (e) { throw new Error(`Attachment invalid base64: ${name}`); }
+    if (!buf || !buf.length) throw new Error(`Attachment empty: ${name}`);
+    if (name.endsWith('.pdf')) {
+        if (!buf.slice(0, 4).equals(Buffer.from('%PDF'))) throw new Error(`Attachment verification failed (PDF): ${name}`);
+    }
+    if (name.endsWith('.docx')) {
+        if (!buf.slice(0, 2).equals(Buffer.from('PK'))) throw new Error(`Attachment verification failed (DOCX): ${name}`);
+    }
+    if (name.endsWith('.html')) {
+        const head = buf.slice(0, 64).toString('utf8').toLowerCase();
+        if (!head.includes('<!doctype') && !head.includes('<html')) throw new Error(`Attachment verification failed (HTML): ${name}`);
+    }
+    return { bytes: buf.length };
+}
+
+async function fetchResendEmailStatus(resendId) {
+    const key = String(process.env.RESEND_API_KEY || '').trim();
+    if (!key) return { available: false, message: 'RESEND_API_KEY not configured' };
+    const id = String(resendId || '').trim();
+    if (!id) return { available: false, message: 'Missing resend id' };
+    const r = await fetch(`https://api.resend.com/emails/${encodeURIComponent(id)}`, {
+        headers: { 'Authorization': `Bearer ${key}` }
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+        return { available: true, success: false, status: null, data };
+    }
+    // Resend returns fields like {id, to, subject, created_at, last_event, ...}
+    return { available: true, success: true, status: data?.last_event || data?.status || null, data };
+}
+
 // 2.18 Send approved doc packet via email + audit trail
 app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
@@ -2219,7 +2274,9 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
     if (!include.length) return res.status(400).json({ success: false, message: 'Select at least one document to send' });
 
     try {
-        const packet = await getDocPacketOrThrow(packetId);
+        const got = await getDocPacketOrThrow(packetId);
+        const packet = got.packet;
+        const packetMeta = got.meta || {};
         const docs = packet.docs && typeof packet.docs === 'object' ? packet.docs : {};
         const fields = packet.fields || {};
         const clientName = String(fields.client_name || '').trim() || 'Client';
@@ -2231,6 +2288,7 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
         // Build attachments (approved only)
         const attachments = [];
         const missing = [];
+        const verification = [];
         for (const docType of toSend) {
             const doc = docs[docType];
             if (!doc) { missing.push(`${docType}:not_generated`); continue; }
@@ -2238,29 +2296,38 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
 
             if (docType === 'proposal' || docType === 'agreement') {
                 if (!doc.docx) { missing.push(`${docType}:docx_missing`); continue; }
-                attachments.push({
+                const a = {
                     filename: `${docType}-${packetId}.docx`,
                     content: String(doc.docx),
                     content_type: DOCX_MIME
-                });
+                };
+                const v = verifyAttachmentOrThrow(a);
+                verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
+                attachments.push(a);
                 continue;
             }
             if (docType === 'invoice') {
                 const pdfBuf = await renderInvoicePdf(fields, packetId);
-                attachments.push({
+                const a = {
                     filename: `invoice-${packetId}.pdf`,
                     content: base64FromBuffer(pdfBuf),
                     content_type: 'application/pdf'
-                });
+                };
+                const v = verifyAttachmentOrThrow(a);
+                verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
+                attachments.push(a);
                 continue;
             }
             // NDA / media_release as HTML
             if (!doc.html) { missing.push(`${docType}:html_missing`); continue; }
-            attachments.push({
+            const a = {
                 filename: `${docType}-${packetId}.html`,
                 content: base64FromBuffer(Buffer.from(String(doc.html), 'utf8')),
                 content_type: 'text/html'
-            });
+            };
+            const v = verifyAttachmentOrThrow(a);
+            verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
+            attachments.push(a);
         }
 
         if (!attachments.length) {
@@ -2284,6 +2351,7 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
         const text = `Attached are your approved documents from Only True Perspective.\n\nIncluded: ${list}\n\nReply to this email if anything needs adjustment.\n\nOnly True Perspective\n${from}`;
 
         const emailResult = await sendSecureEmail({ to, from, subject, html, text, attachments });
+        const resendId = String(emailResult?.data?.id || '').trim() || null;
 
         // Audit trail (append-only)
         const event = {
@@ -2293,19 +2361,24 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
             from,
             include: toSend,
             attachments: attachments.map(a => ({ filename: a.filename, content_type: a.content_type })),
+            attachment_verification: verification,
             missing,
             provider: 'resend',
             success: !!emailResult?.success,
             provider_response: emailResult?.data || null,
-            simulated: !!emailResult?.simulated
+            simulated: !!emailResult?.simulated,
+            resend_email_id: resendId,
+            packet_version: packetMeta
         };
-        await appendDocAudit(packetId, event);
+        const auditRecord = await appendDocAudit(packetId, event);
 
         res.json({
             success: true,
             message: emailResult?.simulated ? 'Email simulated (no RESEND_API_KEY configured)' : 'Email sent',
             sent: attachments.map(a => ({ filename: a.filename, content_type: a.content_type })),
-            missing
+            missing,
+            resend_email_id: resendId,
+            audit_last_hash: auditRecord?.last_hash || null
         });
     } catch (error) {
         const status = Number(error.statusCode) || 500;
@@ -2346,6 +2419,144 @@ app.get('/api/admin/docs/audit/:packetId', verifyToken, async (req, res) => {
         res.json({ success: true, packet_id: packetId, events, updated_at: row.updated_at });
     } catch (error) {
         console.error("docs-audit:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2.20 Refresh delivery status (append-only status updates)
+app.post('/api/admin/docs/send-status', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.body?.packetId || '').trim();
+    if (!packetId) return res.status(400).json({ success: false, message: 'Missing packetId' });
+    try {
+        // Read audit events, find recent sends that have resend ids
+        const key = `${KNOWLEDGE_PREFIX.docAudit}${packetId}`;
+        const { data: row, error: fetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('content')
+            .eq('key', key)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        const payload = row ? safeJsonParse(row.content, null) : null;
+        const events = Array.isArray(payload?.events) ? payload.events : [];
+        const recent = events
+            .filter(e => e && e.type === 'doc_packet_send' && e.resend_email_id && !e.simulated)
+            .slice(-6);
+        const results = [];
+        for (const ev of recent) {
+            const st = await fetchResendEmailStatus(ev.resend_email_id);
+            results.push({ resend_email_id: ev.resend_email_id, status: st.status || null, ok: !!st.success });
+            await appendDocAudit(packetId, {
+                type: 'doc_packet_delivery_update',
+                actor: req.auth?.role || 'admin',
+                resend_email_id: ev.resend_email_id,
+                status: st.status || null,
+                success: !!st.success,
+                provider: 'resend',
+                provider_response: st.data || null
+            });
+        }
+        res.json({ success: true, packet_id: packetId, updates: results });
+    } catch (error) {
+        console.error("docs-send-status:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2.21 Retry a failed send (append-only)
+app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.body?.packetId || '').trim();
+    const retryOf = String(req.body?.retry_of_event_id || '').trim();
+    if (!packetId) return res.status(400).json({ success: false, message: 'Missing packetId' });
+    if (!retryOf) return res.status(400).json({ success: false, message: 'Missing retry_of_event_id' });
+    try {
+        const key = `${KNOWLEDGE_PREFIX.docAudit}${packetId}`;
+        const { data: row, error: fetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('content')
+            .eq('key', key)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        const payload = row ? safeJsonParse(row.content, null) : null;
+        const events = Array.isArray(payload?.events) ? payload.events : [];
+        const base = events.find(e => e && e.id === retryOf && e.type === 'doc_packet_send');
+        if (!base) return res.status(404).json({ success: false, message: 'Base send event not found' });
+
+        // Re-run send using current packet (but same include/to/from as base)
+        req.body = { packetId, to: base.to, from: base.from, include: Array.isArray(base.include) ? base.include : [] };
+        // Mark retry attempt as a new send event (caller can infer via retry_of)
+        const got = await getDocPacketOrThrow(packetId);
+        const packet = got.packet;
+        const packetMeta = got.meta || {};
+        const docs = packet.docs && typeof packet.docs === 'object' ? packet.docs : {};
+        const fields = packet.fields || {};
+        const clientName = String(fields.client_name || '').trim() || 'Client';
+        const allowedDocs = new Set(['proposal', 'agreement', 'invoice', 'nda', 'media_release']);
+        const toSend = (Array.isArray(req.body.include) ? req.body.include : []).filter(d => allowedDocs.has(String(d)));
+        const to = safeEmail(base.to);
+        const from = safeEmail(base.from) || BUSINESS_EMAILS.BOOKINGS;
+        if (!to || !toSend.length) return res.status(400).json({ success: false, message: 'Retry payload invalid' });
+
+        const attachments = [];
+        const missing = [];
+        const verification = [];
+        for (const docType of toSend) {
+            const doc = docs[docType];
+            if (!doc) { missing.push(`${docType}:not_generated`); continue; }
+            if (!doc.approved) { missing.push(`${docType}:not_approved`); continue; }
+            if (docType === 'proposal' || docType === 'agreement') {
+                if (!doc.docx) { missing.push(`${docType}:docx_missing`); continue; }
+                const a = { filename: `${docType}-${packetId}.docx`, content: String(doc.docx), content_type: DOCX_MIME };
+                const v = verifyAttachmentOrThrow(a);
+                verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
+                attachments.push(a);
+                continue;
+            }
+            if (docType === 'invoice') {
+                const pdfBuf = await renderInvoicePdf(fields, packetId);
+                const a = { filename: `invoice-${packetId}.pdf`, content: base64FromBuffer(pdfBuf), content_type: 'application/pdf' };
+                const v = verifyAttachmentOrThrow(a);
+                verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
+                attachments.push(a);
+                continue;
+            }
+            if (!doc.html) { missing.push(`${docType}:html_missing`); continue; }
+            const a = { filename: `${docType}-${packetId}.html`, content: base64FromBuffer(Buffer.from(String(doc.html), 'utf8')), content_type: 'text/html' };
+            const v = verifyAttachmentOrThrow(a);
+            verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
+            attachments.push(a);
+        }
+        if (!attachments.length) return res.status(400).json({ success: false, message: 'No approved documents are ready to send', details: { missing } });
+
+        const subject = `Only True Perspective — Documents for ${clientName}`;
+        const list = attachments.map(a => a.filename).join(', ');
+        const html = `<div style="font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial; line-height:1.6; color:#111;"><p>Attached are your approved documents from Only True Perspective.</p><p style="margin:0 0 10px;"><strong>Included:</strong> ${escapeHtmlForEmail(list)}</p><p>If anything needs adjustment, reply to this email and we’ll handle it.</p><p style="margin-top:18px;"><strong>Only True Perspective</strong><br/>${escapeHtmlForEmail(from)}</p></div>`;
+        const text = `Attached are your approved documents from Only True Perspective.\n\nIncluded: ${list}\n\nReply to this email if anything needs adjustment.\n\nOnly True Perspective\n${from}`;
+        const emailResult = await sendSecureEmail({ to, from, subject, html, text, attachments });
+        const resendId = String(emailResult?.data?.id || '').trim() || null;
+
+        const auditRecord = await appendDocAudit(packetId, {
+            type: 'doc_packet_send',
+            actor: req.auth?.role || 'admin',
+            to,
+            from,
+            include: toSend,
+            attachments: attachments.map(a => ({ filename: a.filename, content_type: a.content_type })),
+            attachment_verification: verification,
+            missing,
+            provider: 'resend',
+            success: !!emailResult?.success,
+            provider_response: emailResult?.data || null,
+            simulated: !!emailResult?.simulated,
+            resend_email_id: resendId,
+            retry_of_event_id: retryOf,
+            packet_version: packetMeta
+        });
+
+        res.json({ success: true, message: emailResult?.simulated ? 'Email simulated (no RESEND_API_KEY configured)' : 'Email sent', resend_email_id: resendId, audit_last_hash: auditRecord?.last_hash || null, missing });
+    } catch (error) {
+        console.error("docs-send-retry:", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 });

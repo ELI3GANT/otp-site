@@ -2202,6 +2202,52 @@
         }
     };
 
+    window.refreshDocPacketDeliveryStatus = async function() {
+        const s = window.__docPacketState || {};
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
+        try {
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const res = await fetch(`${apiBase}/api/admin/docs/send-status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ packetId: s.packetId })
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Status failed (${res.status})`);
+            showToast('DELIVERY STATUS REFRESHED');
+        } catch (e) {
+            showToast(`STATUS FAILED: ${e.message}`);
+        } finally {
+            window.refreshDocPacketAudit?.();
+        }
+    };
+
+    window.retryLastDocPacketSend = async function() {
+        const s = window.__docPacketState || {};
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
+        const events = Array.isArray(s.auditEvents) ? s.auditEvents : [];
+        const lastSend = events.slice().reverse().find(e => e && e.type === 'doc_packet_send');
+        if (!lastSend || !lastSend.id) { showToast('NO SEND EVENT FOUND'); return; }
+        if (lastSend.success) { showToast('LAST SEND WAS SUCCESS'); return; }
+        try {
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const res = await fetch(`${apiBase}/api/admin/docs/send-retry`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ packetId: s.packetId, retry_of_event_id: lastSend.id })
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Retry failed (${res.status})`);
+            showToast('RETRY SENT');
+        } catch (e) {
+            showToast(`RETRY FAILED: ${e.message}`);
+        } finally {
+            window.refreshDocPacketAudit?.();
+        }
+    };
+
     // Apply saved admin defaults on load (best effort)
     (function applyAdminDefaultsOnce() {
         try {
