@@ -228,7 +228,8 @@ function renderDocxFromTemplate(templateBuffer, fields) {
 function dollarsFromCents(cents) {
     const n = Number(cents);
     if (!Number.isFinite(n)) return null;
-    return `$${(n / 100).toFixed(0)}`;
+    const dollars = Math.round(n / 100);
+    return `$${dollars.toLocaleString('en-US')}`;
 }
 
 async function renderInvoicePdf(fields, packetId = '') {
@@ -251,12 +252,12 @@ async function renderInvoicePdf(fields, packetId = '') {
     const margin = 54;
     const contentW = width - margin * 2;
 
-    // Try to embed the official OTP eye emblem (JPG) from public assets; fallback to text mark if unavailable.
+    // Try to embed the official OTP eye emblem (eye-only crop) from public assets; fallback to text mark if unavailable.
     let logoImage = null;
     try {
         const fs = require('fs');
         const path = require('path');
-        const logoPath = path.join(__dirname, 'assets', 'otp-eye-emblem.jpg');
+        const logoPath = path.join(__dirname, 'assets', 'otp-eye-emblem-eye.jpg');
         const buf = fs.readFileSync(logoPath);
         logoImage = await pdfDoc.embedJpg(buf);
     } catch (e) {
@@ -273,15 +274,17 @@ async function renderInvoicePdf(fields, packetId = '') {
     const leftX = margin;
     const headerY = height - 34;
     if (logoImage) {
-        const targetH = 46;
+        const targetH = 38;
         const scale = targetH / logoImage.height;
         const drawW = logoImage.width * scale;
-        page.drawImage(logoImage, { x: leftX, y: height - headerH + 24, width: drawW, height: targetH, opacity: 0.96 });
+        page.drawImage(logoImage, { x: leftX, y: height - headerH + 32, width: drawW, height: targetH, opacity: 0.96 });
         page.drawText('ONLY TRUE PERSPECTIVE', { x: leftX + drawW + 12, y: height - headerH + 48, size: 10, font: fontBold, color: rgb(0.9, 0.93, 0.98) });
         page.drawText('Tactical Visual Intelligence', { x: leftX + drawW + 12, y: height - headerH + 33, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
+        page.drawText('INVOICE (DEPOSIT)', { x: leftX + drawW + 12, y: height - headerH + 20, size: 8.5, font: fontBold, color: rgb(0.78, 0.82, 0.88) });
     } else {
         page.drawText('ONLY TRUE PERSPECTIVE', { x: leftX, y: height - headerH + 48, size: 12, font: fontBold, color: rgb(0.92, 0.94, 0.98) });
         page.drawText('Tactical Visual Intelligence', { x: leftX, y: height - headerH + 32, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
+        page.drawText('INVOICE (DEPOSIT)', { x: leftX, y: height - headerH + 20, size: 8.5, font: fontBold, color: rgb(0.78, 0.82, 0.88) });
     }
 
     // Invoice meta (right)
