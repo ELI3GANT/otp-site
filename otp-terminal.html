@@ -925,6 +925,34 @@
                     <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="document.getElementById('docTemplateAgreement').click()">UPLOAD AGREEMENT</button>
                 </div>
                 <div id="docPacketErrors" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,170,0,0.35);background:rgba(255,170,0,0.08);color:#ffd37a;font-size:0.72rem;line-height:1.45;"></div>
+                <div id="docPacketSend" style="display:none;margin-bottom:12px;padding:12px 12px;border-radius:12px;border:1px solid var(--admin-border);background:rgba(0,0,0,0.10);">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+                        <div style="font-size:0.72rem;color:var(--admin-muted);line-height:1.45;flex:1;min-width:260px;">
+                            <strong style="color:var(--admin-text);">Send to client (Approval-gated)</strong><br/>
+                            Only approved documents can be sent. Sending is logged to an audit trail.
+                        </div>
+                        <button id="docPacketAuditRefreshBtn" type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="refreshDocPacketAudit()">REFRESH AUDIT</button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px;align-items:end;">
+                        <div>
+                            <div style="font-size:0.68rem;color:var(--admin-muted);margin-bottom:6px;">Recipient (client)</div>
+                            <input id="docPacketSendTo" class="input-field" placeholder="client@email.com" style="width:100%;padding:10px;border-radius:10px;" />
+                        </div>
+                        <div>
+                            <div style="font-size:0.68rem;color:var(--admin-muted);margin-bottom:6px;">From</div>
+                            <select id="docPacketSendFrom" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;">
+                                <option value="bookings@onlytrueperspective.tech">bookings@onlytrueperspective.tech</option>
+                                <option value="contact@onlytrueperspective.tech">contact@onlytrueperspective.tech</option>
+                                <option value="info@onlytrueperspective.tech">info@onlytrueperspective.tech</option>
+                                <option value="eli3gant@onlytrueperspective.tech">eli3gant@onlytrueperspective.tech</option>
+                            </select>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button id="docPacketSendBtn" type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="sendDocPacketEmail()">SEND APPROVED DOCS</button>
+                        </div>
+                    </div>
+                    <div id="docPacketAuditLog" style="margin-top:10px;font-family:monospace;font-size:0.7rem;color:var(--admin-muted);white-space:pre-wrap;"></div>
+                </div>
                 <div id="docPacketList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
                 </div>
             </div>

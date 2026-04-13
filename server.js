@@ -413,7 +413,8 @@ const KNOWLEDGE_PREFIX = {
     file: 'kb_file::',
     chunk: 'kb_chunk::',
     leadRec: 'kb_lead_rec::',
-    docPacket: 'kb_doc_packet::'
+    docPacket: 'kb_doc_packet::',
+    docAudit: 'kb_doc_audit::'
 };
 const VERSION_PREFIX = 'version_event::';
 const MAX_VERSION_EVENTS = 20;
@@ -818,7 +819,7 @@ const BUSINESS_EMAILS = {
     INFO: 'info@onlytrueperspective.tech'
 };
 
-async function sendSecureEmail({ to, subject, html, text, from = BUSINESS_EMAILS.CONTACT }) {
+async function sendSecureEmail({ to, subject, html, text, from = BUSINESS_EMAILS.CONTACT, attachments = null }) {
     const key = process.env.RESEND_API_KEY; // Recommended service
     
     // For local dev/demo, we log the intent if no key exists
@@ -829,6 +830,7 @@ FROM: ${from}
 TO: ${to}
 SUBJECT: ${subject}
 BODY: ${text || 'HTML Content Sent'}
+ATTACHMENTS: ${Array.isArray(attachments) ? attachments.map(a => a?.filename).filter(Boolean).join(', ') : 'none'}
 -------------------------------
         `);
         return { success: true, simulated: true };
@@ -846,7 +848,8 @@ BODY: ${text || 'HTML Content Sent'}
                 to: [to],
                 subject,
                 html,
-                text
+                text,
+                attachments: Array.isArray(attachments) ? attachments : undefined
             })
         });
         const data = await response.json();
@@ -2144,6 +2147,205 @@ app.get('/api/admin/docs/templates/status', verifyToken, async (req, res) => {
         });
     } catch (error) {
         console.error("docs-templates-status:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+async function getDocPacketOrThrow(packetId) {
+    const key = `${KNOWLEDGE_PREFIX.docPacket}${packetId}`;
+    const { data: row, error: fetchError } = await supabaseAdmin
+        .from('site_content')
+        .select('content')
+        .eq('key', key)
+        .maybeSingle();
+    if (fetchError) throw fetchError;
+    if (!row) {
+        const e = new Error('Packet not found');
+        e.statusCode = 404;
+        throw e;
+    }
+    const packet = safeJsonParse(row.content, null);
+    if (!packet || typeof packet !== 'object') {
+        const e = new Error('Packet corrupted');
+        e.statusCode = 500;
+        throw e;
+    }
+    return packet;
+}
+
+async function appendDocAudit(packetId, entry) {
+    const nowIso = new Date().toISOString();
+    const key = `${KNOWLEDGE_PREFIX.docAudit}${packetId}`;
+    const { data: row, error: fetchError } = await supabaseAdmin
+        .from('site_content')
+        .select('content')
+        .eq('key', key)
+        .maybeSingle();
+    if (fetchError) throw fetchError;
+    const existing = row ? safeJsonParse(row.content, null) : null;
+    const events = Array.isArray(existing?.events) ? existing.events : [];
+    events.push({ ...entry, at: nowIso });
+    const record = {
+        schema: 'otp-doc-audit-v1',
+        packet_id: packetId,
+        events
+    };
+    const { error: upsertError } = await supabaseAdmin
+        .from('site_content')
+        .upsert([{ key, content: JSON.stringify(record), updated_at: nowIso }], { onConflict: 'key' });
+    if (upsertError) throw upsertError;
+    return record;
+}
+
+function safeEmail(s) {
+    const v = String(s || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return null;
+    return v;
+}
+
+function base64FromBuffer(buf) {
+    return Buffer.isBuffer(buf) ? buf.toString('base64') : Buffer.from(buf).toString('base64');
+}
+
+// 2.18 Send approved doc packet via email + audit trail
+app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.body?.packetId || '').trim();
+    const to = safeEmail(req.body?.to);
+    const from = safeEmail(req.body?.from) || BUSINESS_EMAILS.BOOKINGS;
+    const include = Array.isArray(req.body?.include) ? req.body.include.map(v => String(v).trim()).filter(Boolean) : [];
+    if (!packetId) return res.status(400).json({ success: false, message: 'Missing packetId' });
+    if (!to) return res.status(400).json({ success: false, message: 'Missing/invalid recipient email' });
+    if (!include.length) return res.status(400).json({ success: false, message: 'Select at least one document to send' });
+
+    try {
+        const packet = await getDocPacketOrThrow(packetId);
+        const docs = packet.docs && typeof packet.docs === 'object' ? packet.docs : {};
+        const fields = packet.fields || {};
+        const clientName = String(fields.client_name || '').trim() || 'Client';
+
+        const allowedDocs = new Set(['proposal', 'agreement', 'invoice', 'nda', 'media_release']);
+        const toSend = include.filter(d => allowedDocs.has(d));
+        if (!toSend.length) return res.status(400).json({ success: false, message: 'No valid doc types selected' });
+
+        // Build attachments (approved only)
+        const attachments = [];
+        const missing = [];
+        for (const docType of toSend) {
+            const doc = docs[docType];
+            if (!doc) { missing.push(`${docType}:not_generated`); continue; }
+            if (!doc.approved) { missing.push(`${docType}:not_approved`); continue; }
+
+            if (docType === 'proposal' || docType === 'agreement') {
+                if (!doc.docx) { missing.push(`${docType}:docx_missing`); continue; }
+                attachments.push({
+                    filename: `${docType}-${packetId}.docx`,
+                    content: String(doc.docx),
+                    content_type: DOCX_MIME
+                });
+                continue;
+            }
+            if (docType === 'invoice') {
+                const pdfBuf = await renderInvoicePdf(fields, packetId);
+                attachments.push({
+                    filename: `invoice-${packetId}.pdf`,
+                    content: base64FromBuffer(pdfBuf),
+                    content_type: 'application/pdf'
+                });
+                continue;
+            }
+            // NDA / media_release as HTML
+            if (!doc.html) { missing.push(`${docType}:html_missing`); continue; }
+            attachments.push({
+                filename: `${docType}-${packetId}.html`,
+                content: base64FromBuffer(Buffer.from(String(doc.html), 'utf8')),
+                content_type: 'text/html'
+            });
+        }
+
+        if (!attachments.length) {
+            return res.status(400).json({
+                success: false,
+                message: 'No approved documents are ready to send',
+                details: { missing }
+            });
+        }
+
+        const subject = `Only True Perspective — Documents for ${clientName}`;
+        const list = attachments.map(a => a.filename).join(', ');
+        const html = `
+            <div style="font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial; line-height:1.6; color:#111;">
+              <p>Attached are your approved documents from Only True Perspective.</p>
+              <p style="margin:0 0 10px;"><strong>Included:</strong> ${escapeHtmlForEmail(list)}</p>
+              <p>If anything needs adjustment, reply to this email and we’ll handle it.</p>
+              <p style="margin-top:18px;"><strong>Only True Perspective</strong><br/>${escapeHtmlForEmail(from)}</p>
+            </div>
+        `;
+        const text = `Attached are your approved documents from Only True Perspective.\n\nIncluded: ${list}\n\nReply to this email if anything needs adjustment.\n\nOnly True Perspective\n${from}`;
+
+        const emailResult = await sendSecureEmail({ to, from, subject, html, text, attachments });
+
+        // Audit trail (append-only)
+        const event = {
+            type: 'doc_packet_send',
+            actor: req.auth?.role || 'admin',
+            to,
+            from,
+            include: toSend,
+            attachments: attachments.map(a => ({ filename: a.filename, content_type: a.content_type })),
+            missing,
+            provider: 'resend',
+            success: !!emailResult?.success,
+            provider_response: emailResult?.data || null,
+            simulated: !!emailResult?.simulated
+        };
+        await appendDocAudit(packetId, event);
+
+        res.json({
+            success: true,
+            message: emailResult?.simulated ? 'Email simulated (no RESEND_API_KEY configured)' : 'Email sent',
+            sent: attachments.map(a => ({ filename: a.filename, content_type: a.content_type })),
+            missing
+        });
+    } catch (error) {
+        const status = Number(error.statusCode) || 500;
+        console.error("docs-send:", error.message);
+        try {
+            if (packetId) {
+                await appendDocAudit(packetId, {
+                    type: 'doc_packet_send',
+                    actor: req.auth?.role || 'admin',
+                    to,
+                    from,
+                    include,
+                    success: false,
+                    error: String(error.message || error)
+                });
+            }
+        } catch (e) {}
+        res.status(status).json({ success: false, message: error.message });
+    }
+});
+
+// 2.19 Fetch doc packet audit trail
+app.get('/api/admin/docs/audit/:packetId', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.params?.packetId || '').trim();
+    if (!packetId) return res.status(400).json({ success: false, message: 'Missing packetId' });
+    try {
+        const key = `${KNOWLEDGE_PREFIX.docAudit}${packetId}`;
+        const { data: row, error: fetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('content, updated_at')
+            .eq('key', key)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!row) return res.json({ success: true, packet_id: packetId, events: [] });
+        const payload = safeJsonParse(row.content, null);
+        const events = Array.isArray(payload?.events) ? payload.events : [];
+        res.json({ success: true, packet_id: packetId, events, updated_at: row.updated_at });
+    } catch (error) {
+        console.error("docs-audit:", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 });

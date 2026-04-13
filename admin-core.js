@@ -1763,12 +1763,14 @@
     window.__docPacketState = {
         packetId: null,
         docs: {},
+        fields: null,
         leadId: null,
         sourceTable: 'contacts',
         contextKey: null,
         docxErrors: null,
         approvalsBaseline: null,
-        notice: null
+        notice: null,
+        auditEvents: null
     };
 
     window.__resetDocPacketState = function(keepContext = false) {
@@ -1776,9 +1778,11 @@
         const next = {
             packetId: null,
             docs: {},
+            fields: null,
             docxErrors: null,
             approvalsBaseline: null,
-            notice: null
+            notice: null,
+            auditEvents: null
         };
         if (!keepContext) {
             next.leadId = null;
@@ -1851,6 +1855,10 @@
         if (!meta || !list) return;
         const s = window.__docPacketState || {};
         const hasPacket = !!s.packetId;
+        const sendBox = document.getElementById('docPacketSend');
+        const sendTo = document.getElementById('docPacketSendTo');
+        const auditLog = document.getElementById('docPacketAuditLog');
+        const auditRefreshBtn = document.getElementById('docPacketAuditRefreshBtn');
 
         if (genBtn) {
             genBtn.disabled = !s.leadId;
@@ -1866,6 +1874,17 @@
             <div><strong>Packet</strong>: ${window.escapeHtml(String(s.packetId || 'NOT GENERATED'))}</div>
             ${s.notice ? `<div style="margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid rgba(var(--accent2-rgb),0.25);background:rgba(var(--accent2-rgb),0.07);color:var(--admin-text);font-size:0.72rem;line-height:1.4;">${window.escapeHtml(String(s.notice))}</div>` : `<div style="margin-top:6px;">Generate → preview → approve → download.</div>`}
         `;
+
+        // Send block (only after packet exists)
+        if (sendBox) {
+            sendBox.style.display = hasPacket ? 'block' : 'none';
+            if (hasPacket && sendTo && !String(sendTo.value || '').trim()) {
+                const fallbackEmail = String(s.fields?.client_email || '').trim();
+                if (fallbackEmail) sendTo.value = fallbackEmail;
+            }
+            if (!hasPacket && auditLog) auditLog.textContent = '';
+            if (auditRefreshBtn) auditRefreshBtn.disabled = !hasPacket;
+        }
 
         const docOrder = [
             ['proposal', 'Proposal'],
@@ -1943,6 +1962,29 @@
             } else {
                 errBox.style.display = 'none';
                 errBox.textContent = '';
+            }
+        }
+
+        // Render audit log if we have it
+        if (auditLog) {
+            const events = Array.isArray(s.auditEvents) ? s.auditEvents : [];
+            if (!hasPacket) {
+                auditLog.textContent = '';
+            } else if (!events.length) {
+                auditLog.textContent = 'Audit: no sends logged yet.';
+            } else {
+                const lines = events
+                    .slice()
+                    .reverse()
+                    .slice(0, 8)
+                    .map(ev => {
+                        const at = String(ev.at || '').replace('T', ' ').replace('Z', ' UTC');
+                        const ok = ev.success ? 'SENT' : 'FAILED';
+                        const docs = Array.isArray(ev.include) ? ev.include.join(', ') : '';
+                        const to = ev.to || '';
+                        return `[${ok}] ${at}\nTO: ${to}\nDOCS: ${docs}\n`;
+                    });
+                auditLog.textContent = lines.join('\n');
             }
         }
     };
@@ -2026,10 +2068,12 @@
             if (!res.ok || !payload.success) throw new Error(payload.message || `Packet failed (${res.status})`);
             window.__docPacketState.packetId = payload.packet_id;
             window.__docPacketState.docs = payload.docs || {};
+            window.__docPacketState.fields = payload.fields || null;
             window.__docPacketState.docxErrors = payload.docx_errors || null;
             window.__docPacketState.approvalsBaseline = Object.fromEntries(Object.entries(window.__docPacketState.docs || {}).map(([k, v]) => [k, !!v?.approved]));
             window.__docPacketState.notice = 'Packet generated. Preview each doc, then approve to unlock downloads.';
             showToast('DOC PACKET GENERATED (REVIEW REQUIRED)');
+            window.refreshDocPacketAudit?.();
         } catch (e) {
             window.__docPacketState.notice = `Packet generation failed: ${e.message}`;
             showToast(`DOC PACKET FAILED: ${e.message}`);
@@ -2102,6 +2146,59 @@
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = orig || 'APPLY APPROVALS'; }
             window.renderDocPacketUI();
+        }
+    };
+
+    window.refreshDocPacketAudit = async function() {
+        const s = window.__docPacketState || {};
+        if (!state.token) return;
+        if (!s.packetId) return;
+        try {
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const res = await fetch(`${apiBase}/api/admin/docs/audit/${encodeURIComponent(s.packetId)}`, {
+                headers: { 'Authorization': `Bearer ${state.token}` }
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Audit failed (${res.status})`);
+            window.__docPacketState.auditEvents = Array.isArray(payload.events) ? payload.events : [];
+        } catch (e) {
+            window.__docPacketState.auditEvents = [];
+        } finally {
+            window.renderDocPacketUI();
+        }
+    };
+
+    window.sendDocPacketEmail = async function() {
+        const s = window.__docPacketState || {};
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
+        const to = String(document.getElementById('docPacketSendTo')?.value || '').trim();
+        const from = String(document.getElementById('docPacketSendFrom')?.value || '').trim();
+        if (!to) { showToast('RECIPIENT REQUIRED'); return; }
+        // Send only approved docs
+        const include = Object.entries(s.docs || {})
+            .filter(([k, v]) => !!v?.approved)
+            .map(([k]) => k);
+        if (!include.length) { showToast('APPROVE AT LEAST ONE DOC'); return; }
+        const btn = document.getElementById('docPacketSendBtn');
+        const orig = btn ? btn.textContent : '';
+        try {
+            if (btn) { btn.disabled = true; btn.textContent = 'SENDING...'; }
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const res = await fetch(`${apiBase}/api/admin/docs/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ packetId: s.packetId, to, from, include })
+            });
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Send failed (${res.status})`);
+            showToast('EMAIL SENT');
+            window.__docPacketState.notice = 'Email sent. Audit trail updated.';
+        } catch (e) {
+            showToast(`SEND FAILED: ${e.message}`);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = orig || 'SEND APPROVED DOCS'; }
+            window.refreshDocPacketAudit?.();
         }
     };
 
