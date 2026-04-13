@@ -1810,7 +1810,6 @@
             const doc = (s.docs && s.docs[key]) ? s.docs[key] : { approved: false };
             const approved = !!doc.approved;
             const disabled = !s.packetId;
-            const downloadHref = s.packetId ? `${(window.OTP ? window.OTP.getApiBase() : '')}/api/admin/docs/download/${encodeURIComponent(s.packetId)}/${encodeURIComponent(key)}` : '#';
             return `
                 <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:rgba(0,0,0,0.18);">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
@@ -1822,9 +1821,7 @@
                     </div>
                     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
                         <button type="button" onclick="previewDocHtml('${window.escapeHtml(key)}')" class="btn-secondary" style="width:auto;font-size:0.68rem;" ${disabled ? 'disabled style="opacity:0.6;cursor:not-allowed;"' : ''}>PREVIEW</button>
-                        <a href="${approved ? downloadHref : '#'}" ${approved ? '' : 'onclick="return false;"'} style="text-decoration:none;">
-                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;${approved ? '' : 'opacity:0.6;cursor:not-allowed;'}">DOWNLOAD HTML</button>
-                        </a>
+                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}')" class="btn-secondary" style="width:auto;font-size:0.68rem;${approved ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${approved ? '' : 'disabled'}>DOWNLOAD HTML</button>
                     </div>
                     <div style="margin-top:10px;font-size:0.66rem;color:${approved ? 'var(--admin-success)' : '#ffaa00'};font-weight:800;letter-spacing:1px;text-transform:uppercase;">
                         ${approved ? 'APPROVED' : 'PENDING APPROVAL'}
@@ -1844,6 +1841,39 @@
         w.document.open();
         w.document.write(html);
         w.document.close();
+    };
+
+    window.downloadApprovedDoc = async function(docType) {
+        const s = window.__docPacketState || {};
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
+        const approved = !!(s.docs?.[docType]?.approved);
+        if (!approved) { showToast('APPROVAL REQUIRED'); return; }
+        try {
+            const apiBase = window.OTP ? window.OTP.getApiBase() : '';
+            const url = `${apiBase}/api/admin/docs/download/${encodeURIComponent(s.packetId)}/${encodeURIComponent(docType)}`;
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${state.token}` } });
+            const text = await res.text();
+            if (!res.ok) {
+                // attempt json parse for a clearer message
+                let msg = `Download failed (${res.status})`;
+                try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch (e) {}
+                throw new Error(msg);
+            }
+            const blob = new Blob([text], { type: 'text/html;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${docType}-${s.packetId}.html`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                URL.revokeObjectURL(a.href);
+                a.remove();
+            }, 500);
+            showToast('DOWNLOAD STARTED');
+        } catch (e) {
+            showToast(`DOWNLOAD FAILED: ${e.message}`);
+        }
     };
 
     window.generateDocPacket = async function() {
