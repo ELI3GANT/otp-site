@@ -2884,10 +2884,10 @@ html {
   font-size: 0.85rem; 
   letter-spacing: 0.6px;
   font-weight: 600; 
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   column-gap: 14px;
   row-gap: 8px;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   text-shadow: 0 1px 2px rgba(0,0,0,0.25);
@@ -2895,6 +2895,20 @@ html {
 }
 
 .hero-micro > span {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.hero-micro .hero-micro-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.hero-micro .hero-micro-meta > span {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
@@ -5508,18 +5522,17 @@ input:focus, select:focus, textarea:focus {
   }
   
   .hero-micro {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px 12px;
-    align-items: center;
-    justify-content: center;
+    gap: 10px;
     text-align: center;
     font-size: 0.9rem;
   }
   .hero-micro .scarcity-badge {
     width: 100%;
     justify-content: center;
+  }
+  .hero-micro .hero-micro-meta {
+    justify-content: center;
+    gap: 8px 10px;
   }
   .dot-circle { display: none; }
   
