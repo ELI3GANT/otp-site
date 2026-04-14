@@ -6758,9 +6758,13 @@ If citations are provided, treat them as the source of truth for pricing/rules a
     };
 
     // --- ENHANCED LIVE TRAFFIC SIMULATION ---
+    let trafficUplinkStarted = false;
+
     function initTrafficUplink() {
         const pingContainer = document.getElementById('geoPings');
         if (!pingContainer) return;
+        if (trafficUplinkStarted) return;
+        trafficUplinkStarted = true;
 
         // Clear placeholder
         pingContainer.innerHTML = '';
@@ -7060,6 +7064,18 @@ Lang: ${u.lang || 'Unknown'}</div>
             }, 3000);
         }
     }
+
+    /** Manual "open live uplink" (optional .gate-btn); idempotent with delayed initTrafficUplink. */
+    window.unlockChannel = function() {
+        state.isUnlocked = true;
+        if (!document.getElementById('geoPings')) return;
+        if (trafficUplinkStarted) {
+            if (window.showToast) window.showToast('LIVE UPLINK ALREADY ACTIVE');
+            return;
+        }
+        initTrafficUplink();
+        if (window.showToast) window.showToast('LIVE UPLINK ACTIVE');
+    };
     
     // EXPOSE SYSTEM HEALTH TO WINDOW
     window.checkSystemHealth = async function() {
