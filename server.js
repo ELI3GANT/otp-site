@@ -1037,6 +1037,10 @@ async function fetchStructuredKnowledgeEntries({ includeInactive = false, limit 
                 service_tags: serviceTags,
                 active,
                 updated_at: row.updated_at,
+                body: String(payload.body || '').trim(),
+                pricing_guidance: String(payload.pricing_guidance || '').trim(),
+                doc_rules: docRules,
+                playbook: String(payload.playbook || '').trim(),
                 text: entryText
             };
         })
@@ -1046,7 +1050,7 @@ async function fetchStructuredKnowledgeEntries({ includeInactive = false, limit 
 
 function scoreStructuredKnowledge(leadText, entries, serviceType) {
     const base = scoreKnowledgeChunks(leadText, (entries || []).map((e) => ({
-        file_name: `structured:${e.title}`,
+        file_name: `structured:${e.entry_id}:${e.title}`,
         chunk_index: 0,
         vector: textToVector(e.text, KB_VECTOR_DIMS)
     })));
@@ -1054,8 +1058,9 @@ function scoreStructuredKnowledge(leadText, entries, serviceType) {
     // Re-rank with deterministic boosts: priority + service tag match.
     const st = String(serviceType || '').toLowerCase();
     return base.map((m) => {
-        const rawTitle = String(m.file_name || '').replace(/^structured:/, '');
-        const entry = (entries || []).find((e) => e && e.title === rawTitle) || null;
+        const key = String(m.file_name || '').replace(/^structured:/, '');
+        const entryId = key.split(':')[0] || '';
+        const entry = (entries || []).find((e) => e && String(e.entry_id) === String(entryId)) || null;
         const priority = entry ? Number(entry.priority || 0) : 0;
         const tags = entry ? entry.service_tags || [] : [];
         const tagMatch = st && tags.some((t) => t === st) ? 0.18 : 0;
