@@ -1903,6 +1903,9 @@
         const safeDep = Math.min(depCents, totalCents);
         const rem = Math.max(0, totalCents - safeDep);
         el.textContent = moneyFromCents(rem);
+        const warn = depCents > totalCents;
+        el.style.color = warn ? '#ffb86b' : 'var(--admin-text)';
+        el.title = warn ? 'Deposit cannot exceed total. Adjust values before saving.' : '';
     };
 
     window.saveOpsJob = async function() {
