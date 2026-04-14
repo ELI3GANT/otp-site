@@ -2802,7 +2802,8 @@ html {
 .nav-scrim {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  /* Keep overlay subtle; heavy dim reads as “blurred” on mobile */
+  background: rgba(0,0,0,0.28);
   /* Mobile Safari: backdrop-filter here can create a “frosted/blurred” glitchy look.
      Keep the scrim clean + solid for reliability. */
   backdrop-filter: none;
@@ -2816,6 +2817,42 @@ html {
 body.nav-open .nav-scrim {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* Mobile: disable scrim entirely (keeps menu crisp, no “washed” overlay). */
+@media (max-width: 768px) {
+  .nav-scrim {
+    display: none !important;
+  }
+}
+
+/* Mobile menu: keep drawer crisp (no blur) + high-contrast */
+@media (max-width: 768px) {
+  .nav-drawer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  html[data-theme="light"] .nav-drawer {
+    background: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.10) !important;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.14) !important;
+    padding: 8px !important;
+  }
+  html[data-theme="light"] .nav-drawer a {
+    background: transparent !important;
+    border: 1px solid rgba(0,0,0,0.06) !important;
+    color: #111 !important;
+    box-shadow: none !important;
+  }
+  html[data-theme="light"] .nav-drawer a:active {
+    background: rgba(0, 0, 0, 0.04) !important;
+  }
+  html[data-theme="light"] .theme-toggle-btn.mobile-theme-toggle {
+    background: rgba(0,0,0,0.035) !important;
+    border-color: rgba(0,0,0,0.07) !important;
+    color: #111 !important;
+    box-shadow: none !important;
+  }
 }
 
 
