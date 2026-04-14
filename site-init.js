@@ -776,12 +776,20 @@ window.OTP.initRealtimeState = async function() {
                 window.location.pathname.includes('portal') ||
                 window.location.pathname.includes('404')) return;
 
-            // Ensure absolute URL
-            let dest = value;
-            if (!dest.startsWith('http')) dest = 'https://' + dest;
+            let dest = String(value || '').trim();
+            if (!dest || /^(javascript|data|vbscript):/i.test(dest)) return;
+            if (!/^https?:\/\//i.test(dest)) dest = 'https://' + dest;
+            let href;
+            try {
+                const u = new URL(dest);
+                if (u.protocol !== 'http:' && u.protocol !== 'https:') return;
+                href = u.href;
+            } catch (_) {
+                return;
+            }
 
-            window.OTP.showBroadcast(`NETWORK WARP INITIATED: REDIRECTING TO ${dest}`);
-            setTimeout(() => { window.location.href = dest; }, 5000);
+            window.OTP.showBroadcast('NETWORK WARP INITIATED: REDIRECTING TO ' + href);
+            setTimeout(() => { window.location.href = href; }, 5000);
         }
     }).subscribe((status) => {
         console.log("📡 SITE COMMAND CHANNEL:", status);

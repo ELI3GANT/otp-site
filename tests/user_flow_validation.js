@@ -22,6 +22,10 @@ if (!supabaseUrl || !supabaseKey) {
         supabaseKey = keyMatch ? keyMatch[1] : null;
     }
 }
+if (!supabaseUrl || !supabaseKey) {
+    console.log('SKIP: User Flow — Supabase URL or anon key missing (no site-config / .env).');
+    process.exit(0);
+}
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 function isTransientNetworkErr(err) {

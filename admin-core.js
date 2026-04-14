@@ -1311,7 +1311,7 @@
                 updateDiagnostics('auth', 'RLS BLOCK', 'var(--danger)');
             }
             if (list.innerHTML.includes('LOADING') || list.children.length <= 1) {
-                 list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">LINK ERROR: ${err.message}</div>`;
+                 list.innerHTML = `<div style="text-align: center; color: #ff4444; padding:20px;">LINK ERROR: ${window.escapeHtml(String(err.message || err))}</div>`;
             }
         }
     }
@@ -5648,7 +5648,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         } catch (err) {
             console.error("Media Load Error:", err);
-            grid.innerHTML = `<div class="loader" style="color:#ff4444">ERROR: ${err.message}</div>`;
+            grid.innerHTML = `<div class="loader" style="color:#ff4444">ERROR: ${window.escapeHtml(String(err.message || err))}</div>`;
         }
     };
 
@@ -6753,7 +6753,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         if(type === 'warning') color = '#ffaa00';
         if(type === 'info') color = 'var(--admin-cyan)';
 
-        entry.innerHTML = `<span style="opacity:0.4">[${timestamp}]</span> <span style="color:${color}; font-weight:bold;">${msg}</span>`;
+        entry.innerHTML = `<span style="opacity:0.4">[${timestamp}]</span> <span style="color:${color}; font-weight:bold;">${window.escapeHtml(String(msg))}</span>`;
         
         logContainer.prepend(entry);
         if(logContainer.children.length > 50) {
@@ -7207,7 +7207,7 @@ Lang: ${u.lang || 'Unknown'}</div>
             }
 
         } catch (e) {
-            list.innerHTML = `<div style="text-align: center; color: var(--admin-danger); padding: 20px; font-size: 0.8rem; font-weight: bold;">SYSTEM ERROR: ${e.message}</div>`;
+            list.innerHTML = `<div style="text-align: center; color: var(--admin-danger); padding: 20px; font-size: 0.8rem; font-weight: bold;">SYSTEM ERROR: ${window.escapeHtml(String(e.message || e))}</div>`;
         }
     };
 
