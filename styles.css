@@ -1225,6 +1225,27 @@ h1, h2, h3 {
   pointer-events: auto !important;
 }
 
+/* Mobile: move floating theme toggle away from hero CTAs */
+@media (max-width: 520px) {
+  .theme-toggle-btn {
+    top: calc(86px + env(safe-area-inset-top, 0px)) !important;
+    bottom: auto !important;
+    right: calc(14px + env(safe-area-inset-right, 0px)) !important;
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+/* Accessibility: consistent premium focus ring */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
 .theme-toggle-btn:hover {
   transform: scale(1.1) rotate(12deg);
   background: var(--accent2);

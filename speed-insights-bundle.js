@@ -1,4 +1,14 @@
 // node_modules/@vercel/speed-insights/dist/index.mjs
+// OTP hardening: avoid local dev console noise (/_vercel route is Vercel-only).
+try {
+  const host = (typeof window !== "undefined" && window.location && window.location.hostname) ? window.location.hostname : "";
+  const isLocal = host === "localhost" || host === "127.0.0.1" || host === "::1";
+  if (isLocal) {
+    // No-op on local; keep prod behavior intact.
+    // eslint-disable-next-line no-useless-return
+    void 0;
+  }
+} catch (_) {}
 var initQueue = () => {
   if (window.si) return;
   window.si = function a(...params) {
@@ -110,4 +120,12 @@ function injectSpeedInsights(props = {}, confString) {
 }
 
 // speed-insights-entry.mjs
-injectSpeedInsights({ framework: "html", debug: false });
+try {
+  const host = (typeof window !== "undefined" && window.location && window.location.hostname) ? window.location.hostname : "";
+  const isLocal = host === "localhost" || host === "127.0.0.1" || host === "::1";
+  if (!isLocal) {
+    injectSpeedInsights({ framework: "html", debug: false });
+  }
+} catch (_) {
+  // If anything goes wrong, fail closed (no metrics) rather than erroring in client consoles.
+}
