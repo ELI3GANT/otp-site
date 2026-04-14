@@ -1111,9 +1111,12 @@ function computeRequiredDocuments(leadText) {
         reasons.push('Confidential or unreleased scope detected, so an NDA is required.');
         flags.push('confidential');
     }
-    const mentionsIdentifiableMediaWork = /(film|filming|photo|photography|video|on camera|likeness|voice|performance|actor|talent|face)/.test(text);
+    // Media release should be tied to NEW capture / identifiable talent, not pure post-production editing.
+    const mentionsCaptureOrTalent = /(film|filming|shoot|on camera|photo|photography|talent|actor|performance|likeness|voice|face|portrait|interview)/.test(text);
+    const editingOnly = /(edit|editing|revision|revise|trim|cleanup|caption|subtitles?|color|colour|grade|export|render|resize|crop|format|reformat)/.test(text)
+        && !mentionsCaptureOrTalent;
     const explicitlyNoIdentifiableMedia = /(no video|no filming|no photography|no photo|no people|no faces|faceless|product only|not on camera|without talent|no actors)/.test(text);
-    if (mentionsIdentifiableMediaWork && !explicitlyNoIdentifiableMedia) {
+    if (!editingOnly && mentionsCaptureOrTalent && !explicitlyNoIdentifiableMedia) {
         docs.push('Adult Media Release (if identifiable adults appear)');
         reasons.push('Identifiable people are part of deliverables, so media release coverage is required.');
         flags.push('media');
@@ -1211,14 +1214,30 @@ function classifyServiceType(leadTextLower, packageResult) {
 async function fetchKnowledgeChunkPayloads({ limit = 3000 } = {}) {
     const { data: chunkRows, error: chunkError } = await supabaseAdmin
         .from('site_content')
-        .select('content')
+        .select('key, content, updated_at')
         .ilike('key', `${KNOWLEDGE_PREFIX.chunk}%`)
         .limit(limit);
     if (chunkError) throw chunkError;
     return (chunkRows || [])
-        .map(row => safeJsonParse(row.content, null))
-        .filter(Boolean)
-        .filter(chunk => !chunk.archived);
+        .map((row) => {
+            const chunk = safeJsonParse(row.content, null);
+            if (!chunk || typeof chunk !== 'object') return null;
+            if (chunk.archived) return null;
+            const fileName = String(chunk.file_name || chunk.fileName || row.key || '').trim();
+            const idx = Number.isFinite(Number(chunk.chunk_index)) ? Number(chunk.chunk_index) : 0;
+            const vector = Array.isArray(chunk.vector) ? chunk.vector : null;
+            const text = String(chunk.text || chunk.body || '').trim();
+            if (!fileName) return null;
+            if (!vector && !text) return null;
+            return {
+                file_name: fileName,
+                chunk_index: idx,
+                vector,
+                text,
+                updated_at: row.updated_at || null
+            };
+        })
+        .filter(Boolean);
 }
 
 async function fetchStructuredKnowledgeEntries({ includeInactive = false, limit = 500 } = {}) {
@@ -1286,25 +1305,28 @@ function scoreStructuredKnowledge(leadText, entries, serviceType) {
 function scoreKnowledgeChunks(leadText, chunkPayloads) {
     const leadVector = textToVector(leadText, KB_VECTOR_DIMS);
     return (chunkPayloads || [])
-        .map(chunk => ({
-            file_name: chunk.file_name,
-            chunk_index: chunk.chunk_index,
-            similarity: cosineSimilarity(
-                leadVector,
-                Array.isArray(chunk.vector) ? chunk.vector : textToVector(chunk.text, KB_VECTOR_DIMS)
-            )
-        }))
+        .map((chunk) => {
+            const fileName = String(chunk?.file_name || '').trim();
+            if (!fileName) return null;
+            const idx = Number.isFinite(Number(chunk?.chunk_index)) ? Number(chunk.chunk_index) : 0;
+            const v = Array.isArray(chunk?.vector) ? chunk.vector : null;
+            const t = String(chunk?.text || '').trim();
+            if (!v && !t) return null;
+            const vec = v && v.length ? v : textToVector(t, KB_VECTOR_DIMS);
+            return {
+                file_name: fileName,
+                chunk_index: idx,
+                similarity: cosineSimilarity(leadVector, vec)
+            };
+        })
+        .filter(Boolean)
         .sort((a, b) => b.similarity - a.similarity);
 }
 
 async function runOracleRecommendation({ lead, leadId, sourceTable }) {
     const leadText = buildLeadText(lead, sourceTable);
     const completeness = evaluateLeadDataCompleteness(lead, sourceTable);
-    if (!leadText || leadText.length < 12) {
-        const err = new Error("Lead context is too limited to analyze. Add service, objective, or message details.");
-        err.statusCode = 400;
-        throw err;
-    }
+    const thinContext = !leadText || leadText.length < 12;
 
     const packageResult = inferPackageAndRange(leadText);
     const serviceType = classifyServiceType(String(leadText || '').toLowerCase(), packageResult);
@@ -1320,17 +1342,12 @@ async function runOracleRecommendation({ lead, leadId, sourceTable }) {
         ...structuredScored,
         ...chunkScored.filter((m) => !String(m.file_name || '').startsWith('structured:'))
     ].slice(0, 6);
-
-    if (!topMatches.length) {
-        const err = new Error("No indexed knowledge found. Upload business files first or create structured Oracle knowledge entries.");
-        err.statusCode = 400;
-        throw err;
-    }
+    // Missing KB should not block Oracle: treat as manual-review, low-confidence.
 
     const topConfidence = topMatches.slice(0, 3);
     const confidence = topConfidence.length
         ? Math.max(0.05, Math.min(0.95, topConfidence.reduce((sum, item) => sum + item.similarity, 0) / topConfidence.length))
-        : 0.12;
+        : (thinContext ? 0.08 : 0.12);
 
     const requiredDocs = computeRequiredDocuments(leadText);
     const recommendation = buildBrainResponse({
@@ -2248,10 +2265,59 @@ app.post('/api/admin/knowledge/upload', verifyToken, knowledgeUpload.single('fil
             });
         }
 
+        // If a file with the same name already exists (active), archive it so re-upload acts like "new version".
+        const normalizeName = (s) => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+        const nowIso = new Date().toISOString();
+        const existingSameName = (existingFileRows || [])
+            .map(row => safeJsonParse(row.content, null))
+            .filter(Boolean)
+            .filter(meta => !meta.archived)
+            .find(meta => normalizeName(meta.file_name) === normalizeName(fileName));
+        let replaced = false;
+        if (existingSameName && existingSameName.file_id) {
+            const oldId = String(existingSameName.file_id).trim();
+            if (oldId) {
+                // Reuse archive logic: mark meta+chunks archived so Oracle only sees latest version.
+                try {
+                    const archivedPath = 'archive/old_versions/';
+                    const { data: fileRow } = await supabaseAdmin
+                        .from('site_content')
+                        .select('content')
+                        .eq('key', `${KNOWLEDGE_PREFIX.file}${oldId}`)
+                        .maybeSingle();
+                    const meta = safeJsonParse(fileRow?.content, {}) || {};
+                    meta.archived = true;
+                    meta.archived_at = nowIso;
+                    meta.archived_path = archivedPath;
+                    await supabaseAdmin
+                        .from('site_content')
+                        .update({ content: JSON.stringify(meta), updated_at: nowIso })
+                        .eq('key', `${KNOWLEDGE_PREFIX.file}${oldId}`);
+                    const { data: chunkRows } = await supabaseAdmin
+                        .from('site_content')
+                        .select('key, content')
+                        .ilike('key', `${KNOWLEDGE_PREFIX.chunk}${oldId}%`)
+                        .limit(5000);
+                    const updates = (chunkRows || []).map(row => {
+                        const chunk = safeJsonParse(row.content, {}) || {};
+                        chunk.archived = true;
+                        chunk.archived_at = nowIso;
+                        chunk.archived_path = archivedPath;
+                        return { key: row.key, content: JSON.stringify(chunk), updated_at: nowIso };
+                    });
+                    const batchSize = 120;
+                    for (let i = 0; i < updates.length; i += batchSize) {
+                        const batch = updates.slice(i, i + batchSize);
+                        await supabaseAdmin.from('site_content').upsert(batch, { onConflict: 'key' });
+                    }
+                    replaced = true;
+                } catch (_) { /* non-fatal */ }
+            }
+        }
+
         const fileId = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
         const sourceType = path.extname(fileName).toLowerCase().replace('.', '') || 'unknown';
         const chunks = chunkText(extractedText, 1200, 220);
-        const nowIso = new Date().toISOString();
 
         const fileRow = {
             key: `${KNOWLEDGE_PREFIX.file}${fileId}`,
@@ -2293,6 +2359,7 @@ app.post('/api/admin/knowledge/upload', verifyToken, knowledgeUpload.single('fil
 
         res.json({
             success: true,
+            replaced,
             file: {
                 file_id: fileId,
                 file_name: fileName,

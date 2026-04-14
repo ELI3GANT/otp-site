@@ -379,6 +379,11 @@
             return false;
         }
     };
+    const isStaticBypassAllowed = () => {
+        if (state.token !== 'static-bypass-token') return false;
+        const apiBase = resolveApiBase();
+        return isLocalRuntime() && isLocalApiBase(apiBase);
+    };
     const decodeJwtPayload = (token) => {
         if (!token || token === 'static-bypass-token') return null;
         try {
@@ -1456,6 +1461,7 @@
         const apiBase = resolveApiBase();
         showToast(`INDEXING ${files.length} FILE${files.length === 1 ? '' : 'S'}...`);
         let duplicateCount = 0;
+        let replacedCount = 0;
         for (const file of files) {
             const formData = new FormData();
             formData.append('file', file);
@@ -1469,10 +1475,13 @@
                 throw new Error(payload.message || `Upload failed for ${file.name}`);
             }
             if (payload.duplicate) duplicateCount += 1;
+            if (payload.replaced) replacedCount += 1;
         }
         await window.fetchKnowledgeFiles();
         if (duplicateCount > 0) {
             showToast(`INDEX UPDATED (${duplicateCount} DUPLICATE${duplicateCount === 1 ? '' : 'S'} SKIPPED)`);
+        } else if (replacedCount > 0) {
+            showToast(`KNOWLEDGE UPDATED (${replacedCount} FILE${replacedCount === 1 ? '' : 'S'} REPLACED)`);
         } else {
             showToast('KNOWLEDGE INDEX UPDATED');
         }
@@ -1867,6 +1876,9 @@
             // Official pricing hints (non-binding)
             setPlaceholder('opsTotalPrice', 'Total Price * (e.g. 500)');
             setPlaceholder('opsDepositAmount', 'Deposit Amount (e.g. 250)');
+            // Sensible defaults to reduce save failures.
+            set('opsPaymentStatus', 'Unpaid');
+            set('opsJobStatus', 'New Lead');
             return;
         }
 
@@ -2043,7 +2055,7 @@
     };
 
     window.deleteOpsJob = async function(jobId) {
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         const id = String(jobId || '').trim();
         if (!id) return;
         const typed = prompt(`TRASH / DELETE job ${id}?\n\nThis permanently removes the record.\nType DELETE to confirm.`, '');
@@ -2263,7 +2275,7 @@
     };
 
     window.exportOpsPacketZip = async function() {
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         const s = window.__opsPacketState || {};
         const jobId = String(s.jobId || document.getElementById('opsJobId')?.value || '').trim();
         if (!jobId) { showToast('OPEN A JOB FIRST'); return; }
@@ -2416,7 +2428,7 @@
     };
 
     window.executeOpsSend = async function() {
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         const s = window.__opsSendState || {};
         const jobId = String(s.jobId || document.getElementById('opsJobId')?.value || '').trim();
         if (!jobId) { showToast('OPEN A JOB FIRST'); return; }
