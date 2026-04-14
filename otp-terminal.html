@@ -405,6 +405,58 @@
                 <div id="knowledgeFilesManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 340px; overflow-y: auto;">
                     <div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO FILE INDEX YET</div>
                 </div>
+
+                <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--admin-border);">
+                    <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 10px; line-height: 1.5;">
+                        <strong style="color:var(--admin-text);">Structured Oracle Knowledge (Priority)</strong><br/>
+                        Editable, service-tagged guidance that Oracle prioritizes over raw file chunks when relevant.
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
+                        <button type="button" onclick="window.fetchStructuredKnowledge()" class="btn-secondary" style="width:auto;font-size:0.7rem;">REFRESH STRUCTURED</button>
+                        <button type="button" onclick="window.openStructuredKnowledgeEditor()" class="btn-secondary" style="width:auto;font-size:0.7rem;">NEW ENTRY</button>
+                        <span id="structuredKnowledgeBadge" style="font-size: 0.65rem; color: var(--admin-cyan); border: 1px solid var(--admin-border); border-radius: 6px; padding: 6px 10px;">STRUCTURED: STANDBY</span>
+                    </div>
+
+                    <div id="structuredKnowledgeEditor" style="display:none;background:var(--admin-panel);border:1px solid var(--admin-border);border-radius:12px;padding:12px;margin-bottom:10px;">
+                        <input id="structuredEntryId" type="hidden" />
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end;">
+                            <div>
+                                <div style="font-size:0.68rem;color:var(--admin-muted);margin-bottom:6px;">Title</div>
+                                <input id="structuredTitle" class="input-field" placeholder="Simple edits playbook" style="width:100%;padding:10px;border-radius:10px;" />
+                            </div>
+                            <div>
+                                <div style="font-size:0.68rem;color:var(--admin-muted);margin-bottom:6px;">Service tags (comma)</div>
+                                <input id="structuredServiceTags" class="input-field" placeholder="simple_edit, video_service" style="width:100%;padding:10px;border-radius:10px;" />
+                            </div>
+                            <div>
+                                <div style="font-size:0.68rem;color:var(--admin-muted);margin-bottom:6px;">Priority (0-10)</div>
+                                <input id="structuredPriority" class="input-field" placeholder="5" style="width:100%;padding:10px;border-radius:10px;" />
+                            </div>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--admin-text);padding:6px 2px;">
+                                <input id="structuredActive" type="checkbox" checked />
+                                Active
+                            </label>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <div style="font-size:0.68rem;color:var(--admin-muted);margin-bottom:6px;">Body / guidance</div>
+                            <textarea id="structuredBody" class="input-field" rows="5" placeholder="Pricing guidance, what to ask, default deliverables..." style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <div style="font-size:0.68rem;color:var(--admin-muted);margin-bottom:6px;">Doc rules / notes (optional)</div>
+                            <textarea id="structuredDocRules" class="input-field" rows="3" placeholder="When NDA applies, when media release applies, etc." style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:10px;">
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="window.closeStructuredKnowledgeEditor()">CANCEL</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="window.archiveStructuredKnowledgeEntry()">ARCHIVE</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;background:var(--admin-cyan);color:#000;border:none;" onclick="window.saveStructuredKnowledgeEntry()">SAVE ENTRY</button>
+                        </div>
+                        <div id="structuredSaveStatus" style="margin-top:8px;font-size:0.68rem;color:var(--admin-muted);"></div>
+                    </div>
+
+                    <div id="structuredKnowledgeManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 260px; overflow-y: auto;">
+                        <div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO STRUCTURED ENTRIES YET</div>
+                    </div>
+                </div>
             </section>
 
             <!-- SECTION: SESSION LOG -->
@@ -1011,7 +1063,7 @@
                     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
                         <div style="font-size:0.72rem;color:var(--admin-muted);line-height:1.45;flex:1;min-width:260px;">
                             <strong style="color:var(--admin-text);">Send to client (Approval-gated)</strong><br/>
-                            Only approved documents can be sent. Sending is logged to an audit trail.
+                            Only approved documents can be sent. NDA and media release default <em>off</em> in the email unless Oracle flagged them—toggle below. Sending is logged to an audit trail.
                         </div>
                         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
                             <button id="docPacketAuditRefreshBtn" type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="refreshDocPacketAudit()">REFRESH AUDIT</button>
@@ -1037,6 +1089,7 @@
                             <button id="docPacketSendBtn" type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="sendDocPacketEmail()">SEND APPROVED DOCS</button>
                         </div>
                     </div>
+                    <div id="docPacketSendPick" style="margin-top:8px;"></div>
                     <div id="docPacketAuditLog" style="margin-top:10px;font-family:monospace;font-size:0.7rem;color:var(--admin-muted);white-space:pre-wrap;"></div>
                 </div>
                 <div id="docPacketList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
@@ -1111,7 +1164,7 @@
     <script src="site-config.js?v=16.4.6"></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.6.12"></script>
+    <script src="admin-core.js?v=16.6.14"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

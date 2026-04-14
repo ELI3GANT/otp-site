@@ -30,6 +30,15 @@ assert.match(server, /function renderHtmlDoc\(/);
 assert.match(server, /function appendOracleStoredContext\(/);
 assert.match(server, /inferPackageAndRange\(/);
 assert.match(server, /computeRequiredDocuments\(/);
+assert.match(server, /Simple Edit/, 'Oracle supports Simple Edit service');
+assert.match(server, /service_type:/, 'Oracle recommendation includes service_type');
+assert.match(server, /kb_structured::/, 'Structured knowledge prefix present');
+assert.match(server, /\/api\/admin\/knowledge\/structured\/list/, 'Structured knowledge list endpoint');
+assert.match(server, /\/api\/admin\/knowledge\/structured\/upsert/, 'Structured knowledge upsert endpoint');
+assert.match(server, /\/api\/admin\/knowledge\/structured\/archive/, 'Structured knowledge archive endpoint');
+assert.match(server, /runOracleRecommendation\(/, 'Shared recommendation helper');
+assert.match(server, /\/api\/admin\/docs\/signature\/request/, 'Signature request endpoint scaffolding');
+assert.match(server, /\/api\/admin\/docs\/signature\/capture/, 'Signature capture endpoint scaffolding');
 
 // --- Admin-core: Terminal Oracle entry points + cache ---
 assert.ok(adminCore.includes('window.runOracleForReplyContext = async function'));
@@ -39,6 +48,7 @@ assert.ok(adminCore.includes('window.leadOracleCache'));
 assert.ok(adminCore.includes('/api/admin/knowledge/recommend'));
 assert.ok(adminCore.includes('/api/admin/knowledge/recommendations'));
 assert.ok(adminCore.includes('/api/admin/docs/packet'));
+assert.ok(adminCore.includes('fetchStructuredKnowledge'), 'structured knowledge UI fetch');
 assert.ok(adminCore.includes('buildOraclePanelHtml'));
 assert.ok(adminCore.includes('formatOracleContextBlockHtml'));
 
@@ -54,6 +64,7 @@ assert.ok(terminal.includes('onclick="runOracleForReplyContext()"'));
 assert.ok(terminal.includes('id="replyOracleBtn"'));
 assert.ok(terminal.includes('06.5 // OTP Oracle · Knowledge Index'));
 assert.ok(terminal.includes('fetchKnowledgeFiles'));
+assert.ok(terminal.includes('Structured Oracle Knowledge (Priority)'));
 
 console.log('   OK: OTP Oracle master stack');
 console.log('OTP ORACLE MASTER COMPLETE');

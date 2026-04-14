@@ -92,6 +92,8 @@ function buildDocFields({ lead, sourceTable, recommendation }) {
     const docs = Array.isArray(rec.required_documents) ? rec.required_documents : [];
     const pkg = String(rec.recommended_package || '').trim();
     const quoteRange = String(rec.quote_range || '').trim();
+    const serviceType = String(rec.service_type || '').trim();
+    const knowledgeBasis = Array.isArray(rec.knowledge_basis) ? rec.knowledge_basis : [];
     const quote = moneyFromRange(quoteRange);
     const low = quote ? quote.low : null;
     const depositDue = low ? Math.round(low * 0.5) : null;
@@ -127,12 +129,16 @@ function buildDocFields({ lead, sourceTable, recommendation }) {
         documents_reason: docsReason,
         lead_summary: leadSummary,
         tactical_advice: tacticalAdvice,
+        service_type: serviceType || 'unknown',
+        knowledge_basis: knowledgeBasis,
         recommended_package: pkg || 'Manual Review',
         quote_range: quoteRange || 'Scope-based',
         required_documents: docs,
         deposit_due_cents: depositDue ? (depositDue * 100) : null,
         invoice_total_cents: low ? (low * 100) : null,
         invoice_currency: 'USD',
+        client_signature_name: '',
+        client_signature_date: '',
         sender_email: 'bookings@onlytrueperspective.tech',
         sender_company: 'Only True Perspective LLC'
     };
@@ -233,6 +239,7 @@ function renderHtmlDoc(docType, fields) {
       <div class="col"><div class="small">Client</div><div><strong>${escapeHtml(f.client_name || '')}</strong></div><div class="small">${escapeHtml(f.client_email || '')}</div></div>
       <div class="col"><div class="small">Recommended package</div><div><strong>${escapeHtml(f.recommended_package || '')}</strong></div><div class="small">${escapeHtml(f.quote_range || '')}</div></div>
     </div>
+    ${f.service_type ? `<div style="margin-top:10px;" class="small">Service type: <strong>${escapeHtml(String(f.service_type))}</strong></div>` : ''}
   </div>
 
   <h2>Client &amp; mission details</h2>
@@ -549,7 +556,8 @@ const KNOWLEDGE_PREFIX = {
     chunk: 'kb_chunk::',
     leadRec: 'kb_lead_rec::',
     docPacket: 'kb_doc_packet::',
-    docAudit: 'kb_doc_audit::'
+    docAudit: 'kb_doc_audit::',
+    structured: 'kb_structured::'
 };
 const VERSION_PREFIX = 'version_event::';
 const MAX_VERSION_EVENTS = 20;
@@ -794,6 +802,7 @@ function inferPackageAndRange(leadText) {
         .map(match => Number(match[1]))
         .filter(value => Number.isFinite(value));
     const maxBudget = budgetValues.length ? Math.max(...budgetValues) : null;
+    const mentionsSimpleEdit = /(simple edit|just an edit|quick edit|minor edit|small edit|one edit|edit only|cut|trim|cleanup|touch[-\s]?up|revise|revision|fix|sync|subtitle|subtitles|captions?|color|colour|grade|export|render|format|reformat|resize|crop|audio fix|sound fix|noise|denoise|stabiliz|stabilise|transition|b-?roll|overlay|remove|add music)/.test(text);
     const mentionsWebsite = /(website|site|landing page|ecommerce|web)/.test(text);
     const mentionsSimple = /(single|quick|one video|one deliverable|basic|starter)/.test(text);
     const mentionsLarge = /(campaign|full brand|custom architecture|retainer|multiple deliverables|system-wide|enterprise|advanced)/.test(text);
@@ -808,6 +817,15 @@ function inferPackageAndRange(leadText) {
             quote_range: '$1,200+',
             package_confidence: 0.86,
             package_reason: 'Scope and budget indicate a premium multi-deliverable engagement.'
+        };
+    }
+
+    if (mentionsSimpleEdit && !mentionsWebsite) {
+        return {
+            recommended_package: 'Simple Edit',
+            quote_range: '$99-$250',
+            package_confidence: 0.78,
+            package_reason: 'Client requested a lightweight revision/editing deliverable rather than a full production build.'
         };
     }
 
@@ -873,6 +891,11 @@ function computeRequiredDocuments(leadText) {
         'Standard onboarding package requires proposal, signed agreement, and 50% deposit invoice before kickoff.'
     ];
     const flags = [];
+    const isSimpleEdit = /(simple edit|just an edit|quick edit|minor edit|small edit|one edit|edit only|revision|revise|touch[-\s]?up)/.test(text);
+    if (isSimpleEdit) {
+        reasons.push('Scope appears to be a small, single-deliverable edit; keep the doc set minimal and only add NDA/media release when the content requires it.');
+        flags.push('simple_edit');
+    }
     const requestsConfidentialFlow = /(confidential|nda|private|unreleased|sensitive|stealth)/.test(text);
     const explicitlyNonConfidential = /(not confidential|non-confidential|no nda|without nda|public release|public campaign|not private|not sensitive)/.test(text);
     if (requestsConfidentialFlow && !explicitlyNonConfidential) {
@@ -902,6 +925,7 @@ function computeRequiredDocuments(leadText) {
 function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence, topMatches, completeness }) {
     const confidenceLabel = confidence > 0.55 ? 'high' : confidence > 0.35 ? 'medium' : 'low';
     const text = String(leadText || '').toLowerCase();
+    const serviceType = classifyServiceType(text, packageResult);
     const explicitUnclear = /unclear|not sure|idk|help|unsure|figure it out|need guidance|not decided/.test(text);
     const missingScopeSignals = !(completeness && completeness.sufficient);
     const hasMissingFields = Boolean(completeness && Array.isArray(completeness.missing_fields) && completeness.missing_fields.length);
@@ -931,6 +955,7 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
 
     return {
         lead_summary: leadText.slice(0, 700),
+        service_type: serviceType,
         recommended_package: packageResult.recommended_package,
         quote_range: packageResult.quote_range,
         package_confidence: packageConfidence,
@@ -942,6 +967,7 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
         knowledge_basis: knowledgeBasis,
         admin_notes: [
             `Confidence: ${confidenceLabel} (${confidence.toFixed(2)})`,
+            `Service type: ${serviceType}`,
             'Default workflow enforces agreement + invoice + 50% deposit before work begins.',
             (missingScopeSignals || hasMissingFields)
                 ? `Missing lead fields: ${(completeness?.missing_fields || []).join(', ') || 'scope details'}`
@@ -949,6 +975,165 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
             `Knowledge matches: ${(Array.isArray(topMatches) ? topMatches : []).map(m => `${m.file_name}#${m.chunk_index}`).join(', ') || 'none'}`
         ],
         draft_client_reply: `Thanks for reaching out to OnlyTruePerspective LLC. Based on your project details, the strongest next step is ${packageResult.recommended_package} (${packageResult.quote_range}). Before kickoff, we run a secure onboarding flow: proposal review, signed agreement, and invoice with a 50% deposit. Once approved, we can lock timeline and production start.`,
+    };
+}
+
+function classifyServiceType(leadTextLower, packageResult) {
+    const text = String(leadTextLower || '').toLowerCase();
+    const pkg = String(packageResult?.recommended_package || '').toLowerCase();
+    const isSimpleEdit = /(simple edit|just an edit|quick edit|minor edit|small edit|one edit|edit only|revision|revise|touch[-\s]?up|caption|subtitle|trim|cleanup|export|format|resize)/.test(text) || pkg.includes('simple edit');
+    const isWebsite = /(website|site|landing page|ecommerce|web|portal|platform|membership)/.test(text) || pkg.includes('website');
+    const isVideo = /(video|edit|editing|reel|shorts|tiktok|youtube|filming|shoot|cinematic|music video|color grade|vfx|sfx|audio)/.test(text) || /(signal|engine|system)/.test(pkg);
+    const isBranding = /(brand|branding|identity|strategy|creative direction|art direction|design system)/.test(text);
+    const isHybrid = isWebsite && (isVideo || isBranding);
+    if (isHybrid) return 'hybrid_or_multideliverable';
+    if (isSimpleEdit && !isWebsite) return 'simple_edit';
+    if (isWebsite) return 'website_service';
+    if (isBranding) return 'branding_or_strategy';
+    if (isVideo) return 'video_service';
+    return 'unknown';
+}
+
+// --- OTP Oracle core (shared helper) ---
+async function fetchKnowledgeChunkPayloads({ limit = 3000 } = {}) {
+    const { data: chunkRows, error: chunkError } = await supabaseAdmin
+        .from('site_content')
+        .select('content')
+        .ilike('key', `${KNOWLEDGE_PREFIX.chunk}%`)
+        .limit(limit);
+    if (chunkError) throw chunkError;
+    return (chunkRows || [])
+        .map(row => safeJsonParse(row.content, null))
+        .filter(Boolean)
+        .filter(chunk => !chunk.archived);
+}
+
+async function fetchStructuredKnowledgeEntries({ includeInactive = false, limit = 500 } = {}) {
+    const { data: rows, error } = await supabaseAdmin
+        .from('site_content')
+        .select('key, content, updated_at')
+        .ilike('key', `${KNOWLEDGE_PREFIX.structured}%`)
+        .limit(limit);
+    if (error) throw error;
+    return (rows || [])
+        .map((row) => {
+            const payload = safeJsonParse(row.content, null);
+            if (!payload || typeof payload !== 'object') return null;
+            const active = payload.active !== false;
+            const archived = payload.archived === true;
+            if (archived) return null;
+            if (!includeInactive && !active) return null;
+            const entryId = String(payload.entry_id || row.key.replace(KNOWLEDGE_PREFIX.structured, '')).trim();
+            const title = String(payload.title || '').trim() || entryId || 'Structured';
+            const priority = Number.isFinite(Number(payload.priority)) ? Number(payload.priority) : 0;
+            const serviceTags = Array.isArray(payload.service_tags) ? payload.service_tags.map((s) => String(s).toLowerCase().trim()).filter(Boolean) : [];
+            const body = String(payload.body || payload.playbook || payload.pricing_guidance || '').trim();
+            const docRules = String(payload.doc_rules || '').trim();
+            const entryText = normalizeWhitespace([title, body, docRules].filter(Boolean).join('\n\n'));
+            return {
+                entry_id: entryId,
+                title,
+                priority,
+                service_tags: serviceTags,
+                active,
+                updated_at: row.updated_at,
+                text: entryText
+            };
+        })
+        .filter(Boolean)
+        .filter((e) => e.text && e.text.length >= 20);
+}
+
+function scoreStructuredKnowledge(leadText, entries, serviceType) {
+    const base = scoreKnowledgeChunks(leadText, (entries || []).map((e) => ({
+        file_name: `structured:${e.title}`,
+        chunk_index: 0,
+        vector: textToVector(e.text, KB_VECTOR_DIMS)
+    })));
+
+    // Re-rank with deterministic boosts: priority + service tag match.
+    const st = String(serviceType || '').toLowerCase();
+    return base.map((m) => {
+        const rawTitle = String(m.file_name || '').replace(/^structured:/, '');
+        const entry = (entries || []).find((e) => e && e.title === rawTitle) || null;
+        const priority = entry ? Number(entry.priority || 0) : 0;
+        const tags = entry ? entry.service_tags || [] : [];
+        const tagMatch = st && tags.some((t) => t === st) ? 0.18 : 0;
+        const priorityBoost = Math.max(0, Math.min(0.25, priority * 0.03));
+        const boosted = Math.max(0, Math.min(0.999, Number(m.similarity || 0) + tagMatch + priorityBoost));
+        return { ...m, similarity: boosted };
+    }).sort((a, b) => b.similarity - a.similarity);
+}
+
+function scoreKnowledgeChunks(leadText, chunkPayloads) {
+    const leadVector = textToVector(leadText, KB_VECTOR_DIMS);
+    return (chunkPayloads || [])
+        .map(chunk => ({
+            file_name: chunk.file_name,
+            chunk_index: chunk.chunk_index,
+            similarity: cosineSimilarity(
+                leadVector,
+                Array.isArray(chunk.vector) ? chunk.vector : textToVector(chunk.text, KB_VECTOR_DIMS)
+            )
+        }))
+        .sort((a, b) => b.similarity - a.similarity);
+}
+
+async function runOracleRecommendation({ lead, leadId, sourceTable }) {
+    const leadText = buildLeadText(lead, sourceTable);
+    const completeness = evaluateLeadDataCompleteness(lead, sourceTable);
+    if (!leadText || leadText.length < 12) {
+        const err = new Error("Lead context is too limited to analyze. Add service, objective, or message details.");
+        err.statusCode = 400;
+        throw err;
+    }
+
+    const packageResult = inferPackageAndRange(leadText);
+    const serviceType = classifyServiceType(String(leadText || '').toLowerCase(), packageResult);
+
+    // Structured knowledge gets first pass, then we fill remaining slots with indexed file chunks.
+    const structured = await fetchStructuredKnowledgeEntries({ includeInactive: false, limit: 500 }).catch(() => []);
+    const structuredScored = structured.length ? scoreStructuredKnowledge(leadText, structured, serviceType).slice(0, 4) : [];
+
+    const chunkPayloads = await fetchKnowledgeChunkPayloads({ limit: 3000 });
+    const chunkScored = chunkPayloads.length ? scoreKnowledgeChunks(leadText, chunkPayloads) : [];
+
+    const topMatches = [
+        ...structuredScored,
+        ...chunkScored.filter((m) => !String(m.file_name || '').startsWith('structured:'))
+    ].slice(0, 6);
+
+    if (!topMatches.length) {
+        const err = new Error("No indexed knowledge found. Upload business files first or create structured Oracle knowledge entries.");
+        err.statusCode = 400;
+        throw err;
+    }
+
+    const topConfidence = topMatches.slice(0, 3);
+    const confidence = topConfidence.length
+        ? Math.max(0.05, Math.min(0.95, topConfidence.reduce((sum, item) => sum + item.similarity, 0) / topConfidence.length))
+        : 0.12;
+
+    const requiredDocs = computeRequiredDocuments(leadText);
+    const recommendation = buildBrainResponse({
+        leadText,
+        packageResult,
+        requiredDocs,
+        confidence,
+        topMatches,
+        completeness
+    });
+
+    return {
+        leadId,
+        leadText,
+        serviceType,
+        completeness,
+        topMatches,
+        confidence,
+        packageResult,
+        requiredDocs,
+        recommendation
     };
 }
 
@@ -1972,6 +2157,91 @@ app.post('/api/admin/knowledge/archive', verifyToken, async (req, res) => {
     }
 });
 
+// 2.10.2 OTP Oracle — structured knowledge (editable, priority-aware)
+app.post('/api/admin/knowledge/structured/list', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const includeInactive = !!req.body?.includeInactive;
+        const entries = await fetchStructuredKnowledgeEntries({ includeInactive, limit: 800 });
+        res.json({ success: true, entries });
+    } catch (error) {
+        console.error("knowledge-structured-list:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/admin/knowledge/structured/upsert', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const nowIso = new Date().toISOString();
+        const entryId = String(req.body?.entry_id || '').trim() || crypto.randomBytes(6).toString('hex');
+        const title = String(req.body?.title || '').trim();
+        if (!title) return res.status(400).json({ success: false, message: "Missing title." });
+
+        const payload = {
+            schema: 'otp-kb-structured-v1',
+            entry_id: entryId,
+            title,
+            body: String(req.body?.body || '').trim(),
+            pricing_guidance: String(req.body?.pricing_guidance || '').trim(),
+            doc_rules: String(req.body?.doc_rules || '').trim(),
+            playbook: String(req.body?.playbook || '').trim(),
+            service_tags: Array.isArray(req.body?.service_tags)
+                ? req.body.service_tags.map((s) => String(s).toLowerCase().trim()).filter(Boolean).slice(0, 24)
+                : [],
+            audience_tags: Array.isArray(req.body?.audience_tags)
+                ? req.body.audience_tags.map((s) => String(s).toLowerCase().trim()).filter(Boolean).slice(0, 24)
+                : [],
+            priority: Number.isFinite(Number(req.body?.priority)) ? Number(req.body.priority) : 0,
+            active: req.body?.active === false ? false : true,
+            archived: false,
+            updated_at: nowIso
+        };
+
+        const key = `${KNOWLEDGE_PREFIX.structured}${entryId}`;
+        const { error: upsertError } = await supabaseAdmin
+            .from('site_content')
+            .upsert([{ key, content: JSON.stringify(payload), updated_at: nowIso }], { onConflict: 'key' });
+        if (upsertError) throw upsertError;
+
+        res.json({ success: true, entry: { ...payload, key } });
+    } catch (error) {
+        console.error("knowledge-structured-upsert:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/admin/knowledge/structured/archive', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const entryId = String(req.body?.entry_id || '').trim();
+        if (!entryId) return res.status(400).json({ success: false, message: "Missing entry_id." });
+        const key = `${KNOWLEDGE_PREFIX.structured}${entryId}`;
+        const { data: row, error: fetchError } = await supabaseAdmin
+            .from('site_content')
+            .select('content')
+            .eq('key', key)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!row) return res.status(404).json({ success: false, message: "Structured entry not found." });
+        const payload = safeJsonParse(row.content, null);
+        if (!payload || typeof payload !== 'object') return res.status(500).json({ success: false, message: "Structured entry corrupted." });
+        payload.archived = true;
+        payload.archived_at = new Date().toISOString();
+        payload.active = false;
+        const nowIso = new Date().toISOString();
+        const { error: updateError } = await supabaseAdmin
+            .from('site_content')
+            .update({ content: JSON.stringify(payload), updated_at: nowIso })
+            .eq('key', key);
+        if (updateError) throw updateError;
+        res.json({ success: true });
+    } catch (error) {
+        console.error("knowledge-structured-archive:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // 2.11 OTP Oracle — knowledge: lead/contact recommendation
 app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
@@ -1991,51 +2261,8 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
         }
         if (!lead) return res.status(400).json({ success: false, message: "Missing lead context." });
         if (!leadId) leadId = String(lead.id || '').trim() || crypto.randomBytes(6).toString('hex');
-
-        const leadText = buildLeadText(lead, sourceTable);
-        const completeness = evaluateLeadDataCompleteness(lead, sourceTable);
-        if (!leadText || leadText.length < 12) {
-            return res.status(400).json({ success: false, message: "Lead context is too limited to analyze. Add service, objective, or message details." });
-        }
-        const leadVector = textToVector(leadText, KB_VECTOR_DIMS);
-
-        const { data: chunkRows, error: chunkError } = await supabaseAdmin
-            .from('site_content')
-            .select('content')
-            .ilike('key', `${KNOWLEDGE_PREFIX.chunk}%`)
-            .limit(3000);
-        if (chunkError) throw chunkError;
-        if (!chunkRows || !chunkRows.length) {
-            return res.status(400).json({ success: false, message: "No indexed knowledge found. Upload business files first." });
-        }
-
-        const scored = chunkRows
-            .map(row => safeJsonParse(row.content, null))
-            .filter(Boolean)
-            .filter(chunk => !chunk.archived)
-            .map(chunk => ({
-                file_name: chunk.file_name,
-                chunk_index: chunk.chunk_index,
-                similarity: cosineSimilarity(leadVector, Array.isArray(chunk.vector) ? chunk.vector : textToVector(chunk.text, KB_VECTOR_DIMS))
-            }))
-            .sort((a, b) => b.similarity - a.similarity);
-
-        const topMatches = scored.slice(0, 6);
-        const topConfidence = topMatches.slice(0, 3);
-        const confidence = topConfidence.length
-            ? Math.max(0.05, Math.min(0.95, topConfidence.reduce((sum, item) => sum + item.similarity, 0) / topConfidence.length))
-            : 0.12;
-
-        const packageResult = inferPackageAndRange(leadText);
-        const requiredDocs = computeRequiredDocuments(leadText);
-        const recommendation = buildBrainResponse({
-            leadText,
-            packageResult,
-            requiredDocs,
-            confidence,
-            topMatches,
-            completeness
-        });
+        const oracle = await runOracleRecommendation({ lead, leadId, sourceTable });
+        const { topMatches, confidence, recommendation } = oracle;
 
         const recKey = `${KNOWLEDGE_PREFIX.leadRec}${leadId}`;
         const nowIso = new Date().toISOString();
@@ -2062,8 +2289,9 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
             top_matches: topMatches.slice(0, 6)
         });
     } catch (error) {
+        const status = Number(error.statusCode) || 500;
         console.error("knowledge-recommend:", error.message);
-        res.status(500).json({ success: false, message: error.message });
+        res.status(status).json({ success: false, message: error.message });
     }
 });
 
@@ -2083,48 +2311,22 @@ app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
             .maybeSingle();
         if (leadError) throw leadError;
         if (!lead) return res.status(404).json({ success: false, message: "Lead not found." });
-
-        // Run Oracle-style recommendation (same internal path as /knowledge/recommend)
-        const leadText = buildLeadText(lead, sourceTable);
-        const completeness = evaluateLeadDataCompleteness(lead, sourceTable);
-        const leadVector = textToVector(leadText, KB_VECTOR_DIMS);
-        const { data: chunkRows, error: chunkError } = await supabaseAdmin
-            .from('site_content')
-            .select('content')
-            .ilike('key', `${KNOWLEDGE_PREFIX.chunk}%`)
-            .limit(3000);
-        if (chunkError) throw chunkError;
-        const scored = (chunkRows || [])
-            .map(row => safeJsonParse(row.content, null))
-            .filter(Boolean)
-            .filter(chunk => !chunk.archived)
-            .map(chunk => ({
-                file_name: chunk.file_name,
-                chunk_index: chunk.chunk_index,
-                similarity: cosineSimilarity(leadVector, Array.isArray(chunk.vector) ? chunk.vector : textToVector(chunk.text, KB_VECTOR_DIMS))
-            }))
-            .sort((a, b) => b.similarity - a.similarity);
-        const topMatches = scored.slice(0, 6);
-        const topConfidence = topMatches.slice(0, 3);
-        const confidence = topConfidence.length
-            ? Math.max(0.05, Math.min(0.95, topConfidence.reduce((sum, item) => sum + item.similarity, 0) / topConfidence.length))
-            : 0.12;
-        const packageResult = inferPackageAndRange(leadText);
-        const requiredDocs = computeRequiredDocuments(leadText);
-        const recommendation = buildBrainResponse({
-            leadText,
-            packageResult,
-            requiredDocs,
-            confidence,
-            topMatches,
-            completeness
-        });
+        // Run Oracle-style recommendation (shared helper)
+        const oracle = await runOracleRecommendation({ lead, leadId, sourceTable });
+        const { recommendation } = oracle;
 
         const fields = buildDocFields({ lead, sourceTable, recommendation });
         const docTypes = ['proposal', 'agreement', 'invoice', 'nda', 'media_release'];
         const docs = {};
         for (const t of docTypes) {
-            docs[t] = { html: renderHtmlDoc(t, fields), approved: false };
+            docs[t] = {
+                html: renderHtmlDoc(t, fields),
+                approved: false,
+                approved_at: null,
+                signed: false,
+                signed_at: null,
+                signature_required: t === 'agreement'
+            };
         }
 
         // DOCX generation for master templates (proposal + agreement)
@@ -2152,7 +2354,8 @@ app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
             lead_id: leadId,
             generated_at: nowIso,
             fields,
-            docs
+            docs,
+            recommendation
         };
 
         const { error: upsertError } = await supabaseAdmin
@@ -2169,8 +2372,9 @@ app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
             docx_errors: Object.keys(docxErrors).length ? docxErrors : null
         });
     } catch (error) {
+        const status = Number(error.statusCode) || 500;
         console.error("docs-packet:", error.message);
-        res.status(500).json({ success: false, message: error.message });
+        res.status(status).json({ success: false, message: error.message });
     }
 });
 
@@ -2209,6 +2413,78 @@ app.post('/api/admin/docs/approve', verifyToken, async (req, res) => {
     } catch (error) {
         console.error("docs-approve:", error.message);
         res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2.13.1 Signature hooks (internal scaffolding; no external e-sign provider yet)
+app.post('/api/admin/docs/signature/request', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.body?.packetId || '').trim();
+    const docType = String(req.body?.docType || '').trim();
+    if (!packetId) return res.status(400).json({ success: false, message: 'Missing packetId' });
+    if (!docType) return res.status(400).json({ success: false, message: 'Missing docType' });
+    try {
+        const got = await getDocPacketOrThrow(packetId);
+        const packet = got.packet;
+        const docs = packet.docs && typeof packet.docs === 'object' ? packet.docs : {};
+        if (!docs[docType]) return res.status(404).json({ success: false, message: 'Doc not found' });
+        const audit = await appendDocAudit(packetId, {
+            type: 'doc_signature_requested',
+            actor: req.auth?.role || 'admin',
+            doc_type: docType,
+            packet_version: got.meta
+        });
+        res.json({ success: true, audit_last_hash: audit?.last_hash || null });
+    } catch (error) {
+        const status = Number(error.statusCode) || 500;
+        console.error("docs-signature-request:", error.message);
+        res.status(status).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/admin/docs/signature/capture', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const packetId = String(req.body?.packetId || '').trim();
+    const docType = String(req.body?.docType || '').trim();
+    const signerName = String(req.body?.signer_name || '').trim();
+    if (!packetId) return res.status(400).json({ success: false, message: 'Missing packetId' });
+    if (!docType) return res.status(400).json({ success: false, message: 'Missing docType' });
+    if (!signerName) return res.status(400).json({ success: false, message: 'Missing signer_name' });
+    try {
+        const got = await getDocPacketOrThrow(packetId);
+        const packet = got.packet;
+        const docs = packet.docs && typeof packet.docs === 'object' ? packet.docs : {};
+        if (!docs[docType]) return res.status(404).json({ success: false, message: 'Doc not found' });
+
+        // Minimal state update (scaffolding). Later: signer sessions + locked render + binary artifacts.
+        docs[docType].signed = true;
+        docs[docType].signed_at = new Date().toISOString();
+        packet.docs = docs;
+        if (!packet.fields || typeof packet.fields !== 'object') packet.fields = {};
+        packet.fields.client_signature_name = signerName;
+        packet.fields.client_signature_date = new Date().toISOString().slice(0, 10);
+
+        const key = `${KNOWLEDGE_PREFIX.docPacket}${packetId}`;
+        const nowIso = new Date().toISOString();
+        const { error: updateError } = await supabaseAdmin
+            .from('site_content')
+            .update({ content: JSON.stringify(packet), updated_at: nowIso })
+            .eq('key', key);
+        if (updateError) throw updateError;
+
+        const audit = await appendDocAudit(packetId, {
+            type: 'doc_signature_captured',
+            actor: req.auth?.role || 'admin',
+            doc_type: docType,
+            signer_name: signerName,
+            packet_version: got.meta
+        });
+
+        res.json({ success: true, packet_id: packetId, doc_type: docType, audit_last_hash: audit?.last_hash || null });
+    } catch (error) {
+        const status = Number(error.statusCode) || 500;
+        console.error("docs-signature-capture:", error.message);
+        res.status(status).json({ success: false, message: error.message });
     }
 });
 

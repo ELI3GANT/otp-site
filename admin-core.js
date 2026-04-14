@@ -525,6 +525,7 @@
                     fetchInbox(),
                     fetchLeads(),
                     (typeof window.fetchKnowledgeFiles === 'function' ? window.fetchKnowledgeFiles() : Promise.resolve()),
+                    (typeof window.fetchStructuredKnowledge === 'function' ? window.fetchStructuredKnowledge() : Promise.resolve()),
                     fetchCategories(),
                     fetchArchetypes()
                 ]);
@@ -1518,6 +1519,184 @@
         await window.fetchKnowledgeFiles();
     };
 
+    // --- Structured Oracle Knowledge (priority layer) ---
+    window.structuredKnowledgeCache = [];
+
+    function parseCommaTags(input) {
+        return String(input || '')
+            .split(',')
+            .map((s) => s.trim().toLowerCase())
+            .filter(Boolean)
+            .slice(0, 24);
+    }
+
+    function setStructuredStatus(text) {
+        const badge = document.getElementById('structuredKnowledgeBadge');
+        if (badge) badge.textContent = String(text || 'STRUCTURED: STANDBY');
+    }
+
+    window.fetchStructuredKnowledge = async function() {
+        const container = document.getElementById('structuredKnowledgeManager');
+        if (!state.token) {
+            setStructuredStatus('STRUCTURED: AUTH REQUIRED');
+            if (container) container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED TO LOAD STRUCTURED KNOWLEDGE</div>';
+            return;
+        }
+        setStructuredStatus('STRUCTURED: SYNCING...');
+        if (container) container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">SYNCING STRUCTURED KNOWLEDGE...</div>';
+        try {
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/structured/list`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ includeInactive: true })
+            }, 30000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Structured list failed (${res.status})`);
+            window.structuredKnowledgeCache = Array.isArray(payload.entries) ? payload.entries : [];
+            const entries = window.structuredKnowledgeCache;
+            setStructuredStatus(`STRUCTURED: ${entries.length} ENTRY${entries.length === 1 ? '' : 'IES'}`);
+            if (!container) return;
+            if (!entries.length) {
+                container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">NO STRUCTURED ENTRIES YET</div>';
+                return;
+            }
+            container.innerHTML = entries
+                .slice()
+                .sort((a, b) => (Number(b.priority || 0) - Number(a.priority || 0)))
+                .map((e) => {
+                    const title = window.escapeHtml(String(e.title || e.entry_id || 'Entry'));
+                    const id = window.escapeHtml(String(e.entry_id || ''));
+                    const tags = Array.isArray(e.service_tags) ? e.service_tags.join(', ') : '';
+                    const active = e.active !== false;
+                    const activeLabel = active ? 'ACTIVE' : 'INACTIVE';
+                    const color = active ? 'var(--admin-success)' : '#ffaa00';
+                    return `
+                        <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:8px;background:var(--admin-panel);">
+                            <div style="min-width:0;">
+                                <div style="font-size:0.8rem;font-weight:800;color:var(--admin-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
+                                <div style="font-size:0.66rem;color:var(--admin-muted);margin-top:3px;line-height:1.4;">
+                                    <span style="color:${color};font-weight:900;letter-spacing:0.08em;">${activeLabel}</span>
+                                    • priority ${Number(e.priority || 0)}
+                                    ${tags ? `• tags: ${window.escapeHtml(tags)}` : ''}
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <button type="button" onclick="window.editStructuredKnowledgeEntry('${id}')" style="background:transparent;border:1px solid rgba(var(--accent2-rgb),0.35);color:var(--admin-cyan);font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">EDIT</button>
+                            </div>
+                        </div>
+                    `;
+                })
+                .join('');
+        } catch (e) {
+            setStructuredStatus('STRUCTURED: ERROR');
+            if (container) container.innerHTML = `<div style="text-align:center;color:#ff8888;padding:20px;">STRUCTURED ERROR: ${window.escapeHtml(e.message)}</div>`;
+        }
+    };
+
+    window.openStructuredKnowledgeEditor = function() {
+        const editor = document.getElementById('structuredKnowledgeEditor');
+        const status = document.getElementById('structuredSaveStatus');
+        if (status) status.textContent = '';
+        if (editor) editor.style.display = 'block';
+        const id = document.getElementById('structuredEntryId');
+        const title = document.getElementById('structuredTitle');
+        const tags = document.getElementById('structuredServiceTags');
+        const pr = document.getElementById('structuredPriority');
+        const active = document.getElementById('structuredActive');
+        const body = document.getElementById('structuredBody');
+        const rules = document.getElementById('structuredDocRules');
+        if (id) id.value = '';
+        if (title) title.value = '';
+        if (tags) tags.value = '';
+        if (pr) pr.value = '5';
+        if (active) active.checked = true;
+        if (body) body.value = '';
+        if (rules) rules.value = '';
+    };
+
+    window.editStructuredKnowledgeEntry = function(entryId) {
+        const e = (window.structuredKnowledgeCache || []).find((x) => x && String(x.entry_id) === String(entryId));
+        window.openStructuredKnowledgeEditor();
+        const id = document.getElementById('structuredEntryId');
+        const title = document.getElementById('structuredTitle');
+        const tags = document.getElementById('structuredServiceTags');
+        const pr = document.getElementById('structuredPriority');
+        const active = document.getElementById('structuredActive');
+        const body = document.getElementById('structuredBody');
+        const rules = document.getElementById('structuredDocRules');
+        if (id) id.value = String(e?.entry_id || '');
+        if (title) title.value = String(e?.title || '');
+        if (tags) tags.value = Array.isArray(e?.service_tags) ? e.service_tags.join(', ') : '';
+        if (pr) pr.value = String(e?.priority ?? '0');
+        if (active) active.checked = e?.active !== false;
+        // Note: list endpoint returns `text`, but upsert supports body/doc_rules; we keep editor best-effort.
+        if (body) body.value = String(e?.body || e?.text || '');
+        if (rules) rules.value = String(e?.doc_rules || '');
+    };
+
+    window.closeStructuredKnowledgeEditor = function() {
+        const editor = document.getElementById('structuredKnowledgeEditor');
+        if (editor) editor.style.display = 'none';
+    };
+
+    window.saveStructuredKnowledgeEntry = async function() {
+        const status = document.getElementById('structuredSaveStatus');
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        const entry_id = String(document.getElementById('structuredEntryId')?.value || '').trim() || undefined;
+        const title = String(document.getElementById('structuredTitle')?.value || '').trim();
+        const service_tags = parseCommaTags(document.getElementById('structuredServiceTags')?.value || '');
+        const priority = Number(document.getElementById('structuredPriority')?.value || 0);
+        const active = !!document.getElementById('structuredActive')?.checked;
+        const body = String(document.getElementById('structuredBody')?.value || '').trim();
+        const doc_rules = String(document.getElementById('structuredDocRules')?.value || '').trim();
+        if (!title) { showToast('TITLE REQUIRED'); return; }
+        try {
+            if (status) status.textContent = 'Saving...';
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/structured/upsert`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ entry_id, title, service_tags, priority, active, body, doc_rules })
+            }, 45000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Save failed (${res.status})`);
+            showToast('STRUCTURED ENTRY SAVED');
+            if (status) status.textContent = 'Saved.';
+            window.closeStructuredKnowledgeEditor();
+            await window.fetchStructuredKnowledge();
+        } catch (e) {
+            if (status) status.textContent = `Save failed: ${e.message}`;
+            showToast(`SAVE FAILED: ${e.message}`);
+        }
+    };
+
+    window.archiveStructuredKnowledgeEntry = async function() {
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        const entry_id = String(document.getElementById('structuredEntryId')?.value || '').trim();
+        if (!entry_id) { showToast('NO ENTRY SELECTED'); return; }
+        if (!confirm(`Archive structured knowledge entry ${entry_id}?`)) return;
+        const status = document.getElementById('structuredSaveStatus');
+        try {
+            if (status) status.textContent = 'Archiving...';
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/structured/archive`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ entry_id })
+            }, 30000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Archive failed (${res.status})`);
+            showToast('STRUCTURED ENTRY ARCHIVED');
+            if (status) status.textContent = 'Archived.';
+            window.closeStructuredKnowledgeEditor();
+            await window.fetchStructuredKnowledge();
+        } catch (e) {
+            if (status) status.textContent = `Archive failed: ${e.message}`;
+            showToast(`ARCHIVE FAILED: ${e.message}`);
+        }
+    };
+
     window.requestLeadBrain = async function(leadId, sourceTable = 'leads') {
         if (!state.token) throw new Error('LOGIN REQUIRED');
         if (!leadId) throw new Error('MISSING LEAD ID');
@@ -2121,6 +2300,30 @@
         return `[${t}] ${at}\n`;
     }
 
+    /** Canonical doc packet keys (order matches UI + server). */
+    const DOC_PACKET_DOC_KEYS = Object.freeze(['proposal', 'agreement', 'invoice', 'nda', 'media_release']);
+    const DOC_PACKET_LABELS = Object.freeze({
+        proposal: 'Proposal',
+        agreement: 'Agreement',
+        invoice: 'Invoice',
+        nda: 'NDA',
+        media_release: 'Media Release'
+    });
+
+    function normalizeDocPacketApprovalsBaseline(raw) {
+        const out = {};
+        for (const k of DOC_PACKET_DOC_KEYS) out[k] = !!(raw && raw[k]);
+        return out;
+    }
+
+    /** Oracle-driven defaults for attaching NDA / media release to client email (not for approval). */
+    function docPacketOracleAttachDefaults(rec) {
+        const docs = Array.isArray(rec?.required_documents) ? rec.required_documents.map((s) => String(s).toLowerCase()) : [];
+        const nda = docs.some((s) => /nda|mutual|confidential|non-?disclosure/.test(s));
+        const media = docs.some((s) => /media release|likeness|talent release|model release/.test(s));
+        return { nda, media };
+    }
+
     window.__docPacketState = {
         packetId: null,
         docs: {},
@@ -2131,7 +2334,9 @@
         docxErrors: null,
         approvalsBaseline: null,
         notice: null,
-        auditEvents: null
+        auditEvents: null,
+        recommendation: null,
+        sendInclude: null
     };
 
     window.__resetDocPacketState = function(keepContext = false) {
@@ -2143,7 +2348,9 @@
             docxErrors: null,
             approvalsBaseline: null,
             notice: null,
-            auditEvents: null
+            auditEvents: null,
+            recommendation: null,
+            sendInclude: null
         };
         if (!keepContext) {
             next.leadId = null;
@@ -2157,11 +2364,13 @@
     window.__docPacketApprovalsChanged = function() {
         const s = window.__docPacketState || {};
         if (!s.packetId) return false;
-        const baseline = s.approvalsBaseline && typeof s.approvalsBaseline === 'object' ? s.approvalsBaseline : null;
-        if (!baseline) return false;
+        const baseline = normalizeDocPacketApprovalsBaseline(
+            s.approvalsBaseline && typeof s.approvalsBaseline === 'object' ? s.approvalsBaseline : null
+        );
         const toggles = Array.from(document.querySelectorAll('#docPacketList .doc-approve-toggle'));
-        for (const t of toggles) {
-            const k = String(t.dataset.doc || '');
+        for (const k of DOC_PACKET_DOC_KEYS) {
+            const t = toggles.find((el) => String(el.dataset.doc || '') === k);
+            if (!t) continue;
             const cur = !!t.checked;
             const base = !!baseline[k];
             if (cur !== base) return true;
@@ -2178,6 +2387,23 @@
         approveBtn.style.opacity = enabled ? '1' : '0.6';
         approveBtn.style.cursor = enabled ? 'pointer' : 'not-allowed';
         approveBtn.title = !s.packetId ? 'Generate a packet first.' : (enabled ? '' : 'No approval changes to apply.');
+    };
+
+    window.__updateDocPacketSendBtn = function() {
+        const st = window.__docPacketState || {};
+        const hp = !!st.packetId;
+        const sendB = document.getElementById('docPacketSendBtn');
+        if (!sendB) return;
+        const attachCount = DOC_PACKET_DOC_KEYS.filter((k) => st.docs?.[k]?.approved && st.sendInclude?.[k]).length;
+        const anyApproved = Object.values(st.docs || {}).some((d) => d && d.approved);
+        const canSend = hp && attachCount > 0;
+        sendB.disabled = !canSend;
+        sendB.style.opacity = canSend ? '1' : '0.6';
+        sendB.style.cursor = canSend ? 'pointer' : 'not-allowed';
+        if (!hp) sendB.title = 'Generate a packet first.';
+        else if (!anyApproved) sendB.title = 'Approve at least one document before sending.';
+        else if (attachCount === 0) sendB.title = 'Select at least one approved document in “Attach to client email”.';
+        else sendB.title = '';
     };
 
     window.openDocPacket = function() {
@@ -2237,6 +2463,7 @@
         }
         const s = window.__docPacketState || {};
         const hasPacket = !!s.packetId;
+        const oracleAttach = docPacketOracleAttachDefaults(s.recommendation);
         const sendBox = document.getElementById('docPacketSend');
         const sendTo = document.getElementById('docPacketSendTo');
         const auditLog = document.getElementById('docPacketAuditLog');
@@ -2253,6 +2480,7 @@
             <div><strong>Lead ID</strong>: ${window.escapeHtml(String(s.leadId || ''))}</div>
             <div><strong>Source</strong>: ${window.escapeHtml(String(s.sourceTable || 'contacts'))}</div>
             <div><strong>Packet</strong>: ${window.escapeHtml(String(s.packetId || 'NOT GENERATED'))}</div>
+            ${s.recommendation?.service_type ? `<div><strong>Service</strong>: ${window.escapeHtml(String(s.recommendation.service_type))}</div>` : ''}
             ${s.notice ? `<div style="margin-top:8px;padding:8px 10px;border-radius:10px;border:1px solid rgba(var(--accent2-rgb),0.25);background:rgba(var(--accent2-rgb),0.07);color:var(--admin-text);font-size:0.72rem;line-height:1.4;">${window.escapeHtml(String(s.notice))}</div>` : `<div style="margin-top:6px;">Tip: run <strong style="color:var(--admin-cyan);">OTP ORACLE</strong> in the reply window first so packages and required docs match the thread. Then generate → preview → approve → download / send.</div>`}
         `;
 
@@ -2265,15 +2493,60 @@
             }
             if (!hasPacket && auditLog) auditLog.textContent = '';
             if (auditRefreshBtn) auditRefreshBtn.disabled = !hasPacket;
+
+            if (sendBox.dataset.docSendPickDelegated !== '1') {
+                sendBox.dataset.docSendPickDelegated = '1';
+                sendBox.addEventListener('change', (e) => {
+                    const t = e.target;
+                    if (t && t.classList && t.classList.contains('doc-send-include')) {
+                        const k = String(t.dataset.doc || '').trim();
+                        if (!k) return;
+                        if (!window.__docPacketState.sendInclude || typeof window.__docPacketState.sendInclude !== 'object') {
+                            window.__docPacketState.sendInclude = {};
+                        }
+                        window.__docPacketState.sendInclude[k] = !!t.checked;
+                        window.__updateDocPacketSendBtn?.();
+                    }
+                });
+            }
+
+            const sendPick = document.getElementById('docPacketSendPick');
+            if (sendPick) {
+                if (!hasPacket) {
+                    sendPick.innerHTML = '';
+                } else {
+                    if (!s.sendInclude || typeof s.sendInclude !== 'object') s.sendInclude = {};
+                    for (const k of DOC_PACKET_DOC_KEYS) {
+                        const doc = s.docs[k];
+                        if (!doc?.approved) {
+                            delete s.sendInclude[k];
+                            continue;
+                        }
+                        if (s.sendInclude[k] === undefined) {
+                            if (k === 'nda') s.sendInclude[k] = !!oracleAttach.nda;
+                            else if (k === 'media_release') s.sendInclude[k] = !!oracleAttach.media;
+                            else s.sendInclude[k] = true;
+                        }
+                    }
+                    const pickLines = DOC_PACKET_DOC_KEYS.map((k) => {
+                        const doc = s.docs[k];
+                        if (!doc?.approved) return '';
+                        let hint = '';
+                        if (k === 'nda') hint = oracleAttach.nda ? ' — Oracle: confidential scope' : ' — optional';
+                        if (k === 'media_release') hint = oracleAttach.media ? ' — Oracle: people/media' : ' — optional';
+                        const checked = !!s.sendInclude[k];
+                        return `<label style="display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--admin-text);margin-right:14px;margin-bottom:4px;"><input type="checkbox" class="doc-send-include" data-doc="${k}" ${checked ? 'checked' : ''}/><span>${DOC_PACKET_LABELS[k]}${hint}</span></label>`;
+                    }).filter(Boolean);
+                    if (pickLines.length) {
+                        sendPick.innerHTML = `<div style="font-size:0.68rem;color:var(--admin-muted);margin-top:10px;margin-bottom:6px;font-weight:700;">Attach to client email</div><div style="display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;">${pickLines.join('')}</div>`;
+                    } else {
+                        sendPick.innerHTML = '<div style="font-size:0.68rem;color:var(--admin-muted);margin-top:8px;">Approve documents above, then choose which files to attach.</div>';
+                    }
+                }
+            }
         }
 
-        const docOrder = [
-            ['proposal', 'Proposal'],
-            ['agreement', 'Agreement'],
-            ['invoice', 'Invoice'],
-            ['nda', 'NDA'],
-            ['media_release', 'Media Release']
-        ];
+        const docOrder = DOC_PACKET_DOC_KEYS.map((k) => [k, DOC_PACKET_LABELS[k]]);
 
         const statusFor = (key) => {
             if (!hasPacket) return { label: 'NOT GENERATED', color: '#8892a0' };
@@ -2304,11 +2577,24 @@
             const canDownloadHtml = generated && approved && !!doc?.html;
             const canDownloadDocx = generated && approved && (key === 'proposal' || key === 'agreement') && !!doc?.docx;
             const canDownloadPdf = generated && approved && key === 'invoice';
+            const optionalHint =
+                key === 'nda'
+                    ? (oracleAttach.nda
+                        ? '<div style="font-size:0.62rem;color:var(--admin-cyan);font-weight:650;margin-top:6px;line-height:1.35;">Oracle flagged confidential scope — approve if you will use an NDA for this client.</div>'
+                        : '<div style="font-size:0.62rem;color:var(--admin-muted);font-weight:650;margin-top:6px;line-height:1.35;">Optional — approve only if this engagement needs an NDA. Not required for core onboarding.</div>')
+                    : key === 'media_release'
+                        ? (oracleAttach.media
+                            ? '<div style="font-size:0.62rem;color:var(--admin-cyan);font-weight:650;margin-top:6px;line-height:1.35;">Oracle flagged identifiable people/media — approve when a release applies.</div>'
+                            : '<div style="font-size:0.62rem;color:var(--admin-muted);font-weight:650;margin-top:6px;line-height:1.35;">Optional — approve only if deliverables need a media release.</div>')
+                        : '';
             return `
                 <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-panel);">
-                    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-                        <div style="font-weight:800;color:var(--admin-text);">${window.escapeHtml(label)}</div>
-                        <label style="display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--admin-muted);">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+                        <div>
+                            <div style="font-weight:800;color:var(--admin-text);">${window.escapeHtml(label)}</div>
+                            ${optionalHint}
+                        </div>
+                        <label style="display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--admin-muted);flex-shrink:0;">
                             <input type="checkbox" class="doc-approve-toggle" data-doc="${window.escapeHtml(key)}" ${approved ? 'checked' : ''} ${disabled ? 'disabled' : ''}/>
                             APPROVE
                         </label>
@@ -2358,15 +2644,7 @@
             }
         }
 
-        const sendBtn = document.getElementById('docPacketSendBtn');
-        if (sendBtn) {
-            const anyApproved = Object.values(s.docs || {}).some((d) => d && d.approved);
-            const canSend = hasPacket && anyApproved;
-            sendBtn.disabled = !canSend;
-            sendBtn.style.opacity = canSend ? '1' : '0.6';
-            sendBtn.style.cursor = canSend ? 'pointer' : 'not-allowed';
-            sendBtn.title = !hasPacket ? 'Generate a packet first.' : (!anyApproved ? 'Approve at least one document before sending.' : '');
-        }
+        window.__updateDocPacketSendBtn();
 
         const retryBtn = document.getElementById('docPacketRetryBtn');
         if (retryBtn) {
@@ -2456,6 +2734,8 @@
             window.__docPacketState.docxErrors = null;
             window.__docPacketState.approvalsBaseline = null;
             window.__docPacketState.auditEvents = null;
+            window.__docPacketState.recommendation = null;
+            window.__docPacketState.sendInclude = null;
             window.__docPacketState.notice = 'Thread changed — packet cleared; generate again for this lead.';
             window.renderDocPacketUI();
         }
@@ -2475,7 +2755,11 @@
             window.__docPacketState.docs = payload.docs || {};
             window.__docPacketState.fields = payload.fields || null;
             window.__docPacketState.docxErrors = payload.docx_errors || null;
-            window.__docPacketState.approvalsBaseline = Object.fromEntries(Object.entries(window.__docPacketState.docs || {}).map(([k, v]) => [k, !!v?.approved]));
+            window.__docPacketState.recommendation = payload.recommendation || null;
+            window.__docPacketState.sendInclude = null;
+            window.__docPacketState.approvalsBaseline = normalizeDocPacketApprovalsBaseline(
+                Object.fromEntries(DOC_PACKET_DOC_KEYS.map((k) => [k, !!(window.__docPacketState.docs[k]?.approved)]))
+            );
             window.__docPacketState.notice = 'Packet generated. Preview each doc, then approve to unlock downloads.';
             showToast('DOC PACKET GENERATED (REVIEW REQUIRED)');
             window.refreshDocPacketAudit?.();
@@ -2542,7 +2826,14 @@
                 if (!window.__docPacketState.docs[k]) window.__docPacketState.docs[k] = {};
                 window.__docPacketState.docs[k].approved = !!v.approved;
             }
-            window.__docPacketState.approvalsBaseline = Object.fromEntries(Object.entries(approvals || {}).map(([k, v]) => [k, !!v]));
+            for (const k of DOC_PACKET_DOC_KEYS) {
+                if (!window.__docPacketState.docs[k]?.approved && window.__docPacketState.sendInclude && k in window.__docPacketState.sendInclude) {
+                    delete window.__docPacketState.sendInclude[k];
+                }
+            }
+            window.__docPacketState.approvalsBaseline = normalizeDocPacketApprovalsBaseline(
+                Object.fromEntries(DOC_PACKET_DOC_KEYS.map((k) => [k, !!(window.__docPacketState.docs[k]?.approved)]))
+            );
             window.__docPacketState.notice = 'Approvals applied. Approved documents are now download-ready.';
             showToast('APPROVALS APPLIED');
             await window.refreshDocPacketAudit();
@@ -2581,11 +2872,8 @@
         const to = String(document.getElementById('docPacketSendTo')?.value || '').trim();
         const from = String(document.getElementById('docPacketSendFrom')?.value || '').trim();
         if (!to) { showToast('RECIPIENT REQUIRED'); return; }
-        // Send only approved docs
-        const include = Object.entries(s.docs || {})
-            .filter(([k, v]) => !!v?.approved)
-            .map(([k]) => k);
-        if (!include.length) { showToast('APPROVE AT LEAST ONE DOC'); return; }
+        const include = DOC_PACKET_DOC_KEYS.filter((k) => s.docs?.[k]?.approved && s.sendInclude?.[k]);
+        if (!include.length) { showToast('SELECT DOCS TO ATTACH (APPROVED + CHECKED)'); return; }
         const btn = document.getElementById('docPacketSendBtn');
         const orig = btn ? btn.textContent : '';
         try {
