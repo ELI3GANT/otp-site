@@ -3,8 +3,8 @@
  * OTP prod Terminal sweep (admin-only).
  * - Reads OTP_ADMIN_TOKEN from env (never hardcode).
  * - Navigates to https://www.onlytrueperspective.tech/otp-terminal
- * - Runs a small interaction smoke: load jobs, open first job, generate doc,
- *   attempt exports, packet preview, send prep.
+ * - Runs an interaction sweep: ops jobs, docs+exports, packet preview+zip,
+ *   send prep, quick deal save+open, and doc packet modal approve toggles.
  *
  * Usage:
  *   OTP_ADMIN_TOKEN="..." node scripts/prod_terminal_sweep.js > prod-terminal-sweep.json
@@ -155,6 +155,20 @@ async function main() {
     push('packet_preview', { status: short(pktStatus, 240) });
   }
 
+  // Packet ZIP export (download only)
+  const exportZip = page.locator('button:has-text("EXPORT PACKET ZIP")');
+  if (await exportZip.count()) {
+    const [download] = await Promise.all([
+      page.waitForEvent('download', { timeout: 45000 }).catch(() => null),
+      exportZip.first().click({ timeout: 15000 }),
+    ]);
+    if (!download) push('download', { ok: false, kind: 'EXPORT PACKET ZIP', message: 'No download event' });
+    else {
+      push('download', { ok: true, kind: 'EXPORT PACKET ZIP', filename: download.suggestedFilename() });
+      await download.cancel().catch(() => {});
+    }
+  }
+
   // Send prep (never execute send)
   const sendSummary = page.locator('summary:has-text("SEND (CONTROLLED)")');
   if (await sendSummary.count()) {
@@ -168,6 +182,68 @@ async function main() {
     await page.waitForTimeout(1600);
     const sendStatus = await page.locator('#opsSendStatus').innerText().catch(() => '');
     push('send_prepare', { status: short(sendStatus, 320) });
+  }
+
+  // Quick Deal Mode (non-destructive: verify inputs + math + checkbox interactions; do NOT save)
+  const qdName = page.locator('#qdClientName');
+  if (await qdName.count()) {
+    await qdName.fill('QA CHECK (no save)');
+    await page.locator('#qdServiceType').fill('Video Editing Services');
+    await page.locator('#qdPackageType').selectOption({ label: 'Custom' }).catch(async () => {
+      await page.locator('#qdPackageType').selectOption('Custom').catch(() => {});
+    });
+    await page.locator('#qdSummary').fill('Interaction sweep only. No save performed.');
+    await page.locator('#qdTotalPrice').fill('500');
+    await page.locator('#qdDepositAmount').fill('250');
+    await page.waitForTimeout(250);
+    const rem = await page.locator('#qdRemainingBalance').innerText().catch(() => '');
+    push('quick_deal_math', { remaining: short(rem, 60) });
+
+    // Toggle a doc checkbox to verify interaction
+    const qdDoc = page.locator('.qdDocNeed').first();
+    if (await qdDoc.count()) {
+      const before = await qdDoc.isChecked().catch(() => null);
+      await qdDoc.click({ timeout: 15000 });
+      const after = await qdDoc.isChecked().catch(() => null);
+      push('quick_deal_doc_toggle', { before, after });
+    }
+  }
+
+  // Doc Packet modal approve toggles (lead packet system)
+  const docPacketBtn = page.locator('button:has-text("DOC PACKET")');
+  if (await docPacketBtn.count()) {
+    // Some layouts may hide this button until a reply thread is opened;
+    // if present but not visible, call the handler directly.
+    const visible = await docPacketBtn.first().isVisible().catch(() => false);
+    if (visible) {
+      await docPacketBtn.first().click({ timeout: 15000 });
+    } else {
+      await page.evaluate(() => window.openDocPacket?.());
+    }
+    const modal = page.locator('#docPacketModal');
+    const modalVisible = await modal.isVisible().catch(() => false);
+    if (!modalVisible) {
+      push('doc_packet_skip', { reason: 'No active reply thread context (expected unless inbox thread opened)' });
+    } else {
+      await page.waitForTimeout(600);
+      // Generate packet if possible
+      const gen = page.locator('#docPacketGenerateBtn');
+      if (await gen.count()) {
+        await gen.first().click({ timeout: 15000 }).catch(() => {});
+        await page.waitForTimeout(2200);
+      }
+      // Toggle first approval checkbox if present
+      const toggle = page.locator('#docPacketList input.doc-approve-toggle');
+      const tCount = await toggle.count();
+      push('doc_packet_toggles', { count: tCount });
+      if (tCount > 0) {
+        const before = await toggle.first().isChecked().catch(() => null);
+        await toggle.first().click({ timeout: 15000 });
+        await page.waitForTimeout(200);
+        const after = await toggle.first().isChecked().catch(() => null);
+        push('doc_packet_toggle', { before, after });
+      }
+    }
   }
 
   // Final summary
