@@ -13,6 +13,7 @@ This document is the **operating blueprint** for keeping every Terminal area hea
 | Layer | Responsibility |
 |--------|------------------|
 | **Server** `POST /api/admin/knowledge/recommend` | Canonical Oracle run for a lead/contact; persists snapshot under `site_content` key `kb_lead_rec::<id>`; returns `recommendation`, `confidence`, `updated_at`, `kb_updated_at`. |
+| **Server** `POST /api/admin/ops/jobs/from-oracle` | Runs the same Oracle + snapshot persist, then **creates/updates** an `ops_jobs` row (`source_type: oracleLead`) with package, totals (parsed from `quote_range` or safe default), and description — Terminal **JOB ⊕ ORACLE** / reply modal **JOB SHEET (ORACLE)**. |
 | **Server** `POST /api/admin/knowledge/recommendations` | Bulk read of saved recommendations for lead cards. |
 | **Server** `GET /api/admin/knowledge/meta` | Global **knowledge index** freshness stamp (`kb_meta::index`), bumped on upload/archive/delete/structured edits. |
 | **Server** `POST /api/admin/docs/packet` | Doc packet path; calls **`runOracleRecommendation`** so packet HTML/DOCX aligns with the same Oracle as replies. |
@@ -33,7 +34,7 @@ Rough order as shown in `otp-terminal.html`. “Oracle?” indicates **direct** 
 | **06.5 Knowledge Index** | PDF/DOCX upload, archive | `/api/admin/knowledge/*`, `/api/admin/knowledge/meta` | **Feeds Oracle** | Upload/structured change bumps **global KB meta**; invalidates client Oracle freshness |
 | **06.5 Structured knowledge** | Priority rules, doc rules | `/api/admin/knowledge/structured/*` | **Feeds Oracle** | Same as above |
 | **06.6 Quick Deal** | Fast deal → ops job | Ops jobs API | Usually no direct Oracle call | Validate intake fields; job then available for ops docs |
-| **06.7 Job Sheet / Ops** | CRUD jobs, ops doc exports | Ops jobs + `/api/admin/ops/docs/*` (and related) | **Indirect** — data feeds packets/docs; packet builder uses Oracle | Ensure job saves succeed (client validation + server) |
+| **06.7 Job Sheet / Ops** | CRUD jobs, ops doc exports | Ops jobs + `/api/admin/ops/jobs/from-oracle` + `/api/admin/ops/docs/*` (and related) | **Yes** — `from-oracle` runs `runOracleRecommendation` + persists `kb_lead_rec::`; job row feeds invoice/doc paths | After KB changes, re-run **JOB ⊕ ORACLE** on a lead to refresh the sheet |
 | **07 Session activity** | Logs | Reads local / server logs per implementation | No | N/A |
 | **08 Broadcasts** | Broadcast UI | Config / secure writes | No | N/A |
 | **Oracle Hub / Post composer / AI** | Long-form AI, archetypes | `/api/ai/generate`, `/api/ai/chat`, post writes | **Partial** — LLM features; not always the same as **knowledge recommend** | When copy should match business rules, **also** run Oracle or cite knowledge in prompt |

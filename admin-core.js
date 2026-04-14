@@ -1412,10 +1412,11 @@
                              <div style="color: var(--admin-cyan); font-size: 0.75rem; font-family: monospace;">&lt;${window.escapeHtml(c.email)}&gt;</div>
                              <div style="font-size: 0.6rem; color: var(--admin-muted); margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">LAST SIGNAL: ${c.created_at ? new Date(c.created_at).toLocaleString() : '—'}</div>
                         </div>
-                        <div style="display:flex; gap: 8px; align-items:center;">
+                        <div style="display:flex; gap: 8px; align-items:center; flex-wrap:wrap;">
                             <div style="font-size: 0.65rem; font-family: 'Space Grotesk', sans-serif; font-weight: 900; color: ${statusColor}; border: 1px solid ${statusColor}; padding: 3px 8px; border-radius: 4px; background: rgba(var(--accent2-rgb), 0.05);">${statusText}</div>
-                            <button type="button" onclick="return archiveContact('${c.id}', event)" title="Archive" class="btn-icon-mini">📦</button>
-                            <button type="button" onclick="return deleteContact('${c.id}', event)" title="Delete" class="btn-icon-mini danger">✖</button>
+                            <button type="button" class="touch-ops-oracle" onclick="window.bootstrapOpsJobFromOracle({ leadId: ${JSON.stringify(String(c.id))}, sourceTable: 'contacts' })" title="Create Job Sheet from OTP Oracle" style="min-height:40px;padding:8px 12px;font-size:0.68rem;border-radius:8px;border:1px solid var(--admin-cyan);background:rgba(var(--accent2-rgb),0.12);color:var(--admin-cyan);cursor:pointer;font-weight:800;">JOB ⊕ ORACLE</button>
+                            <button type="button" onclick="return archiveContact(${JSON.stringify(String(c.id))}, event)" title="Archive" class="btn-icon-mini">📦</button>
+                            <button type="button" onclick="return deleteContact(${JSON.stringify(String(c.id))}, event)" title="Delete" class="btn-icon-mini danger">✖</button>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 0.8rem; margin-bottom: 12px; color: var(--admin-text); padding: 10px; background: var(--admin-panel); border: 1px solid var(--admin-border); border-radius: 6px;">
@@ -1428,13 +1429,15 @@
                     <div style="background: rgba(var(--accent2-rgb), 0.05); border-left: 3px solid var(--admin-cyan); padding: 15px; margin-top: 10px; border-radius: 0 6px 6px 0;">
                         <div style="font-size: 0.65rem; color: var(--admin-cyan); margin-bottom: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px;">// OTP ORACLE DRAFT</div>
                         <div style="font-size: 0.85rem; color: var(--admin-text); white-space: pre-wrap; margin-bottom: 15px; line-height: 1.5; font-style: italic;">"${c.draft_reply.substring(0, 200)}${c.draft_reply.length > 200 ? '...' : ''}"</div>
-                        <div style="display:flex; gap:12px;">
-                            <button type="button" onclick="copyDraft('${c.id}')" class="btn-action-mini">COPY SIGNAL</button>
-                            <button type="button" onclick="openReplyManager('${c.id}')" class="btn-action-mini outline">MODULATE RESPONSE</button>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                            <button type="button" class="touch-ops-oracle" onclick="window.bootstrapOpsJobFromOracle({ leadId: ${JSON.stringify(String(c.id))}, sourceTable: 'contacts' })" style="min-height:40px;padding:8px 12px;font-size:0.68rem;border-radius:8px;border:1px solid var(--admin-cyan);background:rgba(var(--accent2-rgb),0.12);color:var(--admin-cyan);cursor:pointer;font-weight:800;">JOB ⊕ ORACLE</button>
+                            <button type="button" onclick="copyDraft(${JSON.stringify(String(c.id))})" class="btn-action-mini">COPY SIGNAL</button>
+                            <button type="button" onclick="openReplyManager(${JSON.stringify(String(c.id))})" class="btn-action-mini outline">MODULATE RESPONSE</button>
                         </div>
                     </div>` : `
-                    <div style="display: flex; justify-content: flex-end; margin-top: 5px;">
-                        <button type="button" onclick="openReplyManager('${c.id}')" class="btn-action-mini ghost">GENERATE RESPONSE</button>
+                    <div style="display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
+                        <button type="button" class="touch-ops-oracle" onclick="window.bootstrapOpsJobFromOracle({ leadId: ${JSON.stringify(String(c.id))}, sourceTable: 'contacts' })" style="min-height:40px;padding:8px 14px;font-size:0.72rem;border-radius:8px;border:1px solid var(--admin-cyan);background:rgba(var(--accent2-rgb),0.1);color:var(--admin-cyan);cursor:pointer;font-weight:800;">JOB ⊕ ORACLE</button>
+                        <button type="button" onclick="openReplyManager(${JSON.stringify(String(c.id))})" class="btn-action-mini ghost">GENERATE RESPONSE</button>
                     </div>
                     `}
                 </div>
@@ -2058,6 +2061,51 @@
         } catch (e) {
             showToast(`LOAD FAILED: ${String(e?.message ?? e)}`);
         }
+    };
+
+    /** Run OTP Oracle, persist snapshot, upsert ops job with aligned totals, then open Job Sheet (phone-friendly). */
+    window.bootstrapOpsJobFromOracle = async function(opts) {
+        const leadId = String(opts && opts.leadId || '').trim();
+        const sourceTable = opts && opts.sourceTable === 'contacts' ? 'contacts' : 'leads';
+        const existingJobId = String(opts && opts.existingJobId || '').trim() || undefined;
+        if (!leadId) {
+            showToast('MISSING LEAD / CONTACT ID');
+            return;
+        }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) {
+            showToast('LOGIN REQUIRED (REAL JWT)');
+            return;
+        }
+        showToast('ORACLE → JOB SHEET…');
+        try {
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/from-oracle`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ leadId, sourceTable, existingJobId: existingJobId || '' })
+            }, 90000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `from-oracle failed (${res.status})`);
+            const jobId = payload.row && payload.row.jobId;
+            const pkg = payload.oracle && payload.oracle.recommended_package;
+            showToast(jobId ? `JOB ${jobId}${pkg ? ' • ' + pkg : ''}` : 'JOB SAVED');
+            await window.fetchOpsJobs();
+            if (jobId) await window.openOpsJobEditor(jobId);
+            const anchor = document.getElementById('section-ops-jobs');
+            if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (e) {
+            showToast('ORACLE → JOB FAILED: ' + String(e?.message ?? e));
+        }
+    };
+
+    window.bootstrapOpsJobFromReplyModal = function() {
+        const id = document.getElementById('replyContactId')?.value;
+        const src = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
+        if (!id) {
+            showToast('NO THREAD SELECTED');
+            return;
+        }
+        return window.bootstrapOpsJobFromOracle({ leadId: id, sourceTable: src });
     };
 
     window.closeOpsJobEditor = function() {
@@ -3134,6 +3182,7 @@
                         </div>
                         <div style="display:flex; gap: 8px; align-items:center;">
                             <div style="font-size: 0.65rem; font-family: 'Space Grotesk', sans-serif; font-weight: 900; color: var(--admin-cyan); border: 1px solid var(--admin-cyan); padding: 3px 8px; border-radius: 4px; background: rgba(var(--accent2-rgb), 0.1); letter-spacing: 1px;">AUDIT SIGNAL</div>
+                            <button type="button" class="touch-ops-oracle" onclick="window.bootstrapOpsJobFromOracle({ leadId: ${JSON.stringify(String(l.id))}, sourceTable: 'leads' })" title="Job sheet from OTP Oracle" style="min-height:40px;padding:6px 10px;font-size:0.65rem;border-radius:8px;border:1px solid var(--admin-cyan);background:rgba(var(--accent2-rgb),0.1);color:var(--admin-cyan);cursor:pointer;font-weight:800;">JOB⊕</button>
                             <button type="button" onclick="openReplyManager(${JSON.stringify(String(l.id))}, 'leads')" title="Reply" style="background:transparent; border:none; color:var(--admin-cyan); cursor:pointer; font-size: 1.1rem;">📩</button>
                             <button type="button" onclick="return deleteLead(${JSON.stringify(String(l.id))}, event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer; font-size: 1.1rem;">✖</button>
                         </div>

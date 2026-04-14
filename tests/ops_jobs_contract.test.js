@@ -19,6 +19,8 @@ const adminCore = read('admin-core.js');
 assert.match(server, /\/api\/admin\/ops\/jobs\/list/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/get/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/upsert/);
+assert.match(server, /\/api\/admin\/ops\/jobs\/from-oracle/);
+assert.match(server, /buildOpsJobPayloadFromLeadAndOracle/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/update-status/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/archive/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/delete/);
@@ -30,6 +32,7 @@ assert.match(server, /Due Date cannot be before Start Date/);
 assert.match(server, /sourceTypeRaw/, 'supports sourceType input');
 assert.match(server, /source_type:\s*sourceType/, 'persists source_type from normalized sourceType');
 assert.match(server, /:\s*'manualIntake'/, 'default sourceType remains manualIntake');
+assert.match(server, /oracleLead/, 'ops job sourceType allows oracleLead');
 
 // Terminal wiring exists
 assert.ok(terminal.includes('OTP Quick Intake / Job Sheet'), 'Terminal section exists');
@@ -39,6 +42,7 @@ assert.ok(terminal.includes('opsJobsManager'), 'opsJobsManager mount');
 assert.ok(adminCore.includes('fetchOpsJobs'), 'fetchOpsJobs exists');
 assert.ok(adminCore.includes('saveOpsJob'), 'saveOpsJob exists');
 assert.ok(adminCore.includes('/api/admin/ops/jobs/upsert'), 'upsert endpoint called');
+assert.ok(adminCore.includes('/api/admin/ops/jobs/from-oracle'), 'Oracle → job bootstrap endpoint used');
 
 console.log('   ✅ Ops jobs contract OK');
 console.log('🎉 OPS JOBS CONTRACT COMPLETE');

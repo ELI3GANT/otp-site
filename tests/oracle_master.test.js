@@ -43,6 +43,8 @@ assert.match(server, /\/api\/admin\/ops\/packets\/export-zip/, 'Ops packets zip 
 assert.match(server, /\/api\/admin\/ops\/send\/prepare/, 'Ops send prepare endpoint');
 assert.match(server, /\/api\/admin\/ops\/send\/execute/, 'Ops send execute endpoint');
 assert.match(server, /runOracleRecommendation\(/, 'Shared recommendation helper');
+assert.match(server, /\/api\/admin\/ops\/jobs\/from-oracle/, 'Oracle → ops job bootstrap route');
+assert.match(server, /persistOracleLeadSnapshot\(/, 'Oracle snapshot persistence helper');
 assert.match(server, /\/api\/admin\/docs\/signature\/request/, 'Signature request endpoint scaffolding');
 assert.match(server, /\/api\/admin\/docs\/signature\/capture/, 'Signature capture endpoint scaffolding');
 
@@ -52,6 +54,7 @@ assert.ok(adminCore.includes('window.requestLeadBrain = async function'));
 assert.ok(adminCore.includes('window.replyOracleCache'));
 assert.ok(adminCore.includes('window.leadOracleCache'));
 assert.ok(adminCore.includes('/api/admin/knowledge/recommend'));
+assert.ok(adminCore.includes('window.bootstrapOpsJobFromOracle'), 'Terminal can open job sheet from Oracle');
 assert.ok(adminCore.includes('/api/admin/knowledge/recommendations'));
 assert.ok(adminCore.includes('/api/admin/docs/packet'));
 assert.ok(adminCore.includes('fetchStructuredKnowledge'), 'structured knowledge UI fetch');

@@ -55,6 +55,11 @@
         max-height: min(38vh, 220px);
         min-height: 96px;
       }
+      button.touch-ops-oracle {
+        min-height: 48px;
+        padding: 12px 16px;
+        font-size: 0.78rem;
+      }
     }
 
     /* OTP Terminal: two-column grid — avoid horizontal overflow / clipped columns */
@@ -553,10 +558,10 @@
             </section>
 
             <!-- SECTION: OTP QUICK INTAKE / JOB SHEET -->
-            <section class="input-section">
+            <section class="input-section" id="section-ops-jobs">
                 <div class="section-label">06.7 // OTP Quick Intake / Job Sheet</div>
                 <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.5;">
-                    Internal client operations record system. One job sheet = one source of truth (Oracle-ready).
+                    Internal client operations record. Use <strong style="color:var(--admin-cyan);">JOB ⊕ ORACLE</strong> on Inbox or Leads to run OTP Oracle, save the brain snapshot, and open this sheet with package + pricing prefilled (then <strong>Generate Invoice</strong>).
                 </div>
 
                 <div id="opsJobsCounts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
@@ -1392,6 +1397,7 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                <button type="button" class="touch-ops-oracle" onclick="window.bootstrapOpsJobFromReplyModal()" style="background: rgba(var(--accent2-rgb),0.12); border: 1px solid var(--admin-cyan); color: var(--admin-cyan); padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 0.72rem;">JOB SHEET (ORACLE)</button>
                 <button id="replyCacheBtn" onclick="saveDraftUpdate()" class="action-btn" style="background: transparent; border: 1px solid var(--admin-border);">CACHE DRAFT</button>
                 <button onclick="launchMailClient()" class="action-btn" style="background: var(--admin-accent); color: white;">LAUNCH CLIENT MAIL</button>
                 <button id="replySyncBtn" onclick="markAsReplied()" class="action-btn" style="background: var(--admin-success); color: black;">SYNCHRONIZE SIGNAL</button>
@@ -1578,7 +1584,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.15"></script>
+    <script src="admin-core.js?v=16.7.16"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

@@ -50,6 +50,9 @@ assert.ok(terminal.includes('onclick="openDocPacket()"'), 'doc packet from reply
 assert.ok(terminal.includes('id="replyOracleBtn"'), 'replyOracleBtn id');
 assert.ok(terminal.includes('id="replyAnalysis"'), 'analysis mount');
 assert.ok(terminal.includes('admin-core.js?v='), 'admin-core cache-busted');
+assert.ok(terminal.includes('id="section-ops-jobs"'), 'Job sheet section anchor for scroll');
+assert.ok(terminal.includes('bootstrapOpsJobFromReplyModal'), 'Reply modal wires Oracle → job');
+assert.ok(adminCore.includes('/api/admin/ops/jobs/from-oracle'), 'admin-core calls from-oracle');
 
 assert.ok(adminCore.includes('window.sanitizeHttpUrl'), 'admin-core must expose http(s) media URL sanitizer');
 assert.ok(

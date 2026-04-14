@@ -1489,6 +1489,30 @@ if (supabaseAdmin) {
     console.warn("⚠️ Supabase Admin NOT Initialized (Check SUPABASE_URL and SUPABASE_SERVICE_KEY)");
 }
 
+/** Persist OTP Oracle snapshot for a lead/contact (shared by /knowledge/recommend and ops job bootstrap). */
+async function persistOracleLeadSnapshot({ leadId, sourceTable, oracle }) {
+    if (!supabaseAdmin) throw new Error('Database Admin Interface Offline');
+    const { topMatches, confidence, recommendation } = oracle;
+    const kbMeta = await getKnowledgeIndexMeta();
+    const recKey = `${KNOWLEDGE_PREFIX.leadRec}${leadId}`;
+    const nowIso = new Date().toISOString();
+    const recPayload = {
+        schema: 'otp-kb-rec-v1',
+        lead_id: leadId,
+        source_table: sourceTable,
+        recommendation,
+        confidence: Number(Number(confidence || 0).toFixed(4)),
+        top_matches: topMatches,
+        updated_at: nowIso,
+        kb_updated_at: kbMeta?.kb_updated_at || null
+    };
+    const { error: upsertError } = await supabaseAdmin
+        .from('site_content')
+        .upsert([{ key: recKey, content: JSON.stringify(recPayload), updated_at: nowIso }], { onConflict: 'key' });
+    if (upsertError) throw upsertError;
+    return { nowIso, kb_updated_at: kbMeta?.kb_updated_at || null };
+}
+
 if (process.env.GEMINI_API_KEY) {
     console.log("✅ Gemini API Key found");
 } else {
@@ -2710,7 +2734,7 @@ function normalizeOpsJobPayload(payload, { existingJobId = null, actor = null } 
     const jobId = String(existingJobId || p.jobId || '').trim() || generateJobId();
 
     const sourceTypeRaw = String(p.sourceType || p.source_type || '').trim();
-    const sourceType = (sourceTypeRaw && ['manualIntake', 'quickDeal'].includes(sourceTypeRaw)) ? sourceTypeRaw : 'manualIntake';
+    const sourceType = (sourceTypeRaw && ['manualIntake', 'quickDeal', 'oracleLead'].includes(sourceTypeRaw)) ? sourceTypeRaw : 'manualIntake';
 
     const clientName = sanitizeOpsText(p.clientName, 140);
     const businessName = sanitizeOpsText(p.businessName, 180);
@@ -2851,6 +2875,113 @@ function mapOpsJobRowToApi(row) {
     };
 }
 
+function mapOracleRecommendedPackageToOpsPackageType(recommendedPackage) {
+    const pkg = String(recommendedPackage || '').trim();
+    if (OPS_JOB.packageTypes.includes(pkg)) return pkg;
+    const p = pkg.toLowerCase();
+    if (!p) return 'Custom';
+    if (/(starter|the signal|^signal|simple edit|video editing|edit only|quick edit)/.test(p)) return 'The Signal';
+    if (/(the system|^system\b|premium multi|enterprise|custom website architecture|architecture)/.test(p)) return 'The System';
+    if (/(the engine|^engine\b|business website|growth|ongoing|retainer)/.test(p)) return 'The Engine';
+    return 'Custom';
+}
+
+/** Parse dollar amounts from Oracle quote_range; returns midpoint for ranges. */
+function suggestPriceCentsFromOracleQuoteRange(quoteRange) {
+    const s = String(quoteRange || '');
+    const nums = [];
+    const re = /\$?\s*([\d]{1,3}(?:,\d{3})+|\d{2,5})\b/g;
+    let m;
+    while ((m = re.exec(s)) !== null) {
+        const n = Number(String(m[1]).replace(/,/g, ''));
+        if (Number.isFinite(n) && n >= 25 && n <= 999999) nums.push(n);
+    }
+    if (!nums.length) return null;
+    const low = Math.min(...nums);
+    const high = Math.max(...nums);
+    const midDollars = nums.length >= 2 && high > low ? Math.round((low + high) / 2) : high;
+    const totalCents = Math.min(99999900, midDollars * 100);
+    const depositCents = Math.min(totalCents, Math.round(totalCents * 0.5));
+    return { totalCents, depositCents };
+}
+
+function deriveClientNameFromLead(lead, sourceTable) {
+    const raw = String(lead?.name || '').trim();
+    if (raw) return raw.slice(0, 140);
+    const email = String(lead?.email || '').trim();
+    if (email.includes('@')) {
+        const local = email.split('@')[0].trim();
+        if (local) return local.slice(0, 140);
+    }
+    return sourceTable === 'leads' ? 'Audit lead' : 'Contact';
+}
+
+function buildOpsJobPayloadFromLeadAndOracle(lead, sourceTable, oracle, { existingJobId = null } = {}) {
+    const rec = oracle.recommendation || {};
+    const packageType = mapOracleRecommendedPackageToOpsPackageType(rec.recommended_package);
+    const pricing = suggestPriceCentsFromOracleQuoteRange(rec.quote_range);
+    let totalCents = pricing?.totalCents;
+    let depositCents = pricing?.depositCents ?? 0;
+    let priceNote = '';
+    if (totalCents == null || !Number.isFinite(totalCents)) {
+        totalCents = 120000;
+        depositCents = 60000;
+        priceNote = 'Could not parse Oracle quote_range; defaulted to $1200 total / $600 deposit — verify before invoicing.\n';
+    }
+    const clientName = deriveClientNameFromLead(lead, sourceTable);
+    const email = String(lead?.email || '').trim();
+    const phone = String(lead?.phone || lead?.phone_number || '').trim().slice(0, 60);
+    const business = String(lead?.company || lead?.company_name || '').trim().slice(0, 180);
+    const serviceType = String(rec.service_type || rec.recommended_package || 'General').slice(0, 140);
+    let goal = '';
+    if (sourceTable === 'leads') {
+        const answers = safeJsonParse(lead?.answers, lead?.answers) || {};
+        goal = String(answers.q5_goal || answers.q1 || '').trim();
+    }
+    const projectTitle = String(goal || rec.recommended_package || 'New engagement').slice(0, 180);
+    const projDescParts = [
+        rec.lead_summary ? `Lead summary:\n${String(rec.lead_summary).slice(0, 3500)}` : '',
+        rec.quote_range ? `Oracle quote: ${rec.quote_range}` : '',
+        rec.package_reason ? `Package fit: ${String(rec.package_reason).slice(0, 1200)}` : ''
+    ].filter(Boolean);
+    const projectDescription = projDescParts.join('\n\n').slice(0, 9000);
+    const internalNotes = [
+        priceNote,
+        `otp_oracle_sync: ${new Date().toISOString()} source=${sourceTable} leadId=${String(oracle.leadId || lead.id || '')}`,
+        `oracle_confidence: ${oracle.confidence}`,
+        `next_action: ${rec.next_action || ''}`,
+        `required_docs: ${Array.isArray(rec.required_documents) ? rec.required_documents.join(', ') : ''}`
+    ].join('\n').slice(0, 12000);
+
+    return {
+        jobId: existingJobId || undefined,
+        sourceType: 'oracleLead',
+        clientName,
+        businessName: business || null,
+        phone: phone || null,
+        email,
+        serviceType,
+        packageType,
+        projectTitle,
+        projectDescription,
+        deliverables: '',
+        addOns: '',
+        startDate: '',
+        dueDate: '',
+        allowDateOverride: false,
+        totalPrice: String(Math.round(totalCents / 100)),
+        depositAmount: String(Math.round(depositCents / 100)),
+        paymentMethod: '',
+        paymentStatus: 'Unpaid',
+        jobStatus: 'New Lead',
+        clientNotes: String(rec.lead_summary || '').slice(0, 9000),
+        internalNotes,
+        portfolioPermission: false,
+        agreementSigned: false,
+        invoiceSent: false
+    };
+}
+
 app.post('/api/admin/ops/jobs/list', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
@@ -2960,6 +3091,72 @@ app.post('/api/admin/ops/jobs/upsert', verifyToken, async (req, res) => {
         res.json({ success: true, row: mapOpsJobRowToApi(upserted) });
     } catch (error) {
         console.error("ops-jobs-upsert:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Create or refresh an ops job from a lead/contact + fresh OTP Oracle run (mobile-friendly pipeline).
+app.post('/api/admin/ops/jobs/from-oracle', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const sourceTable = req.body?.sourceTable === 'contacts' ? 'contacts' : 'leads';
+        const leadId = String(req.body?.leadId || '').trim();
+        const existingJobId = String(req.body?.existingJobId || '').trim() || null;
+        if (!leadId) return res.status(400).json({ success: false, message: 'Missing leadId' });
+
+        const { data: lead, error: leadErr } = await supabaseAdmin
+            .from(sourceTable)
+            .select('*')
+            .eq('id', leadId)
+            .maybeSingle();
+        if (leadErr) throw leadErr;
+        if (!lead) return res.status(404).json({ success: false, message: 'Lead or contact not found' });
+
+        const oracle = await runOracleRecommendation({ lead, leadId, sourceTable });
+        await persistOracleLeadSnapshot({ leadId, sourceTable, oracle });
+
+        let existing = null;
+        if (existingJobId) {
+            const { data: ex, error: exErr } = await supabaseAdmin
+                .from('ops_jobs')
+                .select('job_id, created_at, created_by')
+                .eq('job_id', existingJobId)
+                .maybeSingle();
+            if (exErr) throw exErr;
+            if (!ex) return res.status(404).json({ success: false, message: 'existingJobId not found' });
+            existing = ex;
+        }
+
+        const jobPayload = buildOpsJobPayloadFromLeadAndOracle(lead, sourceTable, oracle, { existingJobId });
+        const actor = String(req.auth?.role || 'admin');
+        const normalized = normalizeOpsJobPayload(jobPayload, { existingJobId: existing?.job_id || existingJobId, actor });
+        if (!normalized.ok) return res.status(400).json({ success: false, message: normalized.errors.join(' ') });
+
+        if (existing) {
+            normalized.row.created_at = existing.created_at;
+            normalized.row.created_by = existing.created_by || normalized.row.created_by;
+        }
+
+        const { data: upserted, error: upsertError } = await supabaseAdmin
+            .from('ops_jobs')
+            .upsert([normalized.row], { onConflict: 'job_id' })
+            .select('*')
+            .maybeSingle();
+        if (upsertError) throw upsertError;
+
+        const rec = oracle.recommendation || {};
+        res.json({
+            success: true,
+            row: mapOpsJobRowToApi(upserted),
+            oracle: {
+                confidence: oracle.confidence,
+                recommended_package: rec.recommended_package,
+                quote_range: rec.quote_range,
+                next_action: rec.next_action
+            }
+        });
+    } catch (error) {
+        console.error('ops-jobs-from-oracle:', error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -3651,25 +3848,8 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
         if (!leadId) leadId = String(lead.id || '').trim() || crypto.randomBytes(6).toString('hex');
         const oracle = await runOracleRecommendation({ lead, leadId, sourceTable });
         const { topMatches, confidence, recommendation } = oracle;
-        const kbMeta = await getKnowledgeIndexMeta();
 
-        const recKey = `${KNOWLEDGE_PREFIX.leadRec}${leadId}`;
-        const nowIso = new Date().toISOString();
-        const recPayload = {
-            schema: 'otp-kb-rec-v1',
-            lead_id: leadId,
-            source_table: sourceTable,
-            recommendation,
-            confidence: Number(confidence.toFixed(4)),
-            top_matches: topMatches,
-            updated_at: nowIso,
-            kb_updated_at: kbMeta?.kb_updated_at || null
-        };
-
-        const { error: upsertError } = await supabaseAdmin
-            .from('site_content')
-            .upsert([{ key: recKey, content: JSON.stringify(recPayload), updated_at: nowIso }], { onConflict: 'key' });
-        if (upsertError) throw upsertError;
+        const { nowIso, kb_updated_at } = await persistOracleLeadSnapshot({ leadId, sourceTable, oracle });
 
         res.json({
             success: true,
@@ -3678,7 +3858,7 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
             recommendation,
             top_matches: topMatches.slice(0, 6),
             updated_at: nowIso,
-            kb_updated_at: kbMeta?.kb_updated_at || null
+            kb_updated_at: kb_updated_at || null
         });
     } catch (error) {
         const status = Number(error.statusCode) || 500;

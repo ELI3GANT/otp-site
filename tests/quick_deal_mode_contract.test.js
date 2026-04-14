@@ -16,7 +16,7 @@ const terminal = read('otp-terminal.html');
 
 // Server must accept ops_jobs sourceType from payload and allow quickDeal.
 assert.match(server, /sourceTypeRaw/);
-assert.match(server, /\['manualIntake',\s*'quickDeal'\]/);
+assert.match(server, /\['manualIntake',\s*'quickDeal',\s*'oracleLead'\]/);
 assert.match(server, /source_type:\s*sourceType/);
 
 // Terminal UI must contain the Quick Deal section and key ids.
