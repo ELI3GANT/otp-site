@@ -264,6 +264,9 @@
         if (!entry || typeof entry !== 'object') return false;
         const ms = parseIsoMs(entry.updated_at) ?? parseIsoMs(entry.fetched_at) ?? null;
         if (!ms) return false;
+        const kbMetaMs = parseIsoMs(window.__kbUpdatedAt || '');
+        const entryKbMs = parseIsoMs(entry.kb_updated_at || '');
+        if (kbMetaMs && (!entryKbMs || entryKbMs < kbMetaMs)) return false;
         return (Date.now() - ms) <= maxAgeMs;
     }
 
@@ -1476,6 +1479,16 @@
         }
         try {
             const apiBase = resolveApiBase();
+            // Refresh global KB meta so Oracle caches can detect staleness after index changes.
+            try {
+                const metaRes = await fetch(`${apiBase}/api/admin/knowledge/meta`, {
+                    headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+                const metaPayload = await metaRes.json().catch(() => ({}));
+                if (metaRes.ok && metaPayload.success && metaPayload.meta && metaPayload.meta.kb_updated_at) {
+                    window.__kbUpdatedAt = metaPayload.meta.kb_updated_at;
+                }
+            } catch (_) { /* best-effort */ }
             const res = await fetch(`${apiBase}/api/admin/knowledge/files`, {
                 headers: { 'Authorization': `Bearer ${state.token}` }
             });
@@ -2912,7 +2925,8 @@
         const entry = {
             recommendation: payload.recommendation,
             confidence: payload.confidence,
-            updated_at: new Date().toISOString()
+            updated_at: payload.updated_at || new Date().toISOString(),
+            kb_updated_at: payload.kb_updated_at || null
         };
         window.leadOracleCache = window.leadOracleCache || {};
         if (st === 'leads') window.leadOracleCache[leadId] = entry;
@@ -3038,6 +3052,18 @@
         leads.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">SYNCING LEAD DATA...</div>';
 
         try {
+            // Best-effort: keep KB meta fresh so cached Oracle cards can detect staleness.
+            try {
+                const apiBase = resolveApiBase();
+                const metaRes = await fetch(`${apiBase}/api/admin/knowledge/meta`, {
+                    headers: { 'Authorization': `Bearer ${state.token}` }
+                });
+                const metaPayload = await metaRes.json().catch(() => ({}));
+                if (metaRes.ok && metaPayload.success && metaPayload.meta && metaPayload.meta.kb_updated_at) {
+                    window.__kbUpdatedAt = metaPayload.meta.kb_updated_at;
+                }
+            } catch (_) { /* best-effort */ }
+
             const data = await window.secureRead('leads', { limit: 100 });
 
             if (!data || data.length === 0) {

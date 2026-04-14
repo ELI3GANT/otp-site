@@ -258,10 +258,17 @@ async function main() {
   await page.evaluate(() => window.fetchInbox?.());
   await page.waitForTimeout(1400);
   // Prefer MODULATE RESPONSE when draft exists, else GENERATE RESPONSE.
-  // Prefer the canonical QA thread to avoid ambiguity when multiple threads exist.
-  const inboxButtons = page.locator('#inboxManager .post-row:has-text("qa@example.com") button:has-text("MODULATE RESPONSE"), #inboxManager .post-row:has-text("qa@example.com") button:has-text("GENERATE RESPONSE")');
-  const inboxCount = await inboxButtons.count();
-  push('inbox_threads', { count: inboxCount });
+  // Prefer the canonical QA thread when present; otherwise exercise any inbox row (prod data varies).
+  let inboxButtons = page.locator('#inboxManager .post-row:has-text("qa@example.com") button:has-text("MODULATE RESPONSE"), #inboxManager .post-row:has-text("qa@example.com") button:has-text("GENERATE RESPONSE")');
+  let inboxCount = await inboxButtons.count();
+  if (inboxCount === 0) {
+    inboxButtons = page.locator('#inboxManager .post-row button:has-text("MODULATE RESPONSE"), #inboxManager .post-row button:has-text("GENERATE RESPONSE")');
+    inboxCount = await inboxButtons.count();
+    if (inboxCount > 0) push('inbox_threads', { count: inboxCount, note: 'fallback_any_thread' });
+    else push('inbox_threads', { count: 0 });
+  } else {
+    push('inbox_threads', { count: inboxCount, note: 'qa_thread_preferred' });
+  }
 
   let openedReplyContext = false;
   if (inboxCount > 0) {

@@ -743,6 +743,7 @@ const KNOWLEDGE_PREFIX = {
     structured: 'kb_structured::',
     opsSend: 'kb_ops_send::'
 };
+const KB_META_KEY = 'kb_meta::index';
 const VERSION_PREFIX = 'version_event::';
 const MAX_VERSION_EVENTS = 20;
 const KB_VECTOR_DIMS = 128;
@@ -764,6 +765,41 @@ function safeJsonParse(raw, fallback = null) {
     if (raw == null) return fallback;
     if (typeof raw === 'object') return raw;
     try { return JSON.parse(raw); } catch (e) { return fallback; }
+}
+
+async function getKnowledgeIndexMeta() {
+    if (!supabaseAdmin) return { kb_updated_at: null };
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('site_content')
+            .select('content, updated_at')
+            .eq('key', KB_META_KEY)
+            .maybeSingle();
+        if (error) throw error;
+        const payload = safeJsonParse(data?.content, {}) || {};
+        return {
+            kb_updated_at: data?.updated_at || payload?.kb_updated_at || null,
+            reason: payload?.reason || null
+        };
+    } catch (_) {
+        return { kb_updated_at: null };
+    }
+}
+
+async function touchKnowledgeIndexMeta(reason = '') {
+    if (!supabaseAdmin) return null;
+    const nowIso = new Date().toISOString();
+    const payload = {
+        schema: 'otp-kb-meta-v1',
+        kb_updated_at: nowIso,
+        reason: String(reason || '').slice(0, 140)
+    };
+    try {
+        await supabaseAdmin
+            .from('site_content')
+            .upsert([{ key: KB_META_KEY, content: JSON.stringify(payload), updated_at: nowIso }], { onConflict: 'key' });
+    } catch (_) { /* best-effort */ }
+    return payload;
 }
 
 function normalizeWhitespace(text) {
@@ -2297,6 +2333,18 @@ app.get('/api/admin/knowledge/files', verifyToken, async (req, res) => {
     }
 });
 
+// 2.8.1 OTP Oracle — knowledge: index meta (global freshness)
+app.get('/api/admin/knowledge/meta', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const meta = await getKnowledgeIndexMeta();
+        res.json({ success: true, meta });
+    } catch (error) {
+        console.error("knowledge-meta:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // 2.9 OTP Oracle — knowledge: upload + index PDF/DOCX
 app.post('/api/admin/knowledge/upload', verifyToken, knowledgeUpload.single('file'), async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
@@ -2427,6 +2475,7 @@ app.post('/api/admin/knowledge/upload', verifyToken, knowledgeUpload.single('fil
             if (batchError) throw batchError;
         }
 
+        await touchKnowledgeIndexMeta(replaced ? 'knowledge_upload_replace' : 'knowledge_upload');
         res.json({
             success: true,
             replaced,
@@ -2460,6 +2509,7 @@ app.post('/api/admin/knowledge/delete', verifyToken, async (req, res) => {
         if (fileError) throw fileError;
         const { error: chunkError } = await supabaseAdmin.from('site_content').delete().ilike('key', `${KNOWLEDGE_PREFIX.chunk}${fileId}%`);
         if (chunkError) throw chunkError;
+        await touchKnowledgeIndexMeta('knowledge_delete');
         res.json({ success: true });
     } catch (error) {
         console.error("knowledge-delete:", error.message);
@@ -2519,6 +2569,7 @@ app.post('/api/admin/knowledge/archive', verifyToken, async (req, res) => {
             if (batchError) throw batchError;
         }
 
+        await touchKnowledgeIndexMeta('knowledge_archive');
         res.json({ success: true });
     } catch (error) {
         console.error("knowledge-archive:", error.message);
@@ -2573,6 +2624,7 @@ app.post('/api/admin/knowledge/structured/upsert', verifyToken, async (req, res)
             .upsert([{ key, content: JSON.stringify(payload), updated_at: nowIso }], { onConflict: 'key' });
         if (upsertError) throw upsertError;
 
+        await touchKnowledgeIndexMeta('structured_upsert');
         res.json({ success: true, entry: { ...payload, key } });
     } catch (error) {
         console.error("knowledge-structured-upsert:", error.message);
@@ -2604,6 +2656,7 @@ app.post('/api/admin/knowledge/structured/archive', verifyToken, async (req, res
             .update({ content: JSON.stringify(payload), updated_at: nowIso })
             .eq('key', key);
         if (updateError) throw updateError;
+        await touchKnowledgeIndexMeta('structured_archive');
         res.json({ success: true });
     } catch (error) {
         console.error("knowledge-structured-archive:", error.message);
@@ -3598,6 +3651,7 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
         if (!leadId) leadId = String(lead.id || '').trim() || crypto.randomBytes(6).toString('hex');
         const oracle = await runOracleRecommendation({ lead, leadId, sourceTable });
         const { topMatches, confidence, recommendation } = oracle;
+        const kbMeta = await getKnowledgeIndexMeta();
 
         const recKey = `${KNOWLEDGE_PREFIX.leadRec}${leadId}`;
         const nowIso = new Date().toISOString();
@@ -3608,7 +3662,8 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
             recommendation,
             confidence: Number(confidence.toFixed(4)),
             top_matches: topMatches,
-            updated_at: nowIso
+            updated_at: nowIso,
+            kb_updated_at: kbMeta?.kb_updated_at || null
         };
 
         const { error: upsertError } = await supabaseAdmin
@@ -3621,7 +3676,9 @@ app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
             leadId,
             confidence: Number(confidence.toFixed(4)),
             recommendation,
-            top_matches: topMatches.slice(0, 6)
+            top_matches: topMatches.slice(0, 6),
+            updated_at: nowIso,
+            kb_updated_at: kbMeta?.kb_updated_at || null
         });
     } catch (error) {
         const status = Number(error.statusCode) || 500;
@@ -4443,7 +4500,8 @@ app.post('/api/admin/knowledge/recommendations', verifyToken, async (req, res) =
             recommendations[leadId] = {
                 recommendation: payload.recommendation,
                 confidence: payload.confidence || 0,
-                updated_at: row.updated_at
+                updated_at: row.updated_at,
+                kb_updated_at: payload.kb_updated_at || null
             };
         });
 
