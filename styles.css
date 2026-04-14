@@ -2557,7 +2557,8 @@ html {
     box-sizing: border-box;
   }
   .nav-drawer {
-    top: calc(70px + env(safe-area-inset-top, 0px));
+    /* Align drawer closer to the nav on mobile */
+    top: calc(56px + env(safe-area-inset-top, 0px));
   }
   .nav-links {
     display: none !important;
