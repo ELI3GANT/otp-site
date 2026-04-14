@@ -1428,9 +1428,8 @@
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;border:1px dashed var(--admin-border);border-radius:10px;padding:10px 12px;background:var(--admin-surface-inset-strong);">
                     <div style="font-size:0.7rem;color:var(--admin-muted);flex:1;min-width:240px;line-height:1.45;">
-                        <strong style="color:var(--admin-text);">Master Templates (Global)</strong><br/>
-                        These templates apply across <strong>all</strong> leads/packets. Upload your branded master-final DOCX files once, then generate lead-specific packets below.
-                        Placeholders use <span style="color:var(--admin-cyan);font-family:monospace;">{{field_name}}</span>.
+                        <strong style="color:var(--admin-text);">Master DOCX (Global)</strong><br/>
+                        Same uploads as <strong>Settings → MASTER DOCX</strong>: <span style="font-family:monospace;color:var(--admin-cyan);">master/proposal.docx</span> &amp; <span style="font-family:monospace;color:var(--admin-cyan);">master/agreement.docx</span>. Use <span style="font-family:monospace;">{{client_name}}</span>, <span style="font-family:monospace;">{{lead_summary}}</span>, etc.
                     </div>
                     <input id="docTemplateProposal" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;" onchange="uploadDocTemplate('proposal', this.files?.[0])"/>
                     <input id="docTemplateAgreement" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;" onchange="uploadDocTemplate('agreement', this.files?.[0])"/>
@@ -1486,11 +1485,11 @@
             </div>
             <div style="padding: 14px 4px 6px;">
                 <div class="input-section" style="margin-bottom:14px;">
-                    <div class="section-label" style="margin-top:0;">DOC PACKET ADMIN</div>
+                    <div class="section-label" style="margin-top:0;">MASTER DOCX (PROPOSAL + AGREEMENT)</div>
                     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
                         <div style="flex:1;min-width:260px;font-size:0.78rem;color:var(--admin-muted);line-height:1.5;">
-                            <strong style="color:var(--admin-text);">Master Templates (Global)</strong><br/>
-                            These apply across <strong>all</strong> leads/packets. Upload once to enable DOCX merges for Proposal + Agreement.
+                            <strong style="color:var(--admin-text);">Global merge templates</strong><br/>
+                            Stored in Supabase Storage as <span style="font-family:monospace;color:var(--admin-cyan);">master/proposal.docx</span> and <span style="font-family:monospace;color:var(--admin-cyan);">master/agreement.docx</span>. They apply to <strong>every</strong> doc packet (HTML preview + DOCX download). Use <span style="font-family:monospace;">{{placeholders}}</span> in Word — common fields include <span style="font-family:monospace;font-size:0.7rem;">client_name</span>, <span style="font-family:monospace;font-size:0.7rem;">client_email</span>, <span style="font-family:monospace;font-size:0.7rem;">lead_summary</span>, <span style="font-family:monospace;font-size:0.7rem;">recommended_package</span>, <span style="font-family:monospace;font-size:0.7rem;">quote_range</span>, <span style="font-family:monospace;font-size:0.7rem;">service_type</span>.
                         </div>
                         <div style="display:flex;gap:10px;flex-wrap:wrap;">
                             <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="document.getElementById('docTemplateProposal').click()">UPLOAD PROPOSAL</button>
@@ -1498,7 +1497,7 @@
                             <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="refreshDocTemplateStatus()">REFRESH STATUS</button>
                         </div>
                     </div>
-                    <div id="docTemplateStatus" style="margin-top:10px;font-family:monospace;font-size:0.72rem;color:var(--admin-text);opacity:0.9;"></div>
+                    <div id="docTemplateStatus" style="margin-top:10px;font-family:monospace;font-size:0.72rem;color:var(--admin-text);opacity:0.9;white-space:pre-wrap;"></div>
                 </div>
 
                 <div class="input-section" style="margin-bottom:14px;">
@@ -1588,7 +1587,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.4"></script>
+    <script src="admin-core.js?v=16.7.5"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

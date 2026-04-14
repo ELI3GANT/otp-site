@@ -4006,14 +4006,35 @@ app.get('/api/admin/docs/templates/status', verifyToken, async (req, res) => {
             .list(DOC_TEMPLATE_PREFIX, { limit: 100, offset: 0, sortBy: { column: 'name', order: 'asc' } });
         if (error) throw error;
         const files = Array.isArray(data) ? data : [];
-        const has = (name) => files.some(f => String(f?.name || '').toLowerCase() === name.toLowerCase());
+        const byName = new Map();
+        for (const f of files) {
+            const n = String(f?.name || '').trim();
+            if (n) byName.set(n.toLowerCase(), f);
+        }
+        const fileStatus = (fileName) => {
+            const want = String(fileName || '').trim().toLowerCase();
+            const row = want ? byName.get(want) : null;
+            const key = `${DOC_TEMPLATE_PREFIX}${fileName}`;
+            if (!row) {
+                return { key, present: false, updated_at: null, size: null };
+            }
+            const meta = row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+            const sizeRaw = meta.size;
+            const size = Number.isFinite(Number(sizeRaw)) ? Number(sizeRaw) : null;
+            return {
+                key,
+                present: true,
+                updated_at: row.updated_at || row.created_at || null,
+                size
+            };
+        };
         res.json({
             success: true,
             bucket: DOC_TEMPLATE_BUCKET,
             prefix: DOC_TEMPLATE_PREFIX,
             templates: {
-                proposal: { key: `${DOC_TEMPLATE_PREFIX}proposal.docx`, present: has('proposal.docx') },
-                agreement: { key: `${DOC_TEMPLATE_PREFIX}agreement.docx`, present: has('agreement.docx') }
+                proposal: fileStatus('proposal.docx'),
+                agreement: fileStatus('agreement.docx')
             }
         });
     } catch (error) {

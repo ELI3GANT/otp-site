@@ -4008,10 +4008,25 @@
         }
     };
 
+    function fmtTemplateBytes(n) {
+        const v = Number(n);
+        if (!Number.isFinite(v) || v < 0) return '';
+        if (v < 1024) return `${Math.round(v)} B`;
+        if (v < 1024 * 1024) return `${(v / 1024).toFixed(1)} KB`;
+        return `${(v / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
     window.uploadDocTemplate = async function(docType, file) {
         if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!file) return;
         if (!['proposal', 'agreement'].includes(docType)) { showToast('INVALID TEMPLATE TYPE'); return; }
+        const name = String(file.name || '').toLowerCase();
+        const docxMime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        const okMime = !file.type || file.type === docxMime || file.type === 'application/octet-stream';
+        if (!name.endsWith('.docx') || !okMime) {
+            showToast('USE A .DOCX FILE (WORD / DOCX ONLY)');
+            return;
+        }
         try {
             const apiBase = resolveApiBase();
             const fd = new FormData();
@@ -4026,8 +4041,9 @@
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Upload failed (${res.status})`);
             showToast(`${docType.toUpperCase()} TEMPLATE UPLOADED`);
+            await window.refreshDocTemplateStatus?.();
         } catch (e) {
-            showToast(`TEMPLATE UPLOAD FAILED: ${e.message}`);
+            showToast(`TEMPLATE UPLOAD FAILED: ${formatNetworkError(e)}`);
         } finally {
             // Allow re-uploading the same file (onchange won't fire if value doesn't change)
             const inputId = docType === 'proposal' ? 'docTemplateProposal' : 'docTemplateAgreement';
@@ -4469,7 +4485,10 @@
     window.refreshDocTemplateStatus = async function() {
         const out = document.getElementById('docTemplateStatus');
         if (!out) return;
-        if (!state.token) { out.textContent = 'Login required.'; return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) {
+            out.textContent = 'Login required (JWT or allowed local bypass).';
+            return;
+        }
         try {
             out.textContent = 'Loading template status...';
             const apiBase = resolveApiBase();
@@ -4479,10 +4498,26 @@
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Status failed (${res.status})`);
             const t = payload.templates || {};
-            const line = (k) => `${k}: ${t[k]?.present ? 'READY' : 'MISSING'}`;
-            out.textContent = `${line('proposal')} | ${line('agreement')}`;
+            const bucket = String(payload.bucket || '').trim();
+            const prefix = String(payload.prefix || '').trim();
+            const head = bucket && prefix ? `Bucket ${bucket} • ${prefix}\n` : '';
+            const line = (label, k) => {
+                const row = t[k] || {};
+                const ok = !!row.present;
+                const stamp = row.updated_at ? new Date(row.updated_at).toLocaleString() : '';
+                const sz = row.size != null ? fmtTemplateBytes(row.size) : '';
+                const bits = [ok ? 'READY' : 'MISSING'];
+                if (stamp) bits.push(stamp);
+                if (sz) bits.push(sz);
+                const key = String(row.key || `${prefix}${k}.docx`).trim();
+                return `${label}: ${bits.join(' • ')}\n   ${key}`;
+            };
+            out.textContent = head + [
+                line('Master proposal', 'proposal'),
+                line('Master agreement', 'agreement')
+            ].join('\n');
         } catch (e) {
-            out.textContent = `Status error: ${e.message}`;
+            out.textContent = `Status error: ${formatNetworkError(e)}`;
         }
     };
 
