@@ -418,6 +418,7 @@
         const grid = document.querySelector('.insights-grid');
         const bakedCards = grid ? [...grid.querySelectorAll('.insight-card')] : [];
         const hasBakedContent = bakedCards.length > 0;
+        const statusParent = grid || document.querySelector('main') || document.body;
 
         const escapeHtml = (str) => {
             if (!str) return '';
@@ -434,14 +435,15 @@
                 statusEl = document.createElement('div');
                 statusEl.id = 'fetch-status';
                 statusEl.style.cssText = 'grid-column:1/-1; text-align:center; padding:40px; font-size:0.85rem; letter-spacing:2px; font-family:\'Space Grotesk\',sans-serif;';
-                grid.prepend(statusEl);
+                statusParent.prepend(statusEl);
             }
             statusEl.style.color = isError ? '#ff4444' : 'var(--muted)';
             
             if (isError) {
+                const safeMsg = escapeHtml(String(msg ?? ''));
                 statusEl.innerHTML = `
-                    <div style="margin-bottom:20px;">${msg}</div>
-                    <button onclick="window.location.reload()" style="background:var(--accent2); color:#000; border:none; padding:10px 20px; border-radius:8px; font-family:\'Space Grotesk\',sans-serif; font-weight:800; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Retry Signal</button>
+                    <div style="margin-bottom:20px;">${safeMsg}</div>
+                    <button type="button" onclick="window.location.reload()" style="background:var(--accent2); color:#000; border:none; padding:10px 20px; border-radius:8px; font-family:\'Space Grotesk\',sans-serif; font-weight:800; cursor:pointer; text-transform:uppercase; letter-spacing:1px;">Retry Signal</button>
                 `;
             } else {
                 statusEl.textContent = msg;
@@ -497,7 +499,7 @@
 
         } catch (e) {
             console.warn("Insights fetch error:", e);
-            if (!hasBakedContent) setStatus(`SIGNAL LOSS: ${e.message}`, true);
+            if (!hasBakedContent) setStatus(`SIGNAL LOSS: ${String(e?.message ?? e)}`, true);
         }
 
         function renderFilters() {
@@ -523,7 +525,7 @@
             const usefulTags = ['ALL', ...Object.keys(tagCounts).sort()];
 
             wrap.innerHTML = usefulTags.map(tag => `
-                <button type="button" class="filter-btn ${tag === activeTag ? 'active' : ''}" onclick="window.filterByTag('${escapeHtml(tag)}')">${tag === 'ALL' ? 'All' : escapeHtml(tag)}</button>
+                <button type="button" class="filter-btn ${tag === activeTag ? 'active' : ''}" onclick="window.filterByTag(${JSON.stringify(tag)})">${tag === 'ALL' ? 'All' : escapeHtml(tag)}</button>
             `).join('');
         }
 
@@ -614,7 +616,7 @@
 
 
   <script src="stars-v2.js?v=16.3.0" defer></script>
-  <script src="site-init.js?v=16.4.19" defer></script>
+  <script src="site-init.js?v=16.4.20" defer></script>
   <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>
 </body>
 </html>

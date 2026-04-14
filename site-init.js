@@ -1726,7 +1726,10 @@ function initSite() {
                     setTimeout(() => { btn.innerText = originalText; }, 3000);
                 }
 
-                if (statusDiv) statusDiv.textContent = 'Error: ' + (err.message || 'Something went wrong.');
+                if (statusDiv) {
+                    const msg = String(err?.message ?? err ?? 'Something went wrong.');
+                    statusDiv.textContent = 'Error: ' + msg;
+                }
             }
         });
     }
