@@ -19,6 +19,7 @@ const tests = [
     { name: 'Authentication Logic', path: 'tests/auth_flow_test.js' },
     { name: 'Post Management Logic', path: 'tests/manage_post_test.js' },
     { name: 'Email Link Logic', path: 'tests/email_link_test.js' },
+    { name: 'Ops Jobs Contract', path: 'tests/ops_jobs_contract.test.js' },
     { name: 'Doc Packet Logic', path: 'tests/doc_packet_logic.test.js' },
     { name: 'Oracle + Terminal Contract', path: 'tests/oracle_terminal_contract.test.js' },
     { name: 'OTP Oracle Master (stack)', path: 'tests/oracle_master.test.js' },

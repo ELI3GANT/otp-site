@@ -459,6 +459,178 @@
                 </div>
             </section>
 
+            <!-- SECTION: OTP QUICK INTAKE / JOB SHEET -->
+            <section class="input-section">
+                <div class="section-label">06.7 // OTP Quick Intake / Job Sheet</div>
+                <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.5;">
+                    Internal client operations record system. One job sheet = one source of truth (Oracle-ready).
+                </div>
+
+                <div id="opsJobsCounts" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px;">
+                    <div style="border:1px solid var(--admin-border);border-radius:12px;padding:10px;background:var(--admin-panel);">
+                        <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">New Leads</div>
+                        <div id="opsCountNewLead" style="font-size:1.1rem;font-weight:900;color:var(--admin-text);margin-top:6px;">—</div>
+                    </div>
+                    <div style="border:1px solid var(--admin-border);border-radius:12px;padding:10px;background:var(--admin-panel);">
+                        <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Quote Sent</div>
+                        <div id="opsCountQuoteSent" style="font-size:1.1rem;font-weight:900;color:var(--admin-text);margin-top:6px;">—</div>
+                    </div>
+                    <div style="border:1px solid var(--admin-border);border-radius:12px;padding:10px;background:var(--admin-panel);">
+                        <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Active Clients</div>
+                        <div id="opsCountActiveClient" style="font-size:1.1rem;font-weight:900;color:var(--admin-text);margin-top:6px;">—</div>
+                    </div>
+                    <div style="border:1px solid var(--admin-border);border-radius:12px;padding:10px;background:var(--admin-panel);">
+                        <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Awaiting Final</div>
+                        <div id="opsCountAwaitingFinalPayment" style="font-size:1.1rem;font-weight:900;color:var(--admin-text);margin-top:6px;">—</div>
+                    </div>
+                    <div style="border:1px solid var(--admin-border);border-radius:12px;padding:10px;background:var(--admin-panel);">
+                        <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Completed</div>
+                        <div id="opsCountCompleted" style="font-size:1.1rem;font-weight:900;color:var(--admin-text);margin-top:6px;">—</div>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
+                    <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="window.openOpsJobEditor()">NEW JOB</button>
+                    <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="window.fetchOpsJobs()">REFRESH</button>
+                    <span id="opsJobsBadge" style="font-size: 0.65rem; color: var(--admin-cyan); border: 1px solid var(--admin-border); border-radius: 6px; padding: 6px 10px;">JOBS: STANDBY</span>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px;">
+                    <input id="opsJobsSearch" class="input-field" placeholder="Search: jobId / client / project..." style="width:100%;padding:10px;border-radius:10px;" oninput="window.queueOpsJobsRefresh()" />
+                    <select id="opsFilterPackageType" onchange="window.fetchOpsJobs()" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;">
+                        <option value="">Package: All</option>
+                        <option value="The Signal">The Signal</option>
+                        <option value="The Engine">The Engine</option>
+                        <option value="The System">The System</option>
+                        <option value="Custom">Custom</option>
+                    </select>
+                    <select id="opsFilterPaymentStatus" onchange="window.fetchOpsJobs()" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;">
+                        <option value="">Payment: All</option>
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="Deposit Paid">Deposit Paid</option>
+                        <option value="Paid in Full">Paid in Full</option>
+                    </select>
+                    <select id="opsFilterJobStatus" onchange="window.fetchOpsJobs()" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;">
+                        <option value="">Status: All</option>
+                        <option value="New Lead">New Lead</option>
+                        <option value="Quote Sent">Quote Sent</option>
+                        <option value="Deposit Paid">Deposit Paid</option>
+                        <option value="Active Client">Active Client</option>
+                        <option value="Awaiting Final Payment">Awaiting Final Payment</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Archived">Archived</option>
+                    </select>
+                    <input id="opsFilterDueAfter" class="input-field" placeholder="Due after (YYYY-MM-DD)" style="width:100%;padding:10px;border-radius:10px;" onchange="window.fetchOpsJobs()" />
+                    <input id="opsFilterDueBefore" class="input-field" placeholder="Due before (YYYY-MM-DD)" style="width:100%;padding:10px;border-radius:10px;" onchange="window.fetchOpsJobs()" />
+                </div>
+
+                <div id="opsJobsEditor" style="display:none;background:var(--admin-panel);border:1px solid var(--admin-border);border-radius:12px;padding:12px;margin-bottom:12px;">
+                    <input id="opsJobId" type="hidden" />
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+                        <div style="min-width:240px;flex:1;">
+                            <div style="font-weight:900;color:var(--admin-text);letter-spacing:0.06em;">JOB SHEET</div>
+                            <div id="opsEditorMeta" style="margin-top:6px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;">New manual intake record.</div>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="window.closeOpsJobEditor()">CLOSE</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;background:var(--admin-cyan);color:#000;border:none;" onclick="window.saveOpsJob()">SAVE</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Client</div>
+                            <input id="opsClientName" class="input-field" placeholder="Client Name *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <input id="opsBusinessName" class="input-field" placeholder="Business / Brand Name" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <input id="opsPhone" class="input-field" placeholder="Phone" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <input id="opsEmail" class="input-field" placeholder="Email" style="width:100%;padding:10px;border-radius:10px;" />
+                        </div>
+
+                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Project</div>
+                            <input id="opsServiceType" class="input-field" placeholder="Service Type *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <select id="opsPackageType" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;margin-bottom:8px;">
+                                <option value="">Package Type *</option>
+                                <option value="The Signal">The Signal</option>
+                                <option value="The Engine">The Engine</option>
+                                <option value="The System">The System</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                            <input id="opsProjectTitle" class="input-field" placeholder="Project Title *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <textarea id="opsProjectDescription" class="input-field" rows="4" placeholder="Project Description" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
+                            <textarea id="opsDeliverables" class="input-field" rows="3" placeholder="Deliverables" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-top:8px;"></textarea>
+                            <textarea id="opsAddOns" class="input-field" rows="2" placeholder="Add-Ons" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-top:8px;"></textarea>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:8px;align-items:end;">
+                                <input id="opsStartDate" class="input-field" placeholder="Start Date (YYYY-MM-DD)" style="width:100%;padding:10px;border-radius:10px;" />
+                                <input id="opsDueDate" class="input-field" placeholder="Due Date (YYYY-MM-DD)" style="width:100%;padding:10px;border-radius:10px;" />
+                                <label style="display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--admin-text);padding:6px 2px;">
+                                    <input id="opsAllowDateOverride" type="checkbox" />
+                                    Allow date override
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Pricing / Payment</div>
+                            <input id="opsTotalPrice" class="input-field" placeholder="Total Price * (e.g. 399)" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" oninput="window.recalcOpsBalance()" />
+                            <input id="opsDepositAmount" class="input-field" placeholder="Deposit Amount (e.g. 199)" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" oninput="window.recalcOpsBalance()" />
+                            <div style="border:1px dashed var(--admin-border);border-radius:10px;padding:10px;margin-bottom:10px;background:var(--admin-panel);">
+                                <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Remaining Balance</div>
+                                <div id="opsRemainingBalance" style="font-size:1.1rem;font-weight:900;color:var(--admin-text);margin-top:6px;">—</div>
+                            </div>
+                            <select id="opsPaymentMethod" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;margin-bottom:8px;">
+                                <option value="">Payment Method</option>
+                                <option value="Apple Pay">Apple Pay</option>
+                                <option value="Cash App">Cash App</option>
+                                <option value="Zelle">Zelle</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <select id="opsPaymentStatus" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;margin-bottom:8px;">
+                                <option value="">Payment Status *</option>
+                                <option value="Unpaid">Unpaid</option>
+                                <option value="Deposit Paid">Deposit Paid</option>
+                                <option value="Paid in Full">Paid in Full</option>
+                            </select>
+                            <select id="opsJobStatus" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;">
+                                <option value="">Job Status *</option>
+                                <option value="New Lead">New Lead</option>
+                                <option value="Quote Sent">Quote Sent</option>
+                                <option value="Deposit Paid">Deposit Paid</option>
+                                <option value="Active Client">Active Client</option>
+                                <option value="Awaiting Final Payment">Awaiting Final Payment</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Archived">Archived</option>
+                            </select>
+                        </div>
+
+                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Workflow / Admin</div>
+                            <textarea id="opsClientNotes" class="input-field" rows="3" placeholder="Client Notes (client-facing)" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-bottom:8px;"></textarea>
+                            <textarea id="opsInternalNotes" class="input-field" rows="4" placeholder="Internal OTP Notes (private)" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-bottom:10px;"></textarea>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);margin-bottom:6px;">
+                                <input id="opsPortfolioPermission" type="checkbox" />
+                                Portfolio permission
+                            </label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);margin-bottom:6px;">
+                                <input id="opsAgreementSigned" type="checkbox" />
+                                Agreement signed
+                            </label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);margin-bottom:6px;">
+                                <input id="opsInvoiceSent" type="checkbox" />
+                                Invoice sent
+                            </label>
+                            <div id="opsJobSaveStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="opsJobsManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 520px; overflow-y: auto;">
+                    <div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO JOBS LOADED</div>
+                </div>
+            </section>
+
             <!-- SECTION: SESSION LOG -->
             <section class="input-section">
                 <div class="section-label">07 // Session Activity Log</div>
@@ -1164,7 +1336,7 @@
     <script src="site-config.js?v=16.4.6"></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.6.14"></script>
+    <script src="admin-core.js?v=16.6.15"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

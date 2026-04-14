@@ -526,6 +526,7 @@
                     fetchLeads(),
                     (typeof window.fetchKnowledgeFiles === 'function' ? window.fetchKnowledgeFiles() : Promise.resolve()),
                     (typeof window.fetchStructuredKnowledge === 'function' ? window.fetchStructuredKnowledge() : Promise.resolve()),
+                    (typeof window.fetchOpsJobs === 'function' ? window.fetchOpsJobs() : Promise.resolve()),
                     fetchCategories(),
                     fetchArchetypes()
                 ]);
@@ -1693,6 +1694,305 @@
             await window.fetchStructuredKnowledge();
         } catch (e) {
             if (status) status.textContent = `Archive failed: ${e.message}`;
+            showToast(`ARCHIVE FAILED: ${e.message}`);
+        }
+    };
+
+    // --- OTP OPS: Quick Intake / Job Sheet ---
+    window.opsJobsCache = [];
+    let opsJobsRefreshTimer = null;
+
+    const moneyFromCents = (c) => {
+        const n = Number(c);
+        if (!Number.isFinite(n)) return '—';
+        return `$${(n / 100).toFixed(0)}`;
+    };
+
+    const parseMoneyToCents = (raw) => {
+        const t = String(raw == null ? '' : raw).trim();
+        if (!t) return null;
+        const cleaned = t.replace(/[^0-9.]/g, '');
+        if (!cleaned) return null;
+        const num = Number(cleaned);
+        if (!Number.isFinite(num) || num < 0) return null;
+        return Math.round(num * 100);
+    };
+
+    window.queueOpsJobsRefresh = function() {
+        if (opsJobsRefreshTimer) clearTimeout(opsJobsRefreshTimer);
+        opsJobsRefreshTimer = setTimeout(() => window.fetchOpsJobs(), 300);
+    };
+
+    function setOpsBadge(text) {
+        const b = document.getElementById('opsJobsBadge');
+        if (b) b.textContent = String(text || 'JOBS: STANDBY');
+    }
+
+    function setCount(id, value) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = String(value == null ? '0' : value);
+    }
+
+    window.fetchOpsJobs = async function() {
+        const mgr = document.getElementById('opsJobsManager');
+        if (!state.token) {
+            setOpsBadge('JOBS: AUTH REQUIRED');
+            if (mgr) mgr.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED</div>';
+            return;
+        }
+        setOpsBadge('JOBS: SYNCING...');
+        if (mgr) mgr.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">SYNCING JOB SHEETS...</div>';
+        try {
+            const apiBase = resolveApiBase();
+            const q = String(document.getElementById('opsJobsSearch')?.value || '').trim();
+            const packageType = String(document.getElementById('opsFilterPackageType')?.value || '').trim();
+            const paymentStatus = String(document.getElementById('opsFilterPaymentStatus')?.value || '').trim();
+            const jobStatus = String(document.getElementById('opsFilterJobStatus')?.value || '').trim();
+            const dueAfter = String(document.getElementById('opsFilterDueAfter')?.value || '').trim();
+            const dueBefore = String(document.getElementById('opsFilterDueBefore')?.value || '').trim();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/list`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ q, packageType, paymentStatus, jobStatus, dueAfter, dueBefore, limit: 50, offset: 0 })
+            }, 45000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `List failed (${res.status})`);
+            const rows = Array.isArray(payload.rows) ? payload.rows : [];
+            window.opsJobsCache = rows;
+            setOpsBadge(`JOBS: ${rows.length}${payload.total != null ? ` / ${payload.total}` : ''}`);
+
+            const c = payload.counts || {};
+            setCount('opsCountNewLead', c['New Lead'] ?? 0);
+            setCount('opsCountQuoteSent', c['Quote Sent'] ?? 0);
+            setCount('opsCountActiveClient', c['Active Client'] ?? 0);
+            setCount('opsCountAwaitingFinalPayment', c['Awaiting Final Payment'] ?? 0);
+            setCount('opsCountCompleted', c['Completed'] ?? 0);
+
+            if (!mgr) return;
+            if (!rows.length) {
+                mgr.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">NO JOBS YET</div>';
+                return;
+            }
+            mgr.innerHTML = rows.map((r) => {
+                const due = r.dueDate ? new Date(r.dueDate).toLocaleDateString() : '—';
+                const upd = r.updatedAt ? new Date(r.updatedAt).toLocaleString() : '';
+                const pay = r.paymentStatus || '—';
+                const st = r.jobStatus || '—';
+                return `
+                    <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-panel);margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+                            <div style="min-width:240px;flex:1;">
+                                <div style="font-size:0.66rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;">${window.escapeHtml(String(r.jobId || ''))}</div>
+                                <div style="font-size:0.92rem;font-weight:900;color:var(--admin-text);margin-top:4px;">${window.escapeHtml(String(r.clientName || ''))}</div>
+                                <div style="font-size:0.72rem;color:var(--admin-muted);margin-top:4px;line-height:1.35;">${window.escapeHtml(String(r.projectTitle || ''))}</div>
+                                <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.35;">
+                                    ${window.escapeHtml(String(r.packageType || ''))} • ${moneyFromCents(r.totalPriceCents)} • ${window.escapeHtml(pay)} • ${window.escapeHtml(st)} • Due: ${window.escapeHtml(due)}
+                                </div>
+                                <div style="font-size:0.62rem;color:var(--admin-muted);margin-top:4px;">Updated: ${window.escapeHtml(upd)}</div>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.openOpsJobEditor('${window.escapeHtml(String(r.jobId || ''))}')">OPEN / EDIT</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.updateOpsJobStatus('${window.escapeHtml(String(r.jobId || ''))}','Completed')">MARK COMPLETED</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.archiveOpsJob('${window.escapeHtml(String(r.jobId || ''))}')">ARCHIVE</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            setOpsBadge('JOBS: ERROR');
+            if (mgr) mgr.innerHTML = `<div style="text-align:center;color:#ff8888;padding:20px;">OPS ERROR: ${window.escapeHtml(e.message)}</div>`;
+        }
+    };
+
+    window.openOpsJobEditor = async function(jobId) {
+        const editor = document.getElementById('opsJobsEditor');
+        const status = document.getElementById('opsJobSaveStatus');
+        if (status) status.textContent = '';
+        if (editor) editor.style.display = 'block';
+        const meta = document.getElementById('opsEditorMeta');
+
+        // Default clean state
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val == null ? '' : String(val); };
+        const setCk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+
+        set('opsJobId', '');
+        set('opsClientName', '');
+        set('opsBusinessName', '');
+        set('opsPhone', '');
+        set('opsEmail', '');
+        set('opsServiceType', '');
+        set('opsPackageType', '');
+        set('opsProjectTitle', '');
+        set('opsProjectDescription', '');
+        set('opsDeliverables', '');
+        set('opsAddOns', '');
+        set('opsStartDate', '');
+        set('opsDueDate', '');
+        setCk('opsAllowDateOverride', false);
+        set('opsTotalPrice', '');
+        set('opsDepositAmount', '');
+        set('opsPaymentMethod', '');
+        set('opsPaymentStatus', '');
+        set('opsJobStatus', '');
+        set('opsClientNotes', '');
+        set('opsInternalNotes', '');
+        setCk('opsPortfolioPermission', false);
+        setCk('opsAgreementSigned', false);
+        setCk('opsInvoiceSent', false);
+        window.recalcOpsBalance();
+
+        if (!jobId) {
+            if (meta) meta.textContent = 'New manual intake record.';
+            return;
+        }
+
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        try {
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/get`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId })
+            }, 30000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Get failed (${res.status})`);
+            const r = payload.row || {};
+            set('opsJobId', r.jobId || '');
+            set('opsClientName', r.clientName || '');
+            set('opsBusinessName', r.businessName || '');
+            set('opsPhone', r.phone || '');
+            set('opsEmail', r.email || '');
+            set('opsServiceType', r.serviceType || '');
+            set('opsPackageType', r.packageType || '');
+            set('opsProjectTitle', r.projectTitle || '');
+            set('opsProjectDescription', r.projectDescription || '');
+            set('opsDeliverables', r.deliverables || '');
+            set('opsAddOns', r.addOns || '');
+            set('opsStartDate', r.startDate || '');
+            set('opsDueDate', r.dueDate || '');
+            setCk('opsAllowDateOverride', !!r.allowDateOverride);
+            set('opsTotalPrice', r.totalPriceCents != null ? String(Math.round(Number(r.totalPriceCents) / 100)) : '');
+            set('opsDepositAmount', r.depositAmountCents != null ? String(Math.round(Number(r.depositAmountCents) / 100)) : '');
+            set('opsPaymentMethod', r.paymentMethod || '');
+            set('opsPaymentStatus', r.paymentStatus || '');
+            set('opsJobStatus', r.jobStatus || '');
+            set('opsClientNotes', r.clientNotes || '');
+            set('opsInternalNotes', r.internalNotes || '');
+            setCk('opsPortfolioPermission', !!r.portfolioPermission);
+            setCk('opsAgreementSigned', !!r.agreementSigned);
+            setCk('opsInvoiceSent', !!r.invoiceSent);
+            window.recalcOpsBalance();
+            if (meta) meta.textContent = `Editing ${r.jobId} • created ${r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}`;
+        } catch (e) {
+            showToast(`LOAD FAILED: ${e.message}`);
+        }
+    };
+
+    window.closeOpsJobEditor = function() {
+        const editor = document.getElementById('opsJobsEditor');
+        if (editor) editor.style.display = 'none';
+    };
+
+    window.recalcOpsBalance = function() {
+        const totalCents = parseMoneyToCents(document.getElementById('opsTotalPrice')?.value);
+        const depCents = parseMoneyToCents(document.getElementById('opsDepositAmount')?.value) ?? 0;
+        const el = document.getElementById('opsRemainingBalance');
+        if (!el) return;
+        if (totalCents == null) { el.textContent = '—'; return; }
+        const safeDep = Math.min(depCents, totalCents);
+        const rem = Math.max(0, totalCents - safeDep);
+        el.textContent = moneyFromCents(rem);
+    };
+
+    window.saveOpsJob = async function() {
+        const status = document.getElementById('opsJobSaveStatus');
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        const jobId = String(document.getElementById('opsJobId')?.value || '').trim();
+        const job = {
+            jobId,
+            sourceType: 'manualIntake',
+            clientName: String(document.getElementById('opsClientName')?.value || '').trim(),
+            businessName: String(document.getElementById('opsBusinessName')?.value || '').trim(),
+            phone: String(document.getElementById('opsPhone')?.value || '').trim(),
+            email: String(document.getElementById('opsEmail')?.value || '').trim(),
+            serviceType: String(document.getElementById('opsServiceType')?.value || '').trim(),
+            packageType: String(document.getElementById('opsPackageType')?.value || '').trim(),
+            projectTitle: String(document.getElementById('opsProjectTitle')?.value || '').trim(),
+            projectDescription: String(document.getElementById('opsProjectDescription')?.value || '').trim(),
+            deliverables: String(document.getElementById('opsDeliverables')?.value || '').trim(),
+            addOns: String(document.getElementById('opsAddOns')?.value || '').trim(),
+            startDate: String(document.getElementById('opsStartDate')?.value || '').trim(),
+            dueDate: String(document.getElementById('opsDueDate')?.value || '').trim(),
+            allowDateOverride: !!document.getElementById('opsAllowDateOverride')?.checked,
+            totalPrice: String(document.getElementById('opsTotalPrice')?.value || '').trim(),
+            depositAmount: String(document.getElementById('opsDepositAmount')?.value || '').trim(),
+            paymentMethod: String(document.getElementById('opsPaymentMethod')?.value || '').trim(),
+            paymentStatus: String(document.getElementById('opsPaymentStatus')?.value || '').trim(),
+            jobStatus: String(document.getElementById('opsJobStatus')?.value || '').trim(),
+            clientNotes: String(document.getElementById('opsClientNotes')?.value || '').trim(),
+            internalNotes: String(document.getElementById('opsInternalNotes')?.value || '').trim(),
+            portfolioPermission: !!document.getElementById('opsPortfolioPermission')?.checked,
+            agreementSigned: !!document.getElementById('opsAgreementSigned')?.checked,
+            invoiceSent: !!document.getElementById('opsInvoiceSent')?.checked
+        };
+        try {
+            if (status) status.textContent = 'Saving...';
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/upsert`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId: jobId || undefined, job })
+            }, 45000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Save failed (${res.status})`);
+            showToast('JOB SAVED');
+            if (status) status.textContent = 'Saved.';
+            const saved = payload.row || {};
+            const idEl = document.getElementById('opsJobId');
+            if (idEl && saved.jobId) idEl.value = saved.jobId;
+            await window.fetchOpsJobs();
+        } catch (e) {
+            if (status) status.textContent = `Save failed: ${e.message}`;
+            showToast(`SAVE FAILED: ${e.message}`);
+        }
+    };
+
+    window.updateOpsJobStatus = async function(jobId, nextStatus) {
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!jobId || !nextStatus) return;
+        try {
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/update-status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId, jobStatus: nextStatus })
+            }, 30000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Status failed (${res.status})`);
+            showToast('STATUS UPDATED');
+            await window.fetchOpsJobs();
+        } catch (e) {
+            showToast(`STATUS FAILED: ${e.message}`);
+        }
+    };
+
+    window.archiveOpsJob = async function(jobId) {
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        if (!jobId) return;
+        if (!confirm(`Archive job ${jobId}?`)) return;
+        try {
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/archive`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId })
+            }, 30000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Archive failed (${res.status})`);
+            showToast('JOB ARCHIVED');
+            await window.fetchOpsJobs();
+        } catch (e) {
             showToast(`ARCHIVE FAILED: ${e.message}`);
         }
     };

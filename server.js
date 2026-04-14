@@ -2247,6 +2247,350 @@ app.post('/api/admin/knowledge/structured/archive', verifyToken, async (req, res
     }
 });
 
+// 2.10.3 OTP Ops — Quick Intake / Job Sheet (single source of truth: ops_jobs table)
+const OPS_JOB = Object.freeze({
+    packageTypes: ['The Signal', 'The Engine', 'The System', 'Custom'],
+    paymentMethods: ['Apple Pay', 'Cash App', 'Zelle', 'Bank Transfer', 'Cash', 'Other'],
+    paymentStatuses: ['Unpaid', 'Deposit Paid', 'Paid in Full'],
+    jobStatuses: ['New Lead', 'Quote Sent', 'Deposit Paid', 'Active Client', 'Awaiting Final Payment', 'Completed', 'Archived']
+});
+
+function sanitizeOpsText(v, max = 20000) {
+    const s = String(v == null ? '' : v).trim();
+    if (!s) return '';
+    return s.slice(0, Math.max(0, Math.min(max, 20000)));
+}
+
+function parseCurrencyToCents(input) {
+    if (input == null || input === '') return null;
+    if (typeof input === 'number' && Number.isFinite(input)) {
+        const cents = Math.round(input * 100);
+        return cents >= 0 ? cents : null;
+    }
+    const raw = String(input).trim();
+    if (!raw) return null;
+    const cleaned = raw.replace(/[^0-9.]/g, '');
+    if (!cleaned) return null;
+    const num = Number(cleaned);
+    if (!Number.isFinite(num) || num < 0) return null;
+    return Math.round(num * 100);
+}
+
+function validateOpsEmail(input) {
+    const v = String(input || '').trim();
+    if (!v) return { ok: true, value: '' };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return { ok: false, value: v };
+    return { ok: true, value: v };
+}
+
+function generateJobId() {
+    return `JOB-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`.toUpperCase();
+}
+
+function normalizeOpsJobPayload(payload, { existingJobId = null, actor = null } = {}) {
+    const p = payload && typeof payload === 'object' ? payload : {};
+    const nowIso = new Date().toISOString();
+    const jobId = String(existingJobId || p.jobId || '').trim() || generateJobId();
+
+    const clientName = sanitizeOpsText(p.clientName, 140);
+    const businessName = sanitizeOpsText(p.businessName, 180);
+    const phone = sanitizeOpsText(p.phone, 60);
+    const emailCheck = validateOpsEmail(p.email);
+    const email = emailCheck.value;
+
+    const serviceType = sanitizeOpsText(p.serviceType, 140);
+    const packageType = sanitizeOpsText(p.packageType, 40);
+    const projectTitle = sanitizeOpsText(p.projectTitle, 180);
+
+    const projectDescription = sanitizeOpsText(p.projectDescription, 9000);
+    const deliverables = sanitizeOpsText(p.deliverables, 6000);
+    const addOns = sanitizeOpsText(p.addOns, 4000);
+
+    const startDate = String(p.startDate || '').trim() || null;
+    const dueDate = String(p.dueDate || '').trim() || null;
+    const allowDateOverride = !!p.allowDateOverride;
+
+    const totalCents = parseCurrencyToCents(p.totalPrice);
+    const depositCents = parseCurrencyToCents(p.depositAmount) ?? 0;
+    const remainingCents = (totalCents == null ? null : Math.max(0, totalCents - Math.min(depositCents, totalCents)));
+
+    const paymentMethod = sanitizeOpsText(p.paymentMethod, 40);
+    const paymentStatus = sanitizeOpsText(p.paymentStatus, 40);
+    const jobStatus = sanitizeOpsText(p.jobStatus, 60);
+
+    const clientNotes = sanitizeOpsText(p.clientNotes, 9000);
+    const internalNotes = sanitizeOpsText(p.internalNotes, 12000);
+
+    const portfolioPermission = !!p.portfolioPermission;
+    const agreementSigned = !!p.agreementSigned;
+    const invoiceSent = !!p.invoiceSent;
+
+    const errors = [];
+    if (!clientName) errors.push('Client Name is required.');
+    if (!serviceType) errors.push('Service Type is required.');
+    if (!packageType) errors.push('Package Type is required.');
+    if (!projectTitle) errors.push('Project Title is required.');
+    if (totalCents == null) errors.push('Total Price is required.');
+    if (!paymentStatus) errors.push('Payment Status is required.');
+    if (!jobStatus) errors.push('Job Status is required.');
+    if (!emailCheck.ok) errors.push('Email is invalid.');
+    if (packageType && !OPS_JOB.packageTypes.includes(packageType)) errors.push('Package Type is invalid.');
+    if (paymentMethod && !OPS_JOB.paymentMethods.includes(paymentMethod)) errors.push('Payment Method is invalid.');
+    if (paymentStatus && !OPS_JOB.paymentStatuses.includes(paymentStatus)) errors.push('Payment Status is invalid.');
+    if (jobStatus && !OPS_JOB.jobStatuses.includes(jobStatus)) errors.push('Job Status is invalid.');
+    if (totalCents != null && depositCents > totalCents) errors.push('Deposit Amount cannot exceed Total Price.');
+    if (totalCents != null && totalCents < 0) errors.push('Total Price cannot be negative.');
+    if (depositCents < 0) errors.push('Deposit Amount cannot be negative.');
+    if (remainingCents != null && remainingCents < 0) errors.push('Remaining balance cannot be negative.');
+
+    if (startDate && dueDate && !allowDateOverride) {
+        const s = new Date(startDate);
+        const d = new Date(dueDate);
+        if (Number.isFinite(s.getTime()) && Number.isFinite(d.getTime()) && d.getTime() < s.getTime()) {
+            errors.push('Due Date cannot be before Start Date unless override is enabled.');
+        }
+    }
+
+    const row = {
+        job_id: jobId,
+        created_at: String(p.createdAt || '').trim() || nowIso,
+        updated_at: nowIso,
+        source_type: 'manualIntake',
+
+        client_name: clientName,
+        business_name: businessName || null,
+        phone: phone || null,
+        email: email || null,
+
+        service_type: serviceType,
+        package_type: packageType,
+
+        project_title: projectTitle,
+        project_description: projectDescription || null,
+        deliverables: deliverables || null,
+        add_ons: addOns || null,
+        start_date: startDate || null,
+        due_date: dueDate || null,
+        allow_date_override: allowDateOverride,
+
+        total_price_cents: totalCents ?? 0,
+        deposit_amount_cents: depositCents,
+        remaining_balance_cents: remainingCents ?? 0,
+
+        payment_method: paymentMethod || null,
+        payment_status: paymentStatus,
+
+        client_notes: clientNotes || null,
+        internal_notes: internalNotes || null,
+
+        portfolio_permission: portfolioPermission,
+        agreement_signed: agreementSigned,
+        invoice_sent: invoiceSent,
+
+        job_status: jobStatus,
+        created_by: String(p.createdBy || actor || '').trim() || null,
+        updated_by: String(actor || p.updatedBy || '').trim() || null
+    };
+
+    return { ok: errors.length === 0, errors, row };
+}
+
+function mapOpsJobRowToApi(row) {
+    const r = row || {};
+    return {
+        jobId: r.job_id,
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+        sourceType: r.source_type,
+        clientName: r.client_name,
+        businessName: r.business_name,
+        phone: r.phone,
+        email: r.email,
+        serviceType: r.service_type,
+        packageType: r.package_type,
+        projectTitle: r.project_title,
+        projectDescription: r.project_description,
+        deliverables: r.deliverables,
+        addOns: r.add_ons,
+        startDate: r.start_date,
+        dueDate: r.due_date,
+        allowDateOverride: !!r.allow_date_override,
+        totalPriceCents: r.total_price_cents,
+        depositAmountCents: r.deposit_amount_cents,
+        remainingBalanceCents: r.remaining_balance_cents,
+        paymentMethod: r.payment_method,
+        paymentStatus: r.payment_status,
+        clientNotes: r.client_notes,
+        internalNotes: r.internal_notes,
+        portfolioPermission: !!r.portfolio_permission,
+        agreementSigned: !!r.agreement_signed,
+        invoiceSent: !!r.invoice_sent,
+        jobStatus: r.job_status,
+        createdBy: r.created_by,
+        updatedBy: r.updated_by
+    };
+}
+
+app.post('/api/admin/ops/jobs/list', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const q = String(req.body?.q || '').trim();
+        const packageType = String(req.body?.packageType || '').trim();
+        const paymentStatus = String(req.body?.paymentStatus || '').trim();
+        const jobStatus = String(req.body?.jobStatus || '').trim();
+        const dueBefore = String(req.body?.dueBefore || '').trim();
+        const dueAfter = String(req.body?.dueAfter || '').trim();
+        const limit = Math.max(1, Math.min(100, Number(req.body?.limit || 30)));
+        const offset = Math.max(0, Number(req.body?.offset || 0));
+
+        let query = supabaseAdmin
+            .from('ops_jobs')
+            .select('*', { count: 'exact' })
+            .order('updated_at', { ascending: false })
+            .range(offset, offset + limit - 1);
+
+        if (q) {
+            const like = `%${q.replace(/%/g, '')}%`;
+            query = query.or(`job_id.ilike.${like},client_name.ilike.${like},project_title.ilike.${like}`);
+        }
+        if (packageType) query = query.eq('package_type', packageType);
+        if (paymentStatus) query = query.eq('payment_status', paymentStatus);
+        if (jobStatus) query = query.eq('job_status', jobStatus);
+        if (dueAfter) query = query.gte('due_date', dueAfter);
+        if (dueBefore) query = query.lte('due_date', dueBefore);
+
+        const { data, error, count } = await query;
+        if (error) throw error;
+
+        const counts = {};
+        const statusBuckets = ['New Lead', 'Quote Sent', 'Active Client', 'Awaiting Final Payment', 'Completed'];
+        const countQueries = statusBuckets.map(async (st) => {
+            const { count: c, error: ce } = await supabaseAdmin
+                .from('ops_jobs')
+                .select('job_id', { count: 'exact', head: true })
+                .eq('job_status', st);
+            if (ce) throw ce;
+            counts[st] = c || 0;
+        });
+        await Promise.all(countQueries);
+
+        res.json({
+            success: true,
+            total: count || 0,
+            rows: (data || []).map(mapOpsJobRowToApi),
+            counts
+        });
+    } catch (error) {
+        console.error("ops-jobs-list:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/admin/ops/jobs/get', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', jobId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+        res.json({ success: true, row: mapOpsJobRowToApi(data) });
+    } catch (error) {
+        console.error("ops-jobs-get:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/admin/ops/jobs/upsert', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const input = req.body?.job || {};
+        const requestedJobId = String(req.body?.jobId || input.jobId || '').trim() || null;
+        let existing = null;
+        if (requestedJobId) {
+            const { data, error } = await supabaseAdmin
+                .from('ops_jobs')
+                .select('job_id, created_at, created_by')
+                .eq('job_id', requestedJobId)
+                .maybeSingle();
+            if (error) throw error;
+            existing = data || null;
+        }
+
+        const actor = String(req.auth?.role || 'admin');
+        const normalized = normalizeOpsJobPayload(input, { existingJobId: existing?.job_id || requestedJobId, actor });
+        if (!normalized.ok) return res.status(400).json({ success: false, message: normalized.errors.join(' ') });
+
+        // Preserve created_at/by on updates.
+        if (existing) {
+            normalized.row.created_at = existing.created_at;
+            normalized.row.created_by = existing.created_by || normalized.row.created_by;
+        }
+
+        const { data: upserted, error: upsertError } = await supabaseAdmin
+            .from('ops_jobs')
+            .upsert([normalized.row], { onConflict: 'job_id' })
+            .select('*')
+            .maybeSingle();
+        if (upsertError) throw upsertError;
+        res.json({ success: true, row: mapOpsJobRowToApi(upserted) });
+    } catch (error) {
+        console.error("ops-jobs-upsert:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/admin/ops/jobs/update-status', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        const jobStatus = String(req.body?.jobStatus || '').trim();
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+        if (!jobStatus) return res.status(400).json({ success: false, message: 'Missing jobStatus' });
+        if (!OPS_JOB.jobStatuses.includes(jobStatus)) return res.status(400).json({ success: false, message: 'Invalid jobStatus' });
+        const nowIso = new Date().toISOString();
+        const actor = String(req.auth?.role || 'admin');
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .update({ job_status: jobStatus, updated_at: nowIso, updated_by: actor })
+            .eq('job_id', jobId)
+            .select('*')
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+        res.json({ success: true, row: mapOpsJobRowToApi(data) });
+    } catch (error) {
+        console.error("ops-jobs-update-status:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/admin/ops/jobs/archive', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+        const nowIso = new Date().toISOString();
+        const actor = String(req.auth?.role || 'admin');
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .update({ job_status: 'Archived', updated_at: nowIso, updated_by: actor })
+            .eq('job_id', jobId)
+            .select('*')
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+        res.json({ success: true, row: mapOpsJobRowToApi(data) });
+    } catch (error) {
+        console.error("ops-jobs-archive:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // 2.11 OTP Oracle — knowledge: lead/contact recommendation
 app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
