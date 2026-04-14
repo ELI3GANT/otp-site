@@ -2236,7 +2236,7 @@ html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 10000; /* Increased to stay above all content */
+  z-index: 12000; /* Must be above .nav-scrim (prevents scrim blocking drawer taps) */
 
   background: rgba(10,10,18,0.30);
   backdrop-filter: blur(8px);
