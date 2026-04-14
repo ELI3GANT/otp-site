@@ -26,7 +26,9 @@ assert.match(server, /\/api\/admin\/ops\/jobs\/archive/);
 assert.match(server, /Deposit Amount cannot exceed Total Price/);
 assert.match(server, /Remaining balance cannot be negative/);
 assert.match(server, /Due Date cannot be before Start Date/);
-assert.match(server, /source_type:\s*'manualIntake'/);
+assert.match(server, /sourceTypeRaw/, 'supports sourceType input');
+assert.match(server, /source_type:\s*sourceType/, 'persists source_type from normalized sourceType');
+assert.match(server, /:\s*'manualIntake'/, 'default sourceType remains manualIntake');
 
 // Terminal wiring exists
 assert.ok(terminal.includes('OTP Quick Intake / Job Sheet'), 'Terminal section exists');

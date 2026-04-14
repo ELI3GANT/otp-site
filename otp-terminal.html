@@ -459,6 +459,108 @@
                 </div>
             </section>
 
+            <!-- SECTION: QUICK DEAL MODE -->
+            <section class="input-section">
+                <div class="section-label">06.6 // Quick Deal Mode</div>
+                <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.5;">
+                    Fast admin-only deal entry. Saves into <strong>ops_jobs</strong> as <span style="color:var(--admin-cyan);font-weight:900;">sourceType=quickDeal</span> and can generate/export docs immediately.
+                </div>
+
+                <div id="qdPanel" style="background:var(--admin-panel);border:1px solid var(--admin-border);border-radius:12px;padding:12px;">
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+                        <div style="min-width:240px;flex:1;">
+                            <div style="font-weight:900;color:var(--admin-text);letter-spacing:0.06em;">QUICK DEAL</div>
+                            <div id="qdMeta" style="margin-top:6px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;">Create a deal in under a minute.</div>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="window.resetQuickDeal()">RESET</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;background:var(--admin-cyan);color:#000;border:none;" onclick="window.saveQuickDeal()">SAVE QUICK DEAL</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Client</div>
+                            <input id="qdClientName" class="input-field" placeholder="Client Name *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <input id="qdEmail" class="input-field" placeholder="Client Email" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <input id="qdPhone" class="input-field" placeholder="Client Phone" style="width:100%;padding:10px;border-radius:10px;" />
+                        </div>
+
+                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Deal</div>
+                            <input id="qdServiceType" class="input-field" placeholder="Service Type *" list="opsServiceTypeList" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <div id="qdServiceGuidance" style="display:none;margin:-2px 0 10px 0;font-size:0.66rem;line-height:1.4;color:var(--admin-muted);"></div>
+                            <select id="qdPackageType" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
+                                <option value="">Package Type *</option>
+                                <option value="The Signal">The Signal</option>
+                                <option value="The Engine">The Engine</option>
+                                <option value="The System">The System</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                            <div id="qdPackageGuidance" style="display:none;margin:-2px 0 10px 0;font-size:0.66rem;line-height:1.4;color:var(--admin-muted);"></div>
+                            <textarea id="qdSummary" class="input-field" rows="4" placeholder="Project Summary / What Was Done *" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
+                        </div>
+
+                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Payment</div>
+                            <input id="qdTotalPrice" class="input-field" placeholder="Price * (e.g. 500)" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" oninput="window.recalcQuickDealBalance()" />
+                            <input id="qdDepositAmount" class="input-field" placeholder="Deposit Amount (e.g. 250)" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" oninput="window.recalcQuickDealBalance()" />
+                            <div style="border:1px dashed var(--admin-border);border-radius:10px;padding:10px;margin-bottom:10px;background:var(--admin-panel);">
+                                <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Remaining Balance</div>
+                                <div id="qdRemainingBalance" style="font-size:1.1rem;font-weight:900;color:var(--admin-text);margin-top:6px;">—</div>
+                            </div>
+                            <select id="qdPaymentMethod" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
+                                <option value="">Payment Method</option>
+                                <option value="Apple Pay">Apple Pay</option>
+                                <option value="Cash App">Cash App</option>
+                                <option value="Zelle">Zelle</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <select id="qdPaymentStatus" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
+                                <option value="">Payment Status *</option>
+                                <option value="Unpaid">Unpaid</option>
+                                <option value="Deposit Paid">Deposit Paid</option>
+                                <option value="Paid in Full">Paid in Full</option>
+                            </select>
+                            <select id="qdDealStatus" class="input-field" style="width:100%;padding:10px;border-radius:10px;">
+                                <option value="">Deal Status *</option>
+                                <option value="Starting Now">Starting Now</option>
+                                <option value="Completed Now">Completed Now</option>
+                            </select>
+                        </div>
+
+                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Documents</div>
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;">
+                                <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="qdDocNeed" type="checkbox" value="Invoice" checked />Invoice</label>
+                                <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="qdDocNeed" type="checkbox" value="Paid Receipt" />Paid Receipt</label>
+                                <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="qdDocNeed" type="checkbox" value="Service Summary" />Service Summary</label>
+                                <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="qdDocNeed" type="checkbox" value="Proposal" />Proposal</label>
+                                <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="qdDocNeed" type="checkbox" value="Agreement" />Agreement</label>
+                                <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="qdDocNeed" type="checkbox" value="NDA" />NDA</label>
+                                <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="qdDocNeed" type="checkbox" value="Media Release" />Media Release</label>
+                            </div>
+                            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.generateQuickDealPriorityDocs()">Generate Priority Docs</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.generateQuickDealSelectedDocs()">Generate Selected Docs</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.openQuickDealInJobSheet()">Open Full Record</button>
+                            </div>
+                            <div id="qdStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;"></div>
+                        </div>
+
+                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Notes (internal)</div>
+                            <textarea id="qdNotes" class="input-field" rows="5" placeholder="Internal notes (private) — quick context for later." style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
+                            <div style="margin-top:10px;font-size:0.66rem;color:var(--admin-muted);line-height:1.45;">
+                                Exports and client-facing docs never include internal notes.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- SECTION: OTP QUICK INTAKE / JOB SHEET -->
             <section class="input-section">
                 <div class="section-label">06.7 // OTP Quick Intake / Job Sheet</div>
@@ -1378,7 +1480,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.6.16"></script>
+    <script src="admin-core.js?v=16.7.0"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

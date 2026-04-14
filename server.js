@@ -2475,6 +2475,9 @@ function normalizeOpsJobPayload(payload, { existingJobId = null, actor = null } 
     const nowIso = new Date().toISOString();
     const jobId = String(existingJobId || p.jobId || '').trim() || generateJobId();
 
+    const sourceTypeRaw = String(p.sourceType || p.source_type || '').trim();
+    const sourceType = (sourceTypeRaw && ['manualIntake', 'quickDeal'].includes(sourceTypeRaw)) ? sourceTypeRaw : 'manualIntake';
+
     const clientName = sanitizeOpsText(p.clientName, 140);
     const businessName = sanitizeOpsText(p.businessName, 180);
     const phone = sanitizeOpsText(p.phone, 60);
@@ -2538,7 +2541,7 @@ function normalizeOpsJobPayload(payload, { existingJobId = null, actor = null } 
         job_id: jobId,
         created_at: String(p.createdAt || '').trim() || nowIso,
         updated_at: nowIso,
-        source_type: 'manualIntake',
+        source_type: sourceType,
 
         client_name: clientName,
         business_name: businessName || null,

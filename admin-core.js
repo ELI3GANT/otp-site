@@ -2144,6 +2144,216 @@
         }
     };
 
+    function setQuickDealGuidance(el, text) {
+        if (!el) return;
+        const t = String(text || '').trim();
+        if (!t) { el.style.display = 'none'; el.textContent = ''; return; }
+        el.style.display = 'block';
+        el.textContent = t;
+    }
+    function refreshQuickDealGuidance() {
+        const pkg = document.getElementById('qdPackageType')?.value || '';
+        const svc = document.getElementById('qdServiceType')?.value || '';
+        setQuickDealGuidance(document.getElementById('qdPackageGuidance'), pricingGuidanceTextForPackage(pkg));
+        setQuickDealGuidance(document.getElementById('qdServiceGuidance'), pricingGuidanceTextForService(svc));
+    }
+    function computeQuickDealJobStatus(dealStatus, paymentStatus) {
+        const ds = String(dealStatus || '').trim();
+        const ps = String(paymentStatus || '').trim();
+        if (ds === 'Completed Now') {
+            if (ps === 'Paid in Full') return 'Completed';
+            if (ps === 'Deposit Paid') return 'Awaiting Final Payment';
+            return 'Quote Sent';
+        }
+        // Starting Now
+        if (ps === 'Deposit Paid') return 'Active Client';
+        if (ps === 'Paid in Full') return 'Active Client';
+        return 'Quote Sent';
+    }
+    function quickDealMetaBlock({ dealStatus, requestedDocuments }) {
+        const meta = {
+            quickDealStatus: String(dealStatus || '').trim(),
+            requestedDocuments: Array.isArray(requestedDocuments) ? requestedDocuments : []
+        };
+        return `QD_META=${JSON.stringify(meta)}`;
+    }
+    function parseQuickDealMeta(internalNotes) {
+        const raw = String(internalNotes || '');
+        const m = raw.match(/QD_META=({[\s\S]*?})/);
+        if (!m) return null;
+        try { return JSON.parse(m[1]); } catch (_) { return null; }
+    }
+    function getQuickDealRequestedDocs() {
+        return Array.from(document.querySelectorAll('.qdDocNeed'))
+            .filter((el) => !!el.checked)
+            .map((el) => String(el.value || '').trim())
+            .filter(Boolean);
+    }
+    function setQuickDealStatus(text) {
+        const el = document.getElementById('qdStatus');
+        if (el) el.textContent = String(text || '');
+    }
+    window.recalcQuickDealBalance = function() {
+        const totalCents = parseMoneyToCents(document.getElementById('qdTotalPrice')?.value);
+        const depCents = parseMoneyToCents(document.getElementById('qdDepositAmount')?.value) ?? 0;
+        const el = document.getElementById('qdRemainingBalance');
+        if (!el) return;
+        if (totalCents == null) { el.textContent = '—'; return; }
+        const safeDep = Math.min(depCents, totalCents);
+        const rem = Math.max(0, totalCents - safeDep);
+        el.textContent = moneyFromCents(rem);
+        const warn = depCents > totalCents;
+        el.style.color = warn ? '#ffb86b' : 'var(--admin-text)';
+        el.title = warn ? 'Deposit cannot exceed total. Adjust values before saving.' : '';
+    };
+    window.resetQuickDeal = function() {
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val == null ? '' : String(val); };
+        set('qdClientName', '');
+        set('qdEmail', '');
+        set('qdPhone', '');
+        set('qdServiceType', '');
+        set('qdPackageType', '');
+        set('qdSummary', '');
+        set('qdTotalPrice', '');
+        set('qdDepositAmount', '');
+        set('qdPaymentMethod', '');
+        set('qdPaymentStatus', '');
+        set('qdDealStatus', '');
+        set('qdNotes', '');
+        Array.from(document.querySelectorAll('.qdDocNeed')).forEach((el) => { el.checked = (String(el.value) === 'Invoice'); });
+        window.__quickDealState = { jobId: null };
+        refreshQuickDealGuidance();
+        window.recalcQuickDealBalance();
+        setQuickDealStatus('');
+        const meta = document.getElementById('qdMeta');
+        if (meta) meta.textContent = 'Create a deal in under a minute.';
+    };
+    window.saveQuickDeal = async function() {
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        const clientName = String(document.getElementById('qdClientName')?.value || '').trim();
+        const email = String(document.getElementById('qdEmail')?.value || '').trim();
+        const phone = String(document.getElementById('qdPhone')?.value || '').trim();
+        const serviceType = String(document.getElementById('qdServiceType')?.value || '').trim();
+        const packageType = String(document.getElementById('qdPackageType')?.value || '').trim();
+        const summary = String(document.getElementById('qdSummary')?.value || '').trim();
+        const totalPrice = String(document.getElementById('qdTotalPrice')?.value || '').trim();
+        const depositAmount = String(document.getElementById('qdDepositAmount')?.value || '').trim();
+        const paymentMethod = String(document.getElementById('qdPaymentMethod')?.value || '').trim();
+        const paymentStatus = String(document.getElementById('qdPaymentStatus')?.value || '').trim();
+        const dealStatus = String(document.getElementById('qdDealStatus')?.value || '').trim();
+        const notes = String(document.getElementById('qdNotes')?.value || '').trim();
+
+        const requestedDocs = getQuickDealRequestedDocs();
+        const jobStatus = computeQuickDealJobStatus(dealStatus, paymentStatus);
+
+        const internalNotes = normalizeWhitespace([
+            quickDealMetaBlock({ dealStatus, requestedDocuments: requestedDocs }),
+            notes ? `\n\n${notes}` : ''
+        ].filter(Boolean).join(''));
+
+        const job = {
+            sourceType: 'quickDeal',
+            clientName,
+            email,
+            phone,
+            serviceType,
+            packageType,
+            // Use summary as title to avoid inventing a separate title.
+            projectTitle: summary,
+            projectDescription: summary,
+            deliverables: '',
+            addOns: '',
+            startDate: '',
+            dueDate: '',
+            allowDateOverride: false,
+            totalPrice,
+            depositAmount,
+            paymentMethod,
+            paymentStatus,
+            jobStatus,
+            clientNotes: '',
+            internalNotes,
+            portfolioPermission: false,
+            agreementSigned: false,
+            invoiceSent: false
+        };
+
+        try {
+            setQuickDealStatus('Saving…');
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/upsert`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ job })
+            }, 45000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Save failed (${res.status})`);
+            const saved = payload.row || {};
+            window.__quickDealState = { jobId: saved.jobId || null, requestedDocuments: requestedDocs };
+            const meta = document.getElementById('qdMeta');
+            if (meta) meta.textContent = saved.jobId ? `Saved ${saved.jobId} • ${saved.jobStatus || ''} • ${saved.paymentStatus || ''}` : 'Saved.';
+            setQuickDealStatus(saved.jobId ? `Saved as ${saved.jobId}. You can generate docs immediately.` : 'Saved.');
+            showToast('QUICK DEAL SAVED');
+            // Keep job sheet list in sync.
+            if (typeof window.fetchOpsJobs === 'function') await window.fetchOpsJobs();
+        } catch (e) {
+            setQuickDealStatus(`Save failed: ${e.message}`);
+            showToast(`SAVE FAILED: ${e.message}`);
+        }
+    };
+
+    window.openQuickDealInJobSheet = async function() {
+        const jobId = String(window.__quickDealState?.jobId || '').trim();
+        if (!jobId) { showToast('SAVE QUICK DEAL FIRST'); return; }
+        await window.openOpsJobEditor(jobId);
+        showToast('OPENED IN JOB SHEET');
+    };
+
+    async function generateOneQuickDealDoc(docType) {
+        const jobId = String(window.__quickDealState?.jobId || '').trim();
+        if (!jobId) { showToast('SAVE QUICK DEAL FIRST'); return; }
+        const idEl = document.getElementById('opsJobId');
+        if (idEl) idEl.value = jobId;
+        // Generate into existing ops doc panel (single source of UI truth).
+        await window.generateOpsDoc(docType);
+    }
+
+    window.generateQuickDealPriorityDocs = async function() {
+        await generateOneQuickDealDoc('Invoice');
+        await generateOneQuickDealDoc('Paid Receipt');
+        await generateOneQuickDealDoc('Service Summary');
+    };
+    window.generateQuickDealSelectedDocs = async function() {
+        const selected = Array.from(new Set(getQuickDealRequestedDocs()));
+        if (!selected.length) { showToast('NO DOCS SELECTED'); return; }
+        // Prioritize the operational trio first if included.
+        const order = ['Invoice', 'Paid Receipt', 'Service Summary', 'Proposal', 'Agreement', 'NDA', 'Media Release'];
+        const sorted = order.filter((t) => selected.includes(t));
+        for (const t of sorted) {
+            // NDA / Media Release aren't implemented in ops-docs.js; warn cleanly.
+            if (t === 'NDA' || t === 'Media Release') {
+                showToast(`${t.toUpperCase()} NOT ENABLED YET`);
+                continue;
+            }
+            await generateOneQuickDealDoc(t);
+        }
+    };
+
+    // Quick deal guidance listeners (non-destructive)
+    (function attachQuickDealListeners() {
+        const pkg = document.getElementById('qdPackageType');
+        const svc = document.getElementById('qdServiceType');
+        if (pkg) {
+            pkg.addEventListener('change', refreshQuickDealGuidance);
+            pkg.addEventListener('input', refreshQuickDealGuidance);
+        }
+        if (svc) {
+            svc.addEventListener('change', refreshQuickDealGuidance);
+            svc.addEventListener('input', refreshQuickDealGuidance);
+            svc.addEventListener('blur', refreshQuickDealGuidance);
+        }
+    })();
+
     function getOtpPricingSafe() {
         try {
             const p = window.OTP_PRICING;
