@@ -1817,6 +1817,18 @@
         if (packetStatus) packetStatus.textContent = '';
         window.__opsPacketState = null;
 
+        const sendStatus = document.getElementById('opsSendStatus');
+        const sendMeta = document.getElementById('opsSendMeta');
+        if (sendMeta) sendMeta.textContent = 'Prepare, review, then send valid docs/packet. No auto-send.';
+        if (sendStatus) sendStatus.textContent = '';
+        const sendTo = document.getElementById('opsSendTo');
+        const sendSubject = document.getElementById('opsSendSubject');
+        const sendBody = document.getElementById('opsSendBody');
+        if (sendTo) sendTo.value = '';
+        if (sendSubject) sendSubject.value = '';
+        if (sendBody) sendBody.value = '';
+        window.__opsSendState = null;
+
         // Default clean state
         const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val == null ? '' : String(val); };
         const setCk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
@@ -1895,6 +1907,9 @@
             window.recalcOpsBalance();
             refreshOpsPricingGuidance();
             if (meta) meta.textContent = `Editing ${r.jobId} • created ${r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}`;
+
+            // Send panel defaults from saved record
+            if (sendTo) sendTo.value = String(r.email || '').trim();
         } catch (e) {
             showToast(`LOAD FAILED: ${e.message}`);
         }
@@ -2281,6 +2296,129 @@
             showToast('MESSAGE COPIED');
         } catch (_) {
             showToast('COPY FAILED');
+        }
+    };
+
+    function setOpsSendStatus(text) {
+        const el = document.getElementById('opsSendStatus');
+        if (el) el.textContent = String(text || '');
+    }
+
+    window.copyOpsSendBody = async function() {
+        const text = String(document.getElementById('opsSendBody')?.value || '').trim();
+        if (!text) { showToast('NO MESSAGE'); return; }
+        try { await navigator.clipboard.writeText(text); showToast('COPIED'); } catch (_) { showToast('COPY FAILED'); }
+    };
+
+    window.copyOpsSendSummary = async function() {
+        const text = String(window.__opsSendState?.share_summary || window.__opsPacketState?.packet?.share_summary || '').trim();
+        if (!text) { showToast('PREPARE SEND FIRST'); return; }
+        try { await navigator.clipboard.writeText(text); showToast('COPIED'); } catch (_) { showToast('COPY FAILED'); }
+    };
+
+    window.prepareOpsSend = async function() {
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        const jobId = String(document.getElementById('opsJobId')?.value || '').trim();
+        if (!jobId) { showToast('OPEN A JOB FIRST'); return; }
+        const docTypes = getOpsPacketDocTypes();
+        if (!docTypes.length) { showToast('SELECT DOCS'); return; }
+        const formats = getOpsPacketFormats();
+        const mode = String(document.getElementById('opsSendMode')?.value || 'packet').trim();
+
+        const btn = Array.from(document.querySelectorAll('button')).find(b => b && b.textContent && b.textContent.trim() === 'PREPARE SEND') || null;
+        try {
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; }
+            setOpsSendStatus('Preparing send…');
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/send/prepare`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId, mode, docTypes, formats })
+            }, 45000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Prepare failed (${res.status})`);
+
+            const toEl = document.getElementById('opsSendTo');
+            const subjEl = document.getElementById('opsSendSubject');
+            const bodyEl = document.getElementById('opsSendBody');
+            if (toEl && !String(toEl.value || '').trim()) toEl.value = payload.to_default || '';
+            if (subjEl) subjEl.value = payload.subject_default || '';
+            if (bodyEl) bodyEl.value = payload.body_default || '';
+
+            const inc = Array.isArray(payload.included) ? payload.included : [];
+            const blk = Array.isArray(payload.blocked) ? payload.blocked : [];
+            const incNames = inc.map(d => d.docType).join(', ') || '—';
+            const blkNames = blk.map(d => d.docType).join(', ') || '—';
+            const missingLine = blk.length
+                ? blk.map(b => `${b.docType}: ${(b.missing_required_fields || []).join(', ') || 'missing fields'}`).join(' • ')
+                : '';
+
+            window.__opsSendState = {
+                jobId,
+                mode,
+                docTypes,
+                formats,
+                included: inc,
+                blocked: blk,
+                share_summary: payload.packet?.share_summary || '',
+                client_message: payload.packet?.client_message || ''
+            };
+
+            setOpsSendStatus(
+                [
+                    `Ready docs: ${incNames}`,
+                    blk.length ? `Blocked: ${blkNames}` : '',
+                    missingLine ? `Missing: ${missingLine}` : '',
+                    payload.to_default ? '' : 'Recipient email is missing in the job record — enter recipient to send.',
+                    inc.length ? 'Review subject/body, then send.' : 'No valid docs included yet.'
+                ].filter(Boolean).join('\n')
+            );
+            if (blk.length) showToast(`SEND PREP: ${inc.length} OK / ${blk.length} BLOCKED`);
+            else showToast('SEND PREP READY');
+        } catch (e) {
+            setOpsSendStatus(`Prepare failed: ${e.message}`);
+            showToast(`SEND PREP FAILED: ${formatNetworkError(e)}`);
+        } finally {
+            if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+        }
+    };
+
+    window.executeOpsSend = async function() {
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        const s = window.__opsSendState || {};
+        const jobId = String(s.jobId || document.getElementById('opsJobId')?.value || '').trim();
+        if (!jobId) { showToast('OPEN A JOB FIRST'); return; }
+        const mode = String(document.getElementById('opsSendMode')?.value || s.mode || 'packet').trim();
+        const to = String(document.getElementById('opsSendTo')?.value || '').trim();
+        const subject = String(document.getElementById('opsSendSubject')?.value || '').trim();
+        const body = String(document.getElementById('opsSendBody')?.value || '').trim();
+        const docTypes = (Array.isArray(s.docTypes) && s.docTypes.length) ? s.docTypes : getOpsPacketDocTypes();
+        const formats = (Array.isArray(s.formats) && s.formats.length) ? s.formats : getOpsPacketFormats();
+        if (!to) { showToast('RECIPIENT EMAIL REQUIRED'); return; }
+        if (!subject) { showToast('SUBJECT REQUIRED'); return; }
+        if (!body) { showToast('MESSAGE REQUIRED'); return; }
+        if (!docTypes.length) { showToast('SELECT DOCS'); return; }
+
+        const btn = Array.from(document.querySelectorAll('button')).find(b => b && b.textContent && b.textContent.trim() === 'SEND') || null;
+        try {
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; }
+            setOpsSendStatus('Sending…');
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/send/execute`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId, mode, to, subject, body, docTypes, formats })
+            }, 120000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Send failed (${res.status})`);
+            const sent = Array.isArray(payload.sent) ? payload.sent : [];
+            setOpsSendStatus(`Sent: ${sent.map(a => a.filename).join(', ') || '—'}${payload.resend_email_id ? `\nResend ID: ${payload.resend_email_id}` : ''}`);
+            showToast(payload.message || 'EMAIL SENT');
+        } catch (e) {
+            setOpsSendStatus(`Send failed: ${e.message}`);
+            showToast(`SEND FAILED: ${formatNetworkError(e)}`);
+        } finally {
+            if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
         }
     };
 

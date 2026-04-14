@@ -704,7 +704,8 @@ const KNOWLEDGE_PREFIX = {
     leadRec: 'kb_lead_rec::',
     docPacket: 'kb_doc_packet::',
     docAudit: 'kb_doc_audit::',
-    structured: 'kb_structured::'
+    structured: 'kb_structured::',
+    opsSend: 'kb_ops_send::'
 };
 const VERSION_PREFIX = 'version_event::';
 const MAX_VERSION_EVENTS = 20;
@@ -3078,6 +3079,302 @@ app.post('/api/admin/ops/packets/export-zip', verifyToken, async (req, res) => {
     }
 });
 
+function opsDocTypeSlugLower(docType) {
+    return String(docType || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'document';
+}
+
+function buildOpsSendDefaults({ job, mode, includedDocTypes, isPacket }) {
+    const client = String(job?.clientName || job?.businessName || '').trim() || 'Client';
+    const project = String(job?.projectTitle || job?.serviceType || '').trim();
+    const subjectBase = project ? `${project}` : `${String(job?.serviceType || '').trim() || 'OTP Documents'}`;
+    const subject = `Only True Perspective — ${subjectBase}`;
+
+    const includedLine = Array.isArray(includedDocTypes) && includedDocTypes.length
+        ? includedDocTypes.join(', ')
+        : (isPacket ? 'Packet' : 'Documents');
+
+    const body = normalizeWhitespace([
+        `Hi ${client},`,
+        '',
+        project ? `Attached are your OTP documents for: ${project}.` : 'Attached are your OTP documents.',
+        `Included: ${includedLine}.`,
+        '',
+        'If you need an adjustment before kickoff, reply here and we’ll tighten it immediately.',
+        '',
+        '— OnlyTruePerspective LLC'
+    ].join('\n'));
+
+    return { subject, body };
+}
+
+async function appendOpsSendHistory({ jobId, event }) {
+    if (!supabaseAdmin) return null;
+    const id = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+    const key = `${KNOWLEDGE_PREFIX.opsSend}${jobId}::${id}`;
+    const nowIso = new Date().toISOString();
+    const payload = {
+        schema: 'otp-ops-send-v1',
+        id,
+        job_id: jobId,
+        created_at: nowIso,
+        event
+    };
+    const { error } = await supabaseAdmin
+        .from('site_content')
+        .upsert([{ key, content: JSON.stringify(payload), updated_at: nowIso }], { onConflict: 'key' });
+    if (error) throw error;
+    return { key, id };
+}
+
+// 2.10.z2 Ops Jobs → Send prep (docs or packet)
+app.post('/api/admin/ops/send/prepare', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    if (!OPS_DOCS || typeof OPS_DOCS.generateOpsDocument !== 'function') {
+        return res.status(503).json({ success: false, message: 'Ops document generator offline' });
+    }
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        const mode = String(req.body?.mode || 'packet').trim(); // packet|docs
+        const docTypes = normalizeOpsPacketDocTypes(req.body?.docTypes || []);
+        const formats = normalizeOpsPacketFormats(req.body?.formats || []);
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+        if (!['packet', 'docs'].includes(mode)) return res.status(400).json({ success: false, message: 'Invalid mode' });
+        if (!docTypes.length) return res.status(400).json({ success: false, message: 'Select at least one document type' });
+
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', jobId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+
+        const job = mapOpsJobRowToApi(data);
+        delete job.internalNotes;
+
+        const included = [];
+        const blocked = [];
+        for (const docType of docTypes) {
+            const out = OPS_DOCS.generateOpsDocument({ docType, job, pricing: OTP_PRICING });
+            const doc = out?.doc || null;
+            const validation = doc?.validation || {};
+            const missing = Array.isArray(validation.missing_required_fields) ? validation.missing_required_fields : [];
+            if (!doc || validation.blocking) {
+                blocked.push({ docType, missing_required_fields: missing, message: validation.message || 'Missing required fields' });
+                continue;
+            }
+            included.push({ docType, formats, filenames: formats.map((fmt) => {
+                const yyyyMmDd = new Date().toISOString().slice(0, 10);
+                const baseName = `${safeFilenamePart(jobId)}-${safeFilenamePart(docTypeToSlug(docType))}-${yyyyMmDd}`;
+                return `${baseName}.${fmt}`;
+            })});
+        }
+
+        const includedDocTypes = included.map(d => d.docType);
+        const defaults = buildOpsSendDefaults({ job, mode, includedDocTypes, isPacket: mode === 'packet' });
+
+        const packetPreview = buildOpsPacketSummary({ job, docsIncluded: included.map(d => ({ docType: d.docType, formats })), docsBlocked: blocked, formats });
+        const toDefault = String(job.email || '').trim();
+
+        res.json({
+            success: true,
+            jobId,
+            mode,
+            to_default: toDefault || null,
+            subject_default: defaults.subject,
+            body_default: defaults.body,
+            included,
+            blocked,
+            packet: packetPreview
+        });
+    } catch (error) {
+        console.error("ops-send-prepare:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2.10.z3 Ops Jobs → Send execute (controlled, admin-only)
+app.post('/api/admin/ops/send/execute', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    if (!OPS_DOCS || typeof OPS_DOCS.generateOpsDocument !== 'function') {
+        return res.status(503).json({ success: false, message: 'Ops document generator offline' });
+    }
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        const mode = String(req.body?.mode || 'packet').trim();
+        const to = safeEmail(req.body?.to);
+        const from = resolveDocPacketFrom(req.body?.from); // reuse existing from constraints
+        const replyTo = BUSINESS_EMAILS.BOOKINGS;
+        const subject = String(req.body?.subject || '').trim();
+        const body = String(req.body?.body || '').trim();
+        const docTypes = normalizeOpsPacketDocTypes(req.body?.docTypes || []);
+        const formats = normalizeOpsPacketFormats(req.body?.formats || []);
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+        if (!['packet', 'docs'].includes(mode)) return res.status(400).json({ success: false, message: 'Invalid mode' });
+        if (!to) return res.status(400).json({ success: false, message: 'Missing/invalid recipient email' });
+        if (!subject) return res.status(400).json({ success: false, message: 'Missing subject' });
+        if (!body) return res.status(400).json({ success: false, message: 'Missing body message' });
+        if (!docTypes.length) return res.status(400).json({ success: false, message: 'Select at least one document type' });
+
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', jobId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+
+        const job = mapOpsJobRowToApi(data);
+        delete job.internalNotes;
+
+        const yyyyMmDd = new Date().toISOString().slice(0, 10);
+        const attachments = [];
+        const missing = [];
+        const verification = [];
+
+        // Build docs (exclude blocked always)
+        const included = [];
+        const blocked = [];
+        const zip = mode === 'packet' ? new JSZip() : null;
+
+        for (const docType of docTypes) {
+            const out = OPS_DOCS.generateOpsDocument({ docType, job, pricing: OTP_PRICING });
+            const doc = out?.doc || null;
+            const validation = doc?.validation || {};
+            const miss = Array.isArray(validation.missing_required_fields) ? validation.missing_required_fields : [];
+            if (!doc || validation.blocking) {
+                blocked.push({ docType, missing_required_fields: miss, message: validation.message || 'Missing required fields' });
+                missing.push(`${docType}:blocked`);
+                continue;
+            }
+
+            const md = String(doc.rendered_markdown || '').trim();
+            const plain = opsDocMarkdownToPlainText(md);
+            const subtitleParts = [
+                doc?.display?.client_label ? `Client: ${doc.display.client_label}` : '',
+                doc?.display?.project_label ? `Project: ${doc.display.project_label}` : '',
+                job?.email ? `Email: ${job.email}` : ''
+            ].filter(Boolean);
+            const subtitle = subtitleParts.join(' • ');
+
+            const slug = safeFilenamePart(docTypeToSlug(docType));
+            const baseName = `${safeFilenamePart(jobId)}-${slug}-${yyyyMmDd}`;
+
+            for (const fmt of formats) {
+                if (fmt === 'pdf') {
+                    const pdfBuf = await renderOpsDocPdfFromText({ title: docType, subtitle, bodyText: plain });
+                    const filename = `${baseName}.pdf`;
+                    if (mode === 'packet') {
+                        zip.file(filename, Buffer.from(pdfBuf));
+                    } else {
+                        const a = { filename, content: base64FromBuffer(Buffer.from(pdfBuf)), content_type: 'application/pdf' };
+                        const v = verifyAttachmentOrThrow(a);
+                        verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
+                        attachments.push(a);
+                    }
+                }
+                if (fmt === 'docx') {
+                    const docxBuf = renderOpsDocDocxFromText({ title: `OnlyTruePerspective LLC — ${docType}`, bodyText: plain });
+                    const filename = `${baseName}.docx`;
+                    if (mode === 'packet') {
+                        zip.file(filename, docxBuf);
+                    } else {
+                        const a = { filename, content: base64FromBuffer(docxBuf), content_type: DOCX_MIME };
+                        const v = verifyAttachmentOrThrow(a);
+                        verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
+                        attachments.push(a);
+                    }
+                }
+            }
+
+            included.push({ docType, formats });
+        }
+
+        let packetSummary = null;
+        if (mode === 'packet') {
+            packetSummary = buildOpsPacketSummary({ job, docsIncluded: included, docsBlocked: blocked, formats });
+            zip.file(`${safeFilenamePart(jobId)}-packet-summary-${yyyyMmDd}.txt`, packetSummary.share_summary);
+            const zipBuf = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+            const filename = `${safeFilenamePart(jobId)}-packet-${yyyyMmDd}.zip`;
+            const a = { filename, content: base64FromBuffer(zipBuf), content_type: 'application/zip' };
+            const v = verifyAttachmentOrThrow(a);
+            verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
+            attachments.push(a);
+        }
+
+        if (!attachments.length) {
+            return res.status(400).json({
+                success: false,
+                message: 'No valid documents are ready to send (all selected docs are blocked)',
+                details: { blocked }
+            });
+        }
+
+        const list = attachments.map(a => a.filename).join(', ');
+        const html = `
+            <div style="font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial; line-height:1.6; color:#111;">
+              <p>${escapeHtmlForEmail(body).replace(/\n/g, '<br/>')}</p>
+              <p style="margin:14px 0 0;"><strong>Included:</strong> ${escapeHtmlForEmail(list)}</p>
+              <p style="margin-top:18px;"><strong>Only True Perspective</strong><br/>${escapeHtmlForEmail(from)}</p>
+            </div>
+        `;
+        const text = `${body}\n\nIncluded: ${list}\n\nOnly True Perspective\n${from}`;
+
+        const emailResult = await sendSecureEmail({ to, from, replyTo, subject, html, text, attachments });
+        const resendId = String(emailResult?.data?.id || '').trim() || null;
+
+        // Lightweight send history (ops_jobs based)
+        const historyEvent = {
+            type: 'ops_send',
+            actor: req.auth?.role || 'admin',
+            job_id: jobId,
+            mode,
+            to,
+            from,
+            reply_to: replyTo,
+            subject,
+            included_docs: included.map(d => d.docType),
+            blocked_docs: blocked,
+            attachments: attachments.map(a => ({ filename: a.filename, content_type: a.content_type })),
+            attachment_verification: verification,
+            provider: 'resend',
+            success: !!emailResult?.success,
+            provider_response: emailResult?.data || null,
+            simulated: !!emailResult?.simulated,
+            resend_email_id: resendId
+        };
+        const history = await appendOpsSendHistory({ jobId, event: historyEvent });
+
+        if (!emailResult?.success) {
+            const msg = String(emailResult?.data?.message || emailResult?.error || 'Email failed');
+            return res.status(502).json({
+                success: false,
+                message: msg,
+                blocked,
+                resend_email_id: resendId,
+                history_key: history?.key || null
+            });
+        }
+
+        res.json({
+            success: true,
+            message: emailResult?.simulated ? 'Email simulated (no RESEND_API_KEY configured)' : 'Email sent',
+            sent: attachments.map(a => ({ filename: a.filename, content_type: a.content_type })),
+            blocked,
+            resend_email_id: resendId,
+            history_key: history?.key || null,
+            packet: packetSummary
+        });
+    } catch (error) {
+        console.error("ops-send-execute:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // 2.11 OTP Oracle — knowledge: lead/contact recommendation
 app.post('/api/admin/knowledge/recommend', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
@@ -3557,6 +3854,9 @@ function verifyAttachmentOrThrow(att) {
     }
     if (name.endsWith('.docx')) {
         if (!buf.slice(0, 2).equals(Buffer.from('PK'))) throw new Error(`Attachment verification failed (DOCX): ${name}`);
+    }
+    if (name.endsWith('.zip') || type === 'application/zip') {
+        if (!buf.slice(0, 2).equals(Buffer.from('PK'))) throw new Error(`Attachment verification failed (ZIP): ${name}`);
     }
     if (name.endsWith('.html')) {
         const head = buf.slice(0, 64).toString('utf8').toLowerCase();

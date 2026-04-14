@@ -678,6 +678,38 @@
                         <div id="opsPacketStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;"></div>
                     </div>
 
+                    <div style="margin-top:10px;border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+                            <div style="min-width:220px;flex:1;">
+                                <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);">SEND (CONTROLLED)</div>
+                                <div id="opsSendMeta" style="margin-top:6px;font-size:0.66rem;color:var(--admin-muted);line-height:1.4;">Prepare, review, then send valid docs/packet. No auto-send.</div>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.prepareOpsSend()">PREPARE SEND</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;background:var(--admin-cyan);color:#000;border:none;" onclick="window.executeOpsSend()">SEND</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+                            <input id="opsSendTo" class="input-field" placeholder="Recipient Email *" style="width:100%;padding:10px;border-radius:10px;" />
+                            <select id="opsSendMode" class="input-field" style="width:100%;padding:10px;border-radius:10px;">
+                                <option value="packet">Send Packet ZIP (recommended)</option>
+                                <option value="docs">Send Individual Docs</option>
+                            </select>
+                        </div>
+                        <div style="margin-top:10px;">
+                            <input id="opsSendSubject" class="input-field" placeholder="Subject *" style="width:100%;padding:10px;border-radius:10px;" />
+                        </div>
+                        <div style="margin-top:10px;">
+                            <textarea id="opsSendBody" class="input-field" rows="6" placeholder="Message *" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
+                        </div>
+                        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsSendBody()">COPY MESSAGE</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsSendSummary()">COPY SUMMARY</button>
+                        </div>
+                        <div id="opsSendStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;"></div>
+                    </div>
+
                     <div id="opsDocPanel" style="display:none;margin-top:12px;border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
                         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
                             <div style="min-width:220px;flex:1;">
@@ -1510,7 +1542,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.0"></script>
+    <script src="admin-core.js?v=16.7.1"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)
