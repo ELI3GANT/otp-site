@@ -972,7 +972,7 @@
 
         } catch (err) {
             console.error("Upload Failed:", err);
-            showToast("UPLOAD FAILED: " + err.message);
+            showToast("UPLOAD FAILED: " + String(err?.message ?? err));
         } finally {
             if(btn) btn.textContent = "Upload Media";
         }
@@ -1052,7 +1052,7 @@
 
         } catch(err) {
             console.error("Edit Load Error:", err);
-            showToast("LOAD FAILED: " + err.message);
+            showToast("LOAD FAILED: " + String(err?.message ?? err));
         }
     };
 
@@ -1237,7 +1237,7 @@
         else filtered.sort((a, b) => a.name.localeCompare(b.name));
 
         list.innerHTML = filtered.map(a => `
-            <div style="padding: 12px; border-bottom: 1px solid var(--admin-border); cursor: pointer;" onclick="editArchetype('${a.id}')">
+            <div style="padding: 12px; border-bottom: 1px solid var(--admin-border); cursor: pointer;" onclick="editArchetype(${JSON.stringify(String(a.id))})">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
                     <span style="font-weight: bold; color: var(--admin-accent);">${a.name}</span>
                     <span style="font-size: 0.65rem; color: var(--admin-muted);">USES: ${a.usage_count || 0}</span>
@@ -1555,19 +1555,20 @@
                         </div>
                     </div>
                     <div style="display:flex;gap:8px;align-items:center;">
-                        <button type="button" onclick="window.updateKnowledgeFileById('${window.escapeHtml(file.file_id || '')}')" style="background:transparent;border:1px solid rgba(var(--accent2-rgb),0.35);color:var(--admin-cyan);font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">UPDATE</button>
-                        <button type="button" onclick="window.archiveKnowledgeFile('${window.escapeHtml(file.file_id)}')" style="background:transparent;border:1px solid rgba(255,170,0,0.45);color:#ffd37a;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">ARCHIVE</button>
-                        <button type="button" onclick="window.deleteKnowledgeFile('${window.escapeHtml(file.file_id)}')" style="background:transparent;border:1px solid rgba(255,90,90,0.4);color:#ff8f8f;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">DELETE</button>
+                        <button type="button" onclick="window.updateKnowledgeFileById(${JSON.stringify(String(file.file_id || ''))})" style="background:transparent;border:1px solid rgba(var(--accent2-rgb),0.35);color:var(--admin-cyan);font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">UPDATE</button>
+                        <button type="button" onclick="window.archiveKnowledgeFile(${JSON.stringify(String(file.file_id || ''))})" style="background:transparent;border:1px solid rgba(255,170,0,0.45);color:#ffd37a;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">ARCHIVE</button>
+                        <button type="button" onclick="window.deleteKnowledgeFile(${JSON.stringify(String(file.file_id || ''))})" style="background:transparent;border:1px solid rgba(255,90,90,0.4);color:#ff8f8f;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">DELETE</button>
                     </div>
                 </div>
             `).join('');
         } catch (e) {
-            const authRequired = /invalid or expired token|authentication required|403/i.test(String(e.message || ''));
+            const errStr = String(e?.message ?? e ?? '');
+            const authRequired = /invalid or expired token|authentication required|403/i.test(errStr);
             if (badge) badge.textContent = 'INDEX: ERROR';
             if (container) {
                 container.innerHTML = authRequired
                     ? '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED TO LOAD KNOWLEDGE INDEX</div>'
-                    : `<div style="text-align:center;color:#ff8888;padding:20px;">INDEX ERROR: ${window.escapeHtml(e.message)}</div>`;
+                    : `<div style="text-align:center;color:#ff8888;padding:20px;">INDEX ERROR: ${window.escapeHtml(errStr)}</div>`;
             }
         }
     };
@@ -1796,8 +1797,9 @@
             window.closeStructuredKnowledgeEditor();
             await window.fetchStructuredKnowledge();
         } catch (e) {
-            if (status) status.textContent = `Save failed: ${e.message}`;
-            showToast(`SAVE FAILED: ${e.message}`);
+            const em = String(e?.message ?? e);
+            if (status) status.textContent = `Save failed: ${em}`;
+            showToast(`SAVE FAILED: ${em}`);
         }
     };
 
@@ -1822,8 +1824,9 @@
             window.closeStructuredKnowledgeEditor();
             await window.fetchStructuredKnowledge();
         } catch (e) {
-            if (status) status.textContent = `Archive failed: ${e.message}`;
-            showToast(`ARCHIVE FAILED: ${e.message}`);
+            const em = String(e?.message ?? e);
+            if (status) status.textContent = `Archive failed: ${em}`;
+            showToast(`ARCHIVE FAILED: ${em}`);
         }
     };
 
@@ -2044,7 +2047,7 @@
             // Send panel defaults from saved record
             if (sendTo) sendTo.value = String(r.email || '').trim();
         } catch (e) {
-            showToast(`LOAD FAILED: ${e.message}`);
+            showToast(`LOAD FAILED: ${String(e?.message ?? e)}`);
         }
     };
 
@@ -2187,7 +2190,7 @@
             showToast('STATUS UPDATED');
             await window.fetchOpsJobs();
         } catch (e) {
-            showToast(`STATUS FAILED: ${e.message}`);
+            showToast(`STATUS FAILED: ${String(e?.message ?? e)}`);
         }
     };
 
@@ -2207,7 +2210,7 @@
             showToast('JOB ARCHIVED');
             await window.fetchOpsJobs();
         } catch (e) {
-            showToast(`ARCHIVE FAILED: ${e.message}`);
+            showToast(`ARCHIVE FAILED: ${String(e?.message ?? e)}`);
         }
     };
 
@@ -2234,7 +2237,7 @@
             if (cur && cur === id) window.closeOpsJobEditor?.();
             await window.fetchOpsJobs();
         } catch (e) {
-            showToast(`DELETE FAILED: ${e.message}`);
+            showToast(`DELETE FAILED: ${String(e?.message ?? e)}`);
         }
     };
 
@@ -2315,9 +2318,10 @@
             else if (warnings.length) showToast(`DOC READY (${warnings.length} WARN)`);
             else showToast('DOC READY');
         } catch (e) {
-            if (metaEl) metaEl.textContent = `Generation failed: ${e.message}`;
+            const em = String(e?.message ?? e);
+            if (metaEl) metaEl.textContent = `Generation failed: ${em}`;
             if (outEl) outEl.textContent = '';
-            showToast(`DOC FAILED: ${e.message}`);
+            showToast(`DOC FAILED: ${em}`);
         }
     };
 
@@ -2424,7 +2428,7 @@
             if (blk.length) showToast(`PACKET: ${inc.length} OK / ${blk.length} BLOCKED`);
             else showToast('PACKET READY');
         } catch (e) {
-            setOpsPacketStatus(`Preview failed: ${e.message}`);
+            setOpsPacketStatus(`Preview failed: ${String(e?.message ?? e)}`);
             showToast(`PACKET FAILED: ${formatNetworkError(e)}`);
         } finally {
             if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
@@ -2577,7 +2581,7 @@
             if (blk.length) showToast(`SEND PREP: ${inc.length} OK / ${blk.length} BLOCKED`);
             else showToast('SEND PREP READY');
         } catch (e) {
-            setOpsSendStatus(`Prepare failed: ${e.message}`);
+            setOpsSendStatus(`Prepare failed: ${String(e?.message ?? e)}`);
             showToast(`SEND PREP FAILED: ${formatNetworkError(e)}`);
         } finally {
             if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
@@ -2616,7 +2620,7 @@
             setOpsSendStatus(`Sent: ${sent.map(a => a.filename).join(', ') || '—'}${payload.resend_email_id ? `\nResend ID: ${payload.resend_email_id}` : ''}`);
             showToast(payload.message || 'EMAIL SENT');
         } catch (e) {
-            setOpsSendStatus(`Send failed: ${e.message}`);
+            setOpsSendStatus(`Send failed: ${String(e?.message ?? e)}`);
             showToast(`SEND FAILED: ${formatNetworkError(e)}`);
         } finally {
             if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
@@ -3121,8 +3125,8 @@
                         </div>
                         <div style="display:flex; gap: 8px; align-items:center;">
                             <div style="font-size: 0.65rem; font-family: 'Space Grotesk', sans-serif; font-weight: 900; color: var(--admin-cyan); border: 1px solid var(--admin-cyan); padding: 3px 8px; border-radius: 4px; background: rgba(var(--accent2-rgb), 0.1); letter-spacing: 1px;">AUDIT SIGNAL</div>
-                            <button type="button" onclick="openReplyManager('${l.id}', 'leads')" title="Reply" style="background:transparent; border:none; color:var(--admin-cyan); cursor:pointer; font-size: 1.1rem;">📩</button>
-                            <button type="button" onclick="return deleteLead('${l.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer; font-size: 1.1rem;">✖</button>
+                            <button type="button" onclick="openReplyManager(${JSON.stringify(String(l.id))}, 'leads')" title="Reply" style="background:transparent; border:none; color:var(--admin-cyan); cursor:pointer; font-size: 1.1rem;">📩</button>
+                            <button type="button" onclick="return deleteLead(${JSON.stringify(String(l.id))}, event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer; font-size: 1.1rem;">✖</button>
                         </div>
                     </div>
                     <div class="otp-lead-mission-grid" style="font-size: 0.8rem; margin-bottom: 15px; color: var(--admin-text); background: var(--admin-panel); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
@@ -3155,15 +3159,16 @@
     window.confirmPurgeLeads = function() {
         const modal = document.getElementById('deleteModal');
         const confirmBtn = document.getElementById('confirmDeleteBtn');
-        
+        if (!modal || !confirmBtn) return;
+
         // Dynamically update text for Purge context
         const titleEl = modal.querySelector('h3');
         const descEl = modal.querySelector('p');
-        
+
         if(titleEl) titleEl.textContent = "PURGE ALL LEADS?";
         if(descEl) descEl.innerHTML = "<span style='color:var(--admin-danger)'>⚠️ WARNING: IRREVERSIBLE ACTION</span><br>This will permanently delete every single lead entry.";
 
-        if(modal && confirmBtn) {
+        {
             const newBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
             
@@ -3199,7 +3204,7 @@
 
                      } catch(e) {
                         console.error("Purge Error:", e);
-                        showToast("PURGE FAILED: " + e.message);
+                        showToast("PURGE FAILED: " + String(e?.message ?? e));
                         newBtn.textContent = "PURGE EVERYTHING";
                         newBtn.disabled = false;
                      }
@@ -3225,15 +3230,16 @@
     window.confirmPurgeInbox = function() {
         const modal = document.getElementById('deleteModal');
         const confirmBtn = document.getElementById('confirmDeleteBtn');
-        
+        if (!modal || !confirmBtn) return;
+
         // Dynamically update text for Purge context
         const titleEl = modal.querySelector('h3');
         const descEl = modal.querySelector('p');
-        
+
         if(titleEl) titleEl.textContent = "PURGE INBOX?";
         if(descEl) descEl.innerHTML = "<span style='color:var(--admin-danger)'>⚠️ WARNING: IRREVERSIBLE ACTION</span><br>This will permanently delete every message.";
 
-        if(modal && confirmBtn) {
+        {
             const newBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
             
@@ -3269,7 +3275,7 @@
                     modal.style.display = 'none';
                 } catch(e) {
                     console.error("Inbox Purge Error:", e);
-                    showToast("PURGE FAILED: " + e.message);
+                    showToast("PURGE FAILED: " + String(e?.message ?? e));
                     newBtn.textContent = "PURGE MESSAGES";
                     newBtn.disabled = false;
                 }
@@ -3294,7 +3300,8 @@
         
         const modal = document.getElementById('deleteModal');
         const confirmBtn = document.getElementById('confirmDeleteBtn');
-        
+        if (!modal || !confirmBtn) return false;
+
         // Dynamically update text for Lead context
         const titleEl = modal.querySelector('h3');
         const descEl = modal.querySelector('p');
@@ -3302,7 +3309,7 @@
         if(titleEl) titleEl.textContent = "DELETE LEAD?";
         if(descEl) descEl.innerHTML = "This will permanently remove the audit data.<br>This cannot be undone.";
 
-        if(modal && confirmBtn) {
+        {
             // Remove old listeners by cloning
             const newBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
@@ -3319,9 +3326,8 @@
 
                 } catch(e) {
                     console.error("Delete failed:", e);
-                    showToast("DELETE FAILED: " + e.message);
-                }
- finally {
+                    showToast("DELETE FAILED: " + String(e?.message ?? e));
+                } finally {
                     newBtn.textContent = "DELETE";
                     newBtn.disabled = false;
                 }
@@ -3406,7 +3412,7 @@
                     else (window.leadsCache = window.leadsCache || []).push(c);
                 }
             } catch (e) {
-                showToast(`THREAD LOAD FAILED: ${e.message}`);
+                showToast(`THREAD LOAD FAILED: ${String(e?.message ?? e)}`);
                 return;
             }
         }
@@ -4032,8 +4038,9 @@
             showToast('DOC PACKET GENERATED (REVIEW REQUIRED)');
             window.refreshDocPacketAudit?.();
         } catch (e) {
-            window.__docPacketState.notice = `Packet generation failed: ${e.message}`;
-            showToast(`DOC PACKET FAILED: ${e.message}`);
+            const em = String(e?.message ?? e);
+            window.__docPacketState.notice = `Packet generation failed: ${em}`;
+            showToast(`DOC PACKET FAILED: ${em}`);
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = orig || 'GENERATE PACKET'; }
             window.renderDocPacketUI();
@@ -4122,8 +4129,9 @@
             showToast('APPROVALS APPLIED');
             await window.refreshDocPacketAudit();
         } catch (e) {
-            window.__docPacketState.notice = `Approval failed: ${e.message}`;
-            showToast(`APPROVAL FAILED: ${e.message}`);
+            const em = String(e?.message ?? e);
+            window.__docPacketState.notice = `Approval failed: ${em}`;
+            showToast(`APPROVAL FAILED: ${em}`);
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = orig || 'APPLY APPROVALS'; }
             window.renderDocPacketUI();
@@ -4143,7 +4151,7 @@
             if (!res.ok || !payload.success) throw new Error(payload.message || `Audit failed (${res.status})`);
             window.__docPacketState.auditEvents = Array.isArray(payload.events) ? payload.events : [];
         } catch (e) {
-            showToast(`AUDIT REFRESH FAILED: ${e.message}`);
+            showToast(`AUDIT REFRESH FAILED: ${String(e?.message ?? e)}`);
         } finally {
             window.renderDocPacketUI();
         }
@@ -4178,8 +4186,9 @@
             showToast(payload.message && String(payload.message).toLowerCase().includes('simulated') ? 'EMAIL SIMULATED (NO API KEY)' : 'EMAIL SENT');
             window.__docPacketState.notice = String(payload.message || 'Email sent. Audit trail updated.');
         } catch (e) {
-            window.__docPacketState.notice = `Send failed: ${e.message}`;
-            showToast(`SEND FAILED: ${e.message}`);
+            const em = String(e?.message ?? e);
+            window.__docPacketState.notice = `Send failed: ${em}`;
+            showToast(`SEND FAILED: ${em}`);
         } finally {
             if (btn) { btn.disabled = false; btn.textContent = orig || 'SEND APPROVED DOCS'; }
             window.refreshDocPacketAudit?.();
@@ -4201,7 +4210,7 @@
             if (!res.ok || !payload.success) throw new Error(payload.message || `Status failed (${res.status})`);
             showToast('DELIVERY STATUS REFRESHED');
         } catch (e) {
-            showToast(`STATUS FAILED: ${e.message}`);
+            showToast(`STATUS FAILED: ${String(e?.message ?? e)}`);
         } finally {
             window.refreshDocPacketAudit?.();
         }
@@ -4226,8 +4235,9 @@
             showToast(payload.message && String(payload.message).toLowerCase().includes('simulated') ? 'RETRY SIMULATED (NO API KEY)' : 'RETRY SENT');
             window.__docPacketState.notice = String(payload.message || 'Retry send completed. Audit updated.');
         } catch (e) {
-            window.__docPacketState.notice = `Retry failed: ${e.message}`;
-            showToast(`RETRY FAILED: ${e.message}`);
+            const em = String(e?.message ?? e);
+            window.__docPacketState.notice = `Retry failed: ${em}`;
+            showToast(`RETRY FAILED: ${em}`);
         } finally {
             window.refreshDocPacketAudit?.();
         }
@@ -4373,7 +4383,7 @@
             if (status) status.textContent = 'Diagnostics copied.';
             showToast('DIAGNOSTICS COPIED');
         } catch (e) {
-            if (status) status.textContent = `Copy failed: ${e.message}`;
+            if (status) status.textContent = `Copy failed: ${String(e?.message ?? e)}`;
             showToast('COPY FAILED');
         }
     };
@@ -4408,7 +4418,7 @@
             if (status) status.textContent = 'Export started.';
             showToast('EXPORT STARTED');
         } catch (e) {
-            if (status) status.textContent = `Export failed: ${e.message}`;
+            if (status) status.textContent = `Export failed: ${String(e?.message ?? e)}`;
             showToast('EXPORT FAILED');
         }
     };
@@ -4442,7 +4452,7 @@
                 if (status) status.textContent = 'Imported.';
                 showToast('SETTINGS IMPORTED');
             } catch (e) {
-                if (status) status.textContent = `Import failed: ${e.message}`;
+                if (status) status.textContent = `Import failed: ${String(e?.message ?? e)}`;
                 showToast('IMPORT FAILED');
             }
         };
@@ -4932,15 +4942,16 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         } catch(e) {
             console.error("GEN ERROR:", e);
-            const friendlyError = formatNeuralError(e.message);
+            const em = String(e?.message ?? e ?? '');
+            const friendlyError = formatNeuralError(em);
             const analysisDiv = document.getElementById('replyAnalysis');
-            if (analysisDiv && isGeminiQuotaIssue(e.message)) {
+            if (analysisDiv && isGeminiQuotaIssue(em)) {
                 analysisDiv.innerHTML = `
                     <div style="background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.35); border-radius: 8px; padding: 10px;">
                         <div style="font-size:0.62rem;color:#ffd37a;letter-spacing:1.2px;text-transform:uppercase;font-weight:900;margin-bottom:6px;">Analysis Agent Alert</div>
                         <div style="font-size:0.72rem;color:var(--admin-text);line-height:1.45;">Gemini quota is exhausted. Switch Intelligence Engine to Groq/OpenAI/Anthropic or add a billed Gemini key.</div>
                     </div>`;
-            } else if (analysisDiv && isOpenAIQuotaIssue(e.message)) {
+            } else if (analysisDiv && isOpenAIQuotaIssue(em)) {
                 analysisDiv.innerHTML = `
                     <div style="background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.35); border-radius: 8px; padding: 10px;">
                         <div style="font-size:0.62rem;color:#ffd37a;letter-spacing:1.2px;text-transform:uppercase;font-weight:900;margin-bottom:6px;">Analysis Agent Alert</div>
@@ -5033,7 +5044,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         if(modal && title && btn) {
             title.textContent = "ARCHIVE THREAD?";
             text.textContent = "This will move the conversation to the archive.";
-            inputContainer.style.display = 'none';
+            if (inputContainer) inputContainer.style.display = 'none';
             
             // Set up one-time click handler
             btn.onclick = async () => {
@@ -5046,7 +5057,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                      await fetchInbox();
                      window.refocusInbox();
                 } catch(e) { 
-                    showToast("FAILED: "+e.message);
+                    showToast("FAILED: "+ String(e?.message ?? e));
                     btn.textContent = "EXECUTE";
                 }
             };
@@ -5074,7 +5085,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         const modal = document.getElementById('deleteModal');
         const confirmBtn = document.getElementById('confirmDeleteBtn');
-        
+        if (!modal || !confirmBtn) return false;
+
         // Dynamically update text for Lead context
         const titleEl = modal.querySelector('h3');
         const descEl = modal.querySelector('p');
@@ -5082,7 +5094,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         if(titleEl) titleEl.textContent = "DELETE CONTACT?";
         if(descEl) descEl.innerHTML = "This will permanently remove the contact message.<br>This cannot be undone.";
 
-        if(modal && confirmBtn) {
+        {
             // Remove old listeners by cloning
             const newBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
@@ -5099,7 +5111,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                     if (window.refocusInbox) window.refocusInbox();
                 } catch(e) {
                     console.error("Contact delete error:", e);
-                    showToast("DELETE FAILED: " + e.message);
+                    showToast("DELETE FAILED: " + String(e?.message ?? e));
                 } finally {
                     newBtn.textContent = "DELETE";
                     newBtn.disabled = false;
@@ -5304,7 +5316,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                 <div style="display: flex; gap: 8px; align-items: center;">
                     ${isLive && post.slug ? `
                         <a href="${postUrl}" target="_blank" rel="noopener" class="view-btn" title="View on live site" style="text-decoration:none; padding: 6px 12px; font-size: 0.7rem; border: 1px solid var(--admin-border); color: var(--admin-text); border-radius: 4px;">VIEW ↗</a>
-                        <button type="button" onclick="copyPostLink('${window.escapeHtml(post.slug)}')" title="Copy share link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
+                        <button type="button" onclick="copyPostLink(${JSON.stringify(String(post.slug))})" title="Copy share link" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted); padding: 6px 10px; border-radius: 4px; font-size: 0.7rem;">🔗</button>
                     ` : ''}
                     <button type="button" onclick="openDeleteModal(${post.id}, event)" class="delete-btn">DELETE</button>
                 </div>
@@ -5317,29 +5329,29 @@ If citations are provided, treat them as the source of truth for pricing/rules a
     window.openDeleteModal = function(id, event) {
         if(event) event.stopPropagation(); // Don't trigger edit
         const modal = document.getElementById('deleteModal');
-        if(modal) {
-            // Update modal text for Post context
-            const titleEl = modal.querySelector('h3');
-            const descEl = modal.querySelector('p');
-            if(titleEl) titleEl.textContent = "TERMINATE TRANSMISSION?";
-            if(descEl) descEl.innerHTML = "This will permanently remove the broadcast from the live grid.<br>This cannot be undone.";
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        if (!modal || !confirmBtn) return;
 
-            modal.style.display = 'flex';
-            modal.style.position = 'fixed';
-            modal.style.inset = '0';
-            modal.style.zIndex = '10000';
-            modal.style.alignItems = 'center';
-            modal.style.justifyContent = 'center';
-            modal.style.background = 'var(--admin-modal-scrim)';
-            modal.style.backdropFilter = 'blur(5px)';
+        // Update modal text for Post context
+        const titleEl = modal.querySelector('h3');
+        const descEl = modal.querySelector('p');
+        if(titleEl) titleEl.textContent = "TERMINATE TRANSMISSION?";
+        if(descEl) descEl.innerHTML = "This will permanently remove the broadcast from the live grid.<br>This cannot be undone.";
 
-            const confirmBtn = document.getElementById('confirmDeleteBtn');
-            // Remove old listeners to prevent stacking
-            const newBtn = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
-            
-            newBtn.addEventListener('click', () => executeDelete(id));
-        }
+        modal.style.display = 'flex';
+        modal.style.position = 'fixed';
+        modal.style.inset = '0';
+        modal.style.zIndex = '10000';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.background = 'var(--admin-modal-scrim)';
+        modal.style.backdropFilter = 'blur(5px)';
+
+        // Remove old listeners to prevent stacking
+        const newBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+
+        newBtn.addEventListener('click', () => executeDelete(id));
     };
 
     // New Robust Deletion Logic
@@ -5366,7 +5378,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             finishDelete();
         } catch (err) {
             console.error("❌ DELETION FAILED:", err);
-            showToast("DELETION FAILED: " + err.message);
+            showToast("DELETION FAILED: " + String(err?.message ?? err));
         } finally {
             const confirmBtn = document.getElementById('confirmDeleteBtn');
             if(confirmBtn) {
@@ -5378,7 +5390,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
     }
 
     function finishDelete() {
-        document.getElementById('deleteModal').style.display = 'none';
+        const dm = document.getElementById('deleteModal');
+        if (dm) dm.style.display = 'none';
         fetchPosts(true); 
     }
 
@@ -5404,7 +5417,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         const magicBtn = document.getElementById('magicBtn');
         if(magicBtn) magicBtn.addEventListener('click', () => {
             // Reset ID when creating new generated post to avoid overwriting
-            document.getElementById('postIdInput').value = '';
+            const pid = document.getElementById('postIdInput');
+            if (pid) pid.value = '';
             const submitBtn = document.getElementById('submitBtn');
             if(submitBtn) {
                  submitBtn.textContent = "COMMENCE BROADCAST";
@@ -5459,7 +5473,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                         throw new Error(`Server Error: ${res.status}`);
                     }
                 } catch(e) {
-                     showToast("KILL FAILED: " + e.message);
+                     showToast("KILL FAILED: " + String(e?.message ?? e));
                 }
             }
         );
@@ -5566,6 +5580,10 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         }
 
         const btn = document.getElementById('submitBtn');
+        if (!btn) {
+            showToast("SUBMIT CONTROL NOT FOUND");
+            return;
+        }
         const ogText = btn.textContent;
         btn.textContent = "TRANSMITTING...";
         btn.disabled = true;
@@ -5575,7 +5593,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             showToast("TRANSMISSION SUCCESSFUL");
         } catch (e) {
             console.error("Transmission Error:", e);
-            showToast("TRANSMISSION ERROR: " + e.message);
+            showToast("TRANSMISSION ERROR: " + String(e?.message ?? e));
         } finally {
             btn.textContent = ogText;
             btn.disabled = false;
@@ -5627,7 +5645,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         } catch (e) {
             console.error("MAINTENANCE ERROR:", e);
-            showToast("CLEANUP ERROR: " + e.message);
+            showToast("CLEANUP ERROR: " + String(e?.message ?? e));
         } finally {
             if(btn) { btn.textContent = "PROCEED"; btn.disabled = false; }
         }
@@ -6179,7 +6197,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         } catch (err) {
             console.error("AI ERROR:", err);
-            const friendlyError = formatNeuralError(err.message);
+            const friendlyError = formatNeuralError(String(err?.message ?? err));
             if(status) { status.textContent = "ERROR: " + friendlyError; status.style.color = "#ff4444"; }
             showToast("AI ERROR: " + friendlyError);
         } finally {
@@ -6242,14 +6260,16 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             }
         } catch (e) {
             console.error("Image Synthesis Failed:", e);
-            
-            document.getElementById('imageUrl').value = "";
-            document.getElementById('urlInput').value = "";
-            
+
+            const iu = document.getElementById('imageUrl');
+            const ur = document.getElementById('urlInput');
+            if (iu) iu.value = "";
+            if (ur) ur.value = "";
+
             const prevDiv = document.getElementById('imagePreview');
             if(prevDiv) prevDiv.style.display = 'none';
-            
-            showToast("VISUAL SYNTHESIS FAILED: " + e.message);
+
+            showToast("VISUAL SYNTHESIS FAILED: " + String(e?.message ?? e));
         }
     }
 
@@ -6724,7 +6744,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             }
         } catch (e) {
             console.error("Satellite Connection Probe Failed:", e);
-            showToast(`❌ LINK FAILED: ${e.message}`);
+            showToast(`❌ LINK FAILED: ${String(e?.message ?? e)}`);
             if (input) { input.style.border = '1px solid var(--admin-danger)'; }
         }
     };
@@ -6761,7 +6781,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             cachedSqlSchema = await res.text();
             content.textContent = cachedSqlSchema;
         } catch(e) {
-            content.textContent = "ERROR: " + e.message;
+            content.textContent = "ERROR: " + String(e?.message ?? e);
         }
     };
 
@@ -7327,7 +7347,7 @@ Lang: ${esc(u.lang || 'Unknown')}</div>
                 }, 3000);
 
             } catch (e) {
-                showToast("ROLLBACK FAILURE: " + (e.message || "Network Timeout"), "error");
+                showToast("ROLLBACK FAILURE: " + String(e?.message ?? e ?? "Network Timeout"));
             }
         });
     };
