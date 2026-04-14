@@ -55,6 +55,8 @@ assert.ok(!archive.includes('https://onlytrueperspective.tech/archive.html'), 'a
 assert.ok(themeChrono.includes('OTP.getEffectiveThemeForPaint'), 'theme-chrono exposes paint theme API');
 assert.ok(siteInit.includes('data-theme') || siteInit.includes("getAttribute('data-theme')"), 'site-init references data-theme');
 assert.ok(siteInit.includes('OTPSetProjectType'), 'site-init exposes safe homepage package CTA helper');
+assert.ok(siteInit.includes('/api/contact/submit'), 'site-init wires contact form to public submit API');
+assert.ok(siteInit.includes('Invalid response from server'), 'contact handler tolerates non-JSON error bodies');
 
 assert.ok(terminal.includes('toggleAdminTheme()'), 'OTP Terminal theme control');
 assert.ok(terminal.includes('data-theme'), 'OTP Terminal uses data-theme');

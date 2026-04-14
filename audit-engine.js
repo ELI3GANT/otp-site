@@ -96,6 +96,10 @@ window.AuditEngine = {
         this.isSubmitting = true;
 
         const emailInput = document.getElementById('audit-email');
+        if (!emailInput) {
+            this.isSubmitting = false;
+            return;
+        }
         const email = emailInput.value.trim();
         const errorEl = document.getElementById('audit-error-msg');
         

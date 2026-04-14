@@ -66,6 +66,7 @@ Automated contract: `tests/client_journey_contract.test.js` (also in master runn
 
 ### 4.3 Manual smoke (high value, short)
 
+- **Homepage contact**: Submit the index form with a throwaway email → success state; repeat with airplane mode / bad network → inline error without crashing (non-JSON responses are handled in `site-init.js`).
 - **Knowledge**: Upload a small DOCX → confirm index count increases → run Oracle on a lead → confirm `knowledge_basis` / structured rules surface in recommendation.
 - **Reply**: Open thread → **OTP Oracle** → **Generate reply** → confirm tone aligns with required docs + citations block.
 - **Packet**: Generate packet → approve → download DOCX for proposal/agreement → confirm merge fields.

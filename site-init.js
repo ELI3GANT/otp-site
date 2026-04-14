@@ -1614,24 +1614,39 @@ function initSite() {
             e.preventDefault();
             
             const btn = contactForm.querySelector('button[type="submit"]');
-            const originalText = btn.innerText;
-            btn.innerText = "SENDING...";
-            btn.disabled = true;
+            const originalText = btn ? btn.innerText : 'SUBMIT';
+            if (btn) {
+                btn.innerText = 'SENDING...';
+                btn.disabled = true;
+            }
 
             const formData = new FormData(contactForm);
             const data = Object.fromEntries(formData.entries());
 
             const apiBase = window.OTP.getApiBase();
+            const statusDiv = document.getElementById('formStatus');
+            if (statusDiv) statusDiv.textContent = '';
+
             try {
                 const res = await fetch(`${apiBase}/api/contact/submit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                
-                const result = await res.json();
-                
-                if (result.success) {
+
+                const raw = await res.text();
+                let result = {};
+                try {
+                    result = raw ? JSON.parse(raw) : {};
+                } catch (_) {
+                    throw new Error(
+                        res.ok
+                            ? 'Invalid response from server.'
+                            : `Server error (${res.status}). Try again or email us directly.`
+                    );
+                }
+
+                if (res.ok && result.success) {
                     // Hide Form, Show Success
                     contactForm.style.display = 'none';
                     const successDiv = document.getElementById('successState');
@@ -1644,24 +1659,25 @@ function initSite() {
                             gsap.to(successDiv.querySelector('p'), { opacity: 1, y: 0, delay: 0.3, duration: 0.5 });
                         } else {
                             // Fallback simple fade
-                            successDiv.style.opacity = 1; 
+                            successDiv.style.opacity = 1;
                         }
                     }
                     if (typeof window.gtag === 'function') {
                         window.gtag('event', 'generate_lead', { value: 0, currency: 'USD' });
                     }
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || `Request failed (${res.status}).`);
                 }
 
             } catch (err) {
                 console.error(err);
-                btn.innerText = "ERROR - TRY AGAIN";
-                btn.disabled = false;
-                setTimeout(() => btn.innerText = originalText, 3000);
-                
-                const statusDiv = document.getElementById('formStatus');
-                if (statusDiv) statusDiv.textContent = "Error: " + err.message;
+                if (btn) {
+                    btn.innerText = 'ERROR - TRY AGAIN';
+                    btn.disabled = false;
+                    setTimeout(() => { btn.innerText = originalText; }, 3000);
+                }
+
+                if (statusDiv) statusDiv.textContent = 'Error: ' + (err.message || 'Something went wrong.');
             }
         });
     }
