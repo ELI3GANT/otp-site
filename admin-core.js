@@ -2044,6 +2044,8 @@
     window.closeOpsDocPanel = function() {
         const panel = document.getElementById('opsDocPanel');
         if (panel) panel.style.display = 'none';
+        const wrap = document.getElementById('opsDocPanelWrap');
+        if (wrap) wrap.style.display = 'none';
     };
     window.copyOpsDocOutput = async function() {
         const el = document.getElementById('opsDocOutput');
@@ -2084,6 +2086,8 @@
         if (metaEl) metaEl.textContent = 'Generating…';
         if (outEl) outEl.textContent = '';
         if (panel) panel.style.display = 'block';
+        const wrap = document.getElementById('opsDocPanelWrap');
+        if (wrap) { wrap.style.display = 'block'; wrap.open = true; }
 
         try {
             const apiBase = resolveApiBase();

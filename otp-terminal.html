@@ -648,187 +648,188 @@
                         <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Service Summary')">Generate Service Summary</button>
                     </div>
 
-                    <div style="margin-top:10px;border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
-                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
-                            <div style="min-width:220px;flex:1;">
-                                <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);">PACKET BUILDER</div>
-                                <div id="opsPacketMeta" style="margin-top:6px;font-size:0.66rem;color:var(--admin-muted);line-height:1.4;">Select docs, preview packet readiness, then export a ZIP bundle.</div>
+                    <div id="opsEditorGrid" class="ops-editor-grid">
+                        <div class="ops-editor-left">
+                            <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+                                <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                                    <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Client</div>
+                                    <input id="opsClientName" class="input-field" placeholder="Client Name *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                                    <input id="opsBusinessName" class="input-field" placeholder="Business / Brand Name" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                                    <input id="opsPhone" class="input-field" placeholder="Phone" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                                    <input id="opsEmail" class="input-field" placeholder="Email" style="width:100%;padding:10px;border-radius:10px;" />
+                                </div>
+        
+                                <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                                    <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Project</div>
+                                    <input id="opsServiceType" class="input-field" placeholder="Service Type *" list="opsServiceTypeList" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                                    <div id="opsServiceGuidance" style="display:none;margin:-2px 0 10px 0;font-size:0.66rem;line-height:1.4;color:var(--admin-muted);"></div>
+                                    <datalist id="opsServiceTypeList">
+                                        <option value="Starter Web Presence"></option>
+                                        <option value="Business Website Pro"></option>
+                                        <option value="Custom Website Architecture"></option>
+                                        <option value="Video Editing Services"></option>
+                                        <option value="Filming / Production"></option>
+                                        <option value="Photography Sessions"></option>
+                                        <option value="AI Promo / Digital Creative"></option>
+                                        <option value="Custom AI Automation Setup"></option>
+                                        <option value="Starter Monthly Content Package"></option>
+                                        <option value="Growth Brand Package"></option>
+                                        <option value="Full Brand Engine Retainer"></option>
+                                        <option value="Monthly Website Maintenance"></option>
+                                    </datalist>
+                                    <select id="opsPackageType" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
+                                        <option value="">Package Type *</option>
+                                        <option value="The Signal">The Signal</option>
+                                        <option value="The Engine">The Engine</option>
+                                        <option value="The System">The System</option>
+                                        <option value="Custom">Custom</option>
+                                    </select>
+                                    <div id="opsPackageGuidance" style="display:none;margin:-2px 0 10px 0;font-size:0.66rem;line-height:1.4;color:var(--admin-muted);"></div>
+                                    <input id="opsProjectTitle" class="input-field" placeholder="Project Title *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                                    <textarea id="opsProjectDescription" class="input-field" rows="4" placeholder="Project Description" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
+                                    <textarea id="opsDeliverables" class="input-field" rows="3" placeholder="Deliverables" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-top:8px;"></textarea>
+                                    <textarea id="opsAddOns" class="input-field" rows="2" placeholder="Add-Ons" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-top:8px;"></textarea>
+                                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:8px;align-items:end;">
+                                        <input id="opsStartDate" type="date" class="input-field" style="width:100%;padding:10px;border-radius:10px;" />
+                                        <input id="opsDueDate" type="date" class="input-field" style="width:100%;padding:10px;border-radius:10px;" />
+                                        <label style="display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--admin-text);padding:6px 2px;">
+                                            <input id="opsAllowDateOverride" type="checkbox" />
+                                            Allow date override
+                                        </label>
+                                    </div>
+                                </div>
+        
+                                <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                                    <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Pricing / Payment</div>
+                                    <input id="opsTotalPrice" class="input-field" placeholder="Total Price * (e.g. 399)" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" oninput="window.recalcOpsBalance()" />
+                                    <input id="opsDepositAmount" class="input-field" placeholder="Deposit Amount (e.g. 199)" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" oninput="window.recalcOpsBalance()" />
+                                    <div style="border:1px dashed var(--admin-border);border-radius:10px;padding:10px;margin-bottom:10px;background:var(--admin-panel);">
+                                        <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Remaining Balance</div>
+                                        <div id="opsRemainingBalance" style="font-size:1.1rem;font-weight:900;color:var(--admin-text);margin-top:6px;">—</div>
+                                    </div>
+                                    <select id="opsPaymentMethod" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
+                                        <option value="">Payment Method</option>
+                                        <option value="Apple Pay">Apple Pay</option>
+                                        <option value="Cash App">Cash App</option>
+                                        <option value="Zelle">Zelle</option>
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <select id="opsPaymentStatus" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
+                                        <option value="">Payment Status *</option>
+                                        <option value="Unpaid">Unpaid</option>
+                                        <option value="Deposit Paid">Deposit Paid</option>
+                                        <option value="Paid in Full">Paid in Full</option>
+                                    </select>
+                                    <select id="opsJobStatus" class="input-field" style="width:100%;padding:10px;border-radius:10px;">
+                                        <option value="">Job Status *</option>
+                                        <option value="New Lead">New Lead</option>
+                                        <option value="Quote Sent">Quote Sent</option>
+                                        <option value="Deposit Paid">Deposit Paid</option>
+                                        <option value="Active Client">Active Client</option>
+                                        <option value="Awaiting Final Payment">Awaiting Final Payment</option>
+                                        <option value="Completed">Completed</option>
+                                        <option value="Archived">Archived</option>
+                                    </select>
+                                </div>
+        
+                                <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                                    <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Workflow / Admin</div>
+                                    <textarea id="opsClientNotes" class="input-field" rows="3" placeholder="Client Notes (client-facing)" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-bottom:8px;"></textarea>
+                                    <textarea id="opsInternalNotes" class="input-field" rows="4" placeholder="Internal OTP Notes (private)" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-bottom:10px;"></textarea>
+                                    <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);margin-bottom:6px;">
+                                        <input id="opsPortfolioPermission" type="checkbox" />
+                                        Portfolio permission
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);margin-bottom:6px;">
+                                        <input id="opsAgreementSigned" type="checkbox" />
+                                        Agreement signed
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);margin-bottom:6px;">
+                                        <input id="opsInvoiceSent" type="checkbox" />
+                                        Invoice sent
+                                    </label>
+                                    <div id="opsJobSaveStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);"></div>
+                                </div>
                             </div>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.previewOpsPacket()">BUILD / PREVIEW</button>
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.exportOpsPacketZip()">EXPORT PACKET ZIP</button>
+                        </div>
+
+                        <div class="ops-editor-right">
+                            <div class="ops-side-stack">
+                                <details class="otp-collapsible" open>
+                                    <summary>PACKET BUILDER</summary>
+                                    <div class="otp-subpanel-body">
+                                        <div id="opsPacketMeta" style="margin-top:6px;font-size:0.66rem;color:var(--admin-muted);line-height:1.4;">Select docs, preview packet readiness, then export a ZIP bundle.</div>
+                                        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start;">
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.previewOpsPacket()">BUILD / PREVIEW</button>
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.exportOpsPacketZip()">EXPORT PACKET ZIP</button>
+                                        </div>
+                                        <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;">
+                                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Invoice" checked />Invoice</label>
+                                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Paid Receipt" />Paid Receipt</label>
+                                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Service Summary" />Service Summary</label>
+                                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Proposal" />Proposal</label>
+                                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Agreement" />Agreement</label>
+                                        </div>
+                                        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketFmtNeed" type="checkbox" value="pdf" checked />PDF</label>
+                                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketFmtNeed" type="checkbox" value="docx" checked />DOCX</label>
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsPacketSummary()">COPY SUMMARY</button>
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsPacketClientMessage()">COPY MESSAGE</button>
+                                        </div>
+                                        <div id="opsPacketStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;"></div>
+                                    </div>
+                                </details>
+
+                                <details class="otp-collapsible">
+                                    <summary>SEND (CONTROLLED)</summary>
+                                    <div class="otp-subpanel-body">
+                                        <div id="opsSendMeta" style="margin-top:6px;font-size:0.66rem;color:var(--admin-muted);line-height:1.4;">Prepare, review, then send valid docs/packet. No auto-send.</div>
+                                        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start;">
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.prepareOpsSend()">PREPARE</button>
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;background:var(--admin-cyan);color:#000;border:none;" onclick="window.executeOpsSend()">SEND</button>
+                                        </div>
+                                        <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+                                            <input id="opsSendTo" class="input-field" placeholder="Recipient Email *" style="width:100%;padding:10px;border-radius:10px;" />
+                                            <select id="opsSendMode" class="input-field" style="width:100%;padding:10px;border-radius:10px;">
+                                                <option value="packet">Send Packet ZIP (recommended)</option>
+                                                <option value="docs">Send Individual Docs</option>
+                                            </select>
+                                        </div>
+                                        <div style="margin-top:10px;">
+                                            <input id="opsSendSubject" class="input-field" placeholder="Subject *" style="width:100%;padding:10px;border-radius:10px;" />
+                                        </div>
+                                        <div style="margin-top:10px;">
+                                            <textarea id="opsSendBody" class="input-field" rows="6" placeholder="Message *" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
+                                        </div>
+                                        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsSendBody()">COPY MESSAGE</button>
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsSendSummary()">COPY SUMMARY</button>
+                                        </div>
+                                        <div id="opsSendStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;"></div>
+                                    </div>
+                                </details>
+
+                                <details class="otp-collapsible" id="opsDocPanelWrap" style="display:none;">
+                                    <summary>DOCUMENT OUTPUT</summary>
+                                    <div class="otp-subpanel-body">
+                                        <div id="opsDocMeta" style="margin-top:6px;font-size:0.66rem;color:var(--admin-muted);line-height:1.4;"></div>
+                                        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsDocOutput()">COPY</button>
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.exportOpsDoc('pdf')">EXPORT PDF</button>
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.exportOpsDoc('docx')">EXPORT DOCX</button>
+                                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.closeOpsDocPanel()">CLOSE</button>
+                                        </div>
+                                        <pre id="opsDocOutput" style="margin-top:10px;white-space:pre-wrap;word-break:break-word;font-size:0.7rem;line-height:1.45;color:var(--admin-text);background:var(--admin-panel);border:1px solid var(--admin-border);border-radius:10px;padding:10px;max-height:380px;overflow:auto;"></pre>
+                                    </div>
+                                </details>
                             </div>
                         </div>
-
-                        <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;">
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Invoice" checked />Invoice</label>
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Paid Receipt" />Paid Receipt</label>
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Service Summary" />Service Summary</label>
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Proposal" />Proposal</label>
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Agreement" />Agreement</label>
-                        </div>
-
-                        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketFmtNeed" type="checkbox" value="pdf" checked />PDF</label>
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketFmtNeed" type="checkbox" value="docx" checked />DOCX</label>
-                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsPacketSummary()">COPY SUMMARY</button>
-                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsPacketClientMessage()">COPY CLIENT MESSAGE</button>
-                        </div>
-
-                        <div id="opsPacketStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;"></div>
                     </div>
 
-                    <div style="margin-top:10px;border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
-                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
-                            <div style="min-width:220px;flex:1;">
-                                <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);">SEND (CONTROLLED)</div>
-                                <div id="opsSendMeta" style="margin-top:6px;font-size:0.66rem;color:var(--admin-muted);line-height:1.4;">Prepare, review, then send valid docs/packet. No auto-send.</div>
-                            </div>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.prepareOpsSend()">PREPARE SEND</button>
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;background:var(--admin-cyan);color:#000;border:none;" onclick="window.executeOpsSend()">SEND</button>
-                            </div>
-                        </div>
-
-                        <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
-                            <input id="opsSendTo" class="input-field" placeholder="Recipient Email *" style="width:100%;padding:10px;border-radius:10px;" />
-                            <select id="opsSendMode" class="input-field" style="width:100%;padding:10px;border-radius:10px;">
-                                <option value="packet">Send Packet ZIP (recommended)</option>
-                                <option value="docs">Send Individual Docs</option>
-                            </select>
-                        </div>
-                        <div style="margin-top:10px;">
-                            <input id="opsSendSubject" class="input-field" placeholder="Subject *" style="width:100%;padding:10px;border-radius:10px;" />
-                        </div>
-                        <div style="margin-top:10px;">
-                            <textarea id="opsSendBody" class="input-field" rows="6" placeholder="Message *" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
-                        </div>
-                        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsSendBody()">COPY MESSAGE</button>
-                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsSendSummary()">COPY SUMMARY</button>
-                        </div>
-                        <div id="opsSendStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;"></div>
-                    </div>
-
-                    <div id="opsDocPanel" style="display:none;margin-top:12px;border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
-                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
-                            <div style="min-width:220px;flex:1;">
-                                <div id="opsDocTitle" style="font-size:0.7rem;font-weight:900;color:var(--admin-text);">DOCUMENT OUTPUT</div>
-                                <div id="opsDocMeta" style="margin-top:6px;font-size:0.66rem;color:var(--admin-muted);line-height:1.4;"></div>
-                            </div>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsDocOutput()">COPY</button>
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.exportOpsDoc('pdf')">EXPORT PDF</button>
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.exportOpsDoc('docx')">EXPORT DOCX</button>
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.closeOpsDocPanel()">CLOSE</button>
-                            </div>
-                        </div>
-                        <pre id="opsDocOutput" style="margin-top:10px;white-space:pre-wrap;word-break:break-word;font-size:0.7rem;line-height:1.45;color:var(--admin-text);background:var(--admin-panel);border:1px solid var(--admin-border);border-radius:10px;padding:10px;max-height:380px;overflow:auto;"></pre>
-                    </div>
-
-                    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
-                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
-                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Client</div>
-                            <input id="opsClientName" class="input-field" placeholder="Client Name *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
-                            <input id="opsBusinessName" class="input-field" placeholder="Business / Brand Name" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
-                            <input id="opsPhone" class="input-field" placeholder="Phone" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
-                            <input id="opsEmail" class="input-field" placeholder="Email" style="width:100%;padding:10px;border-radius:10px;" />
-                        </div>
-
-                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
-                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Project</div>
-                            <input id="opsServiceType" class="input-field" placeholder="Service Type *" list="opsServiceTypeList" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
-                            <div id="opsServiceGuidance" style="display:none;margin:-2px 0 10px 0;font-size:0.66rem;line-height:1.4;color:var(--admin-muted);"></div>
-                            <datalist id="opsServiceTypeList">
-                                <option value="Starter Web Presence"></option>
-                                <option value="Business Website Pro"></option>
-                                <option value="Custom Website Architecture"></option>
-                                <option value="Video Editing Services"></option>
-                                <option value="Filming / Production"></option>
-                                <option value="Photography Sessions"></option>
-                                <option value="AI Promo / Digital Creative"></option>
-                                <option value="Custom AI Automation Setup"></option>
-                                <option value="Starter Monthly Content Package"></option>
-                                <option value="Growth Brand Package"></option>
-                                <option value="Full Brand Engine Retainer"></option>
-                                <option value="Monthly Website Maintenance"></option>
-                            </datalist>
-                            <select id="opsPackageType" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
-                                <option value="">Package Type *</option>
-                                <option value="The Signal">The Signal</option>
-                                <option value="The Engine">The Engine</option>
-                                <option value="The System">The System</option>
-                                <option value="Custom">Custom</option>
-                            </select>
-                            <div id="opsPackageGuidance" style="display:none;margin:-2px 0 10px 0;font-size:0.66rem;line-height:1.4;color:var(--admin-muted);"></div>
-                            <input id="opsProjectTitle" class="input-field" placeholder="Project Title *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
-                            <textarea id="opsProjectDescription" class="input-field" rows="4" placeholder="Project Description" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
-                            <textarea id="opsDeliverables" class="input-field" rows="3" placeholder="Deliverables" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-top:8px;"></textarea>
-                            <textarea id="opsAddOns" class="input-field" rows="2" placeholder="Add-Ons" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-top:8px;"></textarea>
-                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:8px;align-items:end;">
-                                <input id="opsStartDate" type="date" class="input-field" style="width:100%;padding:10px;border-radius:10px;" />
-                                <input id="opsDueDate" type="date" class="input-field" style="width:100%;padding:10px;border-radius:10px;" />
-                                <label style="display:flex;align-items:center;gap:8px;font-size:0.7rem;color:var(--admin-text);padding:6px 2px;">
-                                    <input id="opsAllowDateOverride" type="checkbox" />
-                                    Allow date override
-                                </label>
-                            </div>
-                        </div>
-
-                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
-                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Pricing / Payment</div>
-                            <input id="opsTotalPrice" class="input-field" placeholder="Total Price * (e.g. 399)" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" oninput="window.recalcOpsBalance()" />
-                            <input id="opsDepositAmount" class="input-field" placeholder="Deposit Amount (e.g. 199)" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" oninput="window.recalcOpsBalance()" />
-                            <div style="border:1px dashed var(--admin-border);border-radius:10px;padding:10px;margin-bottom:10px;background:var(--admin-panel);">
-                                <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Remaining Balance</div>
-                                <div id="opsRemainingBalance" style="font-size:1.1rem;font-weight:900;color:var(--admin-text);margin-top:6px;">—</div>
-                            </div>
-                            <select id="opsPaymentMethod" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
-                                <option value="">Payment Method</option>
-                                <option value="Apple Pay">Apple Pay</option>
-                                <option value="Cash App">Cash App</option>
-                                <option value="Zelle">Zelle</option>
-                                <option value="Bank Transfer">Bank Transfer</option>
-                                <option value="Cash">Cash</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <select id="opsPaymentStatus" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
-                                <option value="">Payment Status *</option>
-                                <option value="Unpaid">Unpaid</option>
-                                <option value="Deposit Paid">Deposit Paid</option>
-                                <option value="Paid in Full">Paid in Full</option>
-                            </select>
-                            <select id="opsJobStatus" class="input-field" style="width:100%;padding:10px;border-radius:10px;">
-                                <option value="">Job Status *</option>
-                                <option value="New Lead">New Lead</option>
-                                <option value="Quote Sent">Quote Sent</option>
-                                <option value="Deposit Paid">Deposit Paid</option>
-                                <option value="Active Client">Active Client</option>
-                                <option value="Awaiting Final Payment">Awaiting Final Payment</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Archived">Archived</option>
-                            </select>
-                        </div>
-
-                        <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
-                            <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Workflow / Admin</div>
-                            <textarea id="opsClientNotes" class="input-field" rows="3" placeholder="Client Notes (client-facing)" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-bottom:8px;"></textarea>
-                            <textarea id="opsInternalNotes" class="input-field" rows="4" placeholder="Internal OTP Notes (private)" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-bottom:10px;"></textarea>
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);margin-bottom:6px;">
-                                <input id="opsPortfolioPermission" type="checkbox" />
-                                Portfolio permission
-                            </label>
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);margin-bottom:6px;">
-                                <input id="opsAgreementSigned" type="checkbox" />
-                                Agreement signed
-                            </label>
-                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);margin-bottom:6px;">
-                                <input id="opsInvoiceSent" type="checkbox" />
-                                Invoice sent
-                            </label>
-                            <div id="opsJobSaveStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);"></div>
-                        </div>
-                    </div>
+                    <!-- keep legacy panel container for JS hooks, but render via the right-side collapsible -->
+                    <div id="opsDocPanel" style="display:none;"></div>
                 </div>
 
                 <div id="opsJobsManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 520px; overflow-y: auto;">
@@ -1542,7 +1543,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.1"></script>
+    <script src="admin-core.js?v=16.7.2"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

@@ -89,6 +89,76 @@ body::before {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* OTP Terminal: reduce box-heaviness on wide screens */
+@media (min-width: 1024px) {
+    body.otp-terminal-page .input-section {
+        padding: 18px;
+        margin-bottom: 16px;
+        border-radius: 14px;
+    }
+    body.otp-terminal-page .section-label {
+        margin-bottom: 14px;
+    }
+}
+
+/* Ops editor: use width better on desktop */
+.ops-editor-grid {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+@media (min-width: 1100px) {
+    .ops-editor-grid {
+        grid-template-columns: 1.35fr 0.85fr;
+        align-items: start;
+    }
+}
+.ops-side-stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+details.otp-collapsible {
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    background: var(--admin-surface-inset);
+    overflow: hidden;
+}
+details.otp-collapsible > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 10px 12px;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--admin-text);
+    background: rgba(0,0,0,0.14);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+html[data-theme="light"] details.otp-collapsible > summary {
+    background: rgba(0,0,0,0.03);
+}
+details.otp-collapsible > summary::-webkit-details-marker {
+    display: none;
+}
+details.otp-collapsible > summary::after {
+    content: '▾';
+    color: var(--admin-muted);
+    font-weight: 900;
+}
+details.otp-collapsible[open] > summary::after {
+    content: '▴';
+}
+.otp-subpanel-body {
+    padding: 12px;
+}
+
 /*
   Mobile/iOS paint stability
   --------------------------
