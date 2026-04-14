@@ -1689,7 +1689,7 @@
                 .join('');
         } catch (e) {
             setStructuredStatus('STRUCTURED: ERROR');
-            if (container) container.innerHTML = `<div style="text-align:center;color:#ff8888;padding:20px;">STRUCTURED ERROR: ${window.escapeHtml(e.message)}</div>`;
+            if (container) container.innerHTML = `<div style="text-align:center;color:#ff8888;padding:20px;">STRUCTURED ERROR: ${window.escapeHtml(String(e && e.message != null ? e.message : e))}</div>`;
         }
     };
 
@@ -1900,7 +1900,7 @@
             }).join('');
         } catch (e) {
             setOpsBadge('JOBS: ERROR');
-            if (mgr) mgr.innerHTML = `<div style="text-align:center;color:#ff8888;padding:20px;">OPS ERROR: ${window.escapeHtml(e.message)}</div>`;
+            if (mgr) mgr.innerHTML = `<div style="text-align:center;color:#ff8888;padding:20px;">OPS ERROR: ${window.escapeHtml(String(e && e.message != null ? e.message : e))}</div>`;
         }
     };
 
@@ -6307,7 +6307,9 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
             const isOracle = document.getElementById('aiDraftSource')?.value === 'true' || content.includes('// NEURAL_DRAFT') || content.includes('// ORACLE_DRAFT');
             const isVideo = image && image.match(/\.(mp4|webm|mov)$/i);
-            const excerptHtml = excerpt ? `<p style="font-size: 1.25rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${excerpt}</p>` : '';
+            const esc = (s) => (window.escapeHtml ? window.escapeHtml(String(s ?? '')) : String(s ?? ''));
+            const titleEsc = esc(title);
+            const excerptHtml = excerpt ? `<p style="font-size: 1.25rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${esc(excerpt)}</p>` : '';
             
             const mediaHtml = (image && image.trim().length > 0) ? `
                 <div style="margin-bottom: 35px; background: var(--admin-surface-inset-strong); border-radius: 12px; overflow: hidden; border: 1px solid var(--admin-border);">
@@ -6326,7 +6328,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                 <div style="max-width: 720px; margin: 0px auto; font-family: 'Inter', sans-serif; color: var(--admin-white); padding: 40px; ${isOracle ? 'border-left: 2px solid var(--admin-cyan); background: rgba(0, 236, 255, 0.02);' : ''}">
                     ${mediaHtml}
                     <div style="border-bottom: 1px solid var(--admin-border); margin-bottom: 35px; padding-bottom: 25px;">
-                        <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; line-height: 1.1; margin-bottom: 15px; color: var(--admin-white); font-weight: 700;">${title}</h1>
+                        <h1 style="font-family: 'Space Grotesk', sans-serif; font-size: 3rem; line-height: 1.1; margin-bottom: 15px; color: var(--admin-white); font-weight: 700;">${titleEsc}</h1>
                         ${excerptHtml}
                     </div>
                     <div class="otp-content blog-content ${isOracle ? 'oracle-text' : ''}" style="font-size: 1.1rem; line-height: 1.8; color: var(--admin-white);">
@@ -6343,7 +6345,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                 throw new Error("PREVIEW FAILED: Modal components are unreachable.");
             }
 
-            titleDisplay.innerHTML = `<span style="opacity:0.5;">PREVIEW //</span> ${title}`;
+            titleDisplay.innerHTML = `<span style="opacity:0.5;">PREVIEW //</span> ${titleEsc}`;
             bodyDisplay.innerHTML = html;
             modal.style.display = 'flex';
             
@@ -6352,7 +6354,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         } catch (err) {
             console.error("CRITICAL PREVIEW ERROR:", err);
-            showToast("PREVIEW ERROR: " + err.message);
+            showToast("PREVIEW ERROR: " + String(err && err.message != null ? err.message : err));
         }
     };
 

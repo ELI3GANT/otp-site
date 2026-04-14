@@ -17,6 +17,7 @@ const insightsList = read('insights.html');
 const archive = read('archive.html');
 const terms = read('terms.html');
 const privacy = read('privacy.html');
+const notFound = read('404.html');
 const terminal = read('otp-terminal.html');
 const themeChrono = read('theme-chrono.js');
 const siteInit = read('site-init.js');
@@ -26,6 +27,23 @@ assert.ok(index.includes('styles.css?v='), 'index loads styles.css');
 assert.ok(index.includes('gsap.min.js'), 'index loads GSAP');
 assert.ok(index.includes('ScrollTrigger.min.js'), 'index loads ScrollTrigger');
 assert.ok(index.includes('site-init.js?v='), 'index loads site-init');
+const indexSiteInitV = (index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
+const insightSiteInitV = (insight.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
+assert.ok(indexSiteInitV && insightSiteInitV, 'index and insight declare site-init cache-bust');
+const assertSiteInitMatchesIndex = (html, label) => {
+    const v = (html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
+    assert.strictEqual(
+        v,
+        indexSiteInitV,
+        `${label} site-init.js?v must match index.html (avoid stale public helpers)`
+    );
+};
+assertSiteInitMatchesIndex(insight, 'insight.html');
+assertSiteInitMatchesIndex(insightsList, 'insights.html');
+assertSiteInitMatchesIndex(archive, 'archive.html');
+assertSiteInitMatchesIndex(terms, 'terms.html');
+assertSiteInitMatchesIndex(privacy, 'privacy.html');
+assertSiteInitMatchesIndex(notFound, '404.html');
 assert.ok(index.includes('data-editable='), 'CMS-editable regions present');
 assert.match(index, /href="archive\.html"/, 'desktop nav includes Archive (parity with mobile drawer)');
 assert.ok(

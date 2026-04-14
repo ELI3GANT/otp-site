@@ -17,7 +17,8 @@ function showToast(msg, type = 'info') {
         document.body.appendChild(toast);
     }
     toast.style.borderColor = type === 'error' ? '#ff0055' : 'var(--accent2)';
-    toast.innerHTML = type === 'error' ? `⚠️ ${msg}` : `⚡ ${msg}`;
+    const prefix = type === 'error' ? '\u26A0\uFE0F ' : '\u26A1 ';
+    toast.textContent = prefix + String(msg == null ? '' : msg);
     toast.style.transform = 'translateY(0)';
     setTimeout(() => { toast.style.transform = 'translateY(100px)'; }, 4000);
 }
