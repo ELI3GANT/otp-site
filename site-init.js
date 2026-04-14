@@ -1274,153 +1274,99 @@ function initSite() {
         }
     }
 
-    const handleMenuToggle = (e) => {
-        const toggle = e.target.closest('.nav-toggle');
-        const link = e.target.closest('.nav-drawer a');
+    // --- MOBILE NAV DRAWER (iOS/Safari reliable) ---
+    (function bindMobileNavDrawer() {
         const drawer = document.querySelector('.nav-drawer');
         const btn = document.querySelector('.nav-toggle');
-        const scrimId = 'navDrawerScrim';
-        const ensureScrim = () => {
-            const scrim = document.getElementById(scrimId);
-            return scrim || null;
-        };
-        const removeScrim = () => {
-            const scrim = document.getElementById(scrimId);
-            if (!scrim) return;
-            // Keep node in DOM; CSS handles visibility via body.nav-open.
+        const scrim = document.getElementById('navDrawerScrim');
+        if (!drawer || !btn) return;
+
+        const setExpanded = (expanded) => {
+            btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            btn.setAttribute('aria-label', expanded ? 'Close primary navigation menu' : 'Open primary navigation menu');
         };
 
-        // 1. Toggle button clicked
-        if (toggle && drawer) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Debounce (prevent double-fire from touch + click)
-            if (toggle.dataset.processing) return;
-            toggle.dataset.processing = "true";
-            setTimeout(() => delete toggle.dataset.processing, 300);
-
-            const isOpen = drawer.classList.contains('open');
-            if (isOpen) {
-                drawer.classList.remove('open');
-                document.body.classList.remove('nav-open');
-                document.documentElement.classList.remove('nav-open');
-                btn.setAttribute('aria-expanded', 'false');
-                btn.setAttribute('aria-label', 'Open primary navigation menu');
-                removeScrim();
-            } else {
-                drawer.classList.add('open');
-                document.body.classList.add('nav-open');
-                document.documentElement.classList.add('nav-open');
-                btn.setAttribute('aria-expanded', 'true');
-                btn.setAttribute('aria-label', 'Close primary navigation menu');
-                // If scrim exists, keep it clickable for outside-close.
-                const scrim = ensureScrim();
-                if (scrim && !scrim.dataset.bound) {
-                    scrim.dataset.bound = '1';
-                    scrim.addEventListener('click', () => {
-                        const d = document.querySelector('.nav-drawer');
-                        const b = document.querySelector('.nav-toggle');
-                        if (d) d.classList.remove('open');
-                        document.body.classList.remove('nav-open');
-                        document.documentElement.classList.remove('nav-open');
-                        if (b) {
-                            b.setAttribute('aria-expanded', 'false');
-                            b.setAttribute('aria-label', 'Open primary navigation menu');
-                        }
-                    }, { passive: true });
-                }
-            }
-            return; // Don't fall through to close-outside check
-        }
-
-        // 2. Drawer link clicked — close menu
-        if (link && drawer && drawer.classList.contains('open')) {
+        const close = () => {
             drawer.classList.remove('open');
             document.body.classList.remove('nav-open');
             document.documentElement.classList.remove('nav-open');
-            if (btn) {
-                btn.setAttribute('aria-expanded', 'false');
-                btn.setAttribute('aria-label', 'Open primary navigation menu');
+            setExpanded(false);
+        };
+
+        const open = () => {
+            drawer.classList.add('open');
+            document.body.classList.add('nav-open');
+            document.documentElement.classList.add('nav-open');
+            setExpanded(true);
+        };
+
+        const toggle = () => {
+            if (drawer.classList.contains('open')) close();
+            else open();
+        };
+
+        // Debounce across touch/click "ghost" events (not per-event).
+        let lastToggleAt = 0;
+        const onToggleIntent = (e) => {
+            // iOS: ensure the button tap never scrolls/zooms/selects.
+            if (e) {
+                e.preventDefault?.();
+                e.stopPropagation?.();
             }
-            removeScrim();
-            return;
+
+            const now = Date.now();
+            if (now - lastToggleAt < 350) return;
+            lastToggleAt = now;
+            toggle();
+        };
+
+        // Bind directly to the button (more reliable than body delegation on mobile browsers).
+        btn.addEventListener('click', onToggleIntent, { passive: false });
+        btn.addEventListener('touchend', onToggleIntent, { passive: false });
+
+        // Scrim close.
+        if (scrim && !scrim.dataset.bound) {
+            scrim.dataset.bound = '1';
+            scrim.addEventListener('click', (e) => {
+                e.preventDefault?.();
+                close();
+            }, { passive: false });
+            scrim.addEventListener('touchend', (e) => {
+                e.preventDefault?.();
+                close();
+            }, { passive: false });
         }
 
-        // 3. Click outside — close if open
-        if (drawer && drawer.classList.contains('open')) {
-            const clickedInsideDrawer = drawer.contains(e.target);
-            const clickedToggle = btn && btn.contains(e.target);
-            if (!clickedInsideDrawer && !clickedToggle) {
-                drawer.classList.remove('open');
-                document.body.classList.remove('nav-open');
-                document.documentElement.classList.remove('nav-open');
-                if (btn) {
-                    btn.setAttribute('aria-expanded', 'false');
-                    btn.setAttribute('aria-label', 'Open primary navigation menu');
-                }
-                removeScrim();
-            }
-        }
-    };
+        // Close when clicking a drawer link.
+        drawer.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+            close();
+        });
 
-    document.body.addEventListener('click', handleMenuToggle);
+        // Click outside — close if open (capture phase so it still works if other handlers stopPropagation).
+        document.addEventListener('click', (e) => {
+            if (!drawer.classList.contains('open')) return;
+            if (drawer.contains(e.target)) return;
+            if (btn.contains(e.target)) return;
+            close();
+        }, true);
 
-    // If the scrim is present in markup, bind it once for reliable close-on-tap.
-    (function bindNavScrimOnce() {
-        const scrim = document.getElementById('navDrawerScrim');
-        if (!scrim || scrim.dataset.bound) return;
-        scrim.dataset.bound = '1';
-        scrim.addEventListener('click', () => {
-            const drawer = document.querySelector('.nav-drawer');
-            const btn = document.querySelector('.nav-toggle');
-            if (drawer) drawer.classList.remove('open');
-            document.body.classList.remove('nav-open');
-            document.documentElement.classList.remove('nav-open');
-            if (btn) {
-                btn.setAttribute('aria-expanded', 'false');
-                btn.setAttribute('aria-label', 'Open primary navigation menu');
+        // Keyboard: close drawer on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (!drawer.classList.contains('open')) return;
+            close();
+            btn.focus?.();
+        });
+
+        // Fix: Close mobile drawer on desktop resize to prevent stuck overflow:hidden
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && document.body.classList.contains('nav-open')) {
+                close();
             }
-        }, { passive: true });
+        });
     })();
-
-    // Keyboard: close drawer on Escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            const drawer = document.querySelector('.nav-drawer');
-            const btn = document.querySelector('.nav-toggle');
-            if (drawer && drawer.classList.contains('open')) {
-                drawer.classList.remove('open');
-                document.body.classList.remove('nav-open');
-                document.documentElement.classList.remove('nav-open');
-                if (btn) {
-                    btn.setAttribute('aria-expanded', 'false');
-                    btn.setAttribute('aria-label', 'Open primary navigation menu');
-                }
-                const scrim = document.getElementById('navDrawerScrim');
-                // Keep scrim node; CSS will hide it.
-                btn?.focus();
-            }
-        }
-    });
-
-    // Fix: Close mobile drawer on desktop resize to prevent stuck overflow:hidden
-    window.addEventListener('resize', () => {
-        if (window.innerWidth > 768 && document.body.classList.contains('nav-open')) {
-            const drawer = document.querySelector('.nav-drawer');
-            const btn = document.querySelector('.nav-toggle');
-            if (drawer) drawer.classList.remove('open');
-            document.body.classList.remove('nav-open');
-            document.documentElement.classList.remove('nav-open');
-            if (btn) {
-                btn.setAttribute('aria-expanded', 'false');
-                btn.setAttribute('aria-label', 'Open primary navigation menu');
-            }
-            const scrim = document.getElementById('navDrawerScrim');
-            // Keep scrim node; CSS will hide it.
-        }
-    });
-
 
     // --- BEFORE/AFTER SLIDER ---
     const slider = document.getElementById('baSlider');
