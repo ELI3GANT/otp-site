@@ -159,6 +159,14 @@ details.otp-collapsible[open] > summary::after {
     padding: 12px;
 }
 
+/* OTP Terminal: preserve line breaks in status blocks */
+body.otp-terminal-page #opsPacketStatus,
+body.otp-terminal-page #opsSendStatus,
+body.otp-terminal-page #opsDocMeta,
+body.otp-terminal-page #opsEditorMeta {
+    white-space: pre-wrap;
+}
+
 /*
   Mobile/iOS paint stability
   --------------------------
