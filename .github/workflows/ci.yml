@@ -1,0 +1,58 @@
+# Runs on every PR and push to main. Keeps "test + live health headers" on autopilot.
+# Optional: set repo secret OTP_ADMIN_TOKEN to run Playwright terminal sweep on main only.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Used by tests/security_perf_audit.js when invoked from master_runner.js
+  LIVE_API_URL: https://www.onlytrueperspective.tech
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Master test suite (includes live security/health audit via LIVE_API_URL)
+        run: npm test
+
+  # Full browser sweep against production terminal — only when token is configured.
+  terminal-sweep:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.OTP_ADMIN_TOKEN != '' }}
+    env:
+      OTP_ADMIN_TOKEN: ${{ secrets.OTP_ADMIN_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Production terminal sweep
+        run: node scripts/prod_terminal_sweep.js
