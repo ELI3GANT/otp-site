@@ -2076,9 +2076,21 @@
             if (!res.ok || !payload.success) throw new Error(payload.message || `Generate failed (${res.status})`);
             const doc = payload.doc || {};
             const warnings = Array.isArray(doc.warnings) ? doc.warnings : [];
-            if (metaEl) metaEl.textContent = `${doc.schema || 'doc'} • ${doc.generated_at || ''}${warnings.length ? ` • ${warnings.length} warning${warnings.length === 1 ? '' : 's'}` : ''}`;
+            const missing = Array.isArray(doc.validation?.missing_required_fields) ? doc.validation.missing_required_fields : [];
+            const blocked = !!doc.validation?.blocking;
+            if (metaEl) {
+                const parts = [
+                    (doc.schema || 'doc'),
+                    (doc.generated_at || ''),
+                    (blocked ? 'BLOCKED: missing required fields' : ''),
+                    (missing.length ? `Missing: ${missing.join(', ')}` : ''),
+                    (warnings.length ? `${warnings.length} warning${warnings.length === 1 ? '' : 's'}` : '')
+                ].filter(Boolean);
+                metaEl.textContent = parts.join(' • ');
+            }
             if (outEl) outEl.textContent = String(doc.rendered_markdown || '').trim() || JSON.stringify(doc, null, 2);
-            if (warnings.length) showToast(`DOC READY (${warnings.length} WARN)`);
+            if (blocked) showToast(`DOC BLOCKED (${missing.length || 0} MISSING)`);
+            else if (warnings.length) showToast(`DOC READY (${warnings.length} WARN)`);
             else showToast('DOC READY');
         } catch (e) {
             if (metaEl) metaEl.textContent = `Generation failed: ${e.message}`;

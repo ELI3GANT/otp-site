@@ -60,7 +60,9 @@ for (const t of ['Proposal', 'Invoice', 'Agreement', 'Paid Receipt', 'Service Su
   const out = generateOpsDocument({ docType: 'Invoice', job: job2, pricing });
   assert.ok(out.ok, 'invoice still returns ok with warnings');
   assert.ok(Array.isArray(out.doc.warnings));
-  assert.ok(out.doc.warnings.join(' ').toLowerCase().includes('missing totalprice'));
+  assert.ok(out.doc.validation && out.doc.validation.blocking === true, 'invoice blocks when missing total');
+  assert.ok(Array.isArray(out.doc.validation.missing_required_fields));
+  assert.ok(out.doc.validation.missing_required_fields.includes('totalPriceCents'));
 }
 
 console.log('OPS DOCS GENERATION COMPLETE');

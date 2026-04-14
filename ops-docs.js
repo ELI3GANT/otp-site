@@ -84,6 +84,12 @@ function baseDoc(job, docType, pricing) {
     schema: 'otp-ops-doc-v1',
     doc_type: docType,
     generated_at: nowIso,
+    validation: {
+      ok: true,
+      blocking: false,
+      missing_required_fields: [],
+      message: null,
+    },
     job: {
       jobId: safeStr(job.jobId) || null,
       clientName: clientName || null,
@@ -154,10 +160,85 @@ function ensure(doc, ok, warningIfMissing) {
   return false;
 }
 
+function addMissing(doc, field, note) {
+  const f = safeStr(field);
+  if (!f) return;
+  if (!Array.isArray(doc.validation.missing_required_fields)) doc.validation.missing_required_fields = [];
+  if (!doc.validation.missing_required_fields.includes(f)) doc.validation.missing_required_fields.push(f);
+  if (note) doc.warnings.push(safeStr(note));
+}
+
+function markBlockingIfMissing(doc) {
+  const missing = Array.isArray(doc.validation.missing_required_fields) ? doc.validation.missing_required_fields : [];
+  const blocking = missing.length > 0;
+  doc.validation.blocking = blocking;
+  doc.validation.ok = !blocking;
+  if (blocking) {
+    doc.validation.message = `Missing required fields: ${missing.join(', ')}`;
+  } else {
+    doc.validation.message = null;
+  }
+}
+
+function validateRequired(doc, docType, job) {
+  const type = safeStr(docType);
+  const hasClient = Boolean(safeStr(job.clientName) || safeStr(job.businessName));
+  const hasProjectLabel = Boolean(safeStr(job.projectTitle) || safeStr(job.serviceType) || safeStr(job.packageType));
+
+  // Proposal: can be useful without totals/deliverables, but must have client + project label.
+  if (type === 'Proposal') {
+    if (!hasClient) addMissing(doc, 'clientName_or_businessName', 'Missing client identity (clientName/businessName).');
+    if (!hasProjectLabel) addMissing(doc, 'projectTitle_or_serviceType_or_packageType', 'Missing project label (projectTitle/serviceType/packageType).');
+  }
+
+  // Invoice: must have client + total saved (never invent totals).
+  if (type === 'Invoice') {
+    if (!hasClient) addMissing(doc, 'clientName_or_businessName', 'Missing client identity (clientName/businessName).');
+    if (job.totalPriceCents == null) addMissing(doc, 'totalPriceCents', 'Missing totalPrice; invoice requires a saved total.');
+  }
+
+  // Agreement: must have client + service/package + some scope signal.
+  if (type === 'Agreement') {
+    if (!hasClient) addMissing(doc, 'clientName_or_businessName', 'Missing client identity (clientName/businessName).');
+    if (!(safeStr(job.serviceType) || safeStr(job.packageType))) addMissing(doc, 'serviceType_or_packageType', 'Missing service/package (serviceType/packageType).');
+    if (!(safeStr(job.deliverables) || safeStr(job.projectDescription) || safeStr(job.projectTitle))) {
+      addMissing(doc, 'deliverables_or_projectDescription_or_projectTitle', 'Missing scope fields (deliverables/projectDescription/projectTitle).');
+    }
+  }
+
+  // Paid Receipt: must have client + enough payment data to state an amount (saved).
+  if (type === 'Paid Receipt') {
+    if (!hasClient) addMissing(doc, 'clientName_or_businessName', 'Missing client identity (clientName/businessName).');
+    const status = safeStr(job.paymentStatus).toLowerCase();
+    const canComputePaid =
+      (status === 'paid in full' && job.totalPriceCents != null) ||
+      (status === 'deposit paid' && job.depositAmountCents != null);
+    if (!canComputePaid) {
+      addMissing(
+        doc,
+        'paymentStatus_and_amount',
+        'Paid receipt requires paymentStatus + saved paid amount (Paid in Full→totalPriceCents or Deposit Paid→depositAmountCents).'
+      );
+    }
+  }
+
+  // Service Summary: must have client + at least one scope signal.
+  if (type === 'Service Summary') {
+    if (!hasClient) addMissing(doc, 'clientName_or_businessName', 'Missing client identity (clientName/businessName).');
+    if (!(safeStr(job.deliverables) || safeStr(job.projectDescription) || safeStr(job.projectTitle) || safeStr(job.serviceType))) {
+      addMissing(doc, 'deliverables_or_projectDescription_or_projectTitle_or_serviceType', 'Missing scope fields for summary.');
+    }
+  }
+
+  markBlockingIfMissing(doc);
+  if (doc.validation.blocking) {
+    doc.warnings.unshift('Document generation blocked: required data is missing. Update the job record and retry.');
+  }
+}
+
 function generateProposal(job, pricing) {
   const doc = baseDoc(job, 'Proposal', pricing);
-  ensure(doc, safeStr(job.clientName) || safeStr(job.businessName), 'Missing client identity (clientName/businessName).');
-  ensure(doc, safeStr(job.projectTitle) || safeStr(job.serviceType) || safeStr(job.packageType), 'Missing project label (projectTitle/serviceType/packageType).');
+  validateRequired(doc, 'Proposal', job);
 
   pushBlock(doc, 'Project', normalizeWhitespace([
     safeStr(job.projectTitle) ? `**Title**: ${safeStr(job.projectTitle)}` : '',
@@ -202,8 +283,7 @@ function generateProposal(job, pricing) {
 
 function generateInvoice(job, pricing) {
   const doc = baseDoc(job, 'Invoice', pricing);
-  ensure(doc, safeStr(job.clientName) || safeStr(job.businessName), 'Missing client identity (clientName/businessName).');
-  ensure(doc, job.totalPriceCents != null, 'Missing totalPrice; invoice cannot be generated without a saved total.');
+  validateRequired(doc, 'Invoice', job);
 
   pushBlock(doc, 'Invoice details', normalizeWhitespace([
     safeStr(job.projectTitle) ? `**Project**: ${safeStr(job.projectTitle)}` : '',
@@ -230,8 +310,7 @@ function generateInvoice(job, pricing) {
 
 function generateAgreement(job, pricing) {
   const doc = baseDoc(job, 'Agreement', pricing);
-  ensure(doc, safeStr(job.clientName) || safeStr(job.businessName), 'Missing client identity (clientName/businessName).');
-  ensure(doc, safeStr(job.serviceType) || safeStr(job.packageType), 'Missing service/package (serviceType/packageType).');
+  validateRequired(doc, 'Agreement', job);
 
   pushBlock(doc, 'Parties', normalizeWhitespace([
     '**Provider**: OnlyTruePerspective LLC ("OTP")',
@@ -275,7 +354,7 @@ function generateAgreement(job, pricing) {
 
 function generatePaidReceipt(job, pricing) {
   const doc = baseDoc(job, 'Paid Receipt', pricing);
-  ensure(doc, safeStr(job.clientName) || safeStr(job.businessName), 'Missing client identity (clientName/businessName).');
+  validateRequired(doc, 'Paid Receipt', job);
 
   const status = safeStr(job.paymentStatus);
   const p = buildPricingBlock(job);
@@ -316,7 +395,7 @@ function generatePaidReceipt(job, pricing) {
 
 function generateServiceSummary(job, pricing) {
   const doc = baseDoc(job, 'Service Summary', pricing);
-  ensure(doc, safeStr(job.clientName) || safeStr(job.businessName), 'Missing client identity (clientName/businessName).');
+  validateRequired(doc, 'Service Summary', job);
 
   pushBlock(doc, 'Summary', normalizeWhitespace([
     safeStr(job.projectTitle) ? `**Project**: ${safeStr(job.projectTitle)}` : '',
@@ -365,6 +444,16 @@ function generateOpsDocument({ docType, job, pricing }) {
   if (type === 'Paid Receipt') doc = generatePaidReceipt(safeJob, pricing);
   if (type === 'Service Summary') doc = generateServiceSummary(safeJob, pricing);
 
+  // If blocked, still return a stable doc payload for the UI, but avoid pretending it's a valid doc.
+  if (doc && doc.validation && doc.validation.blocking) {
+    // Keep any partial content, but ensure the UI has a top-level, consistent warning signal.
+    if (!Array.isArray(doc.warnings)) doc.warnings = [];
+    if (!doc.warnings.length || !String(doc.warnings[0] || '').toLowerCase().includes('blocked')) {
+      doc.warnings.unshift('Document generation blocked: required data is missing.');
+    }
+    renderDocMarkdown(doc);
+  }
+
   // Hard stop: do not leak internal notes even if present by accident.
   if (doc && typeof doc.rendered_markdown === 'string' && safeStr(job.internalNotes)) {
     const needle = safeStr(job.internalNotes);
@@ -373,7 +462,7 @@ function generateOpsDocument({ docType, job, pricing }) {
     }
   }
 
-  // If the doc has "blocking" warnings (invoice without total), keep ok=true but signal.
+  // For blocking validation, keep ok=true for transport stability; UI reads doc.validation.
   return { ok: true, status: 200, message: 'ok', doc };
 }
 
