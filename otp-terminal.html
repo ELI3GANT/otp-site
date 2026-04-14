@@ -648,6 +648,36 @@
                         <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Service Summary')">Generate Service Summary</button>
                     </div>
 
+                    <div style="margin-top:10px;border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+                            <div style="min-width:220px;flex:1;">
+                                <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);">PACKET BUILDER</div>
+                                <div id="opsPacketMeta" style="margin-top:6px;font-size:0.66rem;color:var(--admin-muted);line-height:1.4;">Select docs, preview packet readiness, then export a ZIP bundle.</div>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.previewOpsPacket()">BUILD / PREVIEW</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.exportOpsPacketZip()">EXPORT PACKET ZIP</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Invoice" checked />Invoice</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Paid Receipt" />Paid Receipt</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Service Summary" />Service Summary</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Proposal" />Proposal</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketDocNeed" type="checkbox" value="Agreement" />Agreement</label>
+                        </div>
+
+                        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketFmtNeed" type="checkbox" value="pdf" checked />PDF</label>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:0.72rem;color:var(--admin-text);"><input class="opsPacketFmtNeed" type="checkbox" value="docx" checked />DOCX</label>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsPacketSummary()">COPY SUMMARY</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsPacketClientMessage()">COPY CLIENT MESSAGE</button>
+                        </div>
+
+                        <div id="opsPacketStatus" style="margin-top:10px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;"></div>
+                    </div>
+
                     <div id="opsDocPanel" style="display:none;margin-top:12px;border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
                         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
                             <div style="min-width:220px;flex:1;">

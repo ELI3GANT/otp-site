@@ -2144,6 +2144,133 @@
         }
     };
 
+    function getOpsPacketDocTypes() {
+        return Array.from(document.querySelectorAll('.opsPacketDocNeed'))
+            .filter((el) => !!el.checked)
+            .map((el) => String(el.value || '').trim())
+            .filter(Boolean);
+    }
+    function getOpsPacketFormats() {
+        const list = Array.from(document.querySelectorAll('.opsPacketFmtNeed'))
+            .filter((el) => !!el.checked)
+            .map((el) => String(el.value || '').trim().toLowerCase())
+            .filter(Boolean);
+        return list.length ? list : ['pdf', 'docx'];
+    }
+    function setOpsPacketStatus(text) {
+        const el = document.getElementById('opsPacketStatus');
+        if (el) el.textContent = String(text || '');
+    }
+
+    window.previewOpsPacket = async function() {
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        const jobId = String(document.getElementById('opsJobId')?.value || '').trim();
+        if (!jobId) { showToast('OPEN A JOB FIRST'); return; }
+        const docTypes = getOpsPacketDocTypes();
+        if (!docTypes.length) { showToast('SELECT DOCS'); return; }
+        const formats = getOpsPacketFormats();
+        try {
+            setOpsPacketStatus('Building packet preview…');
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/packets/preview`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId, docTypes, formats })
+            }, 45000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Preview failed (${res.status})`);
+            const packet = payload.packet || {};
+            window.__opsPacketState = { jobId, docTypes, formats, packet };
+            const inc = Array.isArray(packet.included) ? packet.included : [];
+            const blk = Array.isArray(packet.blocked) ? packet.blocked : [];
+            const incLine = inc.map(d => d.docType).join(', ') || '—';
+            const blkLine = blk.map(d => d.docType).join(', ') || '—';
+            const missingLine = blk.length
+                ? blk.map(b => `${b.docType}: ${(b.missing_required_fields || []).join(', ') || 'missing fields'}`).join(' • ')
+                : '';
+            setOpsPacketStatus(
+                [
+                    `Included: ${incLine}`,
+                    blk.length ? `Blocked: ${blkLine}` : '',
+                    missingLine ? `Missing: ${missingLine}` : '',
+                    inc.length ? 'Packet ready for export.' : 'No valid docs included yet.'
+                ].filter(Boolean).join('\n')
+            );
+            const meta = document.getElementById('opsPacketMeta');
+            if (meta) meta.textContent = `Packet preview • ${inc.length} included • ${blk.length} blocked`;
+            if (blk.length) showToast(`PACKET: ${inc.length} OK / ${blk.length} BLOCKED`);
+            else showToast('PACKET READY');
+        } catch (e) {
+            setOpsPacketStatus(`Preview failed: ${e.message}`);
+            showToast(`PACKET FAILED: ${formatNetworkError(e)}`);
+        }
+    };
+
+    window.exportOpsPacketZip = async function() {
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        const s = window.__opsPacketState || {};
+        const jobId = String(s.jobId || document.getElementById('opsJobId')?.value || '').trim();
+        if (!jobId) { showToast('OPEN A JOB FIRST'); return; }
+        const docTypes = (Array.isArray(s.docTypes) && s.docTypes.length) ? s.docTypes : getOpsPacketDocTypes();
+        if (!docTypes.length) { showToast('SELECT DOCS'); return; }
+        const formats = (Array.isArray(s.formats) && s.formats.length) ? s.formats : getOpsPacketFormats();
+        try {
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/packets/export-zip`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId, docTypes, formats })
+            }, 120000);
+            if (!res.ok) {
+                const text = await res.text();
+                let msg = `Export failed (${res.status})`;
+                try {
+                    const j = JSON.parse(text);
+                    msg = j.message || j.error || msg;
+                } catch (_) {}
+                throw new Error(msg);
+            }
+            const blob = new Blob([await res.arrayBuffer()], { type: 'application/zip' });
+            const yyyyMmDd = new Date().toISOString().slice(0, 10);
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${jobId}-packet-${yyyyMmDd}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                URL.revokeObjectURL(a.href);
+                a.remove();
+            }, 500);
+            showToast('PACKET ZIP DOWNLOADING');
+        } catch (e) {
+            showToast(`PACKET EXPORT FAILED: ${formatNetworkError(e)}`);
+        }
+    };
+
+    window.copyOpsPacketSummary = async function() {
+        const packet = window.__opsPacketState?.packet || null;
+        const text = String(packet?.share_summary || '').trim();
+        if (!text) { showToast('BUILD PACKET FIRST'); return; }
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast('SUMMARY COPIED');
+        } catch (_) {
+            showToast('COPY FAILED');
+        }
+    };
+
+    window.copyOpsPacketClientMessage = async function() {
+        const packet = window.__opsPacketState?.packet || null;
+        const text = String(packet?.client_message || '').trim();
+        if (!text) { showToast('BUILD PACKET FIRST'); return; }
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast('MESSAGE COPIED');
+        } catch (_) {
+            showToast('COPY FAILED');
+        }
+    };
+
     function setQuickDealGuidance(el, text) {
         if (!el) return;
         const t = String(text || '').trim();

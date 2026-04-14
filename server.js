@@ -24,6 +24,7 @@ const mammoth = require('mammoth');
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
+const JSZip = require('jszip');
 
 // Safe Stripe Init
 let stripe = null;
@@ -2889,6 +2890,190 @@ app.get('/api/admin/ops/docs/export/:format/:jobId/:docType', verifyToken, async
         return res.send(docxBuf);
     } catch (error) {
         console.error("ops-docs-export:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+function normalizeOpsPacketDocTypes(input) {
+    const allowed = new Set(['Proposal', 'Invoice', 'Agreement', 'Paid Receipt', 'Service Summary']);
+    const list = Array.isArray(input) ? input : [];
+    return Array.from(new Set(list.map((v) => String(v || '').trim()).filter((v) => allowed.has(v))));
+}
+
+function normalizeOpsPacketFormats(input) {
+    const allowed = new Set(['pdf', 'docx']);
+    const list = Array.isArray(input) ? input : [];
+    const out = Array.from(new Set(list.map((v) => String(v || '').trim().toLowerCase()).filter((v) => allowed.has(v))));
+    return out.length ? out : ['pdf', 'docx'];
+}
+
+function buildOpsPacketSummary({ job, docsIncluded = [], docsBlocked = [], formats = [] }) {
+    const client = String(job?.clientName || job?.businessName || '').trim();
+    const project = String(job?.projectTitle || job?.serviceType || '').trim();
+    const email = String(job?.email || '').trim();
+    const pay = String(job?.paymentStatus || '').trim();
+    const total = Number.isFinite(Number(job?.totalPriceCents)) ? `$${(Number(job.totalPriceCents) / 100).toFixed(2)}` : '';
+    const dep = Number.isFinite(Number(job?.depositAmountCents)) ? `$${(Number(job.depositAmountCents) / 100).toFixed(2)}` : '';
+    const rem = Number.isFinite(Number(job?.remainingBalanceCents)) ? `$${(Number(job.remainingBalanceCents) / 100).toFixed(2)}` : '';
+
+    const includedNames = docsIncluded.map((d) => d.docType).join(', ') || '—';
+    const blockedNames = docsBlocked.map((d) => d.docType).join(', ') || '—';
+    const fmtLine = (formats || []).join(' + ') || 'pdf + docx';
+
+    const shareSummary = normalizeWhitespace([
+        `Client: ${client || '—'}`,
+        project ? `Project: ${project}` : '',
+        `Included docs: ${includedNames}`,
+        docsBlocked.length ? `Blocked docs: ${blockedNames}` : '',
+        pay ? `Payment status: ${pay}${total ? ` • Total: ${total}` : ''}${dep ? ` • Deposit: ${dep}` : ''}${rem ? ` • Remaining: ${rem}` : ''}` : '',
+        email ? `Client email: ${email}` : '',
+        `Formats: ${fmtLine}`,
+    ].filter(Boolean).join('\n'));
+
+    const clientMessage = normalizeWhitespace([
+        `Hi${client ? ` ${client}` : ''},`,
+        '',
+        project ? `Attached are your OTP documents for: ${project}.` : 'Attached are your OTP documents.',
+        `Included: ${includedNames}.`,
+        '',
+        'If you have any questions or need an adjustment before kickoff, reply here and we’ll tighten it immediately.',
+        '',
+        '— OnlyTruePerspective LLC',
+    ].join('\n'));
+
+    return {
+        schema: 'otp-ops-packet-v1',
+        jobId: String(job?.jobId || '').trim() || null,
+        generated_at: new Date().toISOString(),
+        formats: formats || ['pdf', 'docx'],
+        included: docsIncluded,
+        blocked: docsBlocked,
+        share_summary: shareSummary,
+        client_message: clientMessage,
+    };
+}
+
+// 2.10.z Ops Jobs → Packet bundling (preview summary)
+app.post('/api/admin/ops/packets/preview', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    if (!OPS_DOCS || typeof OPS_DOCS.generateOpsDocument !== 'function') {
+        return res.status(503).json({ success: false, message: 'Ops document generator offline' });
+    }
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        const docTypes = normalizeOpsPacketDocTypes(req.body?.docTypes || []);
+        const formats = normalizeOpsPacketFormats(req.body?.formats || []);
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+        if (!docTypes.length) return res.status(400).json({ success: false, message: 'Select at least one document type' });
+
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', jobId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+
+        const job = mapOpsJobRowToApi(data);
+        delete job.internalNotes;
+
+        const included = [];
+        const blocked = [];
+        for (const docType of docTypes) {
+            const out = OPS_DOCS.generateOpsDocument({ docType, job, pricing: OTP_PRICING });
+            const doc = out?.doc || null;
+            const validation = doc?.validation || {};
+            const missing = Array.isArray(validation.missing_required_fields) ? validation.missing_required_fields : [];
+            const isBlocked = !!validation.blocking;
+            if (isBlocked) {
+                blocked.push({ docType, missing_required_fields: missing, message: validation.message || 'Missing required fields' });
+            } else {
+                included.push({ docType, formats });
+            }
+        }
+
+        const packet = buildOpsPacketSummary({ job, docsIncluded: included, docsBlocked: blocked, formats });
+        res.json({ success: true, packet });
+    } catch (error) {
+        console.error("ops-packets-preview:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2.10.z1 Ops Jobs → Packet ZIP export (regenerates from live job)
+app.post('/api/admin/ops/packets/export-zip', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    if (!OPS_DOCS || typeof OPS_DOCS.generateOpsDocument !== 'function') {
+        return res.status(503).json({ success: false, message: 'Ops document generator offline' });
+    }
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        const docTypes = normalizeOpsPacketDocTypes(req.body?.docTypes || []);
+        const formats = normalizeOpsPacketFormats(req.body?.formats || []);
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+        if (!docTypes.length) return res.status(400).json({ success: false, message: 'Select at least one document type' });
+
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', jobId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+
+        const job = mapOpsJobRowToApi(data);
+        delete job.internalNotes;
+
+        const yyyyMmDd = new Date().toISOString().slice(0, 10);
+        const zip = new JSZip();
+
+        const included = [];
+        const blocked = [];
+
+        for (const docType of docTypes) {
+            const out = OPS_DOCS.generateOpsDocument({ docType, job, pricing: OTP_PRICING });
+            const doc = out?.doc || null;
+            const validation = doc?.validation || {};
+            const missing = Array.isArray(validation.missing_required_fields) ? validation.missing_required_fields : [];
+            if (!doc || validation.blocking) {
+                blocked.push({ docType, missing_required_fields: missing, message: validation.message || 'Missing required fields' });
+                continue;
+            }
+
+            const md = String(doc.rendered_markdown || '').trim();
+            const plain = opsDocMarkdownToPlainText(md);
+            const subtitleParts = [
+                doc?.display?.client_label ? `Client: ${doc.display.client_label}` : '',
+                doc?.display?.project_label ? `Project: ${doc.display.project_label}` : '',
+                job?.email ? `Email: ${job.email}` : ''
+            ].filter(Boolean);
+            const subtitle = subtitleParts.join(' • ');
+
+            const slug = safeFilenamePart(docTypeToSlug(docType));
+            const baseName = `${safeFilenamePart(jobId)}-${slug}-${yyyyMmDd}`;
+
+            for (const fmt of formats) {
+                if (fmt === 'pdf') {
+                    const pdfBuf = await renderOpsDocPdfFromText({ title: docType, subtitle, bodyText: plain });
+                    zip.file(`${baseName}.pdf`, Buffer.from(pdfBuf));
+                }
+                if (fmt === 'docx') {
+                    const docxBuf = renderOpsDocDocxFromText({ title: `OnlyTruePerspective LLC — ${docType}`, bodyText: plain });
+                    zip.file(`${baseName}.docx`, docxBuf);
+                }
+            }
+            included.push({ docType, formats });
+        }
+
+        const packet = buildOpsPacketSummary({ job, docsIncluded: included, docsBlocked: blocked, formats });
+        zip.file(`${safeFilenamePart(jobId)}-packet-summary-${yyyyMmDd}.txt`, packet.share_summary);
+
+        const buf = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="${safeFilenamePart(jobId)}-packet-${yyyyMmDd}.zip"`);
+        res.send(buf);
+    } catch (error) {
+        console.error("ops-packets-export-zip:", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 });

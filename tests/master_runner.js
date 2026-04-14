@@ -22,6 +22,7 @@ const tests = [
     { name: 'Ops Jobs Contract', path: 'tests/ops_jobs_contract.test.js' },
     { name: 'Ops Docs Generation', path: 'tests/ops_docs_generation.test.js' },
     { name: 'Quick Deal Mode Contract', path: 'tests/quick_deal_mode_contract.test.js' },
+    { name: 'Ops Packets Contract', path: 'tests/ops_packets_contract.test.js' },
     { name: 'Doc Packet Logic', path: 'tests/doc_packet_logic.test.js' },
     { name: 'Oracle + Terminal Contract', path: 'tests/oracle_terminal_contract.test.js' },
     { name: 'OTP Oracle Master (stack)', path: 'tests/oracle_master.test.js' },

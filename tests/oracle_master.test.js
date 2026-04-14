@@ -38,6 +38,8 @@ assert.match(server, /\/api\/admin\/knowledge\/structured\/upsert/, 'Structured 
 assert.match(server, /\/api\/admin\/knowledge\/structured\/archive/, 'Structured knowledge archive endpoint');
 assert.match(server, /\/api\/admin\/ops\/docs\/generate/, 'Ops docs generation endpoint');
 assert.match(server, /\/api\/admin\/ops\/docs\/export/, 'Ops docs export endpoint');
+assert.match(server, /\/api\/admin\/ops\/packets\/preview/, 'Ops packets preview endpoint');
+assert.match(server, /\/api\/admin\/ops\/packets\/export-zip/, 'Ops packets zip export endpoint');
 assert.match(server, /runOracleRecommendation\(/, 'Shared recommendation helper');
 assert.match(server, /\/api\/admin\/docs\/signature\/request/, 'Signature request endpoint scaffolding');
 assert.match(server, /\/api\/admin\/docs\/signature\/capture/, 'Signature capture endpoint scaffolding');
