@@ -147,7 +147,8 @@
         toast.classList.remove('show');
         void toast.offsetWidth; // Force reflow
         
-        toast.querySelector('span').textContent = msg;
+        const span = toast.querySelector('span');
+        if (span) span.textContent = msg;
         toast.classList.add('show');
         
         // Auto hide after 4s
@@ -6926,24 +6927,30 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                 
                 const os = u.agent ? (u.agent.includes("Mac OS") ? "macOS" : u.agent.includes("Windows") ? "Windows" : u.agent.includes("Linux") ? "Linux" : "iOS/Android") : "Unknown OS";
 
-                const displayId = u.id ? u.id.split('-')[1] : `usr-${index}`;
+                let displayId = `usr-${index}`;
+                if (u.id) {
+                    const idStr = String(u.id);
+                    const parts = idStr.split('-');
+                    displayId = parts.length > 1 ? parts[1] : idStr.slice(0, 12);
+                }
                 const pageStr = (u.page || 'index').replace('.html', '').replace('/', '');
                 const pageLabel = pageStr === '' ? 'HOME' : pageStr.toUpperCase();
+                const esc = (v) => window.escapeHtml(String(v ?? ''));
 
                 html += `
                     <div class="active-user-card" style="padding: 10px; border: 1px solid rgba(0, 255, 170, 0.2); border-radius: 8px; background: rgba(0, 255, 170, 0.02); display: flex; flex-direction: column; gap: 6px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-family: monospace; font-size: 0.7rem; color: #00ffaa; font-weight: bold;">[${ts}] ⚡ ${displayId.toUpperCase()}</span>
-                            <span style="font-size: 0.6rem; color: var(--admin-text); background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">${pageLabel}</span>
+                            <span style="font-family: monospace; font-size: 0.7rem; color: #00ffaa; font-weight: bold;">[${esc(ts)}] \u26A1 ${esc(displayId.toUpperCase())}</span>
+                            <span style="font-size: 0.6rem; color: var(--admin-text); background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">${esc(pageLabel)}</span>
                         </div>
                         <div style="font-size: 0.65rem; color: var(--admin-muted); display: flex; justify-content: space-between;">
-                            <span>🌐 ${browser} on ${os}</span>
-                            <span>${u.screen || 'Unknown Res'}</span>
+                            <span>\uD83C\uDF10 ${esc(browser)} on ${esc(os)}</span>
+                            <span>${esc(u.screen || 'Unknown Res')}</span>
                         </div>
                         <details style="font-size: 0.6rem; color: var(--admin-muted); margin-top: 4px; cursor: pointer;">
                             <summary style="outline: none; user-select: none;">[+] MORE DETAILS</summary>
-                            <div style="padding-top: 5px; font-family: monospace; white-space: pre-wrap; word-break: break-all; opacity: 0.7;">${u.agent || 'No Agent Data'}
-Lang: ${u.lang || 'Unknown'}</div>
+                            <div style="padding-top: 5px; font-family: monospace; white-space: pre-wrap; word-break: break-all; opacity: 0.7;">${esc(u.agent || 'No Agent Data')}
+Lang: ${esc(u.lang || 'Unknown')}</div>
                         </details>
                     </div>
                 `;
@@ -7006,6 +7013,7 @@ Lang: ${u.lang || 'Unknown'}</div>
         // --- RENDER: Universal ping renderer ---
         function addRealPing({ label, sub, views, slug, type, color }) {
             if (!pingContainer) return;
+            const esc = (v) => window.escapeHtml(String(v ?? ''));
 
             // Remove old messages if we have real events
             if (type !== 'SNAPSHOT') {
@@ -7038,12 +7046,12 @@ Lang: ${u.lang || 'Unknown'}</div>
 
             ping.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.6rem; margin-bottom:3px;">
-                    <span style="color:var(--admin-muted)">[${ts}]${typeTag}</span>
-                    ${views !== undefined ? `<span style="color:var(--admin-success); font-family:monospace; font-size:0.6rem;">${views.toLocaleString()} VIEWS</span>` : ''}
+                    <span style="color:var(--admin-muted)">[${esc(ts)}]${typeTag}</span>
+                    ${views !== undefined ? `<span style="color:var(--admin-success); font-family:monospace; font-size:0.6rem;">${esc(views.toLocaleString())} VIEWS</span>` : ''}
                 </div>
-                <div style="font-size:0.72rem; color:var(--admin-text); font-weight:${isReal ? '700' : '400'};">${label}</div>
-                ${sub ? `<div style="font-size:0.6rem; color:var(--admin-muted); margin-top:2px;">${sub}</div>` : ''}
-                ${slug ? `<div style="font-size:0.55rem; color:var(--admin-muted); font-family:monospace; margin-top:1px; opacity:0.6;">/insight.html?slug=${slug}</div>` : ''}
+                <div style="font-size:0.72rem; color:var(--admin-text); font-weight:${isReal ? '700' : '400'};">${esc(label)}</div>
+                ${sub ? `<div style="font-size:0.6rem; color:var(--admin-muted); margin-top:2px;">${esc(sub)}</div>` : ''}
+                ${slug ? `<div style="font-size:0.55rem; color:var(--admin-muted); font-family:monospace; margin-top:1px; opacity:0.6;">/insight.html?slug=${esc(slug)}</div>` : ''}
             `;
 
             pingContainer.prepend(ping);

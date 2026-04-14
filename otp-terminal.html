@@ -147,15 +147,6 @@
             <span class="desktop-only">ENCRYPTION: AES-256</span>
         </div>
     </div>
-    
-    <!-- AUTH CHECK: Redirect if no token -->
-    <script>
-        const localHosts = new Set(['localhost', '127.0.0.1', '::1']);
-        const isLocalHost = localHosts.has(window.location.hostname);
-        if(!localStorage.getItem('otp_admin_token') && !isLocalHost) {
-            window.location.href = 'portal-gate.html';
-        }
-    </script>
 
     <!-- MEDIA LIBRARY MODAL -->
     <!-- ... (rest of modal code) -->
@@ -1587,7 +1578,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.10"></script>
+    <script src="admin-core.js?v=16.7.11"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)
