@@ -1623,8 +1623,17 @@ function initSite() {
             const formData = new FormData(contactForm);
             const data = Object.fromEntries(formData.entries());
 
-            const apiBase = window.OTP.getApiBase();
             const statusDiv = document.getElementById('formStatus');
+            if (!window.OTP || typeof window.OTP.getApiBase !== 'function') {
+                if (statusDiv) statusDiv.textContent = 'Configuration error: reload the page and try again.';
+                if (btn) {
+                    btn.innerText = 'ERROR - TRY AGAIN';
+                    btn.disabled = false;
+                    setTimeout(() => { btn.innerText = originalText; }, 3000);
+                }
+                return;
+            }
+            const apiBase = window.OTP.getApiBase();
             if (statusDiv) statusDiv.textContent = '';
 
             try {
@@ -1654,9 +1663,12 @@ function initSite() {
                         successDiv.style.display = 'block';
                         // Animate if GSAP available
                         if (typeof gsap !== 'undefined') {
-                            gsap.to(successDiv.querySelector('.success-icon'), { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" });
-                            gsap.to(successDiv.querySelector('h3'), { opacity: 1, y: 0, delay: 0.2, duration: 0.5 });
-                            gsap.to(successDiv.querySelector('p'), { opacity: 1, y: 0, delay: 0.3, duration: 0.5 });
+                            const okIcon = successDiv.querySelector('.success-icon');
+                            const okH = successDiv.querySelector('h3');
+                            const okP = successDiv.querySelector('p');
+                            if (okIcon) gsap.to(okIcon, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" });
+                            if (okH) gsap.to(okH, { opacity: 1, y: 0, delay: 0.2, duration: 0.5 });
+                            if (okP) gsap.to(okP, { opacity: 1, y: 0, delay: 0.3, duration: 0.5 });
                         } else {
                             // Fallback simple fade
                             successDiv.style.opacity = 1;
@@ -1723,7 +1735,8 @@ function initSite() {
         channel.on('broadcast', { event: 'command' }, (msg) => {
             if (msg.payload && msg.payload.type === 'status') {
                 const textEl = statusEl.querySelector('.status-text');
-                if (textEl) textEl.textContent = `SYSTEM: ${msg.payload.value.toUpperCase()}`;
+                const line = String(msg.payload.value != null ? msg.payload.value : '').toUpperCase();
+                if (textEl) textEl.textContent = line ? `SYSTEM: ${line}` : 'SYSTEM: UPDATE';
                 
                 // Visual Flash for New Update
                 if (window.gsap) {

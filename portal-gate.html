@@ -294,6 +294,10 @@
             btn.disabled = true;
 
             try {
+                if (!window.OTP || typeof window.OTP.getApiBase !== 'function') {
+                    showError("ERROR: CONFIG MISSING — RELOAD PAGE");
+                    return;
+                }
                 const baseUrl = window.OTP.getApiBase();
                 localStorage.setItem('otp_api_base', baseUrl);
 

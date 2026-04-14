@@ -83,8 +83,10 @@ window.AuditEngine = {
         const input = document.getElementById('audit-goal-input');
         const value = input ? input.value.trim() : '';
         if (!value) {
-            input.style.borderColor = '#ff4444';
-            input.placeholder = "Please enter a core goal...";
+            if (input) {
+                input.style.borderColor = '#ff4444';
+                input.placeholder = "Please enter a core goal...";
+            }
             return;
         }
         this.answers['q5_goal'] = value;
