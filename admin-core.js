@@ -419,6 +419,21 @@
         return aud === 'authenticated' || iss.includes('/auth/v1');
     };
 
+    /** Best-effort: sync global KB index timestamp so Oracle caches detect staleness after knowledge edits. */
+    async function refreshKbMetaBestEffort() {
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) return;
+        try {
+            const apiBase = resolveApiBase();
+            const metaRes = await fetch(`${apiBase}/api/admin/knowledge/meta`, {
+                headers: { 'Authorization': `Bearer ${state.token}` }
+            });
+            const metaPayload = await metaRes.json().catch(() => ({}));
+            if (metaRes.ok && metaPayload.success && metaPayload.meta && metaPayload.meta.kb_updated_at) {
+                window.__kbUpdatedAt = metaPayload.meta.kb_updated_at;
+            }
+        } catch (_) { /* best-effort */ }
+    }
+
     // 2. DIAGNOSTICS UI UPDATE
     const updateDiagnostics = (key, status, color) => {
         const labelStyle = 'color: var(--admin-muted); margin-right: 15px;';
@@ -1308,6 +1323,7 @@
         inbox.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">SYNCING SECURE COMMS...</div>';
 
         try {
+            await refreshKbMetaBestEffort();
             const filters = [];
             if (filter === 'active') {
                 filters.push({ column: 'ai_status', op: 'neq', value: 'completed' });
@@ -1384,8 +1400,8 @@
             // Store cache
             window.inboxCache = data;
 
-        } catch(e) {
-            inbox.innerHTML = `<div style="text-align: center; color: #ff4444; padding: 20px;">ERROR: ${e.message}</div>`;
+        } catch (e) {
+            inbox.innerHTML = `<div style="text-align: center; color: #ff4444; padding: 20px;">ERROR: ${window.escapeHtml ? window.escapeHtml(formatNetworkError(e)) : formatNetworkError(e)}</div>`;
         }
     };
     
@@ -1479,16 +1495,7 @@
         }
         try {
             const apiBase = resolveApiBase();
-            // Refresh global KB meta so Oracle caches can detect staleness after index changes.
-            try {
-                const metaRes = await fetch(`${apiBase}/api/admin/knowledge/meta`, {
-                    headers: { 'Authorization': `Bearer ${state.token}` }
-                });
-                const metaPayload = await metaRes.json().catch(() => ({}));
-                if (metaRes.ok && metaPayload.success && metaPayload.meta && metaPayload.meta.kb_updated_at) {
-                    window.__kbUpdatedAt = metaPayload.meta.kb_updated_at;
-                }
-            } catch (_) { /* best-effort */ }
+            await refreshKbMetaBestEffort();
             const res = await fetch(`${apiBase}/api/admin/knowledge/files`, {
                 headers: { 'Authorization': `Bearer ${state.token}` }
             });
@@ -3052,17 +3059,7 @@
         leads.innerHTML = '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">SYNCING LEAD DATA...</div>';
 
         try {
-            // Best-effort: keep KB meta fresh so cached Oracle cards can detect staleness.
-            try {
-                const apiBase = resolveApiBase();
-                const metaRes = await fetch(`${apiBase}/api/admin/knowledge/meta`, {
-                    headers: { 'Authorization': `Bearer ${state.token}` }
-                });
-                const metaPayload = await metaRes.json().catch(() => ({}));
-                if (metaRes.ok && metaPayload.success && metaPayload.meta && metaPayload.meta.kb_updated_at) {
-                    window.__kbUpdatedAt = metaPayload.meta.kb_updated_at;
-                }
-            } catch (_) { /* best-effort */ }
+            await refreshKbMetaBestEffort();
 
             const data = await window.secureRead('leads', { limit: 100 });
 
@@ -3113,7 +3110,7 @@
             window.leadsCache = data;
 
         } catch(e) {
-            leads.innerHTML = `<div style="text-align: center; color: #ff4444; padding: 20px;">ERROR SYNCING LEADS: ${e.message}</div>`;
+            leads.innerHTML = `<div style="text-align: center; color: #ff4444; padding: 20px;">ERROR SYNCING LEADS: ${window.escapeHtml ? window.escapeHtml(formatNetworkError(e)) : formatNetworkError(e)}</div>`;
         }
     };
 
@@ -4554,14 +4551,16 @@
             window.replyOracleCache[cacheKey] = {
                 recommendation,
                 confidence: payload.confidence,
-                updated_at: new Date().toISOString()
+                updated_at: payload.updated_at || new Date().toISOString(),
+                kb_updated_at: payload.kb_updated_at || null
             };
             if (sourceTable === 'leads') {
                 window.leadOracleCache = window.leadOracleCache || {};
                 window.leadOracleCache[leadId] = {
                     recommendation,
                     confidence: payload.confidence,
-                    updated_at: new Date().toISOString()
+                    updated_at: payload.updated_at || new Date().toISOString(),
+                    kb_updated_at: payload.kb_updated_at || null
                 };
             }
             if (window.__replyContext) window.__replyContext.recommendation = recommendation;

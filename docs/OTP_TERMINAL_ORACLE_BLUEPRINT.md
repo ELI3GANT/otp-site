@@ -28,7 +28,7 @@ Rough order as shown in `otp-terminal.html`. “Oracle?” indicates **direct** 
 |---------|----------------|------------------|---------|-------------------------|
 | **00 Site Command Pro** | Live toggles, theme, maintenance | `secureRead`/`secureWrite` via admin proxy, site config keys | Indirect (site-wide) | N/A for Oracle |
 | **01 Visual analytics** | Charts, stats | Analytics endpoints / secure reads | No | N/A |
-| **05 Secure Inbox** | Threads, reply modal | `contacts` via `secureRead`/`secureWrite`; reply gen `/api/ai/chat` | **Yes** — `runOracleForReplyContext`, `generateReplyForLead` uses `ensureOracleRecommendationFresh` + citations | Reply cache keyed by `contacts:<id>`; refresh KB meta via knowledge/leads loaders |
+| **05 Secure Inbox** | Threads, reply modal | `contacts` via `secureRead`/`secureWrite`; reply gen `/api/ai/chat` | **Yes** — `runOracleForReplyContext`, `generateReplyForLead` uses `ensureOracleRecommendationFresh` + citations | Reply cache keyed by `contacts:<id>`; **inbox load** also refreshes KB meta so staleness detection works without opening Leads |
 | **06 Perspective Audit Leads** | Lead list, brain cards | `leads` + `loadLeadBrainCache` → `/api/admin/knowledge/recommendations`; `runLeadBrain` → `/recommend` | **Yes** | Cards can show saved rec until re-run; opening settings/knowledge refresh helps meta; **RE-RUN** forces new recommend |
 | **06.5 Knowledge Index** | PDF/DOCX upload, archive | `/api/admin/knowledge/*`, `/api/admin/knowledge/meta` | **Feeds Oracle** | Upload/structured change bumps **global KB meta**; invalidates client Oracle freshness |
 | **06.5 Structured knowledge** | Priority rules, doc rules | `/api/admin/knowledge/structured/*` | **Feeds Oracle** | Same as above |
