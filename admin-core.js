@@ -254,6 +254,19 @@
     /** Stable cache key for OTP Oracle results in the reply modal (contacts + leads). */
     const replyOracleKey = (sourceTable, id) => `${sourceTable === 'leads' ? 'leads' : 'contacts'}:${String(id || '').trim()}`;
 
+    function parseIsoMs(v) {
+        const t = String(v || '').trim();
+        if (!t) return null;
+        const ms = Date.parse(t);
+        return Number.isFinite(ms) ? ms : null;
+    }
+    function isOracleCacheFresh(entry, maxAgeMs = 10 * 60 * 1000) {
+        if (!entry || typeof entry !== 'object') return false;
+        const ms = parseIsoMs(entry.updated_at) ?? parseIsoMs(entry.fetched_at) ?? null;
+        if (!ms) return false;
+        return (Date.now() - ms) <= maxAgeMs;
+    }
+
     /** ORACLE_CONTEXT_DATA: human-readable analysis (no monospace “code wall”); strips model markdown fences. */
     const formatOracleContextBlockHtml = (raw) => {
         if (raw == null || raw === '') return '';
@@ -2018,27 +2031,63 @@
         const status = document.getElementById('opsJobSaveStatus');
         if (!state.token) { showToast('LOGIN REQUIRED'); return; }
         const jobId = String(document.getElementById('opsJobId')?.value || '').trim();
+        const clientName = String(document.getElementById('opsClientName')?.value || '').trim();
+        const email = String(document.getElementById('opsEmail')?.value || '').trim();
+        const serviceType = String(document.getElementById('opsServiceType')?.value || '').trim();
+        const packageType = String(document.getElementById('opsPackageType')?.value || '').trim();
+        const projectTitle = String(document.getElementById('opsProjectTitle')?.value || '').trim();
+        const startDate = String(document.getElementById('opsStartDate')?.value || '').trim();
+        const dueDate = String(document.getElementById('opsDueDate')?.value || '').trim();
+        const allowDateOverride = !!document.getElementById('opsAllowDateOverride')?.checked;
+        const totalPrice = String(document.getElementById('opsTotalPrice')?.value || '').trim();
+        const depositAmount = String(document.getElementById('opsDepositAmount')?.value || '').trim();
+        const paymentMethod = String(document.getElementById('opsPaymentMethod')?.value || '').trim();
+        const paymentStatus = String(document.getElementById('opsPaymentStatus')?.value || '').trim();
+        const jobStatus = String(document.getElementById('opsJobStatus')?.value || '').trim();
+
+        // Client-side guardrails (server remains source of truth).
+        if (!clientName) { showToast('CLIENT NAME REQUIRED'); return; }
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('EMAIL INVALID'); return; }
+        if (!serviceType) { showToast('SERVICE TYPE REQUIRED'); return; }
+        if (!packageType) { showToast('PACKAGE TYPE REQUIRED'); return; }
+        if (!projectTitle) { showToast('PROJECT TITLE REQUIRED'); return; }
+        const totalCents = parseMoneyToCents(totalPrice);
+        if (totalCents == null) { showToast('TOTAL PRICE REQUIRED'); return; }
+        const depCents = parseMoneyToCents(depositAmount) ?? 0;
+        if (depCents > totalCents) { showToast('DEPOSIT > TOTAL'); return; }
+        if (!paymentStatus) { showToast('PAYMENT STATUS REQUIRED'); return; }
+        if ((paymentStatus === 'Deposit Paid' || paymentStatus === 'Paid in Full') && !paymentMethod) { showToast('PAYMENT METHOD REQUIRED'); return; }
+        if (!jobStatus) { showToast('JOB STATUS REQUIRED'); return; }
+        if (startDate && dueDate && !allowDateOverride) {
+            const s = new Date(startDate);
+            const d = new Date(dueDate);
+            if (Number.isFinite(s.getTime()) && Number.isFinite(d.getTime()) && d.getTime() < s.getTime()) {
+                showToast('DUE DATE < START DATE (ENABLE OVERRIDE)');
+                return;
+            }
+        }
+
         const job = {
             jobId,
             sourceType: 'manualIntake',
-            clientName: String(document.getElementById('opsClientName')?.value || '').trim(),
+            clientName,
             businessName: String(document.getElementById('opsBusinessName')?.value || '').trim(),
             phone: String(document.getElementById('opsPhone')?.value || '').trim(),
-            email: String(document.getElementById('opsEmail')?.value || '').trim(),
-            serviceType: String(document.getElementById('opsServiceType')?.value || '').trim(),
-            packageType: String(document.getElementById('opsPackageType')?.value || '').trim(),
-            projectTitle: String(document.getElementById('opsProjectTitle')?.value || '').trim(),
+            email,
+            serviceType,
+            packageType,
+            projectTitle,
             projectDescription: String(document.getElementById('opsProjectDescription')?.value || '').trim(),
             deliverables: String(document.getElementById('opsDeliverables')?.value || '').trim(),
             addOns: String(document.getElementById('opsAddOns')?.value || '').trim(),
-            startDate: String(document.getElementById('opsStartDate')?.value || '').trim(),
-            dueDate: String(document.getElementById('opsDueDate')?.value || '').trim(),
-            allowDateOverride: !!document.getElementById('opsAllowDateOverride')?.checked,
-            totalPrice: String(document.getElementById('opsTotalPrice')?.value || '').trim(),
-            depositAmount: String(document.getElementById('opsDepositAmount')?.value || '').trim(),
-            paymentMethod: String(document.getElementById('opsPaymentMethod')?.value || '').trim(),
-            paymentStatus: String(document.getElementById('opsPaymentStatus')?.value || '').trim(),
-            jobStatus: String(document.getElementById('opsJobStatus')?.value || '').trim(),
+            startDate,
+            dueDate,
+            allowDateOverride,
+            totalPrice,
+            depositAmount,
+            paymentMethod,
+            paymentStatus,
+            jobStatus,
             clientNotes: String(document.getElementById('opsClientNotes')?.value || '').trim(),
             internalNotes: String(document.getElementById('opsInternalNotes')?.value || '').trim(),
             portfolioPermission: !!document.getElementById('opsPortfolioPermission')?.checked,
@@ -2062,8 +2111,9 @@
             if (idEl && saved.jobId) idEl.value = saved.jobId;
             await window.fetchOpsJobs();
         } catch (e) {
-            if (status) status.textContent = `Save failed: ${e.message}`;
-            showToast(`SAVE FAILED: ${e.message}`);
+            const msg = formatNetworkError(e);
+            if (status) status.textContent = `Save failed: ${msg}`;
+            showToast(`SAVE FAILED: ${msg}`);
         }
     };
 
@@ -2567,6 +2617,25 @@
         const el = document.getElementById('qdStatus');
         if (el) el.textContent = String(text || '');
     }
+    function isValidEmailLoose(v) {
+        const t = String(v || '').trim();
+        if (!t) return true; // optional
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t);
+    }
+    function updateQuickDealMetaPreview() {
+        const meta = document.getElementById('qdMeta');
+        if (!meta) return;
+        const jobId = String(window.__quickDealState?.jobId || '').trim();
+        const ps = String(document.getElementById('qdPaymentStatus')?.value || '').trim();
+        const ds = String(document.getElementById('qdDealStatus')?.value || '').trim();
+        const derived = (ps && ds) ? computeQuickDealJobStatus(ds, ps) : '';
+        const bits = [];
+        if (jobId) bits.push(`Saved ${jobId}`);
+        if (derived) bits.push(`Job Status: ${derived}`);
+        if (ps) bits.push(`Payment: ${ps}`);
+        if (ds) bits.push(`Deal: ${ds}`);
+        meta.textContent = bits.length ? bits.join(' • ') : 'Create a deal in under a minute.';
+    }
     window.recalcQuickDealBalance = function() {
         const totalCents = parseMoneyToCents(document.getElementById('qdTotalPrice')?.value);
         const depCents = parseMoneyToCents(document.getElementById('qdDepositAmount')?.value) ?? 0;
@@ -2591,8 +2660,9 @@
         set('qdTotalPrice', '');
         set('qdDepositAmount', '');
         set('qdPaymentMethod', '');
-        set('qdPaymentStatus', '');
-        set('qdDealStatus', '');
+        // sensible defaults to prevent save failures
+        set('qdPaymentStatus', 'Unpaid');
+        set('qdDealStatus', 'Starting Now');
         set('qdNotes', '');
         Array.from(document.querySelectorAll('.qdDocNeed')).forEach((el) => { el.checked = (String(el.value) === 'Invoice'); });
         window.__quickDealState = { jobId: null };
@@ -2601,6 +2671,7 @@
         setQuickDealStatus('');
         const meta = document.getElementById('qdMeta');
         if (meta) meta.textContent = 'Create a deal in under a minute.';
+        updateQuickDealMetaPreview();
     };
     window.saveQuickDeal = async function() {
         if (!state.token) { showToast('LOGIN REQUIRED'); return; }
@@ -2619,12 +2690,21 @@
 
         // Fast client-side checks (server still enforces truth).
         if (!clientName) { showToast('CLIENT NAME REQUIRED'); return; }
+        if (!isValidEmailLoose(email)) { showToast('EMAIL INVALID'); return; }
         if (!serviceType) { showToast('SERVICE TYPE REQUIRED'); return; }
         if (!packageType) { showToast('PACKAGE TYPE REQUIRED'); return; }
         if (!summary) { showToast('SUMMARY REQUIRED'); return; }
         if (!totalPrice) { showToast('PRICE REQUIRED'); return; }
         if (!paymentStatus) { showToast('PAYMENT STATUS REQUIRED'); return; }
         if (!dealStatus) { showToast('DEAL STATUS REQUIRED'); return; }
+        const totalCents = parseMoneyToCents(totalPrice);
+        if (totalCents == null) { showToast('PRICE INVALID'); return; }
+        const depCents = parseMoneyToCents(depositAmount) ?? 0;
+        if (depCents > totalCents) { showToast('DEPOSIT > TOTAL'); return; }
+        if ((paymentStatus === 'Deposit Paid' || paymentStatus === 'Paid in Full') && !paymentMethod) {
+            showToast('PAYMENT METHOD REQUIRED');
+            return;
+        }
 
         const requestedDocs = getQuickDealRequestedDocs();
         const jobStatus = computeQuickDealJobStatus(dealStatus, paymentStatus);
@@ -2679,9 +2759,11 @@
             showToast('QUICK DEAL SAVED');
             // Keep job sheet list in sync.
             if (typeof window.fetchOpsJobs === 'function') await window.fetchOpsJobs();
+            updateQuickDealMetaPreview();
         } catch (e) {
-            setQuickDealStatus(`Save failed: ${e.message}`);
-            showToast(`SAVE FAILED: ${e.message}`);
+            const msg = formatNetworkError(e);
+            setQuickDealStatus(`Save failed: ${msg}`);
+            showToast(`SAVE FAILED: ${msg}`);
         }
     };
 
@@ -2726,6 +2808,10 @@
     (function attachQuickDealListeners() {
         const pkg = document.getElementById('qdPackageType');
         const svc = document.getElementById('qdServiceType');
+        const pay = document.getElementById('qdPaymentStatus');
+        const deal = document.getElementById('qdDealStatus');
+        const total = document.getElementById('qdTotalPrice');
+        const dep = document.getElementById('qdDepositAmount');
         if (pkg) {
             pkg.addEventListener('change', refreshQuickDealGuidance);
             pkg.addEventListener('input', refreshQuickDealGuidance);
@@ -2734,6 +2820,20 @@
             svc.addEventListener('change', refreshQuickDealGuidance);
             svc.addEventListener('input', refreshQuickDealGuidance);
             svc.addEventListener('blur', refreshQuickDealGuidance);
+        }
+        if (pay) {
+            pay.addEventListener('change', updateQuickDealMetaPreview);
+            pay.addEventListener('input', updateQuickDealMetaPreview);
+        }
+        if (deal) {
+            deal.addEventListener('change', updateQuickDealMetaPreview);
+            deal.addEventListener('input', updateQuickDealMetaPreview);
+        }
+        if (total) {
+            total.addEventListener('input', updateQuickDealMetaPreview);
+        }
+        if (dep) {
+            dep.addEventListener('input', updateQuickDealMetaPreview);
         }
     })();
 
@@ -2819,6 +2919,20 @@
         window.replyOracleCache[replyOracleKey(st, leadId)] = entry;
         return payload.recommendation;
     };
+
+    async function ensureOracleRecommendationFresh({ leadId, sourceTable, maxAgeMs = 10 * 60 * 1000 } = {}) {
+        const st = sourceTable === 'contacts' ? 'contacts' : 'leads';
+        const id = String(leadId || '').trim();
+        if (!id) return null;
+        const key = replyOracleKey(st, id);
+        const cached = window.replyOracleCache?.[key] || (st === 'leads' ? window.leadOracleCache?.[id] : null) || null;
+        if (cached && cached.recommendation && isOracleCacheFresh(cached, maxAgeMs)) return cached.recommendation;
+        try {
+            return await window.requestLeadBrain(id, st);
+        } catch (_) {
+            return cached?.recommendation || null;
+        }
+    }
 
     window.loadLeadBrainCache = async function(leadIds) {
         if (!Array.isArray(leadIds) || !leadIds.length) return;
@@ -4064,8 +4178,33 @@
     // --- SETTINGS (ADMIN) ---
     const SETTINGS_KEYS = {
         aiProvider: 'otp_admin_default_ai_provider',
-        archetype: 'otp_admin_default_archetype'
+        archetype: 'otp_admin_default_archetype',
+        geminiModel: 'otp_admin_default_gemini_model'
     };
+
+    function formatSessionInfoForSettings() {
+        try {
+            const token = String(state.token || localStorage.getItem('otp_admin_token') || '').trim();
+            const apiBase = resolveApiBase();
+            const payload = decodeJwtPayload(token) || null;
+            const exp = payload?.exp ? Number(payload.exp) : null;
+            const expIso = Number.isFinite(exp) ? new Date(exp * 1000).toISOString() : '';
+            const role = String(payload?.role || payload?.app_metadata?.role || payload?.user_metadata?.role || '').trim();
+            const nowS = Math.floor(Date.now() / 1000);
+            const secsLeft = Number.isFinite(exp) ? (exp - nowS) : null;
+            const minsLeft = Number.isFinite(secsLeft) ? Math.floor(secsLeft / 60) : null;
+            const tokenMode = token === 'static-bypass-token' ? 'LOCAL BYPASS' : (token ? 'JWT' : 'NONE');
+            const lines = [
+                `token: ${tokenMode}`,
+                role ? `role: ${role}` : '',
+                expIso ? `expires: ${expIso}${minsLeft != null ? ` (~${minsLeft}m)` : ''}` : '',
+                `apiBase: ${apiBase}`
+            ].filter(Boolean);
+            return lines.join('\n');
+        } catch (_) {
+            return '';
+        }
+    }
 
     window.openAdminSettings = function() {
         const modal = document.getElementById('settingsModal');
@@ -4081,10 +4220,26 @@
 
         const prov = document.getElementById('settingsDefaultAiProvider');
         const arch = document.getElementById('settingsDefaultArchetype');
+        const gem = document.getElementById('settingsDefaultGeminiModel');
         if (prov) prov.value = localStorage.getItem(SETTINGS_KEYS.aiProvider) || '';
         if (arch) arch.value = localStorage.getItem(SETTINGS_KEYS.archetype) || '';
+        if (gem) gem.value = localStorage.getItem(SETTINGS_KEYS.geminiModel) || '';
         const status = document.getElementById('settingsSaveStatus');
         if (status) status.textContent = '';
+
+        const sess = document.getElementById('settingsSessionInfo');
+        if (sess) sess.textContent = formatSessionInfoForSettings();
+        const apiEl = document.getElementById('settingsApiBase');
+        const apiBase = resolveApiBase();
+        if (apiEl) {
+            apiEl.value = apiBase;
+            const canEdit = isLocalRuntime();
+            apiEl.disabled = !canEdit;
+            apiEl.style.opacity = canEdit ? '1' : '0.65';
+            apiEl.title = canEdit ? 'Edit allowed on localhost.' : 'Read-only on production.';
+        }
+        const connStatus = document.getElementById('settingsConnStatus');
+        if (connStatus) connStatus.textContent = '';
         window.refreshDocTemplateStatus?.();
     };
 
@@ -4096,10 +4251,13 @@
     window.saveAdminSettings = function() {
         const prov = document.getElementById('settingsDefaultAiProvider');
         const arch = document.getElementById('settingsDefaultArchetype');
+        const gem = document.getElementById('settingsDefaultGeminiModel');
         const p = prov ? String(prov.value || '') : '';
         const a = arch ? String(arch.value || '') : '';
+        const g = gem ? String(gem.value || '') : '';
         if (p) localStorage.setItem(SETTINGS_KEYS.aiProvider, p); else localStorage.removeItem(SETTINGS_KEYS.aiProvider);
         if (a) localStorage.setItem(SETTINGS_KEYS.archetype, a); else localStorage.removeItem(SETTINGS_KEYS.archetype);
+        if (g) localStorage.setItem(SETTINGS_KEYS.geminiModel, g); else localStorage.removeItem(SETTINGS_KEYS.geminiModel);
         const status = document.getElementById('settingsSaveStatus');
         if (status) status.textContent = 'Saved.';
 
@@ -4108,17 +4266,178 @@
         if (replyArch && a) replyArch.value = a;
         const providerSel = document.getElementById('providerSelect') || document.getElementById('aiProvider');
         if (providerSel && p) providerSel.value = p;
+        const gemModelSel = document.getElementById('geminiModel');
+        if (gemModelSel && g) gemModelSel.value = g;
     };
 
     window.resetAdminSettings = function() {
         localStorage.removeItem(SETTINGS_KEYS.aiProvider);
         localStorage.removeItem(SETTINGS_KEYS.archetype);
+        localStorage.removeItem(SETTINGS_KEYS.geminiModel);
         const prov = document.getElementById('settingsDefaultAiProvider');
         const arch = document.getElementById('settingsDefaultArchetype');
+        const gem = document.getElementById('settingsDefaultGeminiModel');
         if (prov) prov.value = '';
         if (arch) arch.value = '';
+        if (gem) gem.value = '';
         const status = document.getElementById('settingsSaveStatus');
         if (status) status.textContent = 'Reset.';
+    };
+
+    window.copyTerminalDiagnostics = async function() {
+        const status = document.getElementById('settingsSaveStatus');
+        try {
+            const info = [
+                `terminal_version: ${String(document.querySelector('#adminHeader span')?.textContent || '').trim() || 'unknown'}`,
+                `origin: ${window.location.origin}`,
+                `api_base: ${resolveApiBase()}`,
+                `local_runtime: ${isLocalRuntime()}`,
+                `token_mode: ${state.token === 'static-bypass-token' ? 'local_bypass' : (state.token ? 'jwt' : 'none')}`,
+                `user_agent: ${navigator.userAgent}`
+            ].join('\n');
+            await navigator.clipboard.writeText(info);
+            if (status) status.textContent = 'Diagnostics copied.';
+            showToast('DIAGNOSTICS COPIED');
+        } catch (e) {
+            if (status) status.textContent = `Copy failed: ${e.message}`;
+            showToast('COPY FAILED');
+        }
+    };
+
+    function collectTerminalSettingsSnapshot() {
+        const keys = [
+            SETTINGS_KEYS.aiProvider,
+            SETTINGS_KEYS.archetype,
+            SETTINGS_KEYS.geminiModel,
+            'otp_api_base',
+            'ai_provider'
+        ];
+        const snapshot = { schema: 'otp-terminal-settings-v1', at: new Date().toISOString(), values: {} };
+        for (const k of keys) {
+            const v = localStorage.getItem(k);
+            if (v != null && v !== '') snapshot.values[k] = v;
+        }
+        return snapshot;
+    }
+
+    window.exportTerminalSettings = async function() {
+        const status = document.getElementById('settingsSaveStatus');
+        try {
+            const snap = collectTerminalSettingsSnapshot();
+            const blob = new Blob([JSON.stringify(snap, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `otp-terminal-settings-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+            if (status) status.textContent = 'Export started.';
+            showToast('EXPORT STARTED');
+        } catch (e) {
+            if (status) status.textContent = `Export failed: ${e.message}`;
+            showToast('EXPORT FAILED');
+        }
+    };
+
+    window.importTerminalSettings = function() {
+        const status = document.getElementById('settingsSaveStatus');
+        let input = document.getElementById('terminalSettingsImport');
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'file';
+            input.id = 'terminalSettingsImport';
+            input.accept = 'application/json,.json';
+            input.style.display = 'none';
+            document.body.appendChild(input);
+        }
+        input.onchange = async (ev) => {
+            const f = Array.from(ev.target.files || [])[0] || null;
+            input.value = '';
+            if (!f) return;
+            try {
+                const text = await f.text();
+                const parsed = JSON.parse(text);
+                if (!parsed || parsed.schema !== 'otp-terminal-settings-v1' || typeof parsed.values !== 'object') {
+                    throw new Error('Invalid settings file.');
+                }
+                for (const [k, v] of Object.entries(parsed.values || {})) {
+                    localStorage.setItem(String(k), String(v));
+                }
+                // Refresh UI values immediately
+                window.openAdminSettings();
+                if (status) status.textContent = 'Imported.';
+                showToast('SETTINGS IMPORTED');
+            } catch (e) {
+                if (status) status.textContent = `Import failed: ${e.message}`;
+                showToast('IMPORT FAILED');
+            }
+        };
+        input.click();
+    };
+
+    window.applySettingsApiBase = function() {
+        const apiEl = document.getElementById('settingsApiBase');
+        const out = document.getElementById('settingsConnStatus');
+        if (!apiEl) return;
+        if (!isLocalRuntime()) {
+            if (out) out.textContent = 'API base override is disabled on production.';
+            showToast('API BASE LOCKED (PROD)');
+            return;
+        }
+        let val = String(apiEl.value || '').trim();
+        if (!val) {
+            if (out) out.textContent = 'Enter an API base URL first.';
+            showToast('MISSING API BASE');
+            return;
+        }
+        if (!/^https?:\/\//i.test(val)) val = `https://${val}`;
+        val = val.replace(/\/+$/, '');
+        apiEl.value = val;
+        localStorage.setItem('otp_api_base', val);
+        try { persistSystemState?.('api_base', val); } catch (_) {}
+        if (out) out.textContent = `Applied. API base is now: ${val}`;
+        showToast('API BASE UPDATED');
+    };
+
+    window.resetSettingsApiBase = function() {
+        const apiEl = document.getElementById('settingsApiBase');
+        const out = document.getElementById('settingsConnStatus');
+        if (!apiEl) return;
+        if (!isLocalRuntime()) {
+            if (out) out.textContent = 'API base reset is disabled on production.';
+            showToast('API BASE LOCKED (PROD)');
+            return;
+        }
+        localStorage.removeItem('otp_api_base');
+        const fresh = resolveApiBase();
+        localStorage.setItem('otp_api_base', fresh);
+        apiEl.value = fresh;
+        try { persistSystemState?.('api_base', fresh); } catch (_) {}
+        if (out) out.textContent = `Reset. API base is now: ${fresh}`;
+        showToast('API BASE RESET');
+    };
+
+    window.clearLocalOracleKeys = function() {
+        const out = document.getElementById('settingsConnStatus');
+        if (!confirm('Clear locally stored provider keys on this browser? (OpenAI/Gemini/Anthropic/Groq)')) return;
+        const keys = [
+            'cloud_openai',
+            'cloud_gemini',
+            'cloud_groq',
+            'cloud_claude',
+            'cloud_anthropic'
+        ];
+        for (const k of keys) localStorage.removeItem(k);
+        const cloudOA = document.getElementById('cloudOpenAI');
+        const cloudG = document.getElementById('cloudGemini');
+        const cloudC = document.getElementById('cloudClaude');
+        const cloudGr = document.getElementById('cloudGroq');
+        if (cloudOA) cloudOA.value = '';
+        if (cloudG) cloudG.value = '';
+        if (cloudC) cloudC.value = '';
+        if (cloudGr) cloudGr.value = '';
+        if (out) out.textContent = 'Local provider keys cleared for this browser.';
+        showToast('LOCAL KEYS CLEARED');
     };
 
     window.refreshDocTemplateStatus = async function() {
@@ -4275,23 +4594,13 @@
             // Pull OTP Oracle recommendation (best effort) so replies match the packet workflow
             let opsRec = null;
             let oracleConfidenceFromRec = null;
-            try {
-                if (state.token && leadId) {
-                    const recRes = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/recommend`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
-                        body: JSON.stringify({ leadId, sourceTable })
-                    }, 50000);
-                    const recPayload = await recRes.json().catch(() => ({}));
-                    if (recRes.ok && recPayload.success) {
-                        opsRec = recPayload.recommendation || null;
-                        oracleConfidenceFromRec = Number.isFinite(Number(recPayload.confidence))
-                            ? Number(recPayload.confidence)
-                            : null;
-                    }
-                }
-            } catch (e) {
-                // Non-fatal: reply generation can proceed without Oracle context
+            if (state.token && leadId) {
+                // Keep endpoint reference visible for contract tests + clarity.
+                const _oracleRecommendUrl = `${apiBase}/api/admin/knowledge/recommend`;
+                opsRec = await ensureOracleRecommendationFresh({ leadId, sourceTable, maxAgeMs: 10 * 60 * 1000 });
+                const cached = window.replyOracleCache?.[replyOracleKey(sourceTable, leadId)] || null;
+                const conf = Number(cached?.confidence);
+                oracleConfidenceFromRec = Number.isFinite(conf) ? conf : null;
             }
 
             if (window.__replyContext) window.__replyContext.recommendation = opsRec;
@@ -4314,6 +4623,17 @@
                 : '';
 
             const requiredDocs = Array.isArray(opsRec?.required_documents) ? Array.from(new Set(opsRec.required_documents)).join(', ') : '';
+            const citations = Array.isArray(opsRec?.knowledge_basis)
+                ? opsRec.knowledge_basis
+                    .map((h) => {
+                        const file = String(h?.file_name || '').trim();
+                        const idx = Number.isFinite(Number(h?.chunk_index)) ? Number(h.chunk_index) : 0;
+                        const sim = Number.isFinite(Number(h?.similarity)) ? `${Math.round(Number(h.similarity) * 100)}%` : '';
+                        return file ? `${file}#${idx}${sim ? ` (${sim})` : ''}` : '';
+                    })
+                    .filter(Boolean)
+                    .slice(0, 3)
+                : [];
             const systemPrompt = `${baseSystemPrompt}
 
 You are writing a plain-text email reply as Only True Perspective.
@@ -4325,6 +4645,7 @@ Hard rules:
 - Close with: "Best," then "Only True Perspective".
 
 If the OTP Oracle recommends a package or safety docs, align your reply with that workflow (proposal + agreement + invoice/deposit).
+If citations are provided, treat them as the source of truth for pricing/rules and keep the reply consistent with them (do not invent conflicting policy).
 `;
 
             const userPrompt = [
@@ -4336,6 +4657,7 @@ If the OTP Oracle recommends a package or safety docs, align your reply with tha
                 truncateForPrompt(msg, 1600),
                 ``,
                 opsRec ? `OTP ORACLE RECOMMENDATION\nPackage: ${opsRec.recommended_package || 'Manual review'}\nQuote: ${opsRec.quote_range || 'Scope-based'}\nRequired docs: ${requiredDocs || 'Manual doc review'}\nNext action: ${opsRec.next_action || 'manual_review_required'}` : '',
+                citations.length ? `\nCITATIONS (business knowledge)\n- ${citations.join('\n- ')}` : '',
                 analysisText ? `\nORACLE CONTEXT DATA\n${truncateForPrompt(analysisText, 900)}` : '',
                 ``,
                 `Write the reply now.`

@@ -1502,6 +1502,32 @@
                 </div>
 
                 <div class="input-section" style="margin-bottom:14px;">
+                    <div class="section-label" style="margin-top:0;">SESSION + CONNECTION</div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;align-items:start;">
+                        <div style="font-size:0.78rem;color:var(--admin-muted);line-height:1.5;">
+                            <strong style="color:var(--admin-text);">Session</strong><br/>
+                            <div id="settingsSessionInfo" style="margin-top:8px;font-family:monospace;font-size:0.72rem;color:var(--admin-text);opacity:0.92;white-space:pre-wrap;"></div>
+                            <div style="margin-top:10px;font-size:0.7rem;color:var(--admin-muted);">
+                                Settings are stored locally in your browser. Never paste tokens/keys into anything you plan to commit.
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--admin-muted);margin-bottom:6px;">API base (backend uplink)</div>
+                            <input id="settingsApiBase" type="text" placeholder="https://your-api.example.com" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;font-family:monospace;font-size:0.72rem;" />
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="applySettingsApiBase()">APPLY API BASE</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="resetSettingsApiBase()">RESET API BASE</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="clearLocalOracleKeys()">CLEAR LOCAL KEYS</button>
+                            </div>
+                            <div style="margin-top:8px;font-size:0.7rem;color:var(--admin-muted);line-height:1.5;">
+                                Tip: on localhost you can point the Terminal at a local server for debugging. On production, this is displayed read-only.
+                            </div>
+                        </div>
+                    </div>
+                    <div id="settingsConnStatus" style="margin-top:10px;font-size:0.72rem;color:var(--admin-muted);"></div>
+                </div>
+
+                <div class="input-section" style="margin-bottom:14px;">
                     <div class="section-label" style="margin-top:0;">OTP ORACLE DEFAULTS</div>
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
                         <div>
@@ -1525,9 +1551,27 @@
                             </select>
                         </div>
                     </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px;">
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--admin-muted);margin-bottom:6px;">Default Gemini model</div>
+                            <select id="settingsDefaultGeminiModel" style="width:100%;background:var(--admin-panel);color:var(--admin-text);border:1px solid var(--admin-border);padding:10px;border-radius:10px;font-family:monospace;font-size:0.72rem;">
+                                <option value="">(no override)</option>
+                                <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                                <option value="gemini-flash-latest">gemini-flash-latest</option>
+                                <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+                                <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                            </select>
+                        </div>
+                        <div>
+                            <div style="font-size:0.72rem;color:var(--admin-muted);margin-bottom:6px;">Diagnostics</div>
+                            <button type="button" class="btn-secondary" style="width:100%;font-size:0.72rem;" onclick="copyTerminalDiagnostics()">COPY DIAGNOSTICS</button>
+                        </div>
+                    </div>
                     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
                         <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="saveAdminSettings()">SAVE SETTINGS</button>
                         <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="resetAdminSettings()">RESET</button>
+                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="exportTerminalSettings()">EXPORT JSON</button>
+                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="importTerminalSettings()">IMPORT JSON</button>
                     </div>
                     <div id="settingsSaveStatus" style="margin-top:10px;font-size:0.72rem;color:var(--admin-muted);"></div>
                 </div>
@@ -1544,7 +1588,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.3"></script>
+    <script src="admin-core.js?v=16.7.4"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

@@ -833,16 +833,29 @@ function normalizeGeminiRuntimeError(message) {
     return msg || 'Gemini request failed.';
 }
 
+async function loadPdfParseLib() {
+    // Some runtimes/bundlers treat pdf-parse as ESM; support both require() and import().
+    try {
+        // eslint-disable-next-line global-require
+        return require('pdf-parse');
+    } catch (_) {
+        try {
+            const mod = await import('pdf-parse');
+            return mod && (mod.default || mod);
+        } catch (e) {
+            const msg = String(e?.message || e);
+            const err = new Error(`PDF parser failed to load on server: ${msg}`);
+            err.code = 'PDF_PARSE_LOAD_FAILED';
+            throw err;
+        }
+    }
+}
+
 async function extractTextFromKnowledgeFile(file) {
     if (!file || !file.buffer) throw new Error('Missing file buffer.');
     const ext = path.extname(file.originalname || '').toLowerCase();
     if (ext === '.pdf') {
-        let pdfParseLib = null;
-        try {
-            pdfParseLib = require('pdf-parse');
-        } catch (e) {
-            throw new Error('PDF parser failed to load on server. Use DOCX or contact admin.');
-        }
+        const pdfParseLib = await loadPdfParseLib();
 
         const pdfParseCallable = typeof pdfParseLib === 'function'
             ? pdfParseLib
@@ -1153,7 +1166,7 @@ function computeRequiredDocuments(leadText) {
     };
 }
 
-function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence, topMatches, completeness }) {
+function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence, topMatches, completeness, structuredInsights = null }) {
     const confidenceLabel = confidence > 0.55 ? 'high' : confidence > 0.35 ? 'medium' : 'low';
     const text = String(leadText || '').toLowerCase();
     const serviceType = classifyServiceType(text, packageResult);
@@ -1188,16 +1201,31 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
     const isCustom = String(packageResult?.recommended_package || '').trim().toLowerCase() === 'custom';
     const pricingGuidance = isCustom ? '' : totalGuidance;
 
+    const structuredNotes = [];
+    if (structuredInsights && typeof structuredInsights === 'object') {
+        const pricing = String(structuredInsights.pricing_guidance || '').trim();
+        const rules = String(structuredInsights.doc_rules || '').trim();
+        const playbook = String(structuredInsights.playbook || '').trim();
+        if (pricing) structuredNotes.push(`Structured pricing guidance: ${pricing}`);
+        if (rules) structuredNotes.push(`Structured doc rules: ${rules}`);
+        if (playbook) structuredNotes.push(`Structured playbook: ${playbook}`);
+    }
+
     return {
         lead_summary: leadText.slice(0, 700),
         service_type: serviceType,
         recommended_package: packageResult.recommended_package,
         quote_range: packageResult.quote_range,
-        pricing_guidance: pricingGuidance,
+        pricing_guidance: structuredInsights && String(structuredInsights.pricing_guidance || '').trim()
+            ? String(structuredInsights.pricing_guidance || '').trim()
+            : pricingGuidance,
         package_confidence: packageConfidence,
         package_reason: packageResult.package_reason || 'Recommendation generated from lead scope and pricing signals.',
         required_documents: safeDocs,
-        documents_reason: requiredDocs?.documents_reason || 'Document set generated from onboarding and risk controls.',
+        documents_reason: [
+            (requiredDocs?.documents_reason || 'Document set generated from onboarding and risk controls.'),
+            (structuredInsights && String(structuredInsights.doc_rules || '').trim()) ? String(structuredInsights.doc_rules || '').trim() : ''
+        ].filter(Boolean).join(' '),
         next_action: nextAction,
         status_flags: uniqueStatusFlags,
         knowledge_basis: knowledgeBasis,
@@ -1208,7 +1236,8 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
             (missingScopeSignals || hasMissingFields)
                 ? `Missing lead fields: ${(completeness?.missing_fields || []).join(', ') || 'scope details'}`
                 : 'Lead scope appears sufficiently specified.',
-            `Knowledge matches: ${(Array.isArray(topMatches) ? topMatches : []).map(m => `${m.file_name}#${m.chunk_index}`).join(', ') || 'none'}`
+            `Knowledge matches: ${(Array.isArray(topMatches) ? topMatches : []).map(m => `${m.file_name}#${m.chunk_index}`).join(', ') || 'none'}`,
+            ...structuredNotes
         ],
         draft_client_reply: `Thanks for reaching out to OnlyTruePerspective LLC. Based on your project details, the strongest next step is ${packageResult.recommended_package} (${packageResult.quote_range}). Before kickoff, we run a secure onboarding flow: proposal review, signed agreement, and invoice with a 50% deposit. Once approved, we can lock timeline and production start.`,
     };
@@ -1355,6 +1384,25 @@ async function runOracleRecommendation({ lead, leadId, sourceTable }) {
     const structured = await fetchStructuredKnowledgeEntries({ includeInactive: false, limit: 500 }).catch(() => []);
     const structuredScored = structured.length ? scoreStructuredKnowledge(leadText, structured, serviceType).slice(0, 4) : [];
 
+    // Pull top structured entry details so doc rules / pricing guidance actually affect output.
+    const topStructured = structuredScored
+        .map((m) => {
+            const key = String(m.file_name || '');
+            if (!key.startsWith('structured:')) return null;
+            const entryId = key.replace(/^structured:/, '').split(':')[0] || '';
+            const entry = structured.find((e) => e && String(e.entry_id) === String(entryId)) || null;
+            return entry ? { entry, similarity: Number(m.similarity || 0) } : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => (b.similarity - a.similarity));
+    const structuredInsights = topStructured.length ? {
+        entry_id: topStructured[0].entry.entry_id,
+        title: topStructured[0].entry.title,
+        pricing_guidance: topStructured[0].entry.pricing_guidance || '',
+        doc_rules: topStructured[0].entry.doc_rules || '',
+        playbook: topStructured[0].entry.playbook || ''
+    } : null;
+
     const chunkPayloads = await fetchKnowledgeChunkPayloads({ limit: 3000 });
     const chunkScored = chunkPayloads.length ? scoreKnowledgeChunks(leadText, chunkPayloads) : [];
 
@@ -1376,7 +1424,8 @@ async function runOracleRecommendation({ lead, leadId, sourceTable }) {
         requiredDocs,
         confidence,
         topMatches,
-        completeness
+        completeness,
+        structuredInsights
     });
 
     return {
