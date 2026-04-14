@@ -25,4 +25,5 @@ tmp/
 
 # QA artifacts (never commit)
 prod-terminal-sweep.json
+prod-qa-*.json
 qa-screens/
