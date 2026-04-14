@@ -2756,7 +2756,7 @@ html {
   background: rgba(255,255,255,0.15);
   box-shadow: 0 0 20px rgba(var(--accent2-rgb), 0.3); /* Cyan glow active */
   border-color: rgba(var(--accent2-rgb), 0.5);
-  transform: rotate(90deg); /* Full button rotation for flair */
+  transform: none; /* Keep motion subtle; avoid Safari blur/transform artifacts */
 }
 
 .nav-toggle[aria-expanded="true"] span:nth-child(1) {
@@ -2833,6 +2833,19 @@ body.nav-open .nav-scrim {
 
 /* Mobile menu: keep drawer crisp (no blur) + high-contrast */
 @media (max-width: 768px) {
+  /* iOS/Safari reliability: avoid blur filters on interactive nav controls */
+  .nav-toggle {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.14);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+  }
+  html[data-theme="light"] .nav-toggle {
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.10);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.10);
+  }
   .nav-drawer {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;

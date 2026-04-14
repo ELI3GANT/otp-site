@@ -1671,17 +1671,26 @@ function initSite() {
     }
 
     // 10. BOOTSTRAP REALTIME & DYNAMIC CONTENT
-    if (window.OTP && window.OTP.initRealtimeState) {
-        window.OTP.initRealtimeState().catch(e => console.error("Realtime Init Error:", e));
+    // Public homepage should not hard-depend on Supabase dynamic fetches.
+    // Gate realtime + dynamic content loading to admin/edit contexts (or explicit opt-in),
+    // so public users don't see noisy console/network errors when requests are blocked/aborted.
+    const params = new URLSearchParams(window.location.search);
+    const isEditMode = params.get('mode') === 'edit';
+    const adminToken = localStorage.getItem('otp_admin_token');
+    const allowPublicDynamic = !!(window.OTP_CONFIG && window.OTP_CONFIG.allowPublicDynamicContent);
+    const allowDynamic = allowPublicDynamic || (isEditMode && adminToken);
+
+    if (allowDynamic && window.OTP && window.OTP.initRealtimeState) {
+        window.OTP.initRealtimeState().catch(() => {});
     }
-    if (window.OTP && window.OTP.initLiveEditor) {
+    if (allowDynamic && window.OTP && window.OTP.initLiveEditor) {
         window.OTP.initLiveEditor();
     }
     
     // 11. INIT SITE STATUS (PROACTIVE ALERTS)
     (async function initSiteStatus() {
         const statusEl = document.getElementById('siteStatus');
-        if (!statusEl || typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
+        if (!statusEl || !allowDynamic || typeof window.supabase === 'undefined' || !window.OTP_CONFIG) return;
         
         const client = window.OTP.getSupabase();
         if (!client) return;
@@ -1975,6 +1984,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function initializeCommandUplink() {
         if (!window.OTP_CONFIG) return;
+        // Public homepage should not open realtime uplinks or hit Supabase unless explicitly enabled.
+        const params = new URLSearchParams(window.location.search);
+        const isEditMode = params.get('mode') === 'edit';
+        const adminToken = localStorage.getItem('otp_admin_token');
+        const allowPublicDynamic = !!window.OTP_CONFIG.allowPublicDynamicContent;
+        const allowDynamic = allowPublicDynamic || (isEditMode && adminToken);
+        if (!allowDynamic) return;
         
         const SUPABASE_URL = window.OTP_CONFIG.supabaseUrl;
         const SUPABASE_KEY = window.OTP_CONFIG.supabaseKey;
@@ -1994,7 +2010,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const config = JSON.parse(data.content);
                     applyGlobalCommand(config);
                 }
-            } catch(e) { console.warn("Initial State Fetch Silent Fail (Network Mode)"); }
+            } catch(e) {}
 
             // 2. Subscribe to Live Commands (Unified Channel)
             window.OTP_STATE.channel = window.OTP_STATE.client.channel('otp-uplink')
