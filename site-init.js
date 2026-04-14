@@ -1280,10 +1280,35 @@ function initSite() {
         const btn = document.querySelector('.nav-toggle');
         const scrim = document.getElementById('navDrawerScrim');
         if (!drawer || !btn) return;
+        let lockedScrollY = 0;
 
         const setExpanded = (expanded) => {
             btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
             btn.setAttribute('aria-label', expanded ? 'Close primary navigation menu' : 'Open primary navigation menu');
+        };
+
+        const lockScroll = () => {
+            lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+            // iOS Safari: overflow:hidden alone can still allow background scroll / break fixed overlays.
+            // Pin the body to freeze the background while allowing the drawer to scroll.
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${lockedScrollY}px`;
+            document.body.style.left = '0';
+            document.body.style.right = '0';
+            document.body.style.width = '100%';
+        };
+
+        const unlockScroll = () => {
+            // Restore body scroll state
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.left = '';
+            document.body.style.right = '';
+            document.body.style.width = '';
+            if (lockedScrollY) {
+                window.scrollTo(0, lockedScrollY);
+            }
+            lockedScrollY = 0;
         };
 
         const close = () => {
@@ -1291,6 +1316,7 @@ function initSite() {
             document.body.classList.remove('nav-open');
             document.documentElement.classList.remove('nav-open');
             setExpanded(false);
+            unlockScroll();
         };
 
         const open = () => {
@@ -1298,6 +1324,7 @@ function initSite() {
             document.body.classList.add('nav-open');
             document.documentElement.classList.add('nav-open');
             setExpanded(true);
+            lockScroll();
         };
 
         const toggle = () => {
@@ -1321,17 +1348,23 @@ function initSite() {
         };
 
         // Bind directly to the button (more reliable than body delegation on mobile browsers).
+        // Prefer Pointer Events (iOS Safari 13+), fall back to click.
+        btn.addEventListener('pointerup', (e) => {
+            // Only treat touch/pen as a "tap" toggle to avoid desktop mouseup double-firing with click.
+            if (e && (e.pointerType === 'touch' || e.pointerType === 'pen')) onToggleIntent(e);
+        }, { passive: false });
         btn.addEventListener('click', onToggleIntent, { passive: false });
-        btn.addEventListener('touchend', onToggleIntent, { passive: false });
 
         // Scrim close.
         if (scrim && !scrim.dataset.bound) {
             scrim.dataset.bound = '1';
-            scrim.addEventListener('click', (e) => {
-                e.preventDefault?.();
-                close();
+            scrim.addEventListener('pointerup', (e) => {
+                if (e && (e.pointerType === 'touch' || e.pointerType === 'pen')) {
+                    e.preventDefault?.();
+                    close();
+                }
             }, { passive: false });
-            scrim.addEventListener('touchend', (e) => {
+            scrim.addEventListener('click', (e) => {
                 e.preventDefault?.();
                 close();
             }, { passive: false });

@@ -2565,7 +2565,9 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
+    position: fixed; /* ensure above scrim regardless of stacking context */
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    right: max(20px, env(safe-area-inset-right, 0px));
     width: 44px;
     height: 44px;
     right: auto;
@@ -2723,6 +2725,7 @@ html {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   cursor: pointer;
+  touch-action: manipulation; /* iOS/Android: make taps deterministic */
   padding: 0;
   flex-direction: column;
   align-items: center;
