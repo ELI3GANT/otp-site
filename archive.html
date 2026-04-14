@@ -252,15 +252,18 @@
        const projects = document.querySelectorAll('.project-card');
 
        if (filterIcon && filterWrap) {
-           filterIcon.style.cursor = 'pointer';
-           filterIcon.parentElement.addEventListener('click', () => {
-               const isVisible = filterWrap.classList.contains('active');
-               if (isVisible) {
-                   filterWrap.classList.remove('active');
-               } else {
-                   filterWrap.classList.add('active');
-               }
-           });
+           const filterToggleHost = filterIcon.parentElement;
+           if (filterToggleHost) {
+               filterIcon.style.cursor = 'pointer';
+               filterToggleHost.addEventListener('click', () => {
+                   const isVisible = filterWrap.classList.contains('active');
+                   if (isVisible) {
+                       filterWrap.classList.remove('active');
+                   } else {
+                       filterWrap.classList.add('active');
+                   }
+               });
+           }
        }
 
        filterBtns.forEach(btn => {
@@ -329,12 +332,15 @@
         const displacement = document.querySelector('#liquid-distortion feDisplacementMap');
         const cards = document.querySelectorAll('.project-card');
 
+        if (typeof gsap === 'undefined' || !turbulence || !displacement) return;
+
         // Apply filter to images via CSS
         // Optimized: Only run on hover-capable devices to save mobile battery/perf
         if (window.matchMedia('(hover: hover)').matches) {
             cards.forEach(card => {
             const img = card.querySelector('img');
-            
+            if (!img) return;
+
             card.addEventListener('mouseenter', () => {
                 // Activate Filter
                 img.style.filter = 'url(#liquid-distortion)';

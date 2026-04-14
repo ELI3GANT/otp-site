@@ -387,25 +387,29 @@
         const sessionId = params.get('session_id');
 
         function submitAssets() {
-            const link = document.getElementById('projectLink').value;
-            const btn = document.querySelector('.btn');
-            
-            if(!link) {
+            const projectLinkEl = document.getElementById('projectLink');
+            const uploadAreaEl = document.getElementById('uploadArea');
+            const finalMsgEl = document.getElementById('finalMsg');
+            const stepsEl = document.querySelector('.steps');
+            const btn = uploadAreaEl ? uploadAreaEl.querySelector('.btn') : document.querySelector('.btn');
+            const link = (projectLinkEl && projectLinkEl.value) ? projectLinkEl.value.trim() : '';
+
+            if (!link) {
                 alert("Please provide an asset link to continue.");
                 return;
             }
 
-            btn.innerText = "OPENING MAIL CLIENT...";
-            
+            if (btn) btn.innerText = "OPENING MAIL CLIENT...";
+
             const subject = `OTP PRIORITY ASSETS: ${sessionId || 'New Order'}`;
             const body = `ASSET LINK: ${link}\n\n(Session ID: ${sessionId || 'N/A'})\n\nInitiating project verification...`;
-            
+
             window.location.href = `mailto:bookings@onlytrueperspective.tech?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
             setTimeout(() => {
-                document.getElementById('uploadArea').style.display = 'none';
-                document.querySelector('.steps').style.opacity = '0.3';
-                document.getElementById('finalMsg').style.display = 'block';
+                if (uploadAreaEl) uploadAreaEl.style.display = 'none';
+                if (stepsEl) stepsEl.style.opacity = '0.3';
+                if (finalMsgEl) finalMsgEl.style.display = 'block';
             }, 1000);
         }
     </script>

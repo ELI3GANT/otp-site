@@ -1184,7 +1184,7 @@
             document.getElementById('catId').value = '';
             await fetchCategories();
             renderCategoryList();
-        } catch (e) { showToast("SAVE FAILED: " + e.message); }
+        } catch (e) { showToast("SAVE FAILED: " + String(e?.message ?? e)); }
     };
 
     window.editCategory = function(id) {
@@ -1205,7 +1205,7 @@
                     showToast("CATEGORY DELETED (SECURE)");
                     await fetchCategories();
                     renderCategoryList();
-                } catch (e) { showToast("DELETE FAILED: " + e.message); }
+                } catch (e) { showToast("DELETE FAILED: " + String(e?.message ?? e)); }
             }
         );
     };
@@ -1282,7 +1282,7 @@
             document.getElementById('archId').value = '';
             await fetchArchetypes();
             renderArchetypeList();
-        } catch (e) { showToast("SAVE FAILED: " + e.message); }
+        } catch (e) { showToast("SAVE FAILED: " + String(e?.message ?? e)); }
     };
 
     window.editArchetype = function(id) {
@@ -4972,7 +4972,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             const c = window.inboxCache.find(x => x.id == id);
             if(c) c.draft_reply = content;
             await fetchInbox(); 
-        } catch(e) { showToast("SAVE FAILED: " + e.message); }
+        } catch(e) { showToast("SAVE FAILED: " + String(e?.message ?? e)); }
     };
 
     window.launchMailClient = function() {
@@ -5016,7 +5016,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                 const rm = document.getElementById('replyModal');
                 if (rm) rm.style.display = 'none';
                 await fetchInbox();
-            } catch(e) { showToast("UPDATE FAILED: " + e.message); }
+            } catch(e) { showToast("UPDATE FAILED: " + String(e?.message ?? e)); }
         });
     };
     
