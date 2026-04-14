@@ -16,6 +16,7 @@ const tests = [
     { name: 'Full System Integrity', path: 'tests/full_system_test.js' },
     { name: 'Admin Health & Schema', path: 'tests/admin_health.js' },
     { name: 'User Flow Validation', path: 'tests/user_flow_validation.js' },
+    { name: 'Client Journey (public intake)', path: 'tests/client_journey_contract.test.js' },
     { name: 'Authentication Logic', path: 'tests/auth_flow_test.js' },
     { name: 'Post Management Logic', path: 'tests/manage_post_test.js' },
     { name: 'Email Link Logic', path: 'tests/email_link_test.js' },

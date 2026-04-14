@@ -6,7 +6,7 @@ This document is the **operating blueprint** for keeping every Terminal area hea
 
 - **OTP Terminal**: Admin UI (`otp-terminal.html` + `admin-core.js`) for ops, knowledge, docs, inbox/leads, and site control.
 - **OTP Oracle (product)**: The **recommendation + grounding layer** that turns lead/contact context + indexed knowledge into **package quote signals, required documents, next actions, and `knowledge_basis` citations**. Server implementation is centered on `runOracleRecommendation()` in `server.js`.
-- **“Works”**: Section loads, primary actions complete without silent failure, errors are visible (toast/UI), auth rules are consistent, and **Oracle-backed flows stay fresh** after knowledge changes (see §4.3).
+- **“Works”**: Section loads, primary actions complete without silent failure, errors are visible (toast/UI), auth rules are consistent, and **Oracle-backed flows stay fresh** after knowledge changes (see §4.4).
 
 ## 2. Architectural truth (single source of truth)
 
@@ -47,14 +47,22 @@ Rough order as shown in `otp-terminal.html`. “Oracle?” indicates **direct** 
 1. **`npm test`** — `tests/master_runner.js` (contracts: Oracle, terminal, ops, docs, etc.).
 2. **`OTP_ADMIN_TOKEN=<jwt> node scripts/prod_terminal_sweep.js`** — headless Playwright against production Terminal: ops docs, packet zip, knowledge index, quick deal UI; inbox/reply/doc-packet when data exists.
 
-### 4.2 Manual smoke (high value, short)
+### 4.2 Client journey (website + audit, public API)
+
+Automated contract: `tests/client_journey_contract.test.js` (also in master runner).
+
+- **What it simulates**: A visitor submitting the **contact form** (`POST /api/contact/submit` with `project_type`, `project_details`, etc.) and completing the **Perspective Audit** (`POST /api/audit/submit` with `answers.q1`–`q5_goal`).
+- **When it runs**: Only if `GET /api/health` succeeds on `http://127.0.0.1:$PORT` (start `npm start`), or if you set `CLIENT_JOURNEY_API_BASE` (non-local URLs require `CLIENT_JOURNEY_ALLOW_REMOTE=1` so you do not accidentally spam real inboxes from CI).
+- **In-person parity**: The same business data often enters via **06.7 Job Sheet** or **06.6 Quick Deal** in the Terminal; Oracle and packets then consume **leads** / **contacts** / **ops_jobs** depending on the path. After this test, open the Terminal **Inbox** / **Leads** and run **OTP Oracle** on the new row.
+
+### 4.3 Manual smoke (high value, short)
 
 - **Knowledge**: Upload a small DOCX → confirm index count increases → run Oracle on a lead → confirm `knowledge_basis` / structured rules surface in recommendation.
 - **Reply**: Open thread → **OTP Oracle** → **Generate reply** → confirm tone aligns with required docs + citations block.
 - **Packet**: Generate packet → approve → download DOCX for proposal/agreement → confirm merge fields.
 - **Settings**: Open **MASTER DOCX** → status shows bucket/prefix and timestamps after upload.
 
-### 4.3 Oracle-specific regression triggers
+### 4.4 Oracle-specific regression triggers
 
 Run **`/api/admin/knowledge/recommend`** again after:
 
