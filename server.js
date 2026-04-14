@@ -817,19 +817,40 @@ function inferPackageAndRange(leadText) {
     const mentionsGrowthDefault = /(growing small business|growing business|small business|artist|creator|ongoing|weekly|monthly|scale|scaling|brand growth)/.test(text);
     const mentionsCrossServiceWork = /(content|clips|video|filming|photography|branding|social|campaign|production)/.test(text);
 
+    const pkgPriceDisplay = (key) => {
+        try {
+            const p = OTP_PRICING;
+            const obj = p?.packages?.[key];
+            const disp = String(obj?.price_display || '').trim();
+            return disp || '';
+        } catch (_) {
+            return '';
+        }
+    };
+    const svcPriceDisplayByLabel = (label) => {
+        try {
+            const svc = Object.values(OTP_PRICING?.services || {}).find((s) => String(s?.label || '').trim() === String(label || '').trim());
+            const disp = String(svc?.price_display || '').trim();
+            return disp || '';
+        } catch (_) {
+            return '';
+        }
+    };
+
     if (mentionsLarge || budgetHigh) {
         return {
             recommended_package: 'The System',
-            quote_range: 'Starting at $3,500+',
+            quote_range: pkgPriceDisplay('theSystem') ? `Starting at ${pkgPriceDisplay('theSystem').replace(/^starting at\s*/i, '')}` : 'Starting at $3,500+',
             package_confidence: 0.86,
             package_reason: 'Scope and budget indicate a premium multi-deliverable engagement.'
         };
     }
 
     if (mentionsSimpleEdit && !mentionsWebsite) {
+        const ve = svcPriceDisplayByLabel('Video Editing Services');
         return {
             recommended_package: 'The Signal',
-            quote_range: 'Video Editing Services ($150 to $800+)',
+            quote_range: ve ? `Video Editing Services (${ve})` : 'Video Editing Services ($150 to $800+)',
             package_confidence: 0.78,
             package_reason: 'Lightweight edit/revision scope detected. This routes through The Signal for streamlined execution while keeping editing rates flexible.'
         };
@@ -839,7 +860,7 @@ function inferPackageAndRange(leadText) {
     if (mentionsGrowthDefault && !budgetLow && (mentionsCrossServiceWork || !mentionsWebsite)) {
         return {
             recommended_package: 'The Engine',
-            quote_range: '$1,200 to $2,000',
+            quote_range: pkgPriceDisplay('theEngine') || '$1,200 to $2,000',
             package_confidence: 0.8,
             package_reason: 'Growth-stage needs and ongoing deliverables align best with The Engine.'
         };
@@ -847,24 +868,27 @@ function inferPackageAndRange(leadText) {
 
     if (mentionsWebsite) {
         if (/(custom|architecture|complex|portal|platform|membership|automation)/.test(text)) {
+            const wa = svcPriceDisplayByLabel('Custom Website Architecture');
             return {
                 recommended_package: 'Custom Website Architecture',
-                quote_range: 'Starting at $3,500+',
+                quote_range: wa ? wa : 'Starting at $3,500+',
                 package_confidence: 0.83,
                 package_reason: 'Website brief suggests custom architecture and implementation depth.'
             };
         }
         if (mentionsSimple || budgetLow || /(one page|single page|landing page only)/.test(text)) {
+            const swp = svcPriceDisplayByLabel('Starter Web Presence');
             return {
                 recommended_package: 'Starter Web Presence',
-                quote_range: '$750',
+                quote_range: swp ? swp : '$750',
                 package_confidence: 0.78,
                 package_reason: 'Lean website scope detected; starter web presence is the cleanest fit.'
             };
         }
+        const bwp = svcPriceDisplayByLabel('Business Website Pro');
         return {
             recommended_package: 'Business Website Pro',
-            quote_range: '$1,500',
+            quote_range: bwp ? bwp : '$1,500',
             package_confidence: 0.73,
             package_reason: 'Website request maps to a business-grade build with stronger structure and polish.'
         };
@@ -873,14 +897,14 @@ function inferPackageAndRange(leadText) {
     if (mentionsSimple || budgetLow) {
         return {
             recommended_package: 'The Signal',
-            quote_range: 'Starting at $500',
+            quote_range: pkgPriceDisplay('theSignal') ? `Starting at ${pkgPriceDisplay('theSignal').replace(/^starting at\s*/i, '')}` : 'Starting at $500',
             package_confidence: 0.71,
             package_reason: 'Lead appears lightweight with a single-deliverable or constrained budget profile.'
         };
     }
     return {
         recommended_package: 'The Engine',
-        quote_range: '$1,200 to $2,000',
+        quote_range: pkgPriceDisplay('theEngine') || '$1,200 to $2,000',
         package_confidence: 0.65,
         package_reason: 'Defaulting to the core growth package based on available scope details.'
     };
@@ -959,11 +983,16 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
             similarity: Number(Number(match.similarity || 0).toFixed(3))
         }));
 
+    const totalGuidance = String(packageResult?.quote_range || '').trim();
+    const isCustom = String(packageResult?.recommended_package || '').trim().toLowerCase() === 'custom';
+    const pricingGuidance = isCustom ? '' : totalGuidance;
+
     return {
         lead_summary: leadText.slice(0, 700),
         service_type: serviceType,
         recommended_package: packageResult.recommended_package,
         quote_range: packageResult.quote_range,
+        pricing_guidance: pricingGuidance,
         package_confidence: packageConfidence,
         package_reason: packageResult.package_reason || 'Recommendation generated from lead scope and pricing signals.',
         required_documents: safeDocs,

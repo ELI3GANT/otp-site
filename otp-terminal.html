@@ -549,6 +549,7 @@
                         <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
                             <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Project</div>
                             <input id="opsServiceType" class="input-field" placeholder="Service Type *" list="opsServiceTypeList" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <div id="opsServiceGuidance" style="display:none;margin:-2px 0 10px 0;font-size:0.66rem;line-height:1.4;color:var(--admin-muted);"></div>
                             <datalist id="opsServiceTypeList">
                                 <option value="Starter Web Presence"></option>
                                 <option value="Business Website Pro"></option>
@@ -570,6 +571,7 @@
                                 <option value="The System">The System</option>
                                 <option value="Custom">Custom</option>
                             </select>
+                            <div id="opsPackageGuidance" style="display:none;margin:-2px 0 10px 0;font-size:0.66rem;line-height:1.4;color:var(--admin-muted);"></div>
                             <input id="opsProjectTitle" class="input-field" placeholder="Project Title *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
                             <textarea id="opsProjectDescription" class="input-field" rows="4" placeholder="Project Description" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;"></textarea>
                             <textarea id="opsDeliverables" class="input-field" rows="3" placeholder="Deliverables" style="width:100%;padding:10px;border-radius:10px;line-height:1.45;margin-top:8px;"></textarea>
@@ -1348,9 +1350,10 @@
     <!-- 2. SITE CONFIG -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
     <script src="site-config.js?v=16.4.6"></script>
+    <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.6.15"></script>
+    <script src="admin-core.js?v=16.6.16"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

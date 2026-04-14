@@ -1842,6 +1842,7 @@
         setCk('opsAgreementSigned', false);
         setCk('opsInvoiceSent', false);
         window.recalcOpsBalance();
+        refreshOpsPricingGuidance();
 
         if (!jobId) {
             if (meta) meta.textContent = 'New manual intake record.';
@@ -1887,6 +1888,7 @@
             setCk('opsAgreementSigned', !!r.agreementSigned);
             setCk('opsInvoiceSent', !!r.invoiceSent);
             window.recalcOpsBalance();
+            refreshOpsPricingGuidance();
             if (meta) meta.textContent = `Editing ${r.jobId} • created ${r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}`;
         } catch (e) {
             showToast(`LOAD FAILED: ${e.message}`);
@@ -1911,6 +1913,21 @@
         el.style.color = warn ? '#ffb86b' : 'var(--admin-text)';
         el.title = warn ? 'Deposit cannot exceed total. Adjust values before saving.' : '';
     };
+
+    // React to package/service changes without touching saved pricing fields.
+    (function attachOpsPricingGuidanceListeners() {
+        const pkg = document.getElementById('opsPackageType');
+        const svc = document.getElementById('opsServiceType');
+        if (pkg) {
+            pkg.addEventListener('change', refreshOpsPricingGuidance);
+            pkg.addEventListener('input', refreshOpsPricingGuidance);
+        }
+        if (svc) {
+            svc.addEventListener('change', refreshOpsPricingGuidance);
+            svc.addEventListener('input', refreshOpsPricingGuidance);
+            svc.addEventListener('blur', refreshOpsPricingGuidance);
+        }
+    })();
 
     window.saveOpsJob = async function() {
         const status = document.getElementById('opsJobSaveStatus');
@@ -2003,6 +2020,63 @@
             showToast(`ARCHIVE FAILED: ${e.message}`);
         }
     };
+
+    function getOtpPricingSafe() {
+        try {
+            const p = window.OTP_PRICING;
+            if (!p || typeof p !== 'object') return null;
+            return p;
+        } catch (_) {
+            return null;
+        }
+    }
+    function normalizeKey(s) {
+        return String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+    function pricingGuidanceTextForPackage(pkgLabel) {
+        const pricing = getOtpPricingSafe();
+        if (!pricing?.packages) return '';
+        const want = normalizeKey(pkgLabel);
+        const pkgs = pricing.packages;
+        const list = [pkgs.theSignal, pkgs.theEngine, pkgs.theSystem, pkgs.custom].filter(Boolean);
+        const hit = list.find(p => normalizeKey(p?.label) === want || normalizeKey(p?.key) === want);
+        if (!hit) return '';
+        if (normalizeKey(hit.label) === 'custom') return 'Custom scope-based engagement. Final pricing is set manually.';
+        const disp = String(hit.price_display || '').trim();
+        if (!disp) return '';
+        if (normalizeKey(hit.label) === 'the engine') return `Typical range: ${disp.replace(/\s*to\s*/i, ' to ')}`;
+        if (normalizeKey(hit.label) === 'the signal') return `Starting at ${disp.replace(/^starting at\s*/i, '')}`.trim();
+        if (normalizeKey(hit.label) === 'the system') return `Starting at ${disp.replace(/^starting at\s*/i, '')}`.trim();
+        return disp;
+    }
+    function pricingGuidanceTextForService(serviceLabel) {
+        const pricing = getOtpPricingSafe();
+        if (!pricing?.services) return '';
+        const want = normalizeKey(serviceLabel);
+        const entries = Object.values(pricing.services || {});
+        const hit = entries.find(s => normalizeKey(s?.label) === want);
+        if (!hit) return '';
+        const disp = String(hit.price_display || '').trim();
+        if (!disp) return '';
+        const type = normalizeKey(hit.type);
+        if (type === 'hourly') return `Minimum: ${disp}`;
+        if (type === 'one_time_range') return `Typical range: ${disp}`;
+        if (type === 'monthly') return `Standard rate: ${disp}`;
+        return `Standard rate: ${disp}`;
+    }
+    function setGuidance(el, text) {
+        if (!el) return;
+        const t = String(text || '').trim();
+        if (!t) { el.style.display = 'none'; el.textContent = ''; return; }
+        el.style.display = 'block';
+        el.textContent = t;
+    }
+    function refreshOpsPricingGuidance() {
+        const pkg = document.getElementById('opsPackageType')?.value || '';
+        const svc = document.getElementById('opsServiceType')?.value || '';
+        setGuidance(document.getElementById('opsPackageGuidance'), pricingGuidanceTextForPackage(pkg));
+        setGuidance(document.getElementById('opsServiceGuidance'), pricingGuidanceTextForService(svc));
+    }
 
     window.requestLeadBrain = async function(leadId, sourceTable = 'leads') {
         if (!state.token) throw new Error('LOGIN REQUIRED');
