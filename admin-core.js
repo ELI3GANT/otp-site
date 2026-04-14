@@ -1396,6 +1396,57 @@
         });
     };
 
+    window.updateKnowledgeFile = function(fileName) {
+        const targetName = String(fileName || '').trim();
+        if (!targetName) { showToast('MISSING FILE NAME'); return; }
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        let input = document.getElementById('knowledgeReplaceInput');
+        if (!input) {
+            input = document.createElement('input');
+            input.type = 'file';
+            input.id = 'knowledgeReplaceInput';
+            input.accept = '.pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            input.style.display = 'none';
+            document.body.appendChild(input);
+        }
+        input.dataset.targetName = targetName;
+        input.onchange = async (ev) => {
+            const picked = Array.from(ev.target.files || [])[0] || null;
+            input.value = ''; // allow re-pick same file
+            if (!picked) return;
+            try {
+                const apiBase = resolveApiBase();
+                const formData = new FormData();
+                formData.append('file', picked);
+                formData.append('fileNameOverride', targetName);
+                showToast(`UPDATING ${targetName}...`);
+                const res = await fetch(`${apiBase}/api/admin/knowledge/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${state.token}` },
+                    body: formData
+                });
+                const payload = await res.json().catch(() => ({}));
+                if (!res.ok || !payload.success) throw new Error(payload.message || `Update failed (${res.status})`);
+                if (payload.duplicate) showToast('NO CHANGE (DUPLICATE CONTENT)');
+                else if (payload.replaced) showToast('FILE UPDATED (NEW VERSION INDEXED)');
+                else showToast('FILE INDEXED');
+                await window.fetchKnowledgeFiles();
+            } catch (e) {
+                showToast(`UPDATE FAILED: ${formatNetworkError(e)}`);
+            }
+        };
+        input.click();
+    };
+
+    window.updateKnowledgeFileById = function(fileId) {
+        const id = String(fileId || '').trim();
+        if (!id) { showToast('MISSING FILE ID'); return; }
+        const hit = (window.knowledgeFilesCache || []).find((f) => f && String(f.file_id) === id);
+        const name = String(hit?.file_name || '').trim();
+        if (!name) { showToast('FILE NAME NOT FOUND'); return; }
+        return window.updateKnowledgeFile(name);
+    };
+
     window.fetchKnowledgeFiles = async function() {
         const container = document.getElementById('knowledgeFilesManager');
         const badge = document.getElementById('knowledgeStatusBadge');
@@ -1436,6 +1487,7 @@
                         </div>
                     </div>
                     <div style="display:flex;gap:8px;align-items:center;">
+                        <button type="button" onclick="window.updateKnowledgeFileById('${window.escapeHtml(file.file_id || '')}')" style="background:transparent;border:1px solid rgba(var(--accent2-rgb),0.35);color:var(--admin-cyan);font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">UPDATE</button>
                         <button type="button" onclick="window.archiveKnowledgeFile('${window.escapeHtml(file.file_id)}')" style="background:transparent;border:1px solid rgba(255,170,0,0.45);color:#ffd37a;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">ARCHIVE</button>
                         <button type="button" onclick="window.deleteKnowledgeFile('${window.escapeHtml(file.file_id)}')" style="background:transparent;border:1px solid rgba(255,90,90,0.4);color:#ff8f8f;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">DELETE</button>
                     </div>

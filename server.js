@@ -2234,7 +2234,8 @@ app.post('/api/admin/knowledge/upload', verifyToken, knowledgeUpload.single('fil
     try {
         if (!req.file) return res.status(400).json({ success: false, message: "Missing file upload." });
 
-        const fileName = String(req.file.originalname || '').trim();
+        const rawOverride = String(req.body?.fileNameOverride || req.body?.file_name_override || '').trim();
+        const fileName = (rawOverride ? rawOverride : String(req.file.originalname || '').trim()).slice(0, 260);
         const extractedText = await extractTextFromKnowledgeFile(req.file);
         if (!extractedText || extractedText.length < 40) {
             return res.status(400).json({ success: false, message: "Unable to extract enough text from file." });
@@ -2316,7 +2317,7 @@ app.post('/api/admin/knowledge/upload', verifyToken, knowledgeUpload.single('fil
         }
 
         const fileId = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
-        const sourceType = path.extname(fileName).toLowerCase().replace('.', '') || 'unknown';
+        const sourceType = path.extname(fileName).toLowerCase().replace('.', '') || path.extname(String(req.file.originalname || '')).toLowerCase().replace('.', '') || 'unknown';
         const chunks = chunkText(extractedText, 1200, 220);
 
         const fileRow = {
