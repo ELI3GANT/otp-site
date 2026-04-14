@@ -11,6 +11,8 @@
  */
 
 const { chromium } = require('playwright');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const ORIGIN = 'https://www.onlytrueperspective.tech';
 const URL = `${ORIGIN}/otp-terminal`;
@@ -77,6 +79,9 @@ async function main() {
 
   push('meta', { url: URL, token: redact(token) });
 
+  const artifactsDir = path.join(process.cwd(), 'qa-artifacts');
+  try { fs.mkdirSync(artifactsDir, { recursive: true }); } catch (_) {}
+
   const resp = await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
   push('nav', { status: resp ? resp.status() : null });
 
@@ -109,35 +114,51 @@ async function main() {
     push('warn', { text: 'No jobs found to open; skipping doc/export flows.' });
   }
 
-  // Generate a Proposal (non-destructive)
-  const genProposal = page.locator('button:has-text("Generate Proposal")');
-  if (await genProposal.count()) {
-    await genProposal.first().click({ timeout: 15000 });
-    await page.waitForTimeout(1800);
-    const meta = await page.locator('#opsDocMeta').innerText().catch(() => '');
-    const out = await page.locator('#opsDocOutput').innerText().catch(() => '');
-    push('doc_generated', { meta: short(meta, 200), out_preview: short(out, 240) });
-  }
+  // Generate + export all ops docs (PDF + DOCX) from the same job record.
+  const DOC_TYPES = ['Proposal', 'Invoice', 'Agreement', 'Paid Receipt', 'Service Summary'];
 
-  // Export PDF/DOCX (download only; no email send)
-  async function tryDownload(btnText) {
+  async function tryDownload(btnText, prefix) {
     const btn = page.locator(`button:has-text("${btnText}")`);
-    if (!(await btn.count())) return;
+    if (!(await btn.count())) return null;
     const [download] = await Promise.all([
       page.waitForEvent('download', { timeout: 45000 }).catch(() => null),
       btn.first().click({ timeout: 15000 }),
     ]);
     if (!download) {
       push('download', { ok: false, kind: btnText, message: 'No download event (blocked or failed)' });
-      return;
+      return null;
     }
     const suggested = download.suggestedFilename();
-    push('download', { ok: true, kind: btnText, filename: suggested });
-    await download.cancel().catch(() => {});
+    const safeName = `${prefix || 'opsdoc'}__${suggested}`.replace(/[^\w.\-]+/g, '_').slice(0, 180);
+    const savePath = path.join(artifactsDir, safeName);
+    await download.saveAs(savePath).catch(() => {});
+    push('download', { ok: true, kind: btnText, filename: suggested, savedAs: path.relative(process.cwd(), savePath) });
+    return savePath;
   }
 
-  await tryDownload('EXPORT PDF');
-  await tryDownload('EXPORT DOCX');
+  for (const docType of DOC_TYPES) {
+    const genBtn = page.locator(`button:has-text("Generate ${docType}")`);
+    if (!(await genBtn.count())) {
+      push('doc_missing_button', { docType });
+      continue;
+    }
+
+    await genBtn.first().click({ timeout: 15000 });
+    await page.waitForTimeout(1700);
+
+    const meta = await page.locator('#opsDocMeta').innerText().catch(() => '');
+    const out = await page.locator('#opsDocOutput').innerText().catch(() => '');
+    const outShort = short(out, 340);
+    push('doc_generated', { docType, meta: short(meta, 200), out_preview: outShort });
+
+    // Basic correctness assertions (non-fatal; record as warnings if missing).
+    const mustContain = ['Live QA Test Client', 'QA-2026-04-14', 'OTP Validation Reel Cut', 'Video Editing Services', 'The Signal'];
+    const missing = mustContain.filter((s) => !out.includes(s));
+    if (missing.length) push('doc_assert_missing', { docType, missing });
+
+    await tryDownload('EXPORT PDF', docType.toLowerCase().replace(/\s+/g, '-'));
+    await tryDownload('EXPORT DOCX', docType.toLowerCase().replace(/\s+/g, '-'));
+  }
 
   // Packet preview/build
   // Ensure Packet Builder panel is open (details)
@@ -214,7 +235,9 @@ async function main() {
   // This does NOT send any email.
   await page.evaluate(() => window.fetchInbox?.());
   await page.waitForTimeout(1400);
-  const inboxButtons = page.locator('#inboxManager button:has-text("MODULATE RESPONSE")');
+  // Prefer MODULATE RESPONSE when draft exists, else GENERATE RESPONSE.
+  // Prefer the canonical QA thread to avoid ambiguity when multiple threads exist.
+  const inboxButtons = page.locator('#inboxManager .post-row:has-text("qa@example.com") button:has-text("MODULATE RESPONSE"), #inboxManager .post-row:has-text("qa@example.com") button:has-text("GENERATE RESPONSE")');
   const inboxCount = await inboxButtons.count();
   push('inbox_threads', { count: inboxCount });
 
@@ -264,8 +287,8 @@ async function main() {
         await page.waitForTimeout(2600);
       }
 
-      // Toggle first approval checkbox if present
-      const toggle = page.locator('#docPacketList input.doc-approve-toggle');
+      // Toggle first non-disabled approval checkbox if present
+      const toggle = page.locator('#docPacketList input.doc-approve-toggle:not([disabled])');
       const tCount = await toggle.count();
       push('doc_packet_toggles', { count: tCount });
       if (tCount > 0) {
@@ -274,9 +297,48 @@ async function main() {
         await page.waitForTimeout(250);
         const after = await toggle.first().isChecked().catch(() => null);
         push('doc_packet_toggle', { before, after });
+
+        // Apply approvals (persist + re-render send-pick UI)
+        const apply = page.locator('#docPacketApproveBtn');
+        if (await apply.count()) {
+          await apply.first().click({ timeout: 15000 }).catch(() => {});
+          await page.waitForTimeout(2600);
+          const stateSnap = await page.evaluate(() => {
+            const st = window.__docPacketState || {};
+            const docs = st.docs || {};
+            const approved = Object.entries(docs).filter(([, v]) => v && v.approved).map(([k]) => k);
+            return {
+              packetId: st.packetId || null,
+              approvedCount: approved.length,
+              approvedKeys: approved,
+              notice: st.notice || null,
+            };
+          }).catch(() => null);
+          if (stateSnap) push('doc_packet_state_after_approve', stateSnap);
+        }
       }
 
-      // Verify send button remains gated unless approved+selected.
+      // Toggle an "Attach to client email" checkbox (doc-send-include).
+      const includeToggle = page.locator('#docPacketSendPick input.doc-send-include:not([disabled])');
+      const iCount = await includeToggle.count();
+      push('doc_packet_include_toggles', { count: iCount });
+      if (iCount > 0) {
+        const before = await includeToggle.first().isChecked().catch(() => null);
+        await includeToggle.first().click({ timeout: 15000 });
+        await page.waitForTimeout(250);
+        const after = await includeToggle.first().isChecked().catch(() => null);
+        push('doc_packet_include_toggle', { before, after });
+
+        // Ensure we also verify the enabled state (checked=true) path.
+        if (after === false) {
+          await includeToggle.first().click({ timeout: 15000 });
+          await page.waitForTimeout(250);
+          const after2 = await includeToggle.first().isChecked().catch(() => null);
+          push('doc_packet_include_toggle_2', { after: after2 });
+        }
+      }
+
+      // Verify send button gate state transitions (never click send).
       const sendBtn = page.locator('#docPacketSendBtn');
       if (await sendBtn.count()) {
         const disabled = await sendBtn.isDisabled().catch(() => null);

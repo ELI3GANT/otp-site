@@ -355,6 +355,20 @@ function opsDocMarkdownToPlainText(md) {
         .trim();
 }
 
+function stripLeadingDocTitleLine(plainText, docType) {
+    const raw = String(plainText || '').replace(/\r\n/g, '\n');
+    const lines = raw.split('\n');
+    while (lines.length && !String(lines[0]).trim()) lines.shift();
+    const first = String(lines[0] || '').trim();
+    const want = String(docType || '').trim();
+    if (want && first.toLowerCase() === want.toLowerCase()) {
+        lines.shift();
+        while (lines.length && !String(lines[0]).trim()) lines.shift();
+        return lines.join('\n').trim();
+    }
+    return raw.trim();
+}
+
 async function renderOpsDocPdfFromText({ title, subtitle, bodyText }) {
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -2907,8 +2921,8 @@ app.get('/api/admin/ops/docs/export/:format/:jobId/:docType', verifyToken, async
         const yyyyMmDd = new Date().toISOString().slice(0, 10);
         const baseName = `${safeFilenamePart(jobId)}-${safeFilenamePart(docTypeToSlug(docType))}-${yyyyMmDd}`;
 
-        const md = String(doc.rendered_markdown || '').trim();
-        const plain = opsDocMarkdownToPlainText(md);
+            const md = String(doc.rendered_markdown || '').trim();
+            const plain = stripLeadingDocTitleLine(opsDocMarkdownToPlainText(md), docType);
         const subtitleParts = [
             doc?.display?.client_label ? `Client: ${doc.display.client_label}` : '',
             doc?.display?.project_label ? `Project: ${doc.display.project_label}` : '',
@@ -3087,7 +3101,7 @@ app.post('/api/admin/ops/packets/export-zip', verifyToken, async (req, res) => {
             }
 
             const md = String(doc.rendered_markdown || '').trim();
-            const plain = opsDocMarkdownToPlainText(md);
+            const plain = stripLeadingDocTitleLine(opsDocMarkdownToPlainText(md), docType);
             const subtitleParts = [
                 doc?.display?.client_label ? `Client: ${doc.display.client_label}` : '',
                 doc?.display?.project_label ? `Project: ${doc.display.project_label}` : '',
@@ -3297,8 +3311,8 @@ app.post('/api/admin/ops/send/execute', verifyToken, async (req, res) => {
                 continue;
             }
 
-            const md = String(doc.rendered_markdown || '').trim();
-            const plain = opsDocMarkdownToPlainText(md);
+                    const md = String(doc.rendered_markdown || '').trim();
+                    const plain = stripLeadingDocTitleLine(opsDocMarkdownToPlainText(md), docType);
             const subtitleParts = [
                 doc?.display?.client_label ? `Client: ${doc.display.client_label}` : '',
                 doc?.display?.project_label ? `Project: ${doc.display.project_label}` : '',

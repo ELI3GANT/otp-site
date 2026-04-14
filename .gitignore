@@ -27,3 +27,4 @@ tmp/
 prod-terminal-sweep.json
 prod-qa-*.json
 qa-screens/
+qa-artifacts/
