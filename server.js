@@ -1612,6 +1612,14 @@ const verifyToken = (req, res, next) => {
     }
 };
 
+// Ops Job → Document generation (internal/admin-only)
+let OPS_DOCS = null;
+try {
+    OPS_DOCS = require('./ops-docs.js');
+} catch (_) {
+    OPS_DOCS = null;
+}
+
 // 2. Secure AI Generation (Proxied)
 app.post('/api/ai/generate', verifyToken, async (req, res) => {
     // ... existing AI logic ...
@@ -2622,6 +2630,48 @@ app.post('/api/admin/ops/jobs/archive', verifyToken, async (req, res) => {
         res.json({ success: true, row: mapOpsJobRowToApi(data) });
     } catch (error) {
         console.error("ops-jobs-archive:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2.10.x Ops Jobs → Oracle document generation from saved records
+app.post('/api/admin/ops/docs/generate', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    if (!OPS_DOCS || typeof OPS_DOCS.generateOpsDocument !== 'function') {
+        return res.status(503).json({ success: false, message: 'Ops document generator offline' });
+    }
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        const docType = String(req.body?.docType || '').trim();
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+        if (!docType) return res.status(400).json({ success: false, message: 'Missing docType' });
+
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', jobId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+
+        const job = mapOpsJobRowToApi(data);
+        // Safety: never allow internal notes in any client-facing output payload.
+        delete job.internalNotes;
+
+        const result = OPS_DOCS.generateOpsDocument({ docType, job, pricing: OTP_PRICING });
+        if (!result || !result.ok) {
+            const st = Number(result?.status) || 500;
+            return res.status(st).json({ success: false, message: result?.message || 'Generation failed' });
+        }
+
+        res.json({
+            success: true,
+            jobId,
+            docType,
+            doc: result.doc
+        });
+    } catch (error) {
+        console.error("ops-docs-generate:", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 });

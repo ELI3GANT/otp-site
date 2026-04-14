@@ -2021,6 +2021,72 @@
         }
     };
 
+    window.closeOpsDocPanel = function() {
+        const panel = document.getElementById('opsDocPanel');
+        if (panel) panel.style.display = 'none';
+    };
+    window.copyOpsDocOutput = async function() {
+        const el = document.getElementById('opsDocOutput');
+        const text = String(el?.textContent || '').trim();
+        if (!text) { showToast('NOTHING TO COPY'); return; }
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast('COPIED');
+        } catch (_) {
+            // Fallback
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('COPIED');
+            } catch (e) {
+                showToast('COPY FAILED');
+            }
+        }
+    };
+    window.generateOpsDoc = async function(docType) {
+        if (!state.token) { showToast('LOGIN REQUIRED'); return; }
+        const jobId = String(document.getElementById('opsJobId')?.value || '').trim();
+        if (!jobId) { showToast('SAVE JOB FIRST'); return; }
+        const type = String(docType || '').trim();
+        if (!type) { showToast('MISSING DOC TYPE'); return; }
+        const panel = document.getElementById('opsDocPanel');
+        const titleEl = document.getElementById('opsDocTitle');
+        const metaEl = document.getElementById('opsDocMeta');
+        const outEl = document.getElementById('opsDocOutput');
+        if (titleEl) titleEl.textContent = type.toUpperCase();
+        if (metaEl) metaEl.textContent = 'Generating…';
+        if (outEl) outEl.textContent = '';
+        if (panel) panel.style.display = 'block';
+
+        try {
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/docs/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId, docType: type })
+            }, 45000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Generate failed (${res.status})`);
+            const doc = payload.doc || {};
+            const warnings = Array.isArray(doc.warnings) ? doc.warnings : [];
+            if (metaEl) metaEl.textContent = `${doc.schema || 'doc'} • ${doc.generated_at || ''}${warnings.length ? ` • ${warnings.length} warning${warnings.length === 1 ? '' : 's'}` : ''}`;
+            if (outEl) outEl.textContent = String(doc.rendered_markdown || '').trim() || JSON.stringify(doc, null, 2);
+            if (warnings.length) showToast(`DOC READY (${warnings.length} WARN)`);
+            else showToast('DOC READY');
+        } catch (e) {
+            if (metaEl) metaEl.textContent = `Generation failed: ${e.message}`;
+            if (outEl) outEl.textContent = '';
+            showToast(`DOC FAILED: ${e.message}`);
+        }
+    };
+
     function getOtpPricingSafe() {
         try {
             const p = window.OTP_PRICING;

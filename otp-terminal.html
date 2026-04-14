@@ -537,6 +537,29 @@
                         </div>
                     </div>
 
+                    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                        <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Oracle docs</div>
+                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Proposal')">Generate Proposal</button>
+                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Invoice')">Generate Invoice</button>
+                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Agreement')">Generate Agreement</button>
+                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Paid Receipt')">Generate Paid Receipt</button>
+                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Service Summary')">Generate Service Summary</button>
+                    </div>
+
+                    <div id="opsDocPanel" style="display:none;margin-top:12px;border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
+                        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+                            <div style="min-width:220px;flex:1;">
+                                <div id="opsDocTitle" style="font-size:0.7rem;font-weight:900;color:var(--admin-text);">DOCUMENT OUTPUT</div>
+                                <div id="opsDocMeta" style="margin-top:6px;font-size:0.66rem;color:var(--admin-muted);line-height:1.4;"></div>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.copyOpsDocOutput()">COPY</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.closeOpsDocPanel()">CLOSE</button>
+                            </div>
+                        </div>
+                        <pre id="opsDocOutput" style="margin-top:10px;white-space:pre-wrap;word-break:break-word;font-size:0.7rem;line-height:1.45;color:var(--admin-text);background:var(--admin-panel);border:1px solid var(--admin-border);border-radius:10px;padding:10px;max-height:380px;overflow:auto;"></pre>
+                    </div>
+
                     <div style="margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
                         <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
                             <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Client</div>
