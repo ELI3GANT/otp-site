@@ -81,6 +81,12 @@ function moneyFromRange(rangeText) {
     return { low: Math.min(...nums), high: Math.max(...nums) };
 }
 
+function pushLeadLine(parts, label, value) {
+    if (!Array.isArray(parts) || !label) return;
+    const v = normalizeWhitespace(String(value == null ? '' : value));
+    if (v) parts.push(`${label}: ${v}`);
+}
+
 function buildDocFields({ lead, sourceTable, recommendation }) {
     const rec = recommendation || {};
     const docs = Array.isArray(rec.required_documents) ? rec.required_documents : [];
@@ -93,16 +99,34 @@ function buildDocFields({ lead, sourceTable, recommendation }) {
     const name = String(lead?.name || (sourceTable === 'leads' ? 'Valued Lead' : 'Client') || '').trim();
     const email = String(lead?.email || '').trim();
     const createdAt = lead?.created_at ? new Date(lead.created_at) : new Date();
-    const leadSummary = sourceTable === 'contacts'
-        ? String(lead?.message || lead?.project_details || '').trim()
-        : String(lead?.message || '').trim();
+    const missionBrief = normalizeWhitespace(buildLeadText(lead, sourceTable));
+    const pkgReason = String(rec.package_reason || '').trim();
+    const docsReason = String(rec.documents_reason || '').trim();
+    const rationale = [
+        pkgReason && `Package: ${pkgReason}`,
+        docsReason && `Documents: ${docsReason}`
+    ].filter(Boolean).join('\n\n');
+
+    let leadSummary = [missionBrief, rationale].filter(Boolean).join('\n\n———\n\n');
+    if (!normalizeWhitespace(leadSummary)) {
+        leadSummary = sourceTable === 'contacts'
+            ? normalizeWhitespace([lead?.message, lead?.project_details].filter(Boolean).join('\n\n'))
+            : normalizeWhitespace(String(lead?.message || ''));
+    }
+    if (!normalizeWhitespace(leadSummary)) leadSummary = 'N/A';
+    else leadSummary = leadSummary.slice(0, 8000);
+    const tacticalAdvice = extractTacticalAdviceFromLead(lead);
 
     return {
         generated_at: new Date().toISOString(),
         client_name: name,
         client_email: email,
         lead_created_at: createdAt.toISOString(),
+        mission_brief: missionBrief,
+        package_reason: pkgReason,
+        documents_reason: docsReason,
         lead_summary: leadSummary,
+        tactical_advice: tacticalAdvice,
         recommended_package: pkg || 'Manual Review',
         quote_range: quoteRange || 'Scope-based',
         required_documents: docs,
@@ -128,24 +152,77 @@ function renderHtmlDoc(docType, fields) {
         ? f.required_documents.join(', ')
         : 'Manual document selection required';
 
+    const missionRaw = normalizeWhitespace(String(f.mission_brief || '').trim() || String(f.lead_summary || '').trim());
+    const mission = missionRaw || 'N/A';
+    const pkgR = String(f.package_reason || '').trim();
+    const docR = String(f.documents_reason || '').trim();
+    const tac = String(f.tactical_advice || '').trim();
+    const tacProbe = tac.slice(0, Math.min(96, tac.length)).toLowerCase();
+    const showTac = Boolean(tac && tacProbe && !mission.toLowerCase().includes(tacProbe));
+    const htmlPkg = pkgR ? `\n  <h2>Recommended package rationale</h2>\n  <p>${escapeHtml(pkgR)}</p>` : '';
+    const htmlDocR = docR ? `\n  <h2>Why these documents</h2>\n  <p>${escapeHtml(docR)}</p>` : '';
+    const htmlTac = showTac ? `\n  <h2>OTP tactical summary</h2>\n  <p class="scope">${escapeHtml(tac)}</p>` : '';
+
     return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)} — ${escapeHtml(f.client_name || '')}</title>
+  <meta name="color-scheme" content="light dark" />
   <style>
-    body { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Arial; margin: 40px; color: #111; }
-    .meta { color: #555; font-size: 12px; margin-bottom: 18px; }
-    h1 { font-size: 22px; margin: 0 0 8px; }
-    h2 { font-size: 16px; margin: 22px 0 8px; }
-    p, li { font-size: 13px; line-height: 1.6; }
-    .box { border: 1px solid #ddd; border-radius: 10px; padding: 14px 16px; background: #fafafa; }
+    :root {
+      color-scheme: light dark;
+      --doc-bg: #ffffff;
+      --doc-text: #111111;
+      --doc-muted: #555555;
+      --doc-muted2: #444444;
+      --doc-surface: #f4f4f6;
+      --doc-border: #d8d8dc;
+      --doc-line: #111111;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --doc-bg: #0c0c10;
+        --doc-text: #ececf1;
+        --doc-muted: #9b9ba8;
+        --doc-muted2: #b4b4c0;
+        --doc-surface: #16161e;
+        --doc-border: #2e2e3a;
+        --doc-line: #c8c8d4;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Arial;
+      margin: clamp(16px, 4vw, 40px);
+      max-width: 900px;
+      background: var(--doc-bg);
+      color: var(--doc-text);
+    }
+    .meta { color: var(--doc-muted); font-size: 12px; margin-bottom: 18px; line-height: 1.5; }
+    h1 { font-size: clamp(1.1rem, 4vw, 22px); margin: 0 0 8px; color: var(--doc-text); font-weight: 700; }
+    h2 { font-size: 16px; margin: 22px 0 8px; color: var(--doc-text); font-weight: 600; }
+    p, li { font-size: 13px; line-height: 1.6; color: var(--doc-text); }
+    .scope { white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
+    .box {
+      border: 1px solid var(--doc-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      background: var(--doc-surface);
+      color: var(--doc-text);
+    }
+    .box strong { color: var(--doc-text); }
     .row { display: flex; gap: 16px; flex-wrap: wrap; }
-    .col { flex: 1; min-width: 220px; }
+    .col { flex: 1; min-width: min(220px, 100%); }
     .sign { margin-top: 28px; }
-    .sign .line { margin-top: 40px; border-top: 1px solid #111; width: 260px; }
-    .small { font-size: 12px; color: #444; }
+    .sign .line { margin-top: 40px; border-top: 1px solid var(--doc-line); width: min(260px, 70vw); }
+    .small { font-size: 12px; color: var(--doc-muted2); }
+    ul { padding-left: 1.25rem; }
+    @media (max-width: 520px) {
+      body { margin: 14px; }
+      .box .row { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
@@ -158,8 +235,8 @@ function renderHtmlDoc(docType, fields) {
     </div>
   </div>
 
-  <h2>Lead summary</h2>
-  <p>${escapeHtml(f.lead_summary || 'N/A')}</p>
+  <h2>Client &amp; mission details</h2>
+  <p class="scope">${escapeHtml(mission)}</p>${htmlPkg}${htmlDocR}${htmlTac}
 
   <h2>Required documents</h2>
   <p>${escapeHtml(docsLine)}</p>
@@ -202,6 +279,9 @@ function normalizeDocxData(fields) {
     if (flat.invoice_total_cents != null) flat.invoice_total = `$${(Number(flat.invoice_total_cents) / 100).toFixed(0)}`;
     if (flat.deposit_due_cents != null) flat.deposit_due = `$${(Number(flat.deposit_due_cents) / 100).toFixed(0)}`;
     if (Array.isArray(flat.required_documents)) flat.required_documents_csv = flat.required_documents.join(', ');
+    if (flat.tactical_advice == null || flat.tactical_advice === '') {
+        flat.tactical_advice = String(flat.lead_summary || '').trim().slice(0, 2500);
+    }
     return flat;
 }
 
@@ -232,12 +312,42 @@ function dollarsFromCents(cents) {
     return `$${dollars.toLocaleString('en-US')}`;
 }
 
+/** Word-wrap plain text to PDF line widths (Helvetica). */
+function wrapPdfTextToLines(text, font, fontSize, maxWidth) {
+    const raw = String(text || '').replace(/\r\n/g, '\n').trim();
+    if (!raw) return ['—'];
+    const out = [];
+    for (const para of raw.split('\n')) {
+        const words = para.split(/\s+/).filter(Boolean);
+        let line = '';
+        if (!words.length) {
+            out.push('');
+            continue;
+        }
+        for (const w of words) {
+            let chunk = w;
+            while (chunk.length > 1 && font.widthOfTextAtSize(chunk, fontSize) > maxWidth) {
+                chunk = chunk.slice(0, -1);
+            }
+            const test = line ? `${line} ${chunk}` : chunk;
+            if (font.widthOfTextAtSize(test, fontSize) <= maxWidth) {
+                line = test;
+            } else {
+                if (line) out.push(line);
+                line = chunk;
+            }
+        }
+        if (line) out.push(line);
+    }
+    return out.length ? out : ['—'];
+}
+
 async function renderInvoicePdf(fields, packetId = '') {
     const f = normalizeDocxData(fields || {});
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const page = pdfDoc.addPage([612, 792]); // US Letter
+    let page = pdfDoc.addPage([612, 792]); // US Letter (reassigned when scope spans extra pages)
     const { width, height } = page.getSize();
 
     // OTP brand palette (dark + cyan accent)
@@ -324,6 +434,28 @@ async function renderInvoicePdf(fields, packetId = '') {
     drawKV('PROJECT', f.recommended_package || '—', margin + colW + colGap, y);
     drawKV('QUOTE RANGE', f.quote_range || 'Scope-based', margin + colW + colGap, y - 40);
     y -= 86;
+
+    const scopeRaw = String(f.lead_summary || '').trim();
+    if (scopeRaw && scopeRaw !== 'N/A') {
+        drawSectionTitle('SCOPE & CONTEXT');
+        const scopeLines = wrapPdfTextToLines(scopeRaw, font, 9, contentW).slice(0, 26);
+        for (const ln of scopeLines) {
+            if (y < 120) {
+                const p2 = pdfDoc.addPage([612, 792]);
+                p2.drawRectangle({ x: 0, y: 0, width, height, color: paper });
+                page = p2;
+                y = height - 72;
+            }
+            const row = ln.length > 140 ? `${ln.slice(0, 137)}…` : ln;
+            page.drawText(row, { x: margin, y, size: 9, font, color: rgb(0.14, 0.16, 0.2) });
+            y -= 12;
+        }
+        if (scopeRaw.length > 2200) {
+            page.drawText('… (summary continues in agreement / HTML packet)', { x: margin, y, size: 8, font, color: muted });
+            y -= 14;
+        }
+        y -= 8;
+    }
 
     // Line items table
     drawSectionTitle('LINE ITEMS');
@@ -554,32 +686,81 @@ async function extractTextFromKnowledgeFile(file) {
     throw new Error('Unsupported file type. Use PDF or DOCX.');
 }
 
+/** Merge stored OTP Oracle / analysis JSON into the same text pipeline used for KB + doc packets. */
+function appendOracleStoredContext(parts, lead) {
+    if (!Array.isArray(parts) || !lead) return;
+    let raw = lead.ai_analysis;
+    if (raw != null && raw !== '') {
+        if (typeof raw === 'string') {
+            const parsed = safeJsonParse(raw, null);
+            raw = parsed != null ? parsed : { tactical_advice: raw.trim() };
+        }
+        if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+            const tactical = String(raw.tactical_advice || raw.tacticalAdvice || '').trim();
+            if (tactical) parts.push(`Tactical scope (Oracle): ${tactical}`);
+            const scope = String(raw.scope_summary || raw.scopeSummary || '').trim();
+            if (scope) parts.push(`Scope summary: ${scope}`);
+            const risks = String(raw.risks || '').trim();
+            if (risks) parts.push(`Risks / constraints: ${risks}`);
+        }
+    }
+    const adv = String(lead.advice || '').trim();
+    if (adv && !parts.some((p) => typeof p === 'string' && p.includes(adv))) parts.push(`Advisor notes: ${adv}`);
+    const nm = lead.neural_meta;
+    if (typeof nm === 'string' && nm.trim()) {
+        const t = nm.trim().slice(0, 600);
+        if (t && !parts.some((p) => typeof p === 'string' && p.includes(t.slice(0, 80)))) parts.push(`Analysis meta: ${t}`);
+    }
+}
+
+function extractTacticalAdviceFromLead(lead) {
+    if (!lead) return '';
+    let raw = lead.ai_analysis;
+    if (raw != null && raw !== '') {
+        if (typeof raw === 'string') {
+            const parsed = safeJsonParse(raw, null);
+            raw = parsed != null ? parsed : { tactical_advice: raw.trim() };
+        }
+        if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+            const tactical = String(raw.tactical_advice || raw.tacticalAdvice || '').trim();
+            if (tactical) return tactical.slice(0, 2500);
+        }
+    }
+    return String(lead.advice || '').trim().slice(0, 2500);
+}
+
 function buildLeadText(lead = {}, sourceTable = 'leads') {
     const parts = [];
-    if (lead.name) parts.push(`Name: ${lead.name}`);
-    if (lead.email) parts.push(`Email: ${lead.email}`);
+    pushLeadLine(parts, 'Name', lead.name);
+    pushLeadLine(parts, 'Email', lead.email);
+    pushLeadLine(parts, 'Phone', lead.phone || lead.phone_number);
+    pushLeadLine(parts, 'Company', lead.company || lead.company_name);
     if (sourceTable === 'leads') {
         const answers = safeJsonParse(lead.answers, lead.answers) || {};
-        parts.push(
-            `Objective: ${answers.q1 || ''}`,
-            `Barrier: ${answers.q2 || ''}`,
-            `Domain: ${answers.q3 || ''}`,
-            `Aesthetic: ${answers.q4 || ''}`,
-            `Primary Goal: ${answers.q5_goal || ''}`,
-            `Advice: ${lead.advice || ''}`
-        );
+        pushLeadLine(parts, 'Objective / mission', answers.q1);
+        pushLeadLine(parts, 'Challenge / barrier', answers.q2);
+        pushLeadLine(parts, 'Platform / domain', answers.q3);
+        pushLeadLine(parts, 'Creative direction', answers.q4);
+        pushLeadLine(parts, 'Primary goal', answers.q5_goal);
+        pushLeadLine(parts, 'Additional notes', lead.message);
+        const adv = String(lead.advice || '').trim();
+        if (adv) pushLeadLine(parts, 'Advisor notes', adv);
     } else {
+        const svc = normalizeWhitespace(lead.service || '');
+        const ptype = normalizeWhitespace(lead.project_type || '');
+        pushLeadLine(parts, 'Service focus', svc || ptype);
+        if (ptype && ptype !== svc) pushLeadLine(parts, 'Project type', ptype);
+        pushLeadLine(parts, 'Budget', lead.budget);
+        pushLeadLine(parts, 'Timeline', lead.timeline);
         const contactBody = normalizeWhitespace(
             [lead.message, lead.project_details].filter(Boolean).join('\n\n')
         );
-        parts.push(
-            `Service: ${lead.service || ''}`,
-            `Budget: ${lead.budget || ''}`,
-            `Timeline: ${lead.timeline || ''}`,
-            `Message: ${contactBody}`
-        );
+        if (contactBody) parts.push(`Mission / project details:\n${contactBody}`);
+        const cadv = String(lead.advice || '').trim();
+        if (cadv) pushLeadLine(parts, 'Advisor notes', cadv);
     }
-    return normalizeWhitespace(parts.filter(Boolean).join('\n'));
+    appendOracleStoredContext(parts, lead);
+    return normalizeWhitespace(parts.join('\n'));
 }
 
 function evaluateLeadDataCompleteness(lead = {}, sourceTable = 'leads') {

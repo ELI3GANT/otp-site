@@ -19,14 +19,14 @@
   <meta property="og:title" content="Only True Perspective | OTP" />
   <meta property="og:description" content="Tactical Visual Intelligence. High-retention creative direction and cinematic architecture for the digital elite." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://onlytrueperspective.tech/" />
-  <link rel="canonical" href="https://onlytrueperspective.tech/" />
-  <meta property="og:image" content="https://onlytrueperspective.tech/og.jpg" />
+  <meta property="og:url" content="https://www.onlytrueperspective.tech/" />
+  <link rel="canonical" href="https://www.onlytrueperspective.tech/" />
+  <meta property="og:image" content="https://www.onlytrueperspective.tech/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@otp_tech" />
   <meta name="twitter:title" content="Only True Perspective | Creative Studio" />
   <meta name="twitter:description" content="Tactical visual identities & cinematic storytelling." />
-  <meta name="twitter:image" content="https://onlytrueperspective.tech/og.jpg" />
+  <meta name="twitter:image" content="https://www.onlytrueperspective.tech/og.jpg" />
   
   <!-- Favicons -->
   <link rel="icon" type="image/png" href="favicon.png" />
@@ -49,7 +49,7 @@
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=16.3.5" />
+  <link rel="stylesheet" href="./styles.css?v=16.3.7" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -60,7 +60,7 @@
       "@context": "https://schema.org",
       "@type": "Organization",
     "name": "Only True Perspective",
-    "url": "https://onlytrueperspective.tech/",
+    "url": "https://www.onlytrueperspective.tech/",
     "email": "contact@onlytrueperspective.tech",
     "founder": {
       "@type": "Person",
@@ -101,6 +101,7 @@
       <a href="#packages" class="k-hover">Packages</a>
       <a href="#about" class="k-hover">About</a>
       <a href="#contact" class="k-hover">Contact</a>
+      <a href="archive.html" class="k-hover nav-secondary">Archive</a>
       <a href="insights.html" class="k-hover nav-secondary">Insights</a>
     </nav>
 
@@ -219,7 +220,7 @@
         <!-- Project 01: The Froze Tour -->
         <a href="https://www.youtube.com/watch?v=oFM_roer79A" target="_blank" rel="noopener noreferrer" class="work-card-mini k-hover">
           <div class="work-thumb-visual portfolio-visual">
-            <img loading="lazy" src="https://i.ytimg.com/vi/oFM_roer79A/maxresdefault.jpg" alt="THE FROZE TOUR" class="work-img-full" loading="lazy" />
+            <img loading="lazy" src="https://i.ytimg.com/vi/oFM_roer79A/maxresdefault.jpg" alt="THE FROZE TOUR" class="work-img-full" />
             <div class="scanline-overlay"></div>
             <div class="work-overlay-info">
               <span class="work-type-tag">CINEMATIC_VLOG</span>
@@ -239,7 +240,7 @@
         <!-- Project 02: Fame and Fortune -->
         <a href="https://www.youtube.com/watch?v=vNxUzSmr7x0" target="_blank" rel="noopener noreferrer" class="work-card-mini k-hover">
           <div class="work-thumb-visual portfolio-visual">
-            <img loading="lazy" src="https://i.ytimg.com/vi/vNxUzSmr7x0/maxresdefault.jpg" alt="FAME & FORTUNE" class="work-img-full" loading="lazy" />
+            <img loading="lazy" src="https://i.ytimg.com/vi/vNxUzSmr7x0/maxresdefault.jpg" alt="FAME & FORTUNE" class="work-img-full" />
             <div class="scanline-overlay"></div>
             <div class="work-overlay-info">
               <span class="work-type-tag">MUSIC_VIDEO</span>
@@ -259,7 +260,7 @@
         <!-- Project 03: State of Mind -->
         <a href="https://www.youtube.com/watch?v=KYVTqzsovU8" target="_blank" rel="noopener noreferrer" class="work-card-mini k-hover">
           <div class="work-thumb-visual portfolio-visual">
-            <img loading="lazy" src="https://i.ytimg.com/vi/KYVTqzsovU8/maxresdefault.jpg" alt="STATE OF MIND" class="work-img-full" loading="lazy" />
+            <img loading="lazy" src="https://i.ytimg.com/vi/KYVTqzsovU8/maxresdefault.jpg" alt="STATE OF MIND" class="work-img-full" />
             <div class="scanline-overlay"></div>
             <div class="work-overlay-info">
               <span class="work-type-tag">BRAND_DIRECTION</span>
@@ -319,7 +320,7 @@
           </svg>
         </div>
         <div class="manifesto-right">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+          <div class="manifesto-top-row">
             <span class="eyebrow" style="color: var(--accent2); margin: 0; display: block;">IDENTITY</span>
             
             <!-- MINIMAL SHARD STAR : DEEP GLASS -->
@@ -586,7 +587,7 @@
             <span class="step-meta">PHASE_01 // STRATEGY</span>
             <h4>Vision & Architecture</h4>
             <p>We define your goal and build the tactical blueprint. Whether it's a cinematic music video or a high-end brand rollout, we lock in the aesthetic markers and business objectives in a single session.</p>
-            <a href="#contact" onclick="document.getElementById('project_type').value='The Signal'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="lock-in-link resonate k-hover">LOCK IN STRATEGY //</a>
+            <a href="#contact" onclick="window.OTPSetProjectType('The Signal');" class="lock-in-link resonate k-hover">LOCK IN STRATEGY //</a>
           </div>
         </article>
 
@@ -597,7 +598,7 @@
             <span class="step-meta">PHASE_02 // EXECUTION</span>
             <h4>Production & Polish</h4>
             <p>The lab phase. From shooting to detailed post-production, we engineer every visual asset. You'll receive real-time updates as we build the narrative and ensure the technical quality is absolute.</p>
-            <a href="#contact" onclick="document.getElementById('project_type').value='The Engine'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="lock-in-link resonate k-hover">LOCK IN PRODUCTION //</a>
+            <a href="#contact" onclick="window.OTPSetProjectType('The Engine');" class="lock-in-link resonate k-hover">LOCK IN PRODUCTION //</a>
           </div>
         </article>
 
@@ -608,7 +609,7 @@
             <span class="step-meta">PHASE_03 // DELIVERY</span>
             <h4>Technical Rollout</h4>
             <p>Final systems are deployed. We hand over the master files and a custom implementation guide to ensure your content hits the industry with maximum force and consistent authority.</p>
-            <a href="#contact" onclick="document.getElementById('project_type').value='The System'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="lock-in-link resonate k-hover">LOCK IN DELIVERY //</a>
+            <a href="#contact" onclick="window.OTPSetProjectType('The System');" class="lock-in-link resonate k-hover">LOCK IN DELIVERY //</a>
           </div>
         </article>
       </div>
@@ -656,7 +657,7 @@
               </div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
-              <a href="#contact" onclick="document.getElementById('project_type').value='The Signal'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="book-btn k-hover" style="text-decoration: none;">START PROJECT</a>
+              <a href="#contact" onclick="window.OTPSetProjectType('The Signal');" class="book-btn k-hover" style="text-decoration: none;">START PROJECT</a>
               <a href="#contact" class="book-btn-ghost k-hover" style="text-decoration: none;">Request Quote</a>
             </div>
           </div>
@@ -697,7 +698,7 @@
               <p style="font-size: 0.75rem; color: var(--muted); opacity: 0.85; margin: 8px 0 0 0; line-height: 1.4;">Full scope often lands in the ~$500–$800 band after review — same deposit tier as checkout.</p>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
-              <a href="#contact" onclick="document.getElementById('project_type').value='The Engine'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="book-btn k-hover" style="text-decoration: none;">START PROJECT</a>
+              <a href="#contact" onclick="window.OTPSetProjectType('The Engine');" class="book-btn k-hover" style="text-decoration: none;">START PROJECT</a>
               <a href="#contact" class="book-btn-ghost k-hover" style="text-decoration: none;">Request Quote</a>
             </div>
           </div>
@@ -730,7 +731,7 @@
               <p style="font-size: 0.75rem; color: var(--muted); opacity: 0.85; margin: 8px 0 0 0; line-height: 1.4;">Retainers and expanded builds are quoted from this floor; totals depend on scope.</p>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
-              <a href="#contact" onclick="document.getElementById('project_type').value='The System'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="book-btn k-hover" style="text-decoration: none;">START PROJECT</a>
+              <a href="#contact" onclick="window.OTPSetProjectType('The System');" class="book-btn k-hover" style="text-decoration: none;">START PROJECT</a>
               <a href="#contact" class="book-btn-ghost k-hover" style="text-decoration: none;">Request Quote</a>
             </div>
           </div>
@@ -750,7 +751,7 @@
       <div class="network-pkg">
         <h4 class="syne-bold custom-builds-title">Project Management & Creative Consulting</h4>
         <p style="color: var(--muted); max-width: 700px; margin: 0 auto 30px auto; font-size: 1rem; line-height: 1.6;">Helping artists, creators, and professionals architect their vision. From project strategy to technical implementation and helping others scale their unique rollouts.</p>
-        <a href="#contact" onclick="document.getElementById('project_type').value='Strategy'; document.getElementById('project_type').dispatchEvent(new Event('change'));" class="book-btn k-hover" style="background: var(--accent2); color: #000; text-align: center; padding: 14px 28px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block;">START PROJECT</a>
+        <a href="#contact" onclick="window.OTPSetProjectType('Strategy');" class="book-btn k-hover" style="background: var(--accent2); color: #000; text-align: center; padding: 14px 28px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block;">START PROJECT</a>
       </div>
 
     </div>
@@ -1016,7 +1017,7 @@
           <a href="#about">About</a>
           <a href="#contact">Contact</a>
         </nav>
-        <a href="#" class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
+        <a href="#top" class="back-to-top" onclick="event.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' });">Back to top ↑</a>
       </div>
     </div>
   </footer>
@@ -1034,7 +1035,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
   <script src="https://unpkg.com/kursor" defer></script>
   <script src="stars-v2.js?v=16.3.4" defer></script>
-  <script src="site-init.js?v=16.4.6" defer></script>
+  <script src="site-init.js?v=16.4.7" defer></script>
   <script src="audit-engine.js?v=16.3.0" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
@@ -1085,15 +1086,8 @@
   <script src="https://js.stripe.com/v3/" defer></script>
   <script src="pay_v2.js?v=16.3.4" defer></script>
   <script>
-    // PRELOADER LOGIC
+    // SCROLL REVEALS (preloader is handled in site-init.js)
     window.addEventListener('load', () => {
-      const loader = document.getElementById('page-loader');
-      if (loader) {
-        loader.style.opacity = '0';
-        loader.style.visibility = 'hidden';
-      }
-
-    // SCROLL REVEALS
     if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
       gsap.registerPlugin(ScrollTrigger);
       

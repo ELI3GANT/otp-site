@@ -254,6 +254,71 @@
     /** Stable cache key for OTP Oracle results in the reply modal (contacts + leads). */
     const replyOracleKey = (sourceTable, id) => `${sourceTable === 'leads' ? 'leads' : 'contacts'}:${String(id || '').trim()}`;
 
+    /** ORACLE_CONTEXT_DATA: human-readable analysis (no monospace “code wall”); strips model markdown fences. */
+    const formatOracleContextBlockHtml = (raw) => {
+        if (raw == null || raw === '') return '';
+        let obj = raw;
+        if (typeof raw === 'string') {
+            const t = raw.trim();
+            if (t.startsWith('{')) {
+                try { obj = JSON.parse(t); } catch (_) { obj = { tactical_advice: t }; }
+            } else {
+                obj = { tactical_advice: t };
+            }
+        }
+        const esc = (s) => (window.escapeHtml ? window.escapeHtml(String(s)) : String(s));
+        const prose = 'white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; font-size: 0.78rem; color: var(--admin-text); line-height: 1.55; margin: 0; font-family: inherit;';
+        const label = 'font-size:0.58rem;color:var(--admin-cyan);letter-spacing:1px;text-transform:uppercase;font-weight:800;margin:12px 0 5px 0;';
+        const labelFirst = 'font-size:0.58rem;color:var(--admin-cyan);letter-spacing:1px;text-transform:uppercase;font-weight:800;margin:0 0 5px 0;';
+        const wrap = (inner) => `
+                <div class="oracle-context-box" style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: min(42vh, 260px); overflow-y: auto;">
+                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">ORACLE_CONTEXT_DATA</div>
+                    ${inner}
+                </div>`;
+        if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
+            const text = stripMarkdownFences(typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2));
+            return wrap(`<div style="${prose}">${esc(text)}</div>`);
+        }
+        const keys = Object.keys(obj).filter((k) => obj[k] != null && String(obj[k]).trim() !== '');
+        if (keys.length === 1 && keys[0] === 'tactical_advice') {
+            const ta = stripMarkdownFences(String(obj.tactical_advice || '').trim());
+            return wrap(`<div style="${prose}">${esc(ta)}</div>`);
+        }
+        const sections = [
+            ['tactical_advice', 'Tactical analysis', labelFirst],
+            ['tacticalAdvice', 'Tactical analysis', label],
+            ['lead_summary', 'Scope summary', label],
+            ['leadSummary', 'Scope summary', label],
+            ['neural_meta', 'Signal metadata', label],
+            ['neuralMeta', 'Signal metadata', label],
+            ['processed_at', 'Processed', label],
+            ['processedAt', 'Processed', label]
+        ];
+        const rendered = new Set();
+        const parts = [];
+        for (const [key, title, lblStyle] of sections) {
+            if (!keys.includes(key)) continue;
+            let val = obj[key];
+            if (val != null && typeof val === 'object') val = JSON.stringify(val, null, 2);
+            val = stripMarkdownFences(String(val || '').trim());
+            if (!val) continue;
+            parts.push(`<div style="${lblStyle}">${esc(title)}</div><div style="${prose}">${esc(val)}</div>`);
+            rendered.add(key);
+        }
+        const restKeys = keys.filter((k) => !rendered.has(k));
+        if (restKeys.length) {
+            const restObj = {};
+            restKeys.forEach((k) => { restObj[k] = obj[k]; });
+            const restText = stripMarkdownFences(JSON.stringify(restObj, null, 2));
+            parts.push(`<div style="${label}">Additional details</div><div style="${prose};font-size:0.74rem;color:var(--admin-muted);">${esc(restText)}</div>`);
+        }
+        if (!parts.length) {
+            const fallback = stripMarkdownFences(JSON.stringify(obj, null, 2));
+            return wrap(`<div style="${prose}">${esc(fallback)}</div>`);
+        }
+        return wrap(parts.join(''));
+    };
+
     /** Shared HTML for OTP Oracle summary (reply modal + hydrate on reopen). */
     const buildOraclePanelHtml = (recommendation) => {
         const rec = recommendation || {};
@@ -278,6 +343,9 @@
             : rec.next_action === 'send_intake_confirmation_and_prepare_agreement_invoice'
                 ? 'Proceed with intake confirmation and agreement/invoice prep'
                 : (rec.next_action || 'manual_review_required');
+        const notesLine = Array.isArray(rec.admin_notes) && rec.admin_notes.length
+            ? rec.admin_notes.map((n) => String(n || '').trim()).filter(Boolean).join(' · ')
+            : (typeof rec.admin_notes === 'string' && rec.admin_notes.trim() ? rec.admin_notes.trim() : '');
         return `
                     <div style="background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.25); border-radius: 8px; padding: 12px;">
                         <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.4px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP ORACLE (MANUAL APPROVAL REQUIRED)</div>
@@ -289,6 +357,7 @@
                         <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">${window.escapeHtml(docs.join(', ') || 'Manual document review required')}</div>
                         <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">Knowledge hits: ${window.escapeHtml(kbHits.length ? kbHits.map(hit => `${hit.file_name}#${hit.chunk_index} (${Math.round((Number(hit.similarity || 0)) * 100)}%)`).join(' | ') : 'No indexed file citations available.')}</div>
                         <div style="font-size:0.67rem;color:var(--admin-muted);margin-top:7px;">${window.escapeHtml(nextActionLabel)}</div>
+                        ${notesLine ? `<div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;border-top:1px solid var(--admin-border);padding-top:8px;">Admin notes: ${window.escapeHtml(notesLine)}</div>` : ''}
                     </div>`;
     };
     const getGeminiModelCandidates = (preferredModel) => {
@@ -517,8 +586,8 @@
                     el.value = localStorage.getItem(key) || '';
                     el.addEventListener('input', (e) => {
                         localStorage.setItem(key, e.target.value.trim());
-                        const currentProvider = document.getElementById('aiProvider').value;
-                        checkNeuralLink(currentProvider);
+                        const provEl = document.getElementById('aiProvider');
+                        if (provEl) checkNeuralLink(provEl.value);
                     });
                 }
             };
@@ -804,13 +873,19 @@
                 .from('uploads')
                 .getPublicUrl(filePath);
 
-            document.getElementById('imageUrl').value = publicUrl;
-            document.getElementById('fileDetails').style.display = 'block';
-            document.getElementById('fileNameDisplay').textContent = optimizedFile.name;
-            
-            const originalSize = (file.size / 1024 / 1024).toFixed(2);
+            const imageUrlEl = document.getElementById('imageUrl');
+            if (!imageUrlEl) {
+                showToast('MEDIA UPLOAD UI NOT AVAILABLE');
+                return;
+            }
+            imageUrlEl.value = publicUrl;
+            const fileDetails = document.getElementById('fileDetails');
+            if (fileDetails) fileDetails.style.display = 'block';
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            if (fileNameDisplay) fileNameDisplay.textContent = optimizedFile.name;
             const optimizedSize = (optimizedFile.size / 1024 / 1024).toFixed(2);
-            document.getElementById('fileSizeDisplay').textContent = `${optimizedSize} MB (Saved ${((1 - optimizedFile.size/file.size)*100).toFixed(0)}%)`;
+            const fileSizeDisplay = document.getElementById('fileSizeDisplay');
+            if (fileSizeDisplay) fileSizeDisplay.textContent = `${optimizedSize} MB (Saved ${((1 - optimizedFile.size/file.size)*100).toFixed(0)}%)`;
             
             const prevDiv = document.getElementById('imagePreview');
             const urlIn = document.getElementById('urlInput');
@@ -835,7 +910,16 @@
     // 4.7 EDIT POST LOGIC
     window.loadPostForEdit = async function(id) {
         showToast("FETCHING BROADCAST DATA...");
-        
+        const $ = (fid) => document.getElementById(fid);
+        const setVal = (fid, v) => {
+            const n = $(fid);
+            if (n) n.value = v == null ? '' : String(v);
+        };
+        const setChecked = (fid, v) => {
+            const n = $(fid);
+            if (n && 'checked' in n) n.checked = !!v;
+        };
+
         try {
             // Fetch FULL data for this specific post
             const { data: post, error } = await state.client
@@ -846,51 +930,50 @@
 
             if(error) throw error;
             if(!post) throw new Error("Post not found");
-
-            // Populate Form
-            document.getElementById('postIdInput').value = post.id;
-            document.getElementById('titleInput').value = post.title || '';
-            document.getElementById('slugInput').value = post.slug || '';
-            
-            // Handle Image - Populate both fields for flexibility
-            const img = post.image_url || '';
-            document.getElementById('imageUrl').value = img;
-            document.getElementById('urlInput').value = img;
-            
-            // Show Preview if image exists
-            const prevDiv = document.getElementById('imagePreview');
-            if(img && prevDiv) {
-                 prevDiv.innerHTML = `<img id="previewImg" src="${img}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
-                 prevDiv.style.display = 'block';
+            const postForm = $('postForm');
+            const postIdInput = $('postIdInput');
+            if (!postForm || !postIdInput) {
+                showToast('BROADCAST FORM NOT ON THIS PAGE');
+                return;
             }
 
-            document.getElementById('catInput').value = post.category || 'Strategy';
-            document.getElementById('authorInput').value = post.author || 'OTP Admin';
-            document.getElementById('tagsInput').value = (post.tags || []).join(', ');
-            document.getElementById('excerptInput').value = post.excerpt || '';
-            document.getElementById('contentArea').value = post.content || '';
-            
-            // SEO
-            document.getElementById('seoTitle').value = post.seo_title || '';
-            document.getElementById('seoDesc').value = post.seo_desc || '';
-            // Views handled strictly by DB now
-            document.getElementById('pubToggle').checked = post.published;
+            postIdInput.value = post.id;
+            setVal('titleInput', post.title || '');
+            setVal('slugInput', post.slug || '');
 
-            // Update UI State
-            const submitBtn = document.getElementById('submitBtn');
-            if(submitBtn) {
+            const img = post.image_url || '';
+            setVal('imageUrl', img);
+            setVal('urlInput', img);
+
+            const prevDiv = $('imagePreview');
+            if (img && prevDiv) {
+                prevDiv.innerHTML = `<img id="previewImg" src="${img}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
+                prevDiv.style.display = 'block';
+            } else if (prevDiv && !img) {
+                prevDiv.innerHTML = '';
+                prevDiv.style.display = 'none';
+            }
+
+            setVal('catInput', post.category || 'Strategy');
+            setVal('authorInput', post.author || 'OTP Admin');
+            setVal('tagsInput', (post.tags || []).join(', '));
+            setVal('excerptInput', post.excerpt || '');
+            setVal('contentArea', post.content || '');
+            setVal('seoTitle', post.seo_title || '');
+            setVal('seoDesc', post.seo_desc || '');
+            setChecked('pubToggle', post.published);
+
+            const submitBtn = $('submitBtn');
+            if (submitBtn) {
                 submitBtn.textContent = "UPDATE BROADCAST";
-                submitBtn.style.background = "var(--admin-accent)"; 
+                submitBtn.style.background = "var(--admin-accent)";
                 submitBtn.style.color = "#fff";
             }
-            
-            document.getElementById('postForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
-            // Update Word Count
-            const content = document.getElementById('contentArea');
-            if(content) {
-                 content.dispatchEvent(new Event('input')); 
-            }
+
+            postForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            const content = $('contentArea');
+            if (content) content.dispatchEvent(new Event('input'));
 
             showToast("DATA LOADED");
 
@@ -901,9 +984,13 @@
     };
 
     window.resetForm = function() {
-        document.getElementById('postForm').reset();
-        document.getElementById('postIdInput').value = '';
-        document.getElementById('imagePreview').style.display = 'none';
+        const postForm = document.getElementById('postForm');
+        if (!postForm) return;
+        postForm.reset();
+        const postIdInput = document.getElementById('postIdInput');
+        if (postIdInput) postIdInput.value = '';
+        const imagePreview = document.getElementById('imagePreview');
+        if (imagePreview) imagePreview.style.display = 'none';
         
         const submitBtn = document.getElementById('submitBtn');
         if(submitBtn) {
@@ -1445,12 +1532,15 @@
         }, 50000);
         const payload = await res.json().catch(() => ({}));
         if (!res.ok || !payload.success) throw new Error(payload.message || `Recommendation failed (${res.status})`);
-        window.leadOracleCache = window.leadOracleCache || {};
-        window.leadOracleCache[leadId] = {
+        const st = sourceTable === 'contacts' ? 'contacts' : 'leads';
+        const entry = {
             recommendation: payload.recommendation,
             confidence: payload.confidence,
             updated_at: new Date().toISOString()
         };
+        window.leadOracleCache = window.leadOracleCache || {};
+        if (st === 'leads') window.leadOracleCache[leadId] = entry;
+        window.replyOracleCache[replyOracleKey(st, leadId)] = entry;
         return payload.recommendation;
     };
 
@@ -1466,7 +1556,7 @@
                 },
                 body: JSON.stringify({ leadIds })
             }, 45000);
-            const payload = await res.json();
+            const payload = await res.json().catch(() => ({}));
             if (res.ok && payload.success && payload.recommendations) {
                 window.leadOracleCache = { ...(window.leadOracleCache || {}), ...payload.recommendations };
             }
@@ -1539,18 +1629,13 @@
         try {
             showToast('RUNNING OTP ORACLE…');
             await window.requestLeadBrain(leadId, 'leads');
-            const cached = window.leadOracleCache && window.leadOracleCache[leadId];
-            if (cached && cached.recommendation) {
-                window.replyOracleCache[replyOracleKey('leads', leadId)] = {
-                    recommendation: cached.recommendation,
-                    confidence: cached.confidence,
-                    updated_at: cached.updated_at || new Date().toISOString()
-                };
-            }
             await window.fetchLeads();
-            showToast('OTP ORACLE READY');
+            const cached = window.leadOracleCache && window.leadOracleCache[leadId];
+            const conf = Number(cached && cached.confidence);
+            const suffix = Number.isFinite(conf) ? ` (${Math.round(conf * 100)}% match)` : '';
+            showToast('OTP ORACLE READY' + suffix);
         } catch (e) {
-            showToast(`OTP ORACLE FAILED: ${e.message}`);
+            showToast(`OTP ORACLE FAILED: ${formatNetworkError(e)}`);
         }
     };
 
@@ -1592,7 +1677,7 @@
                             <button type="button" onclick="return deleteLead('${l.id}', event)" title="Delete" style="background:transparent; border:none; color:var(--admin-danger); cursor:pointer; font-size: 1.1rem;">✖</button>
                         </div>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 0.8rem; margin-bottom: 15px; color: var(--admin-text); background: var(--admin-panel); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
+                    <div class="otp-lead-mission-grid" style="font-size: 0.8rem; margin-bottom: 15px; color: var(--admin-text); background: var(--admin-panel); padding: 15px; border-radius: 8px; border: 1px solid var(--admin-border);">
                         <div style="grid-column: 1 / -1; margin-bottom: 5px;"><span style="color: var(--admin-cyan); font-weight:900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px;">// MISSION PARAMETERS</span></div>
                         <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">OBJECTIVE:</span><br>${escape(answers.q1 || 'N/A')}</div>
                         <div><span style="color: var(--admin-muted); font-size: 0.7rem; font-weight: bold;">BARRIER:</span><br>${escape(answers.q2 || 'N/A')}</div>
@@ -1826,10 +1911,25 @@
         }
     };
 
+    /** Reply modal nodes from otp-terminal.html — null if wrong page or stripped DOM. */
+    function requireReplyManagerCoreDom() {
+        const modal = document.getElementById('replyModal');
+        const contactId = document.getElementById('replyContactId');
+        const email = document.getElementById('replyContactEmail');
+        const name = document.getElementById('replyContactName');
+        const incoming = document.getElementById('replyIncomingMsg');
+        const draft = document.getElementById('replyDraftContent');
+        if (!modal || !contactId || !email || !name || !incoming || !draft) {
+            showToast('REPLY WORKSPACE NOT LOADED — OPEN OTP TERMINAL');
+            return null;
+        }
+        return { modal, contactId, email, name, incoming, draft };
+    }
+
     // --- REPLY MANAGER LOGIC ---
     window.closeReplyManager = function() {
         const modal = document.getElementById('replyModal');
-        modal.style.display = 'none';
+        if (modal) modal.style.display = 'none';
         const analysisDiv = document.getElementById('replyAnalysis');
         if (analysisDiv) analysisDiv.textContent = 'No analysis data active.';
         // Focus back to inbox container to prevent jump
@@ -1867,17 +1967,32 @@
             return;
         }
 
+        const rmDom = requireReplyManagerCoreDom();
+        if (!rmDom) return;
+
+        const nextSrcForDoc = source === 'leads' ? 'leads' : 'contacts';
+        const replyDocKey = `${nextSrcForDoc}:${c.id}`;
+        const prevDocPacketKey = String(window.__docPacketState?.contextKey || '');
+        if (prevDocPacketKey && prevDocPacketKey !== replyDocKey) {
+            window.closeDocPacket?.();
+            window.__resetDocPacketState?.(false);
+        }
+
         // Persist lightweight context for reply generation (avoids scraping DOM later)
+        let analysisForCtx = c.ai_analysis != null && c.ai_analysis !== '' ? c.ai_analysis : (c.advice || c.neural_meta || null);
+        if (typeof analysisForCtx === 'string' && analysisForCtx.trim().startsWith('{')) {
+            try { analysisForCtx = JSON.parse(analysisForCtx); } catch (_) { /* keep string */ }
+        }
         window.__replyContext = {
             id: c.id,
             source: source === 'leads' ? 'leads' : 'contacts',
-            analysis: c.ai_analysis || c.advice || c.neural_meta || null,
+            analysis: analysisForCtx,
             recommendation: null
         };
         
-        document.getElementById('replyContactId').value = c.id;
-        document.getElementById('replyContactEmail').value = c.email || '';
-        document.getElementById('replyContactName').value = c.name || (source === 'leads' ? 'Valued Lead' : 'Client');
+        rmDom.contactId.value = c.id;
+        rmDom.email.value = c.email || '';
+        rmDom.name.value = c.name || (source === 'leads' ? 'Valued Lead' : 'Client');
         const sourceInput = document.getElementById('replySourceTable');
         if (sourceInput) sourceInput.value = source === 'leads' ? 'leads' : 'contacts';
         
@@ -1902,9 +2017,19 @@
             if (typeof answers === 'string') try { answers = JSON.parse(answers); } catch(e) {}
             messageContext = `AUDIT GOAL: ${answers.q1 || 'N/A'}\nHURDLE: ${answers.q2 || 'N/A'}\nPLATFORM: ${answers.q3 || 'N/A'}\nVIBE: ${answers.q4 || 'N/A'}\nTARGET: ${answers.q5_goal || 'N/A'}`;
         }
+        let aiForTactical = c.ai_analysis;
+        if (typeof aiForTactical === 'string' && aiForTactical.trim().startsWith('{')) {
+            try { aiForTactical = JSON.parse(aiForTactical); } catch (_) { aiForTactical = null; }
+        }
+        const tacticalLine = (aiForTactical && typeof aiForTactical === 'object' && aiForTactical.tactical_advice)
+            ? String(aiForTactical.tactical_advice).trim()
+            : '';
+        if (tacticalLine) {
+            messageContext = [messageContext, `ORACLE TACTICAL —\n${tacticalLine}`].filter(Boolean).join('\n\n');
+        }
         
-        document.getElementById('replyIncomingMsg').textContent = messageContext;
-        document.getElementById('replyDraftContent').value = c.draft_reply || '';
+        rmDom.incoming.textContent = messageContext;
+        rmDom.draft.value = c.draft_reply || '';
         const cacheBtn = document.getElementById('replyCacheBtn');
         const syncBtn = document.getElementById('replySyncBtn');
         const isLeadsSource = source === 'leads';
@@ -1934,12 +2059,7 @@
             const sections = [];
             if (c.ai_analysis || c.advice || c.neural_meta) {
                 const analysisData = c.ai_analysis || { tactical_advice: c.advice, neural_meta: c.neural_meta };
-                const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
-                sections.push(`
-                <div style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: 200px; overflow-y: auto;">
-                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">ORACLE_CONTEXT_DATA</div>
-                    <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.72rem; color: var(--admin-text); line-height: 1.4; margin: 0;">${window.escapeHtml ? window.escapeHtml(analysisText) : analysisText}</pre>
-                </div>`);
+                sections.push(formatOracleContextBlockHtml(analysisData));
             }
             if (opsRec) {
                 sections.push(buildOraclePanelHtml(opsRec));
@@ -1955,8 +2075,8 @@
             analysisDiv.innerHTML = sections.join('<div style="height:12px;"></div>');
         }
         
-        const modal = document.getElementById('replyModal');
-        modal.style.display = 'flex'; 
+        const modal = rmDom.modal;
+        modal.style.display = 'flex';
         // Enforce fixed centering alignment
         modal.style.position = 'fixed';
         modal.style.inset = '0';
@@ -1966,8 +2086,7 @@
         modal.style.background = 'var(--admin-modal-scrim)';
         modal.style.backdropFilter = 'blur(5px)';
 
-    // Focus the first actionable button or input
-        setTimeout(() => document.getElementById('replyDraftContent').focus(), 100);
+        setTimeout(() => rmDom.draft.focus(), 100);
     };
 
     // --- DOC PACKET (DYNAMIC DOCUMENT ENGINE) ---
@@ -2072,8 +2191,13 @@
         }
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
         const nextKey = `${sourceTable}:${leadId}`;
-        // Hard reset on open (reopen) and when switching leads
-        window.__resetDocPacketState(true);
+        const prevKey = String(window.__docPacketState?.contextKey || '');
+        const sameThread = prevKey === nextKey;
+        if (!sameThread) {
+            window.__resetDocPacketState(true);
+            const sendTo = document.getElementById('docPacketSendTo');
+            if (sendTo) sendTo.value = '';
+        }
         window.__docPacketState.contextKey = nextKey;
         window.__docPacketState.leadId = leadId;
         window.__docPacketState.sourceTable = sourceTable;
@@ -2086,6 +2210,9 @@
         modal.style.background = 'var(--admin-modal-scrim)';
         modal.style.backdropFilter = 'blur(5px)';
         window.renderDocPacketUI();
+        if (sameThread && window.__docPacketState?.packetId && state.token && state.token !== 'static-bypass-token') {
+            window.refreshDocPacketAudit?.();
+        }
     };
 
     window.closeDocPacket = function() {
@@ -2099,6 +2226,15 @@
         const errBox = document.getElementById('docPacketErrors');
         const genBtn = document.getElementById('docPacketGenerateBtn');
         if (!meta || !list) return;
+        if (list.dataset.oracleApproveDelegated !== '1') {
+            list.dataset.oracleApproveDelegated = '1';
+            list.addEventListener('change', (e) => {
+                const t = e.target;
+                if (t && t.classList && t.classList.contains('doc-approve-toggle')) {
+                    window.__updateDocPacketApproveBtn();
+                }
+            });
+        }
         const s = window.__docPacketState || {};
         const hasPacket = !!s.packetId;
         const sendBox = document.getElementById('docPacketSend');
@@ -2112,7 +2248,6 @@
             genBtn.style.cursor = s.leadId ? 'pointer' : 'not-allowed';
             genBtn.title = s.leadId ? '' : 'Open a thread first.';
         }
-        window.__updateDocPacketApproveBtn();
 
         meta.innerHTML = `
             <div><strong>Lead ID</strong>: ${window.escapeHtml(String(s.leadId || ''))}</div>
@@ -2191,11 +2326,6 @@
             `;
         }).join('');
 
-        // Approval button should only enable when a toggle differs from baseline
-        const toggles = Array.from(document.querySelectorAll('#docPacketList .doc-approve-toggle'));
-        for (const t of toggles) {
-            t.addEventListener('change', () => window.__updateDocPacketApproveBtn(), { passive: true });
-        }
         window.__updateDocPacketApproveBtn();
 
         if (errBox) {
@@ -2314,6 +2444,21 @@
         const s = window.__docPacketState || {};
         if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.leadId) { showToast('OPEN A THREAD FIRST'); return; }
+        const domLead = String(document.getElementById('replyContactId')?.value || '').trim();
+        const domSrc = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
+        if (domLead && (domLead !== String(s.leadId) || domSrc !== (s.sourceTable || 'contacts'))) {
+            window.__docPacketState.leadId = domLead;
+            window.__docPacketState.sourceTable = domSrc;
+            window.__docPacketState.contextKey = `${domSrc}:${domLead}`;
+            window.__docPacketState.packetId = null;
+            window.__docPacketState.docs = {};
+            window.__docPacketState.fields = null;
+            window.__docPacketState.docxErrors = null;
+            window.__docPacketState.approvalsBaseline = null;
+            window.__docPacketState.auditEvents = null;
+            window.__docPacketState.notice = 'Thread changed — packet cleared; generate again for this lead.';
+            window.renderDocPacketUI();
+        }
         const btn = document.getElementById('docPacketGenerateBtn');
         const orig = btn ? btn.textContent : '';
         try {
@@ -2661,24 +2806,31 @@
                 const sections = [];
                 const raw = window.__replyContext && window.__replyContext.analysis;
                 if (raw) {
-                    const analysisData = (typeof raw === 'object' && raw !== null && !Array.isArray(raw))
-                        ? raw
-                        : { tactical_advice: String(raw) };
-                    const analysisText = typeof analysisData === 'string' ? analysisData : JSON.stringify(analysisData, null, 2);
-                    sections.push(`
-                <div style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: 200px; overflow-y: auto;">
-                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">ORACLE_CONTEXT_DATA</div>
-                    <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.72rem; color: var(--admin-text); line-height: 1.4; margin: 0;">${window.escapeHtml ? window.escapeHtml(analysisText) : analysisText}</pre>
-                </div>`);
+                    sections.push(formatOracleContextBlockHtml(raw));
                 }
                 sections.push(buildOraclePanelHtml(recommendation));
                 analysisDiv.innerHTML = sections.join('<div style="height:12px;"></div>');
             }
-            showToast("OTP ORACLE READY");
+            const confN = Number(payload.confidence);
+            const confSuffix = Number.isFinite(confN) ? ` (${Math.round(confN * 100)}% match)` : '';
+            showToast('OTP ORACLE READY' + confSuffix);
             if (sourceTable === 'leads') await window.fetchLeads();
             else await window.fetchInbox();
         } catch (e) {
-            showToast(`OTP ORACLE FAILED: ${formatNetworkError(e)}`);
+            const msg = formatNetworkError(e);
+            showToast(`OTP ORACLE FAILED: ${msg}`);
+            const failDiv = document.getElementById('replyAnalysis');
+            if (failDiv) {
+                const errHtml = `<div style="padding:12px;border:1px solid rgba(255,100,120,0.4);border-radius:8px;background:rgba(255,100,120,0.08);font-size:0.76rem;color:var(--admin-text);line-height:1.45;"><strong style="letter-spacing:0.06em;">OTP ORACLE FAILED</strong><br/>${window.escapeHtml ? window.escapeHtml(String(msg)) : String(msg)}<br/><span style="font-size:0.68rem;opacity:0.85;">Fix auth, network, or knowledge index — then retry.</span></div>`;
+                const lid = document.getElementById('replyContactId')?.value;
+                const st = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
+                const parts = [errHtml];
+                const rawA = window.__replyContext && window.__replyContext.analysis;
+                if (rawA) parts.push(formatOracleContextBlockHtml(rawA));
+                const prev = lid ? window.replyOracleCache[replyOracleKey(st, lid)] : null;
+                if (prev && prev.recommendation) parts.push(buildOraclePanelHtml(prev.recommendation));
+                failDiv.innerHTML = parts.join('<div style="height:12px;"></div>');
+            }
         } finally {
             if (opsBtn) {
                 opsBtn.disabled = false;
@@ -2691,11 +2843,13 @@
 
     // NEW: Generate AI Reply for Lead
     window.generateReplyForLead = async function() {
-        const msg = document.getElementById('replyIncomingMsg').textContent;
-        const name = document.getElementById('replyContactName').value;
-        const email = document.getElementById('replyContactEmail').value;
-        const draftBox = document.getElementById('replyDraftContent');
-        
+        const rmDom = requireReplyManagerCoreDom();
+        if (!rmDom) return;
+        const msg = rmDom.incoming.textContent;
+        const name = rmDom.name.value;
+        const email = rmDom.email.value;
+        const draftBox = rmDom.draft;
+
         if(!msg) { showToast("NO MESSAGE CONTEXT FOUND"); return; }
         if (!email || !String(email).includes('@')) { showToast("VALID CONTACT EMAIL REQUIRED"); return; }
         
@@ -2736,6 +2890,7 @@
 
             // Pull OTP Oracle recommendation (best effort) so replies match the packet workflow
             let opsRec = null;
+            let oracleConfidenceFromRec = null;
             try {
                 if (state.token && leadId) {
                     const recRes = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/recommend`, {
@@ -2744,7 +2899,12 @@
                         body: JSON.stringify({ leadId, sourceTable })
                     }, 50000);
                     const recPayload = await recRes.json().catch(() => ({}));
-                    if (recRes.ok && recPayload.success) opsRec = recPayload.recommendation || null;
+                    if (recRes.ok && recPayload.success) {
+                        opsRec = recPayload.recommendation || null;
+                        oracleConfidenceFromRec = Number.isFinite(Number(recPayload.confidence))
+                            ? Number(recPayload.confidence)
+                            : null;
+                    }
                 }
             } catch (e) {
                 // Non-fatal: reply generation can proceed without Oracle context
@@ -2754,7 +2914,7 @@
             if (opsRec && leadId) {
                 window.replyOracleCache[replyOracleKey(sourceTable, leadId)] = {
                     recommendation: opsRec,
-                    confidence: null,
+                    confidence: oracleConfidenceFromRec,
                     updated_at: new Date().toISOString()
                 };
                 if (sourceTable === 'leads') {
@@ -2983,7 +3143,7 @@ If the OTP Oracle recommends a package or safety docs, align your reply with tha
                 analysisDiv.innerHTML = `
                     <div style="background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.35); border-radius: 8px; padding: 10px;">
                         <div style="font-size:0.62rem;color:#ffd37a;letter-spacing:1.2px;text-transform:uppercase;font-weight:900;margin-bottom:6px;">Analysis Agent Alert</div>
-                        <div style="font-size:0.72rem;color:var(--admin-text);line-height:1.45;">OpenAI quota or billing blocked this request. Add credits, switch engine to Gemini/Groq, or paste a cloud key under Direct Neural Cloud.</div>
+                        <div style="font-size:0.72rem;color:var(--admin-text);line-height:1.45;">OpenAI quota or billing blocked this request. Add credits, switch engine to Gemini/Groq, or paste a cloud key under OTP Oracle / provider keys.</div>
                     </div>`;
             }
             showToast("GEN FAILED: " + friendlyError);
@@ -2994,13 +3154,15 @@ If the OTP Oracle recommends a package or safety docs, align your reply with tha
     };
 
     window.saveDraftUpdate = async function() {
+        const rmDom = requireReplyManagerCoreDom();
+        if (!rmDom) return;
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
         if (sourceTable !== 'contacts') {
             showToast("DRAFT CACHE AVAILABLE FOR INBOX THREADS");
             return;
         }
-        const id = document.getElementById('replyContactId').value;
-        const content = document.getElementById('replyDraftContent').value;
+        const id = rmDom.contactId.value;
+        const content = rmDom.draft.value;
         
         try {
             await window.secureWrite('contacts', { draft_reply: content }, id);
@@ -3013,43 +3175,45 @@ If the OTP Oracle recommends a package or safety docs, align your reply with tha
     };
 
     window.launchMailClient = function() {
-    const email = document.getElementById('replyContactEmail').value;
-    const name = document.getElementById('replyContactName').value;
-    const content = document.getElementById('replyDraftContent').value;
-    const subject = document.getElementById('replySubject').value || `Inquiry Reply: Only True Perspective`;
-    
-    // Ensure content is safe for URL
-    const safeSubject = encodeURIComponent(subject);
-    const safeBody = encodeURIComponent(content);
-    
-    const mailto = `mailto:${encodeURIComponent(email)}?subject=${safeSubject}&body=${safeBody}`;
-    
-    // Use window.location for better protocol handling in some browsers, fallback to window.open
-    try {
-        window.location.href = mailto;
-    } catch(e) {
-        window.open(mailto, '_blank');
-    }
-};
+        const rmDom = requireReplyManagerCoreDom();
+        if (!rmDom) return;
+        const email = rmDom.email.value;
+        const name = rmDom.name.value;
+        const content = rmDom.draft.value;
+        const subjectEl = document.getElementById('replySubject');
+        const subject = (subjectEl ? subjectEl.value : '') || `Inquiry Reply: Only True Perspective`;
+        const safeSubject = encodeURIComponent(subject);
+        const safeBody = encodeURIComponent(content);
+        const mailto = `mailto:${encodeURIComponent(email)}?subject=${safeSubject}&body=${safeBody}`;
+
+        try {
+            window.location.href = mailto;
+        } catch(e) {
+            window.open(mailto, '_blank');
+        }
+    };
 
     window.markAsReplied = function() {
+        const rmDom = requireReplyManagerCoreDom();
+        if (!rmDom) return;
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
         if (sourceTable !== 'contacts') {
             showToast("LEAD REVIEW LOGGED (NO AUTO-SYNC)");
             window.closeReplyManager();
             return;
         }
-        const draftContent = document.getElementById('replyDraftContent')?.value || '';
-        if (!String(draftContent).trim()) {
+        const draftContent = String(rmDom.draft.value || '').trim();
+        if (!draftContent) {
             showToast("ADD OR GENERATE A DRAFT BEFORE SYNCHRONIZING");
             return;
         }
-        const id = document.getElementById('replyContactId').value;
+        const id = rmDom.contactId.value;
         confirmAction("SENT REPLY?", "Confirm you have sent the reply. This will mark the thread as completed.", async () => {
             try {
                 await window.secureWrite('contacts', { ai_status: 'completed' }, id);
                 showToast("MARKED AS COMPLETED (SECURE)");
-                document.getElementById('replyModal').style.display = 'none';
+                const rm = document.getElementById('replyModal');
+                if (rm) rm.style.display = 'none';
                 await fetchInbox();
             } catch(e) { showToast("UPDATE FAILED: " + e.message); }
         });
@@ -3719,11 +3883,13 @@ If the OTP Oracle recommends a package or safety docs, align your reply with tha
     };
 
     window.closeMediaLibrary = function() {
-        document.getElementById('mediaModal').style.display = 'none';
+        const mm = document.getElementById('mediaModal');
+        if (mm) mm.style.display = 'none';
     };
 
     function selectMedia(url, name) {
-        document.getElementById('imageUrl').value = url;
+        const imageUrlInput = document.getElementById('imageUrl');
+        if (imageUrlInput) imageUrlInput.value = url;
         const previewDiv = document.getElementById('imagePreview');
         const detailsDiv = document.getElementById('fileDetails');
         
@@ -3738,8 +3904,10 @@ If the OTP Oracle recommends a package or safety docs, align your reply with tha
 
         if(detailsDiv) {
             detailsDiv.style.display = 'block';
-            document.getElementById('fileNameDisplay').textContent = name || "Selected from Library";
-            document.getElementById('fileSizeDisplay').textContent = "(Cloud Asset)";
+            const fn = document.getElementById('fileNameDisplay');
+            const fs = document.getElementById('fileSizeDisplay');
+            if (fn) fn.textContent = name || "Selected from Library";
+            if (fs) fs.textContent = "(Cloud Asset)";
         }
         closeMediaLibrary();
     }
@@ -4564,21 +4732,25 @@ If the OTP Oracle recommends a package or safety docs, align your reply with tha
         const modal = document.getElementById('actionModal');
         const inputContainer = document.getElementById('actionModalInputVars');
         const inputField = document.getElementById('actionModalInput');
-        if(!modal) return;
+        const titleEl = document.getElementById('actionModalTitle');
+        const textEl = document.getElementById('actionModalText');
+        if (!modal || !titleEl || !textEl) return;
         
-        document.getElementById('actionModalTitle').textContent = title;
-        document.getElementById('actionModalText').textContent = text;
+        titleEl.textContent = title;
+        textEl.textContent = text;
         
         if (inputMode) {
+            if (!inputContainer || !inputField) return;
             inputContainer.style.display = 'block';
             inputField.placeholder = inputPlaceholder;
             inputField.value = '';
             setTimeout(() => inputField.focus(), 100);
-        } else {
+        } else if (inputContainer) {
             inputContainer.style.display = 'none';
         }
 
         const btn = document.getElementById('confirmActionBtn');
+        if (!btn || !btn.parentNode) return;
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
         

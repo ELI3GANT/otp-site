@@ -1021,8 +1021,8 @@ html[data-theme="light"] .status-dot {
 /* FLOATING THEME TOGGLE (Unified Bottom Right) */
 .theme-btn {
     position: fixed !important;
-    bottom: 25px;
-    right: 25px;
+    bottom: max(20px, calc(12px + env(safe-area-inset-bottom, 0px)));
+    right: max(16px, calc(12px + env(safe-area-inset-right, 0px)));
     top: auto; /* Override desktop top */
     width: 50px;
     height: 50px;
@@ -1512,6 +1512,7 @@ input:focus + .slider {
         position: sticky;
         top: 100px;
         max-height: calc(100vh - 120px);
+        max-height: calc(100dvh - 120px);
         overflow-y: auto;
         scrollbar-width: thin;
         scrollbar-color: var(--admin-border) transparent;
@@ -1525,6 +1526,65 @@ input:focus + .slider {
 @media (max-width: 768px) {
     .admin-wrap { padding: 15px 12px 100px; }
     .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+}
+
+/* OTP Terminal toolbars (inbox / leads) + lead mission grid */
+.terminal-section-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+.terminal-section-toolbar__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+.terminal-section-toolbar__meta {
+    font-size: 0.7rem;
+    color: var(--admin-muted);
+}
+.terminal-section-toolbar--inbox .terminal-section-toolbar__meta {
+    margin-left: auto;
+}
+.terminal-section-toolbar--leads .terminal-section-toolbar__actions {
+    margin-left: auto;
+}
+@media (max-width: 560px) {
+    .terminal-section-toolbar--inbox .terminal-section-toolbar__meta,
+    .terminal-section-toolbar--leads .terminal-section-toolbar__actions {
+        margin-left: 0;
+        width: 100%;
+    }
+    .terminal-section-toolbar--inbox .terminal-section-toolbar__meta {
+        text-align: center;
+    }
+    .terminal-section-toolbar--leads .terminal-section-toolbar__actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 720px) {
+    .admin-header h1 {
+        white-space: normal;
+        flex-wrap: wrap;
+        line-height: 1.25;
+        max-width: 100%;
+    }
+}
+
+.otp-lead-mission-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+@media (max-width: 640px) {
+    .otp-lead-mission-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 600px) {

@@ -19,3 +19,6 @@ my.env
 .playwright-cli/
 output/playwright/
 .vercel
+
+# Local scratch (PDFs, exports)
+tmp/

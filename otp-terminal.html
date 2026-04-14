@@ -21,8 +21,86 @@
   <link rel="manifest" href="site.webmanifest" />
 
   <link rel="stylesheet" href="./styles.css?v=16.3.6" />
-  <link rel="stylesheet" href="./admin-styles.css?v=16.6.0" />
+  <link rel="stylesheet" href="./admin-styles.css?v=16.6.12" />
   <link rel="stylesheet" href="./blog-enhancements.css?v=16.3.0" />
+  <style>
+    /* OTP Terminal: reply + doc packet modals (desktop + mobile safe-area) */
+    #replyModal.modal-overlay,
+    #docPacketModal.modal-overlay {
+      padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      box-sizing: border-box;
+    }
+    #replyModal .otp-modal-panel,
+    #docPacketModal .otp-modal-panel {
+      box-sizing: border-box;
+    }
+    @media (max-width: 720px) {
+      #replyModal.modal-overlay,
+      #docPacketModal.modal-overlay {
+        align-items: flex-end;
+      }
+      #replyModal .otp-modal-panel,
+      #docPacketModal .otp-modal-panel {
+        width: 100%;
+        max-width: 100%;
+        max-height: min(100dvh, 100vh);
+        border-radius: 14px 14px 0 0;
+        margin: 0;
+      }
+      #replyModal .reply-signal-grid {
+        grid-template-columns: 1fr;
+      }
+      #replyIncomingMsg,
+      #replyAnalysis {
+        max-height: min(38vh, 220px);
+        min-height: 96px;
+      }
+    }
+
+    /* OTP Terminal: two-column grid — avoid horizontal overflow / clipped columns */
+    .admin-main-grid > .admin-main-content {
+      min-width: 0;
+    }
+    .admin-main-grid > #postForm.dashboard-sidebar {
+      min-width: 0;
+    }
+    @media (max-width: 1023px) {
+      .admin-header {
+        flex-wrap: wrap;
+        row-gap: 10px;
+      }
+      .admin-header .admin-nav-actions {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+      }
+      #systemHeartbeat {
+        flex-wrap: wrap;
+        row-gap: 6px;
+      }
+    }
+
+    /* Page shell: safe areas + avoid notch clipping */
+    body.otp-terminal-page .admin-wrap {
+      padding-left: max(12px, env(safe-area-inset-left, 0px));
+      padding-right: max(12px, env(safe-area-inset-right, 0px));
+      padding-bottom: max(100px, calc(72px + env(safe-area-inset-bottom, 0px)));
+    }
+
+    /* Social preview header — stack on narrow screens */
+    @media (max-width: 640px) {
+      .social-preview-head {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+      }
+      .social-preview-head .preview-tabs {
+        flex-wrap: wrap;
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+  </style>
   <!--/* ADMIN COMMAND CENTER STYLES - V15.15.2 STABLE */-->
   <style>
     .post-row.row-active-live, .post-row.live-row {
@@ -56,7 +134,7 @@
   <!-- THEME GUARD: first-paint theme + accent (theme-chrono.js) -->
   <script src="theme-chrono.js?v=4"></script>
 </head>
-<body class="">
+<body class="otp-terminal-page">
     <!-- SYSTEM STATUS BAR -->
     <div class="system-status-bar" style="background: #000; border-bottom: 1px solid var(--admin-border); padding: 8px 15px; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 0.7rem; color: #666; position: sticky; top: 0; z-index: 2000;">
         <div style="display: flex; gap: 15px; align-items: center;">
@@ -275,13 +353,88 @@
                     <div style="font-size: 0.75rem; color: var(--admin-muted); font-weight: bold; margin-top: 4px;">LOCKED</div>
                 </div>
             </div>
+            </section>
+            <!-- SECTION: INBOX & AGENT -->
+            <section class="input-section">
+                <div class="section-label">05 // Secure Inbox (AI Agents)</div>
+                <div class="terminal-section-toolbar terminal-section-toolbar--inbox">
+                     <div class="terminal-section-toolbar__actions">
+                        <select id="inboxFilter" onchange="fetchInbox()" style="background: var(--admin-panel); color: var(--admin-text); border: 1px solid var(--admin-border); padding: 5px; border-radius: 4px; font-size: 0.7rem;">
+                            <option value="all">ALL SIGNALS</option>
+                            <option value="active" selected>ACTIVE (New/Draft)</option>
+                            <option value="completed">PROCESSED</option>
+                            <option value="archived">ARCHIVED</option>
+                        </select>
+                        <button type="button" onclick="fetchInbox()" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-success); font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; cursor: pointer;">REFRESH</button>
+                        <button type="button" onclick="confirmPurgeInbox()" style="background: var(--admin-danger); color: #fff; border: none; font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">PURGE INBOX</button>
+                     </div>
+                     <div class="terminal-section-toolbar__meta">SECURE CHANNEL</div>
+                </div>
+                <div id="inboxManager" tabindex="-1" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 500px; overflow-y: auto; outline: none;">
+                    <div style="text-align: center; color: var(--admin-muted); padding: 20px;">LOADING ENCRYPTED COMMS...</div>
+                </div>
+            </section>
 
-            </div> <!-- End .admin-main-content -->
+            <!-- SECTION: PERSPECTIVE AUDIT LEADS -->
+            <section class="input-section">
+                <div class="section-label">06 // Perspective Audit Leads</div>
+                <div class="terminal-section-toolbar terminal-section-toolbar--leads">
+                    <div class="terminal-section-toolbar__meta">TACTICAL DATA HUB</div>
+                    <div class="terminal-section-toolbar__actions">
+                         <button type="button" onclick="window.confirmPurgeLeads()" style="background: var(--admin-danger); color: #fff; border: none; font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">PURGE ALL</button>
+                         <button type="button" onclick="window.fetchLeads()" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-cyan); font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; cursor: pointer;">REFRESH LEADS</button>
+                    </div>
+                </div>
+                <div id="leadsManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 500px; overflow-y: auto;">
+                    <div style="text-align: center; color: var(--admin-muted); padding: 20px;">SYNCING LEAD DATA...</div>
+                </div>
+            </section>
+
+            <!-- SECTION: OTP ORACLE KNOWLEDGE -->
+            <section class="input-section">
+                <div class="section-label">06.5 // OTP Oracle · Knowledge Index</div>
+                <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.5;">
+                    Upload business PDFs/DOCX for the Oracle to cite. Indexed chunks power recommendations and reply context before you contact a client.
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                    <button type="button" onclick="document.getElementById('knowledgeFileInput').click()" class="btn-secondary" style="width: auto; font-size: 0.7rem;">UPLOAD FILES</button>
+                    <button type="button" onclick="window.fetchKnowledgeFiles()" class="btn-secondary" style="width: auto; font-size: 0.7rem;">REFRESH INDEX</button>
+                    <span id="knowledgeStatusBadge" style="font-size: 0.65rem; color: var(--admin-cyan); border: 1px solid var(--admin-border); border-radius: 6px; padding: 6px 10px;">INDEX: STANDBY</span>
+                </div>
+                <input type="file" id="knowledgeFileInput" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple style="display:none;">
+                <div id="knowledgeFilesManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 340px; overflow-y: auto;">
+                    <div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO FILE INDEX YET</div>
+                </div>
+            </section>
+
+            <!-- SECTION: SESSION LOG -->
+            <section class="input-section">
+                <div class="section-label">07 // Session Activity Log</div>
+                <div id="sessionLog" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace;">
+                    <div style="text-align: center; color: var(--admin-muted); padding: 20px; font-size: 0.7rem;">LOG INITIALIZING...</div>
+                </div>
+            </section>
+
+            <!-- SECTION: MANAGE -->
+            <section class="input-section">
+                <div class="section-label">08 // Active Broadcasts</div>
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <label for="manualDeleteSlug" class="sr-only">Slug to delete</label>
+                    <input type="text" id="manualDeleteSlug" placeholder="Paste slug to remove (e.g. whats-so-elegant...)" style="flex: 1; padding: 10px; font-size: 0.8rem;" aria-label="Slug to delete">
+                    <button type="button" onclick="deleteBySlug()" style="width: auto; background: var(--admin-danger); color: #fff; padding: 0 20px; font-size: 0.8rem;" aria-label="Delete post by slug">KILL SLUG</button>
+                </div>
+    
+                <div id="postManager" role="region" aria-label="Existing posts" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; color: var(--admin-muted); font-size: 0.8rem; padding: 20px;">LOADING TRANSMISSIONS...</div>
+                </div>
+            </section>
+            </div><!-- .admin-main-content -->
 
             <div id="postForm" class="dashboard-sidebar">
                 <!-- SECTION: AI SYNTHESIZER -->
                 <section class="input-section" style="margin-top: 0;">
-                    <div class="section-label" style="margin-top: 0;">01 // Neural Hub</div>
+                    <div class="section-label" style="margin-top: 0;">01 // OTP Oracle Hub</div>
     
                 <div class="input-group">
                     <div id="imagePreview" style="display:none; border-radius: 12px; overflow: hidden; border: 1px solid var(--stroke); margin-bottom: 15px;">
@@ -517,7 +670,7 @@
 
                 <!-- MULTI-PLATFORM SOCIAL PREVIEW TOOL -->
                 <div class="social-preview-tool" style="margin-top: 25px; padding: 15px; border: 1px solid var(--admin-border); border-radius: 12px; background: rgba(255,255,255,0.02);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div class="social-preview-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                         <div style="font-size: 0.7rem; color: var(--admin-muted); text-transform: uppercase; letter-spacing: 1px;">Network Node Previews</div>
                         <div class="preview-tabs" style="display: flex; gap: 8px;">
                             <button type="button" onclick="switchPreviewTab('x')" id="tab-x" class="prev-tab active" title="X.com Preview" style="display: flex; align-items: center; gap: 6px; font-size: 0.65rem; padding: 6px 12px; background: #333; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s;">
@@ -566,7 +719,7 @@
                                 <div style="width: 18px; height: 18px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #000;">O</div>
                                 <div>
                                     <div style="color: #dadce0; font-size: 0.75rem;">Only True Perspective</div>
-                                    <div style="color: #9aa0a6; font-size: 0.65rem;">https://onlytrueperspective.tech › journal</div>
+                                    <div style="color: #9aa0a6; font-size: 0.65rem;">https://www.onlytrueperspective.tech › journal</div>
                                 </div>
                             </div>
                             <div id="socialPreviewTitle-search" style="color: #8ab4f8; font-size: 1rem; margin-bottom: 4px; cursor: pointer;">Headline Appears Here</div>
@@ -605,82 +758,7 @@
             </div>
             
             </div>
-            
-            <!-- SECTION: INBOX & AGENT -->
-            <section class="input-section">
-                <div class="section-label">05 // Secure Inbox (AI Agents)</div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                     <div style="display:flex; gap:10px;">
-                        <select id="inboxFilter" onchange="fetchInbox()" style="background: var(--admin-panel); color: var(--admin-text); border: 1px solid var(--admin-border); padding: 5px; border-radius: 4px; font-size: 0.7rem;">
-                            <option value="all">ALL SIGNALS</option>
-                            <option value="active" selected>ACTIVE (New/Draft)</option>
-                            <option value="completed">PROCESSED</option>
-                            <option value="archived">ARCHIVED</option>
-                        </select>
-                        <button type="button" onclick="fetchInbox()" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-success); font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; cursor: pointer;">REFRESH</button>
-                        <button type="button" onclick="confirmPurgeInbox()" style="background: var(--admin-danger); color: #fff; border: none; font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">PURGE INBOX</button>
-                     </div>
-                     <div style="font-size: 0.7rem; color: var(--admin-muted);">SECURE CHANNEL</div>
-                </div>
-                <div id="inboxManager" tabindex="-1" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 500px; overflow-y: auto; outline: none;">
-                    <div style="text-align: center; color: var(--admin-muted); padding: 20px;">LOADING ENCRYPTED COMMS...</div>
-                </div>
-            </section>
 
-            <!-- SECTION: PERSPECTIVE AUDIT LEADS -->
-            <section class="input-section">
-                <div class="section-label">06 // Perspective Audit Leads</div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <div style="font-size: 0.7rem; color: var(--admin-muted);">TACTICAL DATA HUB</div>
-                    <div style="display: flex; gap: 8px;">
-                         <button type="button" onclick="window.confirmPurgeLeads()" style="background: var(--admin-danger); color: #fff; border: none; font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">PURGE ALL</button>
-                         <button type="button" onclick="window.fetchLeads()" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-cyan); font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; cursor: pointer;">REFRESH LEADS</button>
-                    </div>
-                </div>
-                <div id="leadsManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 500px; overflow-y: auto;">
-                    <div style="text-align: center; color: var(--admin-muted); padding: 20px;">SYNCING LEAD DATA...</div>
-                </div>
-            </section>
-
-            <!-- SECTION: OTP ORACLE KNOWLEDGE -->
-            <section class="input-section">
-                <div class="section-label">06.5 // OTP Oracle · Knowledge Index</div>
-                <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.5;">
-                    Upload business PDFs/DOCX for the Oracle to cite. Indexed chunks power recommendations and reply context before you contact a client.
-                </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-                    <button type="button" onclick="document.getElementById('knowledgeFileInput').click()" class="btn-secondary" style="width: auto; font-size: 0.7rem;">UPLOAD FILES</button>
-                    <button type="button" onclick="window.fetchKnowledgeFiles()" class="btn-secondary" style="width: auto; font-size: 0.7rem;">REFRESH INDEX</button>
-                    <span id="knowledgeStatusBadge" style="font-size: 0.65rem; color: var(--admin-cyan); border: 1px solid var(--admin-border); border-radius: 6px; padding: 6px 10px;">INDEX: STANDBY</span>
-                </div>
-                <input type="file" id="knowledgeFileInput" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple style="display:none;">
-                <div id="knowledgeFilesManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 340px; overflow-y: auto;">
-                    <div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO FILE INDEX YET</div>
-                </div>
-            </section>
-
-            <!-- SECTION: SESSION LOG -->
-            <section class="input-section">
-                <div class="section-label">07 // Session Activity Log</div>
-                <div id="sessionLog" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace;">
-                    <div style="text-align: center; color: var(--admin-muted); padding: 20px; font-size: 0.7rem;">LOG INITIALIZING...</div>
-                </div>
-            </section>
-
-            <!-- SECTION: MANAGE -->
-            <section class="input-section">
-                <div class="section-label">08 // Active Broadcasts</div>
-                
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <label for="manualDeleteSlug" class="sr-only">Slug to delete</label>
-                    <input type="text" id="manualDeleteSlug" placeholder="Paste slug to remove (e.g. whats-so-elegant...)" style="flex: 1; padding: 10px; font-size: 0.8rem;" aria-label="Slug to delete">
-                    <button type="button" onclick="deleteBySlug()" style="width: auto; background: var(--admin-danger); color: #fff; padding: 0 20px; font-size: 0.8rem;" aria-label="Delete post by slug">KILL SLUG</button>
-                </div>
-    
-                <div id="postManager" role="region" aria-label="Existing posts" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 400px; overflow-y: auto;">
-                    <div style="text-align: center; color: var(--admin-muted); font-size: 0.8rem; padding: 20px;">LOADING TRANSMISSIONS...</div>
-                </div>
-            <!-- End Post Manager -->
         </div> <!-- End .admin-main-grid -->
   
     </main>
@@ -837,7 +915,7 @@
 
     <!-- REPLY MANAGER MODAL -->
     <div id="replyModal" class="modal-overlay" style="display: none;">
-        <div class="modal-content" style="max-width: 880px; width: min(92vw, 880px); display: block; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-content otp-modal-panel" style="max-width: 880px; width: min(92vw, 880px); display: block; max-height: min(90vh, 100dvh - 24px); overflow-y: auto;">
             <div class="modal-header">
                 <h3>// SECURE TRANSMISSION LINK</h3>
                 <button onclick="closeReplyManager()" style="background:none; border:none; color:var(--admin-muted); cursor:pointer;">X</button>
@@ -848,7 +926,7 @@
             <input type="hidden" id="replyContactName">
             <input type="hidden" id="replySourceTable" value="contacts">
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 20px;">
+            <div class="reply-signal-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 20px;">
                 <div style="background: var(--admin-surface-inset-strong); padding: 15px; border-radius: 8px; border: 1px solid rgba(var(--accent2-rgb),0.18);">
                     <label style="color: var(--admin-cyan); font-size: 0.7rem; display: block; margin-bottom: 5px;">INCOMING SIGNAL</label>
                     <div id="replyIncomingMsg" style="font-size: 0.83rem; color: var(--admin-text); white-space: pre-wrap; max-height: 180px; min-height: 120px; overflow-y: auto; line-height: 1.5; background: var(--admin-surface-inset); border: 1px solid var(--admin-border); border-radius: 6px; padding: 10px;"></div>
@@ -901,7 +979,7 @@
 
     <!-- DOC PACKET MODAL -->
     <div id="docPacketModal" class="modal-overlay" style="display:none;">
-        <div class="modal-content" style="max-width: 980px; width: min(94vw, 980px); display:block; max-height: 90vh; overflow-y:auto;">
+        <div class="modal-content otp-modal-panel" style="max-width: 980px; width: min(94vw, 980px); display:block; max-height: min(90vh, 100dvh - 24px); overflow-y:auto;">
             <div class="modal-header">
                 <h3>// DOCUMENT GENERATION PACKET (ADMIN APPROVAL)</h3>
                 <button onclick="closeDocPacket()" style="background:none; border:none; color:var(--admin-muted); cursor:pointer;">X</button>
@@ -1033,7 +1111,7 @@
     <script src="site-config.js?v=16.4.6"></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.6.0"></script>
+    <script src="admin-core.js?v=16.6.12"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

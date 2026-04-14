@@ -39,6 +39,14 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         yearEl.textContent = new Date().getFullYear();
     }
 
+    /** Homepage package CTAs — safe if #contact form is absent (e.g. other pages). */
+    window.OTPSetProjectType = function (value) {
+        const el = document.getElementById('project_type');
+        if (!el) return;
+        el.value = value;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
     // PREMIUM PRELOADER LOGIC
     window.addEventListener('load', () => {
         const loader = document.getElementById('page-loader');
@@ -124,7 +132,9 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
             isResizing = true;
             window.requestAnimationFrame(() => {
                 // Global resize events can be handled here if needed (e.g. killing/refreshing GSAP)
-                if (window.ScrollTrigger) ScrollTrigger.refresh();
+                if (typeof window.ScrollTrigger !== 'undefined') {
+                    try { window.ScrollTrigger.refresh(); } catch (e) { /* GSAP blocked or version mismatch */ }
+                }
                 isResizing = false;
             });
         }
