@@ -2568,10 +2568,9 @@ html {
     position: fixed; /* ensure above scrim regardless of stacking context */
     top: calc(12px + env(safe-area-inset-top, 0px));
     right: max(20px, env(safe-area-inset-right, 0px));
+    left: auto;
     width: 44px;
     height: 44px;
-    right: auto;
-    top: auto;
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.15);
   }
