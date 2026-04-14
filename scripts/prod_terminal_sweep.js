@@ -210,28 +210,60 @@ async function main() {
   }
 
   // Doc Packet modal approve toggles (lead packet system)
-  const docPacketBtn = page.locator('button:has-text("DOC PACKET")');
-  if (await docPacketBtn.count()) {
-    // Some layouts may hide this button until a reply thread is opened;
-    // if present but not visible, call the handler directly.
-    const visible = await docPacketBtn.first().isVisible().catch(() => false);
-    if (visible) {
-      await docPacketBtn.first().click({ timeout: 15000 });
+  // Establish a reply context by opening the first inbox thread, then open DOC PACKET.
+  // This does NOT send any email.
+  await page.evaluate(() => window.fetchInbox?.());
+  await page.waitForTimeout(1400);
+  const inboxButtons = page.locator('#inboxManager button:has-text("MODULATE RESPONSE")');
+  const inboxCount = await inboxButtons.count();
+  push('inbox_threads', { count: inboxCount });
+
+  let openedReplyContext = false;
+  if (inboxCount > 0) {
+    await inboxButtons.first().click({ timeout: 15000 });
+    await page.waitForSelector('#replyModal', { timeout: 15000 });
+    await page.waitForTimeout(800);
+    openedReplyContext = true;
+  } else {
+    // Fallback: open reply context from the first Perspective Audit Lead
+    await page.evaluate(() => window.fetchLeads?.());
+    await page.waitForTimeout(1600);
+    const leadReplyBtn = page.locator('#leadsManager button[title="Reply"]');
+    const leadReplyCount = await leadReplyBtn.count();
+    push('lead_reply_buttons', { count: leadReplyCount });
+    if (leadReplyCount > 0) {
+      await leadReplyBtn.first().click({ timeout: 15000 });
+      await page.waitForSelector('#replyModal', { timeout: 15000 });
+      await page.waitForTimeout(800);
+      openedReplyContext = true;
+    }
+  }
+
+  if (openedReplyContext) {
+
+    // Open doc packet from reply modal (this should set replyContactId/sourceTable).
+    const replyDocBtn = page.locator('#replyDocsBtn');
+    const replyDocVisible = await replyDocBtn.isVisible().catch(() => false);
+    if (replyDocVisible) {
+      await replyDocBtn.click({ timeout: 15000 });
     } else {
       await page.evaluate(() => window.openDocPacket?.());
     }
+
     const modal = page.locator('#docPacketModal');
     const modalVisible = await modal.isVisible().catch(() => false);
     if (!modalVisible) {
-      push('doc_packet_skip', { reason: 'No active reply thread context (expected unless inbox thread opened)' });
+      push('doc_packet_skip', { reason: 'Doc packet modal did not open (unexpected in reply context)' });
     } else {
-      await page.waitForTimeout(600);
-      // Generate packet if possible
+      await page.waitForTimeout(700);
+
+      // Generate packet
       const gen = page.locator('#docPacketGenerateBtn');
       if (await gen.count()) {
         await gen.first().click({ timeout: 15000 }).catch(() => {});
-        await page.waitForTimeout(2200);
+        await page.waitForTimeout(2600);
       }
+
       // Toggle first approval checkbox if present
       const toggle = page.locator('#docPacketList input.doc-approve-toggle');
       const tCount = await toggle.count();
@@ -239,11 +271,21 @@ async function main() {
       if (tCount > 0) {
         const before = await toggle.first().isChecked().catch(() => null);
         await toggle.first().click({ timeout: 15000 });
-        await page.waitForTimeout(200);
+        await page.waitForTimeout(250);
         const after = await toggle.first().isChecked().catch(() => null);
         push('doc_packet_toggle', { before, after });
       }
+
+      // Verify send button remains gated unless approved+selected.
+      const sendBtn = page.locator('#docPacketSendBtn');
+      if (await sendBtn.count()) {
+        const disabled = await sendBtn.isDisabled().catch(() => null);
+        const title = await sendBtn.getAttribute('title').catch(() => null);
+        push('doc_packet_send_gate', { disabled, title: short(title, 160) });
+      }
     }
+  } else {
+    push('doc_packet_skip', { reason: 'No inbox threads or leads available to open reply context' });
   }
 
   // Final summary
