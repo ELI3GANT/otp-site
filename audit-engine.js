@@ -328,7 +328,8 @@ Standard growth tips won't work for **${obj}** when you're dealing with **${hurd
             errorEl.style.fontWeight = '700';
             errorEl.style.letterSpacing = '1px';
             errorEl.style.transition = 'all 0.3s ease';
-            document.querySelector('.audit-form').appendChild(errorEl);
+            const formMount = document.querySelector('.audit-form');
+            (formMount || document.body).appendChild(errorEl);
         }
         errorEl.textContent = msg;
         errorEl.style.opacity = '1';

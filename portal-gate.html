@@ -244,6 +244,7 @@
         function togglePasscode() {
             const input = document.getElementById('passcode');
             const btn = document.getElementById('eyeBtn');
+            if (!input || !btn) return;
             if (input.type === 'password') {
                 input.type = 'text';
                 btn.textContent = 'HIDE';
@@ -279,9 +280,10 @@
             const input = document.getElementById('passcode');
             const btn = document.getElementById('loginBtn');
             const err = document.getElementById('errorMsg');
+            if (!input || !btn) return;
             const pass = input.value.trim();
 
-            err.style.display = 'none';
+            if (err) err.style.display = 'none';
 
             if (!pass) {
                 showError("ERROR: COMMAND CANNOT BE EMPTY");
@@ -343,19 +345,33 @@
                 }
 
                 if (res.ok) {
-                    const data = await res.json();
-                    if (data.success && data.token) { 
-                        saveAndRedirect(data.token); 
-                        return; 
+                    let data;
+                    try {
+                        data = await res.json();
+                    } catch (parseErr) {
+                        showError("ERROR: SERVER RESPONSE INVALID — TRY AGAIN");
+                        return;
                     }
-                } else if (res.status === 401 || res.status === 403) {
+                    if (data && data.success && data.token) {
+                        saveAndRedirect(data.token);
+                        return;
+                    }
                     showError("ERROR: INVALID COMMAND SEQUENCE");
                     return;
                 }
-
-                throw new Error(`Server returned non-OK status: ${res.status}`);
+                if (res.status === 401 || res.status === 403) {
+                    showError("ERROR: INVALID COMMAND SEQUENCE");
+                    return;
+                }
+                if (res.status >= 500) {
+                    showError("ERROR: SERVER BUSY — TRY AGAIN SHORTLY");
+                    return;
+                }
+                showError("ERROR: AUTH SERVICE UNAVAILABLE — TRY AGAIN");
+                return;
 
             } catch (e) {
+                console.warn('portal-gate login', e);
                 showError("ERROR: INVALID COMMAND SEQUENCE");
             }
         }
@@ -363,8 +379,10 @@
         function saveAndRedirect(token) {
             localStorage.setItem('otp_admin_token', token);
             const btn = document.getElementById('loginBtn');
-            btn.style.background = '#00ff00';
-            btn.textContent = "ACCESS GRANTED";
+            if (btn) {
+                btn.style.background = '#00ff00';
+                btn.textContent = "ACCESS GRANTED";
+            }
             setTimeout(() => { window.location.href = 'otp-terminal.html?v=' + Date.now(); }, 800);
         }
 

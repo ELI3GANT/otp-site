@@ -127,7 +127,11 @@
     window.addEventListener('unhandledrejection', function(event) {
         console.error('Unhandled Rejection:', event.reason);
         if (window.showToast) {
-            window.showToast("SYSTEM ERROR: " + (event.reason ? event.reason.message : "Unknown"));
+            const r = event.reason;
+            const msg = (r && typeof r === 'object' && r.message)
+                ? r.message
+                : (typeof r === 'string' ? r : (r != null ? String(r) : 'Unknown'));
+            window.showToast("SYSTEM ERROR: " + msg);
         }
     });
 
