@@ -2819,10 +2819,15 @@ body.nav-open .nav-scrim {
   pointer-events: auto;
 }
 
-/* Mobile: disable scrim entirely (keeps menu crisp, no “washed” overlay). */
+/* Mobile: keep scrim, but subtle + crisp (no blur). */
 @media (max-width: 768px) {
   .nav-scrim {
-    display: none !important;
+    display: block !important;
+    background: rgba(0, 0, 0, 0.18);
+  }
+  html[data-theme="light"] .nav-scrim {
+    /* Light mode needs less dim to avoid “washed” feeling */
+    background: rgba(0, 0, 0, 0.12);
   }
 }
 
