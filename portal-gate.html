@@ -258,8 +258,8 @@
         function updateCursor() {
             const input = document.getElementById('passcode');
             const cursor = document.getElementById('fake-cursor');
-            if (input.value.length > 0) cursor.style.display = 'inline-block';
-            else cursor.style.display = 'inline-block';
+            if (!input || !cursor) return;
+            cursor.style.display = 'inline-block';
         }
 
         // Fetch with a hard timeout to avoid hanging on cold starts
@@ -394,12 +394,18 @@
             const err = document.getElementById('errorMsg');
             const btn = document.getElementById('loginBtn');
             const input = document.getElementById('passcode');
-            err.textContent = msg || "ACCESS DENIED // INTRUSION DETECTED";
-            err.style.display = 'block';
-            btn.disabled = false;
-            btn.textContent = "IDENTIFICATION REQUIRED";
-            input.value = '';
-            input.focus();
+            if (err) {
+                err.textContent = msg || "ACCESS DENIED // INTRUSION DETECTED";
+                err.style.display = 'block';
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "IDENTIFICATION REQUIRED";
+            }
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
         }
     </script>
   <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>

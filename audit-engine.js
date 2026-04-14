@@ -330,7 +330,7 @@ Standard growth tips won't work for **${obj}** when you're dealing with **${hurd
 
         } catch (e) {
             console.error(e);
-            this.showError('SYSTEM ERROR: ' + e.message);
+            this.showError('SYSTEM ERROR: ' + String(e && e.message != null ? e.message : e));
             if (statusOverlay) statusOverlay.classList.remove('active');
         } finally {
             this.isSubmitting = false;
@@ -400,9 +400,15 @@ Standard growth tips won't work for **${obj}** when you're dealing with **${hurd
                     await new Promise(r => setTimeout(r, Math.random() * 10 + 5));
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
+                const tag = String(node.tagName || '').toLowerCase();
+                if (tag === 'script' || tag === 'iframe' || tag === 'object' || tag === 'embed') return;
                 const el = document.createElement(node.tagName);
-                // Copy attributes
+                // Copy safe attributes only (no event handlers / inline JS vectors).
                 Array.from(node.attributes).forEach(attr => {
+                    if (/^on/i.test(attr.name)) return;
+                    const n = attr.name.toLowerCase();
+                    const v = attr.value;
+                    if ((n === 'href' || n === 'src' || n === 'formaction') && /^\s*(javascript:|data:|vbscript:)/i.test(v)) return;
                     el.setAttribute(attr.name, attr.value);
                 });
                 
