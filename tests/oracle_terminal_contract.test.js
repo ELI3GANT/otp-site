@@ -51,6 +51,20 @@ assert.ok(terminal.includes('id="replyOracleBtn"'), 'replyOracleBtn id');
 assert.ok(terminal.includes('id="replyAnalysis"'), 'analysis mount');
 assert.ok(terminal.includes('admin-core.js?v='), 'admin-core cache-busted');
 
+assert.ok(adminCore.includes('window.sanitizeHttpUrl'), 'admin-core must expose http(s) media URL sanitizer');
+assert.ok(
+    /app\.get\(['"]\/api\/schema-migration['"],\s*verifyToken/.test(server),
+    'schema-migration SQL export must require JWT (not public)'
+);
+assert.ok(
+    /app\.get\(['"]\/api\/deploy-sql['"],\s*verifyToken/.test(server),
+    'deploy-sql alias must require JWT (not public)'
+);
+assert.ok(
+    adminCore.includes("headers['Authorization']") && adminCore.includes('schema-migration'),
+    'viewSqlSchema must send bearer token when fetching hub SQL'
+);
+
 // --- Mirror: tactical-only ORACLE_CONTEXT formatting (keep in sync with formatOracleContextBlockHtml) ---
 function formatOracleContextBlockHtmlTest(raw) {
     if (raw == null || raw === '') return '';

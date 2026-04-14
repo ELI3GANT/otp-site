@@ -1728,7 +1728,7 @@ app.get('/api/status', async (req, res) => {
         res.status(200).json({
             status: 'ERR',
             database: 'DISCONNECTED',
-            message: e.message,
+            message: 'Database check failed',
             version: 'v10.5.1',
             env: process.env.NODE_ENV,
             stripe: !!stripe
@@ -1780,10 +1780,6 @@ function sendSchemaMigrationSql(res) {
         res.status(404).type('text/plain').send('Schema migration file not available.');
     }
 }
-
-// Before rate limiter — public read-only DDL for admin modal (Framer UI → Vercel API).
-app.get('/api/schema-migration', (req, res) => sendSchemaMigrationSql(res));
-app.get('/api/deploy-sql', (req, res) => sendSchemaMigrationSql(res));
 
 // Body parsing (after Stripe webhook raw handler)
 app.use(express.json()); 
@@ -1911,6 +1907,10 @@ const verifyToken = (req, res, next) => {
         res.status(401).json({ success: false, message: "Authentication required" });
     }
 };
+
+// DDL export for Terminal SQL modal — authenticated only (never public; avoids schema disclosure).
+app.get('/api/schema-migration', verifyToken, (req, res) => sendSchemaMigrationSql(res));
+app.get('/api/deploy-sql', verifyToken, (req, res) => sendSchemaMigrationSql(res));
 
 // Ops Job → Document generation (internal/admin-only)
 let OPS_DOCS = null;

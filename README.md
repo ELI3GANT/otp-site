@@ -38,7 +38,7 @@ A high-end, AI-integrated web platform for creative visionaries. Features includ
 
 - Secure login with JWT.
 - Post/broadcast management, analytics, and client auditing from the terminal UI.
-- Schema SQL modal: **`GET /api/schema-migration`** (alias **`/api/deploy-sql`**) on your Vercel app, via `getApiBase()`. Source file: `supabase/migrations/DEPLOY_V1.3.sql`.
+- Schema SQL modal: **`GET /api/schema-migration`** (alias **`/api/deploy-sql`**) with **`Authorization: Bearer <JWT>`** (same token as the Terminal). Not public. Source file: `supabase/migrations/DEPLOY_V1.3.sql`.
 
 ## Optional hosts
 

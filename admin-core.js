@@ -171,6 +171,28 @@
             .replace(/'/g, "&#039;");
     };
 
+    /**
+     * Allow only http(s) URLs for img/video src (blocks javascript:, data:, blob:, etc.).
+     * Rejects embedded quotes/whitespace that could break out of HTML attributes.
+     */
+    window.sanitizeHttpUrl = function(raw) {
+        const s = String(raw || '').trim();
+        if (!s || /[\s"'<>\\]/.test(s)) return '';
+        try {
+            const origin = (typeof window !== 'undefined' && window.location && window.location.origin)
+                ? window.location.origin
+                : 'https://invalid.local';
+            const u = new URL(s, origin);
+            if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+            if (u.username || u.password) return '';
+            const out = u.toString();
+            if (/[\s"'<>\\]/.test(out)) return '';
+            return out;
+        } catch (e) {
+            return '';
+        }
+    };
+
     // 0. CONFIGURATION
     const CONFIG = {
         supabaseUrl: window.OTP_CONFIG ? window.OTP_CONFIG.supabaseUrl : '',
@@ -935,9 +957,15 @@
             if(urlIn) urlIn.value = publicUrl;
             
             if(prevDiv) {
-                // Referrer privacy ensures that storage CDNs (Supabase) don't block the request based on referer-policy
-                prevDiv.innerHTML = `<img id="previewImg" src="${publicUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
-                prevDiv.style.display = 'block';
+                const safeUrl = window.sanitizeHttpUrl(publicUrl);
+                if (safeUrl) {
+                    prevDiv.innerHTML = `<img id="previewImg" src="${safeUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
+                    prevDiv.style.display = 'block';
+                } else {
+                    prevDiv.innerHTML = '';
+                    prevDiv.style.display = 'none';
+                    showToast('INVALID MEDIA URL FROM STORAGE');
+                }
             }
             
             showToast("MEDIA OPTIMIZED & UPLOADED");
@@ -989,12 +1017,14 @@
             setVal('urlInput', img);
 
             const prevDiv = $('imagePreview');
-            if (img && prevDiv) {
-                prevDiv.innerHTML = `<img id="previewImg" src="${img}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
+            const safeImg = window.sanitizeHttpUrl(img);
+            if (safeImg && prevDiv) {
+                prevDiv.innerHTML = `<img id="previewImg" src="${safeImg}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
                 prevDiv.style.display = 'block';
-            } else if (prevDiv && !img) {
+            } else if (prevDiv && (!img || !safeImg)) {
                 prevDiv.innerHTML = '';
                 prevDiv.style.display = 'none';
+                if (img && !safeImg && window.showToast) showToast('UNSUPPORTED OR UNSAFE IMAGE URL — USE HTTPS LINK');
             }
 
             setVal('catInput', post.category || 'Strategy');
@@ -5631,18 +5661,21 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             data.forEach(file => {
                 if(file.name === '.emptyFolderPlaceholder') return;
                 const { data: { publicUrl } } = state.client.storage.from('uploads').getPublicUrl(`blog/${file.name}`);
+                const safePublic = window.sanitizeHttpUrl(publicUrl);
+                if (!safePublic) return;
                 const isVideo = file.metadata && file.metadata.mimetype && file.metadata.mimetype.startsWith('video');
                 const ext = file.name.split('.').pop().toLowerCase();
                 const likelyVideo = ['mp4', 'webm', 'mov'].includes(ext);
+                const altEsc = window.escapeHtml(String(file.name || ''));
 
                 const div = document.createElement('div');
                 div.className = 'media-item';
-                div.onclick = () => selectMedia(publicUrl, file.name);
+                div.onclick = () => selectMedia(safePublic, file.name);
                 
                 if (isVideo || likelyVideo) {
-                     div.innerHTML = `<video src="${publicUrl}#t=0.5" muted preload="metadata" referrerpolicy="no-referrer" onmouseover="this.play()" onmouseout="this.pause()"></video>`;
+                     div.innerHTML = `<video src="${safePublic}#t=0.5" muted preload="metadata" referrerpolicy="no-referrer" onmouseover="this.play()" onmouseout="this.pause()"></video>`;
                 } else {
-                     div.innerHTML = `<img src="${publicUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" loading="lazy" alt="${file.name}">`;
+                     div.innerHTML = `<img src="${safePublic}" referrerpolicy="no-referrer" crossorigin="anonymous" loading="lazy" alt="${altEsc}">`;
                 }
                 grid.appendChild(div);
             });
@@ -5659,16 +5692,21 @@ If citations are provided, treat them as the source of truth for pricing/rules a
     };
 
     function selectMedia(url, name) {
+        const safe = window.sanitizeHttpUrl(url);
+        if (!safe) {
+            showToast('INVALID MEDIA URL');
+            return;
+        }
         const imageUrlInput = document.getElementById('imageUrl');
-        if (imageUrlInput) imageUrlInput.value = url;
+        if (imageUrlInput) imageUrlInput.value = safe;
         const previewDiv = document.getElementById('imagePreview');
         const detailsDiv = document.getElementById('fileDetails');
         
         if(previewDiv) {
-             if(url.match(/\.(mp4|webm|mov)$/i)) {
-                 previewDiv.innerHTML = `<video src="${url}" controls referrerpolicy="no-referrer" style="width: 100%; height: auto; max-height: 400px; display: block; border-radius: 12px;"></video>`;
+             if(safe.match(/\.(mp4|webm|mov)(\?|$)/i)) {
+                 previewDiv.innerHTML = `<video src="${safe}" controls referrerpolicy="no-referrer" style="width: 100%; height: auto; max-height: 400px; display: block; border-radius: 12px;"></video>`;
              } else {
-                 previewDiv.innerHTML = `<img id="previewImg" src="${url}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
+                 previewDiv.innerHTML = `<img id="previewImg" src="${safe}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
              }
              previewDiv.style.display = 'block';
         }
@@ -5718,7 +5756,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         const title = seoTitleEl?.value || titleEl.value || "Headline Appears Here";
         const desc = seoDescEl?.value || excerptEl?.value || "Description appears here...";
-        const img = imgEl?.value || urlEl?.value;
+        const imgRaw = String(imgEl?.value || urlEl?.value || '').trim();
+        const img = window.sanitizeHttpUrl ? window.sanitizeHttpUrl(imgRaw) : '';
         
         // Update All Platforms
         const platforms = ['x', 'ios', 'search'];
@@ -5731,7 +5770,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             if(pDesc) pDesc.textContent = desc;
             if(pCtx) {
                 if(img) {
-                    pCtx.style.backgroundImage = `url('${img}')`;
+                    pCtx.style.backgroundImage = 'url(' + JSON.stringify(img) + ')';
                     pCtx.textContent = '';
                 } else {
                     pCtx.style.backgroundImage = 'none';
@@ -5757,8 +5796,14 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                          const prevDiv = document.getElementById('imagePreview');
                          const prevImg = document.getElementById('previewImg');
                          if(prevDiv && prevImg && el.value) {
-                             prevImg.src = el.value;
-                             prevDiv.style.display = 'block';
+                             const s = window.sanitizeHttpUrl ? window.sanitizeHttpUrl(el.value) : '';
+                             if (s) {
+                                 prevImg.src = s;
+                                 prevDiv.style.display = 'block';
+                             } else {
+                                 prevImg.removeAttribute('src');
+                                 prevDiv.style.display = 'none';
+                             }
                          } else if (prevDiv && !el.value) {
                              prevDiv.style.display = 'none';
                          }
@@ -6100,13 +6145,21 @@ If citations are provided, treat them as the source of truth for pricing/rules a
                 // --- CHAIN IMAGE GENERATION ---
                 // Support both direct URL returns and prompt-based generation
                 if (aiResult.image_url) {
-                    const cleanUrl = aiResult.image_url.trim();
-                    document.getElementById('imageUrl').value = cleanUrl;
-                    document.getElementById('urlInput').value = cleanUrl;
-                    const prevDiv = document.getElementById('imagePreview');
-                    if (prevDiv) {
-                        prevDiv.innerHTML = `<img id="previewImg" src="${cleanUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
-                        prevDiv.style.display = 'block';
+                    const cleanUrl = window.sanitizeHttpUrl(aiResult.image_url.trim());
+                    const iu = document.getElementById('imageUrl');
+                    const ur = document.getElementById('urlInput');
+                    if (cleanUrl && iu && ur) {
+                        iu.value = cleanUrl;
+                        ur.value = cleanUrl;
+                        const prevDiv = document.getElementById('imagePreview');
+                        if (prevDiv) {
+                            prevDiv.innerHTML = `<img id="previewImg" src="${cleanUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
+                            prevDiv.style.display = 'block';
+                        }
+                    } else {
+                        if (iu) iu.value = '';
+                        if (ur) ur.value = '';
+                        showToast('MODEL RETURNED UNSAFE IMAGE URL — SKIPPED');
                     }
                 } else if (aiResult.image_prompt) {
                     await triggerImageGenerator(aiResult.image_prompt, aiResult.title || currentTitle);
@@ -6163,18 +6216,23 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
             const data = await res.json();
             if (data.success && data.url) {
-                const cleanUrl = data.url.trim();
-                document.getElementById('imageUrl').value = cleanUrl;
-                document.getElementById('urlInput').value = cleanUrl;
+                const cleanUrl = window.sanitizeHttpUrl(String(data.url).trim());
+                const iu = document.getElementById('imageUrl');
+                const ur = document.getElementById('urlInput');
+                if (!cleanUrl || !iu || !ur) {
+                    if (iu) iu.value = '';
+                    if (ur) ur.value = '';
+                    throw new Error('Server returned an unsafe or invalid image URL');
+                }
+                iu.value = cleanUrl;
+                ur.value = cleanUrl;
                 
                 const prevDiv = document.getElementById('imagePreview');
                 if (prevDiv) {
-                    // Referrer privacy ensures that storage CDNs (Supabase) don't block the request based on referer-policy
                     prevDiv.innerHTML = `<img id="previewImg" src="${cleanUrl}" referrerpolicy="no-referrer" crossorigin="anonymous" style="width: 100%; height: auto; display: block; max-height: 400px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/800x450?text=VISUAL_SIGNAL_OFFLINE'">`;
                     prevDiv.style.display = 'block';
                 }
                 
-                // Update Social Previews
                 if(window.updateSocialPreview) window.updateSocialPreview();
                 
                 trackAICost('openai', 2000); 
@@ -6292,7 +6350,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
             const title = titleInput.value || "UNTITLED BROADCAST";
             let content = contentArea.value || "_No content captured._";
-            const image = (imageUrl ? imageUrl.value : '') || (urlInput ? urlInput.value : '');
+            const imageRaw = String((imageUrl ? imageUrl.value : '') || (urlInput ? urlInput.value : '')).trim();
+            const image = window.sanitizeHttpUrl ? window.sanitizeHttpUrl(imageRaw) : '';
             const excerpt = excerptInput ? excerptInput.value : '';
             
             // --- 1. Markdown Parsing (Robust Check) ---
@@ -6307,12 +6366,17 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             }
 
             const isOracle = document.getElementById('aiDraftSource')?.value === 'true' || content.includes('// NEURAL_DRAFT') || content.includes('// ORACLE_DRAFT');
-            const isVideo = image && image.match(/\.(mp4|webm|mov)$/i);
+            let isVideo = false;
+            if (image) {
+                try {
+                    isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(new URL(image).pathname);
+                } catch (e) { /* leave false */ }
+            }
             const esc = (s) => (window.escapeHtml ? window.escapeHtml(String(s ?? '')) : String(s ?? ''));
             const titleEsc = esc(title);
             const excerptHtml = excerpt ? `<p style="font-size: 1.25rem; color: var(--admin-muted); font-style: italic; margin-bottom: 30px; line-height: 1.6;">${esc(excerpt)}</p>` : '';
             
-            const mediaHtml = (image && image.trim().length > 0) ? `
+            const mediaHtml = (image && image.length > 0) ? `
                 <div style="margin-bottom: 35px; background: var(--admin-surface-inset-strong); border-radius: 12px; overflow: hidden; border: 1px solid var(--admin-border);">
                     ${isVideo ? `
                         <video src="${image}" controls referrerpolicy="no-referrer" style="width:100%; display: block; max-height: 500px; object-fit: cover;"></video>
@@ -6681,11 +6745,17 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         try {
             const base = resolveApiBase();
+            const headers = { Accept: 'text/plain' };
+            if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
             let url = base ? `${base}/api/schema-migration` : '/supabase/migrations/DEPLOY_V1.3.sql';
-            let res = await fetch(url);
+            let res = await fetch(url, { headers });
             if (!res.ok && base) {
                 url = `${base}/api/deploy-sql`;
-                res = await fetch(url);
+                res = await fetch(url, { headers });
+            }
+            if (res.status === 401 || res.status === 403) {
+                content.textContent = 'AUTH REQUIRED: sign in on the Terminal (valid JWT) to load deployment SQL from the hub.';
+                return;
             }
             if(!res.ok) throw new Error("Failed to load schema file.");
             cachedSqlSchema = await res.text();
