@@ -47,6 +47,7 @@ DROP POLICY IF EXISTS "Allow All" ON leads;
 
 -- 7. STORAGE SECURITY (Public Access only for Downloads)
 -- Restrict bucket 'uploads' to public read, but restricted write.
+-- Blog/CDN assets live here. For client-private files use a separate bucket with no anon SELECT policy.
 -- This assumes policies for storage.objects for bucket_id = 'uploads'.
 DROP POLICY IF EXISTS "Public Access" ON storage.objects;
 DROP POLICY IF EXISTS "Public Insert" ON storage.objects;
