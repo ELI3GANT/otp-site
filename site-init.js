@@ -1038,7 +1038,7 @@ function initSite() {
         // Inject Desktop Toggle as Fixed FAB (Bottom-Right)
         document.body.appendChild(toggleBtn);
 
-        // Inject Mobile Drawer Toggle (Legacy inside Drawer)
+        // Inject Mobile Drawer Toggle (inside Drawer; keep visible without scrolling)
         const navDrawer = document.querySelector('.nav-drawer');
         if (navDrawer) {
             const mobileToggle = document.createElement('button');
@@ -1046,7 +1046,7 @@ function initSite() {
             mobileToggle.ariaLabel = 'Toggle Theme';
             // Inline styles for mobile layout
             mobileToggle.style.marginLeft = '0';
-            mobileToggle.style.marginTop = '10px';
+            mobileToggle.style.marginTop = '0';
             mobileToggle.style.setProperty('width', '100%', 'important');
             mobileToggle.style.borderRadius = '12px';
             mobileToggle.style.justifyContent = 'center';
@@ -1054,7 +1054,10 @@ function initSite() {
             mobileToggle.innerHTML = window.OTP.getThemeIcon(currentTheme) + '<span style="margin-left:10px; font-weight:600; font-size: 0.9rem; white-space: nowrap;">Switch Theme</span>';
             
             mobileToggle.addEventListener('click', handleToggle);
-            navDrawer.appendChild(mobileToggle);
+            // Insert near the top so it’s visible immediately on mobile.
+            const firstLink = navDrawer.querySelector('a');
+            if (firstLink) navDrawer.insertBefore(mobileToggle, firstLink);
+            else navDrawer.appendChild(mobileToggle);
         }
     })();
 
@@ -1276,6 +1279,16 @@ function initSite() {
         const link = e.target.closest('.nav-drawer a');
         const drawer = document.querySelector('.nav-drawer');
         const btn = document.querySelector('.nav-toggle');
+        const scrimId = 'navDrawerScrim';
+        const ensureScrim = () => {
+            const scrim = document.getElementById(scrimId);
+            return scrim || null;
+        };
+        const removeScrim = () => {
+            const scrim = document.getElementById(scrimId);
+            if (!scrim) return;
+            // Keep node in DOM; CSS handles visibility via body.nav-open.
+        };
 
         // 1. Toggle button clicked
         if (toggle && drawer) {
@@ -1294,12 +1307,29 @@ function initSite() {
                 document.documentElement.classList.remove('nav-open');
                 btn.setAttribute('aria-expanded', 'false');
                 btn.setAttribute('aria-label', 'Open primary navigation menu');
+                removeScrim();
             } else {
                 drawer.classList.add('open');
                 document.body.classList.add('nav-open');
                 document.documentElement.classList.add('nav-open');
                 btn.setAttribute('aria-expanded', 'true');
                 btn.setAttribute('aria-label', 'Close primary navigation menu');
+                // If scrim exists, keep it clickable for outside-close.
+                const scrim = ensureScrim();
+                if (scrim && !scrim.dataset.bound) {
+                    scrim.dataset.bound = '1';
+                    scrim.addEventListener('click', () => {
+                        const d = document.querySelector('.nav-drawer');
+                        const b = document.querySelector('.nav-toggle');
+                        if (d) d.classList.remove('open');
+                        document.body.classList.remove('nav-open');
+                        document.documentElement.classList.remove('nav-open');
+                        if (b) {
+                            b.setAttribute('aria-expanded', 'false');
+                            b.setAttribute('aria-label', 'Open primary navigation menu');
+                        }
+                    }, { passive: true });
+                }
             }
             return; // Don't fall through to close-outside check
         }
@@ -1313,6 +1343,7 @@ function initSite() {
                 btn.setAttribute('aria-expanded', 'false');
                 btn.setAttribute('aria-label', 'Open primary navigation menu');
             }
+            removeScrim();
             return;
         }
 
@@ -1328,11 +1359,30 @@ function initSite() {
                     btn.setAttribute('aria-expanded', 'false');
                     btn.setAttribute('aria-label', 'Open primary navigation menu');
                 }
+                removeScrim();
             }
         }
     };
 
     document.body.addEventListener('click', handleMenuToggle);
+
+    // If the scrim is present in markup, bind it once for reliable close-on-tap.
+    (function bindNavScrimOnce() {
+        const scrim = document.getElementById('navDrawerScrim');
+        if (!scrim || scrim.dataset.bound) return;
+        scrim.dataset.bound = '1';
+        scrim.addEventListener('click', () => {
+            const drawer = document.querySelector('.nav-drawer');
+            const btn = document.querySelector('.nav-toggle');
+            if (drawer) drawer.classList.remove('open');
+            document.body.classList.remove('nav-open');
+            document.documentElement.classList.remove('nav-open');
+            if (btn) {
+                btn.setAttribute('aria-expanded', 'false');
+                btn.setAttribute('aria-label', 'Open primary navigation menu');
+            }
+        }, { passive: true });
+    })();
 
     // Keyboard: close drawer on Escape
     document.addEventListener('keydown', (e) => {
@@ -1347,6 +1397,8 @@ function initSite() {
                     btn.setAttribute('aria-expanded', 'false');
                     btn.setAttribute('aria-label', 'Open primary navigation menu');
                 }
+                const scrim = document.getElementById('navDrawerScrim');
+                // Keep scrim node; CSS will hide it.
                 btn?.focus();
             }
         }
@@ -1364,6 +1416,8 @@ function initSite() {
                 btn.setAttribute('aria-expanded', 'false');
                 btn.setAttribute('aria-label', 'Open primary navigation menu');
             }
+            const scrim = document.getElementById('navDrawerScrim');
+            // Keep scrim node; CSS will hide it.
         }
     });
 

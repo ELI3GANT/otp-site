@@ -1238,6 +1238,14 @@ h1, h2, h3 {
   }
 }
 
+/* Mobile nav open: hide the floating FAB so it can’t steal taps */
+@media (max-width: 768px) {
+  body.nav-open .theme-toggle-btn:not(.mobile-theme-toggle) {
+    display: none !important;
+    pointer-events: none !important;
+  }
+}
+
 /* Accessibility: consistent premium focus ring */
 a:focus-visible,
 button:focus-visible,
@@ -2788,6 +2796,24 @@ html {
   pointer-events: none;
   transform: translateY(-12px) scale(0.97);
   transform-origin: top right;
+}
+
+/* Mobile nav scrim (shown when menu open) */
+.nav-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 10999; /* drawer is 11000 */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+  display: block;
+}
+body.nav-open .nav-scrim {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 

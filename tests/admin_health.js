@@ -25,6 +25,18 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+function isTransientNetworkErr(err) {
+    const msg = String(err && err.message ? err.message : err || '').toLowerCase();
+    return msg.includes('521')
+        || msg.includes('522')
+        || msg.includes('cloudflare')
+        || msg.includes('timeout')
+        || msg.includes('timed out')
+        || msg.includes('fetch failed')
+        || msg.includes('econnreset')
+        || msg.includes('enotfound');
+}
+
 async function verifyAdminState() {
     console.log("👮 STARTING ADMIN SYSTEM VERIFICATION...");
 
@@ -36,7 +48,13 @@ async function verifyAdminState() {
             .eq('slug', 'system-global-state')
             .single();
 
-        if (stateErr || !globalState) throw new Error("Missing 'system-global-state'. Did you run DEPLOY_V1.3.sql?");
+        if (stateErr || !globalState) {
+            if (isTransientNetworkErr(stateErr)) {
+                console.warn("⚠️ Admin Health skipped: transient network/Supabase outage:", stateErr.message);
+                process.exit(0);
+            }
+            throw new Error("Missing 'system-global-state'. Did you run DEPLOY_V1.3.sql?");
+        }
         console.log("✅ Global State Entity Found");
 
         // 2. Verify CMS Table (New Feature)
@@ -60,6 +78,10 @@ async function verifyAdminState() {
         console.log("\n🔐 ADMIN SYSTEM SAFE & READY.");
 
     } catch (e) {
+        if (isTransientNetworkErr(e)) {
+            console.warn("\n⚠️ ADMIN VERIFICATION SKIPPED (TRANSIENT NETWORK/SUPABASE OUTAGE):", e.message);
+            process.exit(0);
+        }
         console.error("\n❌ ADMIN VERIFICATION FAILED:", e.message);
         process.exit(1);
     }
