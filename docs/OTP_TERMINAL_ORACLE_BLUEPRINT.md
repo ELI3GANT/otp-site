@@ -42,10 +42,19 @@ Rough order as shown in `otp-terminal.html`. “Oracle?” indicates **direct** 
 
 ## 4. Verification stack (how we “ensure everything works”)
 
+### Post-deploy health ritual (recommended after meaningful deploys)
+
+1. **Local contract suite**: `npm run health:local` (same as `npm test`).
+2. **Production Terminal sweep** (needs a real admin JWT — never commit it):  
+   `OTP_ADMIN_TOKEN=<jwt> npm run health:terminal`  
+   Expect JSON with `"ok": true` and no `pageerror` / console `error` events in `events`.
+3. **One-shot both** (fails if `OTP_ADMIN_TOKEN` is missing — export it first):  
+   `OTP_ADMIN_TOKEN=<jwt> npm run health:post-deploy`
+
 ### 4.1 Automated (required before merge)
 
 1. **`npm test`** — `tests/master_runner.js` (contracts: Oracle, terminal, ops, docs, etc.).
-2. **`OTP_ADMIN_TOKEN=<jwt> node scripts/prod_terminal_sweep.js`** — headless Playwright against production Terminal: ops docs, packet zip, knowledge index, quick deal UI; inbox/reply/doc-packet when data exists.
+2. **`OTP_ADMIN_TOKEN=<jwt> node scripts/prod_terminal_sweep.js`** (or `npm run health:terminal`) — headless Playwright against production Terminal: ops docs, packet zip, knowledge index, quick deal UI; inbox/reply/doc-packet when data exists.
 
 ### 4.2 Client journey (website + audit, public API)
 
