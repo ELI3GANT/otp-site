@@ -1811,6 +1811,11 @@
         if (status) status.textContent = '';
         if (editor) editor.style.display = 'block';
         const meta = document.getElementById('opsEditorMeta');
+        const packetMeta = document.getElementById('opsPacketMeta');
+        const packetStatus = document.getElementById('opsPacketStatus');
+        if (packetMeta) packetMeta.textContent = 'Select docs, preview packet readiness, then export a ZIP bundle.';
+        if (packetStatus) packetStatus.textContent = '';
+        window.__opsPacketState = null;
 
         // Default clean state
         const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val == null ? '' : String(val); };
@@ -2169,7 +2174,10 @@
         const docTypes = getOpsPacketDocTypes();
         if (!docTypes.length) { showToast('SELECT DOCS'); return; }
         const formats = getOpsPacketFormats();
+        const meta = document.getElementById('opsPacketMeta');
+        const btn = Array.from(document.querySelectorAll('button')).find(b => b && b.textContent && b.textContent.trim() === 'BUILD / PREVIEW') || null;
         try {
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; }
             setOpsPacketStatus('Building packet preview…');
             const apiBase = resolveApiBase();
             const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/packets/preview`, {
@@ -2196,13 +2204,14 @@
                     inc.length ? 'Packet ready for export.' : 'No valid docs included yet.'
                 ].filter(Boolean).join('\n')
             );
-            const meta = document.getElementById('opsPacketMeta');
             if (meta) meta.textContent = `Packet preview • ${inc.length} included • ${blk.length} blocked`;
             if (blk.length) showToast(`PACKET: ${inc.length} OK / ${blk.length} BLOCKED`);
             else showToast('PACKET READY');
         } catch (e) {
             setOpsPacketStatus(`Preview failed: ${e.message}`);
             showToast(`PACKET FAILED: ${formatNetworkError(e)}`);
+        } finally {
+            if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
         }
     };
 
@@ -2214,7 +2223,9 @@
         const docTypes = (Array.isArray(s.docTypes) && s.docTypes.length) ? s.docTypes : getOpsPacketDocTypes();
         if (!docTypes.length) { showToast('SELECT DOCS'); return; }
         const formats = (Array.isArray(s.formats) && s.formats.length) ? s.formats : getOpsPacketFormats();
+        const btn = Array.from(document.querySelectorAll('button')).find(b => b && b.textContent && b.textContent.trim() === 'EXPORT PACKET ZIP') || null;
         try {
+            if (btn) { btn.disabled = true; btn.style.opacity = '0.65'; }
             const apiBase = resolveApiBase();
             const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/packets/export-zip`, {
                 method: 'POST',
@@ -2244,6 +2255,8 @@
             showToast('PACKET ZIP DOWNLOADING');
         } catch (e) {
             showToast(`PACKET EXPORT FAILED: ${formatNetworkError(e)}`);
+        } finally {
+            if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
         }
     };
 
@@ -2369,6 +2382,15 @@
         const paymentStatus = String(document.getElementById('qdPaymentStatus')?.value || '').trim();
         const dealStatus = String(document.getElementById('qdDealStatus')?.value || '').trim();
         const notes = String(document.getElementById('qdNotes')?.value || '').trim();
+
+        // Fast client-side checks (server still enforces truth).
+        if (!clientName) { showToast('CLIENT NAME REQUIRED'); return; }
+        if (!serviceType) { showToast('SERVICE TYPE REQUIRED'); return; }
+        if (!packageType) { showToast('PACKAGE TYPE REQUIRED'); return; }
+        if (!summary) { showToast('SUMMARY REQUIRED'); return; }
+        if (!totalPrice) { showToast('PRICE REQUIRED'); return; }
+        if (!paymentStatus) { showToast('PAYMENT STATUS REQUIRED'); return; }
+        if (!dealStatus) { showToast('DEAL STATUS REQUIRED'); return; }
 
         const requestedDocs = getQuickDealRequestedDocs();
         const jobStatus = computeQuickDealJobStatus(dealStatus, paymentStatus);
