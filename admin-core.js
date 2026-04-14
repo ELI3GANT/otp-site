@@ -1815,6 +1815,7 @@
         // Default clean state
         const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val == null ? '' : String(val); };
         const setCk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+        const setPlaceholder = (id, val) => { const el = document.getElementById(id); if (el) el.placeholder = String(val || ''); };
 
         set('opsJobId', '');
         set('opsClientName', '');
@@ -1844,6 +1845,9 @@
 
         if (!jobId) {
             if (meta) meta.textContent = 'New manual intake record.';
+            // Official pricing hints (non-binding)
+            setPlaceholder('opsTotalPrice', 'Total Price * (e.g. 500)');
+            setPlaceholder('opsDepositAmount', 'Deposit Amount (e.g. 250)');
             return;
         }
 

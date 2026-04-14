@@ -46,6 +46,7 @@
   <link rel="preconnect" href="https://assets.calendly.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
   <script src="theme-chrono.js?v=4"></script>
+  <script src="pricing-config.js?v=1" defer></script>
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   
   <!-- Styles -->
@@ -653,7 +654,7 @@
             <div class="pkg-price" style="margin-bottom: 20px;">
               <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">STARTING AT</span>
               <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">250</span>
+                <span class="pkg-currency">$</span><span class="pkg-amount">500</span>
               </div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -693,9 +694,9 @@
             <div class="pkg-price" style="margin-bottom: 20px;">
               <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">STARTING AT</span>
               <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">500</span>
+                <span class="pkg-currency">$</span><span class="pkg-amount">1,200</span>
               </div>
-              <p style="font-size: 0.75rem; color: var(--muted); opacity: 0.85; margin: 8px 0 0 0; line-height: 1.4;">Full scope often lands in the ~$500–$800 band after review — same deposit tier as checkout.</p>
+              <p style="font-size: 0.75rem; color: var(--muted); opacity: 0.85; margin: 8px 0 0 0; line-height: 1.4;">Multi-layer support for growing brands. Final total depends on scope, cadence, and deliverables.</p>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
               <a href="#contact" onclick="window.OTPSetProjectType('The Engine');" class="book-btn k-hover" style="text-decoration: none;">START PROJECT</a>
@@ -726,7 +727,7 @@
             <div class="pkg-price" style="margin-bottom: 20px;">
               <span class="price-label" style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted);">STARTING AT</span>
               <div class="pkg-amount-wrapper">
-                <span class="pkg-currency">$</span><span class="pkg-amount">900</span>
+                <span class="pkg-currency">$</span><span class="pkg-amount">3,500</span>
               </div>
               <p style="font-size: 0.75rem; color: var(--muted); opacity: 0.85; margin: 8px 0 0 0; line-height: 1.4;">Retainers and expanded builds are quoted from this floor; totals depend on scope.</p>
             </div>
@@ -742,8 +743,8 @@
       <!-- PRICING DISCLAIMER -->
       <div class="center-text" style="margin-top: 40px;">
         <p class="pricing-disclaimer" style="font-family: monospace; font-size: 0.85rem; color: var(--muted); opacity: 0.8; letter-spacing: 0.5px;">
-          “Projects are scoped individually. Final pricing confirmed after review. Deposit required to begin.”
-          <br /><span style="display: inline-block; margin-top: 10px;">Card checkout uses the published tier minimums ($250 / $500 / $900); any uplift is agreed before work starts.</span>
+          “Projects are scoped individually. Final pricing is confirmed after review. Deposit required to begin.”
+          <br /><span style="display: inline-block; margin-top: 10px;">Published minimums reflect the official tiers ($500 / $1,200–$2,000 / $3,500+). Custom quotes are always available.</span>
         </p>
       </div>
       
@@ -876,9 +877,9 @@
             <label for="project_type">Project Type</label>
             <select id="project_type" name="project_type" required>
               <option value="" disabled selected>Select a package</option>
-              <option value="The Signal">The Signal (from $250)</option>
-              <option value="The Engine">The Engine (from $500)</option>
-              <option value="The System">The System (from $900)</option>
+              <option value="The Signal">The Signal (starting at $500)</option>
+              <option value="The Engine">The Engine ($1,200 to $2,000)</option>
+              <option value="The System">The System (starting at $3,500+)</option>
               <option value="Strategy">Creative Consulting / Project Strategy</option>
               <option value="Custom Build">Custom Production / Other</option>
             </select>

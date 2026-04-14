@@ -46,6 +46,12 @@ if (!stripe) {
 const app = express();
 app.disable('x-powered-by'); // Hide stack details
 const port = process.env.PORT || 3000;
+let OTP_PRICING = null;
+try {
+    OTP_PRICING = require('./pricing-config.js');
+} catch (e) {
+    OTP_PRICING = null;
+}
 
 /** Slug / post_slug for RPC and filters: capped length, no control chars or angle brackets. */
 function sanitizeSlugInput(raw) {
@@ -814,7 +820,7 @@ function inferPackageAndRange(leadText) {
     if (mentionsLarge || budgetHigh) {
         return {
             recommended_package: 'The System',
-            quote_range: '$1,200+',
+            quote_range: 'Starting at $3,500+',
             package_confidence: 0.86,
             package_reason: 'Scope and budget indicate a premium multi-deliverable engagement.'
         };
@@ -822,10 +828,10 @@ function inferPackageAndRange(leadText) {
 
     if (mentionsSimpleEdit && !mentionsWebsite) {
         return {
-            recommended_package: 'Simple Edit',
-            quote_range: '$99-$250',
+            recommended_package: 'The Signal',
+            quote_range: 'Video Editing Services ($150 to $800+)',
             package_confidence: 0.78,
-            package_reason: 'Client requested a lightweight revision/editing deliverable rather than a full production build.'
+            package_reason: 'Lightweight edit/revision scope detected. This routes through The Signal for streamlined execution while keeping editing rates flexible.'
         };
     }
 
@@ -833,7 +839,7 @@ function inferPackageAndRange(leadText) {
     if (mentionsGrowthDefault && !budgetLow && (mentionsCrossServiceWork || !mentionsWebsite)) {
         return {
             recommended_package: 'The Engine',
-            quote_range: '$500-$800',
+            quote_range: '$1,200 to $2,000',
             package_confidence: 0.8,
             package_reason: 'Growth-stage needs and ongoing deliverables align best with The Engine.'
         };
@@ -843,38 +849,38 @@ function inferPackageAndRange(leadText) {
         if (/(custom|architecture|complex|portal|platform|membership|automation)/.test(text)) {
             return {
                 recommended_package: 'Custom Website Architecture',
-                quote_range: 'From $750 (scope-based)',
+                quote_range: 'Starting at $3,500+',
                 package_confidence: 0.83,
                 package_reason: 'Website brief suggests custom architecture and implementation depth.'
             };
         }
         if (mentionsSimple || budgetLow || /(one page|single page|landing page only)/.test(text)) {
             return {
-                recommended_package: 'Starter Website Build',
-                quote_range: 'From $199',
+                recommended_package: 'Starter Web Presence',
+                quote_range: '$750',
                 package_confidence: 0.78,
-                package_reason: 'Scope is lean and budget-sensitive, fitting a starter web build.'
+                package_reason: 'Lean website scope detected; starter web presence is the cleanest fit.'
             };
         }
         return {
             recommended_package: 'Business Website Pro',
-            quote_range: 'From $399',
+            quote_range: '$1,500',
             package_confidence: 0.73,
-            package_reason: 'Website request maps to a standard business-grade build.'
+            package_reason: 'Website request maps to a business-grade build with stronger structure and polish.'
         };
     }
 
     if (mentionsSimple || budgetLow) {
         return {
             recommended_package: 'The Signal',
-            quote_range: '$250+',
+            quote_range: 'Starting at $500',
             package_confidence: 0.71,
             package_reason: 'Lead appears lightweight with a single-deliverable or constrained budget profile.'
         };
     }
     return {
         recommended_package: 'The Engine',
-        quote_range: '$500-$800',
+        quote_range: '$1,200 to $2,000',
         package_confidence: 0.65,
         package_reason: 'Defaulting to the core growth package based on available scope details.'
     };
@@ -982,7 +988,7 @@ function classifyServiceType(leadTextLower, packageResult) {
     const text = String(leadTextLower || '').toLowerCase();
     const pkg = String(packageResult?.recommended_package || '').toLowerCase();
     const isSimpleEdit = /(simple edit|just an edit|quick edit|minor edit|small edit|one edit|edit only|revision|revise|touch[-\s]?up|caption|subtitle|trim|cleanup|export|format|resize)/.test(text) || pkg.includes('simple edit');
-    const isWebsite = /(website|site|landing page|ecommerce|web|portal|platform|membership)/.test(text) || pkg.includes('website');
+    const isWebsite = /(website|site|landing page|ecommerce|web|portal|platform|membership)/.test(text) || pkg.includes('website') || pkg.includes('web presence');
     const isVideo = /(video|edit|editing|reel|shorts|tiktok|youtube|filming|shoot|cinematic|music video|color grade|vfx|sfx|audio)/.test(text) || /(signal|engine|system)/.test(pkg);
     const isBranding = /(brand|branding|identity|strategy|creative direction|art direction|design system)/.test(text);
     const isHybrid = isWebsite && (isVideo || isBranding);

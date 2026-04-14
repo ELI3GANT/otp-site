@@ -47,6 +47,43 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         el.dispatchEvent(new Event('change', { bubbles: true }));
     };
 
+    // --- PRICING SYNC (single source of truth) ---
+    (function applyUnifiedPricingOnce() {
+        try {
+            const cfg = window.OTP_PRICING;
+            if (!cfg || !cfg.packages) return;
+
+            // Update contact form package labels (display only; values remain stable keys)
+            const sel = document.getElementById('project_type');
+            if (sel) {
+                const map = {
+                    'The Signal': cfg.packages.theSignal?.price_display,
+                    'The Engine': cfg.packages.theEngine?.price_display,
+                    'The System': cfg.packages.theSystem?.price_display
+                };
+                Array.from(sel.options || []).forEach((opt) => {
+                    const v = String(opt.value || '');
+                    if (map[v]) {
+                        opt.textContent = `${v} (${map[v].toLowerCase().startsWith('starting') ? map[v].replace('Starting', 'starting') : map[v]})`;
+                    }
+                });
+            }
+
+            // Update package cards (amounts only; keeps layout the same)
+            const cards = Array.from(document.querySelectorAll('#packages .package-static'));
+            for (const card of cards) {
+                const name = (card.querySelector('h4')?.textContent || '').trim();
+                const amount = card.querySelector('.pkg-amount');
+                if (!amount) continue;
+                if (name === 'The Signal') amount.textContent = '500';
+                if (name === 'The Engine') amount.textContent = '1,200';
+                if (name === 'The System') amount.textContent = '3,500';
+            }
+        } catch (e) {
+            // non-fatal
+        }
+    })();
+
     // PREMIUM PRELOADER LOGIC
     window.addEventListener('load', () => {
         const loader = document.getElementById('page-loader');

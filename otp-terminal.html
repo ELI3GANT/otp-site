@@ -548,7 +548,21 @@
 
                         <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-surface-inset);">
                             <div style="font-size:0.7rem;font-weight:900;color:var(--admin-text);margin-bottom:10px;">Project</div>
-                            <input id="opsServiceType" class="input-field" placeholder="Service Type *" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <input id="opsServiceType" class="input-field" placeholder="Service Type *" list="opsServiceTypeList" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;" />
+                            <datalist id="opsServiceTypeList">
+                                <option value="Starter Web Presence"></option>
+                                <option value="Business Website Pro"></option>
+                                <option value="Custom Website Architecture"></option>
+                                <option value="Video Editing Services"></option>
+                                <option value="Filming / Production"></option>
+                                <option value="Photography Sessions"></option>
+                                <option value="AI Promo / Digital Creative"></option>
+                                <option value="Custom AI Automation Setup"></option>
+                                <option value="Starter Monthly Content Package"></option>
+                                <option value="Growth Brand Package"></option>
+                                <option value="Full Brand Engine Retainer"></option>
+                                <option value="Monthly Website Maintenance"></option>
+                            </datalist>
                             <select id="opsPackageType" class="input-field" style="width:100%;padding:10px;border-radius:10px;margin-bottom:8px;">
                                 <option value="">Package Type *</option>
                                 <option value="The Signal">The Signal</option>

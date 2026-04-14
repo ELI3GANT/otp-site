@@ -30,7 +30,7 @@ assert.match(server, /function renderHtmlDoc\(/);
 assert.match(server, /function appendOracleStoredContext\(/);
 assert.match(server, /inferPackageAndRange\(/);
 assert.match(server, /computeRequiredDocuments\(/);
-assert.match(server, /Simple Edit/, 'Oracle supports Simple Edit service');
+assert.match(server, /Video Editing Services/, 'Oracle supports editing services pricing language');
 assert.match(server, /service_type:/, 'Oracle recommendation includes service_type');
 assert.match(server, /kb_structured::/, 'Structured knowledge prefix present');
 assert.match(server, /\/api\/admin\/knowledge\/structured\/list/, 'Structured knowledge list endpoint');
