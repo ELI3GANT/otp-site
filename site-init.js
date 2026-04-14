@@ -49,6 +49,28 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         el.dispatchEvent(new Event('change', { bubbles: true }));
     };
 
+    /** URL query slug — align with server sanitizeSlugInput (no control chars / brackets). */
+    window.OTP.sanitizeSlugParam = function (raw) {
+        const slug = String(raw ?? '').trim().slice(0, 256);
+        if (!slug || /[\x00-\x08\x0b\x0c\x0e-\x1f<>\\]/.test(slug)) return '';
+        return slug;
+    };
+
+    /** Only http(s) media URLs (insight hero, lazy embeds). */
+    window.OTP.sanitizeHttpUrl = function (raw) {
+        const s = String(raw || '').trim();
+        if (!s || /[\s"'<>\\]/.test(s)) return '';
+        try {
+            const origin = (window.location && window.location.origin) ? window.location.origin : 'https://invalid.local';
+            const u = new URL(s, origin);
+            if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+            if (u.username || u.password) return '';
+            return u.toString();
+        } catch (e) {
+            return '';
+        }
+    };
+
     // --- PRICING SYNC (single source of truth) ---
     (function applyUnifiedPricingOnce() {
         try {
@@ -911,6 +933,7 @@ window.OTP.initLiveEditor = async function() {
         // Save Function (SECURE PROXY)
         window.OTP.saveContent = async function() {
             const btn = document.querySelector('.otp-editor-btn.save');
+            if (!btn) return;
             btn.textContent = "SAVING...";
             
             const updates = [];
@@ -964,7 +987,7 @@ window.OTP.initLiveEditor = async function() {
                 });
             } catch(e) {
                 console.error(e);
-                alert("Save Failed: " + e.message);
+                alert("Save Failed: " + String(e && e.message != null ? e.message : e));
                 btn.textContent = "RETRY";
             }
         };
@@ -982,9 +1005,13 @@ function initSite() {
 
         const loadEmbed = (iframe) => {
             if (!iframe || iframe.dataset.loaded === 'true') return;
-            const src = iframe.getAttribute('data-src');
-            if (!src) return;
-            iframe.src = src;
+            const raw = iframe.getAttribute('data-src');
+            if (!raw) return;
+            const safe = window.OTP && typeof window.OTP.sanitizeHttpUrl === 'function'
+                ? window.OTP.sanitizeHttpUrl(raw)
+                : '';
+            if (!safe) return;
+            iframe.src = safe;
             iframe.dataset.loaded = 'true';
         };
 

@@ -58,6 +58,7 @@ assert.ok(insight.includes('https://www.onlytrueperspective.tech/insight.html'),
 assert.ok(insight.includes('"url": "https://www.onlytrueperspective.tech"'), 'insight JSON-LD org url matches www');
 const ogUrls = insight.match(/property="og:url"[^>]+content="([^"]+)"/g) || [];
 assert.ok(ogUrls.some((l) => l.includes('www.onlytrueperspective.tech')), 'insight static og:url uses www');
+assert.ok(insight.includes('sanitizeSlugParam'), 'insight article loader uses OTP.sanitizeSlugParam for ?slug=');
 
 assert.ok(
     insightsList.includes('https://www.onlytrueperspective.tech/insights.html'),
@@ -73,6 +74,8 @@ assert.ok(!archive.includes('https://onlytrueperspective.tech/archive.html'), 'a
 assert.ok(themeChrono.includes('OTP.getEffectiveThemeForPaint'), 'theme-chrono exposes paint theme API');
 assert.ok(siteInit.includes('data-theme') || siteInit.includes("getAttribute('data-theme')"), 'site-init references data-theme');
 assert.ok(siteInit.includes('OTPSetProjectType'), 'site-init exposes safe homepage package CTA helper');
+assert.ok(siteInit.includes('sanitizeSlugParam'), 'site-init exposes slug sanitizer for insight query param');
+assert.ok(siteInit.includes('sanitizeHttpUrl'), 'site-init exposes http(s) URL helper for embeds and insight');
 assert.ok(siteInit.includes('/api/contact/submit'), 'site-init wires contact form to public submit API');
 assert.ok(siteInit.includes('Invalid response from server'), 'contact handler tolerates non-JSON error bodies');
 
