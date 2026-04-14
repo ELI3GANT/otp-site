@@ -2801,6 +2801,29 @@ app.post('/api/admin/ops/jobs/archive', verifyToken, async (req, res) => {
     }
 });
 
+// 2.10.6 Ops Jobs → hard delete (admin-only trash)
+app.post('/api/admin/ops/jobs/delete', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+
+        // Delete row (hard). Client/UI must confirm; server remains admin-only via verifyToken.
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .delete()
+            .eq('job_id', jobId)
+            .select('job_id')
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+        res.json({ success: true, deleted: { jobId: data.job_id } });
+    } catch (error) {
+        console.error("ops-jobs-delete:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // 2.10.x Ops Jobs → Oracle document generation from saved records
 app.post('/api/admin/ops/docs/generate', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });

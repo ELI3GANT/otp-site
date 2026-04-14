@@ -21,6 +21,7 @@ assert.match(server, /\/api\/admin\/ops\/jobs\/get/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/upsert/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/update-status/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/archive/);
+assert.match(server, /\/api\/admin\/ops\/jobs\/delete/);
 
 // Core business rule enforcement hints (static)
 assert.match(server, /Deposit Amount cannot exceed Total Price/);

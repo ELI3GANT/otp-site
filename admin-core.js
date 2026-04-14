@@ -1794,6 +1794,7 @@
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.openOpsJobEditor('${window.escapeHtml(String(r.jobId || ''))}')">OPEN / EDIT</button>
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.updateOpsJobStatus('${window.escapeHtml(String(r.jobId || ''))}','Completed')">MARK COMPLETED</button>
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.archiveOpsJob('${window.escapeHtml(String(r.jobId || ''))}')">ARCHIVE</button>
+                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;background:rgba(255,68,68,0.12);border:1px solid rgba(255,68,68,0.28);color:var(--admin-text);" onclick="window.deleteOpsJob('${window.escapeHtml(String(r.jobId || ''))}')">TRASH</button>
                             </div>
                         </div>
                     </div>
@@ -2038,6 +2039,33 @@
             await window.fetchOpsJobs();
         } catch (e) {
             showToast(`ARCHIVE FAILED: ${e.message}`);
+        }
+    };
+
+    window.deleteOpsJob = async function(jobId) {
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        const id = String(jobId || '').trim();
+        if (!id) return;
+        const typed = prompt(`TRASH / DELETE job ${id}?\n\nThis permanently removes the record.\nType DELETE to confirm.`, '');
+        if (String(typed || '').trim().toUpperCase() !== 'DELETE') {
+            showToast('DELETE CANCELLED');
+            return;
+        }
+        try {
+            const apiBase = resolveApiBase();
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/delete`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
+                body: JSON.stringify({ jobId: id })
+            }, 30000);
+            const payload = await res.json().catch(() => ({}));
+            if (!res.ok || !payload.success) throw new Error(payload.message || `Delete failed (${res.status})`);
+            showToast('JOB DELETED');
+            const cur = String(document.getElementById('opsJobId')?.value || '').trim();
+            if (cur && cur === id) window.closeOpsJobEditor?.();
+            await window.fetchOpsJobs();
+        } catch (e) {
+            showToast(`DELETE FAILED: ${e.message}`);
         }
     };
 
