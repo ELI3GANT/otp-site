@@ -325,6 +325,146 @@ function dollarsFromCents(cents) {
     return `$${dollars.toLocaleString('en-US')}`;
 }
 
+function safeFilenamePart(s) {
+    return String(s || '')
+        .trim()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9_\-\.]/g, '')
+        .slice(0, 80) || 'doc';
+}
+
+function docTypeToSlug(docType) {
+    return String(docType || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'document';
+}
+
+function opsDocMarkdownToPlainText(md) {
+    const raw = String(md || '').replace(/\r\n/g, '\n');
+    // Minimal, stable markdown → plain transform (no invention, no interpretation).
+    return raw
+        .replace(/^#{2,6}\s+/gm, '')      // headings
+        .replace(/\*\*(.*?)\*\*/g, '$1')  // bold
+        .replace(/`([^`]+)`/g, '$1')      // inline code
+        .replace(/^\-\s+/gm, '• ')        // bullets
+        .trim();
+}
+
+async function renderOpsDocPdfFromText({ title, subtitle, bodyText }) {
+    const pdfDoc = await PDFDocument.create();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    let page = pdfDoc.addPage([612, 792]); // US Letter
+    const { width, height } = page.getSize();
+
+    const ink = rgb(0.06, 0.07, 0.09);
+    const paper = rgb(0.98, 0.98, 0.99);
+    const muted = rgb(0.35, 0.38, 0.44);
+    const accent = rgb(0.0, 0.92, 1.0);
+
+    const margin = 54;
+    const contentW = width - margin * 2;
+
+    const headerH = 86;
+    page.drawRectangle({ x: 0, y: 0, width, height, color: paper });
+    page.drawRectangle({ x: 0, y: height - headerH, width, height: headerH, color: ink });
+    page.drawRectangle({ x: 0, y: height - headerH, width, height: 3, color: accent });
+
+    // Title block
+    page.drawText('ONLY TRUE PERSPECTIVE', { x: margin, y: height - headerH + 46, size: 12, font: fontBold, color: rgb(0.92, 0.94, 0.98) });
+    page.drawText('Tactical Visual Intelligence', { x: margin, y: height - headerH + 30, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
+    page.drawText(String(title || 'DOCUMENT').toUpperCase(), { x: margin, y: height - headerH + 16, size: 9, font: fontBold, color: rgb(0.78, 0.82, 0.88) });
+
+    let y = height - headerH - 24;
+    if (subtitle) {
+        const subLines = wrapPdfTextToLines(String(subtitle), font, 9, contentW).slice(0, 3);
+        for (const ln of subLines) {
+            page.drawText(ln, { x: margin, y, size: 9, font, color: muted });
+            y -= 12;
+        }
+        y -= 6;
+    }
+
+    const body = String(bodyText || '').trim();
+    const lines = wrapPdfTextToLines(body || '—', font, 9.5, contentW);
+    for (const ln of lines) {
+        if (y < 72) {
+            const p2 = pdfDoc.addPage([612, 792]);
+            p2.drawRectangle({ x: 0, y: 0, width, height, color: paper });
+            page = p2;
+            y = height - 72;
+        }
+        page.drawText(ln, { x: margin, y, size: 9.5, font, color: rgb(0.14, 0.16, 0.2) });
+        y -= 12;
+    }
+
+    return await pdfDoc.save();
+}
+
+function escapeXml(s) {
+    return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+
+function renderOpsDocDocxFromText({ title, bodyText }) {
+    const PizZip = require('pizzip');
+    const zip = new PizZip();
+
+    const lines = String(bodyText || '').replace(/\r\n/g, '\n').split('\n');
+    const paragraphs = lines.map((l) => `<w:p><w:r><w:t xml:space="preserve">${escapeXml(l || '')}</w:t></w:r></w:p>`).join('');
+
+    const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+ xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+ xmlns:v="urn:schemas-microsoft-com:vml"
+ xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
+ xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+ xmlns:w10="urn:schemas-microsoft-com:office:word"
+ xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+ xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
+ xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+ xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk"
+ xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+ xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+ mc:Ignorable="w14 wp14">
+  <w:body>
+    <w:p>
+      <w:pPr><w:pStyle w:val="Title"/></w:pPr>
+      <w:r><w:t>${escapeXml(String(title || 'Document'))}</w:t></w:r>
+    </w:p>
+    ${paragraphs}
+    <w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>
+  </w:body>
+</w:document>`;
+
+    const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+    const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+    zip.file('[Content_Types].xml', contentTypes);
+    zip.folder('_rels').file('.rels', rels);
+    zip.folder('word').file('document.xml', documentXml);
+
+    return zip.generate({ type: 'nodebuffer' });
+}
+
 /** Word-wrap plain text to PDF line widths (Helvetica). */
 function wrapPdfTextToLines(text, font, fontSize, maxWidth) {
     const raw = String(text || '').replace(/\r\n/g, '\n').trim();
@@ -2672,6 +2812,80 @@ app.post('/api/admin/ops/docs/generate', verifyToken, async (req, res) => {
         });
     } catch (error) {
         console.error("ops-docs-generate:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// 2.10.y Ops Jobs → Export generated docs as files (PDF/DOCX)
+app.get('/api/admin/ops/docs/export/:format/:jobId/:docType', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    if (!OPS_DOCS || typeof OPS_DOCS.generateOpsDocument !== 'function') {
+        return res.status(503).json({ success: false, message: 'Ops document generator offline' });
+    }
+    try {
+        const format = String(req.params?.format || '').trim().toLowerCase();
+        const jobId = String(req.params?.jobId || '').trim();
+        const docType = String(req.params?.docType || '').trim();
+        if (!format || !jobId || !docType) return res.status(400).json({ success: false, message: 'Missing format/jobId/docType' });
+        if (!['pdf', 'docx'].includes(format)) return res.status(400).json({ success: false, message: 'Invalid format (pdf|docx)' });
+
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', jobId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+
+        const job = mapOpsJobRowToApi(data);
+        delete job.internalNotes;
+        const result = OPS_DOCS.generateOpsDocument({ docType, job, pricing: OTP_PRICING });
+        if (!result || !result.ok || !result.doc) {
+            const st = Number(result?.status) || 500;
+            return res.status(st).json({ success: false, message: result?.message || 'Generation failed' });
+        }
+        const doc = result.doc;
+
+        if (doc?.validation?.blocking) {
+            return res.status(422).json({
+                success: false,
+                message: doc.validation.message || 'Missing required fields',
+                validation: doc.validation
+            });
+        }
+
+        const yyyyMmDd = new Date().toISOString().slice(0, 10);
+        const baseName = `${safeFilenamePart(jobId)}-${safeFilenamePart(docTypeToSlug(docType))}-${yyyyMmDd}`;
+
+        const md = String(doc.rendered_markdown || '').trim();
+        const plain = opsDocMarkdownToPlainText(md);
+        const subtitleParts = [
+            doc?.display?.client_label ? `Client: ${doc.display.client_label}` : '',
+            doc?.display?.project_label ? `Project: ${doc.display.project_label}` : '',
+            job?.email ? `Email: ${job.email}` : ''
+        ].filter(Boolean);
+        const subtitle = subtitleParts.join(' • ');
+
+        if (format === 'pdf') {
+            const pdfBuf = await renderOpsDocPdfFromText({
+                title: docType,
+                subtitle,
+                bodyText: plain
+            });
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="${baseName}.pdf"`);
+            return res.send(Buffer.from(pdfBuf));
+        }
+
+        const docxBuf = renderOpsDocDocxFromText({
+            title: `OnlyTruePerspective LLC — ${docType}`,
+            bodyText: plain
+        });
+        res.setHeader('Content-Type', DOCX_MIME);
+        res.setHeader('Content-Disposition', `attachment; filename="${baseName}.docx"`);
+        return res.send(docxBuf);
+    } catch (error) {
+        console.error("ops-docs-export:", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 });

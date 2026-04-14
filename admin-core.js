@@ -2075,6 +2075,7 @@
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Generate failed (${res.status})`);
             const doc = payload.doc || {};
+            window.__opsDocState = { jobId, docType: type, doc };
             const warnings = Array.isArray(doc.warnings) ? doc.warnings : [];
             const missing = Array.isArray(doc.validation?.missing_required_fields) ? doc.validation.missing_required_fields : [];
             const blocked = !!doc.validation?.blocking;
@@ -2096,6 +2097,50 @@
             if (metaEl) metaEl.textContent = `Generation failed: ${e.message}`;
             if (outEl) outEl.textContent = '';
             showToast(`DOC FAILED: ${e.message}`);
+        }
+    };
+
+    window.exportOpsDoc = async function(format) {
+        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        const s = window.__opsDocState || {};
+        const jobId = String(s.jobId || document.getElementById('opsJobId')?.value || '').trim();
+        const docType = String(s.docType || '').trim();
+        if (!jobId || !docType) { showToast('GENERATE DOC FIRST'); return; }
+        const fmt = String(format || '').trim().toLowerCase();
+        if (!['pdf', 'docx'].includes(fmt)) { showToast('INVALID FORMAT'); return; }
+        try {
+            const apiBase = resolveApiBase();
+            const url = `${apiBase}/api/admin/ops/docs/export/${encodeURIComponent(fmt)}/${encodeURIComponent(jobId)}/${encodeURIComponent(docType)}`;
+            const res = await fetchWithTimeout(url, { headers: { 'Authorization': `Bearer ${state.token}` } }, 90000);
+            if (!res.ok) {
+                const text = await res.text();
+                let msg = `Export failed (${res.status})`;
+                try {
+                    const j = JSON.parse(text);
+                    msg = j.message || j.error || msg;
+                    if (j.validation?.missing_required_fields?.length) {
+                        msg += ` • Missing: ${j.validation.missing_required_fields.join(', ')}`;
+                    }
+                } catch (_) {}
+                throw new Error(msg);
+            }
+            const blob = fmt === 'pdf'
+                ? new Blob([await res.arrayBuffer()], { type: 'application/pdf' })
+                : new Blob([await res.arrayBuffer()], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            const yyyyMmDd = new Date().toISOString().slice(0, 10);
+            const slug = String(docType).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'document';
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${jobId}-${slug}-${yyyyMmDd}.${fmt}`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                URL.revokeObjectURL(a.href);
+                a.remove();
+            }, 500);
+            showToast('EXPORT STARTED');
+        } catch (e) {
+            showToast(`EXPORT FAILED: ${formatNetworkError(e)}`);
         }
     };
 
