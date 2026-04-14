@@ -24,7 +24,8 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/auth/login',
     'POST /api/contact/submit',
     'POST /api/audit/submit',
-    'POST /api/analytics/view'
+    'POST /api/analytics/view',
+    'POST /api/create-checkout-session'
 ]);
 
 const routeLineRe = /app\.(get|post|put|delete|patch)\(\s*['"`](\/api[^'"`]+)['"`]/;
@@ -39,6 +40,33 @@ for (const line of serverSrc.split('\n')) {
     assert.ok(
         UNAUTH_API_ALLOWLIST.has(key),
         `Unauthenticated /api route — add verifyToken or extend UNAUTH_API_ALLOWLIST with justification:\n  ${key}\n  ${line.trim()}`
+    );
+}
+
+// app.route('/api/...').post(...) — not matched by app.post('...') above
+const lines = serverSrc.split('\n');
+for (let i = 0; i < lines.length; i++) {
+    const rm = lines[i].match(/app\.route\(\s*['"`](\/api[^'"`]+)['"`]\)\s*$/);
+    if (!rm) continue;
+    const routePath = rm[1];
+    let method = null;
+    let j = i + 1;
+    for (; j < Math.min(i + 12, lines.length); j++) {
+        const cm = lines[j].match(/^\s*\.(get|post|put|delete|patch)\s*\(/);
+        if (cm) {
+            method = cm[1].toUpperCase();
+            break;
+        }
+    }
+    if (!method) {
+        assert.fail(`app.route(${routePath}) has no chained .get/.post within 12 lines`);
+    }
+    const segment = lines.slice(i, j + 1).join('\n');
+    const key = `${method} ${routePath}`;
+    if (segment.includes('verifyToken')) continue;
+    assert.ok(
+        UNAUTH_API_ALLOWLIST.has(key),
+        `Unauthenticated app.route — add verifyToken or extend UNAUTH_API_ALLOWLIST:\n  ${key}`
     );
 }
 
@@ -79,6 +107,16 @@ assert.ok(
 );
 assert.ok(migration.includes('ALTER TABLE contacts ENABLE ROW LEVEL SECURITY'));
 assert.ok(migration.includes('ALTER TABLE leads ENABLE ROW LEVEL SECURITY'));
+
+// Public analytics: errors must not echo raw exception text to clients.
+assert.ok(
+    serverSrc.includes("res.status(500).json({ success: false, message: 'Analytics update failed' })"),
+    'POST /api/analytics/view must use a generic 500 body (no e.message leak)'
+);
+assert.ok(
+    serverSrc.includes('Checkout could not be started'),
+    'POST /api/create-checkout-session must not return raw Stripe exception text to clients'
+);
 
 // uploads bucket: public read is intentional for blog/CDN assets; ensure policy is scoped to that bucket.
 assert.ok(

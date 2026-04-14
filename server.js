@@ -5201,7 +5201,7 @@ app.post('/api/analytics/view', async (req, res) => {
 
     } catch (e) {
         console.error("Analytics Error:", e);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ success: false, message: 'Analytics update failed' });
     }
 });
 
@@ -5337,7 +5337,7 @@ app.route('/api/create-checkout-session')
         res.json({ id: session.id });
     } catch (e) {
         console.error("Stripe Error:", e.message);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Checkout could not be started. Try again or use inquiry flow.' });
     }
 })
 
