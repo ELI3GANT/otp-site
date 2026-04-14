@@ -128,6 +128,10 @@ window.AuditEngine = {
         const progressBar = document.getElementById('audit-progress-bar');
 
         const btn = document.getElementById('audit-submit-btn');
+        if (!btn) {
+            this.isSubmitting = false;
+            return;
+        }
         const card = document.getElementById('audit-container');
         const originalText = btn.textContent;
         btn.textContent = 'ANALYZING...';
@@ -149,29 +153,37 @@ window.AuditEngine = {
             let success = false;
 
             try {
-                // SECURE BACKEND BRIDGE: Centralized helper
-                const API_BASE = window.OTP.getApiBase();
-                
-                const response = await fetch(`${API_BASE}/api/audit/submit`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, answers: this.answers })
-                });
+                if (window.OTP && typeof window.OTP.getApiBase === 'function') {
+                    const API_BASE = window.OTP.getApiBase();
+                    const response = await fetch(`${API_BASE}/api/audit/submit`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, answers: this.answers })
+                    });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && data.advice) {
-                        advice = data.advice;
-                        success = true;
-                        console.log("✅ Oracle response received.");
+                    if (response.ok) {
+                        const raw = await response.text();
+                        let data = {};
+                        try {
+                            data = raw ? JSON.parse(raw) : {};
+                        } catch (_) {
+                            console.warn('Audit: non-JSON response from server');
+                        }
+                        if (data.success && data.advice) {
+                            advice = data.advice;
+                            success = true;
+                            console.log('OK: Oracle audit response received.');
+                        } else {
+                            console.warn("Oracle returned success:false", data);
+                        }
                     } else {
-                        console.warn("Oracle returned success:false", data);
+                        console.warn(`Oracle connection failed: Status ${response.status}`);
                     }
                 } else {
-                    console.warn(`Oracle connection failed: Status ${response.status}`);
+                    console.warn('Audit: site-config not loaded; using client fallback.');
                 }
-            } catch (e) { 
-                console.warn("Backend link severed, pivoting to emergency protocol..."); 
+            } catch (e) {
+                console.warn("Backend link severed, pivoting to emergency protocol...");
             }
 
             // 2. Client-Side Fallback (Ultimate Fail-Safe)
@@ -262,7 +274,10 @@ Standard growth tips won't work for **${obj}** when you're dealing with **${hurd
             const captureStep = document.getElementById('audit-capture');
             const resultStep = document.getElementById('audit-result');
             const adviceEl = document.getElementById('audit-advice-content');
-            
+            if (!captureStep || !resultStep || !adviceEl) {
+                throw new Error('Audit interface not ready — refresh and try again.');
+            }
+
             if (window.gsap) {
                 const tl = gsap.timeline();
                 

@@ -43,7 +43,9 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
     window.OTPSetProjectType = function (value) {
         const el = document.getElementById('project_type');
         if (!el) return;
-        el.value = value;
+        const v = String(value || '').trim();
+        const optionExists = Array.from(el.options || []).some((o) => o.value === v);
+        el.value = optionExists ? v : 'Custom Build';
         el.dispatchEvent(new Event('change', { bubbles: true }));
     };
 
