@@ -5143,7 +5143,7 @@ app.post('/api/admin/purge-leads', verifyToken, async (req, res) => {
 
     } catch (e) {
         console.error("Purge Error:", e);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Purge operation failed' });
     }
 });
 
@@ -5158,7 +5158,7 @@ app.post('/api/admin/purge-contacts', verifyToken, async (req, res) => {
         res.json({ success: true, message: 'Inbox purged successfully' });
     } catch (e) {
         console.error("Inbox Purge Error:", e);
-        res.status(500).json({ success: false, message: e.message });
+        res.status(500).json({ success: false, message: 'Inbox purge failed' });
     }
 });
 
