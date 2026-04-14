@@ -10,6 +10,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 let supabaseUrl = process.env.SUPABASE_URL;
 let supabaseKey = process.env.SUPABASE_SERVICE_KEY;
+const hasServiceRoleKey = Boolean(supabaseKey);
 
 if (!supabaseUrl || !supabaseKey) {
     const configPath = path.join(__dirname, '../site-config.js');
@@ -39,6 +40,21 @@ async function validateUserFlows() {
     console.log("🏁 STARTING FULL USER-FLOW VALIDATION...");
 
     try {
+        if (!hasServiceRoleKey) {
+            console.log('SKIP: User Flow writes/CRUD — SUPABASE_SERVICE_KEY not set; read-only smoke only.');
+            const { error: rtErr } = await supabase.from('broadcasts').select('id').limit(1);
+            if (rtErr) {
+                if (isTransientNetworkErr(rtErr)) {
+                    console.warn('User Flow skipped (transient):', rtErr.message);
+                    process.exit(0);
+                }
+                throw rtErr;
+            }
+            console.log('OK: Read-only smoke — broadcasts reachable.');
+            console.log('\nUSER-FLOW VALIDATION COMPLETE (anon / CI-safe mode).');
+            return;
+        }
+
         // 1. CONTACT FORM SUBMISSION
         console.log("\n📩 Testing Contact Form Submission...");
         const testContact = {
