@@ -27,6 +27,15 @@ function fmtDate(dateIso) {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
 }
 
+function fmtGenerated(dateIso) {
+  const s = safeStr(dateIso);
+  if (!s) return '';
+  const d = new Date(s);
+  if (!Number.isFinite(d.getTime())) return s;
+  // Client-facing: date only (keeps output compact + avoids raw ISO noise).
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+}
+
 function guidanceForPackage(pricing, packageType) {
   try {
     const p = pricing && pricing.packages ? pricing.packages : null;
@@ -133,20 +142,25 @@ function pushBlock(doc, title, body) {
 
 function renderDocMarkdown(doc) {
   const h = [];
-  h.push(`## ${doc.doc_type}`);
+  h.push(`# ${doc.doc_type}`);
   h.push('');
   if (doc.display.client_label) h.push(`**Client**: ${doc.display.client_label}`);
-  if (doc.job.jobId) h.push(`**Job ID**: ${doc.job.jobId}`);
-  h.push(`**Generated**: ${doc.generated_at}`);
   if (doc.display.project_label) h.push(`**Project**: ${doc.display.project_label}`);
+  if (doc.job.jobId) h.push(`**Job ID**: ${doc.job.jobId}`);
+  h.push(`**Date**: ${fmtGenerated(doc.generated_at) || doc.generated_at}`);
   h.push('');
-  if (doc.warnings.length) {
-    h.push('### Warnings');
-    for (const w of doc.warnings) h.push(`- ${w}`);
+  const notes = Array.isArray(doc.warnings) ? doc.warnings.map((w) => safeStr(w)).filter(Boolean) : [];
+  if (notes.length) {
+    if (doc.validation && doc.validation.blocking) {
+      h.push('## Action required');
+    } else {
+      h.push('## Notes');
+    }
+    for (const w of notes) h.push(`- ${w}`);
     h.push('');
   }
   for (const blk of doc.blocks) {
-    h.push(`### ${blk.title}`);
+    h.push(`## ${blk.title}`);
     h.push(blk.body);
     h.push('');
   }
@@ -232,7 +246,7 @@ function validateRequired(doc, docType, job) {
 
   markBlockingIfMissing(doc);
   if (doc.validation.blocking) {
-    doc.warnings.unshift('Document generation blocked: required data is missing. Update the job record and retry.');
+    doc.warnings.unshift('This document is blocked because required fields are missing. Update the job record and retry.');
   }
 }
 
@@ -240,16 +254,18 @@ function generateProposal(job, pricing) {
   const doc = baseDoc(job, 'Proposal', pricing);
   validateRequired(doc, 'Proposal', job);
 
-  pushBlock(doc, 'Project', normalizeWhitespace([
-    safeStr(job.projectTitle) ? `**Title**: ${safeStr(job.projectTitle)}` : '',
+  pushBlock(doc, 'Summary', normalizeWhitespace([
     safeStr(job.serviceType) ? `**Service**: ${safeStr(job.serviceType)}` : '',
     safeStr(job.packageType) ? `**Package**: ${safeStr(job.packageType)}` : '',
-    safeStr(job.projectDescription) ? `\n${safeStr(job.projectDescription)}` : '',
+    safeStr(job.projectTitle) ? `**Project**: ${safeStr(job.projectTitle)}` : '',
   ].filter(Boolean).join('\n')));
 
+  const overview = safeStr(job.projectDescription);
+  if (overview) pushBlock(doc, 'Project overview', overview);
+
   const deliverables = safeStr(job.deliverables);
-  if (!deliverables) doc.warnings.push('Deliverables not provided; proposal will not list line-items.');
-  pushBlock(doc, 'Deliverables', deliverables || '(Not provided)');
+  if (deliverables) pushBlock(doc, 'Deliverables', deliverables);
+  else doc.warnings.push('Deliverables are not listed in the saved record yet.');
 
   const addOns = safeStr(job.addOns);
   if (addOns) pushBlock(doc, 'Add-ons', addOns);
@@ -257,25 +273,25 @@ function generateProposal(job, pricing) {
   const timing = [];
   if (safeStr(job.startDate)) timing.push(`**Start**: ${fmtDate(job.startDate)}`);
   if (safeStr(job.dueDate)) timing.push(`**Due**: ${fmtDate(job.dueDate)}`);
-  if (timing.length) pushBlock(doc, 'Timing', timing.join('\n'));
+  if (timing.length) pushBlock(doc, 'Timeline', timing.join('\n'));
 
   const pricingBlock = buildPricingBlock(job);
-  if (!pricingBlock.total) doc.warnings.push('Total price is missing; proposal will be informational only.');
+  if (!pricingBlock.total) doc.warnings.push('Pricing totals are not entered in the saved record yet.');
   const lines = [];
   if (pricingBlock.total) lines.push(`**Total**: ${pricingBlock.total}`);
   if (pricingBlock.deposit) lines.push(`**Deposit**: ${pricingBlock.deposit}`);
   if (pricingBlock.remaining) lines.push(`**Remaining**: ${pricingBlock.remaining}`);
-  if (!lines.length) lines.push('(Pricing not entered in job record)');
-  pushBlock(doc, 'Pricing summary', lines.join('\n'));
+  if (lines.length) pushBlock(doc, 'Pricing summary', lines.join('\n'));
 
   const guidanceLines = [];
-  if (doc.pricing_guidance.service) guidanceLines.push(`**Service guidance**: ${doc.pricing_guidance.service}`);
-  if (doc.pricing_guidance.package) guidanceLines.push(`**Package guidance**: ${doc.pricing_guidance.package}`);
+  if (doc.pricing_guidance.service) guidanceLines.push(`**Service**: ${doc.pricing_guidance.service}`);
+  if (doc.pricing_guidance.package) guidanceLines.push(`**Package**: ${doc.pricing_guidance.package}`);
   if (guidanceLines.length) pushBlock(doc, 'Pricing guidance (non-binding)', guidanceLines.join('\n'));
 
   pushBlock(doc, 'Next steps', normalizeWhitespace([
-    'To begin, OTP operations require agreement confirmation and an invoice with the required deposit (when applicable).',
-    'Final scope, timeline, and launch details are confirmed once the saved job record is complete.',
+    'Confirm scope and deliverables in the job record (if not already captured).',
+    'If required for kickoff, OTP will issue an agreement and invoice with the applicable deposit structure.',
+    'Once the record is complete, OTP confirms timeline and delivery checkpoints.',
   ].join('\n\n')));
 
   return renderDocMarkdown(doc);
@@ -285,11 +301,10 @@ function generateInvoice(job, pricing) {
   const doc = baseDoc(job, 'Invoice', pricing);
   validateRequired(doc, 'Invoice', job);
 
-  pushBlock(doc, 'Invoice details', normalizeWhitespace([
+  pushBlock(doc, 'Summary', normalizeWhitespace([
     safeStr(job.projectTitle) ? `**Project**: ${safeStr(job.projectTitle)}` : '',
     safeStr(job.serviceType) ? `**Service**: ${safeStr(job.serviceType)}` : '',
     safeStr(job.packageType) ? `**Package**: ${safeStr(job.packageType)}` : '',
-    safeStr(job.dueDate) ? `**Due**: ${fmtDate(job.dueDate)}` : '',
   ].filter(Boolean).join('\n')));
 
   const p = buildPricingBlock(job);
@@ -297,13 +312,14 @@ function generateInvoice(job, pricing) {
   if (p.total) lines.push(`**Total**: ${p.total}`);
   if (p.deposit) lines.push(`**Deposit**: ${p.deposit}`);
   if (p.remaining) lines.push(`**Remaining**: ${p.remaining}`);
-  if (p.payment_status) lines.push(`**Payment status**: ${p.payment_status}`);
-  if (p.payment_method) lines.push(`**Payment method**: ${p.payment_method}`);
-  pushBlock(doc, 'Payment summary', lines.join('\n'));
+  if (safeStr(job.dueDate)) lines.push(`**Due date**: ${fmtDate(job.dueDate)}`);
+  if (p.payment_status) lines.push(`**Status**: ${p.payment_status}`);
+  if (p.payment_method) lines.push(`**Method**: ${p.payment_method}`);
+  if (lines.length) pushBlock(doc, 'Payment summary', lines.join('\n'));
 
   const scope = safeStr(job.deliverables) || safeStr(job.projectDescription);
   if (scope) pushBlock(doc, 'Scope reference', scope);
-  if (!scope) doc.warnings.push('No deliverables/project description on record; invoice will not include scope details.');
+  else doc.warnings.push('Scope details are not included in the saved record yet (deliverables/project description).');
 
   return renderDocMarkdown(doc);
 }
@@ -312,38 +328,41 @@ function generateAgreement(job, pricing) {
   const doc = baseDoc(job, 'Agreement', pricing);
   validateRequired(doc, 'Agreement', job);
 
+  pushBlock(doc, 'Summary', normalizeWhitespace([
+    safeStr(job.projectTitle) ? `**Project**: ${safeStr(job.projectTitle)}` : '',
+    safeStr(job.serviceType) ? `**Service**: ${safeStr(job.serviceType)}` : '',
+    safeStr(job.packageType) ? `**Package**: ${safeStr(job.packageType)}` : '',
+  ].filter(Boolean).join('\n')));
+
   pushBlock(doc, 'Parties', normalizeWhitespace([
     '**Provider**: OnlyTruePerspective LLC ("OTP")',
     doc.display.client_label ? `**Client**: ${doc.display.client_label}` : '',
   ].filter(Boolean).join('\n')));
 
   const scopeBits = [];
-  if (safeStr(job.projectTitle)) scopeBits.push(`**Project**: ${safeStr(job.projectTitle)}`);
-  if (safeStr(job.serviceType)) scopeBits.push(`**Service**: ${safeStr(job.serviceType)}`);
-  if (safeStr(job.packageType)) scopeBits.push(`**Package**: ${safeStr(job.packageType)}`);
   if (safeStr(job.projectDescription)) scopeBits.push(`\n${safeStr(job.projectDescription)}`);
-  pushBlock(doc, 'Scope', normalizeWhitespace(scopeBits.join('\n')));
+  if (scopeBits.length) pushBlock(doc, 'Scope of services', normalizeWhitespace(scopeBits.join('\n')));
 
   const deliverables = safeStr(job.deliverables);
-  if (!deliverables) doc.warnings.push('Deliverables not provided; agreement will include a placeholder deliverables section.');
-  pushBlock(doc, 'Deliverables', deliverables || '(Not provided)');
+  if (deliverables) pushBlock(doc, 'Deliverables', deliverables);
+  else doc.warnings.push('Deliverables are not listed in the saved record yet.');
 
   const p = buildPricingBlock(job);
-  if (!p.total) doc.warnings.push('Total price missing; agreement will not lock pricing terms.');
+  if (!p.total) doc.warnings.push('Total price is not entered in the saved record yet.');
   pushBlock(doc, 'Payment terms', normalizeWhitespace([
-    p.total ? `**Total**: ${p.total}` : '**Total**: (Not provided in job record)',
-    p.deposit ? `**Deposit**: ${p.deposit} (due before kickoff unless otherwise agreed)` : '**Deposit**: (Not provided in job record)',
+    p.total ? `**Total**: ${p.total}` : '**Total**: (Not provided)',
+    p.deposit ? `**Deposit**: ${p.deposit} (due prior to kickoff unless otherwise agreed)` : '**Deposit**: (Not provided)',
     p.remaining ? `**Remaining**: ${p.remaining} (due prior to final delivery unless otherwise agreed)` : '',
-    'Work begins once the required onboarding items are confirmed (agreement + invoice/deposit, when applicable).',
+    'Work begins once onboarding items are confirmed (agreement + invoice/deposit, when applicable).',
   ].filter(Boolean).join('\n')));
 
   pushBlock(doc, 'Revisions & approvals', normalizeWhitespace([
     'OTP includes a reasonable revision cycle aligned to the recorded scope.',
-    'Additional revisions, scope changes, or add-ons require written confirmation and may adjust timeline and pricing.',
+    'Scope changes, add-ons, or additional revisions require written confirmation and may impact timeline and pricing.',
   ].join('\n\n')));
 
   pushBlock(doc, 'Ownership & usage', normalizeWhitespace([
-    'Upon full payment, the client receives usage rights for the final deliverables as agreed in the scope.',
+    'Upon full payment, the client receives usage rights for final deliverables as defined in the saved scope.',
     'Portfolio usage follows the saved job record permission flag.',
   ].join('\n\n')));
 
@@ -362,24 +381,30 @@ function generatePaidReceipt(job, pricing) {
   const depositPaid = status.toLowerCase() === 'deposit paid';
 
   if (!paidInFull && !depositPaid) {
-    doc.warnings.push('PaymentStatus is not marked as Paid in Full or Deposit Paid; receipt may not be appropriate.');
+    doc.warnings.push('Payment status is not marked as Paid in Full or Deposit Paid; confirm before sending a receipt.');
   }
 
   const amountPaid = paidInFull ? p.total : depositPaid ? p.deposit : null;
-  if (!amountPaid) doc.warnings.push('No clear paid amount available (missing saved total and/or deposit).');
+  if (!amountPaid) doc.warnings.push('Paid amount cannot be determined from the saved record (missing total and/or deposit).');
 
-  pushBlock(doc, 'Receipt', normalizeWhitespace([
-    amountPaid ? `**Amount received**: ${amountPaid}` : '**Amount received**: (Not available in job record)',
-    p.payment_method ? `**Method**: ${p.payment_method}` : '',
-    `**Receipt generated**: ${fmtDate(doc.generated_at)}`,
-    p.payment_status ? `**Payment status**: ${p.payment_status}` : '',
-  ].filter(Boolean).join('\n')));
-
-  pushBlock(doc, 'Service reference', normalizeWhitespace([
+  pushBlock(doc, 'Summary', normalizeWhitespace([
     safeStr(job.projectTitle) ? `**Project**: ${safeStr(job.projectTitle)}` : '',
     safeStr(job.serviceType) ? `**Service**: ${safeStr(job.serviceType)}` : '',
     safeStr(job.packageType) ? `**Package**: ${safeStr(job.packageType)}` : '',
-  ].filter(Boolean).join('\n')) || '(Not provided)');
+  ].filter(Boolean).join('\n')));
+
+  const receiptLines = [];
+  if (amountPaid) receiptLines.push(`**Amount received**: ${amountPaid}`);
+  if (p.payment_method) receiptLines.push(`**Method**: ${p.payment_method}`);
+  receiptLines.push(`**Date**: ${fmtGenerated(doc.generated_at) || doc.generated_at}`);
+  if (p.payment_status) receiptLines.push(`**Status**: ${p.payment_status}`);
+  if (receiptLines.length) pushBlock(doc, 'Payment received', receiptLines.join('\n'));
+
+  const breakdown = [];
+  if (p.total) breakdown.push(`**Total project fee**: ${p.total}`);
+  if (amountPaid) breakdown.push(`**Amount received**: ${amountPaid}`);
+  if (p.remaining) breakdown.push(`**Remaining balance**: ${p.remaining}`);
+  if (breakdown.length) pushBlock(doc, 'Payment breakdown', breakdown.join('\n'));
 
   if (paidInFull) {
     pushBlock(doc, 'Status', 'Paid in full. Thank you.');
@@ -402,11 +427,11 @@ function generateServiceSummary(job, pricing) {
     safeStr(job.serviceType) ? `**Service**: ${safeStr(job.serviceType)}` : '',
     safeStr(job.packageType) ? `**Package**: ${safeStr(job.packageType)}` : '',
     safeStr(job.jobStatus) ? `**Status**: ${safeStr(job.jobStatus)}` : '',
-  ].filter(Boolean).join('\n')) || '(Not provided)');
+  ].filter(Boolean).join('\n')));
 
   const scope = safeStr(job.deliverables) || safeStr(job.projectDescription);
-  if (!scope) doc.warnings.push('No deliverables or project description on record; summary will be minimal.');
-  pushBlock(doc, 'Scope snapshot', scope || '(Not provided)');
+  if (scope) pushBlock(doc, 'Scope snapshot', scope);
+  else doc.warnings.push('Scope details are not included in the saved record yet (deliverables/project description).');
 
   const p = buildPricingBlock(job);
   const paymentBits = [];

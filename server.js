@@ -346,10 +346,12 @@ function opsDocMarkdownToPlainText(md) {
     const raw = String(md || '').replace(/\r\n/g, '\n');
     // Minimal, stable markdown → plain transform (no invention, no interpretation).
     return raw
-        .replace(/^#{2,6}\s+/gm, '')      // headings
+        .replace(/^#\s+(.*)$/gm, '\n$1\n')          // title
+        .replace(/^#{2,6}\s+(.*)$/gm, '\n$1\n')     // headings
         .replace(/\*\*(.*?)\*\*/g, '$1')  // bold
         .replace(/`([^`]+)`/g, '$1')      // inline code
         .replace(/^\-\s+/gm, '• ')        // bullets
+        .replace(/\n{3,}/g, '\n\n')
         .trim();
 }
 
@@ -368,37 +370,42 @@ async function renderOpsDocPdfFromText({ title, subtitle, bodyText }) {
     const margin = 54;
     const contentW = width - margin * 2;
 
-    const headerH = 86;
+    const headerH = 96;
     page.drawRectangle({ x: 0, y: 0, width, height, color: paper });
     page.drawRectangle({ x: 0, y: height - headerH, width, height: headerH, color: ink });
     page.drawRectangle({ x: 0, y: height - headerH, width, height: 3, color: accent });
 
     // Title block
-    page.drawText('ONLY TRUE PERSPECTIVE', { x: margin, y: height - headerH + 46, size: 12, font: fontBold, color: rgb(0.92, 0.94, 0.98) });
-    page.drawText('Tactical Visual Intelligence', { x: margin, y: height - headerH + 30, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
-    page.drawText(String(title || 'DOCUMENT').toUpperCase(), { x: margin, y: height - headerH + 16, size: 9, font: fontBold, color: rgb(0.78, 0.82, 0.88) });
+    page.drawText('ONLY TRUE PERSPECTIVE', { x: margin, y: height - headerH + 56, size: 12, font: fontBold, color: rgb(0.92, 0.94, 0.98) });
+    page.drawText('OnlyTruePerspective LLC', { x: margin, y: height - headerH + 40, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
+    page.drawText(String(title || 'Document'), { x: margin, y: height - headerH + 18, size: 14, font: fontBold, color: rgb(0.96, 0.97, 0.99) });
 
-    let y = height - headerH - 24;
+    let y = height - headerH - 22;
     if (subtitle) {
-        const subLines = wrapPdfTextToLines(String(subtitle), font, 9, contentW).slice(0, 3);
+        const subLines = wrapPdfTextToLines(String(subtitle), font, 9.2, contentW).slice(0, 3);
         for (const ln of subLines) {
-            page.drawText(ln, { x: margin, y, size: 9, font, color: muted });
-            y -= 12;
+            page.drawText(ln, { x: margin, y, size: 9.2, font, color: muted });
+            y -= 12.5;
         }
-        y -= 6;
+        y -= 8;
     }
 
     const body = String(bodyText || '').trim();
-    const lines = wrapPdfTextToLines(body || '—', font, 9.5, contentW);
+    const lines = wrapPdfTextToLines(body || '—', font, 10.2, contentW);
     for (const ln of lines) {
         if (y < 72) {
             const p2 = pdfDoc.addPage([612, 792]);
             p2.drawRectangle({ x: 0, y: 0, width, height, color: paper });
             page = p2;
-            y = height - 72;
+            // Page header (minimal, consistent)
+            p2.drawText('OnlyTruePerspective LLC', { x: margin, y: height - 36, size: 9, font, color: muted });
+            y = height - 62;
         }
-        page.drawText(ln, { x: margin, y, size: 9.5, font, color: rgb(0.14, 0.16, 0.2) });
-        y -= 12;
+        // Visual rhythm: extra space before section-like lines.
+        const isSection = /^[A-Z][A-Za-z0-9 /&()'’\-]{2,}$/.test(ln) && ln.length < 46;
+        if (isSection) y -= 6;
+        page.drawText(ln, { x: margin, y, size: isSection ? 10.6 : 10.2, font: isSection ? fontBold : font, color: rgb(0.14, 0.16, 0.2) });
+        y -= isSection ? 15 : 13;
     }
 
     return await pdfDoc.save();
@@ -418,7 +425,22 @@ function renderOpsDocDocxFromText({ title, bodyText }) {
     const zip = new PizZip();
 
     const lines = String(bodyText || '').replace(/\r\n/g, '\n').split('\n');
-    const paragraphs = lines.map((l) => `<w:p><w:r><w:t xml:space="preserve">${escapeXml(l || '')}</w:t></w:r></w:p>`).join('');
+    const paragraphs = lines.map((l) => {
+        const line = String(l || '');
+        const isEmpty = !line.trim();
+        const isBullet = line.trim().startsWith('• ');
+        const isSection = /^[A-Z][A-Za-z0-9 /&()'’\-]{2,}$/.test(line.trim()) && line.trim().length < 46;
+        if (isEmpty) return `<w:p><w:r><w:t xml:space="preserve"></w:t></w:r></w:p>`;
+        if (isSection) {
+            return `<w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:r><w:t xml:space="preserve">${escapeXml(line.trim())}</w:t></w:r></w:p>`;
+        }
+        if (isBullet) {
+            const t = line.trim().replace(/^•\s+/, '');
+            // Simple bullet-like indent (no numbering.xml dependency)
+            return `<w:p><w:pPr><w:ind w:left="540"/></w:pPr><w:r><w:t xml:space="preserve">• ${escapeXml(t)}</w:t></w:r></w:p>`;
+        }
+        return `<w:p><w:r><w:t xml:space="preserve">${escapeXml(line)}</w:t></w:r></w:p>`;
+    }).join('');
 
     const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
