@@ -1149,15 +1149,16 @@
     window.renderCategoryList = function() {
         const list = document.getElementById('categoryList');
         if (!list) return;
-        list.innerHTML = state.categories.map(c => `
+        const esc = (v) => (window.escapeHtml ? window.escapeHtml(String(v == null ? '' : v)) : String(v == null ? '' : v));
+        list.innerHTML = (state.categories || []).map(c => `
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--admin-border);">
                 <div>
-                    <span style="font-weight: bold; color: var(--admin-cyan);">${c.name}</span>
-                    <span style="font-size: 0.7rem; color: var(--admin-muted); margin-left: 10px;">/${c.slug}</span>
+                    <span style="font-weight: bold; color: var(--admin-cyan);">${esc(c.name)}</span>
+                    <span style="font-size: 0.7rem; color: var(--admin-muted); margin-left: 10px;">/${esc(c.slug)}</span>
                 </div>
                 <div style="display: flex; gap: 8px;">
-                    <button onclick="editCategory('${c.id}')" style="background: transparent; border: 1px solid var(--admin-muted); color: var(--admin-muted); font-size: 0.6rem; padding: 4px 8px;">EDIT</button>
-                    <button onclick="deleteCategory('${c.id}')" style="background: transparent; border: 1px solid var(--admin-danger); color: var(--admin-danger); font-size: 0.6rem; padding: 4px 8px;">DEL</button>
+                    <button type="button" onclick="editCategory(${JSON.stringify(String(c.id))})" style="background: transparent; border: 1px solid var(--admin-muted); color: var(--admin-muted); font-size: 0.6rem; padding: 4px 8px;">EDIT</button>
+                    <button type="button" onclick="deleteCategory(${JSON.stringify(String(c.id))})" style="background: transparent; border: 1px solid var(--admin-danger); color: var(--admin-danger); font-size: 0.6rem; padding: 4px 8px;">DEL</button>
                 </div>
             </div>
         `).join('') || '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">No categories found.</div>';
@@ -1227,24 +1228,32 @@
 
     window.renderArchetypeList = function() {
         const list = document.getElementById('archetypeList');
-        const search = document.getElementById('archSearch').value.toLowerCase();
-        const sort = document.getElementById('archSort').value;
+        const searchEl = document.getElementById('archSearch');
+        const sortEl = document.getElementById('archSort');
+        const search = String(searchEl && searchEl.value != null ? searchEl.value : '').toLowerCase();
+        const sort = sortEl && sortEl.value != null ? sortEl.value : '';
         if (!list) return;
 
-        let filtered = state.archetypes.filter(a => a.name.toLowerCase().includes(search) || a.slug.toLowerCase().includes(search));
-        
+        const esc = (v) => (window.escapeHtml ? window.escapeHtml(String(v == null ? '' : v)) : String(v == null ? '' : v));
+
+        let filtered = (state.archetypes || []).filter((a) => {
+            const n = String(a && a.name != null ? a.name : '').toLowerCase();
+            const s = String(a && a.slug != null ? a.slug : '').toLowerCase();
+            return n.includes(search) || s.includes(search);
+        });
+
         if (sort === 'usage') filtered.sort((a, b) => (b.usage_count || 0) - (a.usage_count || 0));
-        else filtered.sort((a, b) => a.name.localeCompare(b.name));
+        else filtered.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
 
         list.innerHTML = filtered.map(a => `
             <div style="padding: 12px; border-bottom: 1px solid var(--admin-border); cursor: pointer;" onclick="editArchetype(${JSON.stringify(String(a.id))})">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                    <span style="font-weight: bold; color: var(--admin-accent);">${a.name}</span>
-                    <span style="font-size: 0.65rem; color: var(--admin-muted);">USES: ${a.usage_count || 0}</span>
+                    <span style="font-weight: bold; color: var(--admin-accent);">${esc(a.name)}</span>
+                    <span style="font-size: 0.65rem; color: var(--admin-muted);">USES: ${Number(a.usage_count) || 0}</span>
                 </div>
-                <div style="font-size: 0.7rem; color: var(--admin-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${a.system_prompt}</div>
+                <div style="font-size: 0.7rem; color: var(--admin-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${esc(a.system_prompt)}</div>
                 <div style="display: flex; gap: 4px; margin-top: 6px;">
-                    ${(a.tags || []).map(t => `<span style="font-size: 0.55rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">#${t}</span>`).join('')}
+                    ${(a.tags || []).map(t => `<span style="font-size: 0.55rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">#${esc(t)}</span>`).join('')}
                 </div>
             </div>
         `).join('') || '<div style="text-align: center; color: var(--admin-muted); padding: 20px;">No archetypes found.</div>';
