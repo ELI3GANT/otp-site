@@ -46,7 +46,9 @@ html.is-theme-switching .luxe-title .title * {
 html.nav-open, body.nav-open {
     overflow: hidden !important;
     padding-right: 0 !important; /* Managed by scrollbar-gutter */
-    touch-action: none; /* Fully lock background scroll during menu interaction */
+    /* Important: do NOT disable touch-action globally on mobile.
+       It can break tap/click reliability for the drawer/toggle on some browsers. */
+    touch-action: auto;
     overscroll-behavior: contain;
 }
 
