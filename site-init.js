@@ -1312,7 +1312,18 @@ function initSite() {
             document.body.style.right = '';
             document.body.style.width = '';
             if (lockedScrollY) {
-                window.scrollTo(0, lockedScrollY);
+                // Prevent "smooth" scroll animation on restore (mobile can feel like a glitch).
+                const html = document.documentElement;
+                const prevScrollBehavior = html.style.scrollBehavior;
+                html.style.scrollBehavior = 'auto';
+                try {
+                    window.scrollTo({ top: lockedScrollY, left: 0, behavior: 'auto' });
+                } catch (e) {
+                    window.scrollTo(0, lockedScrollY);
+                }
+                requestAnimationFrame(() => {
+                    html.style.scrollBehavior = prevScrollBehavior;
+                });
             }
             lockedScrollY = 0;
         };
