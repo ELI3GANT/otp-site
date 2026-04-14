@@ -2217,7 +2217,7 @@
     };
 
     window.exportOpsDoc = async function(format) {
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         const s = window.__opsDocState || {};
         const jobId = String(s.jobId || document.getElementById('opsJobId')?.value || '').trim();
         const docType = String(s.docType || '').trim();
@@ -3768,7 +3768,7 @@
 
     window.downloadApprovedDoc = async function(docType, format = 'html') {
         const s = window.__docPacketState || {};
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         const doc = s.docs?.[docType];
         const generated = !!doc;
@@ -3777,7 +3777,6 @@
         if (!generated) { showToast('DOC NOT GENERATED'); return; }
         if (format === 'docx' && !['proposal', 'agreement'].includes(docType)) { showToast('DOCX NOT AVAILABLE'); return; }
         if (format === 'pdf' && docType !== 'invoice') { showToast('PDF NOT AVAILABLE'); return; }
-        if (format === 'docx' && !doc?.docx) { showToast('DOCX NOT READY'); return; }
         if (format === 'html' && !doc?.html) { showToast('HTML NOT READY'); return; }
         try {
             const apiBase = resolveApiBase();
@@ -3817,7 +3816,7 @@
 
     window.generateDocPacket = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.leadId) { showToast('OPEN A THREAD FIRST'); return; }
         const domLead = String(document.getElementById('replyContactId')?.value || '').trim();
         const domSrc = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
@@ -3870,7 +3869,7 @@
     };
 
     window.uploadDocTemplate = async function(docType, file) {
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!file) return;
         if (!['proposal', 'agreement'].includes(docType)) { showToast('INVALID TEMPLATE TYPE'); return; }
         try {
@@ -3899,7 +3898,7 @@
 
     window.approveDocPacket = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         if (!window.__docPacketApprovalsChanged()) { showToast('NO CHANGES TO APPLY'); return; }
         const toggles = Array.from(document.querySelectorAll('#docPacketList .doc-approve-toggle'));
@@ -3945,7 +3944,7 @@
 
     window.refreshDocPacketAudit = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token || state.token === 'static-bypass-token') return;
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) return;
         if (!s.packetId) return;
         try {
             const apiBase = resolveApiBase();
@@ -3964,7 +3963,7 @@
 
     window.sendDocPacketEmail = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         const to = String(document.getElementById('docPacketSendTo')?.value || '').trim();
         const from = String(document.getElementById('docPacketSendFrom')?.value || '').trim();
@@ -4001,7 +4000,7 @@
 
     window.refreshDocPacketDeliveryStatus = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         try {
             const apiBase = resolveApiBase();
@@ -4022,7 +4021,7 @@
 
     window.retryLastDocPacketSend = async function() {
         const s = window.__docPacketState || {};
-        if (!state.token || state.token === 'static-bypass-token') { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
         if (!s.packetId) { showToast('GENERATE PACKET FIRST'); return; }
         const events = Array.isArray(s.auditEvents) ? s.auditEvents : [];
         const failedSend = pickLatestFailedDocPacketSend(events);
@@ -4146,7 +4145,7 @@
         const leadId = document.getElementById('replyContactId')?.value;
         const sourceTable = document.getElementById('replySourceTable')?.value === 'leads' ? 'leads' : 'contacts';
         if (!leadId) { showToast("NO THREAD SELECTED"); return; }
-        if (!state.token || state.token === 'static-bypass-token') { showToast("LOGIN REQUIRED (REAL JWT)"); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast("LOGIN REQUIRED (REAL JWT)"); return; }
         const opsBtn = document.getElementById('replyOracleBtn');
         const originalOpsText = opsBtn ? opsBtn.textContent : '';
         try {

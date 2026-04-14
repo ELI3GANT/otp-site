@@ -102,6 +102,20 @@ async function main() {
   const badge = await page.locator('#opsJobsBadge').innerText().catch(() => '');
   push('ops_jobs_badge', { text: short(badge, 120) });
 
+  // Knowledge index sanity (non-destructive)
+  await page.evaluate(() => window.fetchKnowledgeFiles?.());
+  await page.waitForTimeout(1200);
+  const kbBadge = await page.locator('#knowledgeStatusBadge').innerText().catch(() => '');
+  push('knowledge_badge', { text: short(kbBadge, 120) });
+  const kbRows = page.locator('#knowledgeFilesManager button:has-text("ARCHIVE")');
+  const kbCount = await kbRows.count().catch(() => 0);
+  push('knowledge_rows', { count: kbCount });
+  if (kbCount > 0) {
+    const updCount = await page.locator('#knowledgeFilesManager button:has-text("UPDATE")').count().catch(() => 0);
+    push('knowledge_update_buttons', { count: updCount });
+    if (updCount === 0) push('warn', { text: 'Knowledge files exist but UPDATE button not found (UI regression?)' });
+  }
+
   // Open first job if present
   const openButtons = page.locator('button:has-text("OPEN / EDIT")');
   const openCount = await openButtons.count();
@@ -151,10 +165,18 @@ async function main() {
     const outShort = short(out, 340);
     push('doc_generated', { docType, meta: short(meta, 200), out_preview: outShort });
 
-    // Basic correctness assertions (non-fatal; record as warnings if missing).
-    const mustContain = ['Live QA Test Client', 'QA-2026-04-14', 'OTP Validation Reel Cut', 'Video Editing Services', 'The Signal'];
-    const missing = mustContain.filter((s) => !out.includes(s));
-    if (missing.length) push('doc_assert_missing', { docType, missing });
+    // Basic correctness assertions (non-fatal; avoid hard-coded QA strings).
+    const checks = [];
+    const hasMarkdownHeader = /^#\s+\w+/m.test(out);
+    if (!hasMarkdownHeader) checks.push('missing_markdown_header');
+    const hasJobId = /JOB-\d{6,}-[A-Z0-9]{4,}/.test(out);
+    if (!hasJobId) checks.push('missing_job_id');
+    // Should mention client/project labels somewhere.
+    const hasClient = /\*\*Client\*\*:/i.test(out);
+    if (!hasClient) checks.push('missing_client_label');
+    const hasProject = /\*\*Project\*\*:/i.test(out);
+    if (!hasProject) checks.push('missing_project_label');
+    if (checks.length) push('doc_assert_warn', { docType, checks });
 
     await tryDownload('EXPORT PDF', docType.toLowerCase().replace(/\s+/g, '-'));
     await tryDownload('EXPORT DOCX', docType.toLowerCase().replace(/\s+/g, '-'));

@@ -850,8 +850,19 @@ async function extractTextFromKnowledgeFile(file) {
 
         // pdf-parse v2 exposes PDFParse class; v1 exposed a callable function.
         if (typeof pdfParseCallable === 'function') {
-            const parsed = await pdfParseCallable(file.buffer);
-            return normalizeWhitespace(parsed.text);
+            try {
+                const parsed = await pdfParseCallable(file.buffer);
+                const text = normalizeWhitespace(parsed && parsed.text);
+                if (!text) throw new Error('No text extracted (PDF may be scanned/image-only).');
+                return text;
+            } catch (e) {
+                const msg = String(e?.message || e);
+                // Common failure modes: encrypted PDFs, image-only scans.
+                if (/password|encrypted|encryption/i.test(msg)) {
+                    throw new Error('PDF is encrypted/password-protected. Export a text-based PDF or upload a DOCX instead.');
+                }
+                throw new Error(`PDF parse failed: ${msg}`);
+            }
         }
 
         const PDFParseCtor = pdfParseLib && typeof pdfParseLib.PDFParse === 'function'
@@ -864,7 +875,9 @@ async function extractTextFromKnowledgeFile(file) {
         const parser = new PDFParseCtor({ data: file.buffer });
         try {
             const result = await parser.getText();
-            return normalizeWhitespace(result && result.text);
+            const text = normalizeWhitespace(result && result.text);
+            if (!text) throw new Error('No text extracted (PDF may be scanned/image-only).');
+            return text;
         } finally {
             if (typeof parser.destroy === 'function') {
                 await parser.destroy().catch(() => {});
@@ -872,8 +885,15 @@ async function extractTextFromKnowledgeFile(file) {
         }
     }
     if (ext === '.docx') {
-        const parsed = await mammoth.extractRawText({ buffer: file.buffer });
-        return normalizeWhitespace(parsed.value);
+        try {
+            const parsed = await mammoth.extractRawText({ buffer: file.buffer });
+            const text = normalizeWhitespace(parsed && parsed.value);
+            if (!text) throw new Error('No text extracted (DOCX may be empty or image-only).');
+            return text;
+        } catch (e) {
+            const msg = String(e?.message || e);
+            throw new Error(`DOCX parse failed: ${msg}`);
+        }
     }
     throw new Error('Unsupported file type. Use PDF or DOCX.');
 }
@@ -2370,8 +2390,14 @@ app.post('/api/admin/knowledge/upload', verifyToken, knowledgeUpload.single('fil
             }
         });
     } catch (error) {
-        console.error("knowledge-upload:", error.message);
-        res.status(500).json({ success: false, message: error.message });
+        const msg = String(error?.message || error);
+        console.error("knowledge-upload:", msg);
+        // Multer errors for file size limits come through as generic errors; normalize to 413.
+        if (/file too large|limit.*file.*size/i.test(msg)) {
+            return res.status(413).json({ success: false, message: "File too large (max 12MB). Compress the PDF/DOCX and retry." });
+        }
+        const status = /unsupported file type/i.test(msg) ? 415 : 500;
+        res.status(status).json({ success: false, message: msg });
     }
 });
 
@@ -3564,12 +3590,16 @@ app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
         const leadId = String(req.body?.leadId || '').trim();
         if (!leadId) return res.status(400).json({ success: false, message: "Missing leadId." });
 
-        const { data: lead, error: leadError } = await supabaseAdmin
-            .from(sourceTable)
-            .select('*')
-            .eq('id', leadId)
-            .maybeSingle();
-        if (leadError) throw leadError;
+        let lead = req.body?.leadData || null;
+        if (!lead) {
+            const { data: rowLead, error: leadError } = await supabaseAdmin
+                .from(sourceTable)
+                .select('*')
+                .eq('id', leadId)
+                .maybeSingle();
+            if (leadError) throw leadError;
+            lead = rowLead || null;
+        }
         if (!lead) return res.status(404).json({ success: false, message: "Lead not found." });
         // Run Oracle-style recommendation (shared helper)
         const oracle = await runOracleRecommendation({ lead, leadId, sourceTable });
@@ -3595,9 +3625,6 @@ app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
         for (const t of ['proposal', 'agreement']) {
             try {
                 const templateKey = `${DOC_TEMPLATE_PREFIX}${t}.docx`;
-                const templateBuf = await getTemplateBuffer(templateKey);
-                const outBuf = renderDocxFromTemplate(templateBuf, fields);
-                docs[t].docx = outBuf.toString('base64');
                 docs[t].docx_template = templateKey;
             } catch (e) {
                 docxErrors[t] = String(e?.message || e);
@@ -3796,8 +3823,11 @@ app.get('/api/admin/docs/download-docx/:packetId/:docType', verifyToken, async (
         const doc = packet?.docs?.[docType];
         if (!doc) return res.status(404).json({ success: false, message: 'Doc not found' });
         if (!doc.approved) return res.status(403).json({ success: false, message: 'Doc not approved' });
-        if (!doc.docx) return res.status(400).json({ success: false, message: 'DOCX template not configured or merge failed' });
-        const buf = Buffer.from(String(doc.docx), 'base64');
+        const templateKey = String(doc.docx_template || `${DOC_TEMPLATE_PREFIX}${docType}.docx`).trim();
+        if (!templateKey) return res.status(400).json({ success: false, message: 'DOCX template not configured' });
+        const fields = packet?.fields && typeof packet.fields === 'object' ? packet.fields : {};
+        const templateBuf = await getTemplateBuffer(templateKey);
+        const buf = renderDocxFromTemplate(templateBuf, fields);
         res.setHeader('Content-Type', DOCX_MIME);
         res.setHeader('Content-Disposition', `attachment; filename="${docType}-${packetId}.docx"`);
         res.send(buf);
