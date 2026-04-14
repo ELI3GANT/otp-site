@@ -1229,7 +1229,7 @@ h1, h2, h3 {
 
 /* Mobile: move floating theme toggle away from hero CTAs */
 @media (max-width: 520px) {
-  .theme-toggle-btn {
+  .theme-toggle-btn:not(.mobile-theme-toggle) {
     top: calc(86px + env(safe-area-inset-top, 0px)) !important;
     bottom: auto !important;
     right: calc(14px + env(safe-area-inset-right, 0px)) !important;
@@ -1265,6 +1265,7 @@ textarea:focus-visible {
 
 .theme-toggle-btn.mobile-theme-toggle {
   position: relative !important;
+  top: auto !important;
   bottom: auto !important;
   right: auto !important;
   width: 100% !important;
