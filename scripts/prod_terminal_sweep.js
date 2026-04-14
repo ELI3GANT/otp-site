@@ -7,7 +7,7 @@
  *   attempt exports, packet preview, send prep.
  *
  * Usage:
- *   OTP_ADMIN_TOKEN="..." node scripts/prod_terminal_sweep.js
+ *   OTP_ADMIN_TOKEN="..." node scripts/prod_terminal_sweep.js > prod-terminal-sweep.json
  */
 
 const { chromium } = require('playwright');
@@ -29,10 +29,20 @@ function short(s, n = 380) {
   return String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
 }
 
+function looksLikeJwt(s) {
+  const t = String(s || '').trim();
+  if (!t) return false;
+  const parts = t.split('.');
+  return parts.length === 3 && parts[0].length > 10 && parts[1].length > 10;
+}
+
 async function main() {
   const token = String(process.env.OTP_ADMIN_TOKEN || '').trim();
   if (!token) {
     throw new Error('Missing OTP_ADMIN_TOKEN env var');
+  }
+  if (!looksLikeJwt(token)) {
+    throw new Error('OTP_ADMIN_TOKEN does not look like a JWT');
   }
 
   const browser = await chromium.launch({ headless: true });

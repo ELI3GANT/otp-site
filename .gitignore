@@ -22,3 +22,7 @@ output/playwright/
 
 # Local scratch (PDFs, exports)
 tmp/
+
+# QA artifacts (never commit)
+prod-terminal-sweep.json
+qa-screens/
