@@ -1723,9 +1723,9 @@ function initSite() {
             const { data } = await client.from('posts').select('content').eq('slug', 'system-global-state').single();
             if (data && data.content) {
                 const config = JSON.parse(data.content);
-                if (config.status) {
+                if (config.status != null && config.status !== '') {
                     const textEl = statusEl.querySelector('.status-text');
-                    if (textEl) textEl.textContent = `SYSTEM: ${config.status.toUpperCase()}`;
+                    if (textEl) textEl.textContent = `SYSTEM: ${String(config.status).toUpperCase()}`;
                 }
             }
         } catch(e) {}
@@ -2101,12 +2101,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // E. STATUS (Global Message)
-        if (config.status) {
+        if (config.status != null && config.status !== '') {
+            const line = String(config.status).toUpperCase();
             const statusEls = document.querySelectorAll('.status-text, #footer-status');
             statusEls.forEach(el => {
-                el.innerHTML = `<span style="opacity:0.5;">SYSTEM:</span> ${config.status.toUpperCase()}`;
+                el.textContent = '';
+                const lab = document.createElement('span');
+                lab.style.opacity = '0.5';
+                lab.textContent = 'SYSTEM:';
+                el.appendChild(lab);
+                el.appendChild(document.createTextNode(' ' + line));
                 el.style.color = 'var(--accent2)';
-                setTimeout(() => el.style.color = '', 2000);
+                setTimeout(() => { el.style.color = ''; }, 2000);
             });
         }
 
@@ -2129,11 +2135,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="font-size:1.5rem;">📡</div>
             <div style="flex:1;">
                 <div style="font-size:0.6rem; color:var(--accent); text-transform:uppercase; letter-spacing:2px; margin-bottom:5px; font-weight:800;">BROADCAST // SECURE UPLINK</div>
-                <div style="font-family:'Space Grotesk', sans-serif; font-weight:500; color:#fff; line-height:1.4;">${msg}</div>
+                <div class="otp-broadcast-body" style="font-family:'Space Grotesk', sans-serif; font-weight:500; color:#fff; line-height:1.4;"></div>
             </div>
-            <button onclick="this.closest('#emergency-broadcast').remove()" style="background:transparent; border:none; color:rgba(255,255,255,0.3); cursor:pointer; font-size:1.2rem;">&times;</button>
+            <button type="button" class="otp-broadcast-dismiss" style="background:transparent; border:none; color:rgba(255,255,255,0.3); cursor:pointer; font-size:1.2rem;">&times;</button>
         `;
-        
+        const bodyEl = overlay.querySelector('.otp-broadcast-body');
+        if (bodyEl) bodyEl.textContent = String(msg == null ? '' : msg);
+        const dismiss = overlay.querySelector('.otp-broadcast-dismiss');
+        if (dismiss) dismiss.addEventListener('click', () => overlay.remove());
+
         document.body.appendChild(overlay);
         
         // Add animation if not present

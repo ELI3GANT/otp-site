@@ -16,7 +16,10 @@ window.AuditEngine = {
         this.isNavigating = true;
 
         const steps = document.querySelectorAll('.audit-step');
-        if (!steps[this.currentStep]) return;
+        if (!steps[this.currentStep]) {
+            this.isNavigating = false;
+            return;
+        }
         steps[this.currentStep].classList.remove('active');
         this.currentStep++;
         if (steps[this.currentStep]) {
@@ -39,7 +42,12 @@ window.AuditEngine = {
         this.isNavigating = true;
 
         const steps = document.querySelectorAll('.audit-step');
-        steps[this.currentStep].classList.remove('active');
+        const cur = steps[this.currentStep];
+        if (!cur) {
+            this.isNavigating = false;
+            return;
+        }
+        cur.classList.remove('active');
         this.currentStep--;
         if (steps[this.currentStep]) {
             steps[this.currentStep].classList.add('active');
