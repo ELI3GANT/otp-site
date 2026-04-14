@@ -111,14 +111,20 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
     // Check if we are on desktop. Kursor typically hinders mobile touch.
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
     
-    // STRICT CHECK: Only init Kursor if NOT mobile.
-    if (typeof kursor !== 'undefined' && !isMobile) {
+    // Cursor ring disabled (removes the black circle/ring around the mouse).
+    // If we ever want it back, gate behind an explicit config flag.
+    const shouldEnableKursor = !!(window.OTP_CONFIG && window.OTP_CONFIG.enableKursor);
+    if (shouldEnableKursor && typeof kursor !== 'undefined' && !isMobile) {
         new kursor({
             type: 1, // Ring
             color: 'var(--accent2)', // Cyan
             removeDefaultCursor: false
         });
-    } 
+    } else {
+        // Safety: remove any injected nodes.
+        const kursorNodes = document.querySelectorAll('.kursor, .kursor-child');
+        kursorNodes.forEach(n => n.remove());
+    }
     
     // Mobile Starfield Visiblity Logic
     if (isMobile) {
