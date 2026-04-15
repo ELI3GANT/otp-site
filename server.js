@@ -151,6 +151,41 @@ function buildDocFields({ lead, sourceTable, recommendation }) {
     };
 }
 
+/** Knowledge hits rendered as a compact list for packet HTML previews (Oracle transparency). */
+function formatKnowledgeBasisHtml(knowledgeBasis, maxItems = 14) {
+    if (!Array.isArray(knowledgeBasis) || !knowledgeBasis.length) return '';
+    const slice = knowledgeBasis.slice(0, maxItems);
+    const items = slice.map((h) => {
+        const name = escapeHtml(String(h?.file_name || 'file'));
+        const idx = h?.chunk_index != null && h?.chunk_index !== '' ? `#${escapeHtml(String(h.chunk_index))}` : '';
+        const pct = Number.isFinite(Number(h?.similarity)) ? Math.round(Number(h.similarity) * 100) : null;
+        return `<li><span class="kb-name">${name}${idx}</span>${pct != null ? ` <span class="kb-pct">${pct}%</span>` : ''}</li>`;
+    }).join('\n');
+    const more = knowledgeBasis.length > maxItems
+        ? `<p class="kb-more">…and ${knowledgeBasis.length - maxItems} more indexed matches (preview capped).</p>`
+        : '';
+    return `
+  <h2>Oracle knowledge citations</h2>
+  <ul class="kb-list" role="list">${items}</ul>${more}`;
+}
+
+function docPacketSubtitle(docType) {
+    switch (docType) {
+        case 'proposal':
+            return 'OTP Oracle draft — review internally before any client-facing export.';
+        case 'agreement':
+            return 'Service agreement draft — legal review recommended before signature.';
+        case 'invoice':
+            return 'Deposit figures follow the quote-range floor — reconcile in job sheet before send.';
+        case 'nda':
+            return 'Confidentiality draft — align with counsel and scope before signature.';
+        case 'media_release':
+            return 'Media / portrait release draft — verify usage rights and deliverables.';
+        default:
+            return 'OTP-generated preview — manual approval required.';
+    }
+}
+
 function renderHtmlDoc(docType, fields) {
     const f = fields || {};
     const titleMap = {
@@ -166,18 +201,30 @@ function renderHtmlDoc(docType, fields) {
         : 'Manual document selection required';
 
     const missionRaw = normalizeWhitespace(String(f.mission_brief || '').trim() || String(f.lead_summary || '').trim());
-    const mission = missionRaw || 'N/A';
+    const missionFull = missionRaw || 'N/A';
+    const MISSION_PREVIEW_CAP = 5200;
+    const missionTruncated = missionFull.length > MISSION_PREVIEW_CAP;
+    const mission = missionTruncated ? missionFull.slice(0, MISSION_PREVIEW_CAP) : missionFull;
     const pkgR = String(f.package_reason || '').trim();
     const docR = String(f.documents_reason || '').trim();
     const tac = String(f.tactical_advice || '').trim();
     const tacProbe = tac.slice(0, Math.min(96, tac.length)).toLowerCase();
-    const showTac = Boolean(tac && tacProbe && !mission.toLowerCase().includes(tacProbe));
-    const htmlPkg = pkgR ? `\n  <h2>Recommended package rationale</h2>\n  <p>${escapeHtml(pkgR)}</p>` : '';
-    const htmlDocR = docR ? `\n  <h2>Why these documents</h2>\n  <p>${escapeHtml(docR)}</p>` : '';
-    const htmlTac = showTac ? `\n  <h2>OTP tactical summary</h2>\n  <p class="scope">${escapeHtml(tac)}</p>` : '';
+    const missionLower = mission.toLowerCase();
+    const showTac = Boolean(tac && tacProbe && !missionLower.includes(tacProbe));
+    const htmlPkg = pkgR ? `\n  <h2>Package rationale</h2>\n  <p class="prose">${escapeHtml(pkgR)}</p>` : '';
+    const htmlDocR = docR ? `\n  <h2>Document rationale</h2>\n  <p class="prose">${escapeHtml(docR)}</p>` : '';
+    const htmlTac = showTac ? `\n  <h2>Tactical summary</h2>\n  <p class="scope prose">${escapeHtml(tac)}</p>` : '';
+    const htmlKb = formatKnowledgeBasisHtml(f.knowledge_basis);
+    const subtitle = docPacketSubtitle(docType);
+    const truncNote = missionTruncated
+        ? `<p class="trunc-note">Preview truncated (${missionFull.length.toLocaleString()} characters). Full text remains in packet fields for merge/export.</p>`
+        : '';
+
+    const invTotal = f.invoice_total_cents ? ('$' + (f.invoice_total_cents / 100).toLocaleString('en-US')) : 'Scope-based';
+    const invDep = f.deposit_due_cents ? ('$' + (f.deposit_due_cents / 100).toLocaleString('en-US')) : 'Scope-based';
 
     return `<!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -186,90 +233,209 @@ function renderHtmlDoc(docType, fields) {
   <style>
     :root {
       color-scheme: light dark;
-      --doc-bg: #ffffff;
-      --doc-text: #111111;
-      --doc-muted: #555555;
-      --doc-muted2: #444444;
-      --doc-surface: #f4f4f6;
-      --doc-border: #d8d8dc;
-      --doc-line: #111111;
+      --doc-bg: #fafafa;
+      --doc-text: #121218;
+      --doc-muted: #5c5c6e;
+      --doc-muted2: #4a4a58;
+      --doc-surface: #f0f0f4;
+      --doc-surface2: #ffffff;
+      --doc-border: #d4d4de;
+      --doc-line: #1a1a22;
+      --doc-accent: #0d7a5c;
+      --doc-warn-bg: rgba(255, 170, 60, 0.12);
+      --doc-warn-border: rgba(200, 130, 40, 0.45);
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --doc-bg: #0c0c10;
-        --doc-text: #ececf1;
-        --doc-muted: #9b9ba8;
-        --doc-muted2: #b4b4c0;
-        --doc-surface: #16161e;
-        --doc-border: #2e2e3a;
-        --doc-line: #c8c8d4;
+        --doc-bg: #0b0b10;
+        --doc-text: #ececf3;
+        --doc-muted: #9a9aaa;
+        --doc-muted2: #b0b0c0;
+        --doc-surface: #14141c;
+        --doc-surface2: #101018;
+        --doc-border: #2c2c38;
+        --doc-line: #d0d0dc;
+        --doc-accent: #3ecf9a;
+        --doc-warn-bg: rgba(255, 190, 90, 0.1);
+        --doc-warn-border: rgba(255, 200, 120, 0.35);
       }
     }
     * { box-sizing: border-box; }
     body {
-      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Arial;
-      margin: clamp(16px, 4vw, 40px);
-      max-width: 900px;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: clamp(16px, 4vw, 40px);
+      max-width: 820px;
+      margin-inline: auto;
       background: var(--doc-bg);
       color: var(--doc-text);
+      -webkit-font-smoothing: antialiased;
     }
-    .meta { color: var(--doc-muted); font-size: 12px; margin-bottom: 18px; line-height: 1.5; }
-    h1 { font-size: clamp(1.1rem, 4vw, 22px); margin: 0 0 8px; color: var(--doc-text); font-weight: 700; }
-    h2 { font-size: 16px; margin: 22px 0 8px; color: var(--doc-text); font-weight: 600; }
-    p, li { font-size: 13px; line-height: 1.6; color: var(--doc-text); }
+    .shell {
+      background: var(--doc-surface2);
+      border: 1px solid var(--doc-border);
+      border-radius: 14px;
+      padding: clamp(18px, 3.5vw, 28px);
+      box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+    }
+    @media (prefers-color-scheme: dark) {
+      .shell { box-shadow: 0 1px 0 rgba(255,255,255,0.04); }
+    }
+    .banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+      margin-bottom: 16px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--doc-warn-border);
+      background: var(--doc-warn-bg);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--doc-muted2);
+    }
+    .banner span { opacity: 0.9; }
+    .meta {
+      color: var(--doc-muted);
+      font-size: 12px;
+      margin-bottom: 14px;
+      line-height: 1.55;
+    }
+    h1 {
+      font-size: clamp(1.25rem, 4.2vw, 1.65rem);
+      margin: 0 0 6px;
+      color: var(--doc-text);
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: var(--doc-muted);
+      line-height: 1.45;
+      margin: 0 0 18px;
+      max-width: 62ch;
+    }
+    h2 {
+      font-size: 14px;
+      margin: 24px 0 8px;
+      color: var(--doc-text);
+      font-weight: 650;
+      letter-spacing: 0.01em;
+      border-bottom: 1px solid var(--doc-border);
+      padding-bottom: 4px;
+    }
+    .prose, p, li {
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--doc-text);
+    }
+    p { margin: 0 0 12px; }
     .scope { white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; }
+    .trunc-note {
+      font-size: 12px;
+      color: var(--doc-muted);
+      margin: 8px 0 0;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: var(--doc-surface);
+      border: 1px dashed var(--doc-border);
+    }
     .box {
       border: 1px solid var(--doc-border);
-      border-radius: 10px;
-      padding: 14px 16px;
+      border-radius: 12px;
+      padding: 16px 18px;
       background: var(--doc-surface);
       color: var(--doc-text);
     }
     .box strong { color: var(--doc-text); }
-    .row { display: flex; gap: 16px; flex-wrap: wrap; }
-    .col { flex: 1; min-width: min(220px, 100%); }
-    .sign { margin-top: 28px; }
-    .sign .line { margin-top: 40px; border-top: 1px solid var(--doc-line); width: min(260px, 70vw); }
+    .row { display: flex; gap: 18px; flex-wrap: wrap; }
+    .col { flex: 1; min-width: min(200px, 100%); }
+    .dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 14px;
+      font-size: 14px;
+      margin: 0;
+    }
+    .dl dt { color: var(--doc-muted); font-weight: 600; }
+    .dl dd { margin: 0; }
+    .callout {
+      margin-top: 20px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--doc-border);
+      background: var(--doc-surface);
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--doc-muted2);
+    }
+    .callout strong { color: var(--doc-text); }
+    .kb-list {
+      margin: 0;
+      padding-left: 1.2rem;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .kb-list li { margin-bottom: 4px; }
+    .kb-name { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    .kb-pct { color: var(--doc-accent); font-weight: 700; font-size: 12px; }
+    .kb-more { font-size: 12px; color: var(--doc-muted); margin: 8px 0 0; }
+    .sign { margin-top: 32px; padding-top: 8px; border-top: 1px solid var(--doc-border); }
+    .sign .line { margin-top: 36px; border-top: 1px solid var(--doc-line); width: min(280px, 75vw); }
     .small { font-size: 12px; color: var(--doc-muted2); }
-    ul { padding-left: 1.25rem; }
+    ul { padding-left: 1.2rem; }
     @media (max-width: 520px) {
-      body { margin: 14px; }
+      body { padding: 14px 12px; }
+      .shell { padding: 16px 14px; border-radius: 12px; }
       .box .row { flex-direction: column; }
+      .dl { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; padding: 12mm; }
+      .shell { box-shadow: none; border: none; padding: 0; }
+      .banner { border-style: solid; }
     }
   </style>
 </head>
 <body>
-  <div class="meta">${escapeHtml(f.sender_company || '')} • ${escapeHtml(f.sender_email || '')}<br/>Generated: ${escapeHtml(f.generated_at || '')}</div>
-  <h1>${escapeHtml(title)}</h1>
-  <div class="box">
-    <div class="row">
-      <div class="col"><div class="small">Client</div><div><strong>${escapeHtml(f.client_name || '')}</strong></div><div class="small">${escapeHtml(f.client_email || '')}</div></div>
-      <div class="col"><div class="small">Recommended package</div><div><strong>${escapeHtml(f.recommended_package || '')}</strong></div><div class="small">${escapeHtml(f.quote_range || '')}</div></div>
+  <div class="shell">
+    <div class="banner"><span>OTP Oracle</span><span>·</span><span>Draft packet</span><span>·</span><span>Not client-final</span></div>
+    <div class="meta">${escapeHtml(f.sender_company || '')} · ${escapeHtml(f.sender_email || '')}<br/>Generated ${escapeHtml(f.generated_at || '')}</div>
+    <h1>${escapeHtml(title)}</h1>
+    <p class="subtitle">${escapeHtml(subtitle)}</p>
+    <div class="box">
+      <div class="row">
+        <div class="col"><div class="small">Client</div><div><strong>${escapeHtml(f.client_name || '')}</strong></div><div class="small">${escapeHtml(f.client_email || '')}</div></div>
+        <div class="col"><div class="small">Recommended package</div><div><strong>${escapeHtml(f.recommended_package || '')}</strong></div><div class="small">${escapeHtml(f.quote_range || '')}</div></div>
+      </div>
+      ${f.service_type ? `<div style="margin-top:12px;" class="small">Service type: <strong>${escapeHtml(String(f.service_type))}</strong></div>` : ''}
     </div>
-    ${f.service_type ? `<div style="margin-top:10px;" class="small">Service type: <strong>${escapeHtml(String(f.service_type))}</strong></div>` : ''}
-  </div>
 
-  <h2>Client &amp; mission details</h2>
-  <p class="scope">${escapeHtml(mission)}</p>${htmlPkg}${htmlDocR}${htmlTac}
+    <h2>Client &amp; mission details</h2>
+    <p class="scope prose">${escapeHtml(mission)}</p>${truncNote}${htmlPkg}${htmlDocR}${htmlTac}${htmlKb}
 
-  <h2>Required documents</h2>
-  <p>${escapeHtml(docsLine)}</p>
+    <h2>Required documents</h2>
+    <p class="prose">${escapeHtml(docsLine)}</p>
 
   ${docType === 'invoice' ? `
     <h2>Invoice details</h2>
-    <ul>
-      <li>Currency: ${escapeHtml(f.invoice_currency || 'USD')}</li>
-      <li>Estimated total (based on range floor): ${f.invoice_total_cents ? ('$' + (f.invoice_total_cents/100).toFixed(0)) : 'Scope-based'}</li>
-      <li>Deposit due (50%): ${f.deposit_due_cents ? ('$' + (f.deposit_due_cents/100).toFixed(0)) : 'Scope-based'}</li>
-    </ul>
+    <dl class="dl">
+      <dt>Currency</dt><dd>${escapeHtml(f.invoice_currency || 'USD')}</dd>
+      <dt>Est. total <span class="small">(range floor)</span></dt><dd><strong>${invTotal}</strong></dd>
+      <dt>Deposit <span class="small">(50%)</span></dt><dd><strong>${invDep}</strong></dd>
+    </dl>
   ` : ''}
 
-  <h2>Terms (placeholder)</h2>
-  <p>This is an OTP-generated draft for admin review. Final terms must be approved before export/send.</p>
+    <div class="callout"><strong>Admin review</strong> — This HTML is a preview from OTP Oracle fields. Approve in Terminal, align master DOCX/PDF, and verify amounts in the job sheet before any client send.</div>
 
-  <div class="sign">
-    <div class="small">Approved by</div>
-    <div class="line"></div>
+    <div class="sign">
+      <div class="small">Approver signature</div>
+      <div class="line"></div>
+    </div>
   </div>
 </body>
 </html>`;
