@@ -43,6 +43,9 @@ assert.match(server, /\/api\/admin\/ops\/packets\/export-zip/, 'Ops packets zip 
 assert.match(server, /\/api\/admin\/ops\/send\/prepare/, 'Ops send prepare endpoint');
 assert.match(server, /\/api\/admin\/ops\/send\/execute/, 'Ops send execute endpoint');
 assert.match(server, /runOracleRecommendation\(/, 'Shared recommendation helper');
+assert.match(server, /function augmentLeadTextForRetrieval\(/, 'retrieval query expansion');
+assert.match(server, /function diversifyTopMatches\(/, 'diverse knowledge match list');
+assert.match(server, /oracle_retrieval/, 'recommendation exposes oracle_retrieval diagnostics');
 assert.match(server, /\/api\/admin\/ops\/jobs\/from-oracle/, 'Oracle → ops job bootstrap route');
 assert.match(server, /persistOracleLeadSnapshot\(/, 'Oracle snapshot persistence helper');
 assert.match(server, /\/api\/admin\/docs\/signature\/request/, 'Signature request endpoint scaffolding');
@@ -60,6 +63,8 @@ assert.ok(adminCore.includes('/api/admin/docs/packet'));
 assert.ok(adminCore.includes('fetchStructuredKnowledge'), 'structured knowledge UI fetch');
 assert.ok(adminCore.includes('buildOraclePanelHtml'));
 assert.ok(adminCore.includes('formatOracleContextBlockHtml'));
+assert.ok(adminCore.includes('isOracleKbSnapshotStale'), 'Terminal detects KB newer than Oracle snapshot');
+assert.ok(adminCore.includes('snapshotKbAt'), 'Oracle panel receives snapshot KB stamp for stale UI');
 
 const genIdx = adminCore.indexOf('window.generateReplyForLead');
 assert.ok(genIdx > 0);
@@ -74,6 +79,10 @@ assert.ok(terminal.includes('id="replyOracleBtn"'));
 assert.ok(terminal.includes('06.5 // OTP Oracle · Knowledge Index'));
 assert.ok(terminal.includes('fetchKnowledgeFiles'));
 assert.ok(terminal.includes('Structured Oracle Knowledge (Priority)'));
+assert.ok(terminal.includes('id="client-work-loop"'), 'Terminal surfaces client work rhythm anchor');
+assert.ok(terminal.includes('class="otp-client-rhythm"'), 'Client rhythm is a single disclosure (calm dashboard)');
+assert.ok(terminal.includes('window.scrollToClientWorkLoop'), 'Reply modal wires client work checklist scroll');
+assert.ok(adminCore.includes('window.scrollToClientWorkLoop'), 'admin-core exposes scrollToClientWorkLoop');
 
 console.log('   OK: OTP Oracle master stack');
 console.log('OTP ORACLE MASTER COMPLETE');

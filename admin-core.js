@@ -41,6 +41,25 @@
         return msg;
     };
 
+    /** Parse JSON response body; returns {} if body is empty or not JSON (e.g. HTML error page). */
+    const tryParseJson = (raw) => {
+        if (!raw || !String(raw).trim()) return {};
+        try {
+            return JSON.parse(raw);
+        } catch (e) {
+            return {};
+        }
+    };
+
+    /** Strict parse for success responses where we expect JSON. */
+    const parseJsonResponse = (raw, status) => {
+        try {
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            throw new Error(`Invalid JSON from server (${status})`);
+        }
+    };
+
     // GLOBAL ERROR TRAP
     /**
      * SECURE PROXY HELPERS
@@ -60,10 +79,12 @@
             });
             clearTimeout(timeoutId);
             if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
+                const errRaw = await res.text();
+                const err = tryParseJson(errRaw);
                 throw new Error(err.message || `Write Failed (${res.status})`);
             }
-            return await res.json();
+            const okRaw = await res.text();
+            return parseJsonResponse(okRaw, res.status);
         } catch (err) {
             clearTimeout(timeoutId);
             throw new Error(formatNetworkError(err));
@@ -83,16 +104,12 @@
             });
             clearTimeout(timeoutId);
             if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
+                const errRaw = await res.text();
+                const err = tryParseJson(errRaw);
                 throw new Error(err.message || `Read Failed (${res.status})`);
             }
             const raw = await res.text();
-            let json = {};
-            try {
-                json = raw ? JSON.parse(raw) : {};
-            } catch (e) {
-                throw new Error(`Invalid JSON from server (${res.status})`);
-            }
+            const json = parseJsonResponse(raw, res.status);
             const d = json.data;
             return Array.isArray(d) ? d : (d == null ? [] : d);
         } catch (err) {
@@ -114,10 +131,12 @@
             });
             clearTimeout(timeoutId);
             if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
+                const errRaw = await res.text();
+                const err = tryParseJson(errRaw);
                 throw new Error(err.message || `Delete Failed (${res.status})`);
             }
-            return await res.json();
+            const okRaw = await res.text();
+            return parseJsonResponse(okRaw, res.status);
         } catch (err) {
             clearTimeout(timeoutId);
             throw new Error(formatNetworkError(err));
@@ -139,23 +158,41 @@
      * Centralized Toast System
      * Defined early for use in initialization error traps.
      */
-    window.showToast = function(msg) {
+    window.showToast = function(msg, durationMs) {
         const toast = document.getElementById('toast');
         if(!toast) return;
-        
+        if (window.__otpToastTimer) {
+            clearTimeout(window.__otpToastTimer);
+            window.__otpToastTimer = null;
+        }
+
         // Reset
         toast.classList.remove('show');
         void toast.offsetWidth; // Force reflow
-        
+
         const span = toast.querySelector('span');
         if (span) span.textContent = msg;
         toast.classList.add('show');
-        
-        // Auto hide after 4s
-        setTimeout(() => {
+
+        const ms = Number.isFinite(Number(durationMs)) && Number(durationMs) > 0 ? Number(durationMs) : 4000;
+        window.__otpToastTimer = setTimeout(() => {
             toast.classList.remove('show');
-        }, 4000);
+            window.__otpToastTimer = null;
+        }, ms);
     };
+
+    /** Scroll main Terminal to the client-work ritual strip (reply modal can call while open). */
+    window.scrollToClientWorkLoop = function() {
+        const el = document.getElementById('client-work-loop');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    /** Single toast line: avoids stacking a second “reminder” toast on the same action. */
+    function toastKnowledgeFollowup(primaryMsg) {
+        const base = String(primaryMsg || '').trim();
+        if (!base) return;
+        showToast(`${base} · Re-run 🔮 Oracle on open quotes.`, 8200);
+    }
 
     /**
      * Security Utility: Escape HTML
@@ -297,6 +334,14 @@
         return (Date.now() - ms) <= maxAgeMs;
     }
 
+    /** True when global knowledge index meta is newer than the KB stamp embedded in this Oracle snapshot. */
+    function isOracleKbSnapshotStale(snapshotKbAt) {
+        const globalMs = parseIsoMs(window.__kbUpdatedAt || '');
+        const snapMs = parseIsoMs(snapshotKbAt || '');
+        if (!globalMs || !snapMs) return false;
+        return snapMs < globalMs;
+    }
+
     /** ORACLE_CONTEXT_DATA: human-readable analysis (no monospace “code wall”); strips model markdown fences. */
     const formatOracleContextBlockHtml = (raw) => {
         if (raw == null || raw === '') return '';
@@ -363,11 +408,13 @@
     };
 
     /** Shared HTML for OTP Oracle summary (reply modal + hydrate on reopen). */
-    const buildOraclePanelHtml = (recommendation) => {
+    const buildOraclePanelHtml = (recommendation, panelOpts = {}) => {
         const rec = recommendation || {};
         const docs = Array.isArray(rec.required_documents) ? Array.from(new Set(rec.required_documents)) : [];
         const statusFlags = Array.isArray(rec.status_flags) ? rec.status_flags : [];
         const kbHits = Array.isArray(rec.knowledge_basis) ? rec.knowledge_basis : [];
+        const orbRt = rec.oracle_retrieval && typeof rec.oracle_retrieval === 'object' ? rec.oracle_retrieval : null;
+        const staleKb = !!(panelOpts.snapshotKbAt && isOracleKbSnapshotStale(panelOpts.snapshotKbAt));
         const statusMap = {
             ready: 'READY',
             manual_review: 'MANUAL REVIEW',
@@ -389,9 +436,16 @@
         const notesLine = Array.isArray(rec.admin_notes) && rec.admin_notes.length
             ? rec.admin_notes.map((n) => String(n || '').trim()).filter(Boolean).join(' · ')
             : (typeof rec.admin_notes === 'string' && rec.admin_notes.trim() ? rec.admin_notes.trim() : '');
+        const staleLine = staleKb
+            ? `<div style="font-size:0.62rem;color:#ffb347;letter-spacing:1px;text-transform:uppercase;font-weight:900;margin:0 0 8px 0;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,179,71,0.45);background:rgba(255,179,71,0.1);">Knowledge index updated after this run — re-run OTP Oracle for fresh citations.</div>`
+            : '';
+        const rtLine = orbRt && String(orbRt.note || '').trim()
+            ? `<div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.5;border-top:1px solid var(--admin-border);padding-top:8px;"><span style="color:var(--admin-cyan);font-weight:800;text-transform:uppercase;font-size:0.58rem;letter-spacing:0.08em;">Retrieval</span> · ${window.escapeHtml(String(orbRt.note))}${Number.isFinite(Number(orbRt.max_match_similarity)) ? ` <span style="opacity:0.85">(top match ${Math.round(Number(orbRt.max_match_similarity) * 100)}%)</span>` : ''}</div>`
+            : '';
         return `
                     <div style="background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.25); border-radius: 8px; padding: 12px;">
                         <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.4px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP ORACLE (MANUAL APPROVAL REQUIRED)</div>
+                        ${staleLine}
                         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${statusBadges}</div>
                         <div style="font-size:0.85rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
                         <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:4px;">${window.escapeHtml(rec.quote_range || 'Scope-based')}</div>
@@ -399,6 +453,7 @@
                         <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(rec.documents_reason || 'OTP safety docs selected from context.')}</div>
                         <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">${window.escapeHtml(docs.join(', ') || 'Manual document review required')}</div>
                         <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">Knowledge hits: ${window.escapeHtml(kbHits.length ? kbHits.map(hit => `${hit.file_name}#${hit.chunk_index} (${Math.round((Number(hit.similarity || 0)) * 100)}%)`).join(' | ') : 'No indexed file citations available.')}</div>
+                        ${rtLine}
                         <div style="font-size:0.67rem;color:var(--admin-muted);margin-top:7px;">${window.escapeHtml(nextActionLabel)}</div>
                         ${notesLine ? `<div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;border-top:1px solid var(--admin-border);padding-top:8px;">Admin notes: ${window.escapeHtml(notesLine)}</div>` : ''}
                     </div>`;
@@ -1507,8 +1562,8 @@
                 const payload = await res.json().catch(() => ({}));
                 if (!res.ok || !payload.success) throw new Error(payload.message || `Update failed (${res.status})`);
                 if (payload.duplicate) showToast('NO CHANGE (DUPLICATE CONTENT)');
-                else if (payload.replaced) showToast('FILE UPDATED (NEW VERSION INDEXED)');
-                else showToast('FILE INDEXED');
+                else if (payload.replaced) toastKnowledgeFollowup('FILE UPDATED (NEW VERSION INDEXED)');
+                else toastKnowledgeFollowup('FILE INDEXED');
                 await window.fetchKnowledgeFiles();
             } catch (e) {
                 showToast(`UPDATE FAILED: ${formatNetworkError(e)}`);
@@ -1546,7 +1601,7 @@
             const res = await fetch(`${apiBase}/api/admin/knowledge/files`, {
                 headers: { 'Authorization': `Bearer ${state.token}` }
             });
-            const payload = await res.json();
+            const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Index failed (${res.status})`);
 
             window.knowledgeFilesCache = payload.files || [];
@@ -1611,12 +1666,15 @@
             if (payload.replaced) replacedCount += 1;
         }
         await window.fetchKnowledgeFiles();
-        if (duplicateCount > 0) {
-            showToast(`INDEX UPDATED (${duplicateCount} DUPLICATE${duplicateCount === 1 ? '' : 'S'} SKIPPED)`);
-        } else if (replacedCount > 0) {
-            showToast(`KNOWLEDGE UPDATED (${replacedCount} FILE${replacedCount === 1 ? '' : 'S'} REPLACED)`);
+        if (replacedCount > 0 || duplicateCount < files.length) {
+            const msg = duplicateCount > 0
+                ? `INDEX UPDATED (${duplicateCount} DUPLICATE${duplicateCount === 1 ? '' : 'S'} SKIPPED)`
+                : replacedCount > 0
+                    ? `KNOWLEDGE UPDATED (${replacedCount} FILE${replacedCount === 1 ? '' : 'S'} REPLACED)`
+                    : 'KNOWLEDGE INDEX UPDATED';
+            toastKnowledgeFollowup(msg);
         } else {
-            showToast('KNOWLEDGE INDEX UPDATED');
+            showToast(`INDEX UPDATED (${duplicateCount} DUPLICATE${duplicateCount === 1 ? '' : 'S'} SKIPPED)`);
         }
     };
 
@@ -1637,7 +1695,7 @@
             showToast(`ARCHIVE FAILED: ${(payload && payload.message) || res.status}`);
             return;
         }
-        showToast('KNOWLEDGE FILE ARCHIVED');
+        toastKnowledgeFollowup('KNOWLEDGE FILE ARCHIVED');
         await window.fetchKnowledgeFiles();
     };
 
@@ -1658,7 +1716,7 @@
             showToast(`DELETE FAILED: ${(payload && payload.message) || res.status}`);
             return;
         }
-        showToast('KNOWLEDGE FILE DELETED');
+        toastKnowledgeFollowup('KNOWLEDGE FILE DELETED');
         await window.fetchKnowledgeFiles();
     };
 
@@ -1804,7 +1862,7 @@
             }, 45000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Save failed (${res.status})`);
-            showToast('STRUCTURED ENTRY SAVED');
+            toastKnowledgeFollowup('STRUCTURED ENTRY SAVED');
             if (status) status.textContent = 'Saved.';
             window.closeStructuredKnowledgeEditor();
             await window.fetchStructuredKnowledge();
@@ -1831,7 +1889,7 @@
             }, 30000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Archive failed (${res.status})`);
-            showToast('STRUCTURED ENTRY ARCHIVED');
+            toastKnowledgeFollowup('STRUCTURED ENTRY ARCHIVED');
             if (status) status.textContent = 'Archived.';
             window.closeStructuredKnowledgeEditor();
             await window.fetchStructuredKnowledge();
@@ -2087,8 +2145,14 @@
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `from-oracle failed (${res.status})`);
             const jobId = payload.row && payload.row.jobId;
-            const pkg = payload.oracle && payload.oracle.recommended_package;
-            showToast(jobId ? `JOB ${jobId}${pkg ? ' • ' + pkg : ''}` : 'JOB SAVED');
+            const pkgRaw = payload.oracle && payload.oracle.recommended_package ? String(payload.oracle.recommended_package).trim() : '';
+            const oracleHint = pkgRaw.length > 42 ? `${pkgRaw.slice(0, 40)}…` : pkgRaw;
+            showToast(
+                jobId
+                    ? `JOB ${jobId} opened · Oracle = guidance only${oracleHint ? ' · ' + oracleHint : ''} — confirm §06.7 before client use.`
+                    : 'JOB SAVED · Oracle = guidance — confirm §06.7 before client use.',
+                9000
+            );
             await window.fetchOpsJobs();
             if (jobId) await window.openOpsJobEditor(jobId);
             const anchor = document.getElementById('section-ops-jobs');
@@ -3083,6 +3147,8 @@
         }
 
         const rec = cache.recommendation;
+        const staleKb = isOracleKbSnapshotStale(cache.kb_updated_at);
+        const orbRt = rec.oracle_retrieval && typeof rec.oracle_retrieval === 'object' ? rec.oracle_retrieval : null;
         const confidence = Number(cache.confidence || 0);
         const packageConfidence = Number(rec.package_confidence || confidence || 0);
         const statusFlags = Array.isArray(rec.status_flags) ? rec.status_flags : [];
@@ -3120,6 +3186,8 @@
                 <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:transparent;border:1px solid var(--admin-border);color:var(--admin-muted);font-size:0.62rem;padding:5px 8px;border-radius:6px;cursor:pointer;">RE-RUN</button>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${badges}</div>
+            ${staleKb ? `<div style="font-size:0.62rem;color:#ffb347;letter-spacing:0.06em;text-transform:uppercase;font-weight:900;margin-bottom:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,179,71,0.45);background:rgba(255,179,71,0.1);">KB index newer than this snapshot — tap RE-RUN</div>` : ''}
+            ${orbRt && String(orbRt.note || '').trim() ? `<div style="font-size:0.65rem;color:var(--admin-muted);margin-bottom:8px;line-height:1.45;padding:8px 10px;border-radius:8px;border:1px solid var(--admin-border);background:rgba(0,0,0,0.12);"><span style="color:var(--admin-cyan);font-weight:800;">Retrieval</span> · ${window.escapeHtml(String(orbRt.note))}</div>` : ''}
                         <div style="font-size:0.88rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
             <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:3px;">${window.escapeHtml(quoteLabel)}</div>
             <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;">Confidence: ${(confidence * 100).toFixed(0)}%</div>
@@ -3451,21 +3519,22 @@
     window.openReplyManager = async function(id, source = 'contacts') {
         const table = source === 'leads' ? 'leads' : 'contacts';
         const cache = source === 'leads' ? (window.leadsCache || []) : (window.inboxCache || []);
-        let c = cache.find((x) => x.id == id);
+        const idStr = String(id == null ? '' : id).trim();
+        let c = cache.find((x) => x != null && String(x.id) === idStr);
         if (!c && state.token && state.token !== 'static-bypass-token') {
             try {
                 const rows = await window.secureRead(table, {
-                    filters: [{ column: 'id', op: 'eq', value: String(id) }],
+                    filters: [{ column: 'id', op: 'eq', value: idStr }],
                     limit: 1
                 });
                 const list = Array.isArray(rows) ? rows : [];
                 c = list[0];
                 if (c && table === 'contacts') {
-                    const idx = (window.inboxCache || []).findIndex((x) => x.id == id);
+                    const idx = (window.inboxCache || []).findIndex((x) => x != null && String(x.id) === idStr);
                     if (idx >= 0) window.inboxCache[idx] = c;
                     else (window.inboxCache = window.inboxCache || []).push(c);
                 } else if (c && table === 'leads') {
-                    const idx = (window.leadsCache || []).findIndex((x) => x.id == id);
+                    const idx = (window.leadsCache || []).findIndex((x) => x != null && String(x.id) === idStr);
                     if (idx >= 0) window.leadsCache[idx] = c;
                     else (window.leadsCache = window.leadsCache || []).push(c);
                 }
@@ -3562,9 +3631,13 @@
             const rbKey = replyOracleKey(srcTable, c.id);
             let opsRec = null;
             const replyCached = window.replyOracleCache[rbKey];
-            if (replyCached && replyCached.recommendation) opsRec = replyCached.recommendation;
-            else if (srcTable === 'leads' && window.leadOracleCache && window.leadOracleCache[c.id] && window.leadOracleCache[c.id].recommendation) {
+            let snapshotKbForPanel = null;
+            if (replyCached && replyCached.recommendation) {
+                opsRec = replyCached.recommendation;
+                snapshotKbForPanel = replyCached.kb_updated_at || null;
+            } else if (srcTable === 'leads' && window.leadOracleCache && window.leadOracleCache[c.id] && window.leadOracleCache[c.id].recommendation) {
                 opsRec = window.leadOracleCache[c.id].recommendation;
+                snapshotKbForPanel = window.leadOracleCache[c.id].kb_updated_at || null;
             }
             if (window.__replyContext) window.__replyContext.recommendation = opsRec;
 
@@ -3574,7 +3647,7 @@
                 sections.push(formatOracleContextBlockHtml(analysisData));
             }
             if (opsRec) {
-                sections.push(buildOraclePanelHtml(opsRec));
+                sections.push(buildOraclePanelHtml(opsRec, { snapshotKbAt: snapshotKbForPanel }));
             }
             if (!sections.length) {
                 sections.push(`
@@ -4674,7 +4747,7 @@
                 if (raw) {
                     sections.push(formatOracleContextBlockHtml(raw));
                 }
-                sections.push(buildOraclePanelHtml(recommendation));
+                sections.push(buildOraclePanelHtml(recommendation, { snapshotKbAt: payload.kb_updated_at || null }));
                 analysisDiv.innerHTML = sections.join('<div style="height:12px;"></div>');
             }
             const confN = Number(payload.confidence);
@@ -4694,7 +4767,7 @@
                 const rawA = window.__replyContext && window.__replyContext.analysis;
                 if (rawA) parts.push(formatOracleContextBlockHtml(rawA));
                 const prev = lid ? window.replyOracleCache[replyOracleKey(st, lid)] : null;
-                if (prev && prev.recommendation) parts.push(buildOraclePanelHtml(prev.recommendation));
+                if (prev && prev.recommendation) parts.push(buildOraclePanelHtml(prev.recommendation, { snapshotKbAt: prev.kb_updated_at || null }));
                 failDiv.innerHTML = parts.join('<div style="height:12px;"></div>');
             }
         } finally {

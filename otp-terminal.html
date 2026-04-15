@@ -21,7 +21,7 @@
   <link rel="manifest" href="site.webmanifest" />
 
   <link rel="stylesheet" href="./styles.css?v=16.4.4" />
-  <link rel="stylesheet" href="./admin-styles.css?v=16.6.12" />
+  <link rel="stylesheet" href="./admin-styles.css?v=16.6.14" />
   <link rel="stylesheet" href="./blog-enhancements.css?v=16.3.0" />
   <style>
     /* OTP Terminal: reply + doc packet modals (desktop + mobile safe-area) */
@@ -218,6 +218,27 @@
     <main class="admin-wrap">
         <div class="admin-main-grid">
             <div class="admin-main-content">
+                <!-- One rhythm strip: collapsed by default so the dashboard stays calm; expand for full guidance. -->
+                <section id="client-work-loop" class="input-section otp-client-rhythm-shell" aria-label="Client work rhythm">
+                    <details class="otp-client-rhythm">
+                        <summary class="otp-client-rhythm-summary">Client rhythm · Oracle → thread → reply → docs / job sheet <span class="otp-client-rhythm-hint">(expand)</span></summary>
+                        <div class="otp-client-rhythm-body">
+                            <p class="otp-client-rhythm-lede">One connected path: knowledge feeds Oracle; Oracle <em>recommends</em>; §06.7 job rows and your edits are <strong>source of truth</strong> after save. Nothing auto-sends or auto-finalizes.</p>
+                            <ol class="otp-client-rhythm-steps">
+                                <li><strong>Feed</strong> §06.5 Knowledge + structured rules when scope changes.</li>
+                                <li><strong>Open</strong> §05 / §06 → reply modal → <strong>OTP ORACLE</strong> (same engine as doc packet).</li>
+                                <li><strong>Draft</strong> <strong>GEN AI</strong> only after Oracle looks right → <strong>DOC PACKET</strong> / <strong>JOB SHEET (ORACLE)</strong> for paperwork (review before client-facing).</li>
+                            </ol>
+                            <p class="otp-client-rhythm-muted">Stale Oracle banner after a KB change? Re-run 🔮 on that thread before send.</p>
+                            <div class="otp-client-rhythm-actions">
+                                <button type="button" class="btn-secondary otp-client-rhythm-btn" onclick="document.getElementById('section-knowledge-oracle')?.scrollIntoView({ behavior: 'smooth', block: 'start' });">§06.5 Knowledge</button>
+                                <button type="button" class="btn-secondary otp-client-rhythm-btn" onclick="document.getElementById('section-secure-inbox')?.scrollIntoView({ behavior: 'smooth', block: 'start' });">§05 Inbox</button>
+                                <button type="button" class="btn-secondary otp-client-rhythm-btn" onclick="document.getElementById('section-ops-jobs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });">§06.7 Jobs</button>
+                            </div>
+                        </div>
+                    </details>
+                </section>
+
                 <!-- DASHBOARD STATS -->
                 <section class="input-section stats-grid" aria-label="Dashboard Statistics" style="margin-bottom: 25px;">
              <div class="stat-card">
@@ -351,7 +372,7 @@
             </div>
             </section>
             <!-- SECTION: INBOX & AGENT -->
-            <section class="input-section">
+            <section id="section-secure-inbox" class="input-section">
                 <div class="section-label">05 // Secure Inbox (AI Agents)</div>
                 <div class="terminal-section-toolbar terminal-section-toolbar--inbox">
                      <div class="terminal-section-toolbar__actions">
@@ -387,10 +408,10 @@
             </section>
 
             <!-- SECTION: OTP ORACLE KNOWLEDGE -->
-            <section class="input-section">
+            <section id="section-knowledge-oracle" class="input-section">
                 <div class="section-label">06.5 // OTP Oracle · Knowledge Index</div>
                 <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.5;">
-                    Upload business PDFs/DOCX for the Oracle to cite. Indexed chunks power recommendations and reply context before you contact a client.
+                    Upload business PDFs/DOCX for the Oracle to cite. Indexed chunks and <strong style="color:var(--admin-text);">structured entries</strong> below power the <em>same</em> recommendations as reply modal, doc packets, and JOB ⊕ ORACLE — refresh open threads after every change here.
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
                     <button type="button" onclick="document.getElementById('knowledgeFileInput').click()" class="btn-secondary" style="width: auto; font-size: 0.7rem;">UPLOAD FILES</button>
@@ -1347,7 +1368,14 @@
                 <h3>// SECURE TRANSMISSION LINK</h3>
                 <button onclick="closeReplyManager()" style="background:none; border:none; color:var(--admin-muted); cursor:pointer;">X</button>
             </div>
-            
+            <details class="reply-ops-hint">
+                <summary class="reply-ops-hint-summary">Suggested order: Oracle → Generate → Docs / Job sheet <span class="reply-ops-hint-more">(tap)</span></summary>
+                <div class="reply-ops-hint-body">
+                    <p>Assistive only — confirm every client-facing line, price, and attachment yourself. Job sheet totals live in §06.7 after save; Oracle does not override them silently.</p>
+                    <button type="button" class="btn-secondary reply-ops-hint-btn" onclick="window.scrollToClientWorkLoop?.()">Open client rhythm checklist</button>
+                </div>
+            </details>
+
             <input type="hidden" id="replyContactId">
             <input type="hidden" id="replyContactEmail">
             <input type="hidden" id="replyContactName">
@@ -1420,7 +1448,7 @@
                     <button id="docPacketGenerateBtn" type="button" onclick="generateDocPacket()" class="btn-secondary" style="width:auto;font-size:0.7rem;">GENERATE PACKET</button>
                     <button id="docPacketApproveBtn" type="button" onclick="approveDocPacket()" class="btn-secondary" style="width:auto;font-size:0.7rem;">APPLY APPROVALS</button>
                     <div style="font-size:0.66rem;color:var(--admin-muted);line-height:1.35;flex:1;min-width:220px;">
-                        <strong style="color:var(--admin-text);">Workflow</strong>: Generate → Preview → Approve → Download / Send
+                        <strong style="color:var(--admin-text);">Workflow</strong>: Generate → Preview → Approve → Download / Send · Oracle aligns when a reply thread is open; you still approve each step.
                     </div>
                 </div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;border:1px dashed var(--admin-border);border-radius:10px;padding:10px 12px;background:var(--admin-surface-inset-strong);">
@@ -1584,7 +1612,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.16"></script>
+    <script src="admin-core.js?v=16.7.21"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)
