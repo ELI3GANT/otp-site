@@ -138,6 +138,14 @@
             50% { opacity: 0; }
         }
 
+        .gate-input-row {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+            position: relative;
+            min-height: 44px;
+        }
+
         .gate-input {
             background: transparent;
             border: none;
@@ -145,9 +153,36 @@
             font-family: 'VT323', monospace;
             font-size: 1.5rem;
             width: 100%;
+            flex: 1;
+            min-width: 0;
             outline: none;
-            margin-top: 5px;
+            margin-top: 0;
+            padding-right: 52px; /* room for VIEW / HIDE control */
             caret-color: transparent; /* custom cursor */
+        }
+
+        #eyeBtn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--term-dim);
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            min-width: 44px;
+            min-height: 44px;
+            padding: 8px 10px;
+            margin: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .login-btn {
@@ -158,10 +193,13 @@
             font-size: 1.3rem;
             margin-top: 25px;
             width: 100%;
-            padding: 10px;
+            padding: 12px 16px;
+            min-height: 48px;
             cursor: pointer;
             transition: all 0.2s;
             text-transform: uppercase;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .login-btn:hover {
@@ -177,6 +215,11 @@
             margin-top: 15px;
             font-size: 1rem;
             text-align: center;
+        }
+
+        /* iOS: 16px+ on focused inputs avoids viewport zoom */
+        @media (max-width: 768px) {
+            .gate-input { font-size: 16px; }
         }
 
         /* MOBILE OPTIMIZATION */
@@ -227,11 +270,11 @@
         <div class="auth-prompt">
             <label for="passcode">> ENTER SECURITY COMMAND:</label>
             <form onsubmit="event.preventDefault(); attemptLogin();">
-                <div style="display: flex; align-items: center; margin-top: 5px; position: relative;">
+                <div class="gate-input-row">
                     <span style="color: var(--term-green); margin-right: 5px;" aria-hidden="true">></span>
                     <input type="password" id="passcode" class="gate-input" maxlength="20" autocomplete="off" autofocus oninput="updateCursor()" aria-label="Command Input">
                     <span id="fake-cursor" class="cursor" aria-hidden="true"></span>
-                    <button type="button" onclick="togglePasscode()" id="eyeBtn" style="background: none; border: none; color: var(--term-dim); cursor: pointer; padding: 5px; font-size: 0.8rem; position: absolute; right: 0;">VIEW</button>
+                    <button type="button" onclick="togglePasscode()" id="eyeBtn" aria-label="Show or hide password">VIEW</button>
                 </div>
                 <button type="submit" id="loginBtn" class="login-btn">EXECUTE COMMAND</button>
             </form>
@@ -400,7 +443,7 @@
             }
             if (btn) {
                 btn.disabled = false;
-                btn.textContent = "IDENTIFICATION REQUIRED";
+                btn.textContent = "EXECUTE COMMAND";
             }
             if (input) {
                 input.value = '';
