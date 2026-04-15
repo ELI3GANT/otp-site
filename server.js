@@ -1202,7 +1202,7 @@ function computeRequiredDocuments(leadText) {
     };
 }
 
-function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence, topMatches, completeness, structuredInsights = null }) {
+function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence, topMatches, completeness, structuredInsights = null, retrievalStats = null }) {
     const confidenceLabel = confidence > 0.55 ? 'high' : confidence > 0.35 ? 'medium' : 'low';
     const text = String(leadText || '').toLowerCase();
     const serviceType = classifyServiceType(text, packageResult);
@@ -1247,6 +1247,23 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
         if (playbook) structuredNotes.push(`Structured playbook: ${playbook}`);
     }
 
+    const rt = retrievalStats && typeof retrievalStats === 'object' ? retrievalStats : {};
+    const maxSRaw = Number(rt.max_similarity || 0);
+    const maxS = Number.isFinite(maxSRaw) ? maxSRaw : 0;
+    let retrievalNote = 'Retrieval signal within a normal range for this indexer.';
+    if (rt.thin_context) retrievalNote = 'Very little lead text — match scores are exploratory; widen scope before quoting.';
+    else if (!rt.chunk_pool && !rt.structured_count) retrievalNote = 'Knowledge index is empty; package and docs use lead text and defaults only.';
+    else if (maxS < 0.15) retrievalNote = 'Weak match to indexed knowledge — keep manual review and verify against playbooks.';
+    else if (maxS < 0.28) retrievalNote = 'Moderate retrieval signal — confirm pricing and doc stack against structured rules.';
+
+    const oracle_retrieval = {
+        thin_context: !!rt.thin_context,
+        kb_chunks_indexed: Number(rt.chunk_pool || 0),
+        structured_rules_count: Number(rt.structured_count || 0),
+        max_match_similarity: Number(maxS.toFixed(3)),
+        note: retrievalNote
+    };
+
     return {
         lead_summary: leadText.slice(0, 700),
         service_type: serviceType,
@@ -1273,8 +1290,10 @@ function buildBrainResponse({ leadText, packageResult, requiredDocs, confidence,
                 ? `Missing lead fields: ${(completeness?.missing_fields || []).join(', ') || 'scope details'}`
                 : 'Lead scope appears sufficiently specified.',
             `Knowledge matches: ${(Array.isArray(topMatches) ? topMatches : []).map(m => `${m.file_name}#${m.chunk_index}`).join(', ') || 'none'}`,
+            `Retrieval: ${retrievalNote}`,
             ...structuredNotes
         ],
+        oracle_retrieval,
         draft_client_reply: `Thanks for reaching out to OnlyTruePerspective LLC. Based on your project details, the strongest next step is ${packageResult.recommended_package} (${packageResult.quote_range}). Before kickoff, we run a secure onboarding flow: proposal review, signed agreement, and invoice with a 50% deposit. Once approved, we can lock timeline and production start.`,
     };
 }
@@ -1408,17 +1427,66 @@ function scoreKnowledgeChunks(leadText, chunkPayloads) {
         .sort((a, b) => b.similarity - a.similarity);
 }
 
+/** Extra lexical hooks for retrieval only (does not change package inference). */
+function augmentLeadTextForRetrieval(leadText, serviceType, packageResult) {
+    const base = String(leadText || '').trim();
+    const bits = [base];
+    const st = String(serviceType || '');
+    if (st === 'website_service') bits.push('website web site landing page ecommerce portal build');
+    if (st === 'video_service') bits.push('video film edit editing reel post-production color grade');
+    if (st === 'simple_edit') bits.push('edit revision trim caption subtitle export');
+    if (st === 'branding_or_strategy') bits.push('brand branding identity strategy creative direction');
+    if (st === 'hybrid_or_multideliverable') bits.push('hybrid multi-deliverable website video');
+    const pkg = String(packageResult?.recommended_package || '').trim();
+    if (pkg) bits.push(pkg);
+    return normalizeWhitespace(bits.join(' ')).trim() || base;
+}
+
+/**
+ * Prefer diverse sources in the match list (avoid six chunks from one PDF),
+ * while confidence is still computed from the top raw scores.
+ */
+function diversifyTopMatches(sortedMatches, limit = 6, maxPerFile = 2) {
+    const sorted = [...(sortedMatches || [])]
+        .filter((m) => m && String(m.file_name || '').trim())
+        .sort((a, b) => Number(b.similarity || 0) - Number(a.similarity || 0));
+    const picked = [];
+    const seenKey = new Set();
+    const perFile = new Map();
+    for (const m of sorted) {
+        const fk = String(m.file_name);
+        const n = perFile.get(fk) || 0;
+        if (n >= maxPerFile) continue;
+        const dedupe = `${fk}::${Number.isFinite(Number(m.chunk_index)) ? Number(m.chunk_index) : 0}`;
+        if (seenKey.has(dedupe)) continue;
+        seenKey.add(dedupe);
+        perFile.set(fk, n + 1);
+        picked.push(m);
+        if (picked.length >= limit) return picked;
+    }
+    for (const m of sorted) {
+        const dedupe = `${String(m.file_name)}::${Number.isFinite(Number(m.chunk_index)) ? Number(m.chunk_index) : 0}`;
+        if (seenKey.has(dedupe)) continue;
+        seenKey.add(dedupe);
+        picked.push(m);
+        if (picked.length >= limit) break;
+    }
+    return picked;
+}
+
 async function runOracleRecommendation({ lead, leadId, sourceTable }) {
+    const tOracle = Date.now();
     const leadText = buildLeadText(lead, sourceTable);
     const completeness = evaluateLeadDataCompleteness(lead, sourceTable);
     const thinContext = !leadText || leadText.length < 12;
 
     const packageResult = inferPackageAndRange(leadText);
     const serviceType = classifyServiceType(String(leadText || '').toLowerCase(), packageResult);
+    const retrievalText = augmentLeadTextForRetrieval(leadText, serviceType, packageResult);
 
     // Structured knowledge gets first pass, then we fill remaining slots with indexed file chunks.
     const structured = await fetchStructuredKnowledgeEntries({ includeInactive: false, limit: 500 }).catch(() => []);
-    const structuredScored = structured.length ? scoreStructuredKnowledge(leadText, structured, serviceType).slice(0, 4) : [];
+    const structuredScored = structured.length ? scoreStructuredKnowledge(retrievalText, structured, serviceType).slice(0, 8) : [];
 
     // Pull top structured entry details so doc rules / pricing guidance actually affect output.
     const topStructured = structuredScored
@@ -1440,20 +1508,31 @@ async function runOracleRecommendation({ lead, leadId, sourceTable }) {
     } : null;
 
     const chunkPayloads = await fetchKnowledgeChunkPayloads({ limit: 3000 });
-    const chunkScored = chunkPayloads.length ? scoreKnowledgeChunks(leadText, chunkPayloads) : [];
+    const chunkScored = chunkPayloads.length ? scoreKnowledgeChunks(retrievalText, chunkPayloads) : [];
 
-    const topMatches = [
+    const mergedSorted = [
         ...structuredScored,
         ...chunkScored.filter((m) => !String(m.file_name || '').startsWith('structured:'))
-    ].slice(0, 6);
-    // Missing KB should not block Oracle: treat as manual-review, low-confidence.
+    ].sort((a, b) => Number(b.similarity || 0) - Number(a.similarity || 0));
 
-    const topConfidence = topMatches.slice(0, 3);
+    const topConfidence = mergedSorted.slice(0, 3);
     const confidence = topConfidence.length
         ? Math.max(0.05, Math.min(0.95, topConfidence.reduce((sum, item) => sum + item.similarity, 0) / topConfidence.length))
         : (thinContext ? 0.08 : 0.12);
 
+    const maxSimAll = mergedSorted.length
+        ? Math.max(...mergedSorted.slice(0, 32).map((m) => Number(m.similarity || 0)))
+        : 0;
+
+    const topMatches = diversifyTopMatches(mergedSorted, 6, 2);
+
     const requiredDocs = computeRequiredDocuments(leadText);
+    const retrievalStats = {
+        thin_context: thinContext,
+        chunk_pool: chunkPayloads.length,
+        structured_count: structured.length,
+        max_similarity: maxSimAll
+    };
     const recommendation = buildBrainResponse({
         leadText,
         packageResult,
@@ -1461,8 +1540,16 @@ async function runOracleRecommendation({ lead, leadId, sourceTable }) {
         confidence,
         topMatches,
         completeness,
-        structuredInsights
+        structuredInsights,
+        retrievalStats
     });
+
+    const nodeEnv = String(process.env.NODE_ENV || '').toLowerCase();
+    const shouldOracleLog = process.env.OTP_ORACLE_LOG === '1'
+        || (nodeEnv && nodeEnv !== 'production' && nodeEnv !== 'test' && process.env.OTP_ORACLE_LOG !== '0');
+    if (shouldOracleLog) {
+        console.log(`[otp-oracle] lead=${leadId} table=${sourceTable} conf=${Number(confidence).toFixed(3)} maxSim=${maxSimAll.toFixed(3)} chunks=${chunkPayloads.length} structured=${structured.length} thin=${thinContext} ${Date.now() - tOracle}ms`);
+    }
 
     return {
         leadId,
@@ -1881,7 +1968,8 @@ const authLimiter = rateLimit({
 });
 
 app.post('/api/auth/login', authLimiter, (req, res) => {
-    let { passcode } = req.body;
+    const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+    let { passcode } = body;
     const envPass = (process.env.ADMIN_PASSCODE || '').trim();
     const jwtSecret = (process.env.JWT_SECRET || '').trim();
     if (!envPass || !jwtSecret) {
@@ -1906,6 +1994,9 @@ const verifyToken = (req, res, next) => {
     if (typeof bearerHeader !== 'undefined') {
         const bearer = bearerHeader.split(' ');
         const bearerToken = bearer[1];
+        if (!bearerToken || bearerToken === 'null' || bearerToken === 'undefined') {
+            return res.status(401).json({ success: false, message: "Authentication required" });
+        }
 
         // STATIC BYPASS (Dev Only or Explicitly Enabled)
         const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
@@ -2142,7 +2233,8 @@ app.post('/api/ai/generate', verifyToken, async (req, res) => {
 
 // 3. Admin Deletion Endpoint (Bypasses RLS)
 app.post('/api/admin/delete-post', verifyToken, async (req, res) => {
-    const { id, slug, table } = req.body;
+    const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+    const { id, slug, table } = body;
     const targetTable = table || 'posts'; // Default to posts
     
     if (!supabaseAdmin) {
@@ -2186,7 +2278,8 @@ app.post('/api/admin/delete-post', verifyToken, async (req, res) => {
 
 // 3.5 Admin Write Endpoint (Bypasses RLS for secure writing)
 app.post('/api/admin/write-data', verifyToken, async (req, res) => {
-    const { id, payload, table } = req.body;
+    const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+    const { id, payload, table } = body;
     const targetTable = table || 'posts';
     
     if (!supabaseAdmin) {
@@ -2259,7 +2352,8 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
 
 // 2.7 Secure Multi-Table Data Fetching (Bypass RLS via Service Key)
 app.post('/api/admin/fetch-data', verifyToken, async (req, res) => {
-    const { table, select = '*', order = 'created_at', descending = true, filters = [], limit } = req.body;
+    const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+    const { table, select = '*', order = 'created_at', descending = true, filters = [], limit } = body;
 
     const allowedTables = ['posts', 'broadcasts', 'leads', 'contacts', 'site_content', 'categories', 'ai_archetypes'];
     if (!table || !allowedTables.includes(table)) {
@@ -4681,8 +4775,9 @@ app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
 app.post('/api/admin/knowledge/recommendations', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
-        const leadIds = Array.isArray(req.body?.leadIds)
-            ? req.body.leadIds.map(v => String(v).trim()).filter(Boolean).slice(0, 200)
+        const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+        const leadIds = Array.isArray(body.leadIds)
+            ? body.leadIds.map(v => String(v).trim()).filter(Boolean).slice(0, 200)
             : [];
         if (!leadIds.length) return res.json({ success: true, recommendations: {} });
 

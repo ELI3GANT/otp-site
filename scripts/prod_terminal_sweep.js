@@ -257,37 +257,106 @@ async function main() {
   // This does NOT send any email.
   await page.evaluate(() => window.fetchInbox?.());
   await page.waitForTimeout(1400);
-  // Prefer MODULATE RESPONSE when draft exists, else GENERATE RESPONSE.
-  // Prefer the canonical QA thread when present; otherwise exercise any inbox row (prod data varies).
-  let inboxButtons = page.locator('#inboxManager .post-row:has-text("qa@example.com") button:has-text("MODULATE RESPONSE"), #inboxManager .post-row:has-text("qa@example.com") button:has-text("GENERATE RESPONSE")');
-  let inboxCount = await inboxButtons.count();
-  if (inboxCount === 0) {
-    inboxButtons = page.locator('#inboxManager .post-row button:has-text("MODULATE RESPONSE"), #inboxManager .post-row button:has-text("GENERATE RESPONSE")');
-    inboxCount = await inboxButtons.count();
-    if (inboxCount > 0) push('inbox_threads', { count: inboxCount, note: 'fallback_any_thread' });
-    else push('inbox_threads', { count: 0 });
-  } else {
-    push('inbox_threads', { count: inboxCount, note: 'qa_thread_preferred' });
+
+  /** `#replyModal` stays `display:none` until `openReplyManager` finishes; it is async, so onclick does not await — use evaluate+await for CI stability. */
+  async function waitReplyModalVisible(timeoutMs = 20000) {
+    await page.waitForFunction(() => {
+      const el = document.getElementById('replyModal');
+      if (!el) return false;
+      const st = window.getComputedStyle(el);
+      return st.display !== 'none' && st.visibility !== 'hidden';
+    }, { timeout: timeoutMs });
   }
 
   let openedReplyContext = false;
-  if (inboxCount > 0) {
-    await inboxButtons.first().click({ timeout: 15000 });
-    await page.waitForSelector('#replyModal', { timeout: 15000 });
-    await page.waitForTimeout(800);
-    openedReplyContext = true;
-  } else {
-    // Fallback: open reply context from the first Perspective Audit Lead
-    await page.evaluate(() => window.fetchLeads?.());
-    await page.waitForTimeout(1600);
-    const leadReplyBtn = page.locator('#leadsManager button[title="Reply"]');
-    const leadReplyCount = await leadReplyBtn.count();
-    push('lead_reply_buttons', { count: leadReplyCount });
-    if (leadReplyCount > 0) {
-      await leadReplyBtn.first().click({ timeout: 15000 });
-      await page.waitForSelector('#replyModal', { timeout: 15000 });
+
+  const openedContacts = await page.evaluate(async () => {
+    try {
+      const cache = window.inboxCache;
+      if (!Array.isArray(cache) || cache.length === 0) return { ok: false, reason: 'no_inbox_cache' };
+      const prefer = cache.find((c) => c && String(c.email || '').toLowerCase() === 'qa@example.com');
+      const c = prefer || cache[0];
+      if (!c || c.id == null) return { ok: false, reason: 'no_row' };
+      if (typeof window.openReplyManager !== 'function') return { ok: false, reason: 'no_fn' };
+      await window.openReplyManager(String(c.id), 'contacts');
+      return { ok: true, id: String(c.id) };
+    } catch (e) {
+      return { ok: false, reason: String(e && e.message ? e.message : e) };
+    }
+  });
+  push('reply_open_eval', openedContacts);
+  if (openedContacts && openedContacts.ok) {
+    try {
+      await waitReplyModalVisible(20000);
       await page.waitForTimeout(800);
       openedReplyContext = true;
+    } catch (e) {
+      push('warn', { text: `replyModal not visible after openReplyManager: ${short(e?.message || e)}` });
+    }
+  }
+
+  if (!openedReplyContext) {
+    // Legacy path: click inbox CTA (async handler may race; eval path above is preferred).
+    let inboxButtons = page.locator('#inboxManager .post-row:has-text("qa@example.com") button:has-text("MODULATE RESPONSE"), #inboxManager .post-row:has-text("qa@example.com") button:has-text("GENERATE RESPONSE")');
+    let inboxCount = await inboxButtons.count();
+    if (inboxCount === 0) {
+      inboxButtons = page.locator('#inboxManager .post-row button:has-text("MODULATE RESPONSE"), #inboxManager .post-row button:has-text("GENERATE RESPONSE")');
+      inboxCount = await inboxButtons.count();
+      if (inboxCount > 0) push('inbox_threads', { count: inboxCount, note: 'fallback_any_thread' });
+      else push('inbox_threads', { count: 0 });
+    } else {
+      push('inbox_threads', { count: inboxCount, note: 'qa_thread_preferred' });
+    }
+
+    if (inboxCount > 0) {
+      await inboxButtons.first().click({ timeout: 15000 });
+      try {
+        await waitReplyModalVisible(20000);
+      } catch (_) {
+        await page.waitForSelector('#replyModal', { state: 'visible', timeout: 5000 }).catch(() => {});
+      }
+      await page.waitForTimeout(800);
+      openedReplyContext = true;
+    } else {
+      await page.evaluate(() => window.fetchLeads?.());
+      await page.waitForTimeout(1600);
+      const leadOpened = await page.evaluate(async () => {
+        try {
+          const cache = window.leadsCache;
+          if (!Array.isArray(cache) || !cache.length) return { ok: false };
+          const row = cache[0];
+          if (!row || row.id == null) return { ok: false };
+          await window.openReplyManager(String(row.id), 'leads');
+          return { ok: true };
+        } catch (e) {
+          return { ok: false, err: String(e && e.message ? e.message : e) };
+        }
+      });
+      push('reply_open_lead_eval', leadOpened);
+      if (leadOpened && leadOpened.ok) {
+        try {
+          await waitReplyModalVisible(20000);
+          await page.waitForTimeout(800);
+          openedReplyContext = true;
+        } catch (e) {
+          push('warn', { text: `lead replyModal: ${short(e?.message || e)}` });
+        }
+      }
+      if (!openedReplyContext) {
+        const leadReplyBtn = page.locator('#leadsManager button[title="Reply"]');
+        const leadReplyCount = await leadReplyBtn.count();
+        push('lead_reply_buttons', { count: leadReplyCount });
+        if (leadReplyCount > 0) {
+          await leadReplyBtn.first().click({ timeout: 15000 });
+          try {
+            await waitReplyModalVisible(20000);
+          } catch (_) {
+            await page.waitForSelector('#replyModal', { state: 'visible', timeout: 5000 }).catch(() => {});
+          }
+          await page.waitForTimeout(800);
+          openedReplyContext = true;
+        }
+      }
     }
   }
 
