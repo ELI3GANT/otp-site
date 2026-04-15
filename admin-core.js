@@ -2011,11 +2011,44 @@
         }
     };
 
+    window.syncOpsJobEditorStacking = function() {
+        const editor = document.getElementById('opsJobsEditor');
+        const replyModal = document.getElementById('replyModal');
+        if (!editor || editor.style.display === 'none') return;
+        const replyOpen = replyModal && String(replyModal.style.display || '').toLowerCase() === 'flex';
+        if (replyOpen) {
+            editor.classList.add('ops-jobs-editor-overlay');
+            editor.style.position = 'fixed';
+            editor.style.left = '50%';
+            editor.style.top = '50%';
+            editor.style.transform = 'translate(-50%, -50%)';
+            editor.style.zIndex = '10050';
+            editor.style.width = 'min(940px, 96vw)';
+            editor.style.maxHeight = 'min(92dvh, 880px)';
+            editor.style.overflow = 'auto';
+            editor.style.margin = '0';
+            editor.style.boxShadow = '0 24px 80px rgba(0,0,0,0.45)';
+        } else {
+            editor.classList.remove('ops-jobs-editor-overlay');
+            editor.style.position = '';
+            editor.style.left = '';
+            editor.style.top = '';
+            editor.style.transform = '';
+            editor.style.zIndex = '';
+            editor.style.width = '';
+            editor.style.maxHeight = '';
+            editor.style.overflow = '';
+            editor.style.margin = '';
+            editor.style.boxShadow = '';
+        }
+    };
+
     window.openOpsJobEditor = async function(jobId) {
         const editor = document.getElementById('opsJobsEditor');
         const status = document.getElementById('opsJobSaveStatus');
         if (status) status.textContent = '';
         if (editor) editor.style.display = 'block';
+        window.syncOpsJobEditorStacking();
         const meta = document.getElementById('opsEditorMeta');
         const packetMeta = document.getElementById('opsPacketMeta');
         const packetStatus = document.getElementById('opsPacketStatus');
@@ -2119,6 +2152,7 @@
 
             // Send panel defaults from saved record
             if (sendTo) sendTo.value = String(r.email || '').trim();
+            window.syncOpsJobEditorStacking();
         } catch (e) {
             showToast(`LOAD FAILED: ${String(e?.message ?? e)}`);
         }
@@ -2147,7 +2181,8 @@
             }, 90000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `from-oracle failed (${res.status})`);
-            const jobId = payload.row && payload.row.jobId;
+            const row = payload.row || {};
+            const jobId = row.jobId || row.job_id || null;
             const pkgRaw = payload.oracle && payload.oracle.recommended_package ? String(payload.oracle.recommended_package).trim() : '';
             const oracleHint = pkgRaw.length > 42 ? `${pkgRaw.slice(0, 40)}…` : pkgRaw;
             const narrow =
@@ -2182,7 +2217,19 @@
 
     window.closeOpsJobEditor = function() {
         const editor = document.getElementById('opsJobsEditor');
-        if (editor) editor.style.display = 'none';
+        if (!editor) return;
+        editor.style.display = 'none';
+        editor.classList.remove('ops-jobs-editor-overlay');
+        editor.style.position = '';
+        editor.style.left = '';
+        editor.style.top = '';
+        editor.style.transform = '';
+        editor.style.zIndex = '';
+        editor.style.width = '';
+        editor.style.maxHeight = '';
+        editor.style.overflow = '';
+        editor.style.margin = '';
+        editor.style.boxShadow = '';
     };
 
     window.recalcOpsBalance = function() {
@@ -3524,6 +3571,7 @@
         if (modal) modal.style.display = 'none';
         const analysisDiv = document.getElementById('replyAnalysis');
         if (analysisDiv) analysisDiv.textContent = 'No analysis data active.';
+        if (typeof window.syncOpsJobEditorStacking === 'function') window.syncOpsJobEditorStacking();
         // Focus back to inbox container to prevent jump
         window.refocusInbox();
     };
@@ -3580,7 +3628,8 @@
             id: c.id,
             source: source === 'leads' ? 'leads' : 'contacts',
             analysis: analysisForCtx,
-            recommendation: null
+            recommendation: null,
+            incomingPlain: ''
         };
         
         rmDom.contactId.value = c.id;
@@ -3620,7 +3669,7 @@
         if (tacticalLine) {
             messageContext = [messageContext, `ORACLE TACTICAL —\n${tacticalLine}`].filter(Boolean).join('\n\n');
         }
-        
+        if (window.__replyContext) window.__replyContext.incomingPlain = messageContext;
         rmDom.incoming.textContent = messageContext;
         rmDom.draft.value = c.draft_reply || '';
         const cacheBtn = document.getElementById('replyCacheBtn');
@@ -4796,12 +4845,20 @@
     window.generateReplyForLead = async function() {
         const rmDom = requireReplyManagerCoreDom();
         if (!rmDom) return;
-        const msg = rmDom.incoming.textContent;
+        const incomingEl = rmDom.incoming;
+        let msg = (incomingEl && (incomingEl.innerText || incomingEl.textContent) || '').trim();
+        if (!msg && window.__replyContext && typeof window.__replyContext.incomingPlain === 'string') {
+            msg = window.__replyContext.incomingPlain.trim();
+        }
         const name = rmDom.name.value;
         const email = rmDom.email.value;
         const draftBox = rmDom.draft;
 
-        if(!msg) { showToast("NO MESSAGE CONTEXT FOUND"); return; }
+        if (!msg) { showToast("NO MESSAGE CONTEXT FOUND"); return; }
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) {
+            showToast('LOGIN REQUIRED (REAL JWT)');
+            return;
+        }
         if (!email || !String(email).includes('@')) { showToast("VALID CONTACT EMAIL REQUIRED"); return; }
         
         const btn = document.getElementById('replyGenBtn');
@@ -4853,16 +4910,26 @@
 
             if (window.__replyContext) window.__replyContext.recommendation = opsRec;
             if (opsRec && leadId) {
-                window.replyOracleCache[replyOracleKey(sourceTable, leadId)] = {
+                const rk = replyOracleKey(sourceTable, leadId);
+                const prior = window.replyOracleCache[rk] || {};
+                const conf = Number.isFinite(Number(oracleConfidenceFromRec)) ? oracleConfidenceFromRec : prior.confidence;
+                window.replyOracleCache[rk] = {
+                    ...prior,
                     recommendation: opsRec,
-                    confidence: oracleConfidenceFromRec,
-                    updated_at: new Date().toISOString()
+                    confidence: conf != null ? conf : prior.confidence,
+                    updated_at: new Date().toISOString(),
+                    kb_updated_at: prior.kb_updated_at != null ? prior.kb_updated_at : null
                 };
                 if (sourceTable === 'leads') {
                     window.leadOracleCache = window.leadOracleCache || {};
-                    window.leadOracleCache[leadId] = window.leadOracleCache[leadId] || {};
-                    window.leadOracleCache[leadId].recommendation = opsRec;
-                    window.leadOracleCache[leadId].updated_at = new Date().toISOString();
+                    const lp = window.leadOracleCache[leadId] || {};
+                    window.leadOracleCache[leadId] = {
+                        ...lp,
+                        recommendation: opsRec,
+                        confidence: conf != null ? conf : lp.confidence,
+                        updated_at: new Date().toISOString(),
+                        kb_updated_at: lp.kb_updated_at != null ? lp.kb_updated_at : prior.kb_updated_at
+                    };
                 }
             }
             const analysisRaw = (window.__replyContext && window.__replyContext.analysis) ? window.__replyContext.analysis : null;

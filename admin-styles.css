@@ -114,6 +114,14 @@ body::before {
         align-items: start;
     }
 }
+
+/* Job sheet above reply modal when both are open (JOB ⊕ ORACLE from reply) */
+#opsJobsEditor.ops-jobs-editor-overlay {
+    -webkit-overflow-scrolling: touch;
+    border-radius: 14px;
+    outline: 1px solid var(--admin-border);
+}
+
 .ops-side-stack {
     display: grid;
     grid-template-columns: 1fr;
