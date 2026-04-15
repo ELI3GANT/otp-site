@@ -243,7 +243,8 @@
         isUnlocked: false,
         token: localStorage.getItem('otp_admin_token') || null, // Persist session
         categories: [],
-        archetypes: []
+        archetypes: [],
+        siteChannelSubscribed: false
     };
     window.state = state; // Expose to window for inline scripts
     /** OTP Oracle (knowledge + recommendations) cache: `leads:<uuid>` / `contacts:<uuid>` for reply + AI flows. */
@@ -749,6 +750,7 @@
             }
 
             // 5. SITE COMMAND PRO UPLINK (Unified Channel)
+            state.siteChannelSubscribed = false;
             state.siteChannel = state.client.channel('otp-uplink');
             
             // Listen for changes from other admin sessions
@@ -772,8 +774,12 @@
             });
 
             state.siteChannel.subscribe((status) => {
-                if(status === 'SUBSCRIBED') {
+                if (status === 'SUBSCRIBED') {
+                    state.siteChannelSubscribed = true;
                     console.log("🛰️ COMMAND UPLINK: STABLE.");
+                } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                    state.siteChannelSubscribed = false;
+                    console.warn("🛰️ COMMAND UPLINK:", status);
                 }
             });
 
@@ -4026,7 +4032,11 @@
             if (approved) {
                 if (key === 'invoice') return { label: 'READY TO DOWNLOAD', color: 'var(--admin-success)' };
                 if (key === 'nda' || key === 'media_release') return { label: 'READY TO DOWNLOAD', color: 'var(--admin-success)' };
-                if (isDocxType) return doc.docx ? { label: 'READY TO DOWNLOAD', color: 'var(--admin-success)' } : { label: 'APPROVED', color: 'var(--admin-success)' };
+                if (isDocxType) {
+                    return doc.docx
+                        ? { label: 'READY TO DOWNLOAD', color: 'var(--admin-success)' }
+                        : { label: 'READY TO DOWNLOAD (SERVER)', color: 'var(--admin-success)' };
+                }
                 return { label: 'APPROVED', color: 'var(--admin-success)' };
             }
             return { label: 'GENERATED', color: '#ffaa00' };
@@ -4040,9 +4050,14 @@
             const previewDisabled = disabled;
             const previewStyle = previewDisabled ? 'opacity:0.6;cursor:not-allowed;' : '';
             const st = statusFor(key);
+            const docxErrLine = (s.docxErrors && typeof s.docxErrors === 'object') ? s.docxErrors[key] : null;
 
             const canDownloadHtml = generated && approved && !!doc?.html;
-            const canDownloadDocx = generated && approved && (key === 'proposal' || key === 'agreement') && !!doc?.docx;
+            const canDownloadDocx =
+                generated &&
+                approved &&
+                (key === 'proposal' || key === 'agreement') &&
+                !docxErrLine;
             const canDownloadPdf = generated && approved && key === 'invoice';
             const optionalHint =
                 key === 'nda'
@@ -4068,7 +4083,7 @@
                     </div>
                     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
                         <button type="button" onclick="previewDocHtml('${window.escapeHtml(key)}')" class="btn-secondary" style="width:auto;font-size:0.68rem;${previewStyle}" ${previewDisabled ? 'disabled' : ''}>PREVIEW</button>
-                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'docx')" class="btn-secondary" style="width:auto;font-size:0.68rem;${canDownloadDocx ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${canDownloadDocx ? '' : 'disabled'} title="${canDownloadDocx ? '' : (generated ? 'DOCX not ready (template missing/merge failed) or not approved' : 'Generate a packet first')}">DOWNLOAD DOCX</button>
+                        <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'docx')" class="btn-secondary" style="width:auto;font-size:0.68rem;${canDownloadDocx ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${canDownloadDocx ? '' : 'disabled'} title="${canDownloadDocx ? '' : (generated ? 'DOCX blocked (merge error on packet) or not approved' : 'Generate a packet first')}">DOWNLOAD DOCX</button>
                         <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'pdf')" class="btn-secondary" style="width:auto;font-size:0.68rem;${canDownloadPdf ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${canDownloadPdf ? '' : 'disabled'} title="${canDownloadPdf ? '' : (generated ? 'Approve invoice to download' : 'Generate a packet first')}">DOWNLOAD PDF</button>
                         <button type="button" onclick="downloadApprovedDoc('${window.escapeHtml(key)}', 'html')" class="btn-secondary" style="width:auto;font-size:0.68rem;${canDownloadHtml ? '' : 'opacity:0.6;cursor:not-allowed;'}" ${canDownloadHtml ? '' : 'disabled'} title="${canDownloadHtml ? '' : (generated ? 'Approve to download' : 'Generate a packet first')}">DOWNLOAD HTML</button>
                     </div>
@@ -4227,7 +4242,12 @@
                 Object.fromEntries(DOC_PACKET_DOC_KEYS.map((k) => [k, !!(window.__docPacketState.docs[k]?.approved)]))
             );
             window.__docPacketState.notice = 'Packet generated. Preview each doc, then approve to unlock downloads.';
-            showToast('DOC PACKET GENERATED (REVIEW REQUIRED)');
+            const dxErr = payload.docx_errors && typeof payload.docx_errors === 'object' ? payload.docx_errors : null;
+            if (dxErr && Object.keys(dxErr).length) {
+                showToast('DOC PACKET GENERATED — CHECK DOCX ERRORS IN PANEL');
+            } else {
+                showToast('DOC PACKET GENERATED (REVIEW REQUIRED)');
+            }
             window.refreshDocPacketAudit?.();
         } catch (e) {
             const em = String(e?.message ?? e);
@@ -4246,6 +4266,39 @@
         if (v < 1024 * 1024) return `${(v / 1024).toFixed(1)} KB`;
         return `${(v / (1024 * 1024)).toFixed(1)} MB`;
     }
+
+    window.downloadDocTemplate = async function(docType) {
+        if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
+        if (!['proposal', 'agreement'].includes(docType)) { showToast('INVALID TEMPLATE TYPE'); return; }
+        try {
+            const apiBase = resolveApiBase();
+            const url = `${apiBase}/api/admin/docs/templates/download/${encodeURIComponent(docType)}`;
+            showToast(`DOWNLOADING ${docType.toUpperCase()}…`);
+            const res = await fetchWithTimeout(url, { headers: { 'Authorization': `Bearer ${state.token}` } }, 120000);
+            if (!res.ok) {
+                const text = await res.text();
+                let msg = `Download failed (${res.status})`;
+                try {
+                    const j = JSON.parse(text);
+                    msg = j.message || j.error || msg;
+                } catch (e) { /* use msg */ }
+                throw new Error(msg);
+            }
+            const blob = new Blob([await res.arrayBuffer()], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${docType}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                URL.revokeObjectURL(a.href);
+                a.remove();
+            }, 500);
+            showToast(`${docType.toUpperCase()} TEMPLATE SAVED`);
+        } catch (e) {
+            showToast(`TEMPLATE DOWNLOAD FAILED: ${formatNetworkError(e)}`);
+        }
+    };
 
     window.uploadDocTemplate = async function(docType, file) {
         if (!state.token || (state.token === 'static-bypass-token' && !isStaticBypassAllowed())) { showToast('LOGIN REQUIRED (REAL JWT)'); return; }
@@ -4732,6 +4785,12 @@
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Status failed (${res.status})`);
             const t = payload.templates || {};
+            const propOk = !!(t.proposal && t.proposal.present);
+            const agrOk = !!(t.agreement && t.agreement.present);
+            let summary = '';
+            if (propOk && agrOk) summary = 'Both master templates are present.\n\n';
+            else if (!propOk && !agrOk) summary = 'Neither master template found — upload proposal.docx and agreement.docx below.\n\n';
+            else summary = `${!propOk ? 'Proposal' : 'Agreement'} master template is missing — upload the .docx below, then regenerate any open packets.\n\n`;
             const bucket = String(payload.bucket || '').trim();
             const prefix = String(payload.prefix || '').trim();
             const head = bucket && prefix ? `Bucket ${bucket} • ${prefix}\n` : '';
@@ -4746,7 +4805,7 @@
                 const key = String(row.key || `${prefix}${k}.docx`).trim();
                 return `${label}: ${bits.join(' • ')}\n   ${key}`;
             };
-            out.textContent = head + [
+            out.textContent = summary + head + [
                 line('Master proposal', 'proposal'),
                 line('Master agreement', 'agreement')
             ].join('\n');
@@ -6690,6 +6749,42 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         } catch (e) {
             console.error("State Persistence Failed:", e);
+            showToast(`STATE SAVE FAILED: ${formatNetworkError(e)}`);
+        }
+    };
+
+    async function waitForSiteChannelSubscribed(maxMs = 12000) {
+        if (!state.siteChannel) throw new Error('NO_CHANNEL');
+        if (state.siteChannelSubscribed) return;
+        const deadline = Date.now() + maxMs;
+        while (!state.siteChannelSubscribed && Date.now() < deadline) {
+            await new Promise((r) => setTimeout(r, 45));
+        }
+        if (!state.siteChannelSubscribed) throw new Error('REALTIME_NOT_SUBSCRIBED');
+    }
+
+    /** Broadcast on `otp-uplink` after Realtime join; surfaces failures to the operator. */
+    async function broadcastSiteCommand(payload) {
+        try {
+            await waitForSiteChannelSubscribed();
+        } catch (e) {
+            showToast(`NETWORK COMMAND BLOCKED: ${formatNetworkError(e)}`);
+            return false;
+        }
+        try {
+            const result = await state.siteChannel.send({
+                type: 'broadcast',
+                event: 'command',
+                payload
+            });
+            if (result !== 'ok') {
+                showToast(`BROADCAST FAILED: ${String(result).toUpperCase()}`);
+                return false;
+            }
+            return true;
+        } catch (e) {
+            showToast(`BROADCAST ERROR: ${formatNetworkError(e)}`);
+            return false;
         }
     }
 
@@ -6707,15 +6802,19 @@ If citations are provided, treat them as the source of truth for pricing/rules a
     };
 
     window.toggleSiteControl = async function(type) {
-        if(!state.siteChannel) return;
+        if (!state.siteChannel) {
+            showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
+            return;
+        }
         const statusEl = document.getElementById(`status-${type}`);
         if(!statusEl) return;
         
         // 1. Maintenance
         if (type === 'maintenance') {
             const newState = statusEl.textContent === 'OFFLINE' ? 'on' : 'off';
-            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'maintenance', value: newState } });
-            persistSystemState('maintenance', newState); // PERSIST
+            const ok = await broadcastSiteCommand({ type: 'maintenance', value: newState });
+            if (!ok) return;
+            void persistSystemState('maintenance', newState); // PERSIST
             
             statusEl.textContent = newState === 'on' ? 'ACTIVE' : 'OFFLINE';
             statusEl.style.color = newState === 'on' ? 'var(--admin-success)' : 'var(--admin-danger)';
@@ -6726,8 +6825,9 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         if (type === 'visuals') {
             const isHiFi = statusEl.textContent === 'HIGH-FI';
             const next = isHiFi ? 'low' : 'high';
-            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'visuals', value: next } });
-            persistSystemState('visuals', next); // PERSIST
+            const ok = await broadcastSiteCommand({ type: 'visuals', value: next });
+            if (!ok) return;
+            void persistSystemState('visuals', next); // PERSIST
 
             statusEl.textContent = next === 'high' ? 'HIGH-FI' : 'PERF-MODE';
             statusEl.style.color = next === 'high' ? 'var(--admin-success)' : 'var(--accent2)';
@@ -6738,8 +6838,9 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         if (type === 'theme') {
             const isLight = statusEl.textContent === 'DAY-MODE';
             const nextTheme = isLight ? 'dark' : 'light';
-            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'theme', value: nextTheme } });
-            persistSystemState('theme', nextTheme); // PERSIST
+            const ok = await broadcastSiteCommand({ type: 'theme', value: nextTheme });
+            if (!ok) return;
+            void persistSystemState('theme', nextTheme); // PERSIST
 
             // Local Admin Persistence (Using manual lock)
             if (window.OTP && typeof window.OTP.setTheme === 'function') {
@@ -6762,8 +6863,9 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         if (type === 'kursor') {
             const isActive = statusEl.textContent === 'ACTIVE';
             const next = isActive ? 'off' : 'on';
-            await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'kursor', value: next } });
-            persistSystemState('kursor', next); // PERSIST
+            const ok = await broadcastSiteCommand({ type: 'kursor', value: next });
+            if (!ok) return;
+            void persistSystemState('kursor', next); // PERSIST
 
             statusEl.textContent = next === 'on' ? 'ACTIVE' : 'DISABLED';
             statusEl.style.color = next === 'on' ? 'var(--admin-success)' : 'var(--admin-muted)';
@@ -6843,8 +6945,12 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             "PURGE NETWORK CACHE?", 
             "This will force a reload for all active visitors to ensure they see the latest updates. Proceed?",
             async () => {
-                if(!state.siteChannel) return;
-                await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'refresh' } });
+                if (!state.siteChannel) {
+                    showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
+                    return;
+                }
+                const ok = await broadcastSiteCommand({ type: 'refresh' });
+                if (!ok) return;
                 showToast("NETWORK CACHE PURGED");
                 window.logAdminAction("NETWORK CACHE PURGE EXECUTED", "danger");
             }
@@ -6857,12 +6963,16 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             "Enter the target destination URL. All active users will be instantly redirected.",
             "e.g. google.com",
             async (target) => {
-                if(!state.siteChannel) return;
+                if (!state.siteChannel) {
+                    showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
+                    return;
+                }
                 
                 let url = target.trim();
                 if (!url.startsWith('http')) url = 'https://' + url;
                 
-                await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'warp', value: url } });
+                const ok = await broadcastSiteCommand({ type: 'warp', value: url });
+                if (!ok) return;
                 showToast("GLOBAL WARP INITIATED");
             }
         );
@@ -6874,11 +6984,15 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             "Send a high-priority overlay message to all active users.",
             "e.g. SYSTEM MAINTENANCE IN 5 MIN",
             async (msg) => {
-                if(!state.siteChannel) return;
-        
+                if (!state.siteChannel) {
+                    showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
+                    return;
+                }
+
                 // 1. Send to Network
-                await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'alert', value: msg } });
-                
+                const ok = await broadcastSiteCommand({ type: 'alert', value: msg });
+                if (!ok) return;
+
                 // 2. Show Locally (Confirmation)
                 if (window.OTP && window.OTP.showBroadcast) {
                     window.OTP.showBroadcast(msg);
@@ -6896,13 +7010,17 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             "Set the message displayed in the site footer.",
             "e.g. OPERATIONAL, NEW INSIGHT LIVE, etc.",
             async (msg) => {
-                if(!state.siteChannel || !msg) return;
+                if (!state.siteChannel || !msg) {
+                    if (!state.siteChannel) showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
+                    return;
+                }
                 
                 // 1. Broadcast to Network
-                await state.siteChannel.send({ type: 'broadcast', event: 'command', payload: { type: 'status', value: msg } });
-                
+                const ok = await broadcastSiteCommand({ type: 'status', value: msg });
+                if (!ok) return;
+
                 // 2. Persist to DB
-                persistSystemState('status', msg);
+                void persistSystemState('status', msg);
                 
                 // 3. Update Admin UI
                 syncDashboardElement('status', msg);

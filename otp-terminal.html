@@ -21,7 +21,7 @@
   <link rel="manifest" href="site.webmanifest" />
 
   <link rel="stylesheet" href="./styles.css?v=16.4.4" />
-  <link rel="stylesheet" href="./admin-styles.css?v=16.6.14" />
+  <link rel="stylesheet" href="./admin-styles.css?v=16.8.1" />
   <link rel="stylesheet" href="./blog-enhancements.css?v=16.3.0" />
   <style>
     /* OTP Terminal: reply + doc packet modals (desktop + mobile safe-area) */
@@ -1449,11 +1449,13 @@
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center;border:1px dashed var(--admin-border);border-radius:10px;padding:10px 12px;background:var(--admin-surface-inset-strong);">
                     <div style="font-size:0.7rem;color:var(--admin-muted);flex:1;min-width:240px;line-height:1.45;">
                         <strong style="color:var(--admin-text);">Master DOCX (Global)</strong><br/>
-                        Same as <strong>Settings → MASTER DOCX</strong>: <span style="font-family:monospace;color:var(--admin-cyan);">master/proposal.docx</span> &amp; <span style="font-family:monospace;color:var(--admin-cyan);">master/agreement.docx</span>. Merge fields e.g. <span style="font-family:monospace;">{{client_name}}</span>, <span style="font-family:monospace;">{{lead_summary}}</span>.
+                        Same as <strong>Settings → MASTER DOCX</strong>: <span style="font-family:monospace;color:var(--admin-cyan);">master/proposal.docx</span> &amp; <span style="font-family:monospace;color:var(--admin-cyan);">master/agreement.docx</span>. <strong style="color:var(--admin-text);">Edit loop:</strong> download → change in Word → upload to replace. Merge fields e.g. <span style="font-family:monospace;">{{client_name}}</span>, <span style="font-family:monospace;">{{lead_summary}}</span>.
                     </div>
                     <input id="docTemplateProposal" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;" onchange="uploadDocTemplate('proposal', this.files?.[0])"/>
                     <input id="docTemplateAgreement" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;" onchange="uploadDocTemplate('agreement', this.files?.[0])"/>
+                    <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="downloadDocTemplate('proposal')">DOWNLOAD PROPOSAL</button>
                     <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="document.getElementById('docTemplateProposal').click()">UPLOAD PROPOSAL</button>
+                    <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="downloadDocTemplate('agreement')">DOWNLOAD AGREEMENT</button>
                     <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="document.getElementById('docTemplateAgreement').click()">UPLOAD AGREEMENT</button>
                 </div>
                 <div id="docPacketErrors" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,170,0,0.35);background:rgba(255,170,0,0.08);color:#ffd37a;font-size:0.72rem;line-height:1.45;"></div>
@@ -1509,10 +1511,12 @@
                     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
                         <div style="flex:1;min-width:260px;font-size:0.78rem;color:var(--admin-muted);line-height:1.45;">
                             <strong style="color:var(--admin-text);">Global DOCX merge</strong><br/>
-                            Supabase: <span style="font-family:monospace;color:var(--admin-cyan);">master/proposal.docx</span> · <span style="font-family:monospace;color:var(--admin-cyan);">master/agreement.docx</span>. Used for every packet preview + download. Word placeholders e.g. <span style="font-family:monospace;font-size:0.7rem;">{{client_name}}</span>, <span style="font-family:monospace;font-size:0.7rem;">{{lead_summary}}</span>, <span style="font-family:monospace;font-size:0.7rem;">{{recommended_package}}</span>.
+                            Supabase: <span style="font-family:monospace;color:var(--admin-cyan);">master/proposal.docx</span> · <span style="font-family:monospace;color:var(--admin-cyan);">master/agreement.docx</span>. Used for every packet. <strong style="color:var(--admin-text);">Update masters:</strong> download the current file, edit in Word, upload to replace. Placeholders e.g. <span style="font-family:monospace;font-size:0.7rem;">{{client_name}}</span>, <span style="font-family:monospace;font-size:0.7rem;">{{lead_summary}}</span>, <span style="font-family:monospace;font-size:0.7rem;">{{recommended_package}}</span>.
                         </div>
                         <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="downloadDocTemplate('proposal')">DOWNLOAD PROPOSAL</button>
                             <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="document.getElementById('docTemplateProposal').click()">UPLOAD PROPOSAL</button>
+                            <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="downloadDocTemplate('agreement')">DOWNLOAD AGREEMENT</button>
                             <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="document.getElementById('docTemplateAgreement').click()">UPLOAD AGREEMENT</button>
                             <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="refreshDocTemplateStatus()">REFRESH STATUS</button>
                         </div>
@@ -1607,7 +1611,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.25"></script>
+    <script src="admin-core.js?v=16.8.1"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

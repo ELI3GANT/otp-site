@@ -534,6 +534,17 @@ async function getTemplateBuffer(templateKey) {
     return Buffer.from(ab);
 }
 
+function formatDocxtemplaterRenderError(err) {
+    if (!err) return 'Unknown DOCX render error';
+    const props = err.properties;
+    const chunks = [String(err.message || err)];
+    if (props && typeof props === 'object') {
+        if (props.explanation) chunks.push(String(props.explanation));
+        if (props.xtag != null) chunks.push(`placeholder:${String(props.xtag)}`);
+    }
+    return chunks.join(' — ');
+}
+
 function renderDocxFromTemplate(templateBuffer, fields) {
     const zip = new PizZip(templateBuffer);
     const doc = new Docxtemplater(zip, {
@@ -542,7 +553,13 @@ function renderDocxFromTemplate(templateBuffer, fields) {
         delimiters: { start: '{{', end: '}}' }
     });
     doc.setData(normalizeDocxData(fields));
-    doc.render();
+    try {
+        doc.render();
+    } catch (err) {
+        const e = new Error(formatDocxtemplaterRenderError(err));
+        e.cause = err;
+        throw e;
+    }
     return doc.getZip().generate({ type: 'nodebuffer' });
 }
 
@@ -991,6 +1008,47 @@ const docTemplateUpload = multer({
 const DOC_TEMPLATE_BUCKET = process.env.DOC_TEMPLATE_BUCKET || 'otp-doc-templates';
 const DOC_TEMPLATE_PREFIX = 'master/';
 const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+/** Merge master DOCX for proposal/agreement; returns base64 or error message. */
+async function mergeDocxForPacketDoc(doc, docType, fields) {
+    try {
+        const templateKey = String(doc?.docx_template || `${DOC_TEMPLATE_PREFIX}${docType}.docx`).trim();
+        const templateBuf = await getTemplateBuffer(templateKey);
+        const buf = renderDocxFromTemplate(templateBuf, fields);
+        return { base64: base64FromBuffer(buf), error: null };
+    } catch (e) {
+        return { base64: null, error: String(e?.message || e) };
+    }
+}
+
+/**
+ * Attachment for email send: prefers stored packet doc.docx, else merges from template (legacy packets).
+ */
+async function buildDocxEmailAttachment(doc, docType, packetId, fields) {
+    let b64 = doc?.docx ? String(doc.docx).trim() : '';
+    if (!b64) {
+        const merged = await mergeDocxForPacketDoc(doc, docType, fields);
+        if (!merged.base64) {
+            return { ok: false, missing: `${docType}:docx_merge_failed`, detail: merged.error || 'unknown' };
+        }
+        b64 = merged.base64;
+    }
+    const attachment = {
+        filename: `${docType}-${packetId}.docx`,
+        content: b64,
+        content_type: DOCX_MIME
+    };
+    try {
+        const v = verifyAttachmentOrThrow(attachment);
+        return {
+            ok: true,
+            attachment,
+            verification: { filename: attachment.filename, ok: true, bytes: v.bytes }
+        };
+    } catch (e) {
+        return { ok: false, missing: `${docType}:docx_invalid`, detail: String(e?.message || e) };
+    }
+}
 
 function safeJsonParse(raw, fallback = null) {
     if (raw == null) return fallback;
@@ -4230,15 +4288,18 @@ app.post('/api/admin/docs/packet', verifyToken, async (req, res) => {
             };
         }
 
-        // DOCX generation for master templates (proposal + agreement)
-        // Templates are stored in Supabase Storage bucket: DOC_TEMPLATE_BUCKET at DOC_TEMPLATE_PREFIX
+        // DOCX: merge master templates (proposal + agreement) into base64 on the packet for send/download UX.
+        // Templates live in Supabase Storage: DOC_TEMPLATE_BUCKET / DOC_TEMPLATE_PREFIX
         const docxErrors = {};
         for (const t of ['proposal', 'agreement']) {
-            try {
-                const templateKey = `${DOC_TEMPLATE_PREFIX}${t}.docx`;
-                docs[t].docx_template = templateKey;
-            } catch (e) {
-                docxErrors[t] = String(e?.message || e);
+            const templateKey = `${DOC_TEMPLATE_PREFIX}${t}.docx`;
+            docs[t].docx_template = templateKey;
+            const { base64, error } = await mergeDocxForPacketDoc(docs[t], t, fields);
+            if (error || !base64) {
+                docxErrors[t] = error || 'merge returned empty';
+                delete docs[t].docx;
+            } else {
+                docs[t].docx = base64;
             }
         }
 
@@ -4548,6 +4609,34 @@ app.get('/api/admin/docs/templates/status', verifyToken, async (req, res) => {
     }
 });
 
+// Download current master template (edit locally, then re-upload)
+app.get('/api/admin/docs/templates/download/:docType', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    const docType = String(req.params?.docType || '').trim();
+    if (!['proposal', 'agreement'].includes(docType)) {
+        return res.status(400).json({ success: false, message: 'docType must be proposal or agreement' });
+    }
+    try {
+        const key = `${DOC_TEMPLATE_PREFIX}${docType}.docx`;
+        const buf = await getTemplateBuffer(key);
+        if (!buf || !buf.length) {
+            return res.status(404).json({ success: false, message: 'Template file is empty' });
+        }
+        res.setHeader('Content-Type', DOCX_MIME);
+        res.setHeader('Content-Disposition', `attachment; filename="${docType}.docx"`);
+        res.send(buf);
+    } catch (error) {
+        const msg = String(error?.message || error);
+        const low = msg.toLowerCase();
+        const notFound = low.includes('not found') || low.includes('does not exist') || /object not found|404/.test(low);
+        if (notFound) {
+            return res.status(404).json({ success: false, message: 'No template in storage yet — upload a .docx first' });
+        }
+        console.error('docs-template-download:', msg);
+        res.status(500).json({ success: false, message: msg });
+    }
+});
+
 async function getDocPacketOrThrow(packetId) {
     const key = `${KNOWLEDGE_PREFIX.docPacket}${packetId}`;
     const { data: row, error: fetchError } = await supabaseAdmin
@@ -4704,15 +4793,13 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
             if (!doc.approved) { missing.push(`${docType}:not_approved`); continue; }
 
             if (docType === 'proposal' || docType === 'agreement') {
-                if (!doc.docx) { missing.push(`${docType}:docx_missing`); continue; }
-                const a = {
-                    filename: `${docType}-${packetId}.docx`,
-                    content: String(doc.docx),
-                    content_type: DOCX_MIME
-                };
-                const v = verifyAttachmentOrThrow(a);
-                verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
-                attachments.push(a);
+                const built = await buildDocxEmailAttachment(doc, docType, packetId, fields);
+                if (!built.ok) {
+                    missing.push(built.missing);
+                    continue;
+                }
+                verification.push(built.verification);
+                attachments.push(built.attachment);
                 continue;
             }
             if (docType === 'invoice') {
@@ -4929,11 +5016,13 @@ app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
             if (!doc) { missing.push(`${docType}:not_generated`); continue; }
             if (!doc.approved) { missing.push(`${docType}:not_approved`); continue; }
             if (docType === 'proposal' || docType === 'agreement') {
-                if (!doc.docx) { missing.push(`${docType}:docx_missing`); continue; }
-                const a = { filename: `${docType}-${packetId}.docx`, content: String(doc.docx), content_type: DOCX_MIME };
-                const v = verifyAttachmentOrThrow(a);
-                verification.push({ filename: a.filename, ok: true, bytes: v.bytes });
-                attachments.push(a);
+                const built = await buildDocxEmailAttachment(doc, docType, packetId, fields);
+                if (!built.ok) {
+                    missing.push(built.missing);
+                    continue;
+                }
+                verification.push(built.verification);
+                attachments.push(built.attachment);
                 continue;
             }
             if (docType === 'invoice') {

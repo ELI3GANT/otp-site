@@ -50,6 +50,7 @@ assert.match(server, /\/api\/admin\/ops\/jobs\/from-oracle/, 'Oracle → ops job
 assert.match(server, /persistOracleLeadSnapshot\(/, 'Oracle snapshot persistence helper');
 assert.match(server, /\/api\/admin\/docs\/signature\/request/, 'Signature request endpoint scaffolding');
 assert.match(server, /\/api\/admin\/docs\/signature\/capture/, 'Signature capture endpoint scaffolding');
+assert.match(server, /\/api\/admin\/docs\/templates\/download/, 'Master DOCX download for edit loop');
 
 // --- Admin-core: Terminal Oracle entry points + cache ---
 assert.ok(adminCore.includes('window.runOracleForReplyContext = async function'));
@@ -60,6 +61,8 @@ assert.ok(adminCore.includes('/api/admin/knowledge/recommend'));
 assert.ok(adminCore.includes('window.bootstrapOpsJobFromOracle'), 'Terminal can open job sheet from Oracle');
 assert.ok(adminCore.includes('/api/admin/knowledge/recommendations'));
 assert.ok(adminCore.includes('/api/admin/docs/packet'));
+assert.ok(adminCore.includes('window.downloadDocTemplate'), 'admin can download master templates');
+assert.ok(adminCore.includes('broadcastSiteCommand'), 'Site Command Pro uses guarded Realtime send');
 assert.ok(adminCore.includes('fetchStructuredKnowledge'), 'structured knowledge UI fetch');
 assert.ok(adminCore.includes('buildOraclePanelHtml'));
 assert.ok(adminCore.includes('formatOracleContextBlockHtml'));

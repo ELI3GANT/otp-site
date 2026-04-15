@@ -77,6 +77,7 @@ assert.ok(siteInit.includes('OTPSetProjectType'), 'site-init exposes safe homepa
 assert.ok(siteInit.includes('sanitizeSlugParam'), 'site-init exposes slug sanitizer for insight query param');
 assert.ok(siteInit.includes('sanitizeHttpUrl'), 'site-init exposes http(s) URL helper for embeds and insight');
 assert.ok(siteInit.includes('/api/contact/submit'), 'site-init wires contact form to public submit API');
+assert.ok(siteInit.includes('otp-uplink'), 'site-init listens on same Realtime channel as OTP Terminal');
 assert.ok(siteInit.includes('Invalid response from server'), 'contact handler tolerates non-JSON error bodies');
 
 assert.ok(terminal.includes('toggleAdminTheme()'), 'OTP Terminal theme control');

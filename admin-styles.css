@@ -1547,6 +1547,8 @@ input:focus + .slider {
     font-family: 'Space Grotesk', sans-serif;
     text-decoration: none;
     display: block;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 255, 170, 0.1);
 }
 .cmd-tile::before {
     content: '';
@@ -1555,6 +1557,7 @@ input:focus + .slider {
     background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent);
     opacity: 0;
     transition: opacity 0.2s;
+    pointer-events: none;
 }
 .cmd-tile:hover::before { opacity: 1; }
 .cmd-tile:hover {
@@ -2336,6 +2339,20 @@ html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !im
     .admin-section [style*="grid-template-columns: repeat(auto-fit"] {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 8px !important;
+    }
+
+    /* Reliable taps on iOS (no 300ms delay); tiles sit above decorative layers */
+    body.otp-terminal-page .cmd-tile {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 255, 170, 0.12);
+        position: relative;
+        z-index: 1;
+        min-height: 48px;
+    }
+
+    /* Floating theme toggle stacks above safe area so it does not eat grid taps */
+    body.otp-terminal-page .theme-btn {
+        bottom: max(88px, calc(20px + env(safe-area-inset-bottom, 0px))) !important;
     }
     
     .cmd-tile {
