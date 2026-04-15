@@ -698,7 +698,16 @@ window.OTP.initRealtimeState = async function() {
             .single();
         
         if (data && data.content) {
-            const config = JSON.parse(data.content);
+            let config;
+            try {
+                config = JSON.parse(data.content);
+            } catch (parseErr) {
+                console.error('📡 REALTIME: Invalid system-global-state JSON', parseErr);
+                config = null;
+            }
+            if (!config || typeof config !== 'object') {
+                /* fall through to Realtime subscribe only */
+            } else {
             console.log("📡 REMOTE STATE SYNC:", config);
             
             // Apply Maintenance IMMEDIATELY
@@ -715,12 +724,15 @@ window.OTP.initRealtimeState = async function() {
                 return; // STOP EXECUTION
             }
 
-            // Apply Visuals
+            // Apply Visuals (match broadcast branch: perf-mode + otp-fx-change)
             if (config.visuals) {
                 document.documentElement.setAttribute('data-fx-intensity', config.visuals);
                 window.FX_INTENSITY = config.visuals;
+                const highFi = config.visuals === 'high';
+                document.documentElement.classList.toggle('perf-mode', !highFi);
+                window.dispatchEvent(new CustomEvent('otp-fx-change', { detail: { intensity: config.visuals } }));
                 const canvas = document.getElementById('cursor-canvas');
-                if(canvas) canvas.style.display = config.visuals === 'high' ? 'block' : 'none';
+                if (canvas) canvas.style.display = config.visuals === 'high' ? 'block' : 'none';
             }
             
              // Apply Kursor
@@ -745,6 +757,7 @@ window.OTP.initRealtimeState = async function() {
                 const statusHost = document.getElementById('siteStatus');
                 const textEl = statusHost?.querySelector('.status-text');
                 if (textEl) textEl.textContent = `SYSTEM: ${line}`;
+            }
             }
         }
     } catch(e) { console.error("Config Sync Error:", e); }

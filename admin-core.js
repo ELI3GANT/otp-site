@@ -6720,6 +6720,11 @@ If citations are provided, treat them as the source of truth for pricing/rules a
     // --- SITE COMMAND PRO LOGIC ---
     // 4.8 PERSIST STATE HELPER
     window.persistSystemState = async function(key, value) {
+        if (!state.client) {
+            console.warn('persistSystemState: Supabase client not ready');
+            showToast('STATE SAVE SKIPPED — DATABASE OFFLINE');
+            return;
+        }
         try {
             // Fetch current state object first
             let { data: current } = await state.client

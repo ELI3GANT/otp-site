@@ -118,6 +118,11 @@ assert.ok(
     'POST /api/create-checkout-session must not return raw Stripe exception text to clients'
 );
 
+assert.ok(
+    serverSrc.includes('transactional_email'),
+    'GET /api/health should expose transactional_email (Resend) for deploy verification'
+);
+
 // uploads bucket: public read is intentional for blog/CDN assets; ensure policy is scoped to that bucket.
 assert.ok(
     /CREATE\s+POLICY\s+"Public Access"\s+ON\s+storage\.objects[\s\S]*bucket_id\s*=\s*'uploads'/is.test(

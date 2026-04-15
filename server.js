@@ -2224,6 +2224,7 @@ app.get('/api/health', async (req, res) => {
         integrations: {
             supabase: 'UNKNOWN',
             stripe: !!stripe ? 'CONFIGURED' : 'DISCONNECTED',
+            transactional_email: !!String(process.env.RESEND_API_KEY || '').trim() ? 'CONFIGURED' : 'UNAVAILABLE',
             ai: (!!process.env.GEMINI_API_KEY || !!process.env.OPENAI_API_KEY || !!process.env.ANTHROPIC_API_KEY || !!process.env.GROQ_API_KEY) ? 'CONFIGURED' : 'UNAVAILABLE',
             // Presence-only flags (never values) — helps verify Vercel env wiring after deploy.
             ai_providers: {
