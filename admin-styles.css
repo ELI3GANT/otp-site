@@ -880,6 +880,15 @@ html[data-theme="light"] .post-row {
     }
 }
 
+@media (max-width: 480px) {
+    .toast {
+        max-width: min(96vw, 360px);
+        font-size: 0.7rem;
+        letter-spacing: 0.06em;
+        padding: 11px 16px;
+    }
+}
+
 /* ACCESSIBILITY & PERFORMANCE */
 .sr-only {
     position: absolute;
@@ -1778,7 +1787,13 @@ body.otp-terminal-page .otp-client-rhythm {
 body.otp-terminal-page .otp-client-rhythm > summary {
     list-style: none;
     cursor: pointer;
-    padding: 10px 14px;
+    padding: 11px 14px;
+    min-height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 8px;
     font-size: 0.72rem;
     color: var(--admin-text);
     font-weight: 600;
@@ -1791,11 +1806,11 @@ body.otp-terminal-page .otp-client-rhythm-hint {
     font-size: 0.68rem;
 }
 body.otp-terminal-page .otp-client-rhythm-body {
-    padding: 0 14px 12px;
+    padding: 0 12px 10px;
     border-top: 1px solid var(--admin-border);
 }
 body.otp-terminal-page .otp-client-rhythm-lede {
-    margin: 10px 0 8px;
+    margin: 8px 0 6px;
     font-size: 0.7rem;
     color: var(--admin-muted);
     line-height: 1.5;
@@ -1808,7 +1823,7 @@ body.otp-terminal-page .otp-client-rhythm-steps {
     line-height: 1.5;
 }
 body.otp-terminal-page .otp-client-rhythm-muted {
-    margin: 0 0 10px;
+    margin: 0 0 8px;
     font-size: 0.66rem;
     color: var(--admin-muted);
     line-height: 1.45;
@@ -1834,7 +1849,13 @@ body.otp-terminal-page .otp-client-rhythm-btn {
 #replyModal .reply-ops-hint > summary {
     list-style: none;
     cursor: pointer;
-    padding: 8px 12px;
+    padding: 10px 12px;
+    min-height: 44px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 6px;
     font-size: 0.68rem;
     color: var(--admin-text);
     font-weight: 600;
@@ -1852,13 +1873,20 @@ body.otp-terminal-page .otp-client-rhythm-btn {
     line-height: 1.45;
     border-top: 1px solid var(--admin-border);
 }
-#replyModal .reply-ops-hint-body p { margin: 8px 0; }
+#replyModal .reply-ops-hint-body p { margin: 6px 0 8px; }
 #replyModal .reply-ops-hint-btn {
-    margin-top: 6px;
+    margin-top: 4px;
     font-size: 0.64rem !important;
-    padding: 6px 10px !important;
-    min-height: 40px;
+    padding: 8px 12px !important;
+    min-height: 44px;
     touch-action: manipulation;
+}
+
+@media (max-width: 600px) {
+    #replyModal .reply-ops-hint {
+        margin-left: max(10px, env(safe-area-inset-left, 0px));
+        margin-right: max(10px, env(safe-area-inset-right, 0px));
+    }
 }
 
 .otp-lead-mission-grid {

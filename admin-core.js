@@ -187,11 +187,11 @@
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    /** Single toast line: avoids stacking a second “reminder” toast on the same action. */
+    /** Single toast line: avoids stacking a second reminder on the same action. */
     function toastKnowledgeFollowup(primaryMsg) {
         const base = String(primaryMsg || '').trim();
         if (!base) return;
-        showToast(`${base} · Re-run 🔮 Oracle on open quotes.`, 8200);
+        showToast(`${base} · Re-run 🔮 on open threads.`, 5600);
     }
 
     /**
@@ -2147,12 +2147,17 @@
             const jobId = payload.row && payload.row.jobId;
             const pkgRaw = payload.oracle && payload.oracle.recommended_package ? String(payload.oracle.recommended_package).trim() : '';
             const oracleHint = pkgRaw.length > 42 ? `${pkgRaw.slice(0, 40)}…` : pkgRaw;
-            showToast(
-                jobId
-                    ? `JOB ${jobId} opened · Oracle = guidance only${oracleHint ? ' · ' + oracleHint : ''} — confirm §06.7 before client use.`
-                    : 'JOB SAVED · Oracle = guidance — confirm §06.7 before client use.',
-                9000
-            );
+            const narrow =
+                typeof window !== 'undefined' &&
+                window.matchMedia &&
+                window.matchMedia('(max-width: 480px)').matches;
+            const msgSaved = narrow
+                ? 'JOB saved · Oracle guides · verify 06.7'
+                : 'JOB SAVED · Oracle guides only · 06.7 source of truth before client.';
+            const msgOpened = narrow
+                ? `JOB ${jobId} · Oracle guides · verify 06.7`
+                : `JOB ${jobId} opened · Oracle guides only · 06.7 source of truth before client${oracleHint ? ' · ' + oracleHint : ''}.`;
+            showToast(jobId ? msgOpened : msgSaved, narrow ? 6800 : 8200);
             await window.fetchOpsJobs();
             if (jobId) await window.openOpsJobEditor(jobId);
             const anchor = document.getElementById('section-ops-jobs');
