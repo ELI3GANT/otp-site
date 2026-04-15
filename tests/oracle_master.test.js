@@ -63,6 +63,10 @@ assert.ok(adminCore.includes('/api/admin/knowledge/recommendations'));
 assert.ok(adminCore.includes('/api/admin/docs/packet'));
 assert.ok(adminCore.includes('window.downloadDocTemplate'), 'admin can download master templates');
 assert.ok(adminCore.includes('broadcastSiteCommand'), 'Site Command Pro uses guarded Realtime send');
+assert.ok(
+    adminCore.includes("'status-message'") && adminCore.includes("type === 'status'"),
+    'Global status tile uses id status-message (not status-status)'
+);
 assert.ok(adminCore.includes('fetchStructuredKnowledge'), 'structured knowledge UI fetch');
 assert.ok(adminCore.includes('buildOraclePanelHtml'));
 assert.ok(adminCore.includes('formatOracleContextBlockHtml'));

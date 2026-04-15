@@ -829,8 +829,10 @@
 
     // --- SYSTEM STATE SYNC ---
     function syncDashboardElement(type, value) {
-        const el = document.getElementById(`status-${type}`);
-        if (!el || !value) return;
+        const elId = type === 'status' ? 'status-message' : `status-${type}`;
+        const el = document.getElementById(elId);
+        if (!el) return;
+        if (type !== 'status' && (value === undefined || value === null || value === '')) return;
 
         const tile = el.closest('.cmd-tile');
 
@@ -871,7 +873,10 @@
                 html.style.setProperty('--accent2', `rgb(${selected.dark})`);
             }
         } else if (type === 'status') {
-            el.textContent = value.toUpperCase();
+            const v = (value != null && String(value).trim() !== '')
+                ? String(value).trim().toUpperCase()
+                : 'OPERATIONAL';
+            el.textContent = v;
             el.style.color = 'var(--admin-success)';
         }
     }
