@@ -408,29 +408,25 @@
             </section>
 
             <!-- SECTION: OTP ORACLE KNOWLEDGE -->
-            <section id="section-knowledge-oracle" class="input-section">
+            <section id="section-knowledge-oracle" class="input-section otp-knowledge-section">
                 <div class="section-label">06.5 // OTP Oracle · Knowledge Index</div>
-                <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.5;">
-                    PDFs/DOCX and <strong style="color:var(--admin-text);">structured entries</strong> feed the same Oracle as reply, doc packet, and JOB ⊕ ORACLE. Re-run 🔮 on open threads after edits here.
-                </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-                    <button type="button" onclick="document.getElementById('knowledgeFileInput').click()" class="btn-secondary" style="width: auto; font-size: 0.7rem;">UPLOAD FILES</button>
-                    <button type="button" onclick="window.fetchKnowledgeFiles()" class="btn-secondary" style="width: auto; font-size: 0.7rem;">REFRESH INDEX</button>
-                    <span id="knowledgeStatusBadge" style="font-size: 0.65rem; color: var(--admin-cyan); border: 1px solid var(--admin-border); border-radius: 6px; padding: 6px 10px;">INDEX: STANDBY</span>
+                <p class="otp-knowledge-lede">PDFs/DOCX and <strong>structured rules</strong> feed the same Oracle (reply, packet, JOB ⊕ ORACLE). Re-run 🔮 after edits.</p>
+                <div class="otp-knowledge-toolbar" role="group" aria-label="File index actions">
+                    <button type="button" onclick="document.getElementById('knowledgeFileInput').click()" class="btn-secondary otp-knowledge-toolbar__btn">UPLOAD FILES</button>
+                    <button type="button" onclick="window.fetchKnowledgeFiles()" class="btn-secondary otp-knowledge-toolbar__btn">REFRESH INDEX</button>
+                    <span id="knowledgeStatusBadge" class="otp-knowledge-badge">INDEX: STANDBY</span>
                 </div>
                 <input type="file" id="knowledgeFileInput" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple style="display:none;">
-                <div id="knowledgeFilesManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 340px; overflow-y: auto;">
-                    <div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO FILE INDEX YET</div>
+                <div id="knowledgeFilesManager" class="otp-knowledge-files-host">
+                    <div class="otp-knowledge-empty">NO FILE INDEX YET</div>
                 </div>
 
-                <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--admin-border);">
-                    <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 10px; line-height: 1.45;">
-                        <strong style="color:var(--admin-text);">Structured knowledge (priority)</strong> — short rules Oracle prefers over raw file chunks.
-                    </div>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
-                        <button type="button" onclick="window.fetchStructuredKnowledge()" class="btn-secondary" style="width:auto;font-size:0.7rem;">REFRESH STRUCTURED</button>
-                        <button type="button" onclick="window.openStructuredKnowledgeEditor()" class="btn-secondary" style="width:auto;font-size:0.7rem;">NEW ENTRY</button>
-                        <span id="structuredKnowledgeBadge" style="font-size: 0.65rem; color: var(--admin-cyan); border: 1px solid var(--admin-border); border-radius: 6px; padding: 6px 10px;">STRUCTURED: STANDBY</span>
+                <div class="otp-knowledge-structured-block">
+                    <p class="otp-knowledge-structured-lede"><strong>Structured knowledge (priority)</strong> — short rules Oracle prefers over file chunks.</p>
+                    <div class="otp-knowledge-toolbar" role="group" aria-label="Structured knowledge actions">
+                        <button type="button" onclick="window.fetchStructuredKnowledge()" class="btn-secondary otp-knowledge-toolbar__btn">REFRESH STRUCTURED</button>
+                        <button type="button" onclick="window.openStructuredKnowledgeEditor()" class="btn-secondary otp-knowledge-toolbar__btn">NEW ENTRY</button>
+                        <span id="structuredKnowledgeBadge" class="otp-knowledge-badge">STRUCTURED: STANDBY</span>
                     </div>
 
                     <div id="structuredKnowledgeEditor" style="display:none;background:var(--admin-panel);border:1px solid var(--admin-border);border-radius:12px;padding:12px;margin-bottom:10px;">
@@ -469,8 +465,8 @@
                         <div id="structuredSaveStatus" style="margin-top:8px;font-size:0.68rem;color:var(--admin-muted);"></div>
                     </div>
 
-                    <div id="structuredKnowledgeManager" style="background: var(--admin-panel); border-radius: 12px; border: 1px solid var(--admin-border); padding: 15px; max-height: 260px; overflow-y: auto;">
-                        <div style="text-align: center; color: var(--admin-muted); padding: 20px;">NO STRUCTURED ENTRIES YET</div>
+                    <div id="structuredKnowledgeManager" class="otp-knowledge-files-host otp-knowledge-files-host--structured">
+                        <div class="otp-knowledge-empty">NO STRUCTURED ENTRIES YET</div>
                     </div>
                 </div>
             </section>
@@ -1611,7 +1607,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.23"></script>
+    <script src="admin-core.js?v=16.7.24"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

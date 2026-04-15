@@ -1587,13 +1587,13 @@
         if (!state.token) {
             if (badge) badge.textContent = 'INDEX: AUTH REQUIRED';
             if (container) {
-                container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED TO LOAD KNOWLEDGE INDEX</div>';
+                container.innerHTML = '<div class="otp-knowledge-empty">LOGIN REQUIRED</div>';
             }
             return;
         }
         if (badge) badge.textContent = 'INDEX: SYNCING...';
         if (container) {
-            container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">SYNCING KNOWLEDGE INDEX...</div>';
+            container.innerHTML = '<div class="otp-knowledge-empty otp-knowledge-empty--busy">SYNCING INDEX…</div>';
         }
         try {
             const apiBase = resolveApiBase();
@@ -1609,33 +1609,36 @@
             if (badge) badge.textContent = `INDEX: ${files.length} FILE${files.length === 1 ? '' : 'S'}`;
             if (!container) return;
             if (!files.length) {
-                container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">NO FILE INDEX YET</div>';
+                container.innerHTML = '<div class="otp-knowledge-empty">NO FILE INDEX YET</div>';
                 return;
             }
 
-            container.innerHTML = files.map(file => `
-                <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:8px;background:var(--admin-panel);">
-                    <div style="min-width:0;">
-                        <div style="font-size:0.8rem;font-weight:700;color:var(--admin-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${window.escapeHtml(file.file_name || 'Untitled')}</div>
-                        <div style="font-size:0.65rem;color:var(--admin-muted);margin-top:3px;">
-                            ${(file.source_type || 'unknown').toUpperCase()} • ${file.chunk_count || 0} chunks • ${new Date(file.updated_at || Date.now()).toLocaleString()}
+            container.innerHTML = files.map(file => {
+                const updated = new Date(file.updated_at || Date.now());
+                const updatedShort = updated.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                return `
+                <div class="otp-knowledge-file-row">
+                    <div class="otp-knowledge-file-main">
+                        <div class="otp-knowledge-file-name">${window.escapeHtml(file.file_name || 'Untitled')}</div>
+                        <div class="otp-knowledge-file-meta">
+                            ${(file.source_type || 'unknown').toUpperCase()} · ${file.chunk_count || 0} chunks · ${updatedShort}
                         </div>
                     </div>
-                    <div style="display:flex;gap:8px;align-items:center;">
-                        <button type="button" onclick="window.updateKnowledgeFileById(${JSON.stringify(String(file.file_id || ''))})" style="background:transparent;border:1px solid rgba(var(--accent2-rgb),0.35);color:var(--admin-cyan);font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">UPDATE</button>
-                        <button type="button" onclick="window.archiveKnowledgeFile(${JSON.stringify(String(file.file_id || ''))})" style="background:transparent;border:1px solid rgba(255,170,0,0.45);color:#ffd37a;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">ARCHIVE</button>
-                        <button type="button" onclick="window.deleteKnowledgeFile(${JSON.stringify(String(file.file_id || ''))})" style="background:transparent;border:1px solid rgba(255,90,90,0.4);color:#ff8f8f;font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">DELETE</button>
+                    <div class="otp-knowledge-file-actions">
+                        <button type="button" class="otp-k-file-btn otp-k-file-btn--cyan" onclick="window.updateKnowledgeFileById(${JSON.stringify(String(file.file_id || ''))})">UPDATE</button>
+                        <button type="button" class="otp-k-file-btn otp-k-file-btn--amber" onclick="window.archiveKnowledgeFile(${JSON.stringify(String(file.file_id || ''))})">ARCHIVE</button>
+                        <button type="button" class="otp-k-file-btn otp-k-file-btn--red" onclick="window.deleteKnowledgeFile(${JSON.stringify(String(file.file_id || ''))})">DELETE</button>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         } catch (e) {
             const errStr = String(e?.message ?? e ?? '');
             const authRequired = /invalid or expired token|authentication required|403/i.test(errStr);
             if (badge) badge.textContent = 'INDEX: ERROR';
             if (container) {
                 container.innerHTML = authRequired
-                    ? '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED TO LOAD KNOWLEDGE INDEX</div>'
-                    : `<div style="text-align:center;color:#ff8888;padding:20px;">INDEX ERROR: ${window.escapeHtml(errStr)}</div>`;
+                    ? '<div class="otp-knowledge-empty">LOGIN REQUIRED</div>'
+                    : `<div class="otp-knowledge-empty otp-knowledge-empty--error">INDEX ERROR: ${window.escapeHtml(errStr)}</div>`;
             }
         }
     };
@@ -1740,11 +1743,11 @@
         const container = document.getElementById('structuredKnowledgeManager');
         if (!state.token) {
             setStructuredStatus('STRUCTURED: AUTH REQUIRED');
-            if (container) container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">LOGIN REQUIRED TO LOAD STRUCTURED KNOWLEDGE</div>';
+            if (container) container.innerHTML = '<div class="otp-knowledge-empty">LOGIN REQUIRED</div>';
             return;
         }
         setStructuredStatus('STRUCTURED: SYNCING...');
-        if (container) container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">SYNCING STRUCTURED KNOWLEDGE...</div>';
+        if (container) container.innerHTML = '<div class="otp-knowledge-empty otp-knowledge-empty--busy">SYNCING…</div>';
         try {
             const apiBase = resolveApiBase();
             const res = await fetchWithTimeout(`${apiBase}/api/admin/knowledge/structured/list`, {
@@ -1759,7 +1762,7 @@
             setStructuredStatus(`STRUCTURED: ${entries.length} ENTRY${entries.length === 1 ? '' : 'IES'}`);
             if (!container) return;
             if (!entries.length) {
-                container.innerHTML = '<div style="text-align:center;color:var(--admin-muted);padding:20px;">NO STRUCTURED ENTRIES YET</div>';
+                container.innerHTML = '<div class="otp-knowledge-empty">NO STRUCTURED ENTRIES YET</div>';
                 return;
             }
             container.innerHTML = entries
@@ -1773,17 +1776,17 @@
                     const activeLabel = active ? 'ACTIVE' : 'INACTIVE';
                     const color = active ? 'var(--admin-success)' : '#ffaa00';
                     return `
-                        <div style="display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--admin-border);border-radius:8px;margin-bottom:8px;background:var(--admin-panel);">
-                            <div style="min-width:0;">
-                                <div style="font-size:0.8rem;font-weight:800;color:var(--admin-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
-                                <div style="font-size:0.66rem;color:var(--admin-muted);margin-top:3px;line-height:1.4;">
-                                    <span style="color:${color};font-weight:900;letter-spacing:0.08em;">${activeLabel}</span>
-                                    • priority ${Number(e.priority || 0)}
-                                    ${tags ? `• tags: ${window.escapeHtml(tags)}` : ''}
+                        <div class="otp-knowledge-struct-row">
+                            <div class="otp-knowledge-file-main">
+                                <div class="otp-knowledge-file-name otp-knowledge-struct-title">${title}</div>
+                                <div class="otp-knowledge-file-meta otp-knowledge-struct-meta">
+                                    <span class="otp-knowledge-struct-status" style="color:${color}">${activeLabel}</span>
+                                    · pri ${Number(e.priority || 0)}
+                                    ${tags ? ` · ${window.escapeHtml(tags)}` : ''}
                                 </div>
                             </div>
-                            <div style="display:flex;gap:8px;align-items:center;">
-                                <button type="button" onclick="window.editStructuredKnowledgeEntry('${id}')" style="background:transparent;border:1px solid rgba(var(--accent2-rgb),0.35);color:var(--admin-cyan);font-size:0.66rem;padding:6px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">EDIT</button>
+                            <div class="otp-knowledge-file-actions otp-knowledge-file-actions--single">
+                                <button type="button" class="otp-k-file-btn otp-k-file-btn--cyan" onclick="window.editStructuredKnowledgeEntry('${id}')">EDIT</button>
                             </div>
                         </div>
                     `;
@@ -1791,7 +1794,7 @@
                 .join('');
         } catch (e) {
             setStructuredStatus('STRUCTURED: ERROR');
-            if (container) container.innerHTML = `<div style="text-align:center;color:#ff8888;padding:20px;">STRUCTURED ERROR: ${window.escapeHtml(String(e && e.message != null ? e.message : e))}</div>`;
+            if (container) container.innerHTML = `<div class="otp-knowledge-empty otp-knowledge-empty--error">STRUCTURED · ${window.escapeHtml(String(e && e.message != null ? e.message : e))}</div>`;
         }
     };
 

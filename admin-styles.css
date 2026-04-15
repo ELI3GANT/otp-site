@@ -1771,6 +1771,198 @@ body.otp-terminal-page #leadsManager {
     }
 }
 
+/* 06.5 Knowledge Index — readable rows + touch targets on narrow viewports */
+body.otp-terminal-page .otp-knowledge-section {
+    padding-left: max(0px, env(safe-area-inset-left, 0px));
+    padding-right: max(0px, env(safe-area-inset-right, 0px));
+}
+body.otp-terminal-page .otp-knowledge-lede,
+body.otp-terminal-page .otp-knowledge-structured-lede {
+    font-size: 0.72rem;
+    color: var(--admin-muted);
+    line-height: 1.45;
+    margin: 0 0 12px;
+    max-width: 72ch;
+}
+body.otp-terminal-page .otp-knowledge-lede strong,
+body.otp-terminal-page .otp-knowledge-structured-lede strong {
+    color: var(--admin-text);
+    font-weight: 700;
+}
+body.otp-terminal-page .otp-knowledge-structured-block {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--admin-border);
+}
+body.otp-terminal-page .otp-knowledge-structured-lede {
+    margin-bottom: 10px;
+}
+body.otp-terminal-page .otp-knowledge-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+body.otp-terminal-page .otp-knowledge-toolbar__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem !important;
+    touch-action: manipulation;
+    min-height: 44px;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+}
+body.otp-terminal-page .otp-knowledge-badge {
+    font-size: 0.65rem;
+    color: var(--admin-cyan);
+    border: 1px solid var(--admin-border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    line-height: 1.2;
+    word-break: break-word;
+}
+body.otp-terminal-page .otp-knowledge-files-host {
+    background: var(--admin-panel);
+    border-radius: 12px;
+    border: 1px solid var(--admin-border);
+    padding: 14px;
+    max-height: 340px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+body.otp-terminal-page .otp-knowledge-files-host--structured {
+    max-height: 260px;
+}
+body.otp-terminal-page .otp-knowledge-empty {
+    text-align: center;
+    color: var(--admin-muted);
+    padding: 16px 12px;
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
+body.otp-terminal-page .otp-knowledge-empty--busy {
+    letter-spacing: 0.04em;
+}
+body.otp-terminal-page .otp-knowledge-empty--error {
+    color: #ff8888;
+}
+body.otp-terminal-page .otp-knowledge-file-row,
+body.otp-terminal-page .otp-knowledge-struct-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: var(--admin-panel);
+}
+body.otp-terminal-page .otp-knowledge-file-main {
+    min-width: 0;
+    flex: 1 1 160px;
+}
+body.otp-terminal-page .otp-knowledge-file-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--admin-text);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+body.otp-terminal-page .otp-knowledge-file-meta {
+    font-size: 0.64rem;
+    color: var(--admin-muted);
+    margin-top: 4px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+body.otp-terminal-page .otp-knowledge-struct-meta {
+    font-size: 0.63rem;
+}
+body.otp-terminal-page .otp-knowledge-struct-status {
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+body.otp-terminal-page .otp-knowledge-file-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 1 auto;
+}
+body.otp-terminal-page .otp-knowledge-file-actions--single {
+    align-self: center;
+}
+body.otp-terminal-page .otp-k-file-btn {
+    background: transparent;
+    font-size: 0.66rem;
+    padding: 10px 12px;
+    min-height: 44px;
+    border-radius: 6px;
+    cursor: pointer;
+    touch-action: manipulation;
+    border: 1px solid var(--admin-border);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+body.otp-terminal-page .otp-k-file-btn--cyan {
+    border-color: rgba(var(--accent2-rgb), 0.35);
+    color: var(--admin-cyan);
+}
+body.otp-terminal-page .otp-k-file-btn--amber {
+    border-color: rgba(255, 170, 0, 0.45);
+    color: #ffd37a;
+}
+body.otp-terminal-page .otp-k-file-btn--red {
+    border-color: rgba(255, 90, 90, 0.4);
+    color: #ff8f8f;
+}
+@media (max-width: 560px) {
+    body.otp-terminal-page .otp-knowledge-lede,
+    body.otp-terminal-page .otp-knowledge-structured-lede {
+        font-size: 0.78rem;
+        max-width: none;
+    }
+    body.otp-terminal-page .otp-knowledge-toolbar .otp-knowledge-toolbar__btn {
+        flex: 1 1 calc(50% - 4px);
+        justify-content: center;
+    }
+    body.otp-terminal-page .otp-knowledge-toolbar .otp-knowledge-badge {
+        flex: 1 1 100%;
+        text-align: center;
+    }
+    body.otp-terminal-page .otp-knowledge-files-host,
+    body.otp-terminal-page .otp-knowledge-files-host--structured {
+        padding: 12px 10px;
+        max-height: min(52vh, 360px);
+    }
+    body.otp-terminal-page .otp-knowledge-file-row,
+    body.otp-terminal-page .otp-knowledge-struct-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    body.otp-terminal-page .otp-knowledge-file-actions,
+    body.otp-terminal-page .otp-knowledge-file-actions--single {
+        justify-content: stretch;
+        width: 100%;
+    }
+    body.otp-terminal-page .otp-k-file-btn {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    body.otp-terminal-page #section-knowledge-oracle .input-field {
+        font-size: 16px; /* iOS: avoid zoom on focus */
+    }
+}
+
 /* Client rhythm + reply hint: one disclosure each, calm hierarchy, no banner stack. */
 body.otp-terminal-page .otp-client-rhythm-shell {
     margin-bottom: 14px;
