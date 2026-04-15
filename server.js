@@ -26,6 +26,19 @@ const Docxtemplater = require('docxtemplater');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const JSZip = require('jszip');
 
+/** Transparent OTP mark (`assets/otp-mark-doc.png`) as data URI for self-contained Oracle HTML. */
+let _otpDocLogoDataUri;
+function getOtpDocLogoDataUri() {
+    if (_otpDocLogoDataUri !== undefined) return _otpDocLogoDataUri;
+    try {
+        const buf = fs.readFileSync(path.join(__dirname, 'assets', 'otp-mark-doc.png'));
+        _otpDocLogoDataUri = `data:image/png;base64,${buf.toString('base64')}`;
+    } catch (e) {
+        _otpDocLogoDataUri = '';
+    }
+    return _otpDocLogoDataUri;
+}
+
 // Safe Stripe Init
 let stripe = null;
 try {
@@ -223,6 +236,11 @@ function renderHtmlDoc(docType, fields) {
     const invTotal = f.invoice_total_cents ? ('$' + (f.invoice_total_cents / 100).toLocaleString('en-US')) : 'Scope-based';
     const invDep = f.deposit_due_cents ? ('$' + (f.deposit_due_cents / 100).toLocaleString('en-US')) : 'Scope-based';
 
+    const logoUri = getOtpDocLogoDataUri();
+    const logoHtml = logoUri
+        ? `<img class="doc-logo" src="${logoUri}" alt="OTP" width="84" height="84" decoding="async" />`
+        : '';
+
     return `<!doctype html>
 <html lang="en">
 <head>
@@ -281,23 +299,55 @@ function renderHtmlDoc(docType, fields) {
     @media (prefers-color-scheme: dark) {
       .shell { box-shadow: 0 1px 0 rgba(255,255,255,0.04); }
     }
-    .banner {
+    .doc-brand {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
-      gap: 8px 12px;
-      margin-bottom: 16px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--doc-warn-border);
-      background: var(--doc-warn-bg);
+      gap: 18px;
+      margin-bottom: 18px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--doc-border);
+    }
+    .doc-logo {
+      width: 72px;
+      height: auto;
+      max-height: 84px;
+      flex-shrink: 0;
+      object-fit: contain;
+      display: block;
+    }
+    /* Light UI / print: dark mark. Dark UI: light mark (assumes light-on-transparent artwork). */
+    @media (prefers-color-scheme: light) {
+      .doc-logo { filter: brightness(0) saturate(100%); opacity: 0.92; }
+    }
+    @media (prefers-color-scheme: dark) {
+      .doc-logo { filter: none; opacity: 0.98; }
+    }
+    .doc-brand-copy { min-width: 0; flex: 1; }
+    .doc-brand-company {
       font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
+      font-weight: 800;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--doc-muted2);
+      margin-bottom: 8px;
     }
-    .banner span { opacity: 0.9; }
+    .doc-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 8px;
+      align-items: center;
+    }
+    .doc-pill {
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--doc-warn-border);
+      background: var(--doc-warn-bg);
+      color: var(--doc-muted2);
+    }
     .meta {
       color: var(--doc-muted);
       font-size: 12px;
@@ -397,14 +447,25 @@ function renderHtmlDoc(docType, fields) {
     @media print {
       body { background: #fff; padding: 12mm; }
       .shell { box-shadow: none; border: none; padding: 0; }
-      .banner { border-style: solid; }
+      .doc-logo { filter: brightness(0) saturate(100%); opacity: 0.9; }
+      .doc-pill { border-style: solid; }
     }
   </style>
 </head>
 <body>
   <div class="shell">
-    <div class="banner"><span>OTP Oracle</span><span>·</span><span>Draft packet</span><span>·</span><span>Not client-final</span></div>
-    <div class="meta">${escapeHtml(f.sender_company || '')} · ${escapeHtml(f.sender_email || '')}<br/>Generated ${escapeHtml(f.generated_at || '')}</div>
+    <header class="doc-brand">
+      ${logoHtml}
+      <div class="doc-brand-copy">
+        <div class="doc-brand-company">${escapeHtml(f.sender_company || 'Only True Perspective LLC')}</div>
+        <div class="doc-pills" role="note">
+          <span class="doc-pill">OTP Oracle</span>
+          <span class="doc-pill">Draft</span>
+          <span class="doc-pill">Not client-final</span>
+        </div>
+      </div>
+    </header>
+    <div class="meta">${escapeHtml(f.sender_email || '')}<br/>Generated ${escapeHtml(f.generated_at || '')}</div>
     <h1>${escapeHtml(title)}</h1>
     <p class="subtitle">${escapeHtml(subtitle)}</p>
     <div class="box">
@@ -718,16 +779,20 @@ async function renderInvoicePdf(fields, packetId = '') {
     const margin = 54;
     const contentW = width - margin * 2;
 
-    // Try to embed the official OTP eye emblem (eye-only crop) from public assets; fallback to text mark if unavailable.
+    // OTP mark: prefer transparent PNG (Oracle / doc packet brand), then legacy JPG.
     let logoImage = null;
     try {
-        const fs = require('fs');
-        const path = require('path');
-        const logoPath = path.join(__dirname, 'assets', 'otp-eye-emblem-eye.jpg');
-        const buf = fs.readFileSync(logoPath);
-        logoImage = await pdfDoc.embedJpg(buf);
+        const pngPath = path.join(__dirname, 'assets', 'otp-mark-doc.png');
+        const pbuf = fs.readFileSync(pngPath);
+        logoImage = await pdfDoc.embedPng(pbuf);
     } catch (e) {
-        logoImage = null;
+        try {
+            const jpgPath = path.join(__dirname, 'assets', 'otp-eye-emblem-eye.jpg');
+            const jbuf = fs.readFileSync(jpgPath);
+            logoImage = await pdfDoc.embedJpg(jbuf);
+        } catch (e2) {
+            logoImage = null;
+        }
     }
 
     // Header bar
