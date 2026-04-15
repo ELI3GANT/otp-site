@@ -360,7 +360,7 @@
         const labelFirst = 'font-size:0.58rem;color:var(--admin-cyan);letter-spacing:1px;text-transform:uppercase;font-weight:800;margin:0 0 5px 0;';
         const wrap = (inner) => `
                 <div class="oracle-context-box" style="background: rgba(var(--accent2-rgb), 0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--admin-border); max-height: min(42vh, 260px); overflow-y: auto;">
-                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 2px;">ORACLE_CONTEXT_DATA</div>
+                    <div style="font-size: 0.55rem; color: var(--admin-cyan); margin-bottom: 8px; font-weight: 900; letter-spacing: 1.2px;">ORACLE CONTEXT</div>
                     ${inner}
                 </div>`;
         if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) {
@@ -398,7 +398,7 @@
             const restObj = {};
             restKeys.forEach((k) => { restObj[k] = obj[k]; });
             const restText = stripMarkdownFences(JSON.stringify(restObj, null, 2));
-            parts.push(`<div style="${label}">Additional details</div><div style="${prose};font-size:0.74rem;color:var(--admin-muted);">${esc(restText)}</div>`);
+            parts.push(`<div style="${label}">Extra fields</div><div style="${prose};font-size:0.74rem;color:var(--admin-muted);">${esc(restText)}</div>`);
         }
         if (!parts.length) {
             const fallback = stripMarkdownFences(JSON.stringify(obj, null, 2));
@@ -429,33 +429,33 @@
             .map(label => `<span style="font-size:0.56rem;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);color:var(--admin-muted);font-weight:800;">${window.escapeHtml(label)}</span>`)
             .join(' ');
         const nextActionLabel = rec.next_action === 'manual_scope_review_required_before_quote'
-            ? 'Manual scope review required before quoting'
+            ? 'Scope review before quote'
             : rec.next_action === 'send_intake_confirmation_and_prepare_agreement_invoice'
-                ? 'Proceed with intake confirmation and agreement/invoice prep'
-                : (rec.next_action || 'manual_review_required');
+                ? 'Confirm intake · prep agreement / invoice'
+                : (rec.next_action || 'Review before quote');
         const notesLine = Array.isArray(rec.admin_notes) && rec.admin_notes.length
             ? rec.admin_notes.map((n) => String(n || '').trim()).filter(Boolean).join(' · ')
             : (typeof rec.admin_notes === 'string' && rec.admin_notes.trim() ? rec.admin_notes.trim() : '');
         const staleLine = staleKb
-            ? `<div style="font-size:0.62rem;color:#ffb347;letter-spacing:1px;text-transform:uppercase;font-weight:900;margin:0 0 8px 0;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,179,71,0.45);background:rgba(255,179,71,0.1);">Knowledge index updated after this run — re-run OTP Oracle for fresh citations.</div>`
+            ? `<div style="font-size:0.62rem;color:#ffb347;letter-spacing:0.06em;text-transform:uppercase;font-weight:900;margin:0 0 8px 0;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,179,71,0.45);background:rgba(255,179,71,0.1);">KB newer than this snapshot · re-run 🔮</div>`
             : '';
         const rtLine = orbRt && String(orbRt.note || '').trim()
-            ? `<div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.5;border-top:1px solid var(--admin-border);padding-top:8px;"><span style="color:var(--admin-cyan);font-weight:800;text-transform:uppercase;font-size:0.58rem;letter-spacing:0.08em;">Retrieval</span> · ${window.escapeHtml(String(orbRt.note))}${Number.isFinite(Number(orbRt.max_match_similarity)) ? ` <span style="opacity:0.85">(top match ${Math.round(Number(orbRt.max_match_similarity) * 100)}%)</span>` : ''}</div>`
+            ? `<div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.5;border-top:1px solid var(--admin-border);padding-top:8px;"><span style="color:var(--admin-cyan);font-weight:800;text-transform:uppercase;font-size:0.58rem;letter-spacing:0.08em;">Retrieval</span> · ${window.escapeHtml(String(orbRt.note))}${Number.isFinite(Number(orbRt.max_match_similarity)) ? ` <span style="opacity:0.85">(${Math.round(Number(orbRt.max_match_similarity) * 100)}% top)</span>` : ''}</div>`
             : '';
         return `
                     <div style="background: rgba(0,255,170,0.06); border: 1px solid rgba(0,255,170,0.25); border-radius: 8px; padding: 12px;">
-                        <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.4px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP ORACLE (MANUAL APPROVAL REQUIRED)</div>
+                        <div style="font-size:0.62rem;color:var(--admin-success);letter-spacing:1.1px;text-transform:uppercase;font-weight:900;margin-bottom:8px;">OTP ORACLE · guidance · you approve</div>
                         ${staleLine}
                         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${statusBadges}</div>
                         <div style="font-size:0.85rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
                         <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:4px;">${window.escapeHtml(rec.quote_range || 'Scope-based')}</div>
-                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;line-height:1.45;">Why package: ${window.escapeHtml(rec.package_reason || 'Scope and pricing signals used.')}</div>
-                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(rec.documents_reason || 'OTP safety docs selected from context.')}</div>
-                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">${window.escapeHtml(docs.join(', ') || 'Manual document review required')}</div>
-                        <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">Knowledge hits: ${window.escapeHtml(kbHits.length ? kbHits.map(hit => `${hit.file_name}#${hit.chunk_index} (${Math.round((Number(hit.similarity || 0)) * 100)}%)`).join(' | ') : 'No indexed file citations available.')}</div>
+                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;line-height:1.45;">Package: ${window.escapeHtml(rec.package_reason || 'Scope and pricing signals.')}</div>
+                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Docs: ${window.escapeHtml(rec.documents_reason || 'Safety docs from context.')}</div>
+                        <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">${window.escapeHtml(docs.join(', ') || 'Manual doc review')}</div>
+                        <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:7px;word-break:break-word;">Sources: ${window.escapeHtml(kbHits.length ? kbHits.map(hit => `${hit.file_name}#${hit.chunk_index} (${Math.round((Number(hit.similarity || 0)) * 100)}%)`).join(' | ') : 'No file citations.')}</div>
                         ${rtLine}
                         <div style="font-size:0.67rem;color:var(--admin-muted);margin-top:7px;">${window.escapeHtml(nextActionLabel)}</div>
-                        ${notesLine ? `<div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;border-top:1px solid var(--admin-border);padding-top:8px;">Admin notes: ${window.escapeHtml(notesLine)}</div>` : ''}
+                        ${notesLine ? `<div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;border-top:1px solid var(--admin-border);padding-top:8px;">Notes: ${window.escapeHtml(notesLine)}</div>` : ''}
                     </div>`;
     };
     const getGeminiModelCandidates = (preferredModel) => {
@@ -3145,7 +3145,7 @@
             return `
             <div style="margin-top:12px;padding:12px;border:1px dashed var(--admin-border);border-radius:8px;background:var(--admin-panel);">
                 <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
-                    <div style="font-size:0.67rem;color:var(--admin-muted);text-transform:uppercase;letter-spacing:1.4px;">OTP ORACLE // MANUAL REVIEW GATE</div>
+                    <div style="font-size:0.67rem;color:var(--admin-muted);text-transform:uppercase;letter-spacing:1.1px;">OTP ORACLE · not run</div>
                     <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:rgba(var(--accent2-rgb),0.15);border:1px solid var(--admin-cyan);color:var(--admin-cyan);font-size:0.65rem;padding:6px 10px;border-radius:6px;cursor:pointer;">RUN ORACLE</button>
                 </div>
             </div>`;
@@ -3172,36 +3172,40 @@
                 return `<span style="font-size:0.58rem;letter-spacing:1px;text-transform:uppercase;padding:3px 7px;border-radius:999px;border:1px solid ${b.border};background:${b.bg};color:${b.color};font-weight:800;">${b.label}</span>`;
             }).join(' ');
         const docs = Array.isArray(rec.required_documents) ? Array.from(new Set(rec.required_documents)) : [];
-        const docsLabel = docs.length ? docs.join(', ') : 'Manual document selection required';
+        const docsLabel = docs.length ? docs.join(', ') : 'Pick docs manually';
         const kbHits = Array.isArray(rec.knowledge_basis) ? rec.knowledge_basis : [];
         const kbLabel = kbHits.length
             ? kbHits.map(hit => `${hit.file_name}#${hit.chunk_index} (${Math.round((Number(hit.similarity || 0)) * 100)}%)`).join(' | ')
-            : 'No indexed file citations available.';
+            : 'No file citations.';
         const quoteLabel = rec.quote_range || (rec.recommended_package ? 'Scope-based estimate' : 'Manual quote review');
         const reviewTone = statusFlags.includes('manual_review') || statusFlags.includes('missing_data');
         const nextActionLabel = rec.next_action === 'manual_scope_review_required_before_quote'
-            ? 'Manual scope review required before quoting'
+            ? 'Scope review before quote'
             : rec.next_action === 'send_intake_confirmation_and_prepare_agreement_invoice'
-                ? 'Proceed with intake confirmation and agreement/invoice prep'
-                : 'Manual review required';
+                ? 'Confirm intake · prep agreement / invoice'
+                : 'Review before quote';
+        const confPct = (confidence * 100).toFixed(0);
+        const pkgPct = (packageConfidence * 100).toFixed(0);
+        const confLine = confPct === pkgPct
+            ? `Match ${confPct}%`
+            : `Match ${confPct}% · package ${pkgPct}%`;
         return `
         <div style="margin-top:12px;padding:12px;border:1px solid ${reviewTone ? 'rgba(255,190,90,0.35)' : 'rgba(0,255,170,0.3)'};border-radius:8px;background:${reviewTone ? 'rgba(255,170,0,0.05)' : 'rgba(0,255,170,0.04)'};">
             <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px;">
-                <div style="font-size:0.67rem;color:${reviewTone ? '#ffd37a' : 'var(--admin-success)'};text-transform:uppercase;letter-spacing:1.4px;font-weight:900;">OTP ORACLE // MANUAL APPROVAL REQUIRED</div>
+                <div style="font-size:0.67rem;color:${reviewTone ? '#ffd37a' : 'var(--admin-success)'};text-transform:uppercase;letter-spacing:1.1px;font-weight:900;">OTP ORACLE · guidance</div>
                 <button type="button" onclick="window.runLeadBrain('${leadId}')" style="background:transparent;border:1px solid var(--admin-border);color:var(--admin-muted);font-size:0.62rem;padding:5px 8px;border-radius:6px;cursor:pointer;">RE-RUN</button>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">${badges}</div>
-            ${staleKb ? `<div style="font-size:0.62rem;color:#ffb347;letter-spacing:0.06em;text-transform:uppercase;font-weight:900;margin-bottom:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,179,71,0.45);background:rgba(255,179,71,0.1);">KB index newer than this snapshot — tap RE-RUN</div>` : ''}
+            ${staleKb ? `<div style="font-size:0.62rem;color:#ffb347;letter-spacing:0.06em;text-transform:uppercase;font-weight:900;margin-bottom:8px;padding:8px 10px;border-radius:8px;border:1px solid rgba(255,179,71,0.45);background:rgba(255,179,71,0.1);">KB newer · tap RE-RUN</div>` : ''}
             ${orbRt && String(orbRt.note || '').trim() ? `<div style="font-size:0.65rem;color:var(--admin-muted);margin-bottom:8px;line-height:1.45;padding:8px 10px;border-radius:8px;border:1px solid var(--admin-border);background:rgba(0,0,0,0.12);"><span style="color:var(--admin-cyan);font-weight:800;">Retrieval</span> · ${window.escapeHtml(String(orbRt.note))}</div>` : ''}
-                        <div style="font-size:0.88rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
+            <div style="font-size:0.88rem;color:var(--admin-text);font-weight:700;">${window.escapeHtml(rec.recommended_package || 'Manual Review')}</div>
             <div style="font-size:0.72rem;color:var(--admin-cyan);margin-top:3px;">${window.escapeHtml(quoteLabel)}</div>
-            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;">Confidence: ${(confidence * 100).toFixed(0)}%</div>
-            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:2px;">Package confidence: ${(packageConfidence * 100).toFixed(0)}%</div>
-            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;">Why package: ${window.escapeHtml(rec.package_reason || 'Manual review based on available lead context.')}</div>
-            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Why docs: ${window.escapeHtml(rec.documents_reason || 'Document stack selected from OTP onboarding safeguards.')}</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;">${window.escapeHtml(confLine)}</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;">Package: ${window.escapeHtml(rec.package_reason || 'From lead context.')}</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Docs: ${window.escapeHtml(rec.documents_reason || 'From onboarding safeguards.')}</div>
             <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.45;">Next: ${window.escapeHtml(nextActionLabel)}</div>
-            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;word-break:break-word;">Docs: ${window.escapeHtml(docsLabel)}</div>
-            <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;word-break:break-word;">Knowledge hits: ${window.escapeHtml(kbLabel)}</div>
+            <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;word-break:break-word;">Required: ${window.escapeHtml(docsLabel)}</div>
+            <div style="font-size:0.64rem;color:var(--admin-muted);margin-top:8px;line-height:1.45;word-break:break-word;">Sources: ${window.escapeHtml(kbLabel)}</div>
         </div>`;
     };
 

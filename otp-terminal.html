@@ -424,9 +424,8 @@
                 </div>
 
                 <div style="margin-top:14px;padding-top:14px;border-top:1px dashed var(--admin-border);">
-                    <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 10px; line-height: 1.5;">
-                        <strong style="color:var(--admin-text);">Structured Oracle Knowledge (Priority)</strong><br/>
-                        Editable, service-tagged guidance that Oracle prioritizes over raw file chunks when relevant.
+                    <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 10px; line-height: 1.45;">
+                        <strong style="color:var(--admin-text);">Structured knowledge (priority)</strong> — short rules Oracle prefers over raw file chunks.
                     </div>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
                         <button type="button" onclick="window.fetchStructuredKnowledge()" class="btn-secondary" style="width:auto;font-size:0.7rem;">REFRESH STRUCTURED</button>
@@ -479,8 +478,8 @@
             <!-- SECTION: QUICK DEAL MODE -->
             <section class="input-section">
                 <div class="section-label">06.6 // Quick Deal Mode</div>
-                <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.5;">
-                    Fast admin-only deal entry. Saves into <strong>ops_jobs</strong> as <span style="color:var(--admin-cyan);font-weight:900;">sourceType=quickDeal</span> and can generate/export docs immediately.
+                <div style="font-size: 0.72rem; color: var(--admin-muted); margin-bottom: 12px; line-height: 1.45;">
+                    Fast <strong>ops_jobs</strong> entry (<span style="color:var(--admin-cyan);font-weight:900;">quickDeal</span>) with immediate doc generate/export.
                 </div>
 
                 <div id="qdPanel" style="background:var(--admin-panel);border:1px solid var(--admin-border);border-radius:12px;padding:12px;">
@@ -1512,9 +1511,9 @@
                 <div class="input-section" style="margin-bottom:14px;">
                     <div class="section-label" style="margin-top:0;">MASTER DOCX (PROPOSAL + AGREEMENT)</div>
                     <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
-                        <div style="flex:1;min-width:260px;font-size:0.78rem;color:var(--admin-muted);line-height:1.5;">
-                            <strong style="color:var(--admin-text);">Global merge templates</strong><br/>
-                            Stored in Supabase Storage as <span style="font-family:monospace;color:var(--admin-cyan);">master/proposal.docx</span> and <span style="font-family:monospace;color:var(--admin-cyan);">master/agreement.docx</span>. They apply to <strong>every</strong> doc packet (HTML preview + DOCX download). Use <span style="font-family:monospace;">{{placeholders}}</span> in Word — common fields include <span style="font-family:monospace;font-size:0.7rem;">client_name</span>, <span style="font-family:monospace;font-size:0.7rem;">client_email</span>, <span style="font-family:monospace;font-size:0.7rem;">lead_summary</span>, <span style="font-family:monospace;font-size:0.7rem;">recommended_package</span>, <span style="font-family:monospace;font-size:0.7rem;">quote_range</span>, <span style="font-family:monospace;font-size:0.7rem;">service_type</span>.
+                        <div style="flex:1;min-width:260px;font-size:0.78rem;color:var(--admin-muted);line-height:1.45;">
+                            <strong style="color:var(--admin-text);">Global DOCX merge</strong><br/>
+                            Supabase: <span style="font-family:monospace;color:var(--admin-cyan);">master/proposal.docx</span> · <span style="font-family:monospace;color:var(--admin-cyan);">master/agreement.docx</span>. Used for every packet preview + download. Word placeholders e.g. <span style="font-family:monospace;font-size:0.7rem;">{{client_name}}</span>, <span style="font-family:monospace;font-size:0.7rem;">{{lead_summary}}</span>, <span style="font-family:monospace;font-size:0.7rem;">{{recommended_package}}</span>.
                         </div>
                         <div style="display:flex;gap:10px;flex-wrap:wrap;">
                             <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="document.getElementById('docTemplateProposal').click()">UPLOAD PROPOSAL</button>
@@ -1532,7 +1531,7 @@
                             <strong style="color:var(--admin-text);">Session</strong><br/>
                             <div id="settingsSessionInfo" style="margin-top:8px;font-family:monospace;font-size:0.72rem;color:var(--admin-text);opacity:0.92;white-space:pre-wrap;"></div>
                             <div style="margin-top:10px;font-size:0.7rem;color:var(--admin-muted);">
-                                Settings are stored locally in your browser. Never paste tokens/keys into anything you plan to commit.
+                                Stored in this browser only. Do not commit tokens or keys.
                             </div>
                         </div>
                         <div>
@@ -1543,8 +1542,8 @@
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="resetSettingsApiBase()">RESET API BASE</button>
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.72rem;" onclick="clearLocalOracleKeys()">CLEAR LOCAL KEYS</button>
                             </div>
-                            <div style="margin-top:8px;font-size:0.7rem;color:var(--admin-muted);line-height:1.5;">
-                                Tip: on localhost you can point the Terminal at a local server for debugging. On production, this is displayed read-only.
+                            <div style="margin-top:8px;font-size:0.7rem;color:var(--admin-muted);line-height:1.45;">
+                                Localhost: editable for debugging. Production: read-only.
                             </div>
                         </div>
                     </div>
@@ -1612,7 +1611,7 @@
     <script src="pricing-config.js?v=1" defer></script>
 
     <!-- 3. ADMIN CORE (Primary Logic) -->
-    <script src="admin-core.js?v=16.7.22"></script>
+    <script src="admin-core.js?v=16.7.23"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
       // UI Updates based on Auth (Post-Load)

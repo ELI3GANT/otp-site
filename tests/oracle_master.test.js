@@ -78,7 +78,7 @@ assert.ok(terminal.includes('onclick="runOracleForReplyContext()"'));
 assert.ok(terminal.includes('id="replyOracleBtn"'));
 assert.ok(terminal.includes('06.5 // OTP Oracle · Knowledge Index'));
 assert.ok(terminal.includes('fetchKnowledgeFiles'));
-assert.ok(terminal.includes('Structured Oracle Knowledge (Priority)'));
+assert.ok(terminal.includes('Structured knowledge (priority)'), 'structured knowledge section label');
 assert.ok(terminal.includes('id="client-work-loop"'), 'Terminal surfaces client work rhythm anchor');
 assert.ok(terminal.includes('class="otp-client-rhythm"'), 'Client rhythm is a single disclosure (calm dashboard)');
 assert.ok(terminal.includes('window.scrollToClientWorkLoop'), 'Reply modal wires client work checklist scroll');
