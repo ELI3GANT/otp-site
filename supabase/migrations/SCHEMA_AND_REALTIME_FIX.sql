@@ -97,8 +97,8 @@ CREATE POLICY "Public Select" ON broadcasts FOR SELECT USING (true);
 -- 6. SUPABASE REALTIME: enable row-level change events
 --    for the tables the admin Live Traffic Uplink subscribes to.
 --
---    posts     → live-traffic-posts channel (admin-core.js:7222)
---    broadcasts → view-count change detection (admin-core.js:7238)
+--    posts      → subscribed to in the admin Live Traffic Uplink channel (live-traffic-posts)
+--    broadcasts → subscribed to in the admin Live Traffic Uplink channel for view-count changes
 --
 --    NOTE: contacts and leads are NOT added here because:
 --      • Their RLS has no anon SELECT policy (SECURE_HARDENING_PRO.sql:14-18),

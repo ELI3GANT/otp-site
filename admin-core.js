@@ -5434,7 +5434,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         try {
             const bData = await window.secureRead('broadcasts', { select: 'views' });
             if (Array.isArray(bData) && statViews) {
-                const broadcastViews = bData.reduce((sum, b) => sum + (parseInt(b.views) || 0), 0);
+                const broadcastViews = bData.reduce((sum, b) => sum + (parseInt(b.views, 10) || 0), 0);
                 if (broadcastViews > 0) {
                     statViews.textContent = (postViews + broadcastViews).toLocaleString();
                 }
