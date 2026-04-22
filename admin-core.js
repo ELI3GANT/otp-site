@@ -5405,36 +5405,41 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         return false;
     };
 
-    function updateStats(posts) {
+    async function updateStats(posts) {
         if (!posts || !Array.isArray(posts)) return;
         const statViews = document.getElementById('statViews');
-        // Calculate total views
-        const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
-        if(statViews) statViews.textContent = totalViews.toLocaleString();
-        
+        // Calculate total views from posts
+        const postViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
+        if (statViews) statViews.textContent = postViews.toLocaleString();
+
         // Count published
         const statPublished = document.getElementById('statPublished'); 
-        if(statPublished) {
+        if (statPublished) {
             const pubCount = posts.filter(p => p.published).length;
             statPublished.textContent = pubCount;
         }
 
-        // Active Now (Link to Realtime Presence if available, otherwise simulation)
+        // Active Now — mirrors the real presence count from the 'system' Realtime channel.
+        // Never fabricate a number; show 0 when presence hasn't synced yet.
         const statLive = document.getElementById('statLive');
         if (statLive) {
             const realCount = document.getElementById('activeCount')?.textContent;
-            if (realCount && realCount !== '--') {
-                statLive.textContent = realCount;
-            } else {
-                const publishedCount = posts.filter(p => p.published).length;
-                const base = Math.max(1, Math.floor(publishedCount * 0.8));
-                const jitter = Math.floor(Math.random() * 3);
-                statLive.textContent = base + jitter;
-            }
+            statLive.textContent = (realCount && realCount !== '--') ? realCount : '0';
         }
 
-        // Render Chart
+        // Render Chart (synchronous — not gated on the broadcasts fetch below)
         renderChart(posts);
+
+        // Add broadcasts.views to total (best-effort; non-blocking)
+        try {
+            const bData = await window.secureRead('broadcasts', { select: 'views' });
+            if (Array.isArray(bData) && statViews) {
+                const broadcastViews = bData.reduce((sum, b) => sum + (parseInt(b.views) || 0), 0);
+                if (broadcastViews > 0) {
+                    statViews.textContent = (postViews + broadcastViews).toLocaleString();
+                }
+            }
+        } catch (_) { /* best-effort — never block the rest of the UI */ }
     }
     
     // Expose for Theme Toggle
