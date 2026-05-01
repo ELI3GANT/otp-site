@@ -1,21 +1,30 @@
-# Security Policy
+# OTP Site Security
 
-## Supported Versions
+## Secrets
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+Never commit `.env`, `.vercel`, service-role keys, provider keys, Stripe keys, or admin passcodes.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+The Supabase anon key in `site-config.js` is public by design. It is only safe when RLS blocks private tables. The service-role key must stay server-side in Vercel environment variables.
 
-## Reporting a Vulnerability
+Before pushing:
 
-Use this section to tell people how to report a vulnerability.
+```bash
+npm run security:scan
+npm test
+```
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+## Private Tables
+
+These tables must not be directly readable with the public anon key:
+
+```text
+public.contacts
+public.leads
+public.ops_jobs
+```
+
+Use `supabase/migrations/SECURE_HARDENING_PRO.sql` to harden production RLS. It keeps public site content readable while locking OTP OS / Terminal data behind server routes.
+
+## If a Secret Was Pushed
+
+Rotate it immediately, update Vercel environment variables, redeploy, then purge Git history only after confirming the rotated values work.
