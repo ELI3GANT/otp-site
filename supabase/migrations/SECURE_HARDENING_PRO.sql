@@ -13,23 +13,35 @@ CREATE POLICY "Public Select" ON posts FOR SELECT USING (true);
 -- 2. CONTACTS (Leads / Form Submissions)
 -- These contain PII (Email, Name) and MUST NOT BE PUBLICLY READABLE.
 ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contacts FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow All" ON contacts;
+DROP POLICY IF EXISTS "Public Select" ON contacts;
+REVOKE ALL ON TABLE contacts FROM anon, authenticated;
 -- This table remains fully secured. No 'SELECT' or 'INSERT' policies exist for 'anon'.
 -- The 'server.js' backend uses 'service_role' to bypass these restrictions.
 
--- 3. BROADCASTS (Live Transmissions)
+-- 3. OPS JOBS (OTP OS / Terminal Job Sheet)
+-- Internal jobs include client names, deal values, payment state, notes, and contact fields.
+-- They must only be accessed through authenticated server routes using service_role.
+ALTER TABLE ops_jobs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ops_jobs FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow All" ON ops_jobs;
+DROP POLICY IF EXISTS "Public Select" ON ops_jobs;
+REVOKE ALL ON TABLE ops_jobs FROM anon, authenticated;
+
+-- 4. BROADCASTS (Live Transmissions)
 ALTER TABLE broadcasts ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow All" ON broadcasts;
 DROP POLICY IF EXISTS "Public Select" ON broadcasts;
 CREATE POLICY "Public Select" ON broadcasts FOR SELECT USING (true);
 
--- 4. SITE_CONTENT (Live Site Editor Storage)
+-- 5. SITE_CONTENT (Live Site Editor Storage)
 ALTER TABLE site_content ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow All" ON site_content;
 DROP POLICY IF EXISTS "Public Select" ON site_content;
 CREATE POLICY "Public Select" ON site_content FOR SELECT USING (true);
 
--- 5. CATEGORIES & ARCHETYPES (CMS Metadata)
+-- 6. CATEGORIES & ARCHETYPES (CMS Metadata)
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow All" ON categories;
 DROP POLICY IF EXISTS "Public Select" ON categories;
@@ -40,12 +52,15 @@ DROP POLICY IF EXISTS "Allow All" ON ai_archetypes;
 DROP POLICY IF EXISTS "Public Select" ON ai_archetypes;
 CREATE POLICY "Public Select" ON ai_archetypes FOR SELECT USING (true);
 
--- 6. LEADS (Deprecated/Backup Leads Table)
+-- 7. LEADS (Deprecated/Backup Leads Table)
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leads FORCE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow All" ON leads;
+DROP POLICY IF EXISTS "Public Select" ON leads;
+REVOKE ALL ON TABLE leads FROM anon, authenticated;
 -- Fully secured. Backend access only.
 
--- 7. STORAGE SECURITY (Public Access only for Downloads)
+-- 8. STORAGE SECURITY (Public Access only for Downloads)
 -- Restrict bucket 'uploads' to public read, but restricted write.
 -- Blog/CDN assets live here. For client-private files use a separate bucket with no anon SELECT policy.
 -- This assumes policies for storage.objects for bucket_id = 'uploads'.
@@ -54,5 +69,5 @@ DROP POLICY IF EXISTS "Public Insert" ON storage.objects;
 CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING ( bucket_id = 'uploads' );
 -- All uploads now happen via Admin Portal using Service Role, so Public Insert is NO LONGER REQUIRED.
 
--- 8. REFRESH SCHEMA CACHE
+-- 9. REFRESH SCHEMA CACHE
 NOTIFY pgrst, 'reload schema';
