@@ -15,7 +15,8 @@
     "test:oracle": "node tests/oracle_terminal_contract.test.js && node tests/oracle_master.test.js",
     "health:local": "node tests/master_runner.js",
     "health:terminal": "node scripts/prod_terminal_sweep.js",
-    "health:post-deploy": "node tests/master_runner.js && node scripts/prod_terminal_sweep.js"
+    "health:post-deploy": "node tests/master_runner.js && node scripts/prod_terminal_sweep.js",
+    "security:scan": "node scripts/security_scan.js"
   },
   "keywords": [],
   "author": "",

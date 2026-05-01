@@ -92,7 +92,7 @@ for (const line of serverSrc.split('\n')) {
     );
 }
 
-// PII tables: migration must not CREATE POLICY on contacts/leads (DROP ... ON table is fine).
+// PII/internal tables: migration must not CREATE POLICY on contacts/leads/ops_jobs (DROP ... ON table is fine).
 function hasCreatePolicyOnTable(sql, table) {
     const re = new RegExp(`^\\s*CREATE\\s+POLICY\\b.*\\bON\\s+${table}\\b`, 'im');
     return sql.split('\n').some((line) => re.test(line));
@@ -105,8 +105,15 @@ assert.ok(
     !hasCreatePolicyOnTable(migration, 'leads'),
     'SECURE_HARDENING_PRO.sql must not CREATE POLICY on leads (PII — service role only)'
 );
+assert.ok(
+    !hasCreatePolicyOnTable(migration, 'ops_jobs'),
+    'SECURE_HARDENING_PRO.sql must not CREATE POLICY on ops_jobs (internal OTP OS data — service role only)'
+);
 assert.ok(migration.includes('ALTER TABLE contacts ENABLE ROW LEVEL SECURITY'));
 assert.ok(migration.includes('ALTER TABLE leads ENABLE ROW LEVEL SECURITY'));
+assert.ok(migration.includes('ALTER TABLE ops_jobs ENABLE ROW LEVEL SECURITY'));
+assert.ok(migration.includes('ALTER TABLE ops_jobs FORCE ROW LEVEL SECURITY'));
+assert.ok(migration.includes('REVOKE ALL ON TABLE ops_jobs FROM anon, authenticated'));
 
 // Public analytics: errors must not echo raw exception text to clients.
 assert.ok(
