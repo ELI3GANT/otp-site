@@ -1,7 +1,7 @@
 {
   "name": "otp-site-1",
   "version": "10.5.1",
-  "description": "",
+  "description": "AI-powered business operating system and web platform for OnlyTruePerspective.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -18,8 +18,8 @@
     "health:post-deploy": "node tests/master_runner.js && node scripts/prod_terminal_sweep.js",
     "security:scan": "node scripts/security_scan.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["otp", "business-automation", "supabase", "vercel", "nodejs", "ai-tools"],
+  "author": "ELI3GANT",
   "license": "ISC",
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",
