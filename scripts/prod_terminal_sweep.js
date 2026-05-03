@@ -18,6 +18,32 @@ const ORIGIN = 'https://www.onlytrueperspective.tech';
 const URL = `${ORIGIN}/otp-terminal`;
 const TOKEN_KEY = 'otp_admin_token';
 
+/**
+ * Helper to retry page.evaluate calls up to 3 times if execution context is destroyed.
+ * Waits for load state before retrying to ensure context stability.
+ */
+async function safeEvaluate(page, fn, maxRetries = 3) {
+  let lastError;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await page.evaluate(fn);
+    } catch (e) {
+      lastError = e;
+      const msg = String(e?.message || e);
+      if (msg.includes('Execution context was destroyed')) {
+        if (i < maxRetries - 1) {
+          // Wait for load state to stabilize and retry
+          await page.waitForLoadState('domcontentloaded').catch(() => {});
+          await page.waitForTimeout(300);
+          continue;
+        }
+      }
+      throw e;
+    }
+  }
+  throw lastError;
+}
+
 function redact(s) {
   const t = String(s || '');
   if (!t) return '';
@@ -85,25 +111,30 @@ async function main() {
   const resp = await page.goto(URL, { waitUntil: 'domcontentloaded', timeout: 45000 });
   push('nav', { status: resp ? resp.status() : null });
 
-  // Ensure we weren't redirected to gate.
-  await page.waitForTimeout(800);
+  // Wait for any redirects to complete and page to stabilize
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
+  await page.waitForTimeout(500);
+  
+  // Check for gate redirect—this should be stable now
   const finalUrl = page.url();
   push('final_url', { url: finalUrl });
   if (finalUrl.includes('portal-gate')) {
     throw new Error('Redirected to portal-gate (token rejected or missing)');
   }
 
-  // Wait for Terminal to render.
-  await page.waitForSelector('#opsJobsBadge', { timeout: 45000 });
+  // Wait for Terminal to render—use locator with built-in waits instead of raw selector
+  await page.locator('#opsJobsBadge').waitFor({ timeout: 45000 }).catch((e) => {
+    throw new Error(`Terminal UI failed to render: ${e.message}`);
+  });
 
   // Load jobs
-  await page.evaluate(() => window.fetchOpsJobs?.());
+  await safeEvaluate(page, () => window.fetchOpsJobs?.());
   await page.waitForTimeout(1500);
   const badge = await page.locator('#opsJobsBadge').innerText().catch(() => '');
   push('ops_jobs_badge', { text: short(badge, 120) });
 
   // Knowledge index sanity (non-destructive)
-  await page.evaluate(() => window.fetchKnowledgeFiles?.());
+  await safeEvaluate(page, () => window.fetchKnowledgeFiles?.());
   await page.waitForTimeout(1200);
   const kbBadge = await page.locator('#knowledgeStatusBadge').innerText().catch(() => '');
   push('knowledge_badge', { text: short(kbBadge, 120) });
@@ -122,7 +153,9 @@ async function main() {
   push('ops_open_buttons', { count: openCount });
   if (openCount > 0) {
     await openButtons.first().click({ timeout: 15000 });
-    await page.waitForSelector('#opsJobsEditor', { timeout: 15000 });
+    await page.locator('#opsJobsEditor').waitFor({ timeout: 15000 }).catch((e) => {
+      throw new Error(`Job editor failed to open: ${e.message}`);
+    });
     await page.waitForTimeout(600);
   } else {
     push('warn', { text: 'No jobs found to open; skipping doc/export flows.' });
@@ -255,22 +288,42 @@ async function main() {
   // Doc Packet modal approve toggles (lead packet system)
   // Establish a reply context by opening the first inbox thread, then open DOC PACKET.
   // This does NOT send any email.
-  await page.evaluate(() => window.fetchInbox?.());
+  await safeEvaluate(page, () => window.fetchInbox?.());
   await page.waitForTimeout(1400);
 
   /** `#replyModal` stays `display:none` until `openReplyManager` finishes; it is async, so onclick does not await — use evaluate+await for CI stability. */
   async function waitReplyModalVisible(timeoutMs = 20000) {
-    await page.waitForFunction(() => {
-      const el = document.getElementById('replyModal');
-      if (!el) return false;
-      const st = window.getComputedStyle(el);
-      return st.display !== 'none' && st.visibility !== 'hidden';
-    }, { timeout: timeoutMs });
+    try {
+      await page.waitForFunction(() => {
+        try {
+          const el = document.getElementById('replyModal');
+          if (!el) return false;
+          const st = window.getComputedStyle(el);
+          return st.display !== 'none' && st.visibility !== 'hidden';
+        } catch (_) {
+          return false;
+        }
+      }, { timeout: timeoutMs });
+    } catch (e) {
+      // If waitForFunction fails due to context destruction, try locator-based wait as fallback
+      const msg = String(e?.message || e);
+      if (msg.includes('Execution context was destroyed')) {
+        await page.waitForLoadState('domcontentloaded').catch(() => {});
+        try {
+          await page.locator('#replyModal').waitFor({ state: 'visible', timeout: 5000 });
+        } catch (_) {
+          // Still not visible; re-throw original error
+          throw e;
+        }
+      } else {
+        throw e;
+      }
+    }
   }
 
   let openedReplyContext = false;
 
-  const openedContacts = await page.evaluate(async () => {
+  const openedContacts = await safeEvaluate(page, async () => {
     try {
       const cache = window.inboxCache;
       if (!Array.isArray(cache) || cache.length === 0) return { ok: false, reason: 'no_inbox_cache' };
@@ -310,17 +363,18 @@ async function main() {
 
     if (inboxCount > 0) {
       await inboxButtons.first().click({ timeout: 15000 });
+      await page.waitForLoadState('domcontentloaded').catch(() => {});
       try {
         await waitReplyModalVisible(20000);
       } catch (_) {
-        await page.waitForSelector('#replyModal', { state: 'visible', timeout: 5000 }).catch(() => {});
+        await page.locator('#replyModal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       }
       await page.waitForTimeout(800);
       openedReplyContext = true;
     } else {
-      await page.evaluate(() => window.fetchLeads?.());
+      await safeEvaluate(page, () => window.fetchLeads?.());
       await page.waitForTimeout(1600);
-      const leadOpened = await page.evaluate(async () => {
+      const leadOpened = await safeEvaluate(page, async () => {
         try {
           const cache = window.leadsCache;
           if (!Array.isArray(cache) || !cache.length) return { ok: false };
@@ -334,6 +388,7 @@ async function main() {
       });
       push('reply_open_lead_eval', leadOpened);
       if (leadOpened && leadOpened.ok) {
+        await page.waitForLoadState('domcontentloaded').catch(() => {});
         try {
           await waitReplyModalVisible(20000);
           await page.waitForTimeout(800);
@@ -348,10 +403,11 @@ async function main() {
         push('lead_reply_buttons', { count: leadReplyCount });
         if (leadReplyCount > 0) {
           await leadReplyBtn.first().click({ timeout: 15000 });
+          await page.waitForLoadState('domcontentloaded').catch(() => {});
           try {
             await waitReplyModalVisible(20000);
           } catch (_) {
-            await page.waitForSelector('#replyModal', { state: 'visible', timeout: 5000 }).catch(() => {});
+            await page.locator('#replyModal').waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
           }
           await page.waitForTimeout(800);
           openedReplyContext = true;
@@ -368,8 +424,11 @@ async function main() {
     if (replyDocVisible) {
       await replyDocBtn.click({ timeout: 15000 });
     } else {
-      await page.evaluate(() => window.openDocPacket?.());
+      await safeEvaluate(page, () => window.openDocPacket?.());
     }
+
+    // Wait for modal to stabilize after click/evaluate
+    await page.waitForLoadState('domcontentloaded').catch(() => {});
 
     const modal = page.locator('#docPacketModal');
     const modalVisible = await modal.isVisible().catch(() => false);
@@ -401,7 +460,7 @@ async function main() {
         if (await apply.count()) {
           await apply.first().click({ timeout: 15000 }).catch(() => {});
           await page.waitForTimeout(2600);
-          const stateSnap = await page.evaluate(() => {
+          const stateSnap = await safeEvaluate(page, () => {
             const st = window.__docPacketState || {};
             const docs = st.docs || {};
             const approved = Object.entries(docs).filter(([, v]) => v && v.approved).map(([k]) => k);
