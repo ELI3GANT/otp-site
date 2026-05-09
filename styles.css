@@ -8066,6 +8066,17 @@ input:focus, select:focus, textarea:focus {
     line-height: 1 !important;
 }
 
+.pkg-amount-wrapper.scope-copy {
+    align-items: flex-start !important;
+}
+
+.pkg-amount.scope-label {
+    max-width: 12ch;
+    font-size: clamp(1.45rem, 5vw, 2.25rem) !important;
+    line-height: 1.04 !important;
+    letter-spacing: 0 !important;
+}
+
 /* Button & Text visibility */
 .pkg-desc {
     color: var(--muted) !important;
@@ -8180,6 +8191,10 @@ input:focus, select:focus, textarea:focus {
     color: #ffffff !important;
     font-size: 3.5rem !important;
     font-weight: 900 !important;
+}
+
+.pkg-amount.scope-label {
+    font-size: clamp(1.45rem, 5vw, 2.25rem) !important;
 }
 
 [data-theme="light"] .pkg-amount {

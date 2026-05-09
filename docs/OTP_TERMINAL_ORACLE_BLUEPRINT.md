@@ -46,18 +46,18 @@ Rough order as shown in `otp-terminal.html`. “Oracle?” indicates **direct** 
 ### Post-deploy health ritual (recommended after meaningful deploys)
 
 1. **Local contract suite**: `npm run health:local` (same as `npm test`).
-2. **Production Terminal sweep** (needs a real admin JWT — never commit it):  
-   `OTP_ADMIN_TOKEN=<jwt> npm run health:terminal`  
-   Expect JSON with `"ok": true` and no `pageerror` / console `error` events in `events`.
-3. **One-shot both** (fails if `OTP_ADMIN_TOKEN` is missing — export it first):  
-   `OTP_ADMIN_TOKEN=<jwt> npm run health:post-deploy`
+2. **Production Terminal sweep**: `npm run prod:terminal-sweep`  
+   Public checks always run. If `OTP_ADMIN_TOKEN` is a real JWT, the sweep also runs authenticated admin checks.
+3. **One-shot both**: `npm run prod:test:ci`
 
-Set the secret in **GitHub Actions** as `OTP_ADMIN_TOKEN` (`Settings → Secrets and variables → Actions`) and mirror it to **Vercel** as `OTP_ADMIN_TOKEN` if the sweep needs that deployment environment too.
+Set the secret in **GitHub Actions** as `OTP_ADMIN_TOKEN` (`Settings → Secrets and variables → Actions`) and mirror it to **Vercel** as `OTP_ADMIN_TOKEN` if you want authenticated admin checks there too.
+
+**Token rules:** `OTP_ADMIN_TOKEN` is optional for the public sweep. When present, it must be JWT-like (`header.payload.signature`). Never paste the token into logs or chat.
 
 ### 4.1 Automated (required before merge)
 
 1. **`npm test`** — `tests/master_runner.js` (contracts: Oracle, terminal, ops, docs, etc.).
-2. **`OTP_ADMIN_TOKEN=<jwt> node scripts/prod_terminal_sweep.js`** (or `npm run health:terminal`) — headless Playwright against production Terminal: ops docs, packet zip, knowledge index, quick deal UI; inbox/reply/doc-packet when data exists.
+2. **`npm run prod:terminal-sweep`** — public prod health first; admin-authenticated checks only when `OTP_ADMIN_TOKEN` is usable.
 
 ### 4.2 Client journey (website + audit, public API)
 

@@ -88,20 +88,9 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
                 Array.from(sel.options || []).forEach((opt) => {
                     const v = String(opt.value || '');
                     if (map[v]) {
-                        opt.textContent = `${v} (${map[v].toLowerCase().startsWith('starting') ? map[v].replace('Starting', 'starting') : map[v]})`;
+                        opt.textContent = `${v} (${map[v]})`;
                     }
                 });
-            }
-
-            // Update package cards (amounts only; keeps layout the same)
-            const cards = Array.from(document.querySelectorAll('#packages .package-static'));
-            for (const card of cards) {
-                const name = (card.querySelector('h4')?.textContent || '').trim();
-                const amount = card.querySelector('.pkg-amount');
-                if (!amount) continue;
-                if (name === 'The Signal') amount.textContent = '500';
-                if (name === 'The Engine') amount.textContent = '1,200';
-                if (name === 'The System') amount.textContent = '3,500';
             }
         } catch (e) {
             // non-fatal
@@ -2108,4 +2097,3 @@ document.addEventListener('DOMContentLoaded', () => {
     window.OTP = window.OTP || {};
     window.OTP.showBroadcast = (msg) => showEmergencyBroadcast(msg);
 })();
-

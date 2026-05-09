@@ -2036,6 +2036,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));
 });
 const staticAliases = {
+    '/bookings': 'bookings.html',
+    '/booking': 'bookings.html',
+    '/book': 'bookings.html',
+    '/book-otp': 'bookings.html',
     '/privacy': 'privacy.html',
     '/terms': 'terms.html',
     '/archive': 'archive.html',
@@ -2169,6 +2173,75 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Ensure pre-flight uses same origin restrictions
+
+const OTP_BOOKINGS_UPSTREAM = String(
+    process.env.OTP_BOOKINGS_UPSTREAM_URL
+    || process.env.OTP_BOOKINGS_API_BASE
+    || 'https://otp-os.vercel.app'
+).replace(/\/+$/, '');
+const OTP_BOOKINGS_PROXY_HEADERS = new Set([
+    'accept',
+    'content-type',
+    'content-length',
+    'user-agent',
+    'x-booking-token',
+    'x-client-name',
+    'x-file-name',
+    'x-file-size',
+    'x-file-type'
+]);
+const OTP_BOOKINGS_RESPONSE_HEADER_BLOCKLIST = new Set([
+    'connection',
+    'content-encoding',
+    'content-length',
+    'keep-alive',
+    'transfer-encoding',
+    'upgrade'
+]);
+
+// Public OTP BOOKINGS stays on onlytrueperspective.tech while the canonical
+// booking intake API continues to live inside OTP OS.
+app.use('/api/bookings', async (req, res) => {
+    try {
+        const upstreamUrl = new URL(req.originalUrl, OTP_BOOKINGS_UPSTREAM);
+        const headers = {};
+
+        for (const [key, value] of Object.entries(req.headers)) {
+            const lower = key.toLowerCase();
+            if (OTP_BOOKINGS_PROXY_HEADERS.has(lower) && value !== undefined) {
+                headers[lower] = Array.isArray(value) ? value.join(', ') : String(value);
+            }
+        }
+
+        headers['x-forwarded-host'] = req.get('host') || '';
+        headers['x-forwarded-proto'] = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+        headers['x-forwarded-for'] = req.headers['x-forwarded-for'] || req.ip || '';
+
+        const upstream = await fetch(upstreamUrl.href, {
+            method: req.method,
+            headers,
+            body: ['GET', 'HEAD'].includes(req.method) ? undefined : req,
+            redirect: 'manual'
+        });
+
+        res.status(upstream.status);
+        upstream.headers.forEach((value, key) => {
+            if (!OTP_BOOKINGS_RESPONSE_HEADER_BLOCKLIST.has(key.toLowerCase())) {
+                res.setHeader(key, value);
+            }
+        });
+
+        const body = Buffer.from(await upstream.arrayBuffer());
+        return res.send(body);
+    } catch (error) {
+        console.error('OTP bookings proxy error:', error?.message || error);
+        return res.status(502).json({
+            success: false,
+            error: true,
+            message: 'OTP Bookings is temporarily unavailable.'
+        });
+    }
+});
 
 function sendSchemaMigrationSql(res) {
     const migrationPath = path.join(__dirname, 'supabase', 'migrations', 'DEPLOY_V1.3.sql');

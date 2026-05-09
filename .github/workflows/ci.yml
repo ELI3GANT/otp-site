@@ -1,5 +1,5 @@
 # Runs on every PR and push to main. Keeps "test + live health headers" on autopilot.
-# Optional: set repo secret OTP_ADMIN_TOKEN to run Playwright terminal sweep on main only.
+# Optional: set repo secret OTP_ADMIN_TOKEN to run authenticated admin checks in the production sweep.
 # Use a real admin JWT. Configure it in GitHub: Settings → Secrets and variables → Actions → OTP_ADMIN_TOKEN.
 # If you also run the sweep against a Vercel-backed environment, mirror the same JWT as the Vercel env var OTP_ADMIN_TOKEN.
 # Note: Do not use `secrets` in job-level `if:` — GitHub may reject the workflow (no jobs run).
@@ -39,7 +39,10 @@ jobs:
       - name: Master test suite (includes live security/health audit via LIVE_API_URL)
         run: npm test
 
-  # Full browser sweep against production terminal (skipped when OTP_ADMIN_TOKEN is unset).
+      - name: Build if defined
+        run: npm run build --if-present
+
+  # Production terminal sweep: public checks always run; admin checks are optional when OTP_ADMIN_TOKEN is set.
   terminal-sweep:
     needs: test
     runs-on: ubuntu-latest
@@ -61,9 +64,4 @@ jobs:
         run: npx playwright install chromium
 
       - name: Production terminal sweep
-        run: |
-          if [ -z "${OTP_ADMIN_TOKEN:-}" ]; then
-            echo "::notice::OTP_ADMIN_TOKEN not set — skipping terminal sweep."
-            exit 0
-          fi
-          node scripts/prod_terminal_sweep.js
+        run: npm run prod:terminal-sweep

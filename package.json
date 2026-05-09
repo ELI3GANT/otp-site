@@ -14,8 +14,11 @@
     "test": "node tests/master_runner.js",
     "test:oracle": "node tests/oracle_terminal_contract.test.js && node tests/oracle_master.test.js",
     "health:local": "node tests/master_runner.js",
-    "health:terminal": "node scripts/prod_terminal_sweep.js",
-    "health:post-deploy": "node tests/master_runner.js && node scripts/prod_terminal_sweep.js",
+    "prod:terminal-sweep": "node scripts/prod_terminal_sweep.js",
+    "prod:full-sweep": "node scripts/prod_full_sweep.js",
+    "prod:test:ci": "npm run master_test:ci && npm run prod:terminal-sweep",
+    "health:terminal": "npm run prod:terminal-sweep",
+    "health:post-deploy": "npm run prod:test:ci",
     "security:scan": "node scripts/security_scan.js"
   },
   "keywords": ["otp", "business-automation", "supabase", "vercel", "nodejs", "ai-tools"],
