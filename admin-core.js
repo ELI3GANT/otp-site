@@ -1142,6 +1142,18 @@
         if(window.updateSocialPreview) window.updateSocialPreview();
     };
 
+    function resetPostComposerState() {
+        const postIdInput = document.getElementById('postIdInput');
+        if (postIdInput) postIdInput.value = '';
+
+        const submitBtn = document.getElementById('submitBtn');
+        if (submitBtn) {
+            submitBtn.textContent = "COMMENCE BROADCAST";
+            submitBtn.style.background = "var(--admin-success)";
+            submitBtn.style.color = "#000";
+        }
+    }
+
     // --- CATEGORY & ARCHETYPE MANAGEMENT ---
     
     async function fetchCategories() {
@@ -5690,15 +5702,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
 
         const magicBtn = document.getElementById('magicBtn');
         if(magicBtn) magicBtn.addEventListener('click', () => {
-            // Reset ID when creating new generated post to avoid overwriting
-            const pid = document.getElementById('postIdInput');
-            if (pid) pid.value = '';
-            const submitBtn = document.getElementById('submitBtn');
-            if(submitBtn) {
-                 submitBtn.textContent = "COMMENCE BROADCAST";
-                 submitBtn.style.background = "var(--success)";
-                 submitBtn.style.color = "#000";
-            }
+            resetPostComposerState();
             triggerAIGenerator();
         });
 
@@ -5807,6 +5811,7 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         await fetchPosts(true); // Force refresh
     };
     window.draftPostWithAI = async function() {
+        resetPostComposerState();
         window.promptAction(
             "AI ORACLE GENERATION",
             "Enter a topic or inspiration for the new post.",

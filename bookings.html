@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Book your shoot, edit, logo, or creative project with OTP. Send project details, upload references, and request a tailored OnlyTruePerspective quote." />
+    <meta name="theme-color" content="#090907" />
+    <link rel="canonical" href="https://www.onlytrueperspective.tech/bookings" />
+    <meta property="og:title" content="Book OTP | OnlyTruePerspective" />
+    <meta property="og:description" content="Start a premium creative project with OTP. Submit details, references, and quote/deposit preferences in one mobile-ready flow." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.onlytrueperspective.tech/bookings" />
+    <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/otp-logo-transparent.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Book OTP | OnlyTruePerspective" />
+    <meta name="twitter:description" content="Book your shoot, edit, logo, or creative project with OTP." />
+    <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/otp-logo-transparent.png" />
+    <title>Book OTP | OnlyTruePerspective</title>
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/bookings.css?v=20260508-premium" />
+  </head>
+  <body>
+    <main class="booking-page">
+      <header class="booking-header">
+        <a class="brand" href="/bookings" aria-label="OTP Bookings">
+          <span class="brand-mark"><img src="/assets/otp-logo-transparent.png" alt="OTP" /></span>
+          <span>
+            <strong>BOOK OTP</strong>
+            <small>OnlyTruePerspective</small>
+          </span>
+        </a>
+        <a class="admin-link" href="https://www.onlytrueperspective.tech" rel="noopener">Main Site</a>
+      </header>
+
+      <section class="hero">
+        <div>
+          <p class="eyebrow">OnlyTruePerspective bookings</p>
+          <h1>Book your shoot, edit, logo, or creative project with OTP.</h1>
+          <p class="hero-copy">Pick the creative lane, send references, and request a tailored OTP quote. Deposit links stay professional and only appear when the project is ready to lock in.</p>
+        </div>
+        <a class="hero-action" href="#booking-form">Book OTP</a>
+      </section>
+
+      <section class="booking-layout">
+        <div class="service-column">
+          <div class="section-heading">
+            <p class="eyebrow">Services</p>
+            <h2>Pick the project</h2>
+          </div>
+          <div id="service-grid" class="service-grid" aria-live="polite"></div>
+        </div>
+
+        <form id="booking-form" class="booking-form">
+          <div class="section-heading">
+            <p class="eyebrow">Intake</p>
+            <h2>Project details</h2>
+          </div>
+
+          <div class="form-grid">
+            <label>
+              Your Name
+              <input id="booking-name" name="name" autocomplete="name" required />
+            </label>
+            <label>
+              IG Handle
+              <input id="booking-ig" name="ig_handle" autocomplete="off" placeholder="@handle" />
+            </label>
+            <label>
+              Email
+              <input id="booking-email" name="email" type="email" autocomplete="email" />
+            </label>
+            <label>
+              Phone
+              <input id="booking-phone" name="phone" type="tel" autocomplete="tel" />
+            </label>
+          </div>
+
+          <label>
+            Project Description
+            <textarea id="booking-description" name="project_description" required placeholder="What are we making? Include the artist, brand, product, scenes, deliverables, deadline, or must-have details."></textarea>
+          </label>
+
+          <div class="form-grid">
+            <label>
+              Preferred Date
+              <input id="booking-date" name="preferred_date" type="date" />
+            </label>
+            <label>
+              Preferred Time
+              <input id="booking-time" name="preferred_time" type="time" />
+            </label>
+          </div>
+
+          <label>
+            Location
+            <input id="booking-location" name="location" placeholder="Studio, city, venue, or TBD" />
+          </label>
+
+          <label>
+            Budget Range
+            <input id="booking-budget" name="budget_range" inputmode="text" placeholder="Comfortable range, launch scope, or TBD" />
+          </label>
+
+          <div id="add-ons-panel" class="add-ons-panel"></div>
+
+          <section class="upload-panel" aria-labelledby="upload-title">
+            <div>
+              <p id="upload-title" class="eyebrow">Reference Uploads</p>
+              <h2>Add inspo, logos, videos, or files</h2>
+            </div>
+            <label class="upload-drop">
+              <input id="booking-files" type="file" multiple accept="image/*,video/mp4,video/quicktime,application/pdf" />
+              <span>Tap to add files</span>
+              <small id="upload-rules">Images, HEIC, MP4/MOV, or PDF.</small>
+            </label>
+            <div id="upload-list" class="upload-list"></div>
+          </section>
+
+          <section class="payment-panel" aria-labelledby="payment-title">
+            <div>
+              <p id="payment-title" class="eyebrow">Payment</p>
+              <h2>Choose next step</h2>
+            </div>
+            <div class="payment-choice" role="radiogroup" aria-label="Payment choice">
+              <label>
+                <input type="radio" name="payment_choice" value="quote_first" checked />
+                <span>Request Custom Quote</span>
+              </label>
+              <label>
+                <input type="radio" name="payment_choice" value="pay_deposit" />
+                <span>Request Deposit Link</span>
+              </label>
+            </div>
+          </section>
+
+          <div class="estimate-bar">
+            <div>
+              <span>Pricing</span>
+              <strong id="estimate-total">Tailored quote</strong>
+            </div>
+            <div>
+              <span>Deposit</span>
+              <strong id="estimate-deposit">Optional after scope</strong>
+            </div>
+          </div>
+
+          <p id="booking-status" class="form-message hidden" aria-live="polite"></p>
+          <p id="booking-error" class="form-message error hidden" role="alert"></p>
+          <button id="submit-booking" type="submit">Submit Booking</button>
+        </form>
+      </section>
+
+      <section id="booking-success" class="success-panel hidden" aria-live="polite">
+        <p class="eyebrow">Booking received</p>
+        <h2 id="success-title">OTP has the request.</h2>
+        <p id="success-copy"></p>
+        <div id="success-actions" class="success-actions"></div>
+        <div id="success-meta" class="success-meta"></div>
+      </section>
+
+      <footer class="booking-footer">
+        <strong>Book OTP</strong>
+        <span>Book your shoot, edit, logo, or creative project with OTP.</span>
+      </footer>
+    </main>
+
+    <script src="/bookings.js?v=20260508-premium" defer></script>
+  </body>
+</html>

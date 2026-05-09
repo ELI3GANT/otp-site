@@ -28,6 +28,19 @@ assert.ok(
     adminCore.includes('window.runBrainForReplyContext = window.runOracleForReplyContext'),
     'legacy runBrain alias must point at Oracle'
 );
+assert.ok(adminCore.includes('resetPostComposerState'), 'post composer reset helper');
+const draftIdx = adminCore.indexOf('window.draftPostWithAI = async function()');
+assert.ok(draftIdx > 0, 'draftPostWithAI exists');
+assert.ok(
+    adminCore.slice(draftIdx, draftIdx + 1200).includes('resetPostComposerState();'),
+    'AI draft flow should clear edit state before generating'
+);
+const magicIdx = adminCore.indexOf("const magicBtn = document.getElementById('magicBtn');");
+assert.ok(magicIdx > 0, 'magicBtn bootstrap exists');
+assert.ok(
+    adminCore.slice(magicIdx, magicIdx + 900).includes('resetPostComposerState();'),
+    'magicBtn flow should clear edit state before generating'
+);
 assert.ok(
     adminCore.includes('${apiBase}/api/admin/knowledge/recommend'),
     'admin-core should use template URL for knowledge recommend'
