@@ -52,6 +52,8 @@ Rough order as shown in `otp-terminal.html`. “Oracle?” indicates **direct** 
 3. **One-shot both** (fails if `OTP_ADMIN_TOKEN` is missing — export it first):  
    `OTP_ADMIN_TOKEN=<jwt> npm run health:post-deploy`
 
+Set the secret in **GitHub Actions** as `OTP_ADMIN_TOKEN` (`Settings → Secrets and variables → Actions`) and mirror it to **Vercel** as `OTP_ADMIN_TOKEN` if the sweep needs that deployment environment too.
+
 ### 4.1 Automated (required before merge)
 
 1. **`npm test`** — `tests/master_runner.js` (contracts: Oracle, terminal, ops, docs, etc.).

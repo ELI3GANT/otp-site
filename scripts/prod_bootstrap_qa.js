@@ -21,6 +21,15 @@ function looksLikeJwt(s) {
   return parts.length === 3 && parts[0].length > 10 && parts[1].length > 10;
 }
 
+function tokenSetupHelp() {
+  return [
+    'OTP_ADMIN_TOKEN must be a real admin JWT (three dot-separated segments).',
+    'GitHub Actions secret: Settings → Secrets and variables → Actions → OTP_ADMIN_TOKEN.',
+    'Vercel env var if needed: OTP_ADMIN_TOKEN.',
+    'Use the JWT from the admin login flow; do not use a placeholder or static bypass token.'
+  ].join(' ');
+}
+
 async function postJson(path, token, body) {
   const res = await fetch(`${ORIGIN}${path}`, {
     method: 'POST',
@@ -40,8 +49,8 @@ async function postJson(path, token, body) {
 
 async function main() {
   const token = String(process.env.OTP_ADMIN_TOKEN || '').trim();
-  if (!token) throw new Error('Missing OTP_ADMIN_TOKEN env var');
-  if (!looksLikeJwt(token)) throw new Error('OTP_ADMIN_TOKEN does not look like a JWT');
+  if (!token) throw new Error(`Missing OTP_ADMIN_TOKEN env var. ${tokenSetupHelp()}`);
+  if (!looksLikeJwt(token)) throw new Error(`OTP_ADMIN_TOKEN does not look like a JWT. ${tokenSetupHelp()}`);
 
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -176,4 +185,3 @@ main().catch((e) => {
   console.error(JSON.stringify({ ok: false, error: short(e?.message || e) }, null, 2));
   process.exit(1);
 });
-
