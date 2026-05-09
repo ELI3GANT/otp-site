@@ -164,33 +164,37 @@ async function main() {
   // Generate + export all ops docs (PDF + DOCX) from the same job record.
   const DOC_TYPES = ['Proposal', 'Invoice', 'Agreement', 'Paid Receipt', 'Service Summary'];
 
-  async function tryDownload(btnText, prefix) {
-    const btn = page.locator(`button:has-text("${btnText}")`);
-    if (!(await btn.count())) return null;
+  async function tryDownloadFromFunction(fnName, arg, prefix) {
     const [download] = await Promise.all([
-      page.waitForEvent('download', { timeout: 45000 }).catch(() => null),
-      btn.first().click({ timeout: 15000 }),
+      page.waitForEvent('download', { timeout: 10000 }).catch(() => null),
+      invokeUiFunction(fnName, arg),
     ]);
     if (!download) {
-      push('download', { ok: false, kind: btnText, message: 'No download event (blocked or failed)' });
+      push('download', { ok: false, kind: `${fnName}:${String(arg || '')}`, message: 'No download event (blocked or failed)' });
       return null;
     }
     const suggested = download.suggestedFilename();
     const safeName = `${prefix || 'opsdoc'}__${suggested}`.replace(/[^\w.\-]+/g, '_').slice(0, 180);
     const savePath = path.join(artifactsDir, safeName);
     await download.saveAs(savePath).catch(() => {});
-    push('download', { ok: true, kind: btnText, filename: suggested, savedAs: path.relative(process.cwd(), savePath) });
+    push('download', { ok: true, kind: `${fnName}:${String(arg || '')}`, filename: suggested, savedAs: path.relative(process.cwd(), savePath) });
     return savePath;
   }
 
-  for (const docType of DOC_TYPES) {
-    const genBtn = page.locator(`button:has-text("Generate ${docType}")`);
-    if (!(await genBtn.count())) {
-      push('doc_missing_button', { docType });
-      continue;
-    }
+  async function invokeUiFunction(fnName, arg) {
+    return page.evaluate(async ({ name, value }) => {
+      const fn = window[name];
+      if (typeof fn !== 'function') {
+        return { ok: false, reason: 'missing_fn' };
+      }
+      await fn(value);
+      return { ok: true };
+    }, { name: fnName, value: arg });
+  }
 
-    await genBtn.first().click({ timeout: 15000 });
+  for (const docType of DOC_TYPES) {
+    const genResult = await invokeUiFunction('generateOpsDoc', docType);
+    push('doc_generate_call', { docType, ...genResult });
     await page.waitForTimeout(1700);
 
     const meta = await page.locator('#opsDocMeta').innerText().catch(() => '');
@@ -211,54 +215,33 @@ async function main() {
     if (!hasProject) checks.push('missing_project_label');
     if (checks.length) push('doc_assert_warn', { docType, checks });
 
-    await tryDownload('EXPORT PDF', docType.toLowerCase().replace(/\s+/g, '-'));
-    await tryDownload('EXPORT DOCX', docType.toLowerCase().replace(/\s+/g, '-'));
+    await tryDownloadFromFunction('exportOpsDoc', 'pdf', docType.toLowerCase().replace(/\s+/g, '-'));
+    await tryDownloadFromFunction('exportOpsDoc', 'docx', docType.toLowerCase().replace(/\s+/g, '-'));
   }
 
-  // Packet preview/build
-  // Ensure Packet Builder panel is open (details)
-  const packetSummary = page.locator('summary:has-text("PACKET BUILDER")');
-  if (await packetSummary.count()) {
-    const packetDetails = packetSummary.locator('..');
-    const isOpen = await packetDetails.getAttribute('open').catch(() => null);
-    if (isOpen == null) await packetSummary.first().click({ timeout: 15000 });
-  }
-  const buildPacket = page.locator('button:has-text("BUILD / PREVIEW")');
-  if (await buildPacket.count()) {
-    await buildPacket.first().click({ timeout: 15000 });
-    await page.waitForTimeout(1400);
-    const pktStatus = await page.locator('#opsPacketStatus').innerText().catch(() => '');
-    push('packet_preview', { status: short(pktStatus, 240) });
-  }
+  const buildResult = await invokeUiFunction('previewOpsPacket');
+  push('packet_preview_call', buildResult);
+  await page.waitForTimeout(1400);
+  const pktStatus = await page.locator('#opsPacketStatus').innerText().catch(() => '');
+  push('packet_preview', { status: short(pktStatus, 240) });
 
   // Packet ZIP export (download only)
-  const exportZip = page.locator('button:has-text("EXPORT PACKET ZIP")');
-  if (await exportZip.count()) {
-    const [download] = await Promise.all([
-      page.waitForEvent('download', { timeout: 45000 }).catch(() => null),
-      exportZip.first().click({ timeout: 15000 }),
-    ]);
-    if (!download) push('download', { ok: false, kind: 'EXPORT PACKET ZIP', message: 'No download event' });
-    else {
-      push('download', { ok: true, kind: 'EXPORT PACKET ZIP', filename: download.suggestedFilename() });
-      await download.cancel().catch(() => {});
-    }
+  const [download] = await Promise.all([
+    page.waitForEvent('download', { timeout: 10000 }).catch(() => null),
+    invokeUiFunction('exportOpsPacketZip'),
+  ]);
+  if (!download) push('download', { ok: false, kind: 'EXPORT PACKET ZIP', message: 'No download event' });
+  else {
+    push('download', { ok: true, kind: 'EXPORT PACKET ZIP', filename: download.suggestedFilename() });
+    await download.cancel().catch(() => {});
   }
 
   // Send prep (never execute send)
-  const sendSummary = page.locator('summary:has-text("SEND (CONTROLLED)")');
-  if (await sendSummary.count()) {
-    const sendDetails = sendSummary.locator('..');
-    const isOpen = await sendDetails.getAttribute('open').catch(() => null);
-    if (isOpen == null) await sendSummary.first().click({ timeout: 15000 });
-  }
-  const prepSend = page.locator('button:has-text("PREPARE")');
-  if (await prepSend.count()) {
-    await prepSend.first().click({ timeout: 15000 });
-    await page.waitForTimeout(1600);
-    const sendStatus = await page.locator('#opsSendStatus').innerText().catch(() => '');
-    push('send_prepare', { status: short(sendStatus, 320) });
-  }
+  const prepResult = await invokeUiFunction('prepareOpsSend');
+  push('send_prepare_call', prepResult);
+  await page.waitForTimeout(1600);
+  const sendStatus = await page.locator('#opsSendStatus').innerText().catch(() => '');
+  push('send_prepare', { status: short(sendStatus, 320) });
 
   // Quick Deal Mode (non-destructive: verify inputs + math + checkbox interactions; do NOT save)
   const qdName = page.locator('#qdClientName');
@@ -519,4 +502,3 @@ main().catch((e) => {
   console.error(JSON.stringify({ schema: 'otp-prod-terminal-sweep-v1', ok: false, error: short(e?.message || e) }, null, 2));
   process.exit(1);
 });
-
