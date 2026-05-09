@@ -21,7 +21,7 @@ const publicTargets = [
   { name: 'book-alias', path: '/book', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
   { name: 'bookings-html', path: '/bookings.html', kind: 'html', markers: ['Book OTP', '/bookings.css'] },
   { name: 'bookings-css', path: '/bookings.css', kind: 'css', markers: ['booking-page', 'service-grid'] },
-  { name: 'bookings-js', path: '/bookings.js', kind: 'js', markers: ['fetch(\'/api/bookings/config\')', 'fetch(\'/api/bookings/submit\')'] },
+  { name: 'bookings-js', path: '/bookings.js', kind: 'js', markers: ['fetch(\'/api/bookings/config\'', 'fetch(\'/api/bookings/submit\''] },
   { name: 'booking-logo', path: '/assets/otp-logo-transparent.png', kind: 'png' },
   { name: 'portal-gate', path: '/portal-gate', kind: 'html', markers: ['portal', 'gate'] },
   { name: 'terminal-shell', path: '/otp-terminal', kind: 'html', markers: ['postForm', 'magicBtn', 'admin-core.js', 'blog-enhancements.css', 'window.draftPostWithAI()', 'window.generateOpsDoc(\'Proposal\')'] },

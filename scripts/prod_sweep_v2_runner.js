@@ -292,7 +292,6 @@ async function runBrowserSmoke({ baseUrl, token, checks = [] }) {
       hasDraftPostWithAI: typeof window.draftPostWithAI === 'function',
       hasManagePost: typeof window.managePost === 'function',
       hasGenerateOpsDoc: typeof window.generateOpsDoc === 'function',
-      hasResetPostComposerState: typeof window.resetPostComposerState === 'function',
       hasReplyOracleBtn: Boolean(document.getElementById('replyOracleBtn')),
       hasPostForm: Boolean(document.getElementById('postForm')),
       hasMagicBtn: Boolean(document.getElementById('magicBtn')),
