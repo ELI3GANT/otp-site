@@ -22,6 +22,9 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'GET /api/webhook',
     'POST /api/webhook',
     'POST /api/auth/login',
+    'GET /api/bookings/config',
+    'POST /api/bookings/submit',
+    'GET /api/youtube/videos',
     'POST /api/contact/submit',
     'POST /api/audit/submit',
     'POST /api/analytics/view',
@@ -123,6 +126,35 @@ assert.ok(
 assert.ok(
     serverSrc.includes('Checkout could not be started'),
     'POST /api/create-checkout-session must not return raw Stripe exception text to clients'
+);
+
+assert.ok(
+    !serverSrc.includes("origin.endsWith('.vercel.app')"),
+    'CORS must not trust every *.vercel.app origin'
+);
+assert.ok(
+    serverSrc.includes('allowedOriginSet.has(origin)'),
+    'CORS should use an exact allowed-origin set'
+);
+assert.ok(
+    !serverSrc.includes('headers: req.headers'),
+    'Diagnostic routes must not echo request headers'
+);
+assert.ok(
+    serverSrc.includes("process.env.NODE_ENV !== 'production' && process.env.OTP_ENABLE_PUBLIC_DIAG === '1'"),
+    'Diagnostic route must be disabled in production by default'
+);
+assert.ok(
+    !serverSrc.includes('error: err.message'),
+    'Global error handler must not expose raw exception messages'
+);
+assert.ok(
+    serverSrc.includes('Webhook signature verification failed'),
+    'Stripe webhook signature failures should use generic public text'
+);
+assert.ok(
+    serverSrc.includes('BOOKING_PUBLIC_PROXY_PATHS'),
+    'OTP bookings proxy must use a public path allowlist'
 );
 
 assert.ok(

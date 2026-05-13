@@ -1932,7 +1932,7 @@
 
     const moneyFromCents = (c) => {
         const n = Number(c);
-        if (!Number.isFinite(n)) return '—';
+        if (!Number.isFinite(n) || Math.round(n) <= 0) return 'Not set';
         return `$${(n / 100).toFixed(0)}`;
     };
 
@@ -1945,6 +1945,197 @@
         if (!Number.isFinite(num) || num < 0) return null;
         return Math.round(num * 100);
     };
+
+    function uiText(value, fallback = 'Not provided yet') {
+        const v = String(value == null ? '' : value).trim();
+        return v || fallback;
+    }
+
+    function readableStatus(value) {
+        const v = uiText(value, '');
+        if (!v) return 'Not provided yet';
+        return v
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (m) => m.toUpperCase());
+    }
+
+    function parseOpsBookingMeta(notes) {
+        const raw = String(notes || '');
+        const marker = 'OTP_BOOKING_META:';
+        const start = raw.indexOf(marker);
+        if (start < 0) return null;
+        const after = raw.slice(start + marker.length).trim();
+        const jsonStart = after.indexOf('{');
+        if (jsonStart < 0) return null;
+        let depth = 0;
+        let end = -1;
+        for (let i = jsonStart; i < after.length; i += 1) {
+            const ch = after[i];
+            if (ch === '{') depth += 1;
+            if (ch === '}') {
+                depth -= 1;
+                if (depth === 0) {
+                    end = i + 1;
+                    break;
+                }
+            }
+        }
+        if (end < 0) return null;
+        try {
+            const parsed = JSON.parse(after.slice(jsonStart, end));
+            return parsed && typeof parsed === 'object' ? parsed : null;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function currentOpsJobFromEditor() {
+        const totalPriceCents = parseMoneyToCents(document.getElementById('opsTotalPrice')?.value);
+        const depositAmountCents = parseMoneyToCents(document.getElementById('opsDepositAmount')?.value);
+        const internalNotes = String(document.getElementById('opsInternalNotes')?.value || '');
+        const meta = parseOpsBookingMeta(internalNotes);
+        const editorSourceType = String(document.getElementById('opsJobsEditor')?.dataset?.sourceType || '').trim();
+        return {
+            jobId: String(document.getElementById('opsJobId')?.value || '').trim(),
+            sourceType: meta?.source_type || editorSourceType || 'manualIntake',
+            clientName: String(document.getElementById('opsClientName')?.value || '').trim(),
+            businessName: String(document.getElementById('opsBusinessName')?.value || '').trim(),
+            phone: String(document.getElementById('opsPhone')?.value || '').trim(),
+            email: String(document.getElementById('opsEmail')?.value || '').trim(),
+            serviceType: String(document.getElementById('opsServiceType')?.value || '').trim(),
+            packageType: String(document.getElementById('opsPackageType')?.value || '').trim(),
+            projectTitle: String(document.getElementById('opsProjectTitle')?.value || '').trim(),
+            projectDescription: String(document.getElementById('opsProjectDescription')?.value || '').trim(),
+            deliverables: String(document.getElementById('opsDeliverables')?.value || '').trim(),
+            addOns: String(document.getElementById('opsAddOns')?.value || '').trim(),
+            startDate: String(document.getElementById('opsStartDate')?.value || '').trim(),
+            dueDate: String(document.getElementById('opsDueDate')?.value || '').trim(),
+            totalPriceCents,
+            depositAmountCents,
+            remainingBalanceCents: totalPriceCents == null ? null : Math.max(0, totalPriceCents - Math.min(depositAmountCents || 0, totalPriceCents)),
+            paymentMethod: String(document.getElementById('opsPaymentMethod')?.value || '').trim(),
+            paymentStatus: String(document.getElementById('opsPaymentStatus')?.value || '').trim(),
+            jobStatus: String(document.getElementById('opsJobStatus')?.value || '').trim(),
+            clientNotes: String(document.getElementById('opsClientNotes')?.value || '').trim(),
+            internalNotes,
+            bookingMeta: meta
+        };
+    }
+
+    function sourceLabel(job) {
+        if (job?.bookingMeta?.source_type === 'otp_bookings' || job?.sourceType === 'otp_bookings') return 'OTP Bookings';
+        if (job?.sourceType === 'oracleLead') return 'OTP Oracle';
+        if (job?.sourceType === 'quickDeal') return 'Quick Deal';
+        return 'Manual Intake';
+    }
+
+    function opsDocBlockReason(docType, job) {
+        const type = String(docType || '').trim();
+        const hasClient = Boolean(job.clientName || job.businessName);
+        const hasProject = Boolean(job.projectTitle || job.serviceType || job.packageType);
+        const hasScope = Boolean(job.projectDescription || job.deliverables || job.projectTitle);
+        const hasTotal = Number.isFinite(Number(job.totalPriceCents)) && Number(job.totalPriceCents) > 0;
+        const hasDeposit = Number.isFinite(Number(job.depositAmountCents)) && Number(job.depositAmountCents) > 0;
+        const pay = String(job.paymentStatus || '').toLowerCase();
+        if (type === 'Proposal' && (!hasClient || !hasProject)) return 'This profile is missing project details.';
+        if (type === 'Invoice' && (!hasClient || !hasTotal)) return 'This document needs a price before it can be generated.';
+        if (type === 'Agreement' && (!hasClient || !(job.serviceType || job.packageType) || !hasScope)) return 'This profile is missing service details.';
+        if (type === 'Paid Receipt' && !((pay === 'paid in full' && hasTotal) || (pay === 'deposit paid' && hasDeposit))) return 'Receipt requires a paid or deposit-paid status with a saved amount.';
+        if (type === 'Service Summary' && (!hasClient || !hasProject)) return 'This profile is missing project details.';
+        return '';
+    }
+
+    function renderProfileSection(title, rows) {
+        const visible = (rows || []).filter((row) => row && uiText(row[1], '') !== '');
+        if (!visible.length) return '';
+        return `
+            <section class="ops-profile-section">
+                <h4>${window.escapeHtml(title)}</h4>
+                ${visible.map(([label, value]) => `
+                    <div class="ops-profile-row">
+                        <strong>${window.escapeHtml(label)}</strong>
+                        <span>${window.escapeHtml(uiText(value))}</span>
+                    </div>
+                `).join('')}
+            </section>
+        `;
+    }
+
+    window.renderOpsProfileSnapshot = function() {
+        const el = document.getElementById('opsProfileSnapshot');
+        if (!el) return;
+        const job = currentOpsJobFromEditor();
+        const meta = job.bookingMeta || {};
+        const rec = meta.oracle_recommendation || {};
+        const flags = Array.isArray(rec.statusFlags || meta.statusFlags) ? (rec.statusFlags || meta.statusFlags) : [];
+        const docTypes = ['Proposal', 'Invoice', 'Agreement', 'Service Summary', 'Paid Receipt'];
+        const docButtons = docTypes.map((type) => {
+            const reason = opsDocBlockReason(type, job);
+            const disabled = reason ? 'disabled' : '';
+            return `<button type="button" class="btn-secondary" data-ops-doc-type="${window.escapeHtml(type)}" ${disabled} title="${window.escapeHtml(reason || `Generate ${type}`)}" onclick="window.generateOpsDoc('${window.escapeHtml(type)}')">${window.escapeHtml(`Generate ${type}`)}</button>`;
+        }).join('');
+        const followUp = job.clientNotes || rec.followUpMessage || meta.followUpMessage || '';
+        const created = meta.created_at ? new Date(meta.created_at).toLocaleString() : '';
+        const amountDue = Number.isFinite(Number(job.totalPriceCents)) && Number(job.totalPriceCents) > 0 ? moneyFromCents(job.totalPriceCents) : 'Price not set yet';
+        const deposit = Number.isFinite(Number(job.depositAmountCents)) && Number(job.depositAmountCents) > 0 ? moneyFromCents(job.depositAmountCents) : 'Not set yet';
+        const html = [
+            renderProfileSection('Client Overview', [
+                ['Name', job.clientName],
+                ['Email', job.email],
+                ['Phone', job.phone],
+                ['Brand / Business', job.businessName],
+                ['Source', sourceLabel(job)],
+                ['Created Date', created]
+            ]),
+            renderProfileSection('Project Details', [
+                ['Service Type', meta.service_type || job.serviceType],
+                ['Selected Package', meta.package_interest || job.packageType],
+                ['Recommended Package', rec.recommendedPackage || meta.recommended_package],
+                ['Description', meta.project_description || job.projectDescription],
+                ['Budget Range', meta.budget_range],
+                ['Timeline', meta.ideal_deadline || job.dueDate],
+                ['Urgency', meta.urgency_level]
+            ]),
+            renderProfileSection('Oracle Recommendation', [
+                ['Recommended Package', rec.recommendedPackage || meta.recommended_package],
+                ['Quote Range', rec.quoteRange],
+                ['Confidence', rec.confidence != null ? `${Math.round(Number(rec.confidence) * 100)}%` : (meta.oracle_status === 'pending' ? 'Pending review' : '')],
+                ['Reason', rec.reason],
+                ['Next Action', rec.nextAction],
+                ['Missing Info', Array.isArray(rec.missingInfo) && rec.missingInfo.length ? rec.missingInfo.map(readableStatus).join(', ') : 'None flagged'],
+                ['Status Flags', flags.length ? flags.map(readableStatus).join(', ') : (meta.oracle_status === 'pending' ? 'Recommendation pending' : '')]
+            ]),
+            `<section class="ops-profile-section">
+                <h4>Documents</h4>
+                <div class="ops-profile-docs">${docButtons}</div>
+                <p class="ops-profile-note">Invoice requires a saved price. Receipt requires paid or deposit-paid status.</p>
+            </section>`,
+            renderProfileSection('Payment', [
+                ['Payment Status', job.paymentStatus || meta.payment_status],
+                ['Amount Due', amountDue],
+                ['Deposit', deposit],
+                ['Stripe Link', 'Not provided yet'],
+                ['Manual Payment', job.paymentMethod || 'Not provided yet']
+            ]),
+            renderProfileSection('Follow-Up', [
+                ['Message', followUp]
+            ])
+        ].filter(Boolean).join('');
+        el.innerHTML = html || '<div class="ops-profile-empty">This profile is missing project details.</div>';
+        syncOpsDocButtons();
+    };
+
+    function syncOpsDocButtons() {
+        const job = currentOpsJobFromEditor();
+        document.querySelectorAll('[data-ops-doc-type]').forEach((btn) => {
+            const type = String(btn.getAttribute('data-ops-doc-type') || '');
+            const reason = opsDocBlockReason(type, job);
+            btn.disabled = Boolean(reason);
+            btn.title = reason || `Generate ${type}`;
+            btn.style.opacity = reason ? '0.58' : '';
+            btn.style.cursor = reason ? 'not-allowed' : '';
+        });
+    }
 
     window.queueOpsJobsRefresh = function() {
         if (opsJobsRefreshTimer) clearTimeout(opsJobsRefreshTimer);
@@ -2002,10 +2193,12 @@
                 return;
             }
             mgr.innerHTML = rows.map((r) => {
+                const bookingMeta = parseOpsBookingMeta(r.internalNotes);
+                const viewJob = { ...r, bookingMeta };
                 const due = r.dueDate ? new Date(r.dueDate).toLocaleDateString() : '—';
                 const upd = r.updatedAt ? new Date(r.updatedAt).toLocaleString() : '';
                 const pay = r.paymentStatus || '—';
-                const st = r.jobStatus || '—';
+                const st = bookingMeta?.requested_job_status ? readableStatus(bookingMeta.requested_job_status) : (r.jobStatus || '—');
                 return `
                     <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-panel);margin-bottom:10px;">
                         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
@@ -2014,7 +2207,7 @@
                                 <div style="font-size:0.92rem;font-weight:900;color:var(--admin-text);margin-top:4px;">${window.escapeHtml(String(r.clientName || ''))}</div>
                                 <div style="font-size:0.72rem;color:var(--admin-muted);margin-top:4px;line-height:1.35;">${window.escapeHtml(String(r.projectTitle || ''))}</div>
                                 <div style="font-size:0.68rem;color:var(--admin-muted);margin-top:6px;line-height:1.35;">
-                                    ${window.escapeHtml(String(r.packageType || ''))} • ${moneyFromCents(r.totalPriceCents)} • ${window.escapeHtml(pay)} • ${window.escapeHtml(st)} • Due: ${window.escapeHtml(due)}
+                                    ${window.escapeHtml(sourceLabel(viewJob))} • ${window.escapeHtml(String(bookingMeta?.package_interest || r.packageType || ''))} • ${moneyFromCents(r.totalPriceCents)} • ${window.escapeHtml(pay)} • ${window.escapeHtml(st)} • Due: ${window.escapeHtml(due)}
                                 </div>
                                 <div style="font-size:0.62rem;color:var(--admin-muted);margin-top:4px;">Updated: ${window.escapeHtml(upd)}</div>
                             </div>
@@ -2124,6 +2317,7 @@
         refreshOpsPricingGuidance();
 
         if (!jobId) {
+            if (editor) editor.dataset.sourceType = 'manualIntake';
             if (meta) meta.textContent = 'New manual intake record.';
             // Official pricing hints (non-binding)
             setPlaceholder('opsTotalPrice', 'Total Price * (e.g. 500)');
@@ -2131,6 +2325,7 @@
             // Sensible defaults to reduce save failures.
             set('opsPaymentStatus', 'Unpaid');
             set('opsJobStatus', 'New Lead');
+            window.renderOpsProfileSnapshot?.();
             return;
         }
 
@@ -2145,6 +2340,7 @@
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Get failed (${res.status})`);
             const r = payload.row || {};
+            if (editor) editor.dataset.sourceType = r.sourceType || 'manualIntake';
             set('opsJobId', r.jobId || '');
             set('opsClientName', r.clientName || '');
             set('opsBusinessName', r.businessName || '');
@@ -2175,6 +2371,7 @@
 
             // Send panel defaults from saved record
             if (sendTo) sendTo.value = String(r.email || '').trim();
+            window.renderOpsProfileSnapshot?.();
             window.syncOpsJobEditorStacking();
         } catch (e) {
             showToast(`LOAD FAILED: ${String(e?.message ?? e)}`);
@@ -2259,14 +2456,22 @@
         const totalCents = parseMoneyToCents(document.getElementById('opsTotalPrice')?.value);
         const depCents = parseMoneyToCents(document.getElementById('opsDepositAmount')?.value) ?? 0;
         const el = document.getElementById('opsRemainingBalance');
-        if (!el) return;
-        if (totalCents == null) { el.textContent = '—'; return; }
+        if (!el) {
+            window.renderOpsProfileSnapshot?.();
+            return;
+        }
+        if (totalCents == null) {
+            el.textContent = '—';
+            window.renderOpsProfileSnapshot?.();
+            return;
+        }
         const safeDep = Math.min(depCents, totalCents);
         const rem = Math.max(0, totalCents - safeDep);
         el.textContent = moneyFromCents(rem);
         const warn = depCents > totalCents;
         el.style.color = warn ? '#ffb86b' : 'var(--admin-text)';
         el.title = warn ? 'Deposit cannot exceed total. Adjust values before saving.' : '';
+        window.renderOpsProfileSnapshot?.();
     };
 
     // React to package/service changes without touching saved pricing fields.
@@ -2282,6 +2487,25 @@
             svc.addEventListener('input', refreshOpsPricingGuidance);
             svc.addEventListener('blur', refreshOpsPricingGuidance);
         }
+    })();
+
+    (function attachOpsProfileListeners() {
+        let raf = null;
+        const queue = () => {
+            if (raf) cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+                raf = null;
+                window.renderOpsProfileSnapshot?.();
+            });
+        };
+        document.addEventListener('input', (event) => {
+            const id = String(event.target?.id || '');
+            if (id.startsWith('ops')) queue();
+        });
+        document.addEventListener('change', (event) => {
+            const id = String(event.target?.id || '');
+            if (id.startsWith('ops')) queue();
+        });
     })();
 
     window.saveOpsJob = async function() {
@@ -2366,6 +2590,7 @@
             const saved = payload.row || {};
             const idEl = document.getElementById('opsJobId');
             if (idEl && saved.jobId) idEl.value = saved.jobId;
+            window.renderOpsProfileSnapshot?.();
             await window.fetchOpsJobs();
         } catch (e) {
             const msg = formatNetworkError(e);
@@ -2477,6 +2702,12 @@
         if (!jobId) { showToast('SAVE JOB FIRST'); return; }
         const type = String(docType || '').trim();
         if (!type) { showToast('MISSING DOC TYPE'); return; }
+        const blockReason = opsDocBlockReason(type, currentOpsJobFromEditor());
+        if (blockReason) {
+            showToast(blockReason.toUpperCase());
+            window.renderOpsProfileSnapshot?.();
+            return;
+        }
         const panel = document.getElementById('opsDocPanel');
         const titleEl = document.getElementById('opsDocTitle');
         const metaEl = document.getElementById('opsDocMeta');

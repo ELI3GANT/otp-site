@@ -59,12 +59,152 @@ if (!stripe) {
 
 const app = express();
 app.disable('x-powered-by'); // Hide stack details
+app.set('trust proxy', 1); // Trust Vercel proxy before any rate limiter reads req.ip.
 const port = process.env.PORT || 3000;
 let OTP_PRICING = null;
 try {
     OTP_PRICING = require('./pricing-config.js');
 } catch (e) {
     OTP_PRICING = null;
+}
+let OTP_VIDEO_LIBRARY = null;
+try {
+    OTP_VIDEO_LIBRARY = require('./otp-video-library.js');
+} catch (e) {
+    OTP_VIDEO_LIBRARY = null;
+}
+
+function positiveNumber(value, fallback) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+const YOUTUBE_SYNC_TIMEOUT_MS = positiveNumber(process.env.YOUTUBE_SYNC_TIMEOUT_MS, 6500);
+const YOUTUBE_SYNC_CACHE_TTL_MS = positiveNumber(process.env.YOUTUBE_SYNC_CACHE_TTL_MS, 15 * 60 * 1000);
+const YOUTUBE_SYNC_STALE_TTL_MS = positiveNumber(process.env.YOUTUBE_SYNC_STALE_TTL_MS, 6 * 60 * 60 * 1000);
+let youtubeVideoCache = { fetchedAt: 0, videos: [] };
+
+function decodeXmlText(raw) {
+    return String(raw || '')
+        .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&apos;/g, "'");
+}
+
+function extractXmlTag(xml, tagName) {
+    const escaped = tagName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = String(xml || '').match(new RegExp(`<${escaped}[^>]*>([\\s\\S]*?)<\\/${escaped}>`, 'i'));
+    return match ? decodeXmlText(match[1]).trim() : '';
+}
+
+function extractXmlAttr(xml, tagName, attrName) {
+    const escapedTag = tagName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedAttr = attrName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = String(xml || '').match(new RegExp(`<${escapedTag}[^>]*\\s${escapedAttr}=["']([^"']+)["'][^>]*>`, 'i'));
+    return match ? decodeXmlText(match[1]).trim() : '';
+}
+
+function parseYoutubeRssVideos(xml) {
+    const entries = String(xml || '').match(/<entry[\s\S]*?<\/entry>/gi) || [];
+    return entries.map((entry) => {
+        const id = extractXmlTag(entry, 'yt:videoId');
+        return {
+            id,
+            title: extractXmlTag(entry, 'title'),
+            url: id ? `https://www.youtube.com/watch?v=${id}` : extractXmlTag(entry, 'link'),
+            embedUrl: id ? `https://www.youtube.com/embed/${id}` : '',
+            thumbnail: extractXmlAttr(entry, 'media:thumbnail', 'url'),
+            publishedAt: extractXmlTag(entry, 'published'),
+            description: extractXmlTag(entry, 'media:description'),
+            source: 'youtube',
+            category: 'Video / Recap',
+            bookable: true
+        };
+    }).filter((video) => video.id);
+}
+
+async function fetchJsonWithTimeout(url, options = {}, timeoutMs = YOUTUBE_SYNC_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        const data = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return data;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+async function fetchTextWithTimeout(url, options = {}, timeoutMs = YOUTUBE_SYNC_TIMEOUT_MS) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        const text = await response.text().catch(() => '');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return text;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+function normalizeYoutubeVideos(videos) {
+    const lib = OTP_VIDEO_LIBRARY;
+    if (!lib || typeof lib.mergeVideoLists !== 'function') return [];
+    return lib.mergeVideoLists(Array.isArray(videos) ? videos : [], lib.getFallbackVideos()).slice(0, 24);
+}
+
+async function fetchYoutubeVideosFromApi(channelId) {
+    const key = String(process.env.YOUTUBE_API_KEY || '').trim();
+    if (!key || !channelId) return [];
+    const params = new URLSearchParams({
+        part: 'snippet',
+        channelId,
+        maxResults: '12',
+        order: 'date',
+        type: 'video',
+        key
+    });
+    const data = await fetchJsonWithTimeout(`https://www.googleapis.com/youtube/v3/search?${params.toString()}`, {
+        headers: { Accept: 'application/json' }
+    });
+    const items = Array.isArray(data?.items) ? data.items : [];
+    return items.map((item) => {
+        const id = item?.id?.videoId;
+        const snippet = item?.snippet || {};
+        return {
+            id,
+            title: snippet.title,
+            description: snippet.description,
+            publishedAt: snippet.publishedAt,
+            thumbnail: snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url,
+            source: 'youtube',
+            category: 'Video / Recap',
+            bookable: true
+        };
+    }).filter((video) => video.id);
+}
+
+async function fetchYoutubeVideosFromRss(channelId) {
+    if (!channelId) return [];
+    const params = new URLSearchParams({ channel_id: channelId });
+    const xml = await fetchTextWithTimeout(`https://www.youtube.com/feeds/videos.xml?${params.toString()}`, {
+        headers: { Accept: 'application/atom+xml, application/xml;q=0.9, text/xml;q=0.8' }
+    });
+    return parseYoutubeRssVideos(xml);
+}
+
+async function fetchLatestYoutubeVideos() {
+    const lib = OTP_VIDEO_LIBRARY;
+    const channelId = String(process.env.OTP_YOUTUBE_CHANNEL_ID || process.env.YOUTUBE_CHANNEL_ID || lib?.YOUTUBE_CHANNEL?.id || '').trim();
+    const apiVideos = await fetchYoutubeVideosFromApi(channelId);
+    if (apiVideos.length) return apiVideos;
+    return fetchYoutubeVideosFromRss(channelId);
 }
 
 /** Slug / post_slug for RPC and filters: capped length, no control chars or angle brackets. */
@@ -1349,7 +1489,7 @@ function inferPackageAndRange(leadText) {
     const mentionsSimple = /(single|quick|one video|one deliverable|basic|starter)/.test(text);
     const mentionsLarge = /(campaign|full brand|custom architecture|retainer|multiple deliverables|system-wide|enterprise|advanced)/.test(text);
     const budgetLow = /(under\s*\$?\s*300|low budget|very small budget|tight budget)/.test(text) || (maxBudget !== null && maxBudget <= 300);
-    const budgetHigh = /(1,?200\+|1200|2,?000|3000|premium|high budget)/.test(text) || (maxBudget !== null && maxBudget >= 1200);
+    const budgetHigh = /(1,?200\+|1200|2,?000|3,?000|3,?500|3500|premium|high budget)/.test(text) || (maxBudget !== null && maxBudget >= 1200);
     const mentionsGrowthDefault = /(growing small business|growing business|small business|artist|creator|ongoing|weekly|monthly|scale|scaling|brand growth)/.test(text);
     const mentionsCrossServiceWork = /(content|clips|video|filming|photography|branding|social|campaign|production)/.test(text);
 
@@ -1404,29 +1544,26 @@ function inferPackageAndRange(leadText) {
 
     if (mentionsWebsite) {
         if (/(custom|architecture|complex|portal|platform|membership|automation)/.test(text)) {
-            const wa = svcPriceDisplayByLabel('Custom Website Architecture');
             return {
-                recommended_package: 'Custom Website Architecture',
-                quote_range: wa ? wa : 'Starting at $3,500+',
+                recommended_package: 'The System',
+                quote_range: pkgPriceDisplay('theSystem') || 'Starting at $3,500+',
                 package_confidence: 0.83,
-                package_reason: 'Website brief suggests custom architecture and implementation depth.'
+                package_reason: 'Website brief suggests custom architecture, automation, or portal depth, which fits The System.'
             };
         }
         if (mentionsSimple || budgetLow || /(one page|single page|landing page only)/.test(text)) {
-            const swp = svcPriceDisplayByLabel('Starter Web Presence');
             return {
-                recommended_package: 'Starter Web Presence',
-                quote_range: swp ? swp : '$750',
+                recommended_package: 'The Signal',
+                quote_range: pkgPriceDisplay('theSignal') || 'Starting at $500',
                 package_confidence: 0.78,
-                package_reason: 'Lean website scope detected; starter web presence is the cleanest fit.'
+                package_reason: 'Lean website or landing-page scope detected; The Signal is the cleanest focused start.'
             };
         }
-        const bwp = svcPriceDisplayByLabel('Business Website Pro');
         return {
-            recommended_package: 'Business Website Pro',
-            quote_range: bwp ? bwp : '$1,500',
+            recommended_package: 'The Engine',
+            quote_range: pkgPriceDisplay('theEngine') || '$1,200 to $2,000',
             package_confidence: 0.73,
-            package_reason: 'Website request maps to a business-grade build with stronger structure and polish.'
+            package_reason: 'Website request maps to a business-grade build with connected brand structure and polish.'
         };
     }
 
@@ -1916,7 +2053,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://assets.calendly.com", "https://unpkg.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://api.openai.com", "https://generativelanguage.googleapis.com", "https://calendly.com", "https://api.stripe.com", "https://onlytrueperspective.tech", "https://www.onlytrueperspective.tech", "https://app.onlytrueperspective.tech", "https://otp-site.vercel.app", "https://vitals.vercel-insights.com"],
+            connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://api.openai.com", "https://generativelanguage.googleapis.com", "https://calendly.com", "https://api.stripe.com", "https://onlytrueperspective.tech", "https://www.onlytrueperspective.tech", "https://app.onlytrueperspective.tech", "https://otp-site.vercel.app", "https://otp-os.vercel.app", "https://vitals.vercel-insights.com"],
             mediaSrc: ["'self'", "https:"],
             frameSrc: ["'self'", "https://calendly.com", "https://open.spotify.com", "https://embed.music.apple.com", "https://music.apple.com", "https://www.youtube.com", "https://w.soundcloud.com", "https://js.stripe.com", "https://hooks.stripe.com"],
             objectSrc: ["'none'"],
@@ -1997,12 +2134,12 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
     let event;
     try {
         if (!process.env.STRIPE_WEBHOOK_SECRET) throw new Error("Webhook secret missing (STRIPE_WEBHOOK_SECRET)");
-        if (!stripe) return res.status(500).send("Stripe not initialized");
+        if (!stripe) return res.status(500).send("Webhook temporarily unavailable");
 
         event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
         console.warn(`⚠️ Webhook Signature Error: ${err.message}`);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        return res.status(400).send('Webhook signature verification failed');
     }
 
     if (event.type === 'checkout.session.completed') {
@@ -2036,6 +2173,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));
 });
 const staticAliases = {
+    '/portal': 'portal.html',
     '/bookings': 'bookings.html',
     '/booking': 'bookings.html',
     '/book': 'bookings.html',
@@ -2043,9 +2181,11 @@ const staticAliases = {
     '/privacy': 'privacy.html',
     '/terms': 'terms.html',
     '/archive': 'archive.html',
+    '/vault': 'archive.html',
     '/insights': 'insights.html',
     '/insight': 'insight.html',
     '/portal-gate': 'portal-gate.html',
+    '/terminal': 'otp-terminal.html',
     '/otp-terminal': 'otp-terminal.html',
     '/payment-success': 'payment_success.html'
 };
@@ -2054,6 +2194,96 @@ Object.entries(staticAliases).forEach(([route, file]) => {
         noStoreHtml(res);
         res.sendFile(path.join(staticPath, file));
     });
+});
+
+const clientPortalAssetTypes = {
+    '/client.css': 'text/css; charset=utf-8',
+    '/client.js': 'application/javascript; charset=utf-8',
+    '/client-portal-utils.js': 'application/javascript; charset=utf-8'
+};
+
+app.get(Object.keys(clientPortalAssetTypes), async (req, res) => {
+    try {
+        const upstreamUrl = new URL(req.path, OTP_CLIENT_PORTAL_UPSTREAM);
+        const queryIndex = req.originalUrl.indexOf('?');
+        if (queryIndex >= 0) upstreamUrl.search = req.originalUrl.slice(queryIndex);
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), CLIENT_PORTAL_PROXY_TIMEOUT_MS);
+        let upstream;
+        try {
+            upstream = await fetch(upstreamUrl.href, {
+                method: 'GET',
+                redirect: 'manual',
+                signal: controller.signal,
+                headers: {
+                    Accept: req.get('accept') || '*/*',
+                    'User-Agent': req.get('user-agent') || 'OTP-Site-Portal-Asset'
+                }
+            });
+        } finally {
+            clearTimeout(timer);
+        }
+
+        if (!upstream.ok) return res.status(upstream.status || 502).send('');
+
+        const contentType = upstream.headers.get('content-type') || clientPortalAssetTypes[req.path] || 'text/plain; charset=utf-8';
+        const body = Buffer.from(await upstream.arrayBuffer()).toString('utf8');
+        res.status(upstream.status);
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+        return res.send(rewritePortalBody(body, contentType));
+    } catch (error) {
+        console.warn('Client portal asset proxy unavailable:', error?.message || error);
+        return res.status(502).type('text/plain').send('');
+    }
+});
+
+app.get('/client/:token', async (req, res) => {
+    noStoreHtml(res);
+    const token = normalizeClientPortalToken(req.params.token);
+    if (!token) return res.redirect(302, '/portal?status=invalid');
+
+    try {
+        const upstreamUrl = new URL(`/client/${encodeURIComponent(token)}`, OTP_CLIENT_PORTAL_UPSTREAM);
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), CLIENT_PORTAL_PROXY_TIMEOUT_MS);
+        let upstream;
+        try {
+            upstream = await fetch(upstreamUrl.href, {
+                method: 'GET',
+                redirect: 'manual',
+                signal: controller.signal,
+                headers: {
+                    Accept: req.get('accept') || 'text/html,application/xhtml+xml',
+                    'User-Agent': req.get('user-agent') || 'OTP-Site-Portal',
+                    'X-Forwarded-Host': req.get('host') || 'onlytrueperspective.tech',
+                    'X-Forwarded-Proto': req.headers['x-forwarded-proto'] || req.protocol || 'https'
+                }
+            });
+        } finally {
+            clearTimeout(timer);
+        }
+
+        if (upstream.status >= 300 && upstream.status < 400) {
+            const safeLocation = publicClientPortalPath(upstream.headers.get('location'));
+            return res.redirect(upstream.status, safeLocation || '/portal?status=review');
+        }
+        if (!upstream.ok) {
+            return res.redirect(302, '/portal?status=review');
+        }
+
+        const contentType = upstream.headers.get('content-type') || 'text/html; charset=utf-8';
+        const body = Buffer.from(await upstream.arrayBuffer()).toString('utf8');
+        res.status(upstream.status);
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+        return res.send(rewritePortalBody(body, contentType));
+    } catch (error) {
+        console.warn('Client portal proxy unavailable:', error?.message || error);
+        return res.redirect(302, '/portal?status=review');
+    }
 });
 
 app.use(express.static(staticPath, {
@@ -2147,6 +2377,18 @@ const allowedOrigins = [
     'https://app.onlytrueperspective.tech',
     'https://otp-site.vercel.app'
 ];
+const configuredOrigins = String(process.env.OTP_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+const vercelDeploymentOrigin = process.env.VERCEL_URL
+    ? `https://${String(process.env.VERCEL_URL).replace(/^https?:\/\//, '').replace(/\/+$/, '')}`
+    : '';
+const allowedOriginSet = new Set([
+    ...allowedOrigins,
+    ...configuredOrigins,
+    vercelDeploymentOrigin
+].filter(Boolean));
 const corsOptions = {
     origin: (origin, callback) => {
         if (!origin) return callback(null, true);
@@ -2154,16 +2396,11 @@ const corsOptions = {
         const isLocalOrigin = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin);
         if (isLocalOrigin) return callback(null, true);
 
-        if (allowedOrigins.includes(origin)) {
+        if (allowedOriginSet.has(origin)) {
             callback(null, true);
         } else {
-            // Tighten Vercel Preview URL matching if necessary
-            if (origin.endsWith('.vercel.app') && !origin.includes('evil')) {
-                callback(null, true);
-            } else {
-                console.warn(`🛑 CORS Blocked: ${origin}`);
-                callback(new Error('CORS Policy Restricted'));
-            }
+            console.warn(`🛑 CORS Blocked: ${origin}`);
+            callback(null, false);
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -2179,6 +2416,17 @@ const OTP_BOOKINGS_UPSTREAM = String(
     || process.env.OTP_BOOKINGS_API_BASE
     || 'https://otp-os.vercel.app'
 ).replace(/\/+$/, '');
+const OTP_PUBLIC_SITE_ORIGIN = String(
+    process.env.OTP_PUBLIC_SITE_ORIGIN
+    || 'https://onlytrueperspective.tech'
+).replace(/\/+$/, '');
+const OTP_CLIENT_PORTAL_UPSTREAM = String(
+    process.env.OTP_CLIENT_PORTAL_UPSTREAM_URL
+    || process.env.OTP_OS_PUBLIC_BASE
+    || OTP_BOOKINGS_UPSTREAM
+).replace(/\/+$/, '');
+const OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK = process.env.OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK === '1'
+    || (String(process.env.NODE_ENV || '').toLowerCase() === 'production' && process.env.OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK !== '0');
 const OTP_BOOKINGS_PROXY_HEADERS = new Set([
     'accept',
     'content-type',
@@ -2199,10 +2447,570 @@ const OTP_BOOKINGS_RESPONSE_HEADER_BLOCKLIST = new Set([
     'upgrade'
 ]);
 
+const BOOKING_CLIENT_MESSAGE = 'Your booking request was received. OTP will review your project and prepare the next step.';
+const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Booking received. OTP Oracle recommendation is pending review.';
+const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not submit the booking yet. Please check the required fields and try again.';
+const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit']);
+const CLIENT_PORTAL_TOKEN_RE = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,160}$/;
+const CLIENT_PORTAL_PROXY_TIMEOUT_MS = positiveNumber(process.env.CLIENT_PORTAL_PROXY_TIMEOUT_MS, 9000);
+
+const bookingSubmitLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        ok: false,
+        message: 'Too many booking attempts. Please wait a few minutes and try again.',
+        errorCode: 'rate_limited',
+        missingFields: []
+    }
+});
+
+function cleanBookingText(value, max = 2000) {
+    return sanitizeOpsText(value, max);
+}
+
+function publicBookingMessage(value, fallback = BOOKING_CLIENT_MESSAGE) {
+    const message = cleanBookingText(value, 240);
+    if (!message) return fallback;
+    if (/(https?:\/\/|otp-os|supabase|service[_ -]?key|stack trace|bearer|jwt|postgres|database)/i.test(message)) {
+        return fallback;
+    }
+    return message;
+}
+
+function normalizeClientPortalToken(value) {
+    const token = cleanBookingText(value, 180);
+    if (!token || !CLIENT_PORTAL_TOKEN_RE.test(token)) return '';
+    if (/(admin|terminal|api|schema|supabase|service|jwt|bearer)/i.test(token)) return '';
+    return token;
+}
+
+function publicClientPortalPath(value) {
+    const raw = cleanBookingText(value, 500);
+    if (!raw) return '';
+    const directToken = normalizeClientPortalToken(raw);
+    if (directToken) return `/client/${encodeURIComponent(directToken)}`;
+
+    try {
+        const parsed = new URL(raw, OTP_PUBLIC_SITE_ORIGIN);
+        const parts = parsed.pathname.split('/').filter(Boolean);
+        const clientIndex = parts.indexOf('client');
+        const token = clientIndex >= 0 ? normalizeClientPortalToken(parts[clientIndex + 1]) : '';
+        if (!token) return '';
+        const safe = new URL(`/client/${encodeURIComponent(token)}`, OTP_PUBLIC_SITE_ORIGIN);
+        return `${safe.pathname}${safe.search}`;
+    } catch (_) {
+        return '';
+    }
+}
+
+function rewritePortalBody(body, contentType = '') {
+    const type = String(contentType || '').toLowerCase();
+    if (!/(text\/html|text\/css|application\/javascript|text\/javascript)/.test(type)) return body;
+    const publicClientBase = `${OTP_PUBLIC_SITE_ORIGIN}/client/`;
+    return String(body || '')
+        .replaceAll(`${OTP_CLIENT_PORTAL_UPSTREAM}/client/`, publicClientBase)
+        .replaceAll('https://otp-os.vercel.app/client/', publicClientBase)
+        .replaceAll('http://otp-os.vercel.app/client/', publicClientBase);
+}
+
+function pickPublicOption(value, values) {
+    const raw = cleanBookingText(value, 160);
+    if (!raw || !Array.isArray(values)) return '';
+    return values.find((option) => String(option).toLowerCase() === raw.toLowerCase()) || '';
+}
+
+function normalizeBookingPhone(value) {
+    const raw = cleanBookingText(value, 80);
+    if (!raw) return '';
+    const digits = raw.replace(/\D/g, '').slice(0, 15);
+    if (digits.length >= 7) return `${raw.trim().startsWith('+') ? '+' : ''}${digits}`;
+    return raw.slice(0, 60);
+}
+
+function normalizeBookingDeadline(value) {
+    const raw = cleanBookingText(value, 160);
+    if (!raw) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+        const dt = new Date(`${raw}T00:00:00Z`);
+        if (!Number.isNaN(dt.getTime())) return raw;
+    }
+    return raw;
+}
+
+function bookingIdFromToken(token) {
+    const clean = cleanBookingText(token, 120);
+    if (clean) {
+        const hash = crypto.createHash('sha256').update(clean).digest('hex').slice(0, 12).toUpperCase();
+        return `BOOK-${hash}`;
+    }
+    return `BOOK-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`.toUpperCase();
+}
+
+function normalizeBookingPackageName(value) {
+    const raw = String(value || '').trim();
+    const lower = raw.toLowerCase();
+    if (!raw) return '';
+    if (lower === 'not sure yet' || lower === 'not_sure_yet' || lower === 'not-sure-yet') return 'Not Sure Yet';
+    if (lower.includes('signal')) return 'The Signal';
+    if (lower.includes('engine')) return 'The Engine';
+    if (lower.includes('system')) return 'The System';
+    if (lower.includes('custom')) return 'Custom Build';
+    return raw.slice(0, 80);
+}
+
+function packageDisplayToOpsPackage(packageName) {
+    const normalized = normalizeBookingPackageName(packageName);
+    if (normalized === 'The Signal' || normalized === 'The Engine' || normalized === 'The System') return normalized;
+    return 'Custom';
+}
+
+function packageDisplayForPublic(packageName) {
+    const normalized = normalizeBookingPackageName(packageName);
+    return normalized === 'Custom' ? 'Custom Build' : normalized;
+}
+
+function bookingPackageCards() {
+    const cards = Array.isArray(OTP_PRICING?.bookingPackages) ? OTP_PRICING.bookingPackages : [];
+    if (cards.length) return cards.map((card) => ({ ...card }));
+    const p = OTP_PRICING?.packages || {};
+    return [
+        {
+            id: 'the-signal',
+            internal_key: 'The Signal',
+            name: 'The Signal',
+            price: p.theSignal?.price_display || 'Starting at $500',
+            purpose: 'Entry-level creative service for a clean, focused deliverable.',
+            description: 'The Signal is for focused creative work that gives your brand a sharper first impression.',
+            best_for: ['Logo refresh', 'Simple flyer/design', 'Short video edit', 'Content cleanup', 'Landing page section', 'Brand starter work', 'Basic creative direction'],
+            examples: ['Video/content', 'Logo refresh', 'Starter design', 'Landing page section'],
+            cta: 'Start with The Signal'
+        },
+        {
+            id: 'the-engine',
+            internal_key: 'The Engine',
+            name: 'The Engine',
+            price: p.theEngine?.price_display || '$1,200 to $2,000',
+            purpose: 'A stronger package for brands that need multiple connected assets.',
+            description: 'The Engine builds the moving parts your brand needs to look real, move faster, and convert better.',
+            best_for: ['Logo + brand kit', 'Video campaign', 'Website/landing page', 'Content rollout', 'Social media visuals', 'Business presentation', 'Client-facing brand upgrade'],
+            examples: ['Brand kit', 'Video campaign', 'Landing page', 'Content rollout'],
+            cta: 'Build with The Engine',
+            recommended: true
+        },
+        {
+            id: 'the-system',
+            internal_key: 'The System',
+            name: 'The System',
+            price: p.theSystem?.price_display || 'Starting at $3,500+',
+            purpose: 'Full creative and business system.',
+            description: 'The System is for serious brands that need the full structure: visuals, website, automation, documents, and workflow.',
+            best_for: ['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business operating system'],
+            examples: ['Full website', 'AI automation', 'Client portal', 'Document workflow'],
+            cta: 'Build The System'
+        },
+        {
+            id: 'custom-build',
+            internal_key: 'Custom',
+            name: 'Custom Build',
+            price: p.custom?.price_display || 'Scope based',
+            purpose: 'For anything unique, advanced, or mixed.',
+            description: 'Custom Build is for projects that do not fit inside a box. OTP scopes the work and builds around the real goal.',
+            best_for: ['Custom app', 'AI tool', 'Artist rollout', 'Product launch', 'Event coverage', 'Long-term creative support', 'Mixed video/logo/site/automation project'],
+            examples: ['Custom app', 'AI tool', 'Artist rollout', 'Event coverage'],
+            cta: 'Request Custom Build'
+        }
+    ];
+}
+
+function buildPublicBookingConfig() {
+    const serviceTypes = Array.isArray(OTP_PRICING?.bookingServiceTypes)
+        ? OTP_PRICING.bookingServiceTypes
+        : [
+            'Video / Content',
+            'Logo / Brand Identity',
+            'Website / Landing Page',
+            'AI / Automation',
+            'Business System',
+            'Music / Artist Rollout',
+            'Event Coverage',
+            'Custom Request'
+        ];
+    return {
+        ok: true,
+        packages: bookingPackageCards(),
+        serviceTypes,
+        services: serviceTypes,
+        packageOptions: ['The Signal', 'The Engine', 'The System', 'Custom Build', 'Not Sure Yet'],
+        budgetRanges: ['Under $500', '$500 to $1,200', '$1,200 to $2,000', '$2,000 to $3,500', '$3,500+', 'Not sure yet'],
+        urgencyLevels: ['Flexible', 'Soon', 'Rush', 'Launch deadline'],
+        depositReadiness: ['Ready if scope is clear', 'Need quote first', 'Not ready yet'],
+        upload: {
+            supported: false,
+            max_bytes: 25 * 1024 * 1024,
+            allowed_mime_types: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'video/mp4', 'video/quicktime', 'application/pdf']
+        },
+        nextStep: 'OTP reviews the request, confirms scope, and prepares the right proposal, invoice, or agreement.'
+    };
+}
+
+function bookingLeadText(payload) {
+    return normalizeWhitespace([
+        `Service type: ${payload.service_type}`,
+        `Package interest: ${payload.package_interest}`,
+        `Business / brand: ${payload.business_name}`,
+        `Budget: ${payload.budget_range}`,
+        `Timeline: ${payload.ideal_deadline || payload.timeline}`,
+        `Urgency: ${payload.urgency_level}`,
+        `Deposit readiness: ${payload.deposit_readiness}`,
+        `Reference link: ${payload.reference_link}`,
+        `Social / website: ${payload.social_link}`,
+        `Project: ${payload.project_description}`
+    ].filter(Boolean).join('\n'));
+}
+
+function normalizeBookingRecommendation(oracle, fallbackPackage = '') {
+    const rec = oracle?.recommendation || {};
+    const missingInfo = Array.isArray(oracle?.completeness?.missing_fields)
+        ? oracle.completeness.missing_fields
+        : [];
+    return {
+        recommendedPackage: packageDisplayForPublic(rec.recommended_package || fallbackPackage || ''),
+        quoteRange: cleanBookingText(rec.quote_range || '', 180),
+        confidence: Number.isFinite(Number(oracle?.confidence)) ? Number(Number(oracle.confidence).toFixed(4)) : null,
+        reason: cleanBookingText(rec.package_reason || rec.documents_reason || '', 900),
+        suggestedDocuments: Array.isArray(rec.required_documents) ? rec.required_documents : [],
+        nextAction: cleanBookingText(rec.next_action || 'review_scope_and_prepare_next_step', 180),
+        followUpMessage: cleanBookingText(rec.draft_client_reply || '', 1600),
+        internalSummary: cleanBookingText(rec.lead_summary || oracle?.leadText || '', 1400),
+        missingInfo,
+        statusFlags: Array.isArray(rec.status_flags) && rec.status_flags.length ? rec.status_flags : ['manual_review']
+    };
+}
+
+function buildBookingInternalNotes({ bookingId, payload, recommendation, recommendationPending, clientId }) {
+    const meta = {
+        schema: 'otp-booking-meta-v1',
+        booking_id: bookingId,
+        source_type: 'otp_bookings',
+        booking_status: 'new',
+        requested_job_status: 'pending_review',
+        saved_job_status: 'New Lead',
+        payment_status: 'unpaid',
+        client_id: clientId || null,
+        client_name: payload.name,
+        client_email: payload.email,
+        client_phone: payload.phone || null,
+        business_name: payload.business_name || null,
+        social_link: payload.social_link || null,
+        reference_link: payload.reference_link || null,
+        service_type: payload.service_type,
+        package_interest: payload.package_interest,
+        recommended_package: recommendation?.recommendedPackage || null,
+        project_description: payload.project_description,
+        budget_range: payload.budget_range || null,
+        ideal_deadline: payload.ideal_deadline || null,
+        urgency_level: payload.urgency_level || null,
+        deposit_readiness: payload.deposit_readiness || null,
+        oracle_recommendation: recommendation || null,
+        oracle_status: recommendationPending ? 'pending' : 'ready',
+        created_at: new Date().toISOString()
+    };
+    return [
+        'OTP_BOOKING_META:',
+        JSON.stringify(meta, null, 2),
+        '',
+        'Internal note: booking entered from public OTP Bookings. Verify scope and price before sending invoices or agreements.'
+    ].join('\n').slice(0, 12000);
+}
+
+function parseBookingPayload(input) {
+    const body = input && typeof input === 'object' ? input : {};
+    const publicConfig = buildPublicBookingConfig();
+    const packageRaw = normalizeBookingPackageName(body.package_interest || body.packageInterest);
+    const packageInterest = publicConfig.packageOptions.includes(packageRaw) ? packageRaw : '';
+    const spamTrap = cleanBookingText(
+        body.otp_company_website || body.company_website || body.website_url || body._gotcha,
+        120
+    );
+    const payload = {
+        booking_token: cleanBookingText(body.booking_token || body.bookingToken, 120),
+        name: cleanBookingText(body.name, 140),
+        email: cleanBookingText(body.email, 254),
+        phone: normalizeBookingPhone(body.phone),
+        business_name: cleanBookingText(body.business_name || body.businessName || body.brand_name, 180),
+        social_link: cleanBookingText(body.social_link || body.socialWebsiteLink || body.website, 300),
+        service_type: pickPublicOption(body.service_type || body.serviceType, publicConfig.serviceTypes),
+        package_interest: packageInterest,
+        project_description: cleanBookingText(body.project_description || body.projectDescription, 9000),
+        reference_link: cleanBookingText(body.reference_link || body.referenceLink, 500),
+        budget_range: pickPublicOption(body.budget_range || body.budgetRange, publicConfig.budgetRanges)
+            || cleanBookingText(body.budget_range || body.budgetRange, 160),
+        ideal_deadline: normalizeBookingDeadline(body.ideal_deadline || body.idealDeadline || body.timeline),
+        urgency_level: pickPublicOption(body.urgency_level || body.urgencyLevel, publicConfig.urgencyLevels)
+            || cleanBookingText(body.urgency_level || body.urgencyLevel, 80),
+        deposit_readiness: pickPublicOption(body.deposit_readiness || body.depositReadiness, publicConfig.depositReadiness)
+            || cleanBookingText(body.deposit_readiness || body.depositReadiness, 120),
+        upload_ids: Array.isArray(body.upload_ids) ? body.upload_ids.map((v) => cleanBookingText(v, 140)).filter(Boolean).slice(0, 20) : []
+    };
+    const missingFields = [];
+    if (!payload.name) missingFields.push('name');
+    if (!payload.email) missingFields.push('email');
+    if (payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) missingFields.push('valid_email');
+    if (!payload.service_type) missingFields.push('service_type');
+    if (!payload.package_interest) missingFields.push('package_interest');
+    if (!payload.project_description) missingFields.push('project_description');
+    return { payload, missingFields, spamTrap };
+}
+
+async function createBookingContact(payload, recommendation) {
+    if (!supabaseAdmin) return null;
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('contacts')
+            .insert([{
+                name: payload.name,
+                email: payload.email,
+                service: payload.service_type,
+                message: bookingLeadText(payload).slice(0, 12000),
+                budget: payload.budget_range || null,
+                timeline: payload.ideal_deadline || null,
+                ai_status: recommendation ? 'booking_ready' : 'booking_pending'
+            }])
+            .select('id')
+            .single();
+        if (error) throw error;
+        return data?.id || null;
+    } catch (error) {
+        console.warn('booking contact save skipped:', error?.message || error);
+        return null;
+    }
+}
+
+async function runBookingOracle(payload, bookingId) {
+    if (!supabaseAdmin) return { recommendation: null, pending: true, error: 'oracle_unavailable' };
+    try {
+        const lead = {
+            id: bookingId,
+            name: payload.name,
+            email: payload.email,
+            phone: payload.phone,
+            company: payload.business_name,
+            service: payload.service_type,
+            message: bookingLeadText(payload),
+            project_details: payload.project_description,
+            budget: payload.budget_range,
+            timeline: payload.ideal_deadline
+        };
+        const oracle = await runOracleRecommendation({ lead, leadId: bookingId, sourceTable: 'contacts' });
+        return {
+            recommendation: normalizeBookingRecommendation(oracle, payload.package_interest),
+            pending: false,
+            error: null
+        };
+    } catch (error) {
+        console.warn('booking oracle pending:', error?.message || error);
+        return { recommendation: null, pending: true, error: 'oracle_pending' };
+    }
+}
+
+async function saveBookingOpsJob({ bookingId, payload, recommendation, recommendationPending, clientId }) {
+    if (!supabaseAdmin) throw new Error('ops_unavailable');
+    const selectedPackage = payload.package_interest === 'Not Sure Yet'
+        ? (recommendation?.recommendedPackage || 'Custom Build')
+        : payload.package_interest;
+    const packageType = packageDisplayToOpsPackage(selectedPackage);
+    const titleBits = [payload.service_type, payload.business_name || payload.name].filter(Boolean);
+    const projectTitle = titleBits.join(' - ').slice(0, 180) || 'OTP Booking Request';
+    const packageCard = bookingPackageCards().find((card) => card.internal_key === packageType || card.name === packageDisplayForPublic(selectedPackage));
+    const deliverables = [
+        packageCard?.purpose ? `Package purpose: ${packageCard.purpose}` : '',
+        packageCard?.examples?.length ? `Service examples: ${packageCard.examples.join(', ')}` : '',
+        payload.reference_link ? `Reference: ${payload.reference_link}` : ''
+    ].filter(Boolean).join('\n');
+    const followUp = recommendation?.followUpMessage || BOOKING_PENDING_RECOMMENDATION_MESSAGE;
+    const normalized = normalizeOpsJobPayload({
+        jobId: bookingId,
+        sourceType: 'otp_bookings',
+        clientName: payload.name,
+        businessName: payload.business_name,
+        phone: payload.phone,
+        email: payload.email,
+        serviceType: payload.service_type,
+        packageType,
+        projectTitle,
+        projectDescription: payload.project_description,
+        deliverables,
+        addOns: [
+            payload.package_interest ? `Package interest: ${payload.package_interest}` : '',
+            payload.budget_range ? `Budget range: ${payload.budget_range}` : '',
+            payload.urgency_level ? `Urgency: ${payload.urgency_level}` : ''
+        ].filter(Boolean).join('\n'),
+        startDate: '',
+        dueDate: '',
+        allowDateOverride: false,
+        totalPrice: '0',
+        depositAmount: '0',
+        paymentMethod: '',
+        paymentStatus: 'Unpaid',
+        jobStatus: 'New Lead',
+        clientNotes: followUp,
+        internalNotes: buildBookingInternalNotes({ bookingId, payload, recommendation, recommendationPending, clientId }),
+        portfolioPermission: false,
+        agreementSigned: false,
+        invoiceSent: false,
+        createdBy: 'otp_bookings'
+    }, { actor: 'otp_bookings' });
+    if (!normalized.ok) {
+        throw new Error(normalized.errors.join(' '));
+    }
+    const { data, error } = await supabaseAdmin
+        .from('ops_jobs')
+        .upsert([normalized.row], { onConflict: 'job_id' })
+        .select('*')
+        .maybeSingle();
+    if (error) throw error;
+    return mapOpsJobRowToApi(data);
+}
+
+async function forwardBookingSubmitToUpstream(body) {
+    const upstreamUrl = new URL('/api/bookings/submit', OTP_BOOKINGS_UPSTREAM);
+    const upstream = await fetch(upstreamUrl.href, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body || {}),
+        redirect: 'manual'
+    });
+    const text = await upstream.text();
+    let payload = {};
+    try {
+        payload = JSON.parse(text || '{}');
+    } catch (_) {
+        payload = {};
+    }
+    if (!upstream.ok || payload.ok === false || payload.error) {
+        throw new Error(payload.message || `upstream_${upstream.status}`);
+    }
+    return payload;
+}
+
+app.get('/api/bookings/config', (req, res) => {
+    res.json(buildPublicBookingConfig());
+});
+
+app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '256kb' }), async (req, res) => {
+    const { payload, missingFields, spamTrap } = parseBookingPayload(req.body);
+    if (spamTrap) {
+        return res.status(400).json({
+            ok: false,
+            message: BOOKING_GENERIC_ERROR_MESSAGE,
+            errorCode: 'spam_rejected',
+            missingFields: []
+        });
+    }
+    if (missingFields.length) {
+        return res.status(400).json({
+            ok: false,
+            message: BOOKING_GENERIC_ERROR_MESSAGE,
+            errorCode: 'validation_failed',
+            missingFields
+        });
+    }
+
+    try {
+        if (!supabaseAdmin) {
+            if (OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK) {
+                try {
+                    const upstreamPayload = await forwardBookingSubmitToUpstream(req.body);
+                    const upstreamRecommendation = upstreamPayload.recommendation && typeof upstreamPayload.recommendation === 'object' && !Array.isArray(upstreamPayload.recommendation)
+                        ? upstreamPayload.recommendation
+                        : null;
+                    const upstreamPortalPath = publicClientPortalPath(
+                        upstreamPayload.clientPortalPath
+                        || upstreamPayload.portalPath
+                        || upstreamPayload.clientPortalUrl
+                        || upstreamPayload.portalUrl
+                        || upstreamPayload.inviteUrl
+                    );
+                    return res.json({
+                        ok: true,
+                        bookingId: upstreamPayload.bookingId || upstreamPayload.booking_id || null,
+                        jobId: upstreamPayload.jobId || upstreamPayload.job_id || null,
+                        clientId: upstreamPayload.clientId || upstreamPayload.client_id || null,
+                        message: upstreamRecommendation ? BOOKING_CLIENT_MESSAGE : 'Booking saved. Recommendation pending.',
+                        recommendation: upstreamRecommendation,
+                        ...(upstreamPortalPath ? { clientPortalPath: upstreamPortalPath } : {}),
+                        nextStep: publicBookingMessage(
+                            upstreamPayload.nextStep || upstreamPayload.next_action,
+                            'OTP will review the request and prepare the next step.'
+                        )
+                    });
+                } catch (upstreamError) {
+                    console.warn('booking upstream fallback failed:', upstreamError?.message || upstreamError);
+                }
+            }
+            return res.status(503).json({
+                ok: false,
+                message: BOOKING_GENERIC_ERROR_MESSAGE,
+                errorCode: 'otp_os_unavailable',
+                missingFields: []
+            });
+        }
+
+        const bookingId = bookingIdFromToken(payload.booking_token);
+        const oracleResult = await runBookingOracle(payload, bookingId);
+        const clientId = await createBookingContact(payload, oracleResult.recommendation);
+        const job = await saveBookingOpsJob({
+            bookingId,
+            payload,
+            recommendation: oracleResult.recommendation,
+            recommendationPending: oracleResult.pending,
+            clientId
+        });
+        const recommendation = oracleResult.pending ? null : oracleResult.recommendation;
+        return res.json({
+            ok: true,
+            bookingId,
+            jobId: job?.jobId || bookingId,
+            clientId,
+            message: recommendation ? BOOKING_CLIENT_MESSAGE : 'Booking saved. Recommendation pending.',
+            recommendation,
+            nextStep: recommendation?.nextAction || 'OTP will review the request, confirm scope, and prepare the right proposal, invoice, or agreement.'
+        });
+    } catch (error) {
+        console.error('booking submit failed:', error?.message || error);
+        return res.status(500).json({
+            ok: false,
+            message: BOOKING_GENERIC_ERROR_MESSAGE,
+            errorCode: 'booking_save_failed',
+            missingFields: []
+        });
+    }
+});
+
 // Public OTP BOOKINGS stays on onlytrueperspective.tech while the canonical
 // booking intake API continues to live inside OTP OS.
 app.use('/api/bookings', async (req, res) => {
     try {
+        const publicPath = new URL(req.originalUrl, 'https://onlytrueperspective.tech').pathname;
+        if (!BOOKING_PUBLIC_PROXY_PATHS.has(publicPath)) {
+            return res.status(404).json({
+                ok: false,
+                success: false,
+                message: 'Booking endpoint not found.',
+                errorCode: 'not_found'
+            });
+        }
+        if (!OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK) {
+            return res.status(503).json({
+                ok: false,
+                success: false,
+                message: 'OTP Bookings is temporarily unavailable.',
+                errorCode: 'otp_os_unavailable'
+            });
+        }
         const upstreamUrl = new URL(req.originalUrl, OTP_BOOKINGS_UPSTREAM);
         const headers = {};
 
@@ -2237,8 +3045,9 @@ app.use('/api/bookings', async (req, res) => {
         console.error('OTP bookings proxy error:', error?.message || error);
         return res.status(502).json({
             success: false,
-            error: true,
-            message: 'OTP Bookings is temporarily unavailable.'
+            ok: false,
+            message: 'OTP Bookings is temporarily unavailable.',
+            errorCode: 'otp_os_unavailable'
         });
     }
 });
@@ -2259,7 +3068,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API rate limiting
-app.set('trust proxy', 1); // Trust Vercel Proxy
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 500, // Increased from 50 to 500 to support high-traffic drops
@@ -2319,9 +3127,49 @@ app.get('/api/health', async (req, res) => {
     res.json(health);
 });
 
-app.all('/api/diag', (req, res) => {
-    res.json({ method: req.method, path: req.path, headers: req.headers });
+app.get('/api/youtube/videos', async (req, res) => {
+    const fallbackVideos = OTP_VIDEO_LIBRARY && typeof OTP_VIDEO_LIBRARY.getFallbackVideos === 'function'
+        ? OTP_VIDEO_LIBRARY.getFallbackVideos()
+        : [];
+    const now = Date.now();
+
+    try {
+        if (youtubeVideoCache.videos.length && now - youtubeVideoCache.fetchedAt < YOUTUBE_SYNC_CACHE_TTL_MS) {
+            return res.json({
+                ok: true,
+                videos: youtubeVideoCache.videos,
+                fallbackUsed: false
+            });
+        }
+
+        const liveVideos = await fetchLatestYoutubeVideos();
+        const videos = normalizeYoutubeVideos(liveVideos);
+        if (!videos.length) throw new Error('No YouTube videos returned');
+
+        youtubeVideoCache = { fetchedAt: now, videos };
+        return res.json({
+            ok: true,
+            videos,
+            fallbackUsed: false
+        });
+    } catch (error) {
+        const staleCacheOk = youtubeVideoCache.videos.length && now - youtubeVideoCache.fetchedAt < YOUTUBE_SYNC_STALE_TTL_MS;
+        const videos = staleCacheOk ? youtubeVideoCache.videos : fallbackVideos;
+        console.warn('youtube-video-sync:', error.message);
+        return res.status(200).json({
+            ok: false,
+            videos,
+            fallbackUsed: true,
+            message: 'Showing saved videos while YouTube updates.'
+        });
+    }
 });
+
+if (process.env.NODE_ENV !== 'production' && process.env.OTP_ENABLE_PUBLIC_DIAG === '1') {
+    app.all('/api/diag', (req, res) => {
+        res.json({ success: true, method: req.method, path: req.path });
+    });
+}
 
 // Strict Rate Limiting for Login Route (Brute-force protection)
 const authLimiter = rateLimit({
@@ -3191,7 +4039,7 @@ function normalizeOpsJobPayload(payload, { existingJobId = null, actor = null } 
     const jobId = String(existingJobId || p.jobId || '').trim() || generateJobId();
 
     const sourceTypeRaw = String(p.sourceType || p.source_type || '').trim();
-    const sourceType = (sourceTypeRaw && ['manualIntake', 'quickDeal', 'oracleLead'].includes(sourceTypeRaw)) ? sourceTypeRaw : 'manualIntake';
+    const sourceType = (sourceTypeRaw && ['manualIntake', 'quickDeal', 'oracleLead', 'otp_bookings'].includes(sourceTypeRaw)) ? sourceTypeRaw : 'manualIntake';
 
     const clientName = sanitizeOpsText(p.clientName, 140);
     const businessName = sanitizeOpsText(p.businessName, 180);
@@ -3337,6 +4185,7 @@ function mapOracleRecommendedPackageToOpsPackageType(recommendedPackage) {
     if (OPS_JOB.packageTypes.includes(pkg)) return pkg;
     const p = pkg.toLowerCase();
     if (!p) return 'Custom';
+    if (/(custom build|custom request|scope based|scope-based)/.test(p)) return 'Custom';
     if (/(starter|the signal|^signal|simple edit|video editing|edit only|quick edit)/.test(p)) return 'The Signal';
     if (/(the system|^system\b|premium multi|enterprise|custom website architecture|architecture)/.test(p)) return 'The System';
     if (/(the engine|^engine\b|business website|growth|ongoing|retainer)/.test(p)) return 'The Engine';
@@ -5462,7 +6311,11 @@ app.post('/api/contact/submit', async (req, res) => {
     // 0. Honeypot Spam Check
     if (_gotcha) {
         console.warn(`🛑 Spam caught by honeypot: ${email}`);
-        return res.status(200).json({ success: true, message: "Contact received." }); // Fake success for bots
+        return res.status(400).json({
+            success: false,
+            message: 'We could not submit this request. Please try again.',
+            errorCode: 'spam_rejected'
+        });
     }
 
     const nameT = name != null ? String(name).trim().slice(0, 200) : '';
@@ -5482,7 +6335,13 @@ app.post('/api/contact/submit', async (req, res) => {
 
     try {
         const adminClient = supabaseAdmin; 
-        if (!adminClient) throw new Error("Server missing Supabase Admin Key");
+        if (!adminClient) {
+            return res.status(503).json({
+                success: false,
+                message: 'Contact workflow is temporarily unavailable.',
+                errorCode: 'contact_unavailable'
+            });
+        }
 
         // 2. Save Contact to DB
         const { data: contactData, error: dbError } = await adminClient
@@ -6148,7 +7007,7 @@ app.use((err, req, res, next) => {
     const errorLog = `[${new Date().toISOString()}] ERROR: ${err.message}\nStack: ${err.stack}\n`;
     // Console only for Vercel
     console.error(errorLog);
-    res.status(500).json({ success: false, message: "Internal Server Error", error: err.message });
+    res.status(500).json({ success: false, message: "Internal Server Error", errorCode: "internal_server_error" });
 });
 
 // --- START SERVER ---

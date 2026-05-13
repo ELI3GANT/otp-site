@@ -654,6 +654,7 @@ window.OTP.initRealtimeState = async function() {
     // SAFETY: Never sync on Admin/Portal
     if (window.location.pathname.includes('otp-terminal') || 
         window.location.pathname.includes('portal')) return;
+    if (navigator.webdriver && !(window.OTP_CONFIG && window.OTP_CONFIG.allowRealtimeInAutomation)) return;
 
     if (window.__OTP_INIT_REALTIME_STATE__) return;
 
@@ -1060,6 +1061,272 @@ function initSite() {
         }, { rootMargin: '250px 0px', threshold: 0.01 });
 
         embeds.forEach((iframe) => observer.observe(iframe));
+    })();
+
+    (function initYoutubeVideoSections() {
+        const featuredRoot = document.querySelector('[data-video-feed="featured"]');
+        const archiveRoot = document.querySelector('[data-video-feed="archive"]');
+        if (!featuredRoot && !archiveRoot) return;
+
+        const lib = window.OTP_VIDEO_LIBRARY;
+        const fallbackVideos = lib && typeof lib.getFallbackVideos === 'function'
+            ? lib.getFallbackVideos()
+            : [];
+
+        const safeUrl = (raw) => {
+            if (window.OTP && typeof window.OTP.sanitizeHttpUrl === 'function') {
+                return window.OTP.sanitizeHttpUrl(raw);
+            }
+            try {
+                const url = new URL(String(raw || ''), window.location.origin);
+                return (url.protocol === 'http:' || url.protocol === 'https:') ? url.toString() : '';
+            } catch (e) {
+                return '';
+            }
+        };
+
+        const text = (value, fallback = '') => {
+            const raw = String(value == null ? '' : value)
+                .replace(/[\u0000-\u001f\u007f]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return raw || fallback;
+        };
+
+        const formatVideoDate = (video) => {
+            if (video && video.publishedAt) {
+                const date = new Date(video.publishedAt);
+                if (!Number.isNaN(date.getTime())) {
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                }
+            }
+            return text(video && video.year, 'OTP Archive');
+        };
+
+        const createBadge = (label, className) => {
+            const badge = document.createElement('span');
+            badge.className = className || 'otp-platform-badge';
+            badge.textContent = label;
+            return badge;
+        };
+
+        const createVideoImage = (video, className) => {
+            const img = document.createElement('img');
+            img.className = className;
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.alt = text(video.title, 'OTP video thumbnail');
+            img.src = safeUrl(video.thumbnail) || `https://i.ytimg.com/vi/${encodeURIComponent(video.id)}/hqdefault.jpg`;
+            img.addEventListener('error', () => {
+                img.removeAttribute('src');
+                img.classList.add('otp-video-img-missing');
+            }, { once: true });
+            return img;
+        };
+
+        const createVideoActions = (video, watchLabel) => {
+            const actions = document.createElement('div');
+            actions.className = 'otp-video-card-actions';
+
+            const watchUrl = safeUrl(video.url);
+            if (watchUrl) {
+                const watch = document.createElement('a');
+                watch.className = 'otp-video-action otp-video-action-primary';
+                watch.href = watchUrl;
+                watch.target = '_blank';
+                watch.rel = 'noopener noreferrer';
+                watch.textContent = watchLabel || 'Watch';
+                actions.appendChild(watch);
+            }
+
+            if (video.bookable !== false) {
+                const book = document.createElement('a');
+                book.className = 'otp-video-action otp-video-action-secondary';
+                book.href = '/bookings';
+                book.textContent = 'Book Similar Work';
+                actions.appendChild(book);
+            }
+
+            return actions;
+        };
+
+        const makeVideoCardClickable = (card, video) => {
+            const watchUrl = safeUrl(video && video.url);
+            if (!card || !watchUrl) return;
+            card.classList.add('is-clickable');
+            card.setAttribute('aria-label', `${text(video.title, 'OTP video')} - open video`);
+            card.addEventListener('click', (event) => {
+                if (event.target && event.target.closest && event.target.closest('a, button, input, textarea, select')) return;
+                window.open(watchUrl, '_blank', 'noopener,noreferrer');
+            });
+        };
+
+        const createFeaturedCard = (video) => {
+            const card = document.createElement('article');
+            card.className = 'work-card-mini otp-video-card k-hover';
+            card.dataset.videoId = video.id;
+
+            const thumb = document.createElement('div');
+            thumb.className = 'work-thumb-visual portfolio-visual';
+            thumb.appendChild(createVideoImage(video, 'work-img-full'));
+
+            const scanline = document.createElement('div');
+            scanline.className = 'scanline-overlay';
+            thumb.appendChild(scanline);
+
+            const overlay = document.createElement('div');
+            overlay.className = 'work-overlay-info';
+            overlay.appendChild(createBadge('YouTube', 'work-type-tag'));
+            thumb.appendChild(overlay);
+            card.appendChild(thumb);
+
+            const meta = document.createElement('div');
+            meta.className = 'work-meta-mini otp-video-meta';
+            meta.appendChild(createBadge('YouTube', 'otp-platform-badge'));
+
+            const title = document.createElement('h3');
+            title.className = 'work-title-mini';
+            title.textContent = text(video.title, 'OTP video');
+            meta.appendChild(title);
+
+            const description = document.createElement('p');
+            description.className = 'otp-video-description';
+            description.textContent = text(video.description, 'Watch the latest OTP video and book creative work for your own project.');
+            meta.appendChild(description);
+
+            const row = document.createElement('div');
+            row.className = 'otp-card-meta-row';
+            row.appendChild(createBadge(text(video.category, 'Video / Recap'), 'otp-category-pill'));
+            row.appendChild(createBadge(formatVideoDate(video), 'otp-date-pill'));
+            meta.appendChild(row);
+            meta.appendChild(createVideoActions(video, video.id === 'j70o4Psmxfk' ? 'Watch Recap' : 'Watch'));
+            card.appendChild(meta);
+            makeVideoCardClickable(card, video);
+            return card;
+        };
+
+        const createArchiveCard = (video) => {
+            const card = document.createElement('article');
+            card.className = 'project-card otp-archive-card k-hover';
+            card.dataset.category = text(video.category, 'Video / Recap');
+            card.dataset.videoId = video.id;
+
+            card.appendChild(createVideoImage(video, 'project-img-static'));
+
+            const overlay = document.createElement('div');
+            overlay.className = 'project-overlay otp-project-overlay';
+
+            const top = document.createElement('div');
+            top.className = 'otp-archive-card-topline';
+            top.appendChild(createBadge('YouTube', 'otp-platform-badge'));
+            top.appendChild(createBadge(formatVideoDate(video), 'otp-date-pill'));
+            overlay.appendChild(top);
+
+            const title = document.createElement('h3');
+            title.textContent = text(video.title, 'OTP video');
+            overlay.appendChild(title);
+
+            const category = document.createElement('span');
+            category.className = 'otp-archive-category';
+            category.textContent = text(video.category, 'Video / Recap');
+            overlay.appendChild(category);
+
+            const description = document.createElement('p');
+            description.className = 'otp-video-description';
+            description.textContent = text(video.description, 'A moment from the OTP vault.');
+            overlay.appendChild(description);
+            overlay.appendChild(createVideoActions(video, video.id === 'j70o4Psmxfk' ? 'Watch Recap' : 'Watch'));
+            card.appendChild(overlay);
+            makeVideoCardClickable(card, video);
+            return card;
+        };
+
+        const setEmptyState = (root, message) => {
+            root.replaceChildren();
+            const empty = document.createElement('div');
+            empty.className = 'otp-video-empty';
+            empty.textContent = message || 'No videos are available right now.';
+            root.appendChild(empty);
+        };
+
+        const renderFeatured = (videos, fallbackUsed) => {
+            if (!featuredRoot) return;
+            const selected = lib && typeof lib.getFeaturedVideos === 'function'
+                ? lib.getFeaturedVideos(videos, 4)
+                : videos.slice(0, 4);
+            if (!selected.length) return setEmptyState(featuredRoot, 'Recent work is updating. Check back shortly.');
+            featuredRoot.replaceChildren(...selected.map(createFeaturedCard));
+            featuredRoot.dataset.syncState = fallbackUsed ? 'fallback' : 'live';
+        };
+
+        const renderArchive = (videos, fallbackUsed) => {
+            if (!archiveRoot) return;
+            if (!videos.length) return setEmptyState(archiveRoot, 'The Vault is updating. Check back shortly.');
+            archiveRoot.replaceChildren(...videos.map(createArchiveCard));
+            archiveRoot.dataset.syncState = fallbackUsed ? 'fallback' : 'live';
+            wireArchiveFilters();
+        };
+
+        const wireArchiveFilters = () => {
+            const buttons = Array.from(document.querySelectorAll('.filter-btn[data-filter]'));
+            const cards = Array.from(document.querySelectorAll('[data-video-feed="archive"] .project-card'));
+            if (!buttons.length || !cards.length) return;
+
+            const applyFilter = (filter) => {
+                const next = text(filter, 'All');
+                buttons.forEach((button) => button.classList.toggle('active', button.dataset.filter === next));
+                cards.forEach((card) => {
+                    const matches = next === 'All' || card.dataset.category === next;
+                    card.hidden = !matches;
+                });
+            };
+
+            buttons.forEach((button) => {
+                if (button.dataset.otpFilterWired === 'true') return;
+                button.dataset.otpFilterWired = 'true';
+                button.addEventListener('click', () => applyFilter(button.dataset.filter));
+            });
+
+            const active = buttons.find((button) => button.classList.contains('active')) || buttons[0];
+            applyFilter(active ? active.dataset.filter : 'All');
+        };
+
+        const getVideos = async () => {
+            const controller = new AbortController();
+            const timer = window.setTimeout(() => controller.abort(), 7000);
+            try {
+                const apiBase = window.OTP && typeof window.OTP.getApiBase === 'function'
+                    ? window.OTP.getApiBase()
+                    : window.location.origin;
+                const endpoint = new URL('/api/youtube/videos', apiBase).toString();
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: { Accept: 'application/json' },
+                    signal: controller.signal
+                });
+                const data = await response.json().catch(() => null);
+                if (!response.ok || !data || !Array.isArray(data.videos)) throw new Error('Video API unavailable');
+                const videos = lib && typeof lib.mergeVideoLists === 'function'
+                    ? lib.mergeVideoLists(data.videos, fallbackVideos)
+                    : data.videos;
+                return { videos, fallbackUsed: data.fallbackUsed === true || data.ok === false };
+            } finally {
+                window.clearTimeout(timer);
+            }
+        };
+
+        getVideos()
+            .catch(() => ({ videos: fallbackVideos, fallbackUsed: true }))
+            .then(({ videos, fallbackUsed }) => {
+                const normalized = lib && typeof lib.mergeVideoLists === 'function'
+                    ? lib.mergeVideoLists(videos, fallbackVideos)
+                    : videos;
+                renderFeatured(normalized, fallbackUsed);
+                renderArchive(normalized, fallbackUsed);
+                document.dispatchEvent(new CustomEvent('otp:videos-rendered', {
+                    detail: { fallbackUsed, count: normalized.length }
+                }));
+            });
     })();
 
     (function injectThemeToggle() {

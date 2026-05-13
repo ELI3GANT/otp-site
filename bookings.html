@@ -3,169 +3,285 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="Book your shoot, edit, logo, or creative project with OTP. Send project details, upload references, and request a tailored OnlyTruePerspective quote." />
-    <meta name="theme-color" content="#090907" />
+    <meta name="description" content="Book creative work with OTP. Choose a package, describe the project, and get a clear recommendation, quote range, and next step." />
+    <meta name="theme-color" content="#070707" />
     <link rel="canonical" href="https://www.onlytrueperspective.tech/bookings" />
-    <meta property="og:title" content="Book OTP | OnlyTruePerspective" />
-    <meta property="og:description" content="Start a premium creative project with OTP. Submit details, references, and quote/deposit preferences in one mobile-ready flow." />
+    <meta property="og:title" content="OTP Bookings | OnlyTruePerspective" />
+    <meta property="og:description" content="Book creative work built for brands, artists, and businesses ready to look official." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.onlytrueperspective.tech/bookings" />
     <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/otp-logo-transparent.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Book OTP | OnlyTruePerspective" />
-    <meta name="twitter:description" content="Book your shoot, edit, logo, or creative project with OTP." />
+    <meta name="twitter:title" content="OTP Bookings | OnlyTruePerspective" />
+    <meta name="twitter:description" content="Start a premium creative project with OTP." />
     <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/otp-logo-transparent.png" />
-    <title>Book OTP | OnlyTruePerspective</title>
+    <title>OTP Bookings | OnlyTruePerspective</title>
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="icon" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/bookings.css?v=20260508-premium" />
+    <link rel="stylesheet" href="/bookings.css?v=20260513-sigil1" />
   </head>
   <body>
     <main class="booking-page">
       <header class="booking-header">
         <a class="brand" href="/bookings" aria-label="OTP Bookings">
-          <span class="brand-mark"><img src="/assets/otp-logo-transparent.png" alt="OTP" /></span>
+          <span class="official-brand-mark">
+            <img src="/assets/otp.gif" alt="OTP Signal Pulse Logo" width="250" height="250" decoding="async" />
+          </span>
           <span>
-            <strong>BOOK OTP</strong>
-            <small>OnlyTruePerspective</small>
+            <strong>OTP Bookings</strong>
+            <small>Creative work starts here</small>
           </span>
         </a>
-        <a class="admin-link" href="https://www.onlytrueperspective.tech" rel="noopener">Main Site</a>
+        <nav class="top-actions" aria-label="Booking navigation">
+          <a href="https://onlytrueperspective.tech" rel="noopener noreferrer">Live Site</a>
+          <a href="/portal">Client Portal</a>
+          <a href="#booking-form">Start Booking</a>
+        </nav>
       </header>
 
-      <section class="hero">
-        <div>
-          <p class="eyebrow">OnlyTruePerspective bookings</p>
-          <h1>Book your shoot, edit, logo, or creative project with OTP.</h1>
-          <p class="hero-copy">Pick the creative lane, send references, and request a tailored OTP quote. Deposit links stay professional and only appear when the project is ready to lock in.</p>
+      <section class="hero" aria-labelledby="booking-title">
+        <div class="hero-copy-wrap">
+          <div class="hero-system-lockup">
+            <span class="portal-sigil otp-booking-sigil booking-portal-sigil hero-sigil" aria-hidden="true">
+              <span class="sigil-aura"></span>
+              <span class="sigil-orbit orbit-one"></span>
+              <span class="sigil-orbit orbit-two"></span>
+              <span class="sigil-orbit orbit-three"></span>
+              <svg class="sigil-vector booking-glyph" viewBox="0 0 100 100" focusable="false" aria-hidden="true">
+                <rect x="28" y="28" width="44" height="44" rx="10"></rect>
+                <path d="M38 28v-9M62 28v-9M36 44h28M36 56h14M54 56h10"></path>
+                <path d="M50 14l12 12M50 86L38 74M86 50L74 38M14 50l12 12"></path>
+              </svg>
+              <span class="booking-core"></span>
+              <span class="sigil-scan"></span>
+              <span class="sigil-particle p1"></span>
+              <span class="sigil-particle p2"></span>
+              <span class="sigil-particle p3"></span>
+            </span>
+            <p class="hero-label">OTP Bookings Portal</p>
+          </div>
+          <h1 id="booking-title">Creative systems for brands, artists, and businesses ready to look official.</h1>
+          <p class="hero-copy">OTP builds visuals, content, websites, booking flows, and AI-powered systems that help ideas move like real brands.</p>
+          <div class="hero-actions">
+            <a class="primary-action" href="#booking-form">Start Booking</a>
+            <a class="secondary-action" href="#packages">Build My Package</a>
+          </div>
+          <div class="flow-chips" aria-label="OTP booking flow">
+            <span>Live Site</span>
+            <span>Bookings</span>
+            <span>OTP OS Profile</span>
+            <span>Oracle</span>
+            <span>Documents</span>
+            <span>Payment</span>
+            <span>Client Portal</span>
+          </div>
         </div>
-        <a class="hero-action" href="#booking-form">Book OTP</a>
+        <aside class="oracle-card" aria-label="OTP Oracle summary">
+          <span class="portal-sigil otp-oracle-sigil oracle-emblem" aria-hidden="true">
+            <span class="sigil-aura"></span>
+            <span class="sigil-orbit orbit-one"></span>
+            <span class="sigil-orbit orbit-two"></span>
+            <svg class="sigil-vector oracle-glyph" viewBox="0 0 100 100" focusable="false" aria-hidden="true">
+              <path d="M15 50c9-16 21-24 35-24s26 8 35 24c-9 16-21 24-35 24S24 66 15 50Z"></path>
+              <circle cx="50" cy="50" r="13"></circle>
+              <circle cx="50" cy="50" r="4"></circle>
+              <path d="M50 14v10M50 76v10M18 28l8 6M82 28l-8 6M18 72l8-6M82 72l-8-6"></path>
+            </svg>
+            <span class="oracle-core"></span>
+            <span class="sigil-scan"></span>
+            <span class="sigil-particle p1"></span>
+            <span class="sigil-particle p2"></span>
+            <span class="sigil-particle p3"></span>
+          </span>
+          <div class="oracle-card-topline">
+            <span>OTP Oracle</span>
+            <strong class="oracle-status"><span aria-hidden="true"></span>System Active</strong>
+          </div>
+          <strong id="oracle-package-name">Package system standing by</strong>
+          <p id="oracle-package-message">OTP Oracle reviews your request and helps recommend the right package, documents, and next action.</p>
+          <div class="oracle-tags" aria-label="Oracle routing capabilities">
+            <span>Package Logic</span>
+            <span>Document Routing</span>
+            <span>Next Step Planning</span>
+          </div>
+        </aside>
       </section>
 
-      <section class="booking-layout">
-        <div class="service-column">
-          <div class="section-heading">
-            <p class="eyebrow">Services</p>
-            <h2>Pick the project</h2>
+      <section id="packages" class="section-block" aria-labelledby="packages-title">
+        <div class="section-heading">
+          <p>Packages</p>
+          <h2 id="packages-title">Pick the level of build.</h2>
+          <span>Video, logo, website, AI, automation, full systems, and custom bundles can all start here.</span>
+        </div>
+        <div id="package-grid" class="package-grid" aria-live="polite">
+          <article class="package-card loading-card">Loading packages...</article>
+        </div>
+        <div id="package-selection-summary" class="package-selection-summary" aria-live="polite">
+          <span class="summary-signal" aria-hidden="true"></span>
+          <div>
+            <strong id="selected-package-name">No package selected</strong>
+            <p id="selected-package-message">Pick a system module to tune the booking flow, colors, and review summary.</p>
           </div>
-          <div id="service-grid" class="service-grid" aria-live="polite"></div>
+          <span id="selected-package-price">Scope will appear here</span>
+        </div>
+      </section>
+
+      <section class="booking-shell" aria-labelledby="form-title">
+        <div class="booking-context">
+          <p>What happens next</p>
+          <h2>OTP turns the request into an operating-system record.</h2>
+          <span>After submission, OTP reviews your request, confirms the scope, and prepares the right proposal, invoice, or agreement. If you choose “Not Sure Yet,” OTP Oracle can recommend the best package from your answers.</span>
+          <aside id="booking-mini-summary" class="mini-summary" aria-label="Selected booking summary">
+            <div>
+              <span>Package</span>
+              <strong id="mini-package">Not selected</strong>
+            </div>
+            <div>
+              <span>Service</span>
+              <strong id="mini-service">Not selected</strong>
+            </div>
+            <div>
+              <span>Budget</span>
+              <strong id="mini-budget">Not selected</strong>
+            </div>
+            <div>
+              <span>Timeline</span>
+              <strong id="mini-timeline">Not selected</strong>
+            </div>
+          </aside>
         </div>
 
-        <form id="booking-form" class="booking-form">
-          <div class="section-heading">
-            <p class="eyebrow">Intake</p>
-            <h2>Project details</h2>
-          </div>
-
-          <div class="form-grid">
-            <label>
-              Your Name
-              <input id="booking-name" name="name" autocomplete="name" required />
-            </label>
-            <label>
-              IG Handle
-              <input id="booking-ig" name="ig_handle" autocomplete="off" placeholder="@handle" />
-            </label>
-            <label>
-              Email
-              <input id="booking-email" name="email" type="email" autocomplete="email" />
-            </label>
-            <label>
-              Phone
-              <input id="booking-phone" name="phone" type="tel" autocomplete="tel" />
-            </label>
-          </div>
-
-          <label>
-            Project Description
-            <textarea id="booking-description" name="project_description" required placeholder="What are we making? Include the artist, brand, product, scenes, deliverables, deadline, or must-have details."></textarea>
+        <form id="booking-form" class="booking-form" novalidate>
+          <label class="honeypot" aria-hidden="true" tabindex="-1">
+            Company website
+            <input id="otp-company-website" name="otp_company_website" tabindex="-1" autocomplete="off" />
           </label>
 
-          <div class="form-grid">
-            <label>
-              Preferred Date
-              <input id="booking-date" name="preferred_date" type="date" />
-            </label>
-            <label>
-              Preferred Time
-              <input id="booking-time" name="preferred_time" type="time" />
-            </label>
-          </div>
-
-          <label>
-            Location
-            <input id="booking-location" name="location" placeholder="Studio, city, venue, or TBD" />
-          </label>
-
-          <label>
-            Budget Range
-            <input id="booking-budget" name="budget_range" inputmode="text" placeholder="Comfortable range, launch scope, or TBD" />
-          </label>
-
-          <div id="add-ons-panel" class="add-ons-panel"></div>
-
-          <section class="upload-panel" aria-labelledby="upload-title">
+          <div class="form-topline">
             <div>
-              <p id="upload-title" class="eyebrow">Reference Uploads</p>
-              <h2>Add inspo, logos, videos, or files</h2>
+              <p>Booking Request</p>
+              <h2 id="form-title">Start with the real project details.</h2>
+              <span id="form-package-note" class="form-package-note">Select a package module or let OTP Oracle recommend one.</span>
             </div>
-            <label class="upload-drop">
-              <input id="booking-files" type="file" multiple accept="image/*,video/mp4,video/quicktime,application/pdf" />
-              <span>Tap to add files</span>
-              <small id="upload-rules">Images, HEIC, MP4/MOV, or PDF.</small>
-            </label>
-            <div id="upload-list" class="upload-list"></div>
-          </section>
+            <span id="step-label">Step 1 of 4</span>
+          </div>
 
-          <section class="payment-panel" aria-labelledby="payment-title">
-            <div>
-              <p id="payment-title" class="eyebrow">Payment</p>
-              <h2>Choose next step</h2>
+          <ol class="stepper" aria-label="Booking steps">
+            <li class="active" data-step-dot="1">Pick Package</li>
+            <li data-step-dot="2">Project Details</li>
+            <li data-step-dot="3">Budget + Timeline</li>
+            <li data-step-dot="4">Review + Submit</li>
+          </ol>
+
+          <section class="form-step active" data-step="1" aria-label="Client and package">
+            <div id="active-package-pill" class="active-package-pill">
+              <span>Package</span>
+              <strong>No package selected</strong>
             </div>
-            <div class="payment-choice" role="radiogroup" aria-label="Payment choice">
+            <div class="form-grid">
               <label>
-                <input type="radio" name="payment_choice" value="quote_first" checked />
-                <span>Request Custom Quote</span>
+                Name <span>Required</span>
+                <input id="booking-name" name="name" autocomplete="name" required />
               </label>
               <label>
-                <input type="radio" name="payment_choice" value="pay_deposit" />
-                <span>Request Deposit Link</span>
+                Email <span>Required</span>
+                <input id="booking-email" name="email" type="text" inputmode="email" autocomplete="email" required />
+              </label>
+              <label>
+                Phone
+                <input id="booking-phone" name="phone" type="tel" autocomplete="tel" />
+              </label>
+              <label>
+                Brand / Business
+                <input id="booking-business" name="business_name" autocomplete="organization" />
+              </label>
+            </div>
+            <label>
+              Social / Website Link
+              <input id="booking-social" name="social_link" inputmode="url" placeholder="Instagram, website, portfolio, or music link" />
+            </label>
+          </section>
+
+          <section class="form-step" data-step="2" aria-label="What Do You Need">
+            <div class="form-grid">
+              <label>
+                Service Type <span>Required</span>
+                <select id="booking-service" name="service_type" required></select>
+              </label>
+              <label>
+                Package Interest <span>Required</span>
+                <select id="booking-package" name="package_interest" required></select>
+              </label>
+            </div>
+            <label>
+              Project Description <span>Required</span>
+              <textarea id="booking-description" name="project_description" required placeholder="Tell OTP what needs to be built, edited, designed, automated, launched, or cleaned up. Include deliverables, must-have details, and the real goal."></textarea>
+            </label>
+            <label>
+              Reference Link
+              <input id="booking-reference" name="reference_link" inputmode="url" placeholder="Moodboard, video, logo, website, Dropbox, Google Drive, or example link" />
+            </label>
+          </section>
+
+          <section class="form-step" data-step="3" aria-label="Budget and Timeline">
+            <div class="form-grid">
+              <label>
+                Budget Range
+                <select id="booking-budget" name="budget_range"></select>
+              </label>
+              <label>
+                Ideal Deadline
+                <input id="booking-deadline" name="ideal_deadline" type="date" />
+              </label>
+              <label>
+                Urgency Level
+                <select id="booking-urgency" name="urgency_level"></select>
+              </label>
+              <label>
+                Deposit Readiness
+                <select id="booking-deposit" name="deposit_readiness"></select>
               </label>
             </div>
           </section>
 
-          <div class="estimate-bar">
-            <div>
-              <span>Pricing</span>
-              <strong id="estimate-total">Tailored quote</strong>
+          <section class="form-step" data-step="4" aria-label="Review and Submit">
+            <div class="review-panel">
+              <div>
+                <p>Review</p>
+                <h3>Confirm the request before OTP builds the next step.</h3>
+              </div>
+              <div id="review-summary" class="review-summary"></div>
+              <p class="next-step-note">After submission, OTP reviews your request, confirms the scope, and prepares the right proposal, invoice, or agreement.</p>
             </div>
-            <div>
-              <span>Deposit</span>
-              <strong id="estimate-deposit">Optional after scope</strong>
-            </div>
-          </div>
+          </section>
 
           <p id="booking-status" class="form-message hidden" aria-live="polite"></p>
           <p id="booking-error" class="form-message error hidden" role="alert"></p>
-          <button id="submit-booking" type="submit">Submit Booking</button>
+
+          <div class="form-controls">
+            <button id="prev-step" type="button" class="ghost-button">Back</button>
+            <button id="next-step" type="button">Next</button>
+            <button id="submit-booking" type="submit" class="hidden">Submit Booking Request</button>
+          </div>
         </form>
       </section>
 
       <section id="booking-success" class="success-panel hidden" aria-live="polite">
-        <p class="eyebrow">Booking received</p>
-        <h2 id="success-title">OTP has the request.</h2>
-        <p id="success-copy"></p>
-        <div id="success-actions" class="success-actions"></div>
+        <div class="success-mark" aria-hidden="true"><span></span></div>
+        <p>Booking received</p>
+        <h2 id="success-title">Your request is in. OTP will review the scope and prepare the cleanest next step.</h2>
+        <span id="success-copy">After review, you may receive a private OTP Client Portal link where you can view project status, documents, payment steps, and approvals.</span>
         <div id="success-meta" class="success-meta"></div>
+        <div id="success-actions" class="success-actions"></div>
       </section>
 
       <footer class="booking-footer">
-        <strong>Book OTP</strong>
-        <span>Book your shoot, edit, logo, or creative project with OTP.</span>
+        <strong>OnlyTruePerspective</strong>
+        <span>Public booking entry point for the OTP business operating system.</span>
       </footer>
     </main>
 
-    <script src="/bookings.js?v=20260508-premium" defer></script>
+    <script src="/bookings.js?v=20260513-sigil1" defer></script>
   </body>
 </html>

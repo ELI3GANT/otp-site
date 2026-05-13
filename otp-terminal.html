@@ -654,11 +654,11 @@
 
                     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                         <div style="font-size:0.62rem;color:var(--admin-muted);letter-spacing:0.08em;font-weight:900;text-transform:uppercase;">Oracle docs</div>
-                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Proposal')">Generate Proposal</button>
-                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Invoice')">Generate Invoice</button>
-                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Agreement')">Generate Agreement</button>
-                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Paid Receipt')">Generate Paid Receipt</button>
-                        <button type="button" class="btn-secondary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Service Summary')">Generate Service Summary</button>
+                        <button type="button" class="btn-secondary" data-ops-doc-type="Proposal" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Proposal')">Generate Proposal</button>
+                        <button type="button" class="btn-secondary" data-ops-doc-type="Invoice" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Invoice')">Generate Invoice</button>
+                        <button type="button" class="btn-secondary" data-ops-doc-type="Agreement" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Agreement')">Generate Agreement</button>
+                        <button type="button" class="btn-secondary" data-ops-doc-type="Paid Receipt" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Paid Receipt')">Generate Paid Receipt</button>
+                        <button type="button" class="btn-secondary" data-ops-doc-type="Service Summary" style="width:auto;font-size:0.66rem;" onclick="window.generateOpsDoc('Service Summary')">Generate Service Summary</button>
                     </div>
 
                     <div id="opsEditorGrid" class="ops-editor-grid">
@@ -770,6 +770,15 @@
 
                         <div class="ops-editor-right">
                             <div class="ops-side-stack">
+                                <details class="otp-collapsible" open>
+                                    <summary>CLIENT PROFILE</summary>
+                                    <div class="otp-subpanel-body">
+                                        <div id="opsProfileSnapshot" class="ops-profile-snapshot">
+                                            <div class="ops-profile-empty">Open or save a job to see the connected client profile.</div>
+                                        </div>
+                                    </div>
+                                </details>
+
                                 <details class="otp-collapsible" open>
                                     <summary>PACKET BUILDER</summary>
                                     <div class="otp-subpanel-body">

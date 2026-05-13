@@ -15,7 +15,12 @@ function safeStr(v) {
 function dollarsFromCents(cents) {
   if (cents == null || !Number.isFinite(Number(cents))) return '';
   const n = Math.round(Number(cents));
+  if (n <= 0) return '';
   return `$${(n / 100).toFixed(2)}`;
+}
+
+function hasPositiveCents(cents) {
+  return cents != null && Number.isFinite(Number(cents)) && Math.round(Number(cents)) > 0;
 }
 
 function fmtDate(dateIso) {
@@ -208,7 +213,7 @@ function validateRequired(doc, docType, job) {
   // Invoice: must have client + total saved (never invent totals).
   if (type === 'Invoice') {
     if (!hasClient) addMissing(doc, 'clientName_or_businessName', 'Missing client identity (clientName/businessName).');
-    if (job.totalPriceCents == null) addMissing(doc, 'totalPriceCents', 'Missing totalPrice; invoice requires a saved total.');
+    if (!hasPositiveCents(job.totalPriceCents)) addMissing(doc, 'totalPriceCents', 'Missing totalPrice; invoice requires a saved total.');
   }
 
   // Agreement: must have client + service/package + some scope signal.
@@ -225,8 +230,8 @@ function validateRequired(doc, docType, job) {
     if (!hasClient) addMissing(doc, 'clientName_or_businessName', 'Missing client identity (clientName/businessName).');
     const status = safeStr(job.paymentStatus).toLowerCase();
     const canComputePaid =
-      (status === 'paid in full' && job.totalPriceCents != null) ||
-      (status === 'deposit paid' && job.depositAmountCents != null);
+      (status === 'paid in full' && hasPositiveCents(job.totalPriceCents)) ||
+      (status === 'deposit paid' && hasPositiveCents(job.depositAmountCents));
     if (!canComputePaid) {
       addMissing(
         doc,
@@ -494,4 +499,3 @@ function generateOpsDocument({ docType, job, pricing }) {
 module.exports = {
   generateOpsDocument,
 };
-

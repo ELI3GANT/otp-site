@@ -167,6 +167,75 @@ details.otp-collapsible[open] > summary::after {
     padding: 12px;
 }
 
+.ops-profile-snapshot {
+    display: grid;
+    gap: 10px;
+}
+
+.ops-profile-section {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid var(--admin-border);
+    border-radius: 10px;
+    background: var(--admin-panel);
+}
+
+.ops-profile-section h4 {
+    color: var(--admin-text);
+    font-size: 0.76rem;
+    letter-spacing: 0;
+    margin: 0;
+}
+
+.ops-profile-row {
+    display: grid;
+    grid-template-columns: minmax(92px, 0.36fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    padding-top: 7px;
+    border-top: 1px solid var(--admin-border);
+}
+
+.ops-profile-row strong {
+    color: var(--admin-muted);
+    font-size: 0.66rem;
+    font-weight: 900;
+}
+
+.ops-profile-row span {
+    min-width: 0;
+    color: var(--admin-text);
+    font-size: 0.72rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.ops-profile-docs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ops-profile-docs button {
+    width: auto;
+    font-size: 0.66rem;
+}
+
+.ops-profile-note,
+.ops-profile-empty {
+    color: var(--admin-muted);
+    font-size: 0.68rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 520px) {
+    .ops-profile-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}
+
 /* OTP Terminal: preserve line breaks in status blocks */
 body.otp-terminal-page #opsPacketStatus,
 body.otp-terminal-page #opsSendStatus,
@@ -2410,4 +2479,3 @@ html[data-theme="light"] .cmd-tile-active { background: rgba(52,199,89,0.06) !im
     border-color: #d1d1d6 !important;
     color: #333 !important;
 }
-
