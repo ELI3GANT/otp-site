@@ -726,6 +726,27 @@ function docTypeToSlug(docType) {
         .replace(/^_+|_+$/g, '') || 'document';
 }
 
+function clientDocumentFilenameBase(job, doc, docType) {
+    const client = String(doc?.display?.client_label || job?.clientName || job?.businessName || 'otp-client').trim();
+    const project = String(doc?.display?.project_label || job?.projectTitle || job?.serviceType || 'project').trim();
+    const slug = docTypeToSlug(docType);
+    return safeFilenamePart(`${client}-${project}-${slug}`);
+}
+
+async function embedOtpPdfLogo(pdfDoc) {
+    try {
+        const pngPath = path.join(__dirname, 'assets', 'otp-mark-doc.png');
+        return await pdfDoc.embedPng(fs.readFileSync(pngPath));
+    } catch (_) {
+        try {
+            const jpgPath = path.join(__dirname, 'assets', 'otp-eye-emblem-eye.jpg');
+            return await pdfDoc.embedJpg(fs.readFileSync(jpgPath));
+        } catch (_) {
+            return null;
+        }
+    }
+}
+
 function opsDocMarkdownToPlainText(md) {
     const raw = String(md || '').replace(/\r\n/g, '\n');
     // Minimal, stable markdown → plain transform (no invention, no interpretation).
@@ -757,6 +778,7 @@ async function renderOpsDocPdfFromText({ title, subtitle, bodyText }) {
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const logoImage = await embedOtpPdfLogo(pdfDoc);
     let page = pdfDoc.addPage([612, 792]); // US Letter
     const { width, height } = page.getSize();
 
@@ -774,9 +796,17 @@ async function renderOpsDocPdfFromText({ title, subtitle, bodyText }) {
     page.drawRectangle({ x: 0, y: height - headerH, width, height: 3, color: accent });
 
     // Title block
-    page.drawText('ONLY TRUE PERSPECTIVE', { x: margin, y: height - headerH + 56, size: 12, font: fontBold, color: rgb(0.92, 0.94, 0.98) });
-    page.drawText('OnlyTruePerspective LLC', { x: margin, y: height - headerH + 40, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
-    page.drawText(String(title || 'Document'), { x: margin, y: height - headerH + 18, size: 14, font: fontBold, color: rgb(0.96, 0.97, 0.99) });
+    let titleX = margin;
+    if (logoImage) {
+        const targetH = 36;
+        const scale = targetH / logoImage.height;
+        const drawW = logoImage.width * scale;
+        page.drawImage(logoImage, { x: margin, y: height - headerH + 32, width: drawW, height: targetH, opacity: 0.96 });
+        titleX = margin + drawW + 12;
+    }
+    page.drawText('ONLY TRUE PERSPECTIVE', { x: titleX, y: height - headerH + 56, size: 12, font: fontBold, color: rgb(0.92, 0.94, 0.98) });
+    page.drawText('OnlyTruePerspective LLC', { x: titleX, y: height - headerH + 40, size: 9, font, color: rgb(0.75, 0.78, 0.84) });
+    page.drawText(String(title || 'Document'), { x: titleX, y: height - headerH + 18, size: 14, font: fontBold, color: rgb(0.96, 0.97, 0.99) });
 
     let y = height - headerH - 22;
     if (subtitle) {
@@ -2167,6 +2197,26 @@ function noStoreHtml(res) {
     res.set('Expires', '0');
 }
 
+function privatePortalHtml(res) {
+    noStoreHtml(res);
+    res.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    res.set('Referrer-Policy', 'no-referrer');
+    res.set('Content-Security-Policy', [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+        "script-src-attr 'unsafe-inline'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: https:",
+        "font-src 'self'",
+        "connect-src 'self' https://onlytrueperspective.tech https://www.onlytrueperspective.tech",
+        "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'self'"
+    ].join(';'));
+}
+
 // Root + clean URL aliases BEFORE express.static so `/` is not served as a long-cache static file.
 app.get('/', (req, res) => {
     noStoreHtml(res);
@@ -2189,9 +2239,11 @@ const staticAliases = {
     '/otp-terminal': 'otp-terminal.html',
     '/payment-success': 'payment_success.html'
 };
+const privateStaticAliases = new Set(['/portal', '/portal-gate', '/payment-success']);
 Object.entries(staticAliases).forEach(([route, file]) => {
     app.get(route, (req, res) => {
-        noStoreHtml(res);
+        if (privateStaticAliases.has(route)) privatePortalHtml(res);
+        else noStoreHtml(res);
         res.sendFile(path.join(staticPath, file));
     });
 });
@@ -2202,88 +2254,38 @@ const clientPortalAssetTypes = {
     '/client-portal-utils.js': 'application/javascript; charset=utf-8'
 };
 
-app.get(Object.keys(clientPortalAssetTypes), async (req, res) => {
-    try {
-        const upstreamUrl = new URL(req.path, OTP_CLIENT_PORTAL_UPSTREAM);
-        const queryIndex = req.originalUrl.indexOf('?');
-        if (queryIndex >= 0) upstreamUrl.search = req.originalUrl.slice(queryIndex);
-
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), CLIENT_PORTAL_PROXY_TIMEOUT_MS);
-        let upstream;
-        try {
-            upstream = await fetch(upstreamUrl.href, {
-                method: 'GET',
-                redirect: 'manual',
-                signal: controller.signal,
-                headers: {
-                    Accept: req.get('accept') || '*/*',
-                    'User-Agent': req.get('user-agent') || 'OTP-Site-Portal-Asset'
-                }
-            });
-        } finally {
-            clearTimeout(timer);
-        }
-
-        if (!upstream.ok) return res.status(upstream.status || 502).send('');
-
-        const contentType = upstream.headers.get('content-type') || clientPortalAssetTypes[req.path] || 'text/plain; charset=utf-8';
-        const body = Buffer.from(await upstream.arrayBuffer()).toString('utf8');
-        res.status(upstream.status);
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
-        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-        return res.send(rewritePortalBody(body, contentType));
-    } catch (error) {
-        console.warn('Client portal asset proxy unavailable:', error?.message || error);
-        return res.status(502).type('text/plain').send('');
-    }
+app.get(Object.keys(clientPortalAssetTypes), (req, res, next) => {
+    const localPath = path.join(staticPath, req.path.replace(/^\//, ''));
+    if (!fs.existsSync(localPath)) return next();
+    res.setHeader('Content-Type', clientPortalAssetTypes[req.path]);
+    res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    return res.sendFile(localPath);
 });
 
-app.get('/client/:token', async (req, res) => {
-    noStoreHtml(res);
+app.get(['/client', '/client/'], (req, res) => {
+    privatePortalHtml(res);
+    return res.redirect(302, '/portal?status=missing');
+});
+
+app.get('/client/:token', (req, res) => {
+    privatePortalHtml(res);
     const token = normalizeClientPortalToken(req.params.token);
     if (!token) return res.redirect(302, '/portal?status=invalid');
+    return res.sendFile(path.join(staticPath, 'client.html'));
+});
 
-    try {
-        const upstreamUrl = new URL(`/client/${encodeURIComponent(token)}`, OTP_CLIENT_PORTAL_UPSTREAM);
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), CLIENT_PORTAL_PROXY_TIMEOUT_MS);
-        let upstream;
-        try {
-            upstream = await fetch(upstreamUrl.href, {
-                method: 'GET',
-                redirect: 'manual',
-                signal: controller.signal,
-                headers: {
-                    Accept: req.get('accept') || 'text/html,application/xhtml+xml',
-                    'User-Agent': req.get('user-agent') || 'OTP-Site-Portal',
-                    'X-Forwarded-Host': req.get('host') || 'onlytrueperspective.tech',
-                    'X-Forwarded-Proto': req.headers['x-forwarded-proto'] || req.protocol || 'https'
-                }
-            });
-        } finally {
-            clearTimeout(timer);
-        }
+app.get('/_vercel/speed-insights/script.js', (req, res) => {
+    res.type('application/javascript; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=300, must-revalidate');
+    res.send('// OTP local speed insights stub\n');
+});
 
-        if (upstream.status >= 300 && upstream.status < 400) {
-            const safeLocation = publicClientPortalPath(upstream.headers.get('location'));
-            return res.redirect(upstream.status, safeLocation || '/portal?status=review');
-        }
-        if (!upstream.ok) {
-            return res.redirect(302, '/portal?status=review');
-        }
-
-        const contentType = upstream.headers.get('content-type') || 'text/html; charset=utf-8';
-        const body = Buffer.from(await upstream.arrayBuffer()).toString('utf8');
-        res.status(upstream.status);
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-        return res.send(rewritePortalBody(body, contentType));
-    } catch (error) {
-        console.warn('Client portal proxy unavailable:', error?.message || error);
-        return res.redirect(302, '/portal?status=review');
-    }
+app.get('/_vercel/speed-insights/script.debug.js', (req, res) => {
+    res.type('application/javascript; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=300, must-revalidate');
+    res.send('// OTP local speed insights debug stub\n');
 });
 
 app.use(express.static(staticPath, {
@@ -2293,6 +2295,10 @@ app.use(express.static(staticPath, {
         const base = path.basename(filePath).toLowerCase();
         if (ext === '.html') {
             res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate, max-age=0');
+            if (base === 'client.html' || base === 'portal.html') {
+                res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+                res.setHeader('Referrer-Policy', 'no-referrer');
+            }
         } else if (ext === '.js' || ext === '.css') {
             // Query ?v= busts deploys; short TTL limits stale JS/CSS without SW.
             res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
@@ -2316,7 +2322,10 @@ app.get('/:file', (req, res, next) => {
     
     if (allowed.includes(ext)) {
         const base = path.basename(file).toLowerCase();
-        if (ext === '.html') noStoreHtml(res);
+        if (ext === '.html') {
+            if (base === 'client.html' || base === 'portal.html') privatePortalHtml(res);
+            else noStoreHtml(res);
+        }
         else if (ext === '.js' || ext === '.css') {
             res.set('Cache-Control', 'public, max-age=300, must-revalidate');
         } else if (ext === '.xml' || ext === '.txt' || ext === '.webmanifest') {
@@ -2451,8 +2460,10 @@ const BOOKING_CLIENT_MESSAGE = 'Your booking request was received. OTP will revi
 const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Booking received. OTP Oracle recommendation is pending review.';
 const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not submit the booking yet. Please check the required fields and try again.';
 const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit']);
-const CLIENT_PORTAL_TOKEN_RE = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,160}$/;
+const CLIENT_PORTAL_TOKEN_RE = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/;
 const CLIENT_PORTAL_PROXY_TIMEOUT_MS = positiveNumber(process.env.CLIENT_PORTAL_PROXY_TIMEOUT_MS, 9000);
+const CLIENT_PORTAL_TOKEN_VERSION = 'otp1';
+const CLIENT_PORTAL_TOKEN_TTL_DAYS = Math.max(1, Math.min(730, Number(process.env.CLIENT_PORTAL_TOKEN_TTL_DAYS || 180)));
 
 const bookingSubmitLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
@@ -2481,14 +2492,14 @@ function publicBookingMessage(value, fallback = BOOKING_CLIENT_MESSAGE) {
 }
 
 function normalizeClientPortalToken(value) {
-    const token = cleanBookingText(value, 180);
+    const token = cleanBookingText(value, 600);
     if (!token || !CLIENT_PORTAL_TOKEN_RE.test(token)) return '';
-    if (/(admin|terminal|api|schema|supabase|service|jwt|bearer)/i.test(token)) return '';
+    if (!token.includes('.') && /(admin|terminal|api|schema|supabase|service|jwt|bearer)/i.test(token)) return '';
     return token;
 }
 
 function publicClientPortalPath(value) {
-    const raw = cleanBookingText(value, 500);
+    const raw = cleanBookingText(value, 800);
     if (!raw) return '';
     const directToken = normalizeClientPortalToken(raw);
     if (directToken) return `/client/${encodeURIComponent(directToken)}`;
@@ -2514,6 +2525,187 @@ function rewritePortalBody(body, contentType = '') {
         .replaceAll(`${OTP_CLIENT_PORTAL_UPSTREAM}/client/`, publicClientBase)
         .replaceAll('https://otp-os.vercel.app/client/', publicClientBase)
         .replaceAll('http://otp-os.vercel.app/client/', publicClientBase);
+}
+
+function clientPortalSecret() {
+    return String(process.env.CLIENT_PORTAL_SECRET || process.env.JWT_SECRET || '').trim();
+}
+
+function b64url(input) {
+    return Buffer.from(input).toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/g, '');
+}
+
+function unb64url(input) {
+    const s = String(input || '').replace(/-/g, '+').replace(/_/g, '/');
+    return Buffer.from(s + '='.repeat((4 - (s.length % 4)) % 4), 'base64');
+}
+
+function clientPortalTokenKey() {
+    const secret = clientPortalSecret();
+    if (!secret) return null;
+    return crypto.createHash('sha256').update(secret).digest();
+}
+
+function createClientPortalToken(job) {
+    const key = clientPortalTokenKey();
+    const jobId = String(job?.jobId || job?.job_id || '').trim();
+    if (!key || !jobId) return '';
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+    const payload = Buffer.from(JSON.stringify({
+        v: CLIENT_PORTAL_TOKEN_VERSION,
+        j: jobId,
+        iat: Date.now()
+    }), 'utf8');
+    const encrypted = Buffer.concat([cipher.update(payload), cipher.final()]);
+    const tag = cipher.getAuthTag();
+    return [
+        CLIENT_PORTAL_TOKEN_VERSION,
+        b64url(iv),
+        b64url(encrypted),
+        b64url(tag)
+    ].join('.');
+}
+
+function readClientPortalToken(token) {
+    const clean = normalizeClientPortalToken(token);
+    const key = clientPortalTokenKey();
+    if (!clean || !key) return { ok: false, reason: key ? 'invalid' : 'not_configured' };
+    const parts = clean.split('.');
+    if (parts.length !== 4 || parts[0] !== CLIENT_PORTAL_TOKEN_VERSION) {
+        return { ok: false, reason: 'invalid' };
+    }
+    try {
+        const decipher = crypto.createDecipheriv('aes-256-gcm', key, unb64url(parts[1]));
+        decipher.setAuthTag(unb64url(parts[3]));
+        const json = Buffer.concat([decipher.update(unb64url(parts[2])), decipher.final()]).toString('utf8');
+        const payload = JSON.parse(json);
+        const jobId = cleanBookingText(payload?.j, 180);
+        const issuedAt = Number(payload?.iat || 0);
+        const ageMs = Date.now() - issuedAt;
+        const ttlMs = CLIENT_PORTAL_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000;
+        if (payload?.v !== CLIENT_PORTAL_TOKEN_VERSION || !jobId || !Number.isFinite(issuedAt)) {
+            return { ok: false, reason: 'invalid' };
+        }
+        if (ageMs < 0 || ageMs > ttlMs) return { ok: false, reason: 'expired' };
+        return { ok: true, jobId };
+    } catch (_) {
+        return { ok: false, reason: 'invalid' };
+    }
+}
+
+function privatePortalApi(res) {
+    privatePortalHtml(res);
+    res.set('Content-Type', 'application/json; charset=utf-8');
+}
+
+function moneyCents(cents) {
+    const n = Number(cents);
+    if (!Number.isFinite(n) || n <= 0) return '';
+    return `$${(Math.round(n) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function publicJobText(value, max = 4000) {
+    const text = cleanBookingText(value, max);
+    if (!text) return '';
+    if (/(service[_ -]?role|bearer|jwt|supabase|postgres|internal note|otp_booking_meta|private:)/i.test(text)) return '';
+    return text;
+}
+
+function lineItems(value, maxItems = 8) {
+    return publicJobText(value, 3000)
+        .split(/\n|,|;/)
+        .map((item) => cleanBookingText(item, 180))
+        .filter(Boolean)
+        .slice(0, maxItems);
+}
+
+function clientDocLabel(docType) {
+    if (docType === 'Paid Receipt') return 'Receipt';
+    return docType;
+}
+
+function clientDocMessage(docType, doc, paymentStatus) {
+    const validation = doc?.validation || {};
+    if (docType === 'Paid Receipt' && !/^(deposit paid|paid in full)$/i.test(String(paymentStatus || '').trim())) {
+        return 'Receipt unlocks after a saved payment is marked in OTP OS.';
+    }
+    if (validation.blocking) return validation.message || 'More saved project details are required before this document is ready.';
+    if (docType === 'Invoice') return 'Invoice preview uses the saved OTP OS total, deposit, remaining balance, and status.';
+    if (docType === 'Service Summary') return 'Summary is generated from the live saved project scope.';
+    return 'Ready from the live OTP OS job record.';
+}
+
+function buildClientPortalData(jobRow) {
+    const job = mapOpsJobRowToApi(jobRow);
+    const paymentStatus = String(job.paymentStatus || '').trim();
+    const paidEnoughForReceipt = /^(deposit paid|paid in full)$/i.test(paymentStatus);
+    const docs = [];
+    const docTypes = ['Proposal', 'Invoice', 'Agreement', 'Service Summary', 'Paid Receipt'];
+
+    for (const docType of docTypes) {
+        const out = OPS_DOCS && typeof OPS_DOCS.generateOpsDocument === 'function'
+            ? OPS_DOCS.generateOpsDocument({ docType, job: { ...job, internalNotes: '' }, pricing: OTP_PRICING })
+            : null;
+        const doc = out?.doc || null;
+        const blocked = !!doc?.validation?.blocking || (docType === 'Paid Receipt' && !paidEnoughForReceipt);
+        docs.push({
+            type: docType,
+            label: clientDocLabel(docType),
+            status: blocked ? (docType === 'Paid Receipt' && !paidEnoughForReceipt ? 'locked' : 'needs-info') : 'ready',
+            message: clientDocMessage(docType, doc, paymentStatus),
+            preview: blocked ? '' : publicJobText(doc?.rendered_markdown, 5000)
+        });
+    }
+
+    const deliverableItems = lineItems(job.deliverables || job.projectDescription, 10);
+    const projectTitle = publicJobText(job.projectTitle || job.serviceType || 'OTP Project', 180);
+
+    return {
+        ok: true,
+        portal: {
+            origin: OTP_PUBLIC_SITE_ORIGIN,
+            poweredBy: 'OnlyTruePerspective',
+            noindex: true
+        },
+        profile: {
+            clientName: publicJobText(job.clientName || 'Client', 140),
+            businessName: publicJobText(job.businessName, 180),
+            email: publicJobText(job.email, 254),
+            phone: publicJobText(job.phone, 60)
+        },
+        project: {
+            title: projectTitle,
+            serviceType: publicJobText(job.serviceType, 140),
+            packageType: publicJobText(job.packageType, 80),
+            status: publicJobText(job.jobStatus || 'In review', 80),
+            startDate: publicJobText(job.startDate, 40),
+            dueDate: publicJobText(job.dueDate, 40),
+            description: publicJobText(job.projectDescription, 2200),
+            notes: publicJobText(job.clientNotes, 1600)
+        },
+        payment: {
+            status: publicJobText(paymentStatus || 'Unpaid', 80),
+            total: moneyCents(job.totalPriceCents),
+            deposit: moneyCents(job.depositAmountCents),
+            remaining: moneyCents(job.remainingBalanceCents),
+            method: publicJobText(job.paymentMethod, 80),
+            invoiceSent: job.invoiceSent === true,
+            receiptAvailable: paidEnoughForReceipt,
+            cta: {
+                label: paidEnoughForReceipt ? 'Request Receipt Copy' : 'Request Payment Link',
+                href: `mailto:${BUSINESS_EMAILS.BOOKINGS}?subject=${encodeURIComponent(`OTP payment help - ${projectTitle}`)}`
+            }
+        },
+        deliverables: {
+            status: deliverableItems.length ? 'listed' : 'pending',
+            items: deliverableItems
+        },
+        documents: docs
+    };
 }
 
 function pickPublicOption(value, values) {
@@ -2896,8 +3088,70 @@ async function forwardBookingSubmitToUpstream(body) {
     return payload;
 }
 
+function publicBookingSubmitResponse({ recommendation = null, portalPath = '', nextStep = '' } = {}) {
+    return {
+        ok: true,
+        received: true,
+        message: recommendation ? BOOKING_CLIENT_MESSAGE : BOOKING_PENDING_RECOMMENDATION_MESSAGE,
+        recommendation,
+        ...(portalPath ? { clientPortalPath: portalPath } : {}),
+        nextStep: publicBookingMessage(
+            nextStep,
+            'OTP will review the request, confirm scope, and prepare the right proposal, invoice, or agreement.'
+        )
+    };
+}
+
 app.get('/api/bookings/config', (req, res) => {
     res.json(buildPublicBookingConfig());
+});
+
+app.get('/api/client-portal/:token', async (req, res) => {
+    privatePortalApi(res);
+    const parsed = readClientPortalToken(req.params.token);
+    if (!parsed.ok) {
+        const status = parsed.reason === 'not_configured' ? 503 : parsed.reason === 'expired' ? 410 : 401;
+        const message = parsed.reason === 'expired'
+            ? 'This portal link has expired. Request a fresh private OTP portal link.'
+            : parsed.reason === 'not_configured'
+                ? 'Client Portal is not configured yet.'
+                : 'This portal link is invalid. Check the private OTP invite and try again.';
+        return res.status(status).json({
+            ok: false,
+            errorCode: parsed.reason,
+            message
+        });
+    }
+    if (!supabaseAdmin) {
+        return res.status(503).json({
+            ok: false,
+            errorCode: 'otp_os_unavailable',
+            message: 'Client Portal is temporarily unavailable.'
+        });
+    }
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', parsed.jobId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) {
+            return res.status(404).json({
+                ok: false,
+                errorCode: 'not_found',
+                message: 'This client portal is not available yet.'
+            });
+        }
+        return res.json(buildClientPortalData(data));
+    } catch (error) {
+        console.error('client portal load failed:', error?.message || error);
+        return res.status(500).json({
+            ok: false,
+            errorCode: 'portal_load_failed',
+            message: 'Client Portal could not load right now.'
+        });
+    }
 });
 
 app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '256kb' }), async (req, res) => {
@@ -2934,19 +3188,11 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
                         || upstreamPayload.portalUrl
                         || upstreamPayload.inviteUrl
                     );
-                    return res.json({
-                        ok: true,
-                        bookingId: upstreamPayload.bookingId || upstreamPayload.booking_id || null,
-                        jobId: upstreamPayload.jobId || upstreamPayload.job_id || null,
-                        clientId: upstreamPayload.clientId || upstreamPayload.client_id || null,
-                        message: upstreamRecommendation ? BOOKING_CLIENT_MESSAGE : 'Booking saved. Recommendation pending.',
+                    return res.json(publicBookingSubmitResponse({
                         recommendation: upstreamRecommendation,
-                        ...(upstreamPortalPath ? { clientPortalPath: upstreamPortalPath } : {}),
-                        nextStep: publicBookingMessage(
-                            upstreamPayload.nextStep || upstreamPayload.next_action,
-                            'OTP will review the request and prepare the next step.'
-                        )
-                    });
+                        portalPath: upstreamPortalPath,
+                        nextStep: upstreamPayload.nextStep || upstreamPayload.next_action || 'OTP will review the request and prepare the next step.'
+                    }));
                 } catch (upstreamError) {
                     console.warn('booking upstream fallback failed:', upstreamError?.message || upstreamError);
                 }
@@ -2962,7 +3208,7 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
         const bookingId = bookingIdFromToken(payload.booking_token);
         const oracleResult = await runBookingOracle(payload, bookingId);
         const clientId = await createBookingContact(payload, oracleResult.recommendation);
-        const job = await saveBookingOpsJob({
+        await saveBookingOpsJob({
             bookingId,
             payload,
             recommendation: oracleResult.recommendation,
@@ -2970,15 +3216,10 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
             clientId
         });
         const recommendation = oracleResult.pending ? null : oracleResult.recommendation;
-        return res.json({
-            ok: true,
-            bookingId,
-            jobId: job?.jobId || bookingId,
-            clientId,
-            message: recommendation ? BOOKING_CLIENT_MESSAGE : 'Booking saved. Recommendation pending.',
+        return res.json(publicBookingSubmitResponse({
             recommendation,
-            nextStep: recommendation?.nextAction || 'OTP will review the request, confirm scope, and prepare the right proposal, invoice, or agreement.'
-        });
+            nextStep: recommendation?.nextAction
+        }));
     } catch (error) {
         console.error('booking submit failed:', error?.message || error);
         return res.status(500).json({
@@ -4362,6 +4603,38 @@ app.post('/api/admin/ops/jobs/get', verifyToken, async (req, res) => {
     }
 });
 
+app.post('/api/admin/ops/jobs/portal-link', verifyToken, async (req, res) => {
+    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+    if (!clientPortalSecret()) return res.status(503).json({ success: false, message: 'Client Portal secret is not configured' });
+    try {
+        const jobId = String(req.body?.jobId || '').trim();
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
+
+        const { data, error } = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', jobId)
+            .maybeSingle();
+        if (error) throw error;
+        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
+
+        const job = mapOpsJobRowToApi(data);
+        const token = createClientPortalToken(job);
+        if (!token) return res.status(500).json({ success: false, message: 'Could not create portal link' });
+        const pathOnly = `/client/${encodeURIComponent(token)}`;
+        const url = new URL(pathOnly, OTP_PUBLIC_SITE_ORIGIN).href;
+        res.json({
+            success: true,
+            clientPortalPath: pathOnly,
+            clientPortalUrl: url,
+            expiresInDays: CLIENT_PORTAL_TOKEN_TTL_DAYS
+        });
+    } catch (error) {
+        console.error("ops-jobs-portal-link:", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 app.post('/api/admin/ops/jobs/upsert', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
@@ -4618,10 +4891,10 @@ app.get('/api/admin/ops/docs/export/:format/:jobId/:docType', verifyToken, async
         }
 
         const yyyyMmDd = new Date().toISOString().slice(0, 10);
-        const baseName = `${safeFilenamePart(jobId)}-${safeFilenamePart(docTypeToSlug(docType))}-${yyyyMmDd}`;
+        const baseName = `${clientDocumentFilenameBase(job, doc, docType)}-${yyyyMmDd}`;
 
-            const md = String(doc.rendered_markdown || '').trim();
-            const plain = stripLeadingDocTitleLine(opsDocMarkdownToPlainText(md), docType);
+        const md = String(doc.rendered_markdown || '').trim();
+        const plain = stripLeadingDocTitleLine(opsDocMarkdownToPlainText(md), docType);
         const subtitleParts = [
             doc?.display?.client_label ? `Client: ${doc.display.client_label}` : '',
             doc?.display?.project_label ? `Project: ${doc.display.project_label}` : '',
@@ -4808,8 +5081,7 @@ app.post('/api/admin/ops/packets/export-zip', verifyToken, async (req, res) => {
             ].filter(Boolean);
             const subtitle = subtitleParts.join(' • ');
 
-            const slug = safeFilenamePart(docTypeToSlug(docType));
-            const baseName = `${safeFilenamePart(jobId)}-${slug}-${yyyyMmDd}`;
+            const baseName = `${clientDocumentFilenameBase(job, doc, docType)}-${yyyyMmDd}`;
 
             for (const fmt of formats) {
                 if (fmt === 'pdf') {
@@ -7041,3 +7313,8 @@ app.use((req, res) => {
 // Export for Vercel Serverless Function
 
 module.exports = app;
+module.exports.__clientPortalTestHooks = {
+    createClientPortalToken,
+    readClientPortalToken,
+    buildClientPortalData
+};

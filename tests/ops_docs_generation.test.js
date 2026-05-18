@@ -52,6 +52,7 @@ for (const t of ['Proposal', 'Invoice', 'Agreement', 'Paid Receipt', 'Service Su
   assert.strictEqual(out.doc.doc_type, t);
   assert.ok(typeof out.doc.rendered_markdown === 'string' && out.doc.rendered_markdown.length > 40);
   assert.ok(!out.doc.rendered_markdown.includes(job.internalNotes), 'internal notes not leaked');
+  assert.ok(!out.doc.rendered_markdown.includes(job.jobId), 'client-facing docs do not print raw internal job IDs');
 }
 
 // Invoice should warn/fail gracefully without a total.
@@ -66,4 +67,3 @@ for (const t of ['Proposal', 'Invoice', 'Agreement', 'Paid Receipt', 'Service Su
 }
 
 console.log('OPS DOCS GENERATION COMPLETE');
-

@@ -2,7 +2,7 @@
   const form = document.getElementById('portal-invite-form');
   const input = document.getElementById('portal-token');
   const message = document.getElementById('portal-message');
-  const tokenPattern = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,160}$/;
+  const tokenPattern = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/;
 
   function setMessage(value = '', type = '') {
     if (!message) return;
@@ -46,6 +46,8 @@
     const status = params.get('status');
     if (status === 'invalid') {
       setMessage('That invite link could not be opened. Check the private link from OTP and try again.', 'error');
+    } else if (status === 'missing') {
+      setMessage('Paste your private OTP Client Portal invite link or token to continue.', 'error');
     } else if (status === 'review') {
       setMessage('Your portal may still be pending OTP review. Use your latest private invite or book OTP to start.');
     }

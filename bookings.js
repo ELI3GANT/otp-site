@@ -195,7 +195,7 @@ function safePortalHref(data = {}) {
   try {
     const url = new URL(raw, window.location.origin);
     if (url.origin !== window.location.origin) return '';
-    if (!/^\/client\/[A-Za-z0-9][A-Za-z0-9._~-]{5,160}$/.test(url.pathname)) return '';
+    if (!/^\/client\/[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/.test(url.pathname)) return '';
     return `${url.pathname}${url.search}`;
   } catch (_) {
     return '';
@@ -344,7 +344,7 @@ function selectPackage(packageName, options = {}) {
   updateSummaries();
   showError('');
   if (options.advance) {
-    setStep(1);
+    setStep(2);
     window.requestAnimationFrame(() => {
       els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
     });
@@ -549,12 +549,10 @@ function renderSuccess(data) {
   els.successActions.replaceChildren();
 
   const rows = [
-    ['Booking ID', text(data.bookingId, 'Saved')],
-    ['OTP OS Job', text(data.jobId, 'Pending OTP OS sync')],
+    ['Status', recommendation ? 'Booking saved with OTP Oracle guidance' : 'Booking saved. OTP Oracle recommendation is pending review.'],
     ['Recommended Package', recommendation ? text(recommendation.recommendedPackage) : 'Recommendation pending review'],
     ['Quote Range', recommendation ? text(recommendation.quoteRange, 'Scope based') : 'Pending review'],
     ['Next Step', text(data.nextStep || recommendation?.nextAction, 'OTP will confirm scope and prepare the next step.')],
-    ['Status', recommendation ? 'Booking saved with Oracle guidance' : 'Booking saved. OTP Oracle recommendation is pending review.'],
     ['Client Portal', 'Private portal access is sent only after OTP reviews and approves the next step.']
   ];
 

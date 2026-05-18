@@ -18,6 +18,7 @@ const tests = [
     { name: 'User Flow Validation', path: 'tests/user_flow_validation.js' },
     { name: 'Client Journey (public intake)', path: 'tests/client_journey_contract.test.js' },
     { name: 'Client Portal Route Contract', path: 'tests/portal_route_contract.test.js' },
+    { name: 'Client Portal Logic', path: 'tests/client_portal_logic.test.js' },
     { name: 'OTP Bookings Contract', path: 'tests/bookings_contract.test.js' },
     { name: 'Authentication Logic', path: 'tests/auth_flow_test.js' },
     { name: 'Post Management Logic', path: 'tests/manage_post_test.js' },

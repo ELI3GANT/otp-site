@@ -29,6 +29,9 @@ function contentTypeLooksReasonable(kind, contentType) {
   const ct = String(contentType || '').toLowerCase();
   if (kind === 'json') return ct.includes('json');
   if (kind === 'png') return ct.includes('image/png');
+  if (kind === 'gif') return ct.includes('image/gif');
+  if (kind === 'jpg' || kind === 'jpeg') return ct.includes('image/jpeg');
+  if (kind === 'image') return ct.startsWith('image/');
   if (kind === 'css') return ct.includes('text/css') || ct.includes('text/plain') || ct.includes('css');
   if (kind === 'js') return ct.includes('javascript') || ct.includes('text/plain') || ct.includes('ecmascript');
   if (kind === 'html') return ct.includes('text/html') || ct.includes('application/xhtml+xml');
@@ -164,7 +167,7 @@ async function checkBinaryAsset(baseUrl, target) {
     return checkResult({
       name: target.name,
       url,
-      kind: 'png',
+      kind: target.kind || 'image',
       response,
       bytes,
       required: target.required !== false,
@@ -174,7 +177,7 @@ async function checkBinaryAsset(baseUrl, target) {
     return {
       name: target.name,
       url,
-      kind: 'png',
+      kind: target.kind || 'image',
       status: 0,
       contentType: '',
       bytes: 0,
@@ -345,7 +348,7 @@ async function runSweep({
     if (target.kind === 'json') check = await checkJson(baseUrl, target);
     else if (target.kind === 'text') check = await checkText(baseUrl, target);
     else if (target.kind === 'css' || target.kind === 'js') check = await checkTextAsset(baseUrl, target);
-    else if (target.kind === 'png') check = await checkBinaryAsset(baseUrl, target);
+    else if (['png', 'gif', 'jpg', 'jpeg', 'image'].includes(target.kind)) check = await checkBinaryAsset(baseUrl, target);
     else check = await checkHtml(baseUrl, target.kind === 'html' ? target : { ...target, kind: 'html' });
     publicChecks.push(check);
   }

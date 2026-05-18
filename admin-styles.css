@@ -622,6 +622,16 @@ button {
         width: 100% !important;
         flex: none !important;
     }
+    .broadcast-secondary-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    .broadcast-secondary-actions .btn-preview,
+    .broadcast-secondary-actions .btn-secondary {
+        flex: 1 1 140px !important;
+        min-width: 0;
+        min-height: 60px;
+    }
     
     /* Order change: Broadcast on top (default), but maybe user wants preview first? 
        Usually primary action on top is better. */
@@ -1807,6 +1817,18 @@ body.otp-terminal-page #leadsManager {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+    }
+    body.otp-terminal-page .qd-panel-header .qd-panel-title {
+        min-width: 0 !important;
+        flex-basis: 100% !important;
+    }
+    body.otp-terminal-page .qd-panel-actions {
+        width: 100%;
+        justify-content: stretch !important;
+    }
+    body.otp-terminal-page .qd-panel-actions .btn-secondary {
+        flex: 1 1 132px;
+        max-width: 100%;
     }
 }
 
