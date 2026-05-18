@@ -171,7 +171,7 @@ html.nav-open, body.nav-open {
   --accent: #111111;      /* Tactical Tactical Black */
   --accent2: #00ecff;
   --accent2-rgb: 0, 236, 255;
-  --accent2-text: #000;
+  --accent2-text: #050609;
   --accent-glow: rgba(var(--accent2-rgb), 0.35);
 
   --card: rgba(20, 20, 40, 0.4);
@@ -192,7 +192,7 @@ html.nav-open, body.nav-open {
   --muted2: #88888f;
 
   --accent: #000000;
-  --accent2: #00aacc;
+  --accent2: #00648c;
   --accent2-rgb: 0, 100, 140; 
   --accent2-text: #fff;
   --accent-glow: rgba(var(--accent2-rgb), 0.1);
@@ -10639,6 +10639,100 @@ section[id] {
 [data-theme="light"] .home-page .section-results-enhanced .pulse-beam-connector {
   opacity: 0.36 !important;
   background: linear-gradient(180deg, rgba(var(--accent2-rgb), 0.7), transparent) !important;
+}
+
+/* --- OTP DAY/NIGHT VISUAL SYSTEM: final cascade overrides --- */
+.home-page #cursor-canvas {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  z-index: 1 !important;
+  opacity: 0.72;
+  display: block !important;
+  pointer-events: none !important;
+  mix-blend-mode: screen;
+  transition: opacity 420ms ease;
+}
+
+[data-theme="light"] .home-page #cursor-canvas {
+  opacity: 0.24 !important;
+  mix-blend-mode: multiply;
+}
+
+.home-page .nav,
+.home-page .hero-content,
+.home-page .section,
+.home-page .section-studio,
+.home-page .footer {
+  position: relative;
+  z-index: 2;
+}
+
+.home-page .hero-bg {
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 16%, rgba(var(--accent2-rgb), 0.18), transparent 32%),
+    radial-gradient(circle at 78% 68%, rgba(255, 111, 0, 0.11), transparent 38%),
+    linear-gradient(180deg, rgba(3, 3, 5, 0.42), rgba(3, 3, 5, 0));
+}
+
+.home-page .hero {
+  background:
+    radial-gradient(ellipse at 50% -8%, rgba(var(--accent2-rgb), 0.12), transparent 42rem),
+    linear-gradient(180deg, #030305 0%, #050508 54%, #030305 100%);
+}
+
+.home-page .luxe-title .title {
+  filter: drop-shadow(0 18px 42px rgba(0, 0, 0, 0.38));
+}
+
+.home-page .hero-cta .book-btn {
+  background: linear-gradient(135deg, var(--accent2), rgba(255, 255, 255, 0.92)) !important;
+  color: var(--accent2-text) !important;
+  border-color: rgba(var(--accent2-rgb), 0.78) !important;
+  box-shadow: 0 18px 42px rgba(var(--accent2-rgb), 0.18) !important;
+}
+
+.home-page .hero-cta .book-btn-ghost {
+  color: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(var(--accent2-rgb), 0.36) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+[data-theme="light"] .home-page .hero {
+  background:
+    radial-gradient(ellipse at 50% -8%, rgba(var(--accent2-rgb), 0.18), transparent 40rem),
+    linear-gradient(180deg, #fbf7ee 0%, #ffffff 70%, #ffffff 100%) !important;
+}
+
+[data-theme="light"] .home-page .hero-bg {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(var(--accent2-rgb), 0.16), transparent 36%),
+    radial-gradient(circle at 82% 72%, rgba(255, 111, 0, 0.08), transparent 38%),
+    linear-gradient(180deg, rgba(255, 248, 230, 0.55), rgba(255, 255, 255, 0.96)) !important;
+}
+
+[data-theme="light"] .home-page .hero-cta .book-btn {
+  background: linear-gradient(135deg, var(--accent2), rgba(var(--accent2-rgb), 0.72)) !important;
+  color: var(--accent2-text) !important;
+  border-color: rgba(var(--accent2-rgb), 0.74) !important;
+}
+
+[data-theme="light"] .home-page .hero-cta .book-btn-ghost {
+  background: rgba(255, 255, 255, 0.72) !important;
+  color: #11100c !important;
+  border-color: rgba(var(--accent2-rgb), 0.34) !important;
+}
+
+.theme-toggle-btn {
+  border-color: rgba(var(--accent2-rgb), 0.36) !important;
+}
+
+@media (max-width: 768px) {
+  .home-page #cursor-canvas {
+    opacity: 0.48 !important;
+  }
 }
 
 /* --- SPECTRAL MULTI-VARIANTS: PROBABILITY RE-ROLL ENGINE --- */

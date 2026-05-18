@@ -32,6 +32,7 @@ assert.match(server, /Booking received\. OTP Oracle recommendation is pending re
 assert.match(server, /sourceType: 'otp_bookings'/);
 assert.match(server, /bookingSubmitLimiter/);
 assert.match(server, /bookingIdFromToken/);
+assert.match(server, /createBookingContact[\s\S]*\.eq\('email', payload\.email\)[\s\S]*\.update\(contactRow\)/, 'booking contact creation must update an existing email match before inserting');
 assert.match(server, /errorCode: 'validation_failed'/);
 assert.match(server, /errorCode: 'spam_rejected'/);
 assert.match(server, /BOOKING_PUBLIC_PROXY_PATHS/);

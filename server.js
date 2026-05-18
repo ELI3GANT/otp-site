@@ -2959,18 +2959,36 @@ function parseBookingPayload(input) {
 
 async function createBookingContact(payload, recommendation) {
     if (!supabaseAdmin) return null;
+    const contactRow = {
+        name: payload.name,
+        email: payload.email,
+        service: payload.service_type,
+        message: bookingLeadText(payload).slice(0, 12000),
+        budget: payload.budget_range || null,
+        timeline: payload.ideal_deadline || null,
+        ai_status: recommendation ? 'booking_ready' : 'booking_pending'
+    };
     try {
+        const { data: existing, error: existingError } = await supabaseAdmin
+            .from('contacts')
+            .select('id')
+            .eq('email', payload.email)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+        if (existingError) throw existingError;
+        if (existing?.id) {
+            const { error: updateError } = await supabaseAdmin
+                .from('contacts')
+                .update(contactRow)
+                .eq('id', existing.id);
+            if (updateError) throw updateError;
+            return existing.id;
+        }
+
         const { data, error } = await supabaseAdmin
             .from('contacts')
-            .insert([{
-                name: payload.name,
-                email: payload.email,
-                service: payload.service_type,
-                message: bookingLeadText(payload).slice(0, 12000),
-                budget: payload.budget_range || null,
-                timeline: payload.ideal_deadline || null,
-                ai_status: recommendation ? 'booking_ready' : 'booking_pending'
-            }])
+            .insert([contactRow])
             .select('id')
             .single();
         if (error) throw error;

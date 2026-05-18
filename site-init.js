@@ -295,7 +295,7 @@ window.OTP.isManualThemeActive = function() {
     const isManual = localStorage.getItem('theme_manual') === 'true';
     if (!isManual) return false;
     const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
-    const active = !!manualTime && Date.now() - manualTime <= 12 * 60 * 60 * 1000;
+    const active = !!manualTime && Date.now() - manualTime <= 365 * 24 * 60 * 60 * 1000;
     if (!active) {
         try {
             localStorage.removeItem('theme_manual');
@@ -313,18 +313,31 @@ window.OTP.setTheme = function(theme, isManual = false) {
     let hues = window.OTP_HUES || [{ dark: '0, 236, 255', light: '0, 170, 204' }];
     let hueIndex = window.OTP_HUE_INDEX !== undefined ? window.OTP_HUE_INDEX : 0;
     let selectedHue = hues[hueIndex];
+    const contrastText = (rgb) => {
+        const parts = String(rgb || '').split(',').map((n) => Number(n.trim()));
+        const luminance = ((parts[0] || 0) * 299 + (parts[1] || 0) * 587 + (parts[2] || 0) * 114) / 1000;
+        return luminance > 148 ? '#050609' : '#ffffff';
+    };
 
     // ZERO-BLUR PROTOCOL: Freeze transitions/filters during swap
     html.classList.add('is-theme-switching');
+    if (selectedHue.name) html.setAttribute('data-refresh-accent', selectedHue.name);
+    if (selectedHue.gradient) rootStyle.setProperty('--accent-gradient', selectedHue.gradient);
 
     if (theme === 'light') {
         html.setAttribute('data-theme', 'light');
         rootStyle.setProperty('--accent2-rgb', selectedHue.light);
         rootStyle.setProperty('--accent2', `rgb(${selectedHue.light})`);
+        rootStyle.setProperty('--accent2-text', contrastText(selectedHue.light));
     } else {
         html.removeAttribute('data-theme');
         rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
         rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
+        rootStyle.setProperty('--accent2-text', contrastText(selectedHue.dark));
+    }
+
+    if (!isManual && typeof window.OTP.calculateChronoPhase === 'function') {
+        html.setAttribute('data-chrono-phase', window.OTP.calculateChronoPhase());
     }
 
     // Keep browser chrome and native controls aligned with active theme.
@@ -343,9 +356,8 @@ window.OTP.setTheme = function(theme, isManual = false) {
         }, 50);
     });
     
-    // Save to local storage
-    localStorage.setItem('theme', theme);
     if (isManual) {
+        localStorage.setItem('theme', theme);
         localStorage.setItem('theme_manual', 'true');
         localStorage.setItem('theme_manual_time', Date.now().toString());
     }
@@ -371,7 +383,7 @@ window.OTP.initTheme = function() {
     const targetTheme = resolveAuto();
     const isManual = localStorage.getItem('theme_manual') === 'true';
     const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
-    const manualActive = isManual && manualTime && Date.now() - manualTime <= 12 * 60 * 60 * 1000;
+    const manualActive = isManual && manualTime && Date.now() - manualTime <= 365 * 24 * 60 * 60 * 1000;
     console.log(manualActive
         ? `[OTP] Theme: ${targetTheme} (Manual Override Active)`
         : `[OTP] Theme: ${targetTheme} (World Timing Sync)`);
@@ -383,7 +395,7 @@ window.OTP.initTheme = function() {
         const onSchemeChange = () => {
             const m = localStorage.getItem('theme_manual') === 'true';
             const t = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
-            const expired = !t || Date.now() - t > 12 * 60 * 60 * 1000;
+            const expired = !t || Date.now() - t > 365 * 24 * 60 * 60 * 1000;
             if (m && !expired) return;
             if (m && expired) {
                 try {
@@ -408,7 +420,7 @@ window.OTP.initTheme = function() {
     setInterval(() => {
         const isManual = localStorage.getItem('theme_manual') === 'true';
         const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
-        const isExpired = !manualTime || Date.now() - manualTime > 12 * 60 * 60 * 1000;
+        const isExpired = !manualTime || Date.now() - manualTime > 365 * 24 * 60 * 60 * 1000;
 
         if (!isManual || (isManual && isExpired)) {
             if (isManual && isExpired) {
@@ -427,13 +439,13 @@ window.OTP.initTheme = function() {
         }
     }, 5 * 60 * 1000);
 
-    // 4. SPECTRAL REVELATION (Probability Aura)
-    // PROBABILITY RE-ROLL: Evaluation occurs on every refresh (Session Lock Purged)
+    // 4. REFRESH ACCENT SYSTEM: day/night controls light; refresh owns OTP personality.
+    const activeHue = window.OTP_ACTIVE_HUE || ((window.OTP_HUES || [])[window.OTP_HUE_INDEX || 0]) || {};
     const spectralRoll = Math.random();
     let variant = '';
     
     // 6% Total Chance (2% each variant) for SITE-WIDE effects
-    if (spectralRoll < 0.02) variant = 'spectral-revelation'; // V1: Iridescent
+    if (activeHue.name === 'glitch' || spectralRoll < 0.02) variant = 'spectral-revelation'; // V1: Iridescent
     else if (spectralRoll < 0.04) variant = 'spectral-revelation-gold'; // V2: Gold
     else if (spectralRoll < 0.06) variant = 'spectral-revelation-neon'; // V3: Neon
 
@@ -446,8 +458,8 @@ window.OTP.initTheme = function() {
         console.log(`[OTP] SYSTEM_STATE: ${variant.toUpperCase()}_ACTIVE`);
     }
 
-    // Determine the active brand gradient (Default to Iridescent if no site-wide variant is active)
-    let brandGradient = 'linear-gradient(135deg, #00ecff, #ff00cc, #ffcc00, #00ecff)'; 
+    // Determine the active brand gradient. It follows the refresh accent; gold is one possible accent.
+    let brandGradient = activeHue.gradient || 'linear-gradient(135deg, #00ecff, #ff00cc, #ffcc00, #00ecff)';
     if (variant === 'spectral-revelation-gold') brandGradient = 'linear-gradient(135deg, #ffcc00, #ff8800, #ffffff, #ffcc00)';
     if (variant === 'spectral-revelation-neon') brandGradient = 'linear-gradient(135deg, #00ffaa, #00ecff, #ffffff, #00ffaa)';
 
@@ -733,14 +745,9 @@ window.OTP.initRealtimeState = async function() {
                 kNodes.forEach(n => n.style.opacity = config.kursor === 'on' ? '1' : '0');
             }
             
-            // Apply Theme
+            // Local chrono/manual theme owns public display; remote config must not override night/day.
             if (config.theme && !window.location.pathname.includes('otp-terminal')) {
-                const manualActive = typeof window.OTP.isManualThemeActive === 'function'
-                    ? window.OTP.isManualThemeActive()
-                    : (localStorage.getItem('theme_manual') === 'true');
-                if (!manualActive) {
-                    window.OTP.setTheme(config.theme);
-                }
+                localStorage.setItem('last_global_theme', config.theme);
             }
 
             // Footer / strip status (same payload terminal persists as `status`)
@@ -778,18 +785,8 @@ window.OTP.initRealtimeState = async function() {
         }
 
         if (type === 'theme') {
-            // Respect active local manual choice; avoid remote flicker/override loops.
-            if (typeof window.OTP.isManualThemeActive === 'function' && window.OTP.isManualThemeActive()) {
-                return;
-            }
-            window.OTP.setTheme(value, false);
-            localStorage.setItem('theme', value); // Force overwrite user pref
+            // Public pages use local chrono/manual theme, so global broadcasts are recorded only.
             localStorage.setItem('last_global_theme', value);
-            
-            // Sync Toggle Icons
-            if (typeof window.OTP.updateAllToggles === 'function') {
-                window.OTP.updateAllToggles(value);
-            }
 
             // Visual transition
             if (typeof gsap !== 'undefined') {
@@ -1347,6 +1344,9 @@ function initSite() {
             document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
                 // Determine if it's the mobile one (has text) or desktop (icon only) based on class
                 const isMobileBtn = btn.classList.contains('mobile-theme-toggle');
+                const nextLabel = theme === 'light' ? 'Switch to night theme' : 'Switch to day theme';
+                btn.setAttribute('aria-label', nextLabel);
+                btn.setAttribute('title', nextLabel);
                 
                 // Animate
                 btn.style.transform = 'scale(0.8) rotate(90deg)';
@@ -1374,7 +1374,7 @@ function initSite() {
         // Create Main Toggle (Desktop)
         const toggleBtn = document.createElement('button');
         toggleBtn.className = 'theme-toggle-btn';
-        toggleBtn.ariaLabel = 'Toggle Theme';
+        toggleBtn.ariaLabel = currentTheme === 'light' ? 'Switch to night theme' : 'Switch to day theme';
         toggleBtn.innerHTML = window.OTP.getThemeIcon(currentTheme);
         toggleBtn.addEventListener('click', handleToggle);
 
@@ -1386,7 +1386,7 @@ function initSite() {
         if (navDrawer) {
             const mobileToggle = document.createElement('button');
             mobileToggle.className = 'theme-toggle-btn mobile-theme-toggle';
-            mobileToggle.ariaLabel = 'Toggle Theme';
+            mobileToggle.ariaLabel = currentTheme === 'light' ? 'Switch to night theme' : 'Switch to day theme';
             // Inline styles for mobile layout
             mobileToggle.style.marginLeft = '0';
             mobileToggle.style.marginTop = '0';
