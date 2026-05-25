@@ -1549,7 +1549,13 @@ function initSite() {
         let bgCurrentX = 50, bgCurrentY = 50;
         
         const isMobileDevice = window.matchMedia("(hover: none)").matches;
+        const reducedCardMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
         const lerp = (start, end, amt) => start * (1 - amt) + end * amt;
+        const identityPerformanceMode = () => (
+            document.documentElement.classList.contains('stars-performance-mode')
+            || document.documentElement.hasAttribute('data-otp-performance-mode')
+            || reducedCardMotion.matches
+        );
 
         card.addEventListener('mousemove', (e) => {
             const rect = card.getBoundingClientRect();
@@ -1621,6 +1627,24 @@ function initSite() {
 
         function update() {
             if (!isCardVisible) {
+                animationFrameId = null;
+                return;
+            }
+
+            if (identityPerformanceMode()) {
+                currentX = 0;
+                currentY = 0;
+                currentEyeX = 0;
+                currentEyeY = 0;
+                bgCurrentX = 50;
+                bgCurrentY = 50;
+                card.style.setProperty('--rotateX', '0deg');
+                card.style.setProperty('--rotateY', '0deg');
+                card.style.setProperty('--bgX', '50%');
+                card.style.setProperty('--bgY', '50%');
+                card.style.setProperty('--floatY', '0px');
+                card.style.setProperty('--eyeX', '0px');
+                card.style.setProperty('--eyeY', '0px');
                 animationFrameId = null;
                 return;
             }

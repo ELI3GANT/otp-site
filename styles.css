@@ -812,16 +812,11 @@ h1, h2, h3 {
   color: #111 !important;
 }
 
-/* DAY MODE: IDENTITY CARD (Giga Rare Pokemon Card Shimmer) */
+/* DAY MODE: IDENTITY CARD */
 [data-theme="light"] .glass-manifesto {
-  background: linear-gradient(
-    135deg,
-    #ffffff 0%,
-    #f4f7ff 25%,
-    #edf2ff 50%,
-    #f4f7ff 75%,
-    #ffffff 100%
-  );
+  background:
+    radial-gradient(circle at 18% 12%, rgba(var(--accent2-rgb), 0.08), transparent 28%),
+    linear-gradient(135deg, #ffffff 0%, #f6f8ff 46%, #ffffff 100%);
   border: 1px solid rgba(0,0,0,0.1);
   border-top: 1px solid #ffffff;
   border-bottom: 2px solid #b0b8d1;
@@ -837,40 +832,30 @@ h1, h2, h3 {
   content: "";
   position: absolute;
   inset: 0;
-  background: repeating-linear-gradient(
-    115deg, 
-    transparent 0%, 
-    rgba(255, 0, 150, 0.1) 15%, 
-    rgba(255, 255, 0, 0.1) 40%, 
-    transparent 50%
-  );
-  background-size: 200% 200%;
-  mix-blend-mode: color-burn;
-  opacity: 0.5; /* Always visible */
+  background:
+    linear-gradient(115deg, transparent 0 34%, rgba(var(--accent2-rgb), 0.065) 48%, transparent 64%),
+    radial-gradient(circle at 82% 16%, rgba(255,255,255,0.65), transparent 22%);
+  mix-blend-mode: normal;
+  opacity: 0.48;
   pointer-events: none;
   z-index: 2;
   transition: opacity 0.6s ease;
-  animation: holoFlow 15s linear infinite; /* Slower, smoother flow */
 }
 
 [data-theme="light"] .glass-manifesto:hover::after {
-  opacity: 0.9; /* Intensify on focus, no speed change to prevent jump */
+  opacity: 0.62;
 }
 
-/* Add a holographic holographic 'grain' for that rare card feel */
 [data-theme="light"] .glass-manifesto::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.12;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.62), rgba(255,255,255,0)),
+    radial-gradient(circle at 50% 100%, rgba(var(--accent2-rgb), 0.05), transparent 46%);
+  opacity: 0.55;
   pointer-events: none;
   z-index: 1;
-}
-
-@keyframes holoFlow {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 100% 100%; }
 }
 
 /* Base card refinements */
@@ -11332,11 +11317,11 @@ html.stars-performance-mode .scanline-overlay {
 }
 
 html.stars-performance-mode .bg-grain {
-  opacity: 0.08 !important;
+  opacity: 0.035 !important;
 }
 
 html.stars-performance-mode .scanline-overlay {
-  opacity: 0.18 !important;
+  opacity: 0.045 !important;
 }
 
 html.stars-performance-mode .home-page *:not(.cool-work-link):not(.cool-work-link *),
@@ -11349,6 +11334,80 @@ html.stars-performance-mode .home-page .hero::before {
   content: none !important;
   background: none !important;
   opacity: 0 !important;
+}
+
+html.stars-performance-mode .home-page .hero .hero-logo-wrap {
+  mix-blend-mode: normal !important;
+  perspective: none !important;
+  will-change: auto !important;
+}
+
+html.stars-performance-mode .home-page .hero .hero-logo-wrap::before,
+html.stars-performance-mode[data-theme="light"] .home-page .hero .hero-logo-wrap::before,
+html.stars-performance-mode[data-theme="dark"] .home-page .hero .hero-logo-wrap::before {
+  animation: none !important;
+  filter: none !important;
+  opacity: 0.34 !important;
+  inset: -20% !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(var(--accent2-rgb), 0.26), transparent 54%) !important;
+}
+
+html.stars-performance-mode .home-page .hero-logo-wrap::after {
+  box-shadow: 0 0 24px rgba(var(--accent2-rgb), 0.12) !important;
+}
+
+html.stars-performance-mode .home-page .hero .hero-eye-3d,
+html.stars-performance-mode[data-theme="light"] .home-page .hero .hero-eye-3d,
+html.stars-performance-mode[data-theme="dark"] .home-page .hero .hero-eye-3d {
+  animation: none !important;
+  transform: none !important;
+  will-change: auto !important;
+  filter: none !important;
+}
+
+html.stars-performance-mode .home-page .glass-manifesto {
+  transform: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  will-change: auto !important;
+  contain: paint !important;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease !important;
+  box-shadow:
+    0 18px 46px rgba(0, 0, 0, 0.36),
+    0 0 18px rgba(var(--accent2-rgb), 0.10) !important;
+}
+
+html.stars-performance-mode .home-page .glass-manifesto::before {
+  inset: 0 !important;
+  transform: none !important;
+  filter: none !important;
+  opacity: 0.22 !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(var(--accent2-rgb), 0.24), transparent 52%) !important;
+}
+
+html.stars-performance-mode .home-page .glass-manifesto::after {
+  mix-blend-mode: normal !important;
+  opacity: 0.26 !important;
+  background:
+    linear-gradient(135deg, transparent 32%, rgba(255, 255, 255, 0.07) 50%, transparent 68%) !important;
+}
+
+html.stars-performance-mode .home-page .glass-manifesto .otp-eye-svg,
+html.stars-performance-mode .home-page .glass-manifesto .sticker-hieroglyphic {
+  filter: none !important;
+}
+
+html.stars-performance-mode .home-page .glass-manifesto .eye-shape-group,
+html.stars-performance-mode .home-page .glass-manifesto .sticker-resonance {
+  animation: none !important;
+}
+
+html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
 }
 
 .home-page .otp-static-performance-logo {

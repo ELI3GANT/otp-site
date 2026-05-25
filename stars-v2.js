@@ -101,6 +101,7 @@
         if (performanceMode) return;
         performanceMode = true;
         document.documentElement.classList.add('stars-performance-mode');
+        document.documentElement.setAttribute('data-otp-performance-mode', 'stars');
         document.querySelectorAll('img[src*="assets/otp.gif"]').forEach((img) => {
             if (!img.dataset.animatedSrc) img.dataset.animatedSrc = img.getAttribute('src') || '';
             img.src = '/assets/otp-logo-transparent.png';
@@ -213,7 +214,8 @@
             }
         }
         if (document.visibilityState !== 'visible') return;
-        if (time - lastFrame < 33) return;
+        const frameInterval = performanceMode && !mouse.attractor ? 66 : 33;
+        if (time - lastFrame < frameInterval) return;
         lastFrame = time;
 
         const light = isLightMode();
@@ -252,7 +254,7 @@
             ctx.shadowColor = star.accent
                 ? rgba(accent, light ? 0.16 : 0.38)
                 : (light ? 'rgba(20, 20, 30, 0.12)' : 'rgba(255, 250, 236, 0.28)');
-            ctx.shadowBlur = star.depth > 0.65 ? (light ? 2.5 : 5.5) : (light ? 1 : 2.5);
+            ctx.shadowBlur = performanceMode ? 0 : (star.depth > 0.65 ? (light ? 2.5 : 5.5) : (light ? 1 : 2.5));
             ctx.fillStyle = fill;
             ctx.fill();
             ctx.shadowBlur = 0;
