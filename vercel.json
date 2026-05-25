@@ -26,8 +26,8 @@
     }
   ],
   "routes": [
-    { "src": "/os/?", "dest": "https://otp-os.vercel.app" },
-    { "src": "/os/(.*)", "dest": "https://otp-os.vercel.app/$1" },
+    { "src": "^/os/?$", "dest": "/server.js" },
+    { "src": "^/os/(.*)$", "dest": "/server.js" },
     { "src": "/(bookings|booking|book|book-otp)/?", "dest": "/bookings.html" },
     { "src": "/api/bookings/(.*)", "dest": "/server.js" },
     { "src": "/api/(.*)", "dest": "/server.js" },

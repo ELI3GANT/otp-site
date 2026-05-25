@@ -3,7 +3,8 @@
  * OTP Production Terminal Sweep v2
  *
  * Public-first production health checks with optional admin-authenticated checks.
- * Missing/invalid OTP_ADMIN_TOKEN skips private checks but never blocks public validation.
+ * Admin checks prefer OTP_ADMIN_PASSCODE/ADMIN_PASSCODE login, then OTP_ADMIN_TOKEN fallback.
+ * Missing admin auth skips private checks but never blocks public validation.
  */
 
 const {
@@ -15,7 +16,7 @@ const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytruep
 const TOKEN = String(process.env.OTP_ADMIN_TOKEN || '').trim();
 
 const publicTargets = [
-  { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'Insights', 'href="/bookings"', 'href="/portal"'] },
+  { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'Insights', '/bookings?source=', 'href="/portal"'] },
   { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css', '/bookings.js', 'canonical', 'OTP Bookings Portal'] },
   { name: 'booking-alias', path: '/booking', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
   { name: 'book-alias', path: '/book', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
@@ -40,6 +41,7 @@ const publicTargets = [
 ];
 
 const adminTargets = [
+  { name: 'admin-qa-sweep', path: '/api/admin/qa/sweep', kind: 'json', shape: (payload) => Boolean(payload && payload.success === true && payload.fixtures && payload.mutationPolicy) },
   { name: 'admin-knowledge-meta', path: '/api/admin/knowledge/meta', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },
   { name: 'admin-knowledge-files', path: '/api/admin/knowledge/files', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },
   { name: 'admin-docs-templates-status', path: '/api/admin/docs/templates/status', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },

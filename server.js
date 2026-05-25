@@ -300,7 +300,7 @@ function buildDocFields({ lead, sourceTable, recommendation }) {
         client_signature_name: '',
         client_signature_date: '',
         sender_email: 'bookings@onlytrueperspective.tech',
-        sender_company: 'Only True Perspective LLC'
+        sender_company: 'OnlyTruePerspective LLC'
     };
 }
 
@@ -597,7 +597,7 @@ function renderHtmlDoc(docType, fields) {
     <header class="doc-brand">
       ${logoHtml}
       <div class="doc-brand-copy">
-        <div class="doc-brand-company">${escapeHtml(f.sender_company || 'Only True Perspective LLC')}</div>
+        <div class="doc-brand-company">${escapeHtml(f.sender_company || 'OnlyTruePerspective LLC')}</div>
         <div class="doc-pills" role="note">
           <span class="doc-pill">OTP Oracle</span>
           <span class="doc-pill">Draft</span>
@@ -1148,7 +1148,7 @@ async function renderInvoicePdf(fields, packetId = '') {
 
     // Footer
     page.drawRectangle({ x: 0, y: 0, width, height: 28, color: rgb(0.97, 0.97, 0.98) });
-    page.drawText('Only True Perspective LLC • Admin-approved export', { x: margin, y: 10, size: 8.5, font, color: muted });
+    page.drawText('OnlyTruePerspective LLC • Admin-approved export', { x: margin, y: 10, size: 8.5, font, color: muted });
     return Buffer.from(await pdfDoc.save());
 }
 
@@ -2217,6 +2217,96 @@ function privatePortalHtml(res) {
     ].join(';'));
 }
 
+const OTP_OS_UPSTREAM_ORIGIN = 'https://otp-os.vercel.app';
+const OTP_OS_PROXY_HEADER_BLOCKLIST = new Set([
+    'connection',
+    'content-encoding',
+    'content-length',
+    'keep-alive',
+    'transfer-encoding',
+    'upgrade'
+]);
+
+function rewriteOtpOsHtml(html) {
+    return String(html || '').replace(/\b(href|src)=["']\/(?!\/)([^"']*)["']/gi, (match, attr, target) => {
+        const cleanTarget = String(target || '');
+        if (!cleanTarget || cleanTarget.startsWith('os/')) return match;
+
+        const pathPart = cleanTarget.split(/[?#]/)[0];
+        const shouldPrefix = pathPart.startsWith('assets/')
+            || /^(?:app|client|bookings|document-renderer|pricing-config|client-portal-utils)\.js$/i.test(pathPart)
+            || /^(?:styles|client|bookings)\.css$/i.test(pathPart)
+            || /^(?:manifest\.json|site\.webmanifest|icon\.svg|favicon\.png|favicon\.ico|apple-touch-icon\.png)$/i.test(pathPart)
+            || /\.(?:css|js|json|svg|png|jpg|jpeg|gif|ico|webmanifest)$/i.test(pathPart);
+
+        return shouldPrefix ? `${attr}="/os/${cleanTarget}"` : match;
+    });
+}
+
+async function readProxyRequestBody(req) {
+    if (['GET', 'HEAD'].includes(req.method)) return undefined;
+    const chunks = [];
+    for await (const chunk of req) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return chunks.length ? Buffer.concat(chunks) : undefined;
+}
+
+async function proxyOtpOs(req, res) {
+    try {
+        const original = new URL(req.originalUrl, 'https://onlytrueperspective.tech');
+        let upstreamPath = original.pathname.replace(/^\/os(?:\/)?/, '/');
+        if (!upstreamPath || upstreamPath === '/os') upstreamPath = '/';
+        const upstreamUrl = new URL(upstreamPath, OTP_OS_UPSTREAM_ORIGIN);
+        upstreamUrl.search = original.search;
+
+        const headers = {};
+        for (const [key, value] of Object.entries(req.headers)) {
+            const lower = key.toLowerCase();
+            if (['host', 'connection', 'content-length', 'accept-encoding'].includes(lower)) continue;
+            if (value !== undefined) headers[lower] = Array.isArray(value) ? value.join(', ') : String(value);
+        }
+        headers.host = new URL(OTP_OS_UPSTREAM_ORIGIN).host;
+        headers['x-forwarded-host'] = req.get('host') || '';
+        headers['x-forwarded-proto'] = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+        headers['x-forwarded-for'] = req.headers['x-forwarded-for'] || req.ip || '';
+
+        const proxyBody = await readProxyRequestBody(req);
+        if (proxyBody) headers['content-length'] = String(proxyBody.length);
+
+        const upstream = await fetch(upstreamUrl.href, {
+            method: req.method,
+            headers,
+            body: proxyBody,
+            redirect: 'manual'
+        });
+
+        res.status(upstream.status);
+        upstream.headers.forEach((value, key) => {
+            const lower = key.toLowerCase();
+            if (!OTP_OS_PROXY_HEADER_BLOCKLIST.has(lower)) res.setHeader(key, value);
+        });
+
+        const contentType = upstream.headers.get('content-type') || '';
+        const body = Buffer.from(await upstream.arrayBuffer());
+        if (/text\/html/i.test(contentType)) {
+            res.setHeader('Content-Type', contentType);
+            noStoreHtml(res);
+            return res.send(rewriteOtpOsHtml(body.toString('utf8')));
+        }
+        return res.send(body);
+    } catch (error) {
+        console.error('otp-os proxy failed:', error?.message || error);
+        return res.status(502).type('text/plain; charset=utf-8').send('OTP OS is temporarily unavailable.');
+    }
+}
+
+app.get(/^\/os$/, (req, res) => {
+    const query = req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : '';
+    return res.redirect(308, `/os/${query}`);
+});
+app.all(/^\/os(?:\/.*)?$/, proxyOtpOs);
+
 // Root + clean URL aliases BEFORE express.static so `/` is not served as a long-cache static file.
 app.get('/', (req, res) => {
     noStoreHtml(res);
@@ -2425,10 +2515,23 @@ const OTP_BOOKINGS_UPSTREAM = String(
     || process.env.OTP_BOOKINGS_API_BASE
     || 'https://otp-os.vercel.app'
 ).replace(/\/+$/, '');
-const OTP_PUBLIC_SITE_ORIGIN = String(
-    process.env.OTP_PUBLIC_SITE_ORIGIN
-    || 'https://onlytrueperspective.tech'
-).replace(/\/+$/, '');
+function normalizeOtpPublicSiteOrigin(value) {
+    try {
+        const url = new URL(String(value || 'https://www.onlytrueperspective.tech').trim());
+        if (!/^https?:$/.test(url.protocol)) throw new Error('invalid protocol');
+        if (url.hostname.toLowerCase() === 'onlytrueperspective.tech') {
+            url.hostname = 'www.onlytrueperspective.tech';
+        }
+        url.protocol = 'https:';
+        url.hash = '';
+        url.search = '';
+        return url.toString().replace(/\/+$/, '');
+    } catch (_) {
+        return 'https://www.onlytrueperspective.tech';
+    }
+}
+
+const OTP_PUBLIC_SITE_ORIGIN = normalizeOtpPublicSiteOrigin(process.env.OTP_PUBLIC_SITE_ORIGIN);
 const OTP_CLIENT_PORTAL_UPSTREAM = String(
     process.env.OTP_CLIENT_PORTAL_UPSTREAM_URL
     || process.env.OTP_OS_PUBLIC_BASE
@@ -2461,6 +2564,14 @@ const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Booking received. OTP Oracle rec
 const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not submit the booking yet. Please check the required fields and try again.';
 const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit']);
 const CLIENT_PORTAL_TOKEN_RE = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/;
+const SAFE_E2E_PORTAL_FIXTURE = Object.freeze({
+    clientName: 'OTP Test Client',
+    email: 'test@onlytrueperspective.tech',
+    portalToken: 'test-safe-portal-token',
+    jobId: 'E2E-TEST-SAFE',
+    sourceType: 'e2e_test',
+    status: 'test'
+});
 const CLIENT_PORTAL_PROXY_TIMEOUT_MS = positiveNumber(process.env.CLIENT_PORTAL_PROXY_TIMEOUT_MS, 9000);
 const CLIENT_PORTAL_TOKEN_VERSION = 'otp1';
 const CLIENT_PORTAL_TOKEN_TTL_DAYS = Math.max(1, Math.min(730, Number(process.env.CLIENT_PORTAL_TOKEN_TTL_DAYS || 180)));
@@ -2498,6 +2609,10 @@ function normalizeClientPortalToken(value) {
     return token;
 }
 
+function e2eTestModeEnabled() {
+    return ['1', 'true'].includes(String(process.env.E2E_TEST_MODE || '').trim().toLowerCase());
+}
+
 function publicClientPortalPath(value) {
     const raw = cleanBookingText(value, 800);
     if (!raw) return '';
@@ -2512,6 +2627,29 @@ function publicClientPortalPath(value) {
         if (!token) return '';
         const safe = new URL(`/client/${encodeURIComponent(token)}`, OTP_PUBLIC_SITE_ORIGIN);
         return `${safe.pathname}${safe.search}`;
+    } catch (_) {
+        return '';
+    }
+}
+
+function publicPaymentHref(value, status = '', expiresAt = '') {
+    const raw = cleanBookingText(value, 1200);
+    if (!raw) return '';
+    const state = String(status || '').trim().toLowerCase();
+    if (/(expired|disabled|broken|inactive|deactivated)/.test(state)) return '';
+    if (expiresAt) {
+        const parsedExpiry = new Date(expiresAt);
+        if (!Number.isNaN(parsedExpiry.getTime()) && parsedExpiry.getTime() < Date.now()) return '';
+    }
+    try {
+        const parsed = new URL(raw);
+        if (parsed.protocol !== 'https:') return '';
+        if (parsed.username || parsed.password) return '';
+        const host = parsed.hostname.toLowerCase();
+        const pathname = parsed.pathname.toLowerCase();
+        const ownHost = host === 'onlytrueperspective.tech' || host === 'www.onlytrueperspective.tech' || host === 'otp-os.vercel.app';
+        if (ownHost && /^\/(?:api|admin|terminal|otp-terminal|os)(?:\/|$)/.test(pathname)) return '';
+        return parsed.toString();
     } catch (_) {
         return '';
     }
@@ -2597,6 +2735,107 @@ function readClientPortalToken(token) {
     }
 }
 
+function portalTokenFromInternalNotes(notes = '') {
+    const match = String(notes || '').match(/(?:^|\n)(?:Client portal token|OTP_CLIENT_PORTAL_TOKEN):\s*([A-Za-z0-9][A-Za-z0-9._~-]{5,512})/i);
+    return normalizeClientPortalToken(match?.[1] || '');
+}
+
+function portalNoteValue(notes = '', label = '') {
+    const escaped = String(label || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = String(notes || '').match(new RegExp(`^${escaped}:\\s*([^\\n]+)`, 'im'));
+    return cleanBookingText(match?.[1] || '', 260);
+}
+
+function portalExpiresAtFromInternalNotes(notes = '') {
+    return portalNoteValue(notes, 'Client portal expires at');
+}
+
+function portalCreatedAtFromInternalNotes(notes = '') {
+    return portalNoteValue(notes, 'Client portal created at');
+}
+
+function portalRevokedAtFromInternalNotes(notes = '') {
+    return portalNoteValue(notes, 'Client portal revoked at');
+}
+
+function isExpiredIso(value = '') {
+    const date = new Date(value || '');
+    return !Number.isNaN(date.getTime()) && date.getTime() <= Date.now();
+}
+
+function storedClientPortalState(job = {}) {
+    const notes = String(job.internal_notes || '');
+    const token = normalizeClientPortalToken(job.portal_token || portalTokenFromInternalNotes(notes));
+    const createdAt = portalCreatedAtFromInternalNotes(notes) || job.created_at || '';
+    const expiresAt = portalExpiresAtFromInternalNotes(notes);
+    const revokedAt = portalRevokedAtFromInternalNotes(notes);
+    let status = token ? 'active' : 'not_found';
+    if (token && revokedAt) status = 'revoked';
+    if (token && !revokedAt && expiresAt && isExpiredIso(expiresAt)) status = 'expired';
+    return { token, status, expiresAt, revokedAt };
+}
+
+function assertStoredClientPortalUsable(job = {}) {
+    const state = storedClientPortalState(job);
+    if (state.status === 'expired' || state.status === 'revoked') {
+        const error = new Error(state.status === 'expired'
+            ? 'This portal link has expired. Request a fresh private OTP portal link.'
+            : 'This portal link is no longer active. Request a fresh private OTP portal link.');
+        error.statusCode = 410;
+        error.errorCode = state.status;
+        throw error;
+    }
+    return state;
+}
+
+function isClientPortalJobArchived(job = {}) {
+    return Boolean(job.archived_at)
+        || String(job.job_status || '').trim().toLowerCase() === 'archived'
+        || String(job.status || '').trim().toLowerCase() === 'archived';
+}
+
+async function findClientPortalJobByStoredToken(token = '') {
+    const safeToken = normalizeClientPortalToken(token);
+    if (!safeToken || !supabaseAdmin) return null;
+
+    try {
+        const direct = await supabaseAdmin
+            .from('ops_jobs')
+            .select('*')
+            .eq('portal_token', safeToken)
+            .limit(1)
+            .maybeSingle();
+
+        if (!direct.error && direct.data && !isClientPortalJobArchived(direct.data)) {
+            assertStoredClientPortalUsable(direct.data);
+            return direct.data;
+        }
+
+        if (direct.error && !/portal_token|schema cache|column/i.test(direct.error.message || '')) {
+            throw direct.error;
+        }
+    } catch (error) {
+        if (!/portal_token|schema cache|column/i.test(error?.message || '')) {
+            throw error;
+        }
+    }
+
+    const notesLookup = await supabaseAdmin
+        .from('ops_jobs')
+        .select('*')
+        .ilike('internal_notes', `%${safeToken}%`)
+        .limit(5);
+
+    if (notesLookup.error) throw notesLookup.error;
+
+    const matched = (notesLookup.data || []).find((job) => (
+        !isClientPortalJobArchived(job)
+        && portalTokenFromInternalNotes(job.internal_notes || '') === safeToken
+    )) || null;
+    if (matched) assertStoredClientPortalUsable(matched);
+    return matched;
+}
+
 function privatePortalApi(res) {
     privatePortalHtml(res);
     res.set('Content-Type', 'application/json; charset=utf-8');
@@ -2663,6 +2902,7 @@ function buildClientPortalData(jobRow) {
 
     const deliverableItems = lineItems(job.deliverables || job.projectDescription, 10);
     const projectTitle = publicJobText(job.projectTitle || job.serviceType || 'OTP Project', 180);
+    const activePaymentHref = publicPaymentHref(job.paymentUrl, job.paymentLinkStatus, job.paymentUrlExpiresAt);
 
     return {
         ok: true,
@@ -2695,9 +2935,11 @@ function buildClientPortalData(jobRow) {
             method: publicJobText(job.paymentMethod, 80),
             invoiceSent: job.invoiceSent === true,
             receiptAvailable: paidEnoughForReceipt,
+            paymentLinkStatus: publicJobText(job.paymentLinkStatus, 80),
+            paymentLinkReady: Boolean(activePaymentHref),
             cta: {
-                label: paidEnoughForReceipt ? 'Request Receipt Copy' : 'Request Payment Link',
-                href: `mailto:${BUSINESS_EMAILS.BOOKINGS}?subject=${encodeURIComponent(`OTP payment help - ${projectTitle}`)}`
+                label: activePaymentHref ? 'Open Secure Payment Link' : (paidEnoughForReceipt ? 'Request Receipt Copy' : 'Request Payment Link'),
+                href: activePaymentHref || `mailto:${BUSINESS_EMAILS.BOOKINGS}?subject=${encodeURIComponent(`OTP payment help - ${projectTitle}`)}`
             }
         },
         deliverables: {
@@ -2705,6 +2947,54 @@ function buildClientPortalData(jobRow) {
             items: deliverableItems
         },
         documents: docs
+    };
+}
+
+function buildSafeE2EClientPortalData() {
+    return {
+        ok: true,
+        portal: {
+            origin: OTP_PUBLIC_SITE_ORIGIN,
+            poweredBy: 'OnlyTruePerspective',
+            noindex: true,
+            testFixture: true
+        },
+        profile: {
+            clientName: SAFE_E2E_PORTAL_FIXTURE.clientName,
+            businessName: 'OTP E2E QA',
+            email: SAFE_E2E_PORTAL_FIXTURE.email,
+            phone: ''
+        },
+        project: {
+            title: 'OTP Safe E2E Fixture',
+            serviceType: 'E2E Test Flow',
+            packageType: 'Custom',
+            status: 'test',
+            startDate: '',
+            dueDate: '',
+            description: 'Safe production QA fixture for portal rendering only. No real delivery, no real email, no Stripe charge.',
+            notes: 'Manual price required before any real work.'
+        },
+        payment: {
+            status: 'Unpaid',
+            total: '',
+            deposit: '',
+            remaining: '',
+            method: '',
+            invoiceSent: false,
+            receiptAvailable: false,
+            paymentLinkStatus: '',
+            paymentLinkReady: false,
+            cta: {
+                label: 'Request Payment Link',
+                href: `mailto:${BUSINESS_EMAILS.BOOKINGS}?subject=${encodeURIComponent('OTP payment help - safe E2E fixture')}`
+            }
+        },
+        deliverables: {
+            status: 'pending',
+            items: []
+        },
+        documents: []
     };
 }
 
@@ -2730,6 +3020,22 @@ function normalizeBookingDeadline(value) {
         if (!Number.isNaN(dt.getTime())) return raw;
     }
     return raw;
+}
+
+function bookingFastLaneMappings() {
+    const mappings = OTP_PRICING?.fastLaneMappings || {};
+    return {
+        'Same-Day Reel': mappings['Same-Day Reel'] || 'The Signal',
+        'Event Promo': mappings['Event Promo'] || 'The Signal',
+        'Business Content Pack': mappings['Business Content Pack'] || 'The Engine',
+        'Brand Launch Pack': mappings['Brand Launch Pack'] || 'Custom Build'
+    };
+}
+
+function fastLanePackageFor(serviceType) {
+    const clean = cleanBookingText(serviceType, 160);
+    if (!clean) return '';
+    return bookingFastLaneMappings()[clean] || '';
 }
 
 function bookingIdFromToken(token) {
@@ -2836,6 +3142,7 @@ function buildPublicBookingConfig() {
         serviceTypes,
         services: serviceTypes,
         packageOptions: ['The Signal', 'The Engine', 'The System', 'Custom Build', 'Not Sure Yet'],
+        fastLaneMappings: bookingFastLaneMappings(),
         budgetRanges: ['Under $500', '$500 to $1,200', '$1,200 to $2,000', '$2,000 to $3,500', '$3,500+', 'Not sure yet'],
         urgencyLevels: ['Flexible', 'Soon', 'Rush', 'Launch deadline'],
         depositReadiness: ['Ready if scope is clear', 'Need quote first', 'Not ready yet'],
@@ -2849,14 +3156,18 @@ function buildPublicBookingConfig() {
 }
 
 function bookingLeadText(payload) {
+    const tracking = payload.source_tracking || {};
     return normalizeWhitespace([
         `Service type: ${payload.service_type}`,
         `Package interest: ${payload.package_interest}`,
+        payload.fast_lane_package ? `Fast lane package: ${payload.fast_lane_package}` : '',
         `Business / brand: ${payload.business_name}`,
         `Budget: ${payload.budget_range}`,
         `Timeline: ${payload.ideal_deadline || payload.timeline}`,
         `Urgency: ${payload.urgency_level}`,
         `Deposit readiness: ${payload.deposit_readiness}`,
+        tracking.cta_source ? `CTA source: ${tracking.cta_source}` : '',
+        tracking.utm_campaign ? `Campaign: ${tracking.utm_campaign}` : '',
         `Reference link: ${payload.reference_link}`,
         `Social / website: ${payload.social_link}`,
         `Project: ${payload.project_description}`
@@ -2900,12 +3211,14 @@ function buildBookingInternalNotes({ bookingId, payload, recommendation, recomme
         reference_link: payload.reference_link || null,
         service_type: payload.service_type,
         package_interest: payload.package_interest,
+        fast_lane_package: payload.fast_lane_package || null,
         recommended_package: recommendation?.recommendedPackage || null,
         project_description: payload.project_description,
         budget_range: payload.budget_range || null,
         ideal_deadline: payload.ideal_deadline || null,
         urgency_level: payload.urgency_level || null,
         deposit_readiness: payload.deposit_readiness || null,
+        source_tracking: payload.source_tracking || {},
         oracle_recommendation: recommendation || null,
         oracle_status: recommendationPending ? 'pending' : 'ready',
         created_at: new Date().toISOString()
@@ -2918,11 +3231,35 @@ function buildBookingInternalNotes({ bookingId, payload, recommendation, recomme
     ].join('\n').slice(0, 12000);
 }
 
+function cleanBookingSourceTracking(input = {}) {
+    const body = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
+    const clean = (value, max = 180) => cleanBookingText(value, max);
+    const tracked = {
+        cta_source: clean(body.cta_source || body.ctaSource || body.source, 120),
+        first_touch: clean(body.first_touch || body.firstTouch, 120),
+        booking_route: clean(body.booking_route || body.bookingRoute, 120),
+        referrer: clean(body.referrer, 360),
+        platform: clean(body.platform || body.device, 40),
+        utm_source: clean(body.utm_source || body.utmSource, 120),
+        utm_medium: clean(body.utm_medium || body.utmMedium, 120),
+        utm_campaign: clean(body.utm_campaign || body.utmCampaign, 160),
+        utm_content: clean(body.utm_content || body.utmContent, 160),
+        utm_term: clean(body.utm_term || body.utmTerm, 160),
+        captured_at: clean(body.captured_at || body.capturedAt, 80)
+    };
+    if (!tracked.cta_source && tracked.utm_source) tracked.cta_source = tracked.utm_source;
+    if (!tracked.first_touch) tracked.first_touch = tracked.cta_source || 'direct';
+    return Object.fromEntries(Object.entries(tracked).filter(([, value]) => Boolean(value)));
+}
+
 function parseBookingPayload(input) {
     const body = input && typeof input === 'object' ? input : {};
     const publicConfig = buildPublicBookingConfig();
+    const serviceType = pickPublicOption(body.service_type || body.serviceType, publicConfig.serviceTypes);
+    const fastLanePackage = fastLanePackageFor(serviceType);
     const packageRaw = normalizeBookingPackageName(body.package_interest || body.packageInterest);
-    const packageInterest = publicConfig.packageOptions.includes(packageRaw) ? packageRaw : '';
+    const requestedPackage = publicConfig.packageOptions.includes(packageRaw) ? packageRaw : '';
+    const packageInterest = fastLanePackage || requestedPackage;
     const spamTrap = cleanBookingText(
         body.otp_company_website || body.company_website || body.website_url || body._gotcha,
         120
@@ -2934,8 +3271,9 @@ function parseBookingPayload(input) {
         phone: normalizeBookingPhone(body.phone),
         business_name: cleanBookingText(body.business_name || body.businessName || body.brand_name, 180),
         social_link: cleanBookingText(body.social_link || body.socialWebsiteLink || body.website, 300),
-        service_type: pickPublicOption(body.service_type || body.serviceType, publicConfig.serviceTypes),
+        service_type: serviceType,
         package_interest: packageInterest,
+        fast_lane_package: fastLanePackage,
         project_description: cleanBookingText(body.project_description || body.projectDescription, 9000),
         reference_link: cleanBookingText(body.reference_link || body.referenceLink, 500),
         budget_range: pickPublicOption(body.budget_range || body.budgetRange, publicConfig.budgetRanges)
@@ -2945,6 +3283,7 @@ function parseBookingPayload(input) {
             || cleanBookingText(body.urgency_level || body.urgencyLevel, 80),
         deposit_readiness: pickPublicOption(body.deposit_readiness || body.depositReadiness, publicConfig.depositReadiness)
             || cleanBookingText(body.deposit_readiness || body.depositReadiness, 120),
+        source_tracking: cleanBookingSourceTracking(body.source_tracking || body.sourceTracking || {}),
         upload_ids: Array.isArray(body.upload_ids) ? body.upload_ids.map((v) => cleanBookingText(v, 140)).filter(Boolean).slice(0, 20) : []
     };
     const missingFields = [];
@@ -3127,18 +3466,9 @@ app.get('/api/bookings/config', (req, res) => {
 app.get('/api/client-portal/:token', async (req, res) => {
     privatePortalApi(res);
     const parsed = readClientPortalToken(req.params.token);
-    if (!parsed.ok) {
-        const status = parsed.reason === 'not_configured' ? 503 : parsed.reason === 'expired' ? 410 : 401;
-        const message = parsed.reason === 'expired'
-            ? 'This portal link has expired. Request a fresh private OTP portal link.'
-            : parsed.reason === 'not_configured'
-                ? 'Client Portal is not configured yet.'
-                : 'This portal link is invalid. Check the private OTP invite and try again.';
-        return res.status(status).json({
-            ok: false,
-            errorCode: parsed.reason,
-            message
-        });
+    const safeToken = normalizeClientPortalToken(req.params.token);
+    if (e2eTestModeEnabled() && safeToken === SAFE_E2E_PORTAL_FIXTURE.portalToken) {
+        return res.json(buildSafeE2EClientPortalData());
     }
     if (!supabaseAdmin) {
         return res.status(503).json({
@@ -3148,21 +3478,41 @@ app.get('/api/client-portal/:token', async (req, res) => {
         });
     }
     try {
-        const { data, error } = await supabaseAdmin
-            .from('ops_jobs')
-            .select('*')
-            .eq('job_id', parsed.jobId)
-            .maybeSingle();
-        if (error) throw error;
-        if (!data) {
-            return res.status(404).json({
+        let data = null;
+
+        if (parsed.ok) {
+            const result = await supabaseAdmin
+                .from('ops_jobs')
+                .select('*')
+                .eq('job_id', parsed.jobId)
+                .maybeSingle();
+            if (result.error) throw result.error;
+            data = result.data || null;
+        } else if (parsed.reason !== 'expired') {
+            data = await findClientPortalJobByStoredToken(req.params.token);
+        }
+
+        if (!data || isClientPortalJobArchived(data)) {
+            const expired = parsed.reason === 'expired';
+            const status = expired ? 410 : 404;
+            const message = expired
+                ? 'This portal link has expired. Request a fresh private OTP portal link.'
+                : 'This client portal is not available yet.';
+            return res.status(status).json({
                 ok: false,
-                errorCode: 'not_found',
-                message: 'This client portal is not available yet.'
+                errorCode: expired ? 'expired' : 'not_found',
+                message
             });
         }
         return res.json(buildClientPortalData(data));
     } catch (error) {
+        if (error.statusCode) {
+            return res.status(error.statusCode).json({
+                ok: false,
+                errorCode: error.errorCode || 'portal_load_failed',
+                message: error.message || 'Client Portal could not load right now.'
+            });
+        }
         console.error('client portal load failed:', error?.message || error);
         return res.status(500).json({
             ok: false,
@@ -3373,13 +3723,34 @@ app.get('/api/health', async (req, res) => {
                 anthropic: !!String(process.env.ANTHROPIC_API_KEY || '').trim(),
                 groq: !!String(process.env.GROQ_API_KEY || '').trim()
             }
+        },
+        ecosystem: {
+            public_site: OTP_PUBLIC_SITE_ORIGIN ? 'CONFIGURED' : 'UNAVAILABLE',
+            client_portal: OTP_PUBLIC_SITE_ORIGIN ? 'CONFIGURED' : 'UNAVAILABLE',
+            otp_os_proxy: OTP_OS_UPSTREAM_ORIGIN ? 'CONFIGURED' : 'UNAVAILABLE',
+            portal_base: `${OTP_PUBLIC_SITE_ORIGIN}/client/:portalToken`
+        },
+        data: {
+            posts: 'UNKNOWN',
+            jobs: 'UNKNOWN',
+            contacts: 'UNKNOWN'
         }
     };
     
     try {
         if (supabaseAdmin) {
-            const { error } = await supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).limit(1);
-            health.integrations.supabase = error ? 'ERROR' : 'CONNECTED';
+            const tableChecks = await Promise.allSettled([
+                supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).limit(1),
+                supabaseAdmin.from('ops_jobs').select('job_id', { count: 'exact', head: true }).limit(1),
+                supabaseAdmin.from('contacts').select('id', { count: 'exact', head: true }).limit(1)
+            ]);
+            const tableNames = ['posts', 'jobs', 'contacts'];
+            tableChecks.forEach((result, index) => {
+                const name = tableNames[index];
+                const value = result.status === 'fulfilled' ? result.value : { error: result.reason };
+                health.data[name] = value?.error ? 'ERROR' : 'ACCESSIBLE';
+            });
+            health.integrations.supabase = Object.values(health.data).some((value) => value === 'ACCESSIBLE') ? 'CONNECTED' : 'ERROR';
         }
     } catch(e) { health.integrations.supabase = 'ERROR'; }
 
@@ -3496,6 +3867,30 @@ const verifyToken = (req, res, next) => {
 // DDL export for Terminal SQL modal — authenticated only (never public; avoids schema disclosure).
 app.get('/api/schema-migration', verifyToken, (req, res) => sendSchemaMigrationSql(res));
 app.get('/api/deploy-sql', verifyToken, (req, res) => sendSchemaMigrationSql(res));
+
+app.get('/api/admin/qa/sweep', verifyToken, (req, res) => {
+    const e2eMode = e2eTestModeEnabled();
+    res.json({
+        success: true,
+        mode: e2eMode ? 'e2e_test_mode' : 'read_only',
+        fixtures: {
+            clientName: SAFE_E2E_PORTAL_FIXTURE.clientName,
+            email: SAFE_E2E_PORTAL_FIXTURE.email,
+            portalTokenLabel: SAFE_E2E_PORTAL_FIXTURE.portalToken,
+            sourceType: SAFE_E2E_PORTAL_FIXTURE.sourceType,
+            status: SAFE_E2E_PORTAL_FIXTURE.status
+        },
+        safeChecks: [
+            'admin_auth',
+            'portal_headers',
+            'booking_config',
+            'oracle_routes',
+            'document_routes',
+            'os_proxy_assets'
+        ],
+        mutationPolicy: 'Read-only unless E2E_TEST_MODE=true and the fixture identity matches OTP Test Client.'
+    });
+});
 
 // Ops Job → Document generation (internal/admin-only)
 let OPS_DOCS = null;
@@ -4298,7 +4693,9 @@ function normalizeOpsJobPayload(payload, { existingJobId = null, actor = null } 
     const jobId = String(existingJobId || p.jobId || '').trim() || generateJobId();
 
     const sourceTypeRaw = String(p.sourceType || p.source_type || '').trim();
-    const sourceType = (sourceTypeRaw && ['manualIntake', 'quickDeal', 'oracleLead', 'otp_bookings'].includes(sourceTypeRaw)) ? sourceTypeRaw : 'manualIntake';
+    const allowedSourceTypes = ['manualIntake', 'quickDeal', 'oracleLead', 'otp_bookings'];
+    if (e2eTestModeEnabled()) allowedSourceTypes.push(SAFE_E2E_PORTAL_FIXTURE.sourceType);
+    const sourceType = (sourceTypeRaw && allowedSourceTypes.includes(sourceTypeRaw)) ? sourceTypeRaw : 'manualIntake';
 
     const clientName = sanitizeOpsText(p.clientName, 140);
     const businessName = sanitizeOpsText(p.businessName, 180);
@@ -4428,6 +4825,10 @@ function mapOpsJobRowToApi(row) {
         remainingBalanceCents: r.remaining_balance_cents,
         paymentMethod: r.payment_method,
         paymentStatus: r.payment_status,
+        amountPaidCents: r.amount_paid_cents,
+        paymentUrl: r.payment_url,
+        paymentLinkStatus: r.payment_link_status,
+        paymentUrlExpiresAt: r.payment_url_expires_at,
         clientNotes: r.client_notes,
         internalNotes: r.internal_notes,
         portfolioPermission: !!r.portfolio_permission,
@@ -4637,6 +5038,21 @@ app.post('/api/admin/ops/jobs/portal-link', verifyToken, async (req, res) => {
         if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
 
         const job = mapOpsJobRowToApi(data);
+        const safeE2EFixture = e2eTestModeEnabled()
+            && data.job_id === SAFE_E2E_PORTAL_FIXTURE.jobId
+            && String(data.email || '').trim().toLowerCase() === SAFE_E2E_PORTAL_FIXTURE.email
+            && String(data.source_type || '').trim().toLowerCase() === SAFE_E2E_PORTAL_FIXTURE.sourceType;
+        if (safeE2EFixture) {
+            const pathOnly = `/client/${encodeURIComponent(SAFE_E2E_PORTAL_FIXTURE.portalToken)}`;
+            const url = new URL(pathOnly, OTP_PUBLIC_SITE_ORIGIN).href;
+            return res.json({
+                success: true,
+                clientPortalPath: pathOnly,
+                clientPortalUrl: url,
+                portalFixture: true,
+                expiresInDays: CLIENT_PORTAL_TOKEN_TTL_DAYS
+            });
+        }
         const token = createClientPortalToken(job);
         if (!token) return res.status(500).json({ success: false, message: 'Could not create portal link' });
         const pathOnly = `/client/${encodeURIComponent(token)}`;
@@ -5139,7 +5555,7 @@ function buildOpsSendDefaults({ job, mode, includedDocTypes, isPacket }) {
     const client = String(job?.clientName || job?.businessName || '').trim() || 'Client';
     const project = String(job?.projectTitle || job?.serviceType || '').trim();
     const subjectBase = project ? `${project}` : `${String(job?.serviceType || '').trim() || 'OTP Documents'}`;
-    const subject = `Only True Perspective — ${subjectBase}`;
+    const subject = `OnlyTruePerspective — ${subjectBase}`;
 
     const includedLine = Array.isArray(includedDocTypes) && includedDocTypes.length
         ? includedDocTypes.join(', ')
@@ -5367,10 +5783,10 @@ app.post('/api/admin/ops/send/execute', verifyToken, async (req, res) => {
             <div style="font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial; line-height:1.6; color:#111;">
               <p>${escapeHtmlForEmail(body).replace(/\n/g, '<br/>')}</p>
               <p style="margin:14px 0 0;"><strong>Included:</strong> ${escapeHtmlForEmail(list)}</p>
-              <p style="margin-top:18px;"><strong>Only True Perspective</strong><br/>${escapeHtmlForEmail(from)}</p>
+              <p style="margin-top:18px;"><strong>OnlyTruePerspective</strong><br/>${escapeHtmlForEmail(from)}</p>
             </div>
         `;
-        const text = `${body}\n\nIncluded: ${list}\n\nOnly True Perspective\n${from}`;
+        const text = `${body}\n\nIncluded: ${list}\n\nOnlyTruePerspective\n${from}`;
 
         const emailResult = await sendSecureEmail({ to, from, replyTo, subject, html, text, attachments });
         const resendId = String(emailResult?.data?.id || '').trim() || null;
@@ -6047,17 +6463,17 @@ app.post('/api/admin/docs/send', verifyToken, async (req, res) => {
             });
         }
 
-        const subject = `Only True Perspective — Documents for ${clientName}`;
+        const subject = `OnlyTruePerspective — Documents for ${clientName}`;
         const list = attachments.map(a => a.filename).join(', ');
         const html = `
             <div style="font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial; line-height:1.6; color:#111;">
-              <p>Attached are your approved documents from Only True Perspective.</p>
+              <p>Attached are your approved documents from OnlyTruePerspective.</p>
               <p style="margin:0 0 10px;"><strong>Included:</strong> ${escapeHtmlForEmail(list)}</p>
               <p>If anything needs adjustment, reply to this email and we’ll handle it.</p>
-              <p style="margin-top:18px;"><strong>Only True Perspective</strong><br/>${escapeHtmlForEmail(from)}</p>
+              <p style="margin-top:18px;"><strong>OnlyTruePerspective</strong><br/>${escapeHtmlForEmail(from)}</p>
             </div>
         `;
-        const text = `Attached are your approved documents from Only True Perspective.\n\nIncluded: ${list}\n\nReply to this email if anything needs adjustment.\n\nOnly True Perspective\n${from}`;
+        const text = `Attached are your approved documents from OnlyTruePerspective.\n\nIncluded: ${list}\n\nReply to this email if anything needs adjustment.\n\nOnlyTruePerspective\n${from}`;
 
         const emailResult = await sendSecureEmail({ to, from, replyTo, subject, html, text, attachments });
         const resendId = String(emailResult?.data?.id || '').trim() || null;
@@ -6254,10 +6670,10 @@ app.post('/api/admin/docs/send-retry', verifyToken, async (req, res) => {
         }
         if (!attachments.length) return res.status(400).json({ success: false, message: 'No approved documents are ready to send', details: { missing } });
 
-        const subject = `Only True Perspective — Documents for ${clientName}`;
+        const subject = `OnlyTruePerspective — Documents for ${clientName}`;
         const list = attachments.map(a => a.filename).join(', ');
-        const html = `<div style="font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial; line-height:1.6; color:#111;"><p>Attached are your approved documents from Only True Perspective.</p><p style="margin:0 0 10px;"><strong>Included:</strong> ${escapeHtmlForEmail(list)}</p><p>If anything needs adjustment, reply to this email and we’ll handle it.</p><p style="margin-top:18px;"><strong>Only True Perspective</strong><br/>${escapeHtmlForEmail(from)}</p></div>`;
-        const text = `Attached are your approved documents from Only True Perspective.\n\nIncluded: ${list}\n\nReply to this email if anything needs adjustment.\n\nOnly True Perspective\n${from}`;
+        const html = `<div style="font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Arial; line-height:1.6; color:#111;"><p>Attached are your approved documents from OnlyTruePerspective.</p><p style="margin:0 0 10px;"><strong>Included:</strong> ${escapeHtmlForEmail(list)}</p><p>If anything needs adjustment, reply to this email and we’ll handle it.</p><p style="margin-top:18px;"><strong>OnlyTruePerspective</strong><br/>${escapeHtmlForEmail(from)}</p></div>`;
+        const text = `Attached are your approved documents from OnlyTruePerspective.\n\nIncluded: ${list}\n\nReply to this email if anything needs adjustment.\n\nOnlyTruePerspective\n${from}`;
         const emailResult = await sendSecureEmail({ to, from, replyTo, subject, html, text, attachments });
         const resendId = String(emailResult?.data?.id || '').trim() || null;
 
@@ -6495,7 +6911,7 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey.trim()}` },
                     body: JSON.stringify({
                         model: "dall-e-3",
-                        prompt: `High-tech, cinematic, professional photography/render for a brand called 'Only True Perspective'. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. High resolution, 4k. Title reference: ${title}`,
+                        prompt: `High-tech, cinematic, professional photography/render for a brand called 'OnlyTruePerspective'. Subject: ${prompt}. Style: Dark, futuristic, minimal, deep purples and cyans. High resolution, 4k. Title reference: ${title}`,
                         n: 1,
                         size: aspect_ratio === 'landscape' ? "1792x1024" : "1024x1024",
                         quality: "hd"
@@ -6696,7 +7112,7 @@ app.post('/api/contact/submit', async (req, res) => {
         });
 
         // 5. TRIGGER AI AGENT (Content Analysis & Draft Generation)
-        const systemPrompt = `You are the Studio Manager for 'Only True Perspective' (OTP), a high-end creative agency.
+        const systemPrompt = `You are the Studio Manager for 'OnlyTruePerspective' (OTP), a high-end creative agency.
         Draft a high-status, professional reply email for ${nameT}.
         Sign off with "OTP // Visual Division".`;
 
@@ -7334,5 +7750,7 @@ module.exports = app;
 module.exports.__clientPortalTestHooks = {
     createClientPortalToken,
     readClientPortalToken,
-    buildClientPortalData
+    buildClientPortalData,
+    portalTokenFromInternalNotes,
+    storedClientPortalState
 };

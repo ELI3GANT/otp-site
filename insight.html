@@ -3,47 +3,71 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Reading Insight | OTP</title>
-  <meta name="description" content="Decoding high-retention visual strategy and cinematic direction. Tactical insights from Only True Perspective." />
+  <title>Reading Insight | OnlyTruePerspective</title>
+  <meta name="description" content="Creative technology, cinematic storytelling, branding, and experimental digital culture from OnlyTruePerspective and ELI3GANT." />
   <meta name="theme-color" content="#030305" />
   <meta name="color-scheme" content="dark light" />
   <link rel="canonical" href="https://www.onlytrueperspective.tech/insight.html" />
   
-  <!-- SEO / Social (www matches site-config + dynamic OG updates in-page) -->
-  <meta property="og:title" content="Reading Insight | Only True Perspective" />
-  <meta property="og:description" content="Tactical breakdowns and creative strategy from the OTP lab." />
+  <!-- SEO / Social -->
+  <meta property="og:title" content="Reading Insight | OnlyTruePerspective" />
+  <meta property="og:description" content="Creative technology, cinematic storytelling, branding, and experimental digital culture from OnlyTruePerspective and ELI3GANT." />
   <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="OnlyTruePerspective" />
   <meta property="og:url" content="https://www.onlytrueperspective.tech/insight.html" />
   <meta property="og:image" content="https://www.onlytrueperspective.tech/og.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Reading Insight | Only True Perspective" />
-  <meta name="twitter:description" content="Tactical visual identity & cinematic storytelling deconstructed." />
+  <meta name="twitter:title" content="Reading Insight | OnlyTruePerspective" />
+  <meta name="twitter:description" content="Creative technology, cinematic storytelling, branding, and experimental digital culture from OnlyTruePerspective and ELI3GANT." />
   <meta name="twitter:image" content="https://www.onlytrueperspective.tech/og.jpg" />
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Only True Perspective",
-    "url": "https://www.onlytrueperspective.tech",
-    "logo": "https://www.onlytrueperspective.tech/icon.png",
-    "contactPoint": {
-      "@type": "ContactPoint",
-      "contactType": "Customer Service",
-      "email": "contact@onlytrueperspective.tech",
-      "availableLanguage": ["English"]
-    }
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.onlytrueperspective.tech/#organization",
+        "name": "OnlyTruePerspective",
+        "alternateName": ["OTP", "Only True Perspective"],
+        "url": "https://www.onlytrueperspective.tech/",
+        "logo": "https://www.onlytrueperspective.tech/icon.png",
+        "description": "OnlyTruePerspective (OTP) is a Rhode Island-based creative technology and media company focused on cinematic storytelling, branding, digital experiences, and AI-powered creative systems. OTP combines visual direction, content production, automation, and modern web infrastructure to build immersive digital identities and scalable creative ecosystems.",
+        "email": "contact@onlytrueperspective.tech",
+        "founder": {
+          "@id": "https://www.onlytrueperspective.tech/#elijah-huertas"
+        }
+      },
+      {
+        "@type": "Person",
+        "@id": "https://www.onlytrueperspective.tech/#elijah-huertas",
+        "name": "Elijah Huertas",
+        "alternateName": "ELI3GANT",
+        "description": "ELI3GANT is the creative artist identity of Elijah Huertas, a Rhode Island-based musician, visual creative, and founder of OnlyTruePerspective (OTP). Blending atmospheric hip-hop, cinematic aesthetics, and experimental digital storytelling, ELI3GANT represents a fusion of music, design, technology, and independent creative culture."
+      },
+      {
+        "@type": "MusicGroup",
+        "@id": "https://www.onlytrueperspective.tech/#eli3gant",
+        "name": "ELI3GANT",
+        "alternateName": "Elijah Huertas",
+        "url": "https://www.onlytrueperspective.tech/#eli3gant",
+        "description": "ELI3GANT is the creative artist identity of Elijah Huertas, a Rhode Island-based musician, visual creative, and founder of OnlyTruePerspective (OTP). Blending atmospheric hip-hop, cinematic aesthetics, and experimental digital storytelling, ELI3GANT represents a fusion of music, design, technology, and independent creative culture.",
+        "member": {
+          "@id": "https://www.onlytrueperspective.tech/#elijah-huertas"
+        }
+      }
+    ]
   }
   </script>
 
-  <link rel="stylesheet" href="./styles.css?v=16.5.3" />
+  <link rel="stylesheet" href="./styles.css?v=16.6.8" />
   <link rel="stylesheet" href="./blog-enhancements.css?v=16.3.0" />
   <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Outfit:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-  <script src="theme-chrono.js?v=4"></script>
+  <script src="theme-chrono.js?v=8"></script>
   <style>
     body { background: #030305; color: #fff; margin: 0 !important; font-family: 'Inter', sans-serif; }
       
@@ -266,8 +290,8 @@
     </div>
   </main>
 
-  <script src="stars-v2.js?v=16.3.0"></script>
-  <script src="site-init.js?v=16.8.6"></script>
+  <script src="stars-v2.js?v=16.4.5"></script>
+  <script src="site-init.js?v=16.8.11"></script>
 
 
   <script>
@@ -301,7 +325,7 @@
             if (error || !post) throw new Error("POST_NOT_FOUND");
 
             // --- Update Page Meta ---
-            document.title = `${post.title} | Only True Perspective`;
+            document.title = `${post.title} | OnlyTruePerspective`;
             const postTitleEl = document.getElementById('postTitle');
             const postMetaEl = document.getElementById('postMeta');
             if (postTitleEl) postTitleEl.innerText = post.title || '';
@@ -314,7 +338,7 @@
                 : '';
             const postImage = safeHero || 'https://www.onlytrueperspective.tech/og.jpg';
             const postUrl = `https://www.onlytrueperspective.tech/insight.html?slug=${encodeURIComponent(slug)}`;
-            document.querySelector('meta[property="og:title"]')?.setAttribute('content', `${post.title} | Only True Perspective`);
+            document.querySelector('meta[property="og:title"]')?.setAttribute('content', `${post.title} | OnlyTruePerspective`);
             document.querySelector('meta[property="og:description"]')?.setAttribute('content', postExcerpt);
             document.querySelector('meta[property="og:image"]')?.setAttribute('content', postImage);
             document.querySelector('meta[property="og:url"]')?.setAttribute('content', postUrl);

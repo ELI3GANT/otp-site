@@ -41,6 +41,20 @@ assert.ok(pricing.includes('Starting at $500'), 'The Signal price is sourced fro
 assert.ok(pricing.includes('$1,200 to $2,000'), 'The Engine range is sourced from pricing-config');
 assert.ok(pricing.includes('Starting at $3,500+'), 'The System price is sourced from pricing-config');
 assert.ok(pricing.includes('Custom Build'), 'Custom Build label is sourced from pricing-config');
+for (const fastOffer of ['Same-Day Reel', 'Event Promo', 'Business Content Pack', 'Brand Launch Pack']) {
+    assert.ok(pricing.includes(`'${fastOffer}'`), `${fastOffer} is sourced from pricing-config`);
+    assert.ok(js.includes(`'${fastOffer}'`), `${fastOffer} remains available in the browser fallback config`);
+}
+const fastLaneMappings = {
+    'Same-Day Reel': 'The Signal',
+    'Event Promo': 'The Signal',
+    'Business Content Pack': 'The Engine',
+    'Brand Launch Pack': 'Custom Build'
+};
+for (const [offer, mappedPackage] of Object.entries(fastLaneMappings)) {
+    assert.ok(pricing.includes(`'${offer}': '${mappedPackage}'`), `${offer} maps to ${mappedPackage} in pricing-config`);
+    assert.ok(js.includes(`'${offer}': '${mappedPackage}'`), `${offer} maps to ${mappedPackage} in booking fallback config`);
+}
 
 assert.ok(html.includes('Creative systems for brands, artists, and businesses ready to look official.'), 'booking hero is upgraded');
 assert.ok(html.includes('OTP Bookings'), 'booking hero label is visible');
@@ -83,6 +97,11 @@ assert.ok(!/innerHTML\s*=/.test(js), 'booking frontend does not assign unsafe HT
 assert.ok(!/insertAdjacentHTML/.test(js), 'booking frontend does not inject adjacent HTML');
 assert.ok(js.includes('makeBookingToken'), 'frontend sends a booking token for duplicate-friendly handling');
 assert.ok(js.includes('otp_company_website'), 'frontend submits honeypot field');
+assert.ok(js.includes('buildSourceTracking'), 'frontend captures sanitized source tracking');
+assert.ok(js.includes('source_tracking: state.sourceTracking'), 'booking payload includes source tracking');
+assert.ok(js.includes('fastLanePackageFor'), 'booking frontend resolves fast lane package mapping');
+assert.ok(js.includes('applyFastLaneServiceSelection'), 'fast lane service selections sync the package without skipping Step 1');
+assert.ok(!js.includes('advance: true'), 'package card clicks must not auto-advance past Step 1');
 assert.ok(js.includes("typeof value === 'object'"), 'frontend filters object string leaks');
 assert.ok(js.includes('PACKAGE_THEMES'), 'dynamic package themes exist');
 assert.ok(js.includes('applyActiveTheme'), 'selected package applies active theme');
@@ -94,6 +113,10 @@ assert.ok(js.includes('Custom Build is selected for a scoped custom project.'), 
 assert.ok(js.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle default message persists after JS init');
 assert.ok(!js.includes('OTP_BOOKINGS_UPSTREAM'), 'client does not expose internal upstream config');
 assert.ok(!js.includes('SUPABASE_SERVICE'), 'client does not expose service secrets');
+assert.ok(server.includes('cleanBookingSourceTracking'), 'server sanitizes booking source tracking');
+assert.ok(server.includes('source_tracking: payload.source_tracking || {}'), 'internal booking metadata preserves source tracking');
+assert.ok(server.includes('bookingFastLaneMappings'), 'server exposes canonical fast lane mappings');
+assert.ok(server.includes('fast_lane_package'), 'OTP_BOOKING_META preserves the mapped fast lane package');
 
 assert.ok(css.includes('@media (max-width: 640px)'), 'mobile breakpoint exists');
 assert.ok(css.includes('@media (max-width: 430px)'), 'small iPhone breakpoint exists');

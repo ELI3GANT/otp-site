@@ -47,7 +47,13 @@ const fallbackConfig = {
       cta: 'Request Custom Build'
     }
   ],
-  serviceTypes: ['Video / Content', 'Logo / Brand Identity', 'Website / Landing Page', 'AI / Automation', 'Business System', 'Music / Artist Rollout', 'Event Coverage', 'Custom Request'],
+  serviceTypes: ['Same-Day Reel', 'Event Promo', 'Business Content Pack', 'Brand Launch Pack', 'Video / Content', 'Logo / Brand Identity', 'Website / Landing Page', 'AI / Automation', 'Business System', 'Music / Artist Rollout', 'Event Coverage', 'Custom Request'],
+  fastLaneMappings: {
+    'Same-Day Reel': 'The Signal',
+    'Event Promo': 'The Signal',
+    'Business Content Pack': 'The Engine',
+    'Brand Launch Pack': 'Custom Build'
+  },
   packageOptions: ['The Signal', 'The Engine', 'The System', 'Custom Build', 'Not Sure Yet'],
   budgetRanges: ['Under $500', '$500 to $1,200', '$1,200 to $2,000', '$2,000 to $3,500', '$3,500+', 'Not sure yet'],
   urgencyLevels: ['Flexible', 'Soon', 'Rush', 'Launch deadline'],
@@ -113,7 +119,8 @@ const state = {
   submitting: false,
   submitted: false,
   selectedPackage: '',
-  bookingToken: makeBookingToken()
+  bookingToken: makeBookingToken(),
+  sourceTracking: buildSourceTracking()
 };
 
 const stepNames = ['Pick Package', 'Project Details', 'Budget + Timeline', 'Review + Submit'];
@@ -177,6 +184,31 @@ function makeBookingToken() {
   } catch (_) {
     return `WEB-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   }
+}
+
+function cleanTrackingValue(value = '', max = 180) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function buildSourceTracking() {
+  const params = new URLSearchParams(window.location.search || '');
+  const source = cleanTrackingValue(
+    params.get('source') || params.get('cta_source') || params.get('utm_source') || 'direct',
+    120
+  );
+  return {
+    cta_source: source,
+    first_touch: source,
+    booking_route: cleanTrackingValue(window.location.pathname || '/bookings', 120),
+    referrer: cleanTrackingValue(document.referrer || '', 360),
+    platform: window.matchMedia && window.matchMedia('(max-width: 720px)').matches ? 'mobile' : 'desktop',
+    utm_source: cleanTrackingValue(params.get('utm_source') || '', 120),
+    utm_medium: cleanTrackingValue(params.get('utm_medium') || '', 120),
+    utm_campaign: cleanTrackingValue(params.get('utm_campaign') || '', 160),
+    utm_content: cleanTrackingValue(params.get('utm_content') || '', 160),
+    utm_term: cleanTrackingValue(params.get('utm_term') || '', 160),
+    captured_at: new Date().toISOString()
+  };
 }
 
 function text(value, fallback = 'Not provided yet') {
@@ -267,6 +299,12 @@ function packageByName(name) {
   }) || null;
 }
 
+function fastLanePackageFor(serviceType) {
+  const mappings = state.config.fastLaneMappings || fallbackConfig.fastLaneMappings || {};
+  const service = text(serviceType, '').trim();
+  return typeof mappings[service] === 'string' ? mappings[service] : '';
+}
+
 function themeFor(packageName) {
   return PACKAGE_THEMES[packageSlug(packageName)] || PACKAGE_THEMES.default;
 }
@@ -351,6 +389,15 @@ function selectPackage(packageName, options = {}) {
   }
 }
 
+function applyFastLaneServiceSelection() {
+  const mappedPackage = fastLanePackageFor(els.service.value);
+  if (!mappedPackage) {
+    updateSummaries();
+    return;
+  }
+  selectPackage(mappedPackage, { advance: false });
+}
+
 function renderPackages() {
   const packages = state.config.packages || [];
   els.packageGrid.replaceChildren();
@@ -419,7 +466,7 @@ function renderPackages() {
     cta.className = 'package-cta';
     cta.textContent = selected ? 'Selected' : text(pkg.cta, 'Start Booking');
 
-    const handleSelect = () => selectPackage(pkg.name, { advance: true });
+    const handleSelect = () => selectPackage(pkg.name);
     card.addEventListener('click', handleSelect);
     card.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -443,6 +490,7 @@ function fillSelects() {
 function payload() {
   return {
     booking_token: state.bookingToken,
+    source_tracking: state.sourceTracking,
     otp_company_website: els.honeypot ? els.honeypot.value.trim() : '',
     name: els.name.value.trim(),
     email: els.email.value.trim(),
@@ -652,9 +700,10 @@ els.next.addEventListener('click', () => {
 });
 els.prev.addEventListener('click', () => setStep(state.step - 1));
 els.package.addEventListener('change', () => selectPackage(els.package.value, { advance: false }));
+els.service.addEventListener('change', applyFastLaneServiceSelection);
 els.form.addEventListener('input', updateSummaries);
 els.form.addEventListener('change', (event) => {
-  if (event.target !== els.package) updateSummaries();
+  if (event.target !== els.package && event.target !== els.service) updateSummaries();
 });
 els.form.addEventListener('submit', submitBooking);
 

@@ -145,11 +145,11 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         const kursorNodes = document.querySelectorAll('.kursor, .kursor-child');
         kursorNodes.forEach(n => n.remove());
         
-        // Force Starfield Canvas to be visible
+        // Mark the starfield as available; CSS owns opacity by theme/breakpoint.
         const canvas = document.getElementById('cursor-canvas');
         if (canvas) {
             canvas.style.display = 'block';
-            canvas.style.opacity = '1';
+            canvas.classList.add('stars-mounted');
         }
     }
 
@@ -211,51 +211,59 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
     }
 
     // 5. Black Hole Effect for "Enter Archive"
-    // RACE CONDITION FIX: Retry binding if stars-v2.js hasn't loaded yet.
-    const bindBlackHole = (attempts = 0) => {
+    const bindBlackHole = () => {
         const warpBtn = document.querySelector('.cool-work-link');
-        const starCanvas = document.getElementById('cursor-canvas');
         
         if (!warpBtn) return; // No button on this page
-        if (!starCanvas) return; // Home page no longer ships the starfield canvas
+        if (warpBtn.dataset.vaultBound === '1') return;
 
-        if (typeof window.setAttractor === 'function') {
-            const getCenter = (el) => {
-                const rect = el.getBoundingClientRect();
-                return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-            };
+        let active = false;
+        let releaseTimer = 0;
+        let raf = 0;
 
-            // Desktop Hover
-            warpBtn.addEventListener('mouseenter', () => {
-                warpBtn.classList.add('is-black-hole');
-                const c = getCenter(warpBtn);
+        const getCenter = () => {
+            const rect = warpBtn.getBoundingClientRect();
+            return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        };
+        const setAttractorCenter = () => {
+            if (typeof window.setAttractor === 'function') {
+                const c = getCenter();
                 window.setAttractor(c.x, c.y);
-            });
-
-            warpBtn.addEventListener('mouseleave', () => {
-                 warpBtn.classList.remove('is-black-hole');
-                 window.clearAttractor();
-            });
-
-            // Mobile Touch
-            warpBtn.addEventListener('touchstart', () => {
-                 warpBtn.classList.add('is-black-hole');
-                 const c = getCenter(warpBtn);
-                 window.setAttractor(c.x, c.y);
-            }, { passive: true });
-
-            warpBtn.addEventListener('touchend', () => {
-                setTimeout(() => window.clearAttractor(), 600); 
-            });
-            
-            console.log('[OTP] Black Hole Effect Bound Successfully');
-        } else {
-            if (attempts < 10) {
-                setTimeout(() => bindBlackHole(attempts + 1), 200);
-            } else {
-                console.warn('[OTP] Failed to bind Black Hole: Stars system missing.');
             }
-        }
+        };
+        const activateVault = () => {
+            active = true;
+            window.clearTimeout(releaseTimer);
+            warpBtn.classList.add('is-black-hole');
+            setAttractorCenter();
+        };
+        const deactivateVault = () => {
+            active = false;
+            warpBtn.classList.remove('is-black-hole');
+            if (typeof window.clearAttractor === 'function') window.clearAttractor();
+        };
+        const releaseVault = (delay = 0) => {
+            window.clearTimeout(releaseTimer);
+            releaseTimer = window.setTimeout(deactivateVault, delay);
+        };
+        const updateVaultCenter = () => {
+            if (!active || typeof window.setAttractor !== 'function' || raf) return;
+            raf = window.requestAnimationFrame(() => {
+                raf = 0;
+                if (active) setAttractorCenter();
+            });
+        };
+
+        warpBtn.addEventListener('pointerenter', activateVault);
+        warpBtn.addEventListener('pointerleave', () => releaseVault(90));
+        warpBtn.addEventListener('pointermove', updateVaultCenter, { passive: true });
+        warpBtn.addEventListener('focusin', activateVault);
+        warpBtn.addEventListener('focusout', () => releaseVault(90));
+        warpBtn.addEventListener('pointerdown', activateVault, { passive: true });
+        warpBtn.addEventListener('pointerup', () => releaseVault(520), { passive: true });
+        warpBtn.addEventListener('pointercancel', () => releaseVault(160), { passive: true });
+
+        warpBtn.dataset.vaultBound = '1';
     };
     
     // Start binding process
@@ -295,7 +303,7 @@ window.OTP.isManualThemeActive = function() {
     const isManual = localStorage.getItem('theme_manual') === 'true';
     if (!isManual) return false;
     const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
-    const active = !!manualTime && Date.now() - manualTime <= 365 * 24 * 60 * 60 * 1000;
+    const active = !!manualTime && Date.now() - manualTime <= 12 * 60 * 60 * 1000;
     if (!active) {
         try {
             localStorage.removeItem('theme_manual');
@@ -377,13 +385,13 @@ window.OTP.initTheme = function() {
             return window.OTP.calculateChronoTheme();
         }
         const h = new Date().getHours();
-        return h >= 7 && h < 20 ? 'light' : 'dark';
+        return 'dark';
     };
 
     const targetTheme = resolveAuto();
     const isManual = localStorage.getItem('theme_manual') === 'true';
     const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
-    const manualActive = isManual && manualTime && Date.now() - manualTime <= 365 * 24 * 60 * 60 * 1000;
+    const manualActive = isManual && manualTime && Date.now() - manualTime <= 12 * 60 * 60 * 1000;
     console.log(manualActive
         ? `[OTP] Theme: ${targetTheme} (Manual Override Active)`
         : `[OTP] Theme: ${targetTheme} (World Timing Sync)`);
@@ -395,7 +403,7 @@ window.OTP.initTheme = function() {
         const onSchemeChange = () => {
             const m = localStorage.getItem('theme_manual') === 'true';
             const t = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
-            const expired = !t || Date.now() - t > 365 * 24 * 60 * 60 * 1000;
+            const expired = !t || Date.now() - t > 12 * 60 * 60 * 1000;
             if (m && !expired) return;
             if (m && expired) {
                 try {
@@ -420,7 +428,7 @@ window.OTP.initTheme = function() {
     setInterval(() => {
         const isManual = localStorage.getItem('theme_manual') === 'true';
         const manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
-        const isExpired = !manualTime || Date.now() - manualTime > 365 * 24 * 60 * 60 * 1000;
+        const isExpired = !manualTime || Date.now() - manualTime > 12 * 60 * 60 * 1000;
 
         if (!isManual || (isManual && isExpired)) {
             if (isManual && isExpired) {
@@ -730,13 +738,26 @@ window.OTP.initRealtimeState = async function() {
 
             // Apply Visuals (match broadcast branch: perf-mode + otp-fx-change)
             if (config.visuals) {
-                document.documentElement.setAttribute('data-fx-intensity', config.visuals);
-                window.FX_INTENSITY = config.visuals;
-                const highFi = config.visuals === 'high';
+                const requestedVisuals = String(config.visuals).toLowerCase();
+                const starsDisabled = ['off', 'none', 'disabled'].includes(requestedVisuals);
+                const intensity = requestedVisuals === 'high' ? 'high' : 'low';
+                document.documentElement.setAttribute('data-fx-intensity', intensity);
+                window.FX_INTENSITY = intensity;
+                const highFi = intensity === 'high';
                 document.documentElement.classList.toggle('perf-mode', !highFi);
-                window.dispatchEvent(new CustomEvent('otp-fx-change', { detail: { intensity: config.visuals } }));
+                window.dispatchEvent(new CustomEvent('otp-fx-change', { detail: { intensity } }));
                 const canvas = document.getElementById('cursor-canvas');
-                if (canvas) canvas.style.display = config.visuals === 'high' ? 'block' : 'none';
+                if (starsDisabled) {
+                    document.documentElement.setAttribute('data-stars', 'disabled');
+                } else if (canvas && canvas.classList.contains('stars-mounted')) {
+                    document.documentElement.setAttribute('data-stars', 'mounted');
+                } else {
+                    document.documentElement.removeAttribute('data-stars');
+                }
+                if (canvas) {
+                    canvas.classList.toggle('stars-disabled', starsDisabled);
+                    canvas.style.removeProperty('display');
+                }
             }
             
              // Apply Kursor
@@ -797,13 +818,26 @@ window.OTP.initRealtimeState = async function() {
         if (type === 'alert') window.OTP.showBroadcast(value);
         
         if (type === 'visuals') {
-            document.documentElement.setAttribute('data-fx-intensity', value);
-            window.FX_INTENSITY = value === 'high' ? 'high' : 'low';
-            const highFi = value === 'high';
+            const requestedVisuals = String(value).toLowerCase();
+            const starsDisabled = ['off', 'none', 'disabled'].includes(requestedVisuals);
+            const intensity = requestedVisuals === 'high' ? 'high' : 'low';
+            document.documentElement.setAttribute('data-fx-intensity', intensity);
+            window.FX_INTENSITY = intensity;
+            const highFi = intensity === 'high';
             document.documentElement.classList.toggle('perf-mode', !highFi);
-            window.dispatchEvent(new CustomEvent('otp-fx-change', { detail: { intensity: value } }));
+            window.dispatchEvent(new CustomEvent('otp-fx-change', { detail: { intensity } }));
             const canvas = document.getElementById('cursor-canvas');
-            if (canvas) canvas.style.display = value === 'high' ? 'block' : 'none';
+            if (starsDisabled) {
+                document.documentElement.setAttribute('data-stars', 'disabled');
+            } else if (canvas && canvas.classList.contains('stars-mounted')) {
+                document.documentElement.setAttribute('data-stars', 'mounted');
+            } else {
+                document.documentElement.removeAttribute('data-stars');
+            }
+            if (canvas) {
+                canvas.classList.toggle('stars-disabled', starsDisabled);
+                canvas.style.removeProperty('display');
+            }
         }
 
         if (type === 'kursor') {
@@ -2196,18 +2230,6 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(resultsSection);
     });
 })();
-
-    // --- CURSOR CANVAS OPTIMIZATION (Consolidated) ---
-    const cursorCanvas = document.getElementById('cursor-canvas');
-    if (cursorCanvas) {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                cursorCanvas.style.display = entry.isIntersecting ? 'block' : 'none';
-            });
-        });
-        observer.observe(cursorCanvas);
-    }
-
 
 // --- SITE COMMAND PRO (broadcast UI only; live channel is OTP.initRealtimeState → otp-uplink) ---
 (function() {

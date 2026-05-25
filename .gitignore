@@ -24,7 +24,12 @@ output/playwright/
 tmp/
 
 # QA artifacts (never commit)
+*.har
 prod-terminal-sweep.json
 prod-qa-*.json
 qa-screens/
 qa-artifacts/
+playwright-report/
+test-results/
+coverage/
+.nyc_output/

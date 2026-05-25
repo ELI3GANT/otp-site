@@ -131,6 +131,10 @@
       })
     ]),
     bookingServiceTypes: Object.freeze([
+      'Same-Day Reel',
+      'Event Promo',
+      'Business Content Pack',
+      'Brand Launch Pack',
       'Video / Content',
       'Logo / Brand Identity',
       'Website / Landing Page',
@@ -140,6 +144,12 @@
       'Event Coverage',
       'Custom Request'
     ]),
+    fastLaneMappings: Object.freeze({
+      'Same-Day Reel': 'The Signal',
+      'Event Promo': 'The Signal',
+      'Business Content Pack': 'The Engine',
+      'Brand Launch Pack': 'Custom Build'
+    }),
     services: Object.freeze({
       starterWebPresence: Object.freeze({ label: 'Starter Web Presence', price_display: 'Custom quote', type: 'one_time' }),
       businessWebsitePro: Object.freeze({ label: 'Business Website Pro', price_display: 'Tailored pricing', type: 'one_time' }),

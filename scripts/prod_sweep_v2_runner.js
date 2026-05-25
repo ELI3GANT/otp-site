@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
 const { chromium } = require('playwright');
+const jwt = require('jsonwebtoken');
 
 function short(text, n = 240) {
   return String(text || '').replace(/\s+/g, ' ').trim().slice(0, n);
@@ -16,12 +17,101 @@ function hasUsableAdminToken(token) {
   return Boolean(String(token || '').trim()) && isJwtLike(token);
 }
 
+function envFlagEnabled(value) {
+  return ['1', 'true', 'yes', 'on'].includes(String(value || '').trim().toLowerCase());
+}
+
+function adminSweepPasscodeEnv() {
+  return String(
+    process.env.OTP_ADMIN_PASSCODE
+    || process.env.ADMIN_PASSCODE
+    || process.env.OTP_SITE_ADMIN_PASSCODE
+    || ''
+  ).trim();
+}
+
+function mintAdminTokenFromJwtSecret() {
+  const jwtSecret = String(process.env.JWT_SECRET || '').trim();
+  if (!jwtSecret) return { token: '', source: '', warning: 'JWT_SECRET env is unavailable for local admin JWT minting.' };
+  try {
+    const token = jwt.sign(
+      { role: 'admin', source: 'otp-prod-sweep' },
+      jwtSecret,
+      { expiresIn: '10m' }
+    );
+    return { token, source: 'jwt_secret' };
+  } catch (error) {
+    return { token: '', source: '', warning: `JWT_SECRET admin token mint failed: ${short(error?.message || error)}` };
+  }
+}
+
+async function loginForAdminToken(baseUrl) {
+  const passcode = adminSweepPasscodeEnv();
+  if (!passcode) return { token: '', source: '', warning: 'No admin passcode env available for authenticated sweep login.' };
+
+  try {
+    const { response, text } = await fetchText(normalizePath(baseUrl, '/api/auth/login'), {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ passcode })
+    });
+    const payload = text ? JSON.parse(text) : {};
+    const token = String(payload.token || payload.data?.token || '').trim();
+    if (response.ok && hasUsableAdminToken(token)) {
+      return { token, source: 'login' };
+    }
+    return {
+      token: '',
+      source: '',
+      warning: `Admin sweep login did not return a JWT (${response.status}).`
+    };
+  } catch (error) {
+    return {
+      token: '',
+      source: '',
+      warning: `Admin sweep login failed: ${short(error?.message || error)}`
+    };
+  }
+}
+
+async function resolveAdminToken(baseUrl, token = '') {
+  const provided = String(token || '').trim();
+  const passcode = adminSweepPasscodeEnv();
+  if (passcode) {
+    const login = await loginForAdminToken(baseUrl);
+    if (login.token) return login;
+    const minted = mintAdminTokenFromJwtSecret();
+    if (minted.token) return { ...minted, warning: login.warning };
+    if (hasUsableAdminToken(provided)) {
+      return { token: provided, source: 'env', warning: login.warning };
+    }
+    return {
+      token: '',
+      source: '',
+      warning: login.warning || tokenSetupHelp()
+    };
+  }
+  const minted = mintAdminTokenFromJwtSecret();
+  if (minted.token) return minted;
+  if (hasUsableAdminToken(provided)) return { token: provided, source: 'env', warning: minted.warning };
+  const login = await loginForAdminToken(baseUrl);
+  if (login.token) return login;
+  return {
+    token: '',
+    source: '',
+    warning: minted.warning || login.warning || tokenSetupHelp()
+  };
+}
+
 function tokenSetupHelp() {
   return [
     'OTP_ADMIN_TOKEN must be a real admin JWT (three dot-separated parts).',
     'GitHub Actions secret: Settings → Secrets and variables → Actions → OTP_ADMIN_TOKEN.',
     'Vercel env var if needed: OTP_ADMIN_TOKEN.',
-    'Use the JWT from the admin login flow; do not paste a placeholder or static bypass token.'
+    'Use the JWT from the admin login flow or a short-lived JWT signed server-side with JWT_SECRET; do not paste a placeholder or static bypass token.'
   ].join(' ');
 }
 
@@ -334,6 +424,8 @@ async function runSweep({
     schema,
     ok: true,
     baseUrl,
+    e2eTestMode: envFlagEnabled(process.env.E2E_TEST_MODE),
+    adminAuth: { configured: false, source: '' },
     publicChecks: [],
     adminChecks: [],
     warnings: [],
@@ -360,9 +452,15 @@ async function runSweep({
     result.errors.push(...publicFailures.map((check) => `${check.name}: ${check.checks.join('; ')}`));
   }
 
-  const usableToken = hasUsableAdminToken(token);
-  if (!usableToken) {
-    result.warnings.push('OTP_ADMIN_TOKEN missing or not JWT-like; skipping admin-authenticated checks.');
+  const adminAuth = await resolveAdminToken(baseUrl, token);
+  result.adminAuth = {
+    configured: Boolean(adminAuth.token),
+    source: adminAuth.source || ''
+  };
+  if (adminAuth.token && adminAuth.warning) result.warnings.push(adminAuth.warning);
+
+  if (!adminAuth.token) {
+    result.warnings.push(adminAuth.warning || 'OTP_ADMIN_TOKEN missing or not JWT-like; skipping admin-authenticated checks.');
     result.skipped.push(...adminTargets.map((target) => target.name));
     if (browserSmoke) result.skipped.push('terminal-browser-smoke');
     return result;
@@ -374,7 +472,7 @@ async function runSweep({
     try {
       // eslint-disable-next-line no-await-in-loop
       const { response, text } = await fetchText(url, {
-        headers: { Authorization: `Bearer ${String(token).trim()}` }
+        headers: { Authorization: `Bearer ${adminAuth.token}` }
       });
       const check = checkResult({
         name: target.name,
@@ -416,7 +514,7 @@ async function runSweep({
   }
 
   if (browserSmoke) {
-    const smoke = await runBrowserSmoke({ baseUrl, token, checks: [] });
+    const smoke = await runBrowserSmoke({ baseUrl, token: adminAuth.token, checks: [] });
     adminChecks.push(smoke);
   }
 
@@ -433,6 +531,9 @@ module.exports = {
   runSweep,
   isJwtLike,
   hasUsableAdminToken,
+  resolveAdminToken,
+  mintAdminTokenFromJwtSecret,
+  envFlagEnabled,
   tokenSetupHelp,
   short
 };
