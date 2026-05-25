@@ -74,6 +74,9 @@ assert.ok(html.includes('Documents'), 'Documents flow chip is visible');
 assert.ok(html.includes('Payment'), 'Payment flow chip is visible');
 assert.ok(html.includes('Client Portal'), 'Client Portal CTA/flow label is visible');
 assert.ok(html.includes('package-selection-summary'), 'selected package summary is present');
+assert.ok(html.includes('id="fast-lanes"'), 'Fast Lane section is visible on the bookings page');
+assert.ok(html.includes('id="fast-lane-grid"'), 'Fast Lane card grid is present');
+assert.ok(html.includes('Same-day content, event promos, business packs, and launch work'), 'Fast Lane section explains the visible offer lanes');
 assert.ok(html.includes('booking-mini-summary'), 'desktop booking mini-summary is present');
 assert.ok(html.includes('Submit Booking Request'), 'final CTA is explicit');
 assert.ok(html.includes('Not Sure Yet'), 'Oracle recommendation path is visible');
@@ -101,6 +104,11 @@ assert.ok(js.includes('buildSourceTracking'), 'frontend captures sanitized sourc
 assert.ok(js.includes('source_tracking: state.sourceTracking'), 'booking payload includes source tracking');
 assert.ok(js.includes('fastLanePackageFor'), 'booking frontend resolves fast lane package mapping');
 assert.ok(js.includes('applyFastLaneServiceSelection'), 'fast lane service selections sync the package without skipping Step 1');
+assert.ok(js.includes('FAST_LANE_DETAILS'), 'booking frontend has visible Fast Lane card metadata');
+assert.ok(js.includes('renderFastLanes'), 'booking frontend renders Fast Lane cards');
+assert.ok(js.includes('selectFastLane'), 'Fast Lane cards can select service/package state');
+assert.ok(js.includes('selected_fast_offer'), 'booking payload preserves the selected fast offer');
+assert.ok(js.includes('fast_lane_package'), 'booking payload preserves the mapped fast lane package');
 assert.ok(!js.includes('advance: true'), 'package card clicks must not auto-advance past Step 1');
 assert.ok(js.includes("typeof value === 'object'"), 'frontend filters object string leaks');
 assert.ok(js.includes('PACKAGE_THEMES'), 'dynamic package themes exist');
@@ -116,6 +124,7 @@ assert.ok(!js.includes('SUPABASE_SERVICE'), 'client does not expose service secr
 assert.ok(server.includes('cleanBookingSourceTracking'), 'server sanitizes booking source tracking');
 assert.ok(server.includes('source_tracking: payload.source_tracking || {}'), 'internal booking metadata preserves source tracking');
 assert.ok(server.includes('bookingFastLaneMappings'), 'server exposes canonical fast lane mappings');
+assert.ok(server.includes('selected_fast_offer'), 'OTP_BOOKING_META preserves selected fast offer');
 assert.ok(server.includes('fast_lane_package'), 'OTP_BOOKING_META preserves the mapped fast lane package');
 
 assert.ok(css.includes('@media (max-width: 640px)'), 'mobile breakpoint exists');
@@ -134,6 +143,9 @@ assert.ok(css.includes('data-package-theme="the-signal"'), 'Signal card theme is
 assert.ok(css.includes('data-package-theme="the-engine"'), 'Engine card theme is styled');
 assert.ok(css.includes('data-package-theme="the-system"'), 'System card theme is styled');
 assert.ok(css.includes('data-package-theme="custom-build"'), 'Custom card theme is styled');
+assert.ok(css.includes('fast-lane-grid'), 'Fast Lane grid is styled');
+assert.ok(css.includes('fast-lane-card'), 'Fast Lane cards are styled');
+assert.ok(css.includes('fast-lane-meta'), 'Fast Lane card metadata is styled');
 assert.ok(css.includes('otpStarDrift'), 'animated star field is present');
 assert.ok(css.includes('otpOrbitalShift'), 'animated orbital glow is present');
 assert.ok(css.includes('sigilBreath'), 'sigil glow animation is present');

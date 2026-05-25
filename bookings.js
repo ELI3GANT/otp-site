@@ -113,6 +113,29 @@ const PACKAGE_THEMES = {
   }
 };
 
+const FAST_LANE_DETAILS = {
+  'Same-Day Reel': {
+    turnaround: 'Same day',
+    ideal: 'Creators, artists, restaurants, and brands with footage ready',
+    description: 'A focused short-form edit built for momentum, clarity, and a clean public drop.'
+  },
+  'Event Promo': {
+    turnaround: '24-48 hours',
+    ideal: 'Nightlife, launches, pop-ups, performances, and local events',
+    description: 'A promo lane for getting the event, date, location, and vibe moving fast.'
+  },
+  'Business Content Pack': {
+    turnaround: '2-5 days',
+    ideal: 'Local businesses that need sharper web, social, and sales assets',
+    description: 'A connected content lane for cleaner presence across posts, pages, and offers.'
+  },
+  'Brand Launch Pack': {
+    turnaround: 'Scoped after review',
+    ideal: 'New brands, artist rollouts, product drops, and custom launches',
+    description: 'A custom launch lane for brand direction, visual assets, content, and system pieces.'
+  }
+};
+
 const state = {
   config: fallbackConfig,
   step: 1,
@@ -128,6 +151,7 @@ const $ = (id) => document.getElementById(id);
 
 const els = {
   packageGrid: $('package-grid'),
+  fastLaneGrid: $('fast-lane-grid'),
   selectedPackageName: $('selected-package-name'),
   selectedPackageMessage: $('selected-package-message'),
   selectedPackagePrice: $('selected-package-price'),
@@ -379,6 +403,7 @@ function selectPackage(packageName, options = {}) {
   if (els.package) els.package.value = state.selectedPackage;
   applyActiveTheme(state.selectedPackage);
   renderPackages();
+  renderFastLanes();
   updateSummaries();
   showError('');
   if (options.advance) {
@@ -392,10 +417,104 @@ function selectPackage(packageName, options = {}) {
 function applyFastLaneServiceSelection() {
   const mappedPackage = fastLanePackageFor(els.service.value);
   if (!mappedPackage) {
+    renderFastLanes();
     updateSummaries();
     return;
   }
   selectPackage(mappedPackage, { advance: false });
+  renderFastLanes();
+}
+
+function fastLaneServices() {
+  const mappings = state.config.fastLaneMappings || fallbackConfig.fastLaneMappings || {};
+  const serviceTypes = state.config.serviceTypes || state.config.services || fallbackConfig.serviceTypes;
+  return serviceTypes.filter((service) => typeof mappings[service] === 'string');
+}
+
+function selectFastLane(service) {
+  const mappedPackage = fastLanePackageFor(service);
+  if (!mappedPackage) return;
+  els.service.value = service;
+  selectPackage(mappedPackage, { advance: false });
+  renderFastLanes();
+  showError('');
+}
+
+function renderFastLanes() {
+  if (!els.fastLaneGrid) return;
+  const lanes = fastLaneServices();
+  els.fastLaneGrid.replaceChildren();
+  if (!lanes.length) {
+    const empty = document.createElement('article');
+    empty.className = 'fast-lane-card loading-card';
+    empty.textContent = 'Fast Lane options are loading.';
+    els.fastLaneGrid.append(empty);
+    return;
+  }
+  lanes.forEach((service) => {
+    const mappedPackage = fastLanePackageFor(service);
+    const pkg = packageByName(mappedPackage);
+    const cardTheme = themeFor(mappedPackage);
+    const details = FAST_LANE_DETAILS[service] || {};
+    const selected = els.service.value === service && state.selectedPackage === mappedPackage;
+    const card = document.createElement('article');
+    card.className = `fast-lane-card${selected ? ' active' : ''}`;
+    card.dataset.fastLane = service;
+    card.dataset.packageTheme = cardTheme.slug;
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    card.setAttribute('aria-label', `${service} maps to ${mappedPackage}${selected ? ' selected' : ''}`);
+
+    const eyebrow = document.createElement('span');
+    eyebrow.className = 'fast-lane-eyebrow';
+    eyebrow.textContent = 'Fast Lane';
+
+    const head = document.createElement('div');
+    head.className = 'fast-lane-head';
+    const headCopy = document.createElement('div');
+    appendText(headCopy, 'h3', service, 'Fast Lane');
+    appendText(headCopy, 'strong', mappedPackage, 'Mapped package');
+    const status = document.createElement('span');
+    status.className = selected ? 'selected-indicator selected' : 'selected-indicator';
+    status.textContent = selected ? 'Selected' : 'Select';
+    head.append(headCopy, status);
+
+    const description = document.createElement('p');
+    description.className = 'fast-lane-description';
+    description.textContent = text(details.description, 'A focused OTP lane for a scoped creative request.');
+
+    const meta = document.createElement('div');
+    meta.className = 'fast-lane-meta';
+    [
+      ['Turnaround', details.turnaround || 'Scoped after review'],
+      ['Best for', details.ideal || 'Fast creative requests'],
+      ['Package', `${mappedPackage}${pkg?.price ? ` / ${pkg.price}` : ''}`]
+    ].forEach(([label, value]) => {
+      const item = document.createElement('span');
+      const key = document.createElement('em');
+      const val = document.createElement('b');
+      key.textContent = label;
+      val.textContent = value;
+      item.append(key, val);
+      meta.append(item);
+    });
+
+    const cta = document.createElement('span');
+    cta.className = 'fast-lane-cta';
+    cta.textContent = selected ? 'Lane selected' : 'Use this lane';
+
+    const handleSelect = () => selectFastLane(service);
+    card.addEventListener('click', handleSelect);
+    card.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      handleSelect();
+    });
+
+    card.append(eyebrow, head, description, meta, cta);
+    els.fastLaneGrid.append(card);
+  });
 }
 
 function renderPackages() {
@@ -488,6 +607,7 @@ function fillSelects() {
 }
 
 function payload() {
+  const fastLanePackage = fastLanePackageFor(els.service.value);
   return {
     booking_token: state.bookingToken,
     source_tracking: state.sourceTracking,
@@ -499,6 +619,8 @@ function payload() {
     social_link: els.social.value.trim(),
     service_type: els.service.value.trim(),
     package_interest: els.package.value.trim(),
+    selected_fast_offer: fastLanePackage ? els.service.value.trim() : '',
+    fast_lane_package: fastLanePackage,
     project_description: els.description.value.trim(),
     reference_link: els.reference.value.trim(),
     budget_range: els.budget.value.trim(),
@@ -690,6 +812,7 @@ async function init() {
   }
   fillSelects();
   renderPackages();
+  renderFastLanes();
   setStep(1);
   if (offlineMode) showStatus('Booking options loaded in offline mode.');
 }

@@ -3,6 +3,8 @@
   "includedFiles": [
     "404.html",
     "archive.html",
+    "bookings.css",
+    "bookings.html",
     "bookings.js",
     "docs/OTP_CLEAN_RELEASE_GUARDRAILS.md",
     "docs/OTP_TERMINAL_ORACLE_BLUEPRINT.md",
@@ -38,7 +40,6 @@
     "AGENTS.md",
     "README.md",
     "admin-core.js",
-    "bookings.html",
     "client.css",
     "client.html",
     "client.js",
@@ -100,7 +101,7 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Desktop dark/light and mobile dark/light homepage passed with mounted canvas stars, clean hero pseudo-layer, no checkerboard, Enter Vault present, no console errors, and no overflow. Booking mobile package clicks stayed on Step 1; Fast Lane selections mapped Same-Day Reel and Event Promo to The Signal, Business Content Pack to The Engine, and Brand Launch Pack to Custom Build. Mocked submit preserved source tracking. Local /os assets returned 200."
+    "summary": "Desktop dark/light and mobile dark/light homepage passed with mounted canvas stars, clean hero pseudo-layer, no checkerboard, Enter Vault present, no console errors, and no overflow. Booking mobile package clicks stayed on Step 1; visible Fast Lane cards rendered for Same-Day Reel, Event Promo, Business Content Pack, and Brand Launch Pack; selections mapped Same-Day Reel and Event Promo to The Signal, Business Content Pack to The Engine, and Brand Launch Pack to Custom Build. Mocked submit preserved source tracking, selected_fast_offer, and fast_lane_package. Local /os assets returned 200."
   },
   "authenticatedSweep": {
     "status": "passed",

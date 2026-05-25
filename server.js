@@ -3160,6 +3160,7 @@ function bookingLeadText(payload) {
     return normalizeWhitespace([
         `Service type: ${payload.service_type}`,
         `Package interest: ${payload.package_interest}`,
+        payload.selected_fast_offer ? `Selected fast offer: ${payload.selected_fast_offer}` : '',
         payload.fast_lane_package ? `Fast lane package: ${payload.fast_lane_package}` : '',
         `Business / brand: ${payload.business_name}`,
         `Budget: ${payload.budget_range}`,
@@ -3211,6 +3212,7 @@ function buildBookingInternalNotes({ bookingId, payload, recommendation, recomme
         reference_link: payload.reference_link || null,
         service_type: payload.service_type,
         package_interest: payload.package_interest,
+        selected_fast_offer: payload.selected_fast_offer || null,
         fast_lane_package: payload.fast_lane_package || null,
         recommended_package: recommendation?.recommendedPackage || null,
         project_description: payload.project_description,
@@ -3257,6 +3259,7 @@ function parseBookingPayload(input) {
     const publicConfig = buildPublicBookingConfig();
     const serviceType = pickPublicOption(body.service_type || body.serviceType, publicConfig.serviceTypes);
     const fastLanePackage = fastLanePackageFor(serviceType);
+    const selectedFastOffer = fastLanePackage ? serviceType : cleanBookingText(body.selected_fast_offer || body.selectedFastOffer, 120);
     const packageRaw = normalizeBookingPackageName(body.package_interest || body.packageInterest);
     const requestedPackage = publicConfig.packageOptions.includes(packageRaw) ? packageRaw : '';
     const packageInterest = fastLanePackage || requestedPackage;
@@ -3273,6 +3276,7 @@ function parseBookingPayload(input) {
         social_link: cleanBookingText(body.social_link || body.socialWebsiteLink || body.website, 300),
         service_type: serviceType,
         package_interest: packageInterest,
+        selected_fast_offer: selectedFastOffer,
         fast_lane_package: fastLanePackage,
         project_description: cleanBookingText(body.project_description || body.projectDescription, 9000),
         reference_link: cleanBookingText(body.reference_link || body.referenceLink, 500),

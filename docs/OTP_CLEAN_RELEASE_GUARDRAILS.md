@@ -69,9 +69,11 @@ Do not restore visual files by rolling back the whole app. Preserve booking, sou
 Booking deploys must verify:
 
 - package card clicks remain on Step 1
+- Fast Lane offers are visible as cards on `/bookings`, not only hidden in a dropdown
 - the Next button is the only normal step progression path
 - required fields block progression
 - source and UTM tracking stay in the booking payload and `OTP_BOOKING_META`
+- selected Fast Lane metadata stays in the booking payload and `OTP_BOOKING_META`
 - Fast Lane selections map canonically:
   - `Same-Day Reel` -> `The Signal`
   - `Event Promo` -> `The Signal`
