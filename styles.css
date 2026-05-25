@@ -11384,3 +11384,20 @@ html.stars-performance-mode .home-page .hero::before {
     opacity: 0.36 !important;
   }
 }
+
+/* Visual Success Systems restore: operational trust cards without fake proof metrics. */
+.home-page .section-results-enhanced .result-card {
+  border-radius: 8px !important;
+}
+
+.home-page .section-results-enhanced .result-card .result-value {
+  font-size: clamp(0.9rem, 1.15vw, 1.08rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.home-page .section-results-enhanced .result-label {
+  max-width: 32ch;
+  margin-inline: auto;
+}
