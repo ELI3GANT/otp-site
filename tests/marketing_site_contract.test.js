@@ -48,28 +48,30 @@ assert.ok(index.includes('data-editable='), 'CMS-editable regions present');
 assert.match(index, /href="archive\.html"/, 'desktop nav includes Archive (parity with mobile drawer)');
 assert.ok(
     index.includes('https://www.onlytrueperspective.tech/') && index.includes('rel="canonical"'),
-    'index homepage canonical/og use www (matches site-config hub)'
+    'index homepage canonical/og use final www canonical host'
 );
-assert.ok(!index.includes('https://onlytrueperspective.tech/'), 'index avoids apex-only https homepage URLs in head/schema');
+assert.ok(!index.includes('https://onlytrueperspective.tech/og.jpg'), 'index avoids apex social image URLs in head/schema because apex redirects to www');
+assert.ok(index.includes('OnlyTruePerspective (OTP) is a Rhode Island-based creative technology and media company'), 'index uses official OTP description');
+assert.ok(index.includes('ELI3GANT is the creative artist identity of Elijah Huertas'), 'index includes official ELI3GANT schema description');
 
-// insight.html: avoid apex vs www split (was breaking social consistency with JS-set og:url)
-assert.ok(!insight.includes('https://onlytrueperspective.tech/insight.html'), 'insight canonical should not use apex-only host');
-assert.ok(insight.includes('https://www.onlytrueperspective.tech/insight.html'), 'insight canonical uses www');
-assert.ok(insight.includes('"url": "https://www.onlytrueperspective.tech"'), 'insight JSON-LD org url matches www');
+// insight.html: live apex redirects to www, so public metadata canonicalizes to www.
+assert.ok(!insight.includes('https://onlytrueperspective.tech/insight.html'), 'insight canonical should not use redirecting apex host');
+assert.ok(insight.includes('https://www.onlytrueperspective.tech/insight.html'), 'insight canonical uses final www host');
+assert.ok(insight.includes('"url": "https://www.onlytrueperspective.tech/"'), 'insight JSON-LD org url matches final www host');
 const ogUrls = insight.match(/property="og:url"[^>]+content="([^"]+)"/g) || [];
-assert.ok(ogUrls.some((l) => l.includes('www.onlytrueperspective.tech')), 'insight static og:url uses www');
+assert.ok(ogUrls.some((l) => l.includes('https://www.onlytrueperspective.tech/insight.html')), 'insight static og:url uses final www host');
 assert.ok(insight.includes('sanitizeSlugParam'), 'insight article loader uses OTP.sanitizeSlugParam for ?slug=');
 
 assert.ok(
     insightsList.includes('https://www.onlytrueperspective.tech/insights.html'),
-    'insights list canonical/og uses www (matches site-config)'
+    'insights list canonical/og uses final www host'
 );
-assert.ok(!insightsList.includes('https://onlytrueperspective.tech/insights.html'), 'insights list avoids apex-only insight index URL');
+assert.ok(!insightsList.includes('https://onlytrueperspective.tech/insights.html'), 'insights list avoids redirecting apex insight index URL');
 
-assert.ok(archive.includes('https://www.onlytrueperspective.tech/archive.html'), 'archive canonical/og use www');
-assert.ok(terms.includes('https://www.onlytrueperspective.tech/terms.html'), 'terms canonical/og use www');
-assert.ok(privacy.includes('https://www.onlytrueperspective.tech/privacy.html'), 'privacy canonical/og use www');
-assert.ok(!archive.includes('https://onlytrueperspective.tech/archive.html'), 'archive avoids apex-only page URL');
+assert.ok(archive.includes('https://www.onlytrueperspective.tech/archive.html'), 'archive canonical/og use final www host');
+assert.ok(terms.includes('https://www.onlytrueperspective.tech/terms.html'), 'terms canonical/og use final www host');
+assert.ok(privacy.includes('https://www.onlytrueperspective.tech/privacy.html'), 'privacy canonical/og use final www host');
+assert.ok(!archive.includes('https://onlytrueperspective.tech/archive.html'), 'archive avoids redirecting apex page URL');
 
 assert.ok(themeChrono.includes('OTP.getEffectiveThemeForPaint'), 'theme-chrono exposes paint theme API');
 assert.ok(siteInit.includes('data-theme') || siteInit.includes("getAttribute('data-theme')"), 'site-init references data-theme');
@@ -79,6 +81,11 @@ assert.ok(siteInit.includes('sanitizeHttpUrl'), 'site-init exposes http(s) URL h
 assert.ok(siteInit.includes('/api/contact/submit'), 'site-init wires contact form to public submit API');
 assert.ok(siteInit.includes('otp-uplink'), 'site-init listens on same Realtime channel as OTP Terminal');
 assert.ok(siteInit.includes('Invalid response from server'), 'contact handler tolerates non-JSON error bodies');
+assert.ok(!index.includes('onmouseenter='), 'Enter Vault has no inline hover handler');
+assert.ok(!index.includes('onmouseleave='), 'Enter Vault has no inline leave handler');
+assert.ok(siteInit.includes("warpBtn.dataset.vaultBound === '1'"), 'Enter Vault binding is guarded against duplicates');
+assert.ok(siteInit.includes("['off', 'none', 'disabled']"), 'remote visuals can only disable stars explicitly');
+assert.ok(!siteInit.includes("cursorCanvas.style.display = entry.isIntersecting"), 'IntersectionObserver does not hide star canvas');
 
 assert.ok(terminal.includes('toggleAdminTheme()'), 'OTP Terminal theme control');
 assert.ok(terminal.includes('data-theme'), 'OTP Terminal uses data-theme');

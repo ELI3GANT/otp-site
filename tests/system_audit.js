@@ -7,7 +7,7 @@ const path = require('path');
 
 const PAGES = [
     'index.html', 'archive.html', 'insights.html', '404.html', 
-    'privacy.html', 'terms.html', 'otp-terminal.html', 'portal-gate.html', 'portal.html'
+    'privacy.html', 'terms.html', 'otp-terminal.html', 'portal-gate.html'
 ];
 
 const REQUIRED_SCRIPTS = ['site-config.js', 'site-init.js'];
@@ -28,7 +28,7 @@ function auditPage(file) {
     if (!content.includes('<meta name="viewport"')) { console.warn('⚠️ Missing Viewport Meta'); errors++; }
 
     // 2. Check for Scripts
-    if (!file.includes('portal-gate.html') && !file.includes('otp-terminal.html') && !file.includes('portal.html')) {
+    if (!file.includes('portal-gate.html') && !file.includes('otp-terminal.html')) {
         REQUIRED_SCRIPTS.forEach(script => {
             if (!content.includes(script)) {
                 console.error(`❌ MISSING SCRIPT: ${script}`);

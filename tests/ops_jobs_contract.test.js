@@ -46,6 +46,7 @@ assert.ok(adminCore.includes('/api/admin/ops/jobs/upsert'), 'upsert endpoint cal
 assert.ok(adminCore.includes('/api/admin/ops/jobs/from-oracle'), 'Oracle → job bootstrap endpoint used');
 assert.ok(adminCore.includes('renderOpsProfileSnapshot'), 'connected client/job profile snapshot exists');
 assert.ok(adminCore.includes('This document needs a price before it can be generated'), 'invoice generation blocks missing price');
+assert.ok(adminCore.includes("sourceType: currentJob.sourceType || 'manualIntake'"), 'saving an existing booking/oracle job preserves sourceType');
 
 console.log('   ✅ Ops jobs contract OK');
 console.log('🎉 OPS JOBS CONTRACT COMPLETE');

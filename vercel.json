@@ -26,6 +26,8 @@
     }
   ],
   "routes": [
+    { "src": "^/os/?$", "dest": "/server.js" },
+    { "src": "^/os/(.*)$", "dest": "/server.js" },
     { "src": "/(bookings|booking|book|book-otp)/?", "dest": "/bookings.html" },
     { "src": "/api/bookings/(.*)", "dest": "/server.js" },
     { "src": "/api/(.*)", "dest": "/server.js" },

@@ -47,17 +47,17 @@ Rough order as shown in `otp-terminal.html`. “Oracle?” indicates **direct** 
 
 1. **Local contract suite**: `npm run health:local` (same as `npm test`).
 2. **Production Terminal sweep**: `npm run prod:terminal-sweep`  
-   Public checks always run. If `OTP_ADMIN_TOKEN` is a real JWT, the sweep also runs authenticated admin checks.
+   Public checks always run. Authenticated checks prefer `OTP_ADMIN_PASSCODE`/`ADMIN_PASSCODE` login, then a short-lived `JWT_SECRET`-signed JWT, then `OTP_ADMIN_TOKEN` fallback.
 3. **One-shot both**: `npm run prod:test:ci`
 
-Set the secret in **GitHub Actions** as `OTP_ADMIN_TOKEN` (`Settings → Secrets and variables → Actions`) and mirror it to **Vercel** as `OTP_ADMIN_TOKEN` if you want authenticated admin checks there too.
+Set **GitHub Actions** secrets for `OTP_ADMIN_PASSCODE` or `JWT_SECRET` if you want authenticated admin checks in CI. `OTP_ADMIN_TOKEN` is only a fallback for a real unexpired admin JWT.
 
-**Token rules:** `OTP_ADMIN_TOKEN` is optional for the public sweep. When present, it must be JWT-like (`header.payload.signature`). Never paste the token into logs or chat.
+**Token rules:** `/api/admin/*` accepts Bearer JWTs verified by production `JWT_SECRET`. Never paste passcodes, tokens, or JWT secrets into logs or chat.
 
 ### 4.1 Automated (required before merge)
 
 1. **`npm test`** — `tests/master_runner.js` (contracts: Oracle, terminal, ops, docs, etc.).
-2. **`npm run prod:terminal-sweep`** — public prod health first; admin-authenticated checks only when `OTP_ADMIN_TOKEN` is usable.
+2. **`npm run prod:terminal-sweep`** — public prod health first; admin-authenticated checks only when passcode/JWT runtime auth is usable.
 
 ### 4.2 Client journey (website + audit, public API)
 

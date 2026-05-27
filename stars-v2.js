@@ -1,383 +1,308 @@
 /**
  * stars-v2.js
- * A cinematic, multi-layered starfield with interactive connections.
- * "Deep Space" Aesthetic.
- * Optimized for performance: Responsive counts, efficient drawing.
+ * Lightweight OTP atmosphere. Day/night controls intensity; refresh accent controls color.
  */
+(function () {
+    const canvas = document.getElementById('cursor-canvas');
+    const ctx = canvas ? canvas.getContext('2d', { alpha: true }) : null;
 
-const canvas = document.getElementById('cursor-canvas');
-const ctx = canvas ? canvas.getContext('2d') : null;
-
-if (!canvas || !ctx) {
-    console.warn('[OTP] Stars system: cursor-canvas or 2D context missing. Particle field disabled.');
-    // Provide a dummy mouse update function to avoid errors if site-init.js calls it
-    window.updateMouse = () => {};
-} else {
-    let width, height;
-    let stars = [];
-    let shootingStars = [];
-    // Responsive Star Count: Extreme optimization for mobile
-    const IS_MOBILE = window.innerWidth < 768;
-const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const STAR_COUNT = REDUCED_MOTION ? 0 : (IS_MOBILE ? 40 : 180); 
-const CONNECTION_DIST = IS_MOBILE ? 80 : 120; // Shorter connections on mobile
-const SHOOTING_STAR_CHANCE = IS_MOBILE ? 0.002 : 0.005; // Less frequent on mobile
-
-// Mouse tracking
-let mouse = { x: null, y: null };
-const updateMouse = (x, y) => {
-    mouse.x = x;
-    mouse.y = y;
-};
-
-window.addEventListener('mousemove', e => updateMouse(e.clientX, e.clientY));
-window.addEventListener('mouseleave', () => updateMouse(null, null));
-
-// Touch support for mobile interaction
-window.addEventListener('touchstart', e => {
-    if(e.touches.length > 0) {
-        updateMouse(e.touches[0].clientX, e.touches[0].clientY);
-    }
-}, {passive: true});
-
-window.addEventListener('touchmove', e => {
-    if(e.touches.length > 0) {
-        updateMouse(e.touches[0].clientX, e.touches[0].clientY);
-    }
-}, {passive: true});
-
-window.addEventListener('touchend', () => updateMouse(null, null));
-
-// Resize handling
-function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
-
-// Attractor Logic (The "Suck" Effect)
-let attractor = { x: null, y: null, active: false, repel: false };
-
-window.setAttractor = (x, y) => {
-    attractor.x = x;
-    attractor.y = y;
-    attractor.active = true;
-    attractor.repel = false;
-};
-
-// GLOBAL THEME RESET HANDLER
-// Allows site-init.js to force a starfield reset when theme toggles
-window.resetStars = () => {
-    stars.forEach(s => s.reset());
-};
-
-// Theme State Cache (Performance Optimization)
-let isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
-
-// Watch for theme attribute changes directly for robust sync
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-            isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
-            window.resetStars();
-        }
-    });
-});
-observer.observe(document.documentElement, { attributes: true });
-
-window.clearAttractor = () => {
-    attractor.active = false;
-    attractor.repel = true;
-    setTimeout(() => { attractor.repel = false; }, 800); // 0.8s dispersal phase
-};
-
-class Star {
-    constructor() {
-        this.reset();
-        // Randomize initial position
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-    }
-
-    reset() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.z = Math.random() * 2 + 0.5; 
-        this.size = Math.random() * 1.5;
-        // Base velocity
-        this.origVx = (Math.random() - 0.5) * (this.z * 0.15);
-        this.origVy = (Math.random() - 0.5) * (this.z * 0.15);
-        this.vx = this.origVx;
-        this.vy = this.origVy;
-        
-        this.alpha = Math.random() * 0.8 + 0.2;
-        this.alphaChange = (Math.random() * 0.02) - 0.01;
-        
-        const rand = Math.random();
-        if (rand > 0.9) this.baseColor = '112, 0, 255'; 
-        else if (rand > 0.8) this.baseColor = '0, 195, 255'; 
-        else this.baseColor = '255, 255, 255'; 
-        
-        this.color = this.baseColor;
-    }
-
-    update() {
-        // Global Attractor State Management (managed per star but synced via frame count effectively)
-        // Ideally checking this once per frame in animate is better, but doing here for simplicity of access to 'this'
-        
-        if (attractor.active && attractor.x !== null) {
-            // cycle management
-            const cycleLength = 200; // ~3.3 seconds at 60fps
-            const burstPhase = 160;  // Burst starts after this many frames
-            const isBurst = (attractor.age % cycleLength) > burstPhase;
-
-            const dx = attractor.x - this.x;
-            const dy = attractor.y - this.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-
-            if (isBurst) {
-                // *** QUASAR BURST MODE *** (Explosion)
-                // Violent outward force
-                let angle = Math.atan2(dy, dx);
-                let force = -2.5; // Negative for repulsion
-                
-                // Add some chaotic spin during explosion
-                this.vx += Math.cos(angle) * force * this.z;
-                this.vy += Math.sin(angle) * force * this.z;
-                
-                // Flash colors
-                this.hue = ((attractor.age || 0) * 10) % 360; // Rapid cycling rainbow
-                
-                // Friction (less damping for explosion)
-                this.vx *= 0.95;
-                this.vy *= 0.95;
-
-            } else {
-                // *** ACCRETION MODE *** (Suck)
-                // Warp Speed Inward
-                
-                // No fading out! (User request: dont eat dots)
-                // Instead, slingshot logic happens naturally if we don't clamp position
-                
-                // Gravity
-                this.vx += dx * 0.025 * this.z; // Stronger gravity
-                this.vy += dy * 0.025 * this.z;
-
-                // Event Horizon Swirl: Scaled for 260px button (radius 130px)
-                if (dist < 130) {
-                     this.vx += -dy * 0.15; 
-                     this.vy += dx * 0.15;
-                }
-
-                // Fade out particles that are deep inside the button to "eliminate" clutter
-                if (dist < 80) {
-                    this.alpha = Math.max(0, this.alpha - 0.05);
-                }
-
-                // Warp Colors
-                if (!this.hue) this.hue = Math.random() * 360;
-                
-                // Friction
-                this.vx *= 0.92; // More drag to control the chaos
-                this.vy *= 0.92;
-            }
-
-        } else if (attractor.repel) {
-            // REPEL MODE (Mouse release / Explosion aftermath)
-            this.hue = null; 
-
-            let dx = this.x - attractor.x;
-            let dy = this.y - attractor.y;
-            let dist = Math.sqrt(dx*dx + dy*dy);
-            
-            if (dist < 1) dist = 1;
-
-            if (dist < 400) {
-                 const force = (400 - dist) / 400; 
-                 const push = force * 0.8 * this.z; 
-                 
-                 this.vx += (dx / dist) * push;
-                 this.vy += (dy / dist) * push;
-            }
-             this.vx = this.vx * 0.94 + this.origVx * 0.06;
-             this.vy = this.vy * 0.94 + this.origVy * 0.06;
-        } else {
-             // NORMAL MODE
-             this.hue = null;
-             this.alpha = Math.min(this.alpha + 0.01, 1); // Restore alpha if it was low
-             this.vx = this.vx * 0.98 + this.origVx * 0.02;
-             this.vy = this.vy * 0.98 + this.origVy * 0.02;
-        }
-
-        this.x += this.vx;
-        this.y += this.vy;
-
-        // Wrap around screen (Disable wrap during Active to prevent popping)
-        if (!attractor.active) {
-            if (this.x < 0) this.x = width;
-            if (this.x > width) this.x = 0;
-            if (this.y < 0) this.y = height;
-            if (this.y > height) this.y = 0;
-        }
-
-        // Twinkle
-        if (!attractor.active) {
-             this.alpha += this.alphaChange;
-             if (this.alpha <= 0.2 || this.alpha >= 1) this.alphaChange *= -1;
-        } else {
-             this.alpha = 1; // Max visibility during action
-        }
-    }
-
-    draw() {
-        ctx.beginPath();
-        
-        if (attractor.active && this.hue != null) {
-            // WARP STREAKS (Vibrant HSL)
-            // Use Hue for color, Alpha for fade
-            const lightness = isLightMode ? '30%' : '70%'; // Darker in light mode
-            ctx.strokeStyle = `hsla(${this.hue}, 100%, ${lightness}, ${this.alpha})`;
-            ctx.lineWidth = Math.max(1, this.size * this.z); 
-            ctx.moveTo(this.x, this.y);
-            // Longer tails for faster speed
-            ctx.lineTo(this.x - this.vx * 3, this.y - this.vy * 3);
-            ctx.stroke();
-        } else {
-            // STANDARD STAR (RGB)
-            let drawColor = this.baseColor;
-            
-            if (isLightMode) {
-                // PREMIUM DAY MODE PALETTE: Using deep space variations instead of pure black
-                if (this.baseColor === '255, 255, 255') drawColor = '20, 20, 45'; // Deep Midnight
-                else if (this.baseColor === '0, 195, 255') drawColor = '0, 110, 220'; // Vivid Blue
-                else if (this.baseColor === '112, 0, 255') drawColor = '112, 0, 255'; // Keep Purple
-            }
-
-            ctx.arc(this.x, this.y, this.size * this.z * 0.8, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${drawColor}, ${this.alpha})`;
-            ctx.fill();
-        }
-    }
-}
-
-class ShootingStar {
-    constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height / 2; 
-        this.length = Math.random() * 80 + 10;
-        this.speed = Math.random() * 10 + 6;
-        this.angle = Math.PI / 4; 
-        this.life = 1;
-        this.color = Math.random() > 0.5 ? '0, 195, 255' : '255, 255, 255';
-    }
-
-    update() {
-        this.x -= this.speed * Math.cos(this.angle); 
-        this.y += this.speed * Math.sin(this.angle); 
-        this.life -= 0.02;
-    }
-
-    draw() {
-        ctx.beginPath();
-        const endX = this.x + this.length * Math.cos(this.angle); 
-        const endY = this.y - this.length * Math.sin(this.angle);
-        
-        // Adjust color for light mode visibility
-        let drawColor = this.color;
-        if (isLightMode) {
-            if (this.color === '255, 255, 255') drawColor = '20, 20, 45'; // Matching Deep Midnight
-            else if (this.color === '0, 195, 255') drawColor = '0, 80, 200';
-        }
-
-        const g = ctx.createLinearGradient(this.x, this.y, endX, endY);
-        g.addColorStop(0, `rgba(${drawColor}, ${this.life})`);
-        g.addColorStop(1, `rgba(${drawColor}, 0)`);
-        
-        ctx.strokeStyle = g;
-        ctx.lineWidth = 2;
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-    }
-}
-
-// Init Stars
-for (let i = 0; i < STAR_COUNT; i++) {
-    stars.push(new Star());
-}
-
-function animate() {
-    // Performance Optimization: Check if tab is active
-    if (document.visibilityState !== 'visible') {
-        requestAnimationFrame(animate);
+    if (!canvas || !ctx) {
+        document.documentElement.setAttribute('data-stars', 'fallback');
+        window.updateMouse = () => {};
+        window.setAttractor = () => {};
+        window.clearAttractor = () => {};
+        window.resetStars = () => {};
         return;
     }
-    
-    ctx.clearRect(0, 0, width, height);
 
-    if (attractor.active) {
-        attractor.age = (attractor.age || 0) + 1;
-    } else {
-        attractor.age = 0;
+    canvas.setAttribute('aria-hidden', 'true');
+    canvas.classList.add('stars-mounted');
+    document.documentElement.setAttribute('data-stars', 'mounted');
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let stars = [];
+    let lastFrame = 0;
+    let performanceMode = false;
+    let probeStart = 0;
+    let probeAbsoluteStart = 0;
+    let probeFrames = 0;
+    let probeComplete = false;
+    const mouse = { x: -9999, y: -9999, active: false, attractor: false };
+    const sky = { drift: 0, shooting: [] };
+
+    function isLightMode() {
+        return document.documentElement.getAttribute('data-theme') === 'light';
     }
 
-    // Check for Archive Page (No Motion Request)
-    const isArchive = document.body.classList.contains('archive-page');
+    function activeRgb() {
+        const raw = getComputedStyle(document.documentElement).getPropertyValue('--accent2-rgb').trim();
+        const parts = raw.split(',').map((part) => Number(part.trim()));
+        if (parts.length < 3 || parts.some((part) => !Number.isFinite(part))) return [0, 236, 255];
+        return parts.slice(0, 3);
+    }
 
-    // Update & Draw Static Stars
-    stars.forEach(star => {
-        // Only update position (move) if NOT on archive page
-        if (!isArchive) {
-            star.update();
+    function rgba(rgb, alpha) {
+        return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`;
+    }
+
+    function starCount() {
+        if (prefersReducedMotion.matches) return 0;
+        const area = Math.max(1, window.innerWidth * window.innerHeight);
+        const base = Math.round(area / (isLightMode() ? 14000 : 6500));
+        const mobile = window.innerWidth < 700;
+        if (performanceMode) {
+            const reduced = Math.round(base * 0.55);
+            if (isLightMode()) return Math.min(mobile ? 28 : 42, Math.max(16, reduced));
+            return Math.min(mobile ? 44 : 72, Math.max(24, reduced));
         }
-        star.draw();
+        if (isLightMode()) return Math.min(mobile ? 48 : 90, Math.max(28, base));
+        return Math.min(mobile ? 86 : 176, Math.max(52, base));
+    }
 
-        // Connect to mouse if close (Only if NOT in Suck Mode)
-        // Allowed on Archive for interactivity without autoplay motion
-        if (!attractor.active && mouse.x != null) {
-            const dx = mouse.x - star.x;
-            const dy = mouse.y - star.y;
-            // distSq < radiusSq
-            if (dx * dx + dy * dy < CONNECTION_DIST * CONNECTION_DIST) {
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                ctx.beginPath();
-                
-                // Theme-aware connections: Richer violet in Day Mode
-                let connColor = isLightMode ? '112, 0, 255' : '112, 0, 255';
-                let opacity = (1 - distance / CONNECTION_DIST) * (isLightMode ? 0.35 : 0.8);
-                
-                ctx.strokeStyle = `rgba(${connColor}, ${opacity})`; 
-                ctx.lineWidth = 0.5;
-                ctx.moveTo(star.x, star.y);
-                ctx.lineTo(mouse.x, mouse.y);
-                ctx.stroke();
-                
-                 // Gentle mouse attraction
-                 if (!isArchive) {
-                     star.x += dx * 0.005; 
-                     star.y += dy * 0.005;
-                 }
+    function makeStar(layer) {
+        const depth = layer === 0 ? 0.35 : layer === 1 ? 0.68 : 1;
+        return {
+            x: Math.random() * width,
+            y: Math.random() * height,
+            r: (Math.random() * 1.22 + 0.52) * depth,
+            depth,
+            alpha: Math.random() * 0.52 + 0.34,
+            twinkle: Math.random() * Math.PI * 2,
+            speed: (0.003 + Math.random() * 0.014) * depth,
+            accent: Math.random() > 0.54
+        };
+    }
+
+    function rebuildStars() {
+        const total = starCount();
+        stars = Array.from({ length: total }, (_, index) => {
+            const layer = index < total * 0.45 ? 0 : index < total * 0.82 ? 1 : 2;
+            return makeStar(layer);
+        });
+        sky.shooting = [];
+    }
+
+    function resize() {
+        const rect = canvas.getBoundingClientRect();
+        width = Math.max(1, Math.round(rect.width || window.innerWidth));
+        height = Math.max(1, Math.round(rect.height || window.innerHeight));
+        const dprCap = performanceMode ? (window.innerWidth < 700 ? 1.15 : 1.25) : (window.innerWidth < 700 ? 1.5 : 2);
+        dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+        canvas.width = Math.round(width * dpr);
+        canvas.height = Math.round(height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        rebuildStars();
+    }
+
+    function enablePerformanceMode() {
+        if (performanceMode) return;
+        performanceMode = true;
+        document.documentElement.classList.add('stars-performance-mode');
+        document.documentElement.setAttribute('data-otp-performance-mode', 'stars');
+        document.querySelectorAll('img[src*="assets/otp.gif"]').forEach((img) => {
+            if (!img.dataset.animatedSrc) img.dataset.animatedSrc = img.getAttribute('src') || '';
+            img.src = '/assets/otp-logo-transparent.png';
+            img.classList.add('otp-static-performance-logo');
+        });
+        resize();
+    }
+
+    function drawAtmosphere(rgb, light) {
+        if (performanceMode) {
+            const calm = ctx.createLinearGradient(0, 0, width, height);
+            calm.addColorStop(0, rgba(rgb, light ? 0.018 : 0.065));
+            calm.addColorStop(0.52, rgba(rgb, light ? 0.006 : 0.024));
+            calm.addColorStop(1, light ? 'rgba(255, 255, 255, 0.012)' : 'rgba(3, 3, 5, 0.16)');
+            ctx.fillStyle = calm;
+            ctx.fillRect(0, 0, width, height);
+            return;
+        }
+        const topGlow = ctx.createRadialGradient(width * 0.52, height * 0.12, 0, width * 0.52, height * 0.12, width * 0.78);
+        topGlow.addColorStop(0, rgba(rgb, light ? 0.05 : 0.18));
+        topGlow.addColorStop(0.42, rgba(rgb, light ? 0.012 : 0.052));
+        topGlow.addColorStop(1, rgba(rgb, 0));
+        ctx.fillStyle = topGlow;
+        ctx.fillRect(0, 0, width, height);
+
+        const horizon = ctx.createLinearGradient(0, height * 0.42, 0, height);
+        horizon.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        horizon.addColorStop(1, light ? 'rgba(255, 255, 255, 0.035)' : 'rgba(3, 3, 5, 0.34)');
+        ctx.fillStyle = horizon;
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    function spawnShootingStar(rgb) {
+        if (performanceMode) return;
+        if (isLightMode() || window.innerWidth < 700 || Math.random() > 0.006) return;
+        sky.shooting.push({
+            x: Math.random() * width,
+            y: Math.random() * height * 0.42,
+            length: Math.random() * 72 + 42,
+            speed: Math.random() * 7 + 6,
+            life: 1,
+            rgb
+        });
+    }
+
+    function drawShootingStars() {
+        for (let i = sky.shooting.length - 1; i >= 0; i -= 1) {
+            const s = sky.shooting[i];
+            s.x -= s.speed;
+            s.y += s.speed * 0.46;
+            s.life -= 0.024;
+            const endX = s.x + s.length;
+            const endY = s.y - s.length * 0.46;
+            const grad = ctx.createLinearGradient(s.x, s.y, endX, endY);
+            grad.addColorStop(0, rgba(s.rgb, Math.max(0, s.life)));
+            grad.addColorStop(1, rgba(s.rgb, 0));
+            ctx.beginPath();
+            ctx.moveTo(s.x, s.y);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            if (s.life <= 0 || s.x < -s.length || s.y > height + s.length) sky.shooting.splice(i, 1);
+        }
+    }
+
+    function drawAttractor(rgb) {
+        if (!mouse.active || !mouse.attractor) return;
+
+        const pulse = 0.55 + Math.sin(sky.drift * 5.2) * 0.12;
+        const vortexSize = performanceMode ? Math.min(width, 280) : Math.min(width, 520);
+        const vortex = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, vortexSize);
+        vortex.addColorStop(0, rgba(rgb, (performanceMode ? 0.13 : 0.24) * pulse));
+        vortex.addColorStop(0.18, performanceMode ? rgba(rgb, 0.035) : 'rgba(255, 255, 255, 0.055)');
+        vortex.addColorStop(0.44, rgba(rgb, (performanceMode ? 0.04 : 0.08) * pulse));
+        vortex.addColorStop(1, rgba(rgb, 0));
+        ctx.fillStyle = vortex;
+        ctx.fillRect(0, 0, width, height);
+
+        if (performanceMode) return;
+
+        ctx.save();
+        ctx.translate(mouse.x, mouse.y);
+        ctx.rotate(sky.drift * 0.9);
+        for (let i = 0; i < 3; i += 1) {
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 42 + i * 30, 11 + i * 4, i * 0.7, 0, Math.PI * 2);
+            ctx.strokeStyle = rgba(rgb, 0.20 - i * 0.045);
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    function draw(time) {
+        window.requestAnimationFrame(draw);
+        if (!probeComplete && !performanceMode && !prefersReducedMotion.matches) {
+            if (!probeAbsoluteStart) probeAbsoluteStart = time;
+            if (!probeStart) probeStart = time;
+            probeFrames += 1;
+            if (time - probeStart >= 2000) {
+                const fps = probeFrames * 1000 / Math.max(1, time - probeStart);
+                if (fps < 45) enablePerformanceMode();
+                if (performanceMode || time - probeAbsoluteStart >= 8000) {
+                    probeComplete = true;
+                } else {
+                    probeStart = time;
+                    probeFrames = 0;
+                }
             }
         }
+        if (document.visibilityState !== 'visible') return;
+        const frameInterval = performanceMode && !mouse.attractor ? 66 : 33;
+        if (time - lastFrame < frameInterval) return;
+        lastFrame = time;
+
+        const light = isLightMode();
+        const accent = activeRgb();
+        ctx.clearRect(0, 0, width, height);
+        if (prefersReducedMotion.matches) return;
+
+        sky.drift += light ? 0.006 : 0.012;
+        drawAtmosphere(accent, light);
+        drawAttractor(accent);
+        spawnShootingStar(accent);
+
+        for (const star of stars) {
+            star.twinkle += star.speed;
+            const wave = Math.sin(star.twinkle + sky.drift);
+            const baseAlpha = light ? 0.31 : star.alpha;
+            const alpha = Math.max(light ? 0.18 : 0.28, baseAlpha + wave * (light ? 0.072 : 0.2));
+            let x = star.x + Math.sin(sky.drift * star.depth + star.y * 0.003) * star.depth * 3;
+            let y = star.y + Math.cos(sky.drift * 0.6 + star.x * 0.002) * star.depth * 1.4;
+            const nearMouse = mouse.active ? Math.hypot(mouse.x - x, mouse.y - y) : 9999;
+            const radius = mouse.attractor ? 420 : 150;
+            const force = nearMouse < radius ? (1 - nearMouse / radius) : 0;
+            const pull = mouse.attractor ? force * force * star.depth * 42 : 0;
+            if (pull > 0 && nearMouse > 0.1) {
+                x += ((mouse.x - x) / nearMouse) * pull;
+                y += ((mouse.y - y) / nearMouse) * pull;
+            }
+            const lift = force * (mouse.attractor ? (light ? 0.48 : 0.9) : (light ? 0.12 : 0.28));
+            const size = star.r + lift;
+
+            const fill = star.accent
+                ? rgba(accent, alpha + lift)
+                : (light ? `rgba(12, 12, 20, ${alpha})` : `rgba(255, 250, 236, ${alpha + lift * 0.7})`);
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.shadowColor = star.accent
+                ? rgba(accent, light ? 0.16 : 0.38)
+                : (light ? 'rgba(20, 20, 30, 0.12)' : 'rgba(255, 250, 236, 0.28)');
+            ctx.shadowBlur = performanceMode ? 0 : (star.depth > 0.65 ? (light ? 2.5 : 5.5) : (light ? 1 : 2.5));
+            ctx.fillStyle = fill;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            if (!light && star.depth > 0.9 && alpha > 0.58) {
+                ctx.beginPath();
+                ctx.arc(x, y, star.r * 2.8, 0, Math.PI * 2);
+                ctx.fillStyle = rgba(accent, (alpha - 0.48) * 0.18);
+                ctx.fill();
+            }
+        }
+
+        drawShootingStars();
+    }
+
+    function updateMouse(x, y, attractor = false) {
+        mouse.x = Number.isFinite(x) ? x : -9999;
+        mouse.y = Number.isFinite(y) ? y : -9999;
+        mouse.active = Number.isFinite(x) && Number.isFinite(y);
+        mouse.attractor = mouse.active && Boolean(attractor);
+    }
+
+    function trackPointer(x, y) {
+        updateMouse(x, y, mouse.attractor);
+    }
+
+    window.updateMouse = updateMouse;
+    window.setAttractor = (x, y) => updateMouse(x, y, true);
+    window.clearAttractor = () => updateMouse(null, null);
+    window.resetStars = rebuildStars;
+
+    window.addEventListener('mousemove', (event) => trackPointer(event.clientX, event.clientY), { passive: true });
+    window.addEventListener('mouseleave', () => updateMouse(null, null), { passive: true });
+    window.addEventListener('touchstart', (event) => {
+        if (event.touches.length) trackPointer(event.touches[0].clientX, event.touches[0].clientY);
+    }, { passive: true });
+    window.addEventListener('touchmove', (event) => {
+        if (event.touches.length) trackPointer(event.touches[0].clientX, event.touches[0].clientY);
+    }, { passive: true });
+    window.addEventListener('touchend', () => updateMouse(null, null), { passive: true });
+    window.addEventListener('resize', resize, { passive: true });
+    prefersReducedMotion.addEventListener?.('change', rebuildStars);
+
+    new MutationObserver(rebuildStars).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme', 'data-refresh-accent']
     });
 
-    // Handle Shooting Stars (DISABLE on Archive)
-    if (!isArchive && Math.random() < SHOOTING_STAR_CHANCE) {
-        shootingStars.push(new ShootingStar());
-    }
-    
-    for (let i = 0; i < shootingStars.length; i++) {
-        shootingStars[i].update();
-        shootingStars[i].draw();
-        if (shootingStars[i].life <= 0 || shootingStars[i].x < 0 || shootingStars[i].y > height) {
-            shootingStars.splice(i, 1);
-            i--;
-        }
-    }
-
-    requestAnimationFrame(animate);
-}
-
-animate();
-} // End stars system scope
+    resize();
+    window.requestAnimationFrame(draw);
+})();

@@ -151,7 +151,6 @@ function renderDocMarkdown(doc) {
   h.push('');
   if (doc.display.client_label) h.push(`**Client**: ${doc.display.client_label}`);
   if (doc.display.project_label) h.push(`**Project**: ${doc.display.project_label}`);
-  if (doc.job.jobId) h.push(`**Job ID**: ${doc.job.jobId}`);
   h.push(`**Date**: ${fmtGenerated(doc.generated_at) || doc.generated_at}`);
   h.push('');
   const notes = Array.isArray(doc.warnings) ? doc.warnings.map((w) => safeStr(w)).filter(Boolean) : [];

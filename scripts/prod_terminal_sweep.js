@@ -3,7 +3,8 @@
  * OTP Production Terminal Sweep v2
  *
  * Public-first production health checks with optional admin-authenticated checks.
- * Missing/invalid OTP_ADMIN_TOKEN skips private checks but never blocks public validation.
+ * Admin checks prefer OTP_ADMIN_PASSCODE/ADMIN_PASSCODE login, then OTP_ADMIN_TOKEN fallback.
+ * Missing admin auth skips private checks but never blocks public validation.
  */
 
 const {
@@ -15,17 +16,19 @@ const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytruep
 const TOKEN = String(process.env.OTP_ADMIN_TOKEN || '').trim();
 
 const publicTargets = [
-  { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'Insights', 'www.onlytrueperspective.tech/bookings'] },
+  { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'Insights', '/bookings?source=', 'href="/portal"'] },
   { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css', '/bookings.js', 'canonical', 'OTP Bookings Portal'] },
   { name: 'booking-alias', path: '/booking', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
   { name: 'book-alias', path: '/book', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
   { name: 'bookings-html', path: '/bookings.html', kind: 'html', markers: ['Start Booking', '/bookings.css'] },
   { name: 'bookings-css', path: '/bookings.css', kind: 'css', markers: ['booking-page', 'package-grid'] },
   { name: 'bookings-js', path: '/bookings.js', kind: 'js', markers: ['fetch(\'/api/bookings/config\'', 'fetch(\'/api/bookings/submit\''] },
-  { name: 'booking-logo', path: '/assets/otp-logo-transparent.png', kind: 'png' },
+  { name: 'booking-logo', path: '/assets/otp.gif', kind: 'gif' },
   { name: 'client-portal', path: '/portal', kind: 'html', markers: ['OTP Client Portal', 'Access project status', '/portal.css', '/portal.js'] },
   { name: 'client-portal-css', path: '/portal.css', kind: 'css', markers: ['portal-page', 'portal-emblem'] },
   { name: 'client-portal-js', path: '/portal.js', kind: 'js', markers: ['extractToken', '/client/'] },
+  { name: 'private-client-css', path: '/client.css', kind: 'css', markers: ['client-shell', 'documents-list', 'overflow-x: hidden'] },
+  { name: 'private-client-js', path: '/client.js', kind: 'js', markers: ['/api/client-portal/', 'Locked until payment is saved'] },
   { name: 'portal-gate', path: '/portal-gate', kind: 'html', markers: ['portal', 'gate'] },
   { name: 'terminal-alias', path: '/terminal', kind: 'html', markers: ['postForm', 'admin-core.js'] },
   { name: 'terminal-shell', path: '/otp-terminal', kind: 'html', markers: ['postForm', 'magicBtn', 'admin-core.js', 'blog-enhancements.css', 'window.draftPostWithAI()', 'window.generateOpsDoc(\'Proposal\')'] },
@@ -38,6 +41,7 @@ const publicTargets = [
 ];
 
 const adminTargets = [
+  { name: 'admin-qa-sweep', path: '/api/admin/qa/sweep', kind: 'json', shape: (payload) => Boolean(payload && payload.success === true && payload.fixtures && payload.mutationPolicy) },
   { name: 'admin-knowledge-meta', path: '/api/admin/knowledge/meta', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },
   { name: 'admin-knowledge-files', path: '/api/admin/knowledge/files', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },
   { name: 'admin-docs-templates-status', path: '/api/admin/docs/templates/status', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#090806" />
+    <title>Client Portal | OnlyTruePerspective</title>
+    <link rel="icon" href="/favicon-32x32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/client.css?v=20260517-client1" />
+  </head>
+  <body>
+    <main class="client-shell" aria-live="polite">
+      <header class="client-header">
+        <a class="client-brand" href="/" aria-label="OnlyTruePerspective home">
+          <span class="client-brand-mark">
+            <img src="/assets/otp.gif" alt="OTP" width="48" height="48" decoding="async" />
+          </span>
+          <span>
+            <strong>OnlyTruePerspective</strong>
+            <small>Private Client Portal</small>
+          </span>
+        </a>
+        <nav class="client-nav" aria-label="Client portal links">
+          <a href="/portal">Portal Gate</a>
+          <a href="/bookings">Book OTP</a>
+        </nav>
+      </header>
+
+      <section id="portal-loading" class="client-state-card">
+        <span class="eyebrow">Secure Portal</span>
+        <h1>Loading your project.</h1>
+        <p>Fetching the live OTP OS record for this private invite.</p>
+      </section>
+
+      <section id="portal-error" class="client-state-card hidden">
+        <span class="eyebrow">Access Check</span>
+        <h1>Portal link needs attention.</h1>
+        <p id="portal-error-message">This private link could not be opened.</p>
+        <div class="state-actions">
+          <a class="primary-action" href="/portal">Try Another Link</a>
+          <a class="secondary-action" href="mailto:bookings@onlytrueperspective.tech">Request Help</a>
+        </div>
+      </section>
+
+      <section id="portal-app" class="client-app hidden">
+        <section class="client-hero">
+          <div class="hero-copy">
+            <span class="eyebrow">Live OTP OS Profile</span>
+            <h1 id="client-title">Client Project</h1>
+            <p id="client-subtitle">Private project status, documents, and payment state.</p>
+            <div id="status-row" class="status-row"></div>
+          </div>
+          <aside class="payment-panel">
+            <span class="eyebrow">Payment</span>
+            <h2 id="payment-status">Status</h2>
+            <dl id="payment-list"></dl>
+            <a id="payment-cta" class="primary-action" href="mailto:bookings@onlytrueperspective.tech">Request Payment Link</a>
+          </aside>
+        </section>
+
+        <section class="client-grid">
+          <article class="panel">
+            <span class="eyebrow">Client</span>
+            <h2 id="profile-name">Client</h2>
+            <dl id="profile-list"></dl>
+          </article>
+          <article class="panel">
+            <span class="eyebrow">Project</span>
+            <h2 id="project-name">Project</h2>
+            <dl id="project-list"></dl>
+          </article>
+        </section>
+
+        <section class="panel wide">
+          <div class="section-head">
+            <span>
+              <span class="eyebrow">Deliverables</span>
+              <h2>Scope Snapshot</h2>
+            </span>
+            <span id="deliverables-status" class="badge">Pending</span>
+          </div>
+          <ul id="deliverables-list" class="deliverables-list"></ul>
+          <p id="deliverables-empty" class="muted hidden">OTP has not published deliverables to this portal yet.</p>
+        </section>
+
+        <section class="panel wide">
+          <div class="section-head">
+            <span>
+              <span class="eyebrow">Documents</span>
+              <h2>Invoices, Receipts, Agreements</h2>
+            </span>
+          </div>
+          <div id="documents-list" class="documents-list"></div>
+        </section>
+      </section>
+
+      <footer class="client-footer">Powered by OnlyTruePerspective</footer>
+    </main>
+    <script src="/client.js?v=20260517-client1" defer></script>
+  </body>
+</html>

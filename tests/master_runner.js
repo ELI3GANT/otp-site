@@ -18,6 +18,7 @@ const tests = [
     { name: 'User Flow Validation', path: 'tests/user_flow_validation.js' },
     { name: 'Client Journey (public intake)', path: 'tests/client_journey_contract.test.js' },
     { name: 'Client Portal Route Contract', path: 'tests/portal_route_contract.test.js' },
+    { name: 'Client Portal Logic', path: 'tests/client_portal_logic.test.js' },
     { name: 'OTP Bookings Contract', path: 'tests/bookings_contract.test.js' },
     { name: 'Authentication Logic', path: 'tests/auth_flow_test.js' },
     { name: 'Post Management Logic', path: 'tests/manage_post_test.js' },
@@ -30,11 +31,15 @@ const tests = [
     { name: 'Oracle + Terminal Contract', path: 'tests/oracle_terminal_contract.test.js' },
     { name: 'OTP Oracle Master (stack)', path: 'tests/oracle_master.test.js' },
     { name: 'Marketing Site + Theme Contract', path: 'tests/marketing_site_contract.test.js' },
+    { name: 'Homepage Visual Contract', path: 'tests/homepage_visual_contract.test.js' },
     { name: 'YouTube Video Contract', path: 'tests/youtube_video_contract.test.js' },
     { name: 'Theme Logic', path: 'tests/theme.test.js' },
     { name: 'Menu Logic', path: 'tests/menu_logic_test.js' },
     { name: 'Live API Analytics Slug', path: 'tests/live_analytics_slug.test.js' },
     { name: 'API Surface + RLS Contract', path: 'tests/api_surface_security_contract.test.js' },
+    { name: 'Admin Sweep Auth Contract', path: 'tests/admin_sweep_auth_contract.test.js' },
+    { name: 'Vercel Route Precedence', path: 'tests/vercel_route_precedence.test.js' },
+    { name: 'Release Guardrails Contract', path: 'tests/release_guardrails_contract.test.js' },
     { name: 'Security & Performance', path: 'tests/security_perf_audit.js' },
     // Stress test is excluded from default run due to duration/load
     // { name: 'Stress Test', path: 'tests/stress_test.js' } 

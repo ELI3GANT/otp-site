@@ -1,0 +1,27 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+
+const root = path.join(__dirname, '..');
+const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
+
+console.log('RELEASE GUARDRAILS CONTRACT...');
+
+const script = read('scripts/verify_release_scope.js');
+const docs = read('docs/OTP_CLEAN_RELEASE_GUARDRAILS.md');
+
+assert.ok(script.includes('OTP_PRIMARY_CHECKOUT'), 'release guard checks the primary checkout path');
+assert.ok(script.includes('OTP_ALLOW_PRIMARY_DIRTY_DEPLOY'), 'dirty primary deploy override is explicit');
+assert.ok(script.includes('includedFiles'), 'release guard validates includedFiles manifest');
+assert.ok(script.includes('excludedDirtyFiles'), 'release guard validates excludedDirtyFiles manifest section');
+assert.ok(/test-report\\+?\.xml|test-report\\\\\.xml/.test(script), 'release guard blocks generated test report artifacts');
+assert.ok(/\\.har|\.har/.test(script), 'release guard blocks HAR artifacts');
+assert.ok(/\\.env|\.env/.test(script), 'release guard blocks env files');
+
+assert.ok(/Clean scoped release/i.test(docs), 'guardrail docs define clean scoped release');
+assert.ok(/Never deploy from `?\/Users\/eli\/OTP\/otp-site`?/i.test(docs), 'guardrail docs block dirty primary deploys');
+assert.ok(/Release manifest/i.test(docs), 'guardrail docs require release manifests');
+assert.ok(docs.includes('authenticated sweep'), 'guardrail docs require authenticated sweep evidence');
+
+console.log('   OK: Release guardrails contract');
+console.log('RELEASE GUARDRAILS CONTRACT COMPLETE');

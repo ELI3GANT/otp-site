@@ -2525,6 +2525,7 @@
         const paymentMethod = String(document.getElementById('opsPaymentMethod')?.value || '').trim();
         const paymentStatus = String(document.getElementById('opsPaymentStatus')?.value || '').trim();
         const jobStatus = String(document.getElementById('opsJobStatus')?.value || '').trim();
+        const currentJob = currentOpsJobFromEditor();
 
         // Client-side guardrails (server remains source of truth).
         if (!clientName) { showToast('CLIENT NAME REQUIRED'); return; }
@@ -2550,7 +2551,7 @@
 
         const job = {
             jobId,
-            sourceType: 'manualIntake',
+            sourceType: currentJob.sourceType || 'manualIntake',
             clientName,
             businessName: String(document.getElementById('opsBusinessName')?.value || '').trim(),
             phone: String(document.getElementById('opsPhone')?.value || '').trim(),

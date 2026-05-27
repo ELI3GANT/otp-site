@@ -19,7 +19,7 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="icon" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/bookings.css?v=20260513-sigil1" />
+    <link rel="stylesheet" href="/bookings.css?v=20260525-fastlane1" />
   </head>
   <body>
     <main class="booking-page">
@@ -124,6 +124,17 @@
             <p id="selected-package-message">Pick a system module to tune the booking flow, colors, and review summary.</p>
           </div>
           <span id="selected-package-price">Scope will appear here</span>
+        </div>
+      </section>
+
+      <section id="fast-lanes" class="section-block fast-lane-section" aria-labelledby="fast-lanes-title">
+        <div class="section-heading">
+          <p>Fast Lane</p>
+          <h2 id="fast-lanes-title">Start with the lane that matches the move.</h2>
+          <span>Same-day content, event promos, business packs, and launch work stay connected to the right OTP package before review.</span>
+        </div>
+        <div id="fast-lane-grid" class="fast-lane-grid" aria-live="polite">
+          <article class="fast-lane-card loading-card">Loading Fast Lane options...</article>
         </div>
       </section>
 
@@ -282,6 +293,6 @@
       </footer>
     </main>
 
-    <script src="/bookings.js?v=20260513-sigil1" defer></script>
+    <script src="/bookings.js?v=20260525-fastlane1" defer></script>
   </body>
 </html>

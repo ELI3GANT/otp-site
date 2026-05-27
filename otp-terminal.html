@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="manifest" href="site.webmanifest" />
 
-  <link rel="stylesheet" href="./styles.css?v=16.4.4" />
+  <link rel="stylesheet" href="./styles.css?v=16.5.3" />
   <link rel="stylesheet" href="./admin-styles.css?v=16.8.1" />
   <link rel="stylesheet" href="./blog-enhancements.css?v=16.3.0" />
   <style>
@@ -479,12 +479,12 @@
                 </div>
 
                 <div id="qdPanel" style="background:var(--admin-panel);border:1px solid var(--admin-border);border-radius:12px;padding:12px;">
-                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
-                        <div style="min-width:240px;flex:1;">
+                    <div class="qd-panel-header" style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
+                        <div class="qd-panel-title" style="min-width:240px;flex:1;">
                             <div style="font-weight:900;color:var(--admin-text);letter-spacing:0.06em;">QUICK DEAL</div>
                             <div id="qdMeta" style="margin-top:6px;font-size:0.68rem;color:var(--admin-muted);line-height:1.45;">Create a deal in under a minute.</div>
                         </div>
-                        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+                        <div class="qd-panel-actions" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
                             <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;" onclick="window.resetQuickDeal()">RESET</button>
                             <button type="button" class="btn-secondary" style="width:auto;font-size:0.7rem;background:var(--admin-cyan);color:#000;border:none;" onclick="window.saveQuickDeal()">SAVE QUICK DEAL</button>
                         </div>
@@ -1203,7 +1203,7 @@
             
             <div class="action-row-stack">
                 <button type="button" id="submitBtn" onclick="handlePostSubmit(event)" class="btn-broadcast" aria-label="Publish post to the live network">COMMENCE BROADCAST</button>
-                <div style="display: flex; gap: 10px;">
+                <div class="broadcast-secondary-actions" style="display: flex; gap: 10px;">
                     <button type="button" onclick="openDraftPreview()" class="btn-preview" style="flex: 1;">PREVIEW</button>
                     <button type="button" onclick="resetForm()" class="btn-secondary" style="width: auto; background: transparent; border: 1px solid var(--admin-border); color: var(--admin-muted);">RESET</button>
                 </div>

@@ -1,15 +1,26 @@
 /* eslint-disable no-console */
+const jwt = require('jsonwebtoken');
 /**
- * Bootstrap a single clean QA contact (inbox thread) + a single clean QA ops job in production.
+ * Bootstrap one idempotent, safe E2E contact + one safe E2E ops job in production.
  *
- * - Admin-only via JWT (OTP_ADMIN_TOKEN env var).
- * - Safe: does not send email, does not purge tables, only upserts a clearly-marked QA record.
+ * - Admin-only via short-lived JWT from admin login, or OTP_ADMIN_TOKEN fallback.
+ * - Requires E2E_TEST_MODE=true.
+ * - Safe: does not send email, does not create Stripe charges, does not purge tables,
+ *   only upserts clearly-marked e2e_test records.
  *
  * Usage:
- *   OTP_ADMIN_TOKEN="..." node scripts/prod_bootstrap_qa.js
+ *   E2E_TEST_MODE=true OTP_ADMIN_PASSCODE="..." node scripts/prod_bootstrap_qa.js
  */
 
 const ORIGIN = 'https://www.onlytrueperspective.tech';
+const SAFE_FIXTURE = Object.freeze({
+  clientName: 'OTP Test Client',
+  email: 'test@onlytrueperspective.tech',
+  portalToken: 'test-safe-portal-token',
+  sourceType: 'e2e_test',
+  status: 'test',
+  jobId: 'E2E-TEST-SAFE',
+});
 
 function short(s, n = 240) {
   return String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
@@ -21,13 +32,65 @@ function looksLikeJwt(s) {
   return parts.length === 3 && parts[0].length > 10 && parts[1].length > 10;
 }
 
+function isE2ETestMode() {
+  return ['1', 'true'].includes(String(process.env.E2E_TEST_MODE || '').trim().toLowerCase());
+}
+
 function tokenSetupHelp() {
   return [
-    'OTP_ADMIN_TOKEN must be a real admin JWT (three dot-separated segments).',
-    'GitHub Actions secret: Settings → Secrets and variables → Actions → OTP_ADMIN_TOKEN.',
-    'Vercel env var if needed: OTP_ADMIN_TOKEN.',
-    'Use the JWT from the admin login flow; do not use a placeholder or static bypass token.'
+    'Canonical auth: OTP_ADMIN_PASSCODE or ADMIN_PASSCODE logs in through /api/auth/login and receives a short-lived JWT.',
+    'CI/runtime fallback: JWT_SECRET may mint a short-lived admin JWT in subprocess memory only.',
+    'Fallback auth: OTP_ADMIN_TOKEN may be a real, unexpired admin JWT (three dot-separated segments).',
+    'Do not use a placeholder, static bypass token, or token signed with a different JWT_SECRET.'
   ].join(' ');
+}
+
+function adminPasscodeEnv() {
+  return String(
+    process.env.OTP_ADMIN_PASSCODE
+    || process.env.ADMIN_PASSCODE
+    || process.env.OTP_SITE_ADMIN_PASSCODE
+    || ''
+  ).trim();
+}
+
+async function loginForAdminToken() {
+  const passcode = adminPasscodeEnv();
+  if (!passcode) return { token: '', warning: 'Missing OTP_ADMIN_PASSCODE or ADMIN_PASSCODE. ' + tokenSetupHelp() };
+
+  const res = await fetch(`${ORIGIN}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ passcode }),
+  });
+  const text = await res.text();
+  let json = {};
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch (_) {}
+  const token = String(json.token || json.data?.token || '').trim();
+  if (res.ok && looksLikeJwt(token)) return { token, source: 'login' };
+  return { token: '', warning: `/api/auth/login ${res.status}: ${short(json.message || text)}` };
+}
+
+async function resolveAdminToken() {
+  const login = await loginForAdminToken();
+  if (login.token) return login;
+
+  const jwtSecret = String(process.env.JWT_SECRET || '').trim();
+  if (jwtSecret) {
+    const token = jwt.sign(
+      { role: 'admin', source: 'otp-prod-bootstrap-qa' },
+      jwtSecret,
+      { expiresIn: '10m' }
+    );
+    if (looksLikeJwt(token)) return { token, source: 'jwt_secret', warning: login.warning };
+  }
+
+  const token = String(process.env.OTP_ADMIN_TOKEN || '').trim();
+  if (looksLikeJwt(token)) return { token, source: 'env', warning: login.warning };
+
+  throw new Error(login.warning || tokenSetupHelp());
 }
 
 async function postJson(path, token, body) {
@@ -48,9 +111,11 @@ async function postJson(path, token, body) {
 }
 
 async function main() {
-  const token = String(process.env.OTP_ADMIN_TOKEN || '').trim();
-  if (!token) throw new Error(`Missing OTP_ADMIN_TOKEN env var. ${tokenSetupHelp()}`);
-  if (!looksLikeJwt(token)) throw new Error(`OTP_ADMIN_TOKEN does not look like a JWT. ${tokenSetupHelp()}`);
+  if (!isE2ETestMode()) {
+    throw new Error('E2E_TEST_MODE=true is required before writing the safe production QA fixture.');
+  }
+  const auth = await resolveAdminToken();
+  const token = auth.token;
 
   const today = new Date();
   const yyyy = today.getFullYear();
@@ -58,17 +123,16 @@ async function main() {
   const dd = String(today.getDate()).padStart(2, '0');
   const isoDate = `${yyyy}-${mm}-${dd}`;
 
-  // Canonical QA identity (obvious + non-real)
+  // Official safe fixture identity. Do not replace with real-client data.
   const qaContact = {
-    name: 'Live QA Test Client',
-    email: 'qa@example.com',
-    phone: '401-555-0101',
-    service: 'Video Editing Services',
-    budget: '$199',
-    message: `OTP controlled production validation thread (${isoDate}). Do not send real email.`,
-    // Ensure inbox UI shows "MODULATE RESPONSE" button for predictable reply-context bootstrapping.
-    draft_reply: `Draft reply (QA): Thanks — this is a controlled validation thread (${isoDate}).`,
-    ai_status: 'active', // ensures it shows up in inbox "active" filter
+    name: SAFE_FIXTURE.clientName,
+    email: SAFE_FIXTURE.email,
+    phone: '401-555-0199',
+    service: 'E2E Test Flow',
+    budget: 'Manual price required',
+    message: `OTP controlled safe production validation fixture (${isoDate}). source=e2e_test status=test. Do not send real email. Do not create Stripe charges.`,
+    draft_reply: `Draft reply (E2E safe fixture): This is a controlled validation thread (${isoDate}); no real email should be sent.`,
+    ai_status: SAFE_FIXTURE.status,
   };
 
   // 1) Find existing QA contact(s)
@@ -108,7 +172,7 @@ async function main() {
         budget: qaContact.budget,
         message: qaContact.message,
         draft_reply: qaContact.draft_reply,
-        ai_status: 'active',
+        ai_status: SAFE_FIXTURE.status,
       },
     }).catch(() => {});
   }
@@ -133,32 +197,39 @@ async function main() {
 
   const qaJob = {
     clientName: qaContact.name,
-    businessName: 'OTP QA',
+    businessName: 'OTP E2E QA',
     phone: qaContact.phone,
     email: qaContact.email,
-    serviceType: 'Video Editing Services',
-    packageType: 'The Signal',
-    projectTitle: 'OTP Validation Reel Cut',
-    projectDescription: `Controlled validation job (${isoDate}).`,
-    deliverables: '1 reel cut, basic export.',
+    serviceType: 'E2E Test Flow',
+    packageType: 'Custom',
+    projectTitle: 'OTP Safe E2E Fixture',
+    projectDescription: `Controlled validation job (${isoDate}). source=e2e_test status=test. No real delivery, no real email, no Stripe charge.`,
+    deliverables: 'Safe portal render, empty documents state, invoice/payment UI smoke only.',
     addOns: '',
     startDate: isoDate,
     dueDate: dueIso,
-    totalPrice: '199',
-    depositAmount: '99',
+    totalPrice: '0',
+    depositAmount: '0',
     paymentMethod: 'Other',
-    paymentStatus: 'Deposit Paid',
-    jobStatus: 'Active Client',
-    clientNotes: 'QA-only. No real delivery required.',
-    internalNotes: 'INTERNAL: QA validation record. Do not send externally.',
+    paymentStatus: 'Unpaid',
+    jobStatus: 'New Lead',
+    clientNotes: 'E2E test fixture only. Manual price required before any real work.',
+    internalNotes: [
+      'INTERNAL: SAFE E2E TEST FIXTURE. Do not send externally.',
+      'source=e2e_test',
+      'status=test',
+      `Client portal token: ${SAFE_FIXTURE.portalToken}`,
+      `Client portal expires at: ${due.toISOString()}`,
+      'No real Stripe charges. No real emails. Do not mutate real clients.'
+    ].join('\n'),
     portfolioPermission: false,
     agreementSigned: false,
     invoiceSent: false,
-    sourceType: 'manualIntake',
+    sourceType: SAFE_FIXTURE.sourceType,
   };
 
   const upsert = await postJson('/api/admin/ops/jobs/upsert', token, {
-    jobId: `QA-${isoDate}`,
+    jobId: SAFE_FIXTURE.jobId,
     job: qaJob,
   });
 
