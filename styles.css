@@ -2330,9 +2330,40 @@ html {
   display: block;
   position: relative;
   z-index: 1;
-  transition: transform 0.35s ease, filter 0.35s ease;
+  transition: transform 0.35s ease, filter 0.35s ease, opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
   backface-visibility: hidden;
+}
+
+/* Poster-first hero: stacked layers crossfade (GIF preloaded before reveal) */
+.hero-logo-wrap .hero-eye-poster {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-logo-wrap .hero-eye-animated {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  z-index: 3;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.6s;
+}
+
+.hero-logo-wrap.hero-eye-ready .hero-eye-animated {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s;
+}
+
+.hero-logo-wrap.hero-eye-ready .hero-eye-poster {
+  opacity: 0;
 }
 
 [data-theme="light"] .hero-eye-3d {
@@ -10737,6 +10768,16 @@ section[id] {
 @media (prefers-reduced-motion: reduce) {
   .hero-eye-3d {
     animation: none !important;
+  }
+
+  .hero-logo-wrap .hero-eye-animated {
+    display: none !important;
+  }
+
+  .hero-logo-wrap .hero-eye-poster,
+  .hero-logo-wrap.hero-eye-ready .hero-eye-poster {
+    opacity: 1 !important;
+    visibility: visible !important;
   }
   .glass-manifesto {
     transform: perspective(1200px) translate3d(0, 0, 0) !important;

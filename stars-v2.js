@@ -366,9 +366,17 @@
         attributeFilter: ['data-theme', 'data-refresh-accent']
     });
 
-    const heroLogo = document.querySelector('.hero-eye-3d');
-    if (heroLogo) {
-        heroLogo.addEventListener('error', () => applyHeroLogoFallback(heroLogo), { once: true });
+    const heroWrap = document.querySelector('.home-page .hero-logo-wrap') || document.querySelector('.hero-logo-wrap');
+    const heroPoster = heroWrap?.querySelector('.hero-eye-poster') || document.querySelector('.hero-eye-3d:not(.hero-eye-animated)');
+    const heroAnimated = heroWrap?.querySelector('.hero-eye-animated');
+    if (heroPoster) {
+        heroPoster.addEventListener('error', () => applyHeroLogoFallback(heroPoster), { once: true });
+    }
+    if (heroAnimated) {
+        heroAnimated.addEventListener('error', () => {
+            heroAnimated.removeAttribute('src');
+            heroWrap?.classList.remove('hero-eye-ready');
+        }, { once: true });
     }
 
     if (document.readyState === 'complete') {

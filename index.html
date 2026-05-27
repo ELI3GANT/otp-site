@@ -44,7 +44,7 @@
   <noscript><link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" /></noscript>
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=16.8.1" />
+  <link rel="stylesheet" href="./styles.css?v=16.8.2" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -197,7 +197,8 @@
 
     <div class="hero-content">
       <div class="hero-logo-wrap" style="will-change: transform;">
-        <img src="assets/otp-logo-transparent.png" alt="OTP spinning 3D emblem" class="hero-eye-3d" width="250" height="250" fetchpriority="high" loading="eager" decoding="async" data-hero-animated-src="assets/otp.gif" style="opacity: 1 !important; visibility: visible !important;">
+        <img src="assets/otp-logo-transparent.png" alt="OTP spinning 3D emblem" class="hero-eye-3d hero-eye-poster" width="250" height="250" fetchpriority="high" loading="eager" decoding="async">
+        <img class="hero-eye-3d hero-eye-animated" alt="" width="250" height="250" loading="lazy" decoding="async" data-hero-animated-src="assets/otp.gif" aria-hidden="true">
       </div>
       <h1 class="hero-title-adjust luxe-title">
         <span class="title">ONLY TRUE</span>
@@ -1049,12 +1050,12 @@
   <script src="otp-attribution.js?v=16.9.0" defer></script>
   <script src="stars-v2.js?v=16.4.7" defer></script>
   <script src="otp-video-library.js?v=1.0.0" defer></script>
-  <script src="site-init.js?v=16.8.13" defer></script>
+  <script src="site-init.js?v=16.8.14" defer></script>
   <script src="audit-engine.js?v=16.3.5" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
     // Protocol: Desktop (Ctrl/Cmd + Click Logo) or Mobile (2s Long Press Logo).
-    const otpLogos = document.querySelectorAll('.hero-eye-3d, .otp-mark, #nav-logo-neon');
+    const otpLogos = document.querySelectorAll('.hero-eye-poster, .hero-eye-3d:not(.hero-eye-animated), .otp-mark, #nav-logo-neon');
     let touchHoldTimer;
 
     otpLogos.forEach(logo => {
