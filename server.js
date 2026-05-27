@@ -2532,6 +2532,43 @@ function normalizeOtpPublicSiteOrigin(value) {
 }
 
 const OTP_PUBLIC_SITE_ORIGIN = normalizeOtpPublicSiteOrigin(process.env.OTP_PUBLIC_SITE_ORIGIN);
+function normalizeCheckoutOrigin(value) {
+    try {
+        const url = new URL(String(value || '').trim());
+        if (url.protocol !== 'https:') return '';
+        if (url.hostname.toLowerCase() === 'onlytrueperspective.tech') {
+            url.hostname = 'www.onlytrueperspective.tech';
+        }
+        url.pathname = '';
+        url.search = '';
+        url.hash = '';
+        return url.toString().replace(/\/+$/, '');
+    } catch (_) {
+        return '';
+    }
+}
+
+const checkoutAllowedOrigins = new Set([
+    OTP_PUBLIC_SITE_ORIGIN,
+    'https://www.onlytrueperspective.tech',
+    ...configuredOrigins
+].map(normalizeCheckoutOrigin).filter(Boolean));
+
+function resolveCheckoutOrigin(req) {
+    const candidates = [
+        process.env.OTP_CHECKOUT_ORIGIN,
+        req?.headers?.origin,
+        req?.get?.('origin')
+    ];
+
+    for (const candidate of candidates) {
+        const normalized = normalizeCheckoutOrigin(candidate);
+        if (normalized && checkoutAllowedOrigins.has(normalized)) return normalized;
+    }
+
+    return OTP_PUBLIC_SITE_ORIGIN;
+}
+
 const OTP_CLIENT_PORTAL_UPSTREAM = String(
     process.env.OTP_CLIENT_PORTAL_UPSTREAM_URL
     || process.env.OTP_OS_PUBLIC_BASE
@@ -7490,17 +7527,12 @@ app.post('/api/content/update', verifyToken, async (req, res) => {
 // 7. STRIPE CHECKOUT SESSION (ADDED FOR PAYMENTS)
 app.route('/api/create-checkout-session')
     .post(async (req, res) => {
-    const { packageName, customerEmail } = req.body;
+    const { packageName, customerEmail } = req.body && typeof req.body === 'object' ? req.body : {};
     
     // Check if Stripe is actually ready (Key might be invalid or missing)
     if (!stripe) {
         return res.status(500).json({ error: "PAYMENT SYSTEM OFFLINE (Stripe Config Error)" });
     }
-
-    const protocol = req.headers['x-forwarded-proto'] || 'https';
-    const host = req.get('host');
-    const origin = req.headers.origin || `${protocol}://${host}`;
-
 
     // Pricing Map (In cents) - Customize these values
     // Using lowercase keys for robust matching
@@ -7518,12 +7550,23 @@ app.route('/api/create-checkout-session')
     };
 
     // Normalize input to lowercase to avoid case-mismatch fallbacks
-    const normalizedName = packageName ? packageName.toLowerCase().trim() : '';
+    const rawPackageName = String(packageName || '').trim();
+    if (!rawPackageName || rawPackageName.length > 80) {
+        return res.status(400).json({ error: 'Select a valid package before checkout.' });
+    }
+
+    const normalizedName = rawPackageName.toLowerCase();
     const amount = prices[normalizedName];
 
     if (!amount) {
-        console.error(`❌ Checkout Failed: Package [${packageName}] not found in map.`);
-        return res.status(400).json({ error: `Package '${packageName}' is currently set to Inquiry Only.` });
+        console.error(`❌ Checkout Failed: Package [${rawPackageName}] not found in map.`);
+        return res.status(400).json({ error: `Package '${rawPackageName}' is currently set to Inquiry Only.` });
+    }
+
+    const checkoutOrigin = resolveCheckoutOrigin(req);
+    const cleanCustomerEmail = customerEmail ? safeEmail(customerEmail) : null;
+    if (customerEmail && !cleanCustomerEmail) {
+        return res.status(400).json({ error: 'Enter a valid email before checkout.' });
     }
 
     try {
@@ -7533,7 +7576,7 @@ app.route('/api/create-checkout-session')
                 price_data: {
                     currency: 'usd',
                     product_data: {
-                        name: `OTP // ${(packageName || 'CREATIVE SERVICE').toUpperCase()}`,
+                        name: `OTP // ${rawPackageName.toUpperCase()}`,
                         // Dynamic Description based on package
                         description: normalizedName === 'the signal' ? '1x Tactical Asset (Viral/Ad) + Advanced VFX - 24/48H Delivery' :
                                      normalizedName === 'the engine' ? 'Full Production Infrastructure + 4x Cinematic Assets + Complete Brand Motion Suite' :
@@ -7551,7 +7594,7 @@ app.route('/api/create-checkout-session')
                                      normalizedName === 'the partner' ? 'Monthly Creative Retainer - Priority Activation' :
                                      'OTP Priority Activation & Booking',
                         metadata: {
-                            package: packageName,
+                            package: rawPackageName,
                             realm: 'visual_division',
                             server_version: 'v10.5.1'
                         }
@@ -7561,13 +7604,13 @@ app.route('/api/create-checkout-session')
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: `${origin}/payment_success.html?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${origin}/index.html#packages`,
+            success_url: `${checkoutOrigin}/payment_success.html?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${checkoutOrigin}/index.html#packages`,
         };
 
         // Pre-fill email if provided from contact form
-        if (customerEmail) {
-            sessionConfig.customer_email = customerEmail;
+        if (cleanCustomerEmail) {
+            sessionConfig.customer_email = cleanCustomerEmail;
         }
 
         const session = await stripe.checkout.sessions.create(sessionConfig);

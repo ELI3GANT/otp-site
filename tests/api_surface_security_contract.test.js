@@ -129,6 +129,26 @@ assert.ok(
     serverSrc.includes('Checkout could not be started'),
     'POST /api/create-checkout-session must not return raw Stripe exception text to clients'
 );
+assert.ok(
+    serverSrc.includes('function resolveCheckoutOrigin'),
+    'POST /api/create-checkout-session must resolve redirects through a dedicated checkout origin allowlist'
+);
+assert.ok(
+    serverSrc.includes('success_url: `${checkoutOrigin}/payment_success.html?session_id={CHECKOUT_SESSION_ID}`'),
+    'POST /api/create-checkout-session must use the resolved checkout origin for success redirects'
+);
+assert.ok(
+    serverSrc.includes('cancel_url: `${checkoutOrigin}/index.html#packages`'),
+    'POST /api/create-checkout-session must use the resolved checkout origin for cancel redirects'
+);
+assert.ok(
+    !serverSrc.includes("const origin = req.headers.origin || `${protocol}://${host}`"),
+    'POST /api/create-checkout-session must not build Stripe redirects directly from request Origin/Host headers'
+);
+assert.ok(
+    serverSrc.includes('const cleanCustomerEmail = customerEmail ? safeEmail(customerEmail) : null'),
+    'POST /api/create-checkout-session must validate customerEmail before passing it to Stripe'
+);
 
 assert.ok(
     !serverSrc.includes("origin.endsWith('.vercel.app')"),
