@@ -88,8 +88,14 @@ assert.ok(stars.includes('performanceMode && !mouse.attractor ? 66 : 33'), 'star
 assert.ok(stars.includes('ctx.shadowBlur = performanceMode'), 'starfield softens star glow in performance mode instead of removing it');
 assert.ok(!siteInit.includes("data-stars', starsDisabled ? 'disabled' : 'enabled'"), 'remote visuals must not overwrite mounted canvas state with a generic enabled flag');
 assert.ok(siteInit.includes("setAttribute('data-stars', 'mounted')"), 'runtime visuals preserve mounted state after config updates');
-assert.ok(siteInit.includes('identityPerformanceMode'), 'identity card physics respect adaptive performance mode');
+assert.ok(siteInit.includes('identityMotionProfile'), 'identity card physics use adaptive motion profiles');
+assert.ok(siteInit.includes('identityPerformanceLite'), 'identity card reduces motion in performance-lite mode');
+assert.ok(siteInit.includes('identityMotionDisabled'), 'identity card disables motion for reduced-motion users');
 assert.ok(siteInit.includes("classList.contains('stars-performance-mode')"), 'identity card performance guard follows starfield performance mode');
+assert.ok(siteInit.includes('pointermove'), 'identity card listens for pointer movement');
+assert.ok(!styles.includes('html.stars-performance-mode .home-page .glass-manifesto {\n  transform: none !important;'), 'performance mode keeps identity card 3D transform');
+assert.ok(styles.includes('html.stars-performance-mode .home-page .glass-manifesto {\n  transform: perspective(1200px) rotateX(var(--rotateX, 0deg))'), 'performance mode preserves identity card tilt variables');
+assert.ok(styles.includes('.glass-manifesto {\n    transform: perspective(1200px) translate3d(0, 0, 0) !important;'), 'reduced-motion keeps identity card static');
 
 assert.ok(styles.includes('Subpage shell polish: Archive and Insights layout'), 'subpage layout guard is documented');
 assert.ok(styles.includes('.insights-page .archive-main'), 'insights uses shared subpage main shell');

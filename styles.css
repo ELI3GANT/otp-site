@@ -10740,6 +10740,20 @@ section[id] {
   .hero-eye-3d {
     animation: none !important;
   }
+  .glass-manifesto {
+    transform: perspective(1200px) translate3d(0, 0, 0) !important;
+    --rotateX: 0deg !important;
+    --rotateY: 0deg !important;
+    --floatY: 0px !important;
+    --eyeX: 0px !important;
+    --eyeY: 0px !important;
+  }
+  .glass-manifesto::before {
+    transform: translateZ(-20px) !important;
+  }
+  .glass-manifesto .eye-shape-group {
+    animation: none !important;
+  }
   .scanline-overlay,
   .otp-video-loading::after,
   .card-meter-fill {
@@ -11373,20 +11387,20 @@ html.stars-performance-mode .home-page .footer-left .nav-gif {
 }
 
 html.stars-performance-mode .home-page .glass-manifesto {
-  transform: none !important;
+  transform: perspective(1200px) rotateX(var(--rotateX, 0deg)) rotateY(var(--rotateY, 0deg)) translateY(var(--floatY, 0px)) !important;
   backdrop-filter: blur(10px) saturate(1.05) !important;
   -webkit-backdrop-filter: blur(10px) saturate(1.05) !important;
-  will-change: auto !important;
+  will-change: transform !important;
   contain: paint !important;
-  transition: box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease !important;
+  transition: transform 0.08s ease-out, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease !important;
   box-shadow:
     0 18px 46px rgba(0, 0, 0, 0.36),
     0 0 22px rgba(var(--accent2-rgb), 0.14) !important;
 }
 
 html.stars-performance-mode .home-page .glass-manifesto::before {
-  inset: 0 !important;
-  transform: none !important;
+  inset: -40px !important;
+  transform: translate(calc(var(--rotateY, 0deg) * 4px), calc(var(--rotateX, 0deg) * -4px)) translateZ(-20px) !important;
   filter: blur(8px) !important;
   opacity: 0.28 !important;
   background:
@@ -11405,7 +11419,11 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-hieroglyphic {
   filter: none !important;
 }
 
-html.stars-performance-mode .home-page .glass-manifesto .eye-shape-group,
+html.stars-performance-mode .home-page .glass-manifesto .eye-shape-group {
+  animation: blinkGap 10s infinite !important;
+  animation-play-state: running !important;
+}
+
 html.stars-performance-mode .home-page .glass-manifesto .sticker-resonance {
   animation: none !important;
 }

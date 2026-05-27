@@ -1551,30 +1551,44 @@ function initSite() {
         const isMobileDevice = window.matchMedia("(hover: none)").matches;
         const reducedCardMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
         const lerp = (start, end, amt) => start * (1 - amt) + end * amt;
-        const identityPerformanceMode = () => (
+        const identityMotionDisabled = () => reducedCardMotion.matches;
+        const identityPerformanceLite = () => (
             document.documentElement.classList.contains('stars-performance-mode')
             || document.documentElement.hasAttribute('data-otp-performance-mode')
-            || reducedCardMotion.matches
         );
+        const identityMotionProfile = () => {
+            if (identityMotionDisabled()) {
+                return { tilt: 0, float: 0, eye: 0, lerp: 1 };
+            }
+            if (identityPerformanceLite()) {
+                return { tilt: 10, float: 5, eye: 0.55, lerp: 0.09 };
+            }
+            return { tilt: 22, float: 8, eye: 1, lerp: 0.1 };
+        };
 
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+        const applyPointerTargets = (x, y, rect) => {
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
-
-            // RESTORED ULTRA-TILT: 30 for the "8D" high-status impact
-            targetX = ((y - centerY) / centerY) * -30; 
-            targetY = ((x - centerX) / centerX) * 30;
+            const profile = identityMotionProfile();
+            targetX = ((y - centerY) / centerY) * -profile.tilt;
+            targetY = ((x - centerX) / centerX) * profile.tilt;
             bgTargetX = (x / rect.width) * 100;
             bgTargetY = (y / rect.height) * 100;
 
             const ex = x - centerX;
             const ey = y - centerY;
-            targetEyeX = (ex / rect.width) * 45; 
-            targetEyeY = (ey / rect.height) * 40;
-        });
+            targetEyeX = (ex / rect.width) * 45 * profile.eye;
+            targetEyeY = (ey / rect.height) * 40 * profile.eye;
+        };
+
+        const handlePointerMove = (e) => {
+            if (identityMotionDisabled() || isMobileDevice) return;
+            const rect = card.getBoundingClientRect();
+            applyPointerTargets(e.clientX - rect.left, e.clientY - rect.top, rect);
+        };
+
+        card.addEventListener('mousemove', handlePointerMove);
+        card.addEventListener('pointermove', handlePointerMove);
 
         card.addEventListener('mouseleave', () => {
             targetX = 0; targetY = 0;
@@ -1583,13 +1597,15 @@ function initSite() {
         });
 
         const handleOrientation = (e) => {
-            const gamma = e.gamma || 0; 
+            if (identityMotionDisabled()) return;
+            const profile = identityMotionProfile();
+            const gamma = e.gamma || 0;
             const beta = e.beta || 0;
-            // RESTORED PREMIUM SENSITIVITY (8D FOR MOBILE)
-            targetX = Math.min(Math.max(beta / 1.5, -30), 30) * -1; 
-            targetY = Math.min(Math.max(gamma / 1.5, -30), 30);     
-            bgTargetX = 50 + (gamma / 90 * 45); 
-            bgTargetY = 50 + (beta / 90 * 45);
+            const tilt = profile.tilt;
+            targetX = Math.min(Math.max(beta / 1.5, -tilt), tilt) * -1;
+            targetY = Math.min(Math.max(gamma / 1.5, -tilt), tilt);
+            bgTargetX = 50 + (gamma / 90 * 45 * profile.eye);
+            bgTargetY = 50 + (beta / 90 * 45 * profile.eye);
         };
 
         const enableGyro = async () => {
@@ -1631,36 +1647,16 @@ function initSite() {
                 return;
             }
 
-            if (identityPerformanceMode()) {
-                currentX = 0;
-                currentY = 0;
-                currentEyeX = 0;
-                currentEyeY = 0;
-                bgCurrentX = 50;
-                bgCurrentY = 50;
-                card.style.setProperty('--rotateX', '0deg');
-                card.style.setProperty('--rotateY', '0deg');
-                card.style.setProperty('--bgX', '50%');
-                card.style.setProperty('--bgY', '50%');
-                card.style.setProperty('--floatY', '0px');
-                card.style.setProperty('--eyeX', '0px');
-                card.style.setProperty('--eyeY', '0px');
-                animationFrameId = null;
-                return;
-            }
-            
+            const profile = identityMotionProfile();
             const elapsed = (Date.now() - startTime) / 1000;
-            
-            // RESTORED FLOAT AMPLITUDE
-            const floatY = Math.sin(elapsed * 1.0) * 8; 
-            
-            // STABILIZED RESPONSIVENESS: 0.10 for tactile, non-glitch response
-            currentX = lerp(currentX, targetX, 0.10);
-            currentY = lerp(currentY, targetY, 0.10);
-            bgCurrentX = lerp(bgCurrentX, bgTargetX, 0.10);
-            bgCurrentY = lerp(bgCurrentY, bgTargetY, 0.10);
-            currentEyeX = lerp(currentEyeX, targetEyeX, 0.10);
-            currentEyeY = lerp(currentEyeY, targetEyeY, 0.10);
+            const floatY = identityMotionDisabled() ? 0 : Math.sin(elapsed * 1.0) * profile.float;
+
+            currentX = lerp(currentX, targetX, profile.lerp);
+            currentY = lerp(currentY, targetY, profile.lerp);
+            bgCurrentX = lerp(bgCurrentX, bgTargetX, profile.lerp);
+            bgCurrentY = lerp(bgCurrentY, bgTargetY, profile.lerp);
+            currentEyeX = lerp(currentEyeX, targetEyeX, profile.lerp);
+            currentEyeY = lerp(currentEyeY, targetEyeY, profile.lerp);
 
             // Apply to CSS variables
             card.style.setProperty('--rotateX', `${currentX}deg`);
