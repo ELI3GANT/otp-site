@@ -2408,6 +2408,14 @@ html {
   opacity: 1 !important;
 }
 
+/* Light mode: ensure hero title never washes out. */
+[data-theme="light"] .home-page .hero h1.luxe-title,
+[data-theme="light"] .home-page .hero h1.luxe-title .title {
+  color: #050507 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
 [data-theme="light"] .hero-eye-3d {
   filter: grayscale(1) opacity(0.85) drop-shadow(0 10px 30px rgba(0,0,0,0.1));
 }
@@ -10184,23 +10192,7 @@ section[id] {
   margin-top: 0;
 }
 
-.home-page .hero .hero-logo-wrap {
-  position: relative !important;
-  top: auto;
-  left: auto;
-  transform: none !important;
-  display: grid !important;
-  place-items: center !important;
-  width: 132px;
-  max-width: 34vw;
-  aspect-ratio: 1 / 1;
-  margin: 0 auto 28px;
-  opacity: 0.98;
-  mix-blend-mode: normal;
-  isolation: isolate;
-  pointer-events: none;
-  overflow: visible;
-}
+.home-page .hero .hero-logo-wrap { display: none !important; }
 
 .home-page .hero-logo-wrap::before {
   /* Remove orb/planet centerpiece. Keep hero mark as the center. */

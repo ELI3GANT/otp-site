@@ -144,8 +144,7 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
 
     /** Poster-first hero: layered crossfade to GIF after preload (no visible src flash). */
     function activateHeroAnimatedLogo() {
-        // HERO ANIMATION DISABLED (stability): layered poster+gif caused ghosting/double-mark perception.
-        // Keep the static centered poster until a hero-specific animation is reintroduced safely.
+        // HERO ANIMATION DISABLED (stability): hero logo block removed from homepage.
         return;
         const wrap = document.querySelector('.home-page .hero-logo-wrap') || document.querySelector('.hero-logo-wrap');
         if (!wrap) return;

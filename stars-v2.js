@@ -366,17 +366,10 @@
         attributeFilter: ['data-theme', 'data-refresh-accent']
     });
 
-    const heroWrap = document.querySelector('.home-page .hero-logo-wrap') || document.querySelector('.hero-logo-wrap');
-    const heroPoster = heroWrap?.querySelector('.hero-eye-poster') || document.querySelector('.hero-eye-3d:not(.hero-eye-animated)');
-    const heroAnimated = heroWrap?.querySelector('.hero-eye-animated');
-    if (heroPoster) {
-        heroPoster.addEventListener('error', () => applyHeroLogoFallback(heroPoster), { once: true });
-    }
-    if (heroAnimated) {
-        heroAnimated.addEventListener('error', () => {
-            heroAnimated.removeAttribute('src');
-            heroWrap?.classList.remove('hero-eye-ready');
-        }, { once: true });
+    // Hero logo block was removed for stability; keep fallback protection for nav/footer marks only.
+    const navLogo = document.querySelector('#nav-logo-neon, .nav-logo .otp-mark');
+    if (navLogo) {
+        navLogo.addEventListener('error', () => applyHeroLogoFallback(navLogo), { once: true });
     }
 
     if (document.readyState === 'complete') {

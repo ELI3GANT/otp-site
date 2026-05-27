@@ -40,8 +40,8 @@ assert.ok(styles.includes('html.stars-performance-mode .bg-grain'), 'performance
 assert.ok(styles.includes('html.stars-performance-mode .home-page .glass-manifesto'), 'performance mode lightens identity card compositor work');
 assert.ok(styles.includes('backdrop-filter: blur(10px) saturate(1.05) !important'), 'performance mode keeps premium-lite identity card backdrop blur');
 assert.ok(styles.includes('glass-manifesto .sticker-base'), 'performance mode lightens identity card inner glass emblem');
-assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-eye-3d'), 'performance mode lightens hero logo compositor work');
-assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-logo-wrap::before'), 'performance mode softens hero aura without flattening it');
+assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-eye-3d'), 'performance mode hero compositor rule remains (safe even if hero logo removed)');
+assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-logo-wrap::before'), 'performance mode aura rule can remain (hero block removed)');
 assert.ok(styles.includes('otp-static-performance-logo'), 'performance mode static logo style is present');
 assert.ok(styles.includes('Mobile hero title fit: keep ONLY TRUE / PERSPECTIVE complete on narrow screens.'), 'mobile hero title fit guard is documented');
 assert.ok(styles.includes('Mobile hero title fit + spacing/scroll polish') && styles.includes('@media (max-width: 480px)') && styles.includes('@media (max-width: 390px)'), 'mobile hero has late <=480px and <=390px overflow guards');
@@ -50,7 +50,7 @@ assert.ok(styles.includes('.home-page .luxe-title .title:last-child') && styles.
 assert.ok(styles.includes('width: min(100%, calc(100vw - 32px)) !important;'), 'mobile hero title lines use 32px viewport side gutter');
 assert.ok(styles.includes('overflow-x: clip'), 'mobile hero blocks horizontal overflow');
 assert.ok(styles.includes('Mobile hero title fit + spacing/scroll polish'), 'mobile hero spacing and scroll polish guard is documented');
-assert.ok(styles.includes('width: clamp(132px, 38vw, 172px)'), 'mobile hero logo has explicit larger sizing');
+assert.ok(styles.includes('width: clamp(132px, 38vw, 172px)') || styles.includes('.home-page .hero .hero-logo-wrap'), 'hero logo sizing rules may remain (hero block removed from markup)');
 assert.ok(styles.includes('height: 100svh !important'), 'mobile star canvas uses safe viewport height');
 assert.ok(styles.includes('min-height: auto !important'), 'mobile hero avoids rigid viewport min-height jumps');
 assert.ok(styles.includes('position: fixed !important') && styles.includes('max-height: 100dvh !important'), 'mobile star canvas stays fixed without layout height');
@@ -66,22 +66,14 @@ assert.ok(styles.includes('overflow-wrap: anywhere !important'), 'mobile spectra
 
 assert.ok(stars.includes("setAttribute('data-stars', 'mounted')"), 'starfield marks canvas-mounted state');
 assert.ok(stars.includes("setAttribute('data-stars', 'fallback')"), 'starfield marks safe fallback when canvas init fails');
-assert.ok(index.includes('hero-eye-3d') && index.includes('hero-eye-poster'), 'homepage hero uses a single centered poster mark');
-assert.ok(index.includes('hero-eye-poster'), 'homepage hero exposes poster layer for LCP');
+assert.ok(!index.includes('hero-logo-wrap'), 'homepage hero logo block removed for stability');
+assert.ok(!/class="[^"]*hero-eye-poster/.test(index), 'homepage hero does not render poster img layer');
 assert.ok(!/class="[^"]*hero-eye-animated/.test(index), 'homepage hero does not render animated layer (stability)');
-assert.ok(styles.includes('--hero-poster-offset-x') && styles.includes('--hero-animated-offset-x'), 'hero layers include small composition offset variables');
 assert.ok(!index.includes('data-hero-animated-src="assets/otp-hero-centered.gif"'), 'homepage does not reference hero gif while disabled');
-assert.ok(styles.includes('hero-eye-poster') && styles.includes('object-position: calc(50% + var(--hero-poster-offset-x))'), 'poster hero layer uses centered object-position compensation');
-assert.ok(styles.includes('.home-page .hero-logo-wrap::before {\n  /* Remove orb/planet centerpiece.'), 'hero orb pseudo-element is neutralized');
-assert.ok(styles.includes('.home-page .hero-logo-wrap::after {\n  /* Remove visible ring outline.'), 'hero ring pseudo-element is neutralized');
-assert.ok(!/hero-logo-wrap[\s\S]{0,420}opacity:\s*1\s*!important/.test(index), 'homepage hero avoids inline opacity overrides that block crossfade');
-assert.ok(index.includes('assets/otp-hero-poster-frame.png'), 'homepage hero poster uses frame-matched png for seamless reveal');
-assert.ok(index.includes('preload" href="assets/otp-hero-poster-frame.png"'), 'homepage preloads hero poster frame not full gif');
-assert.ok(!index.includes('preload" href="assets/otp-hero-centered.gif"'), 'homepage does not preload full hero gif');
-assert.ok(siteInit.includes('activateHeroAnimatedLogo'), 'site-init activates hero gif after first paint');
+assert.ok(!index.includes('preload" href="assets/otp-hero-poster-frame.png"'), 'homepage does not preload hero poster when removed');
+assert.ok(!index.includes('preload" href="assets/otp-hero-centered.gif"'), 'homepage does not preload hero gif');
 assert.ok(siteInit.includes('activateHeroAnimatedLogo') && siteInit.includes('HERO ANIMATION DISABLED'), 'site-init disables hero gif for stability');
-assert.ok(/prefers-reduced-motion:\s*reduce[\s\S]{0,900}\.hero-logo-wrap \.hero-eye-animated/.test(styles), 'reduced motion keeps static poster only');
-assert.ok(index.includes('width="250"') && index.includes('height="250"'), 'hero image dimensions stay locked');
+assert.ok(index.includes('class="hero-title-adjust luxe-title"'), 'homepage hero wordmark remains the centerpiece');
 assert.ok(stars.includes('STARFIELD_BOOT_DELAY_MS'), 'starfield boot is delayed after first paint');
 assert.ok(stars.includes("img.classList.contains('hero-eye-3d')"), 'performance mode keeps hero centerpiece on animated gif');
 assert.ok(stars.includes('applyHeroLogoFallback'), 'hero centerpiece can fall back to static png only on load failure');
@@ -136,10 +128,10 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.7', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.8', 'homepage styles cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.7', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.8', `${file} styles cache-bust matches index`);
 });
 
 console.log('   OK: Homepage visual contract');
