@@ -1525,6 +1525,65 @@ button:focus-visible,
   padding: 0 16px;
 }
 
+.project-intake-panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: clamp(20px, 4vw, 32px);
+  padding: clamp(18px, 3vw, 24px);
+  border: 1px solid color-mix(in srgb, var(--active-accent) 26%, var(--line));
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--active-accent) 10%, transparent), transparent 55%),
+    var(--surface);
+  box-shadow: var(--shadow);
+  backdrop-filter: var(--glass);
+}
+
+.project-intake-eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.project-intake-panel h2 {
+  margin: 0;
+  max-width: 22ch;
+  font-size: clamp(1.4rem, 4.2vw, 2rem);
+  line-height: 1.06;
+}
+
+.project-intake-lead,
+.project-intake-support {
+  margin: 0;
+  max-width: 62ch;
+  line-height: 1.55;
+}
+
+.project-intake-lead {
+  color: var(--muted-2);
+}
+
+.project-intake-support {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.project-intake-cta {
+  margin-top: 6px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.booking-intake-note {
+  display: block;
+  padding-top: 4px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .booking-footer {
   display: flex;
   flex-wrap: wrap;
@@ -1808,6 +1867,10 @@ button:focus-visible,
   .hero-actions,
   .form-controls,
   .success-actions {
+    width: 100%;
+  }
+
+  .project-intake-cta {
     width: 100%;
   }
 

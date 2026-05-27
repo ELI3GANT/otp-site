@@ -85,6 +85,12 @@ assert.ok(html.includes('private OTP Client Portal link where you can view proje
 assert.ok(html.includes('Your request is in. OTP will review the scope and prepare the cleanest next step.'), 'success screen uses final OTP copy');
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
+assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
+assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
+assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');
+assert.ok(html.includes('Open Secure Project Intake'), 'project intake button copy is explicit');
+assert.ok(html.includes('This page starts the conversation'), 'bookings explains public intake role');
+assert.ok(!/otp-os\.vercel\.app/i.test(js), 'booking JS must not expose OTP OS hostname');
 
 assert.ok(js.includes('/api/bookings/config'), 'frontend loads booking config');
 assert.ok(js.includes('/api/bookings/submit'), 'frontend submits to booking API');
