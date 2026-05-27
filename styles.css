@@ -2346,16 +2346,24 @@ html {
 .hero-logo-wrap .hero-eye-poster {
   position: relative;
   z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .hero-logo-wrap .hero-eye-animated {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   margin: auto;
   z-index: 3;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  object-fit: contain;
+  object-position: center;
   transition:
     opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     visibility 0s linear 0.6s;
@@ -10585,12 +10593,11 @@ section[id] {
 
 [data-theme="light"] .home-page .hero .hero-eye-3d {
   filter:
-    grayscale(1)
-    invert(1)
-    contrast(1.28)
-    brightness(0.9)
-    drop-shadow(0 14px 30px rgba(0, 0, 0, 0.16)) !important;
-  mix-blend-mode: multiply;
+    grayscale(0.6)
+    contrast(1.14)
+    brightness(0.94)
+    drop-shadow(0 14px 30px rgba(0, 0, 0, 0.14)) !important;
+  mix-blend-mode: normal;
 }
 
 [data-theme="light"] .home-page .hero-subline-alt {
@@ -10957,16 +10964,15 @@ section[id] {
 }
 
 [data-theme="light"] .home-page .hero .hero-logo-wrap::before {
-  opacity: 0.62 !important;
-  filter: blur(18px) saturate(1.05) !important;
+  opacity: 0.3 !important;
+  filter: blur(22px) saturate(0.8) !important;
 }
 
 [data-theme="light"] .home-page .hero .hero-eye-3d {
   filter:
-    grayscale(1)
-    invert(1)
-    contrast(1.34)
-    brightness(0.86)
+    grayscale(0.6)
+    contrast(1.14)
+    brightness(0.94)
     drop-shadow(0 12px 28px rgba(0, 0, 0, 0.18))
     drop-shadow(0 0 22px rgba(var(--accent2-rgb), 0.12)) !important;
 }

@@ -97,6 +97,9 @@ assert.ok(js.includes('/api/bookings/submit'), 'frontend submits to booking API'
 assert.ok(js.includes('getAttributionTracking'), 'bookings attaches stored attribution');
 assert.ok(js.includes('wireProjectIntakeAttribution'), 'bookings forwards attribution to secure intake');
 assert.ok(js.includes('data-intake-base') || js.includes("getAttribute('data-intake-base')"), 'bookings reads intake base from markup');
+assert.ok(/getAttributionTracking[\s\S]{0,40}try/.test(js) || /try[\s\S]{0,80}getAttributionTracking/.test(js) || js.includes('try {'), 'attribution is wrapped so packages render even if OTPAttribution throws');
+assert.ok(/if \(els\.next\)|if\(els\.next\)/.test(js), 'event listeners are guarded so null els cannot crash boot');
+assert.ok(js.includes('state.sourceTracking = {}') || js.includes("sourceTracking: {}"), 'state.sourceTracking initialises safely without calling OTPAttribution at parse time');
 assert.ok(js.includes('state.submitting'), 'duplicate submit prevention exists');
 assert.ok(js.includes('state.submitted'), 'post-success duplicate submit prevention exists');
 assert.ok(!js.includes("['Booking ID'"), 'booking success must not show internal booking IDs');

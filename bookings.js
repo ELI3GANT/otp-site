@@ -143,7 +143,7 @@ const state = {
   submitted: false,
   selectedPackage: '',
   bookingToken: makeBookingToken(),
-  sourceTracking: getAttributionTracking()
+  sourceTracking: {}
 };
 
 const stepNames = ['Pick Package', 'Project Details', 'Budget + Timeline', 'Review + Submit'];
@@ -215,9 +215,13 @@ function cleanTrackingValue(value = '', max = 180) {
 }
 
 function getAttributionTracking() {
-  if (window.OTPAttribution && typeof window.OTPAttribution.getSourceTrackingPayload === 'function') {
-    window.OTPAttribution.captureOnLoad();
-    return window.OTPAttribution.getSourceTrackingPayload();
+  try {
+    if (window.OTPAttribution && typeof window.OTPAttribution.getSourceTrackingPayload === 'function') {
+      window.OTPAttribution.captureOnLoad();
+      return window.OTPAttribution.getSourceTrackingPayload();
+    }
+  } catch (_) {
+    /* non-blocking — fall through to URL-only fallback */
   }
   return buildSourceTrackingFallback();
 }
@@ -825,9 +829,13 @@ function wireProjectIntakeAttribution() {
 }
 
 async function init() {
-  if (window.OTPAttribution) window.OTPAttribution.captureOnLoad();
+  try {
+    if (window.OTPAttribution && typeof window.OTPAttribution.captureOnLoad === 'function') {
+      window.OTPAttribution.captureOnLoad();
+    }
+  } catch (_) { /* non-blocking */ }
   state.sourceTracking = getAttributionTracking();
-  wireProjectIntakeAttribution();
+  try { wireProjectIntakeAttribution(); } catch (_) { /* non-blocking */ }
   applyActiveTheme('');
   let offlineMode = false;
   try {
@@ -844,17 +852,19 @@ async function init() {
   if (offlineMode) showStatus('Booking options loaded in offline mode.');
 }
 
-els.next.addEventListener('click', () => {
+if (els.next) els.next.addEventListener('click', () => {
   if (!validateStep(state.step)) return;
   setStep(state.step + 1);
 });
-els.prev.addEventListener('click', () => setStep(state.step - 1));
-els.package.addEventListener('change', () => selectPackage(els.package.value, { advance: false }));
-els.service.addEventListener('change', applyFastLaneServiceSelection);
-els.form.addEventListener('input', updateSummaries);
-els.form.addEventListener('change', (event) => {
-  if (event.target !== els.package && event.target !== els.service) updateSummaries();
-});
-els.form.addEventListener('submit', submitBooking);
+if (els.prev) els.prev.addEventListener('click', () => setStep(state.step - 1));
+if (els.package) els.package.addEventListener('change', () => selectPackage(els.package.value, { advance: false }));
+if (els.service) els.service.addEventListener('change', applyFastLaneServiceSelection);
+if (els.form) {
+  els.form.addEventListener('input', updateSummaries);
+  els.form.addEventListener('change', (event) => {
+    if (event.target !== els.package && event.target !== els.service) updateSummaries();
+  });
+  els.form.addEventListener('submit', submitBooking);
+}
 
 init();
