@@ -54,7 +54,7 @@ assert.ok(styles.includes('width: clamp(132px, 36vw, 152px)'), 'mobile hero logo
 assert.ok(styles.includes('height: 100svh !important'), 'mobile star canvas uses safe viewport height');
 assert.ok(styles.includes('min-height: auto !important'), 'mobile hero avoids rigid viewport min-height jumps');
 assert.ok(styles.includes('position: fixed !important') && styles.includes('max-height: 100dvh !important'), 'mobile star canvas stays fixed without layout height');
-assert.ok(styles.includes('inset: -22% !important'), 'mobile hero aura is tightened relative to logo');
+assert.ok(styles.includes('  .home-page .hero-logo-wrap::before {\n    content: none !important;\n  }'), 'mobile hero orb is removed (no aura inset orb)');
 assert.ok(styles.includes('max-width: min(100%, calc(100vw - 36px)) !important;'), 'tablet hero title stays inside viewport side padding');
 assert.ok(!styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'removed oversized mobile PERSPECTIVE clamp that caused clipping');
 assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'day-mode services polish guard is documented');
@@ -138,10 +138,10 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.5', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.6', 'homepage styles cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.5', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.6', `${file} styles cache-bust matches index`);
 });
 
 console.log('   OK: Homepage visual contract');
