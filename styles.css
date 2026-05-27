@@ -11478,6 +11478,96 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
   }
 }
 
+/* Premium day-mode services polish: richer depth without changing dark mode. */
+[data-theme="light"] .home-page {
+  background:
+    radial-gradient(circle at 14% 28%, rgba(var(--accent2-rgb), 0.12), transparent 30rem),
+    radial-gradient(circle at 86% 52%, rgba(255, 196, 87, 0.12), transparent 34rem),
+    linear-gradient(180deg, #fbf7ee 0%, #f3f5fa 38%, #ffffff 100%);
+}
+
+[data-theme="light"] .home-page #cursor-canvas,
+[data-theme="light"] .home-page #cursor-canvas.stars-mounted {
+  opacity: 0.58 !important;
+  mix-blend-mode: multiply !important;
+  filter: saturate(1.24) contrast(1.16);
+}
+
+[data-theme="light"] .home-page #services.section {
+  padding-top: clamp(68px, 8vw, 92px);
+}
+
+[data-theme="light"] .home-page #services.section-alt {
+  background:
+    radial-gradient(circle at 16% 8%, rgba(var(--accent2-rgb), 0.13), transparent 28rem),
+    radial-gradient(circle at 86% 22%, rgba(255, 206, 112, 0.18), transparent 26rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(244, 247, 252, 0.9) 46%, rgba(255, 255, 255, 0.96));
+}
+
+[data-theme="light"] .home-page #services.section-alt::before {
+  opacity: 0.76;
+  mix-blend-mode: multiply;
+  background:
+    radial-gradient(circle at 12% 24%, rgba(15, 21, 34, 0.13) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 36% 72%, rgba(var(--accent2-rgb), 0.16) 0 1px, transparent 1.9px),
+    radial-gradient(circle at 78% 36%, rgba(15, 21, 34, 0.10) 0 1px, transparent 1.8px),
+    radial-gradient(ellipse at 50% 0%, rgba(var(--accent2-rgb), 0.10), transparent 44%);
+}
+
+[data-theme="light"] .home-page #services .section-head {
+  margin-bottom: clamp(34px, 5vw, 50px);
+}
+
+[data-theme="light"] .home-page #services .service-item {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 255, 0.78)) !important;
+  border: 1px solid rgba(20, 24, 34, 0.10) !important;
+  box-shadow:
+    0 24px 70px rgba(20, 24, 34, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
+}
+
+[data-theme="light"] .home-page #services .service-item:hover {
+  background:
+    linear-gradient(180deg, #ffffff, rgba(248, 251, 255, 0.92)) !important;
+  border-color: rgba(var(--accent2-rgb), 0.28) !important;
+  box-shadow:
+    0 30px 82px rgba(20, 24, 34, 0.12),
+    0 0 0 1px rgba(var(--accent2-rgb), 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+[data-theme="light"] .home-page #services .service-item h3 {
+  color: #08090f !important;
+}
+
+[data-theme="light"] .home-page #services .service-body p {
+  color: rgba(20, 24, 34, 0.78) !important;
+}
+
+[data-theme="light"] .home-page #services .service-details li {
+  color: rgba(20, 24, 34, 0.72) !important;
+}
+
+[data-theme="light"] .home-page .theme-toggle-btn:not(.mobile-theme-toggle) {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(20, 24, 34, 0.13);
+  color: #11131a;
+  box-shadow:
+    0 18px 48px rgba(20, 24, 34, 0.13),
+    0 0 0 1px rgba(255, 255, 255, 0.64) inset;
+}
+
+@media (max-width: 768px) {
+  [data-theme="light"] .home-page #services.section {
+    padding-top: 64px;
+  }
+
+  [data-theme="light"] .home-page #services .service-item {
+    box-shadow: 0 18px 52px rgba(20, 24, 34, 0.09);
+  }
+}
+
 /* Visual Success Systems restore: operational trust cards without fake proof metrics. */
 .home-page .section-results-enhanced .result-card {
   border-radius: 8px !important;

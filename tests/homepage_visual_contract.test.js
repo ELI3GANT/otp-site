@@ -44,6 +44,10 @@ assert.ok(styles.includes('otp-static-performance-logo'), 'performance mode stat
 assert.ok(styles.includes('Mobile hero title fit: keep ONLY TRUE / PERSPECTIVE complete on narrow screens.'), 'mobile hero title fit guard is documented');
 assert.ok(styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'mobile PERSPECTIVE title uses viewport-safe clamp sizing');
 assert.ok(styles.includes('max-width: min(100%, calc(100vw - 36px)) !important;'), 'mobile hero title stays inside viewport side padding');
+assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'day-mode services polish guard is documented');
+assert.ok(styles.includes('[data-theme="light"] .home-page #services.section-alt'), 'light-mode services section gets its own premium surface');
+assert.ok(styles.includes('[data-theme="light"] .home-page #services .service-item'), 'light-mode service cards get scoped contrast treatment');
+assert.ok(styles.includes('[data-theme="light"] .home-page #cursor-canvas.stars-mounted'), 'light-mode star canvas remains visible');
 assert.ok(styles.includes('.spectral-v-sync .network-pkg h4'), 'mobile spectral variants cannot force package headings past the viewport');
 assert.ok(styles.includes('overflow-wrap: anywhere !important'), 'mobile spectral headings wrap safely');
 
