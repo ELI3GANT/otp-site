@@ -44,8 +44,13 @@ assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-ey
 assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-logo-wrap::before'), 'performance mode softens hero aura without flattening it');
 assert.ok(styles.includes('otp-static-performance-logo'), 'performance mode static logo style is present');
 assert.ok(styles.includes('Mobile hero title fit: keep ONLY TRUE / PERSPECTIVE complete on narrow screens.'), 'mobile hero title fit guard is documented');
-assert.ok(styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'mobile PERSPECTIVE title uses viewport-safe clamp sizing');
-assert.ok(styles.includes('max-width: min(100%, calc(100vw - 36px)) !important;'), 'mobile hero title stays inside viewport side padding');
+assert.ok(styles.includes('Mobile hero title fit — final cascade guard (<=480px / <=390px)'), 'mobile hero has late <=480px and <=390px overflow guards');
+assert.ok(styles.includes('@media (max-width: 480px)') && styles.includes('@media (max-width: 390px)'), 'mobile hero uses narrow-width media guards');
+assert.ok(styles.includes('.home-page .luxe-title .title:last-child') && styles.includes('font-size: min(1.68rem, 7.1vw)'), 'PERSPECTIVE line uses viewport-capped min() sizing');
+assert.ok(styles.includes('width: min(100%, calc(100vw - 32px)) !important;'), 'mobile hero title lines use 32px viewport side gutter');
+assert.ok(styles.includes('overflow-x: clip'), 'mobile hero blocks horizontal overflow');
+assert.ok(styles.includes('max-width: min(100%, calc(100vw - 36px)) !important;'), 'tablet hero title stays inside viewport side padding');
+assert.ok(!styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'removed oversized mobile PERSPECTIVE clamp that caused clipping');
 assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'day-mode services polish guard is documented');
 assert.ok(styles.includes('[data-theme="light"] .home-page #services.section-alt'), 'light-mode services section gets its own premium surface');
 assert.ok(styles.includes('[data-theme="light"] .home-page #services .service-item'), 'light-mode service cards get scoped contrast treatment');
@@ -89,7 +94,7 @@ assert.ok(!/\.archive-main\s*\{[^}]*min-height:\s*100vh/.test(styles), 'subpage 
 assert.ok(archive.includes('THE ARCHIVE') && archive.includes('class="archive-main"'), 'archive page exposes visible heading shell');
 assert.ok(insights.includes('THE VAULT') && insights.includes('class="archive-main"'), 'insights page exposes visible heading shell');
 assert.ok(!insights.includes('padding-top: 140px'), 'insights removes duplicate inline top padding');
-assert.ok(styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'mobile hero title clamp remains protected');
+assert.ok(styles.includes('font-size: min(1.68rem, 7.1vw) !important;'), 'mobile PERSPECTIVE title sizing guard remains protected');
 assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'light-mode services polish remains protected');
 assert.ok(stars.includes("img.classList.contains('hero-eye-3d')"), 'animated hero gif performance guard remains protected');
 
