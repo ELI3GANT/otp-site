@@ -2343,13 +2343,22 @@ html {
 }
 
 /* Poster-first hero: stacked layers crossfade (GIF preloaded before reveal) */
+.hero-logo-wrap {
+  /* The PNG/GIF frames have transparent padding; offset both layers together
+     so the visible OTP mark aligns to the aura center. */
+  --hero-poster-offset-x: -2%;
+  --hero-poster-offset-y: 0%;
+  --hero-animated-offset-x: -2%;
+  --hero-animated-offset-y: 0%;
+}
+
 .hero-logo-wrap .hero-eye-poster {
   position: relative;
   z-index: 2;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: center;
+  object-position: calc(50% + var(--hero-poster-offset-x)) calc(50% + var(--hero-poster-offset-y));
 }
 
 .hero-logo-wrap .hero-eye-animated {
@@ -2363,7 +2372,7 @@ html {
   visibility: hidden;
   pointer-events: none;
   object-fit: contain;
-  object-position: center;
+  object-position: calc(50% + var(--hero-animated-offset-x)) calc(50% + var(--hero-animated-offset-y));
   transition:
     opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     visibility 0s linear 0.6s;

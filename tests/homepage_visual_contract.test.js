@@ -69,6 +69,9 @@ assert.ok(stars.includes("setAttribute('data-stars', 'fallback')"), 'starfield m
 assert.ok(index.includes('hero-eye-3d') && index.includes('data-hero-animated-src="assets/otp.gif"'), 'homepage hero uses poster-first animated gif strategy');
 assert.ok(index.includes('hero-eye-poster'), 'homepage hero exposes poster layer for LCP');
 assert.ok(index.includes('hero-eye-animated'), 'homepage hero exposes animated gif layer');
+assert.ok(styles.includes('--hero-poster-offset-x') && styles.includes('--hero-animated-offset-x'), 'hero layers include small composition offset variables');
+assert.ok(styles.includes('hero-eye-animated') && styles.includes('object-position: calc(50% + var(--hero-animated-offset-x))'), 'animated hero layer uses centered object-position compensation');
+assert.ok(styles.includes('hero-eye-poster') && styles.includes('object-position: calc(50% + var(--hero-poster-offset-x))'), 'poster hero layer uses centered object-position compensation');
 assert.ok(!/hero-logo-wrap[\s\S]{0,420}opacity:\s*1\s*!important/.test(index), 'homepage hero avoids inline opacity overrides that block crossfade');
 assert.ok(index.includes('assets/otp-logo-transparent.png'), 'homepage hero poster uses lightweight png');
 assert.ok(index.includes('preload" href="assets/otp-logo-transparent.png"'), 'homepage preloads hero poster not full gif');
@@ -133,10 +136,10 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.3', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.4', 'homepage styles cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.3', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.4', `${file} styles cache-bust matches index`);
 });
 
 console.log('   OK: Homepage visual contract');
