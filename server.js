@@ -3262,6 +3262,7 @@ function buildBookingInternalNotes({ bookingId, payload, recommendation, recomme
         urgency_level: payload.urgency_level || null,
         deposit_readiness: payload.deposit_readiness || null,
         source_tracking: payload.source_tracking || {},
+        source_metadata: payload.source_tracking || {},
         oracle_recommendation: recommendation || null,
         oracle_status: recommendationPending ? 'pending' : 'ready',
         created_at: new Date().toISOString()
@@ -3274,25 +3275,49 @@ function buildBookingInternalNotes({ bookingId, payload, recommendation, recomme
     ].join('\n').slice(0, 12000);
 }
 
+function sanitizeBookingAttributionValue(value, max = 160) {
+    return String(value || '')
+        .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f<>]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, max);
+}
+
 function cleanBookingSourceTracking(input = {}) {
     const body = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
-    const clean = (value, max = 180) => cleanBookingText(value, max);
+    const clean = (value, max = 160) => sanitizeBookingAttributionValue(value, max);
     const tracked = {
         cta_source: clean(body.cta_source || body.ctaSource || body.source, 120),
         first_touch: clean(body.first_touch || body.firstTouch, 120),
-        booking_route: clean(body.booking_route || body.bookingRoute, 120),
-        referrer: clean(body.referrer, 360),
+        booking_route: clean(body.booking_route || body.bookingRoute, 160),
+        referrer: clean(body.referrer, 240),
         platform: clean(body.platform || body.device, 40),
         utm_source: clean(body.utm_source || body.utmSource, 120),
         utm_medium: clean(body.utm_medium || body.utmMedium, 120),
         utm_campaign: clean(body.utm_campaign || body.utmCampaign, 160),
         utm_content: clean(body.utm_content || body.utmContent, 160),
         utm_term: clean(body.utm_term || body.utmTerm, 160),
-        captured_at: clean(body.captured_at || body.capturedAt, 80)
+        ref: clean(body.ref, 120),
+        source: clean(body.source, 120),
+        campaign: clean(body.campaign, 160),
+        landing_page: clean(body.landing_page || body.landingPage, 240),
+        first_seen_at: clean(body.first_seen_at || body.firstSeenAt, 40),
+        last_seen_at: clean(body.last_seen_at || body.lastSeenAt || body.captured_at || body.capturedAt, 40)
     };
     if (!tracked.cta_source && tracked.utm_source) tracked.cta_source = tracked.utm_source;
     if (!tracked.first_touch) tracked.first_touch = tracked.cta_source || 'direct';
-    return Object.fromEntries(Object.entries(tracked).filter(([, value]) => Boolean(value)));
+    const firstTouch = body.attribution_first || body.attributionFirst;
+    const lastTouch = body.attribution_last || body.attributionLast;
+    if (firstTouch && typeof firstTouch === 'object') {
+        tracked.attribution_first = cleanBookingSourceTracking(firstTouch);
+    }
+    if (lastTouch && typeof lastTouch === 'object') {
+        tracked.attribution_last = cleanBookingSourceTracking(lastTouch);
+    }
+    return Object.fromEntries(Object.entries(tracked).filter(([, value]) => {
+        if (value && typeof value === 'object') return Object.keys(value).length > 0;
+        return Boolean(value);
+    }));
 }
 
 function parseBookingPayload(input) {

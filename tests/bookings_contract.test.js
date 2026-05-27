@@ -94,6 +94,9 @@ assert.ok(!/otp-os\.vercel\.app/i.test(js), 'booking JS must not expose OTP OS h
 
 assert.ok(js.includes('/api/bookings/config'), 'frontend loads booking config');
 assert.ok(js.includes('/api/bookings/submit'), 'frontend submits to booking API');
+assert.ok(js.includes('getAttributionTracking'), 'bookings attaches stored attribution');
+assert.ok(js.includes('wireProjectIntakeAttribution'), 'bookings forwards attribution to secure intake');
+assert.ok(js.includes('data-intake-base') || js.includes("getAttribute('data-intake-base')"), 'bookings reads intake base from markup');
 assert.ok(js.includes('state.submitting'), 'duplicate submit prevention exists');
 assert.ok(js.includes('state.submitted'), 'post-success duplicate submit prevention exists');
 assert.ok(!js.includes("['Booking ID'"), 'booking success must not show internal booking IDs');

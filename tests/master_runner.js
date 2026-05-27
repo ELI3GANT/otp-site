@@ -20,6 +20,7 @@ const tests = [
     { name: 'Client Portal Route Contract', path: 'tests/portal_route_contract.test.js' },
     { name: 'Client Portal Logic', path: 'tests/client_portal_logic.test.js' },
     { name: 'OTP Bookings Contract', path: 'tests/bookings_contract.test.js' },
+    { name: 'Attribution Contract', path: 'tests/attribution_contract.test.js' },
     { name: 'Authentication Logic', path: 'tests/auth_flow_test.js' },
     { name: 'Post Management Logic', path: 'tests/manage_post_test.js' },
     { name: 'Email Link Logic', path: 'tests/email_link_test.js' },

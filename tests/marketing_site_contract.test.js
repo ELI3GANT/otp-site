@@ -107,6 +107,7 @@ const bookings = read('bookings.html');
 assert.ok(bookings.includes('project-intake-panel'), 'bookings page bridges to secure project intake');
 assert.ok(bookings.includes('Open Secure Project Intake'), 'bookings exposes secure intake CTA label');
 assert.ok(bookings.includes('https://otp-os.vercel.app/bookings'), 'bookings links secure intake to OTP OS');
+assert.ok(fs.readFileSync(path.join(root, 'otp-attribution.js'), 'utf8').includes('buildUrlWithAttribution'), 'attribution helper can append UTMs to intake URL');
 
 console.log('   ✅ Marketing + theme contract OK');
 console.log('🎉 MARKETING SITE CONTRACT COMPLETE');

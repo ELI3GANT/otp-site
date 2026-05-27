@@ -143,7 +143,7 @@ const state = {
   submitted: false,
   selectedPackage: '',
   bookingToken: makeBookingToken(),
-  sourceTracking: buildSourceTracking()
+  sourceTracking: getAttributionTracking()
 };
 
 const stepNames = ['Pick Package', 'Project Details', 'Budget + Timeline', 'Review + Submit'];
@@ -214,7 +214,15 @@ function cleanTrackingValue(value = '', max = 180) {
   return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
-function buildSourceTracking() {
+function getAttributionTracking() {
+  if (window.OTPAttribution && typeof window.OTPAttribution.getSourceTrackingPayload === 'function') {
+    window.OTPAttribution.captureOnLoad();
+    return window.OTPAttribution.getSourceTrackingPayload();
+  }
+  return buildSourceTrackingFallback();
+}
+
+function buildSourceTrackingFallback() {
   const params = new URLSearchParams(window.location.search || '');
   const source = cleanTrackingValue(
     params.get('source') || params.get('cta_source') || params.get('utm_source') || 'direct',
@@ -231,6 +239,10 @@ function buildSourceTracking() {
     utm_campaign: cleanTrackingValue(params.get('utm_campaign') || '', 160),
     utm_content: cleanTrackingValue(params.get('utm_content') || '', 160),
     utm_term: cleanTrackingValue(params.get('utm_term') || '', 160),
+    ref: cleanTrackingValue(params.get('ref') || '', 120),
+    source: cleanTrackingValue(params.get('source') || '', 120),
+    campaign: cleanTrackingValue(params.get('campaign') || '', 160),
+    landing_page: cleanTrackingValue(`${window.location.pathname || ''}${window.location.search || ''}`, 240),
     captured_at: new Date().toISOString()
   };
 }
@@ -763,6 +775,7 @@ function renderSuccess(data) {
 async function submitBooking(event) {
   event.preventDefault();
   if (state.submitting || state.submitted) return;
+  state.sourceTracking = getAttributionTracking();
   if (!validateStep(1) || !validateStep(2)) {
     setStep(missingForStep(1).length ? 1 : 2);
     return;
@@ -800,7 +813,21 @@ async function submitBooking(event) {
   }
 }
 
+function wireProjectIntakeAttribution() {
+  const cta = document.querySelector('.project-intake-cta');
+  if (!cta || !window.OTPAttribution) return;
+  const base = cta.getAttribute('data-intake-base') || cta.getAttribute('href') || '';
+  const href = window.OTPAttribution.buildUrlWithAttribution(base);
+  if (href) {
+    cta.href = href;
+    cta.rel = 'noopener noreferrer';
+  }
+}
+
 async function init() {
+  if (window.OTPAttribution) window.OTPAttribution.captureOnLoad();
+  state.sourceTracking = getAttributionTracking();
+  wireProjectIntakeAttribution();
   applyActiveTheme('');
   let offlineMode = false;
   try {

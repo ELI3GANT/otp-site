@@ -33,6 +33,10 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         });
     })();
 
+    if (window.OTPAttribution && typeof window.OTPAttribution.captureOnLoad === 'function') {
+        window.OTPAttribution.captureOnLoad();
+    }
+
     // 1. Footer Year
     const yearEl = document.getElementById('year');
     if (yearEl) {
