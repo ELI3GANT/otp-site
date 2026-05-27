@@ -9,6 +9,8 @@ console.log('HOMEPAGE VISUAL CONTRACT...');
 
 const styles = read('styles.css');
 const index = read('index.html');
+const archive = read('archive.html');
+const insights = read('insights.html');
 const stars = read('stars-v2.js');
 const siteInit = read('site-init.js');
 
@@ -67,6 +69,19 @@ assert.ok(!siteInit.includes("data-stars', starsDisabled ? 'disabled' : 'enabled
 assert.ok(siteInit.includes("setAttribute('data-stars', 'mounted')"), 'runtime visuals preserve mounted state after config updates');
 assert.ok(siteInit.includes('identityPerformanceMode'), 'identity card physics respect adaptive performance mode');
 assert.ok(siteInit.includes("classList.contains('stars-performance-mode')"), 'identity card performance guard follows starfield performance mode');
+
+assert.ok(styles.includes('Subpage shell polish: Archive and Insights layout'), 'subpage layout guard is documented');
+assert.ok(styles.includes('.insights-page .archive-main'), 'insights uses shared subpage main shell');
+assert.ok(styles.includes('padding-top: calc(92px + env(safe-area-inset-top, 0px))'), 'subpage content clears fixed nav');
+assert.ok(styles.includes('.archive-page #cursor-canvas.stars-mounted'), 'archive starfield canvas is fixed on subpages');
+assert.ok(styles.includes('.archive-page .footer-inner'), 'archive footer spacing is bounded on subpages');
+assert.ok(!/\.archive-main\s*\{[^}]*min-height:\s*100vh/.test(styles), 'subpage main does not force viewport dead space');
+assert.ok(archive.includes('THE ARCHIVE') && archive.includes('class="archive-main"'), 'archive page exposes visible heading shell');
+assert.ok(insights.includes('THE VAULT') && insights.includes('class="archive-main"'), 'insights page exposes visible heading shell');
+assert.ok(!insights.includes('padding-top: 140px'), 'insights removes duplicate inline top padding');
+assert.ok(styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'mobile hero title clamp remains protected');
+assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'light-mode services polish remains protected');
+assert.ok(stars.includes("img.classList.contains('hero-eye-3d')"), 'animated hero gif performance guard remains protected');
 
 console.log('   OK: Homepage visual contract');
 console.log('HOMEPAGE VISUAL CONTRACT COMPLETE');

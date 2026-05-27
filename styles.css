@@ -5417,7 +5417,7 @@ input:focus, select:focus, textarea:focus {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 30px;
-  padding-bottom: 120px;
+  padding-bottom: clamp(24px, 4vw, 48px);
   width: 100%;
 }
 
@@ -5573,8 +5573,9 @@ input:focus, select:focus, textarea:focus {
 .archive-main {
   position: relative;
   z-index: 2;
-  padding-top: 120px; /* Space for fixed nav */
-  padding-bottom: 100px;
+  padding-top: calc(92px + env(safe-area-inset-top, 0px));
+  padding-bottom: clamp(56px, 7vw, 88px);
+  min-height: 0;
 }
 
 /* Insight Cards Spotlight Effect */
@@ -11583,4 +11584,132 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
 .home-page .section-results-enhanced .result-label {
   max-width: 32ch;
   margin-inline: auto;
+}
+
+/* Subpage shell polish: Archive and Insights layout */
+.archive-page,
+.insights-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.archive-page .archive-main,
+.insights-page .archive-main {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.archive-page .footer,
+.insights-page .footer {
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+.archive-page .secondary-header h1,
+.insights-page .secondary-header h1 {
+  scroll-margin-top: calc(92px + env(safe-area-inset-top, 0px));
+}
+
+.archive-page .secondary-intro,
+.insights-page .secondary-intro {
+  margin-bottom: clamp(32px, 5vw, 56px);
+}
+
+.archive-page .archive-footer-cta {
+  margin-top: clamp(40px, 6vw, 64px) !important;
+  padding-bottom: clamp(16px, 3vw, 32px) !important;
+}
+
+.insights-page .subscribe-section {
+  margin-top: clamp(48px, 7vw, 72px) !important;
+  padding: clamp(40px, 6vw, 60px) clamp(20px, 4vw, 32px) !important;
+}
+
+.insights-page .insights-footer-nav {
+  margin: clamp(32px, 5vw, 48px) 0 clamp(16px, 3vw, 28px) !important;
+}
+
+.archive-page #cursor-canvas,
+.archive-page #cursor-canvas.stars-mounted,
+.insights-page #cursor-canvas,
+.insights-page #cursor-canvas.stars-mounted {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 0.72 !important;
+  mix-blend-mode: screen !important;
+}
+
+[data-theme="light"] .archive-page #cursor-canvas,
+[data-theme="light"] .archive-page #cursor-canvas.stars-mounted,
+[data-theme="light"] .insights-page #cursor-canvas,
+[data-theme="light"] .insights-page #cursor-canvas.stars-mounted {
+  opacity: 0.42 !important;
+  mix-blend-mode: multiply !important;
+  filter: saturate(1.12) contrast(1.06);
+}
+
+.archive-page .nav,
+.insights-page .nav,
+.archive-page .archive-main,
+.insights-page .archive-main,
+.archive-page .footer,
+.insights-page .footer {
+  position: relative;
+  z-index: 2;
+}
+
+.archive-page .nav,
+.insights-page .nav {
+  z-index: 12000;
+}
+
+.archive-page .footer-inner,
+.insights-page .footer-inner {
+  width: min(1240px, calc(100vw - 48px));
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.archive-page .footer-left .nav-logo,
+.insights-page .footer-left .nav-logo {
+  width: auto;
+  max-width: 100%;
+}
+
+.archive-page .footer-left .nav-gif,
+.insights-page .footer-left .nav-gif,
+.archive-page .footer-left .otp-mark,
+.insights-page .footer-left .otp-mark {
+  width: 44px;
+  height: 44px;
+  max-width: 44px;
+  object-fit: contain;
+}
+
+.archive-page,
+.insights-page {
+  scroll-padding-top: calc(92px + env(safe-area-inset-top, 0px));
+}
+
+@media (max-width: 768px) {
+  .archive-main {
+    padding-top: calc(76px + env(safe-area-inset-top, 0px));
+  }
+
+  .archive-page .secondary-header h1,
+  .insights-page .secondary-header h1 {
+    scroll-margin-top: calc(76px + env(safe-area-inset-top, 0px));
+  }
+
+  .archive-page,
+  .insights-page {
+    scroll-padding-top: calc(76px + env(safe-area-inset-top, 0px));
+  }
 }
