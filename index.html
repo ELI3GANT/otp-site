@@ -44,7 +44,7 @@
   <noscript><link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" /></noscript>
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=16.8.2" />
+  <link rel="stylesheet" href="./styles.css?v=16.8.3" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -149,6 +149,28 @@
   <div id="page-loader" style="position:fixed;inset:0;background:var(--bg, #000);z-index:99999;display:flex;align-items:center;justify-content:center;transition:opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s;">
     <div class="loader-pulse" style="width:40px;height:40px;border-radius:50%;background:var(--accent2);animation:pulse-cyan 1.5s infinite alternate;"></div>
   </div>
+  <script>
+    (function () {
+      function dismissPageLoader() {
+        var loader = document.getElementById('page-loader');
+        if (!loader || loader.getAttribute('data-dismissed') === '1') return;
+        loader.setAttribute('data-dismissed', '1');
+        loader.classList.add('is-dismissed');
+        loader.style.opacity = '0';
+        loader.style.visibility = 'hidden';
+        loader.style.pointerEvents = 'none';
+      }
+      window.OTP = window.OTP || {};
+      window.OTP.dismissPageLoader = dismissPageLoader;
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', dismissPageLoader, { once: true });
+      } else {
+        dismissPageLoader();
+      }
+      window.addEventListener('load', dismissPageLoader, { once: true });
+      setTimeout(dismissPageLoader, 1600);
+    })();
+  </script>
 
   <div class="bg-fixed"></div>
   <a class="skip" href="#work">Skip to content</a>
@@ -1050,7 +1072,7 @@
   <script src="otp-attribution.js?v=16.9.0" defer></script>
   <script src="stars-v2.js?v=16.4.7" defer></script>
   <script src="otp-video-library.js?v=1.0.0" defer></script>
-  <script src="site-init.js?v=16.8.14" defer></script>
+  <script src="site-init.js?v=16.8.15" defer></script>
   <script src="audit-engine.js?v=16.3.5" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---

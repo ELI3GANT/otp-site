@@ -33,8 +33,12 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         });
     })();
 
-    if (window.OTPAttribution && typeof window.OTPAttribution.captureOnLoad === 'function') {
-        window.OTPAttribution.captureOnLoad();
+    try {
+        if (window.OTPAttribution && typeof window.OTPAttribution.captureOnLoad === 'function') {
+            window.OTPAttribution.captureOnLoad();
+        }
+    } catch (attrErr) {
+        console.warn('[OTP] Attribution capture skipped:', attrErr);
     }
 
     // 1. Footer Year
@@ -101,10 +105,16 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         }
     })();
 
-    // PREMIUM PRELOADER LOGIC — dismiss on DOM ready so LCP is not blocked by window.load
+    // PREMIUM PRELOADER — inline fail-safe in index.html owns dismiss; this mirrors it.
     function hidePageLoader() {
+        if (window.OTP && typeof window.OTP.dismissPageLoader === 'function') {
+            window.OTP.dismissPageLoader();
+            return;
+        }
         const loader = document.getElementById('page-loader');
-        if (!loader || loader.style.visibility === 'hidden') return;
+        if (!loader || loader.getAttribute('data-dismissed') === '1') return;
+        loader.setAttribute('data-dismissed', '1');
+        loader.classList.add('is-dismissed');
         loader.style.opacity = '0';
         loader.style.visibility = 'hidden';
         loader.style.pointerEvents = 'none';
@@ -116,11 +126,12 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
     }
     window.addEventListener('load', hidePageLoader, { once: true });
     setTimeout(() => {
-        if (document.getElementById('page-loader')?.style.visibility !== 'hidden') {
+        const loader = document.getElementById('page-loader');
+        if (loader && loader.getAttribute('data-dismissed') !== '1') {
             hidePageLoader();
             console.warn('[OTP] Loading timeout reached. Bypassing preloader.');
         }
-    }, 1500);
+    }, 1600);
 
     function scheduleAfterFirstPaint(fn, timeoutMs = 2200) {
         if (typeof fn !== 'function') return;
@@ -189,7 +200,13 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         };
         probe.src = animatedSrc;
     }
-    scheduleAfterFirstPaint(activateHeroAnimatedLogo, 2600);
+    scheduleAfterFirstPaint(() => {
+        try {
+            activateHeroAnimatedLogo();
+        } catch (heroErr) {
+            console.warn('[OTP] Hero animation reveal skipped:', heroErr);
+        }
+    }, 2600);
 
     // 1.5 Lenis Smooth Scroll REMOVED for native feel.
 
@@ -388,6 +405,7 @@ window.OTP.isManualThemeActive = function() {
 };
 
 window.OTP.setTheme = function(theme, isManual = false) {
+    const normalized = theme === 'light' ? 'light' : 'dark';
     const html = document.documentElement;
     const rootStyle = html.style;
     
@@ -406,7 +424,7 @@ window.OTP.setTheme = function(theme, isManual = false) {
     if (selectedHue.name) html.setAttribute('data-refresh-accent', selectedHue.name);
     if (selectedHue.gradient) rootStyle.setProperty('--accent-gradient', selectedHue.gradient);
 
-    if (theme === 'light') {
+    if (normalized === 'light') {
         html.setAttribute('data-theme', 'light');
         rootStyle.setProperty('--accent2-rgb', selectedHue.light);
         rootStyle.setProperty('--accent2', `rgb(${selectedHue.light})`);
@@ -424,10 +442,10 @@ window.OTP.setTheme = function(theme, isManual = false) {
 
     // Keep browser chrome and native controls aligned with active theme.
     try {
-        html.style.colorScheme = theme === 'light' ? 'light' : 'dark';
+        html.style.colorScheme = normalized === 'light' ? 'light' : 'dark';
         const metaTheme = document.querySelector('meta[name="theme-color"]');
         if (metaTheme) {
-            metaTheme.setAttribute('content', theme === 'light' ? '#eceef2' : '#030305');
+            metaTheme.setAttribute('content', normalized === 'light' ? '#eceef2' : '#030305');
         }
     } catch (e) { /* ignore */ }
 
@@ -439,15 +457,21 @@ window.OTP.setTheme = function(theme, isManual = false) {
     });
     
     if (isManual) {
-        localStorage.setItem('theme', theme);
-        localStorage.setItem('theme_manual', 'true');
-        localStorage.setItem('theme_manual_time', Date.now().toString());
+        try {
+            localStorage.setItem('theme', normalized);
+            localStorage.setItem('theme_manual', 'true');
+            localStorage.setItem('theme_manual_time', Date.now().toString());
+        } catch (storageErr) {
+            console.warn('[OTP] Theme preference not persisted:', storageErr);
+        }
     }
     
     // Globally update any toggles on the page
     if (typeof window.OTP.updateAllToggles === 'function') {
-        window.OTP.updateAllToggles(theme);
+        window.OTP.updateAllToggles(normalized);
     }
+
+    hidePageLoader();
 };
 
 window.OTP.initTheme = function() {
@@ -740,8 +764,15 @@ window.OTP.showBroadcast = function(message) {
     }
 };
 
-// Run init immediately
-window.OTP.initTheme();
+// Run init immediately — never block page render if theme setup fails
+try {
+    if (window.OTP && typeof window.OTP.initTheme === 'function') {
+        window.OTP.initTheme();
+    }
+} catch (themeInitErr) {
+    console.warn('[OTP] Theme init failed; using head paint defaults:', themeInitErr);
+    hidePageLoader();
+}
 
 // 8. REALTIME SITE STATE (Sync Dashboard Controls)
 

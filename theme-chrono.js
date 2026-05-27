@@ -17,10 +17,34 @@
 
     var MANUAL_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
+    function storageGet(key) {
+        try {
+            return localStorage.getItem(key);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function storageRemove(key) {
+        try {
+            localStorage.removeItem(key);
+        } catch (e) { /* ignore */ }
+    }
+
     function normalizeTheme(t) {
         if (t === 'light' || t === 'dark') return t;
         return null;
     }
+
+    try {
+        var resetParams = new URLSearchParams(window.location.search || '');
+        if (resetParams.get('reset_theme') === '1') {
+            storageRemove('theme');
+            storageRemove('theme_manual');
+            storageRemove('theme_manual_time');
+            storageRemove('last_global_theme');
+        }
+    } catch (eReset) { /* ignore */ }
 
     /**
      * Local-time civil light:
@@ -42,24 +66,22 @@
 
     /** Manual override if active and valid; otherwise chrono. Clears stale manual flags. */
     window.OTP.getEffectiveThemeForPaint = function () {
-        var isManual = localStorage.getItem('theme_manual') === 'true';
-        var manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
-        var expired = !manualTime || Date.now() - manualTime > MANUAL_TTL_MS;
+        try {
+            var isManual = storageGet('theme_manual') === 'true';
+            var manualTime = parseInt(storageGet('theme_manual_time') || '0', 10);
+            var expired = !manualTime || Date.now() - manualTime > MANUAL_TTL_MS;
 
-        if (isManual && !expired) {
-            var saved = normalizeTheme(localStorage.getItem('theme'));
-            if (saved) return saved;
-            try {
-                localStorage.removeItem('theme_manual');
-                localStorage.removeItem('theme_manual_time');
-            } catch (e2) { /* ignore */ }
-        }
-        if (isManual && expired) {
-            try {
-                localStorage.removeItem('theme_manual');
-                localStorage.removeItem('theme_manual_time');
-            } catch (e) { /* ignore */ }
-        }
+            if (isManual && !expired) {
+                var saved = normalizeTheme(storageGet('theme'));
+                if (saved) return saved;
+                storageRemove('theme_manual');
+                storageRemove('theme_manual_time');
+            }
+            if (isManual && expired) {
+                storageRemove('theme_manual');
+                storageRemove('theme_manual_time');
+            }
+        } catch (eTheme) { /* fall through to chrono */ }
         return window.OTP.calculateChronoTheme();
     };
 
