@@ -11444,6 +11444,40 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
   }
 }
 
+/* Mobile hero title fit: keep ONLY TRUE / PERSPECTIVE complete on narrow screens. */
+@media (max-width: 768px) {
+  .home-page .hero {
+    padding-left: max(18px, env(safe-area-inset-left, 0px));
+    padding-right: max(18px, env(safe-area-inset-right, 0px));
+  }
+
+  .home-page .hero-content,
+  .home-page .hero h1.luxe-title {
+    max-width: min(100%, calc(100vw - 36px)) !important;
+  }
+
+  .home-page .hero h1.luxe-title {
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+  }
+
+  .home-page .luxe-title .title {
+    max-width: 100%;
+    white-space: nowrap;
+    letter-spacing: clamp(-0.055em, -0.45vw, -0.018em) !important;
+    line-height: 0.92 !important;
+  }
+
+  .home-page .luxe-title .title:first-child {
+    font-size: clamp(1.9rem, 8.9vw, 2.65rem) !important;
+  }
+
+  .home-page .luxe-title .title:last-child {
+    font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;
+  }
+}
+
 /* Visual Success Systems restore: operational trust cards without fake proof metrics. */
 .home-page .section-results-enhanced .result-card {
   border-radius: 8px !important;

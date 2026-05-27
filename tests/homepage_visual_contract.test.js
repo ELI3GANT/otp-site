@@ -41,6 +41,9 @@ assert.ok(styles.includes('glass-manifesto .sticker-base'), 'performance mode li
 assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-eye-3d'), 'performance mode lightens hero logo compositor work');
 assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-logo-wrap::before'), 'performance mode removes expensive animated hero aura blur');
 assert.ok(styles.includes('otp-static-performance-logo'), 'performance mode static logo style is present');
+assert.ok(styles.includes('Mobile hero title fit: keep ONLY TRUE / PERSPECTIVE complete on narrow screens.'), 'mobile hero title fit guard is documented');
+assert.ok(styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'mobile PERSPECTIVE title uses viewport-safe clamp sizing');
+assert.ok(styles.includes('max-width: min(100%, calc(100vw - 36px)) !important;'), 'mobile hero title stays inside viewport side padding');
 assert.ok(styles.includes('.spectral-v-sync .network-pkg h4'), 'mobile spectral variants cannot force package headings past the viewport');
 assert.ok(styles.includes('overflow-wrap: anywhere !important'), 'mobile spectral headings wrap safely');
 
