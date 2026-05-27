@@ -31,6 +31,11 @@
     let probeFrames = 0;
     let probeComplete = false;
     let performanceProbeEnabled = false;
+    let lowFpsStreak = 0;
+    const PROBE_WINDOW_MS = 2000;
+    const PROBE_DELAY_MS = 2500;
+    const FPS_TRIGGER = 38;
+    const LOW_FPS_SAMPLES_REQUIRED = 2;
     const mouse = { x: -9999, y: -9999, active: false, attractor: false };
     const sky = { drift: 0, shooting: [] };
 
@@ -55,9 +60,9 @@
         const base = Math.round(area / (isLightMode() ? 14000 : 6500));
         const mobile = window.innerWidth < 700;
         if (performanceMode) {
-            const reduced = Math.round(base * 0.55);
-            if (isLightMode()) return Math.min(mobile ? 28 : 42, Math.max(16, reduced));
-            return Math.min(mobile ? 44 : 72, Math.max(24, reduced));
+            const reduced = Math.round(base * 0.72);
+            if (isLightMode()) return Math.min(mobile ? 36 : 64, Math.max(24, reduced));
+            return Math.min(mobile ? 58 : 112, Math.max(36, reduced));
         }
         if (isLightMode()) return Math.min(mobile ? 48 : 90, Math.max(28, base));
         return Math.min(mobile ? 86 : 176, Math.max(52, base));
@@ -117,10 +122,6 @@
         performanceMode = true;
         document.documentElement.classList.add('stars-performance-mode');
         document.documentElement.setAttribute('data-otp-performance-mode', 'stars');
-        document.querySelectorAll('img[src*="assets/otp.gif"]').forEach((img) => {
-            if (img.classList.contains('hero-eye-3d')) return;
-            applyStaticLogoFallback(img);
-        });
         resize();
     }
 
@@ -130,11 +131,17 @@
 
     function drawAtmosphere(rgb, light) {
         if (performanceMode) {
-            const calm = ctx.createLinearGradient(0, 0, width, height);
-            calm.addColorStop(0, rgba(rgb, light ? 0.018 : 0.065));
-            calm.addColorStop(0.52, rgba(rgb, light ? 0.006 : 0.024));
-            calm.addColorStop(1, light ? 'rgba(255, 255, 255, 0.012)' : 'rgba(3, 3, 5, 0.16)');
-            ctx.fillStyle = calm;
+            const topGlow = ctx.createRadialGradient(width * 0.52, height * 0.12, 0, width * 0.52, height * 0.12, width * 0.72);
+            topGlow.addColorStop(0, rgba(rgb, light ? 0.034 : 0.12));
+            topGlow.addColorStop(0.42, rgba(rgb, light ? 0.008 : 0.034));
+            topGlow.addColorStop(1, rgba(rgb, 0));
+            ctx.fillStyle = topGlow;
+            ctx.fillRect(0, 0, width, height);
+
+            const horizon = ctx.createLinearGradient(0, height * 0.42, 0, height);
+            horizon.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            horizon.addColorStop(1, light ? 'rgba(255, 255, 255, 0.022)' : 'rgba(3, 3, 5, 0.22)');
+            ctx.fillStyle = horizon;
             ctx.fillRect(0, 0, width, height);
             return;
         }
@@ -220,10 +227,17 @@
             if (!probeAbsoluteStart) probeAbsoluteStart = time;
             if (!probeStart) probeStart = time;
             probeFrames += 1;
-            if (time - probeStart >= 2000) {
+            if (time - probeStart >= PROBE_WINDOW_MS) {
                 const fps = probeFrames * 1000 / Math.max(1, time - probeStart);
-                if (fps < 45) enablePerformanceMode();
-                if (performanceMode || time - probeAbsoluteStart >= 8000) {
+                if (fps < FPS_TRIGGER) {
+                    lowFpsStreak += 1;
+                } else {
+                    lowFpsStreak = 0;
+                }
+                if (lowFpsStreak >= LOW_FPS_SAMPLES_REQUIRED) {
+                    enablePerformanceMode();
+                }
+                if (performanceMode || time - probeAbsoluteStart >= 12000) {
                     probeComplete = true;
                 } else {
                     probeStart = time;
@@ -272,7 +286,9 @@
             ctx.shadowColor = star.accent
                 ? rgba(accent, light ? 0.16 : 0.38)
                 : (light ? 'rgba(20, 20, 30, 0.12)' : 'rgba(255, 250, 236, 0.28)');
-            ctx.shadowBlur = performanceMode ? 0 : (star.depth > 0.65 ? (light ? 2.5 : 5.5) : (light ? 1 : 2.5));
+            ctx.shadowBlur = performanceMode
+                ? (star.depth > 0.65 ? (light ? 1.6 : 3.2) : (light ? 0.8 : 1.6))
+                : (star.depth > 0.65 ? (light ? 2.5 : 5.5) : (light ? 1 : 2.5));
             ctx.fillStyle = fill;
             ctx.fill();
             ctx.shadowBlur = 0;
@@ -327,9 +343,9 @@
     }
 
     if (document.readyState === 'complete') {
-        setTimeout(beginPerformanceProbe, 1000);
+        setTimeout(beginPerformanceProbe, PROBE_DELAY_MS);
     } else {
-        window.addEventListener('load', () => setTimeout(beginPerformanceProbe, 1000), { once: true });
+        window.addEventListener('load', () => setTimeout(beginPerformanceProbe, PROBE_DELAY_MS), { once: true });
     }
 
     resize();
