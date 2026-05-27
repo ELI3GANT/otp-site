@@ -2386,9 +2386,26 @@ html {
 }
 
 .hero-logo-wrap.hero-eye-ready .hero-eye-poster {
-  /* Let poster linger faintly to hide any frame/decoder pop. */
-  opacity: 0.14;
-  transition: opacity 0.92s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 1;
+}
+
+/* Stability: homepage hero uses a single static mark (no animated layer). */
+.home-page .hero-logo-wrap .hero-eye-animated {
+  display: none !important;
+}
+
+.home-page .hero-logo-wrap.hero-eye-ready .hero-eye-poster {
+  opacity: 1 !important;
+}
+
+/* Light mode headline: force solid readable text (avoid washed gradient transparency). */
+[data-theme="light"] .otp-brand-synced .luxe-title .title,
+[data-theme="light"] .otp-brand-synced .luxe-title .title *,
+[data-theme="light"] .otp-brand-synced .luxe-title .title div {
+  background-image: none !important;
+  -webkit-text-fill-color: #050507 !important;
+  color: #050507 !important;
+  opacity: 1 !important;
 }
 
 [data-theme="light"] .hero-eye-3d {

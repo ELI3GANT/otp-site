@@ -66,11 +66,11 @@ assert.ok(styles.includes('overflow-wrap: anywhere !important'), 'mobile spectra
 
 assert.ok(stars.includes("setAttribute('data-stars', 'mounted')"), 'starfield marks canvas-mounted state');
 assert.ok(stars.includes("setAttribute('data-stars', 'fallback')"), 'starfield marks safe fallback when canvas init fails');
-assert.ok(index.includes('hero-eye-3d') && index.includes('data-hero-animated-src="assets/otp-hero-centered.gif"'), 'homepage hero uses poster-first centered animated gif strategy');
+assert.ok(index.includes('hero-eye-3d') && index.includes('hero-eye-poster'), 'homepage hero uses a single centered poster mark');
 assert.ok(index.includes('hero-eye-poster'), 'homepage hero exposes poster layer for LCP');
-assert.ok(index.includes('hero-eye-animated'), 'homepage hero exposes animated gif layer');
+assert.ok(!/class="[^"]*hero-eye-animated/.test(index), 'homepage hero does not render animated layer (stability)');
 assert.ok(styles.includes('--hero-poster-offset-x') && styles.includes('--hero-animated-offset-x'), 'hero layers include small composition offset variables');
-assert.ok(styles.includes('hero-eye-animated') && styles.includes('object-position: calc(50% + var(--hero-animated-offset-x))'), 'animated hero layer uses centered object-position compensation');
+assert.ok(!index.includes('data-hero-animated-src="assets/otp-hero-centered.gif"'), 'homepage does not reference hero gif while disabled');
 assert.ok(styles.includes('hero-eye-poster') && styles.includes('object-position: calc(50% + var(--hero-poster-offset-x))'), 'poster hero layer uses centered object-position compensation');
 assert.ok(styles.includes('.home-page .hero-logo-wrap::before {\n  /* Remove orb/planet centerpiece.'), 'hero orb pseudo-element is neutralized');
 assert.ok(styles.includes('.home-page .hero-logo-wrap::after {\n  /* Remove visible ring outline.'), 'hero ring pseudo-element is neutralized');
@@ -79,10 +79,7 @@ assert.ok(index.includes('assets/otp-hero-poster-frame.png'), 'homepage hero pos
 assert.ok(index.includes('preload" href="assets/otp-hero-poster-frame.png"'), 'homepage preloads hero poster frame not full gif');
 assert.ok(!index.includes('preload" href="assets/otp-hero-centered.gif"'), 'homepage does not preload full hero gif');
 assert.ok(siteInit.includes('activateHeroAnimatedLogo'), 'site-init activates hero gif after first paint');
-assert.ok(siteInit.includes('hero-eye-ready'), 'site-init crossfades hero after gif preload');
-assert.ok(siteInit.includes('probe.onload'), 'site-init preloads hero gif before reveal');
-assert.ok(styles.includes('.hero-logo-wrap.hero-eye-ready .hero-eye-animated'), 'hero animated layer crossfades in with opacity');
-assert.ok(styles.includes('.hero-logo-wrap.hero-eye-ready .hero-eye-poster'), 'hero poster fades out during crossfade');
+assert.ok(siteInit.includes('activateHeroAnimatedLogo') && siteInit.includes('HERO ANIMATION DISABLED'), 'site-init disables hero gif for stability');
 assert.ok(/prefers-reduced-motion:\s*reduce[\s\S]{0,900}\.hero-logo-wrap \.hero-eye-animated/.test(styles), 'reduced motion keeps static poster only');
 assert.ok(index.includes('width="250"') && index.includes('height="250"'), 'hero image dimensions stay locked');
 assert.ok(stars.includes('STARFIELD_BOOT_DELAY_MS'), 'starfield boot is delayed after first paint');
@@ -139,10 +136,10 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.6', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.7', 'homepage styles cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.6', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.7', `${file} styles cache-bust matches index`);
 });
 
 console.log('   OK: Homepage visual contract');
