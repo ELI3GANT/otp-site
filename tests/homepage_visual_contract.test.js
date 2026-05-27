@@ -53,6 +53,11 @@ assert.ok(styles.includes('overflow-wrap: anywhere !important'), 'mobile spectra
 
 assert.ok(stars.includes("setAttribute('data-stars', 'mounted')"), 'starfield marks canvas-mounted state');
 assert.ok(stars.includes("setAttribute('data-stars', 'fallback')"), 'starfield marks safe fallback when canvas init fails');
+assert.ok(index.includes('class="hero-eye-3d"') && index.includes('assets/otp.gif'), 'homepage hero centerpiece uses animated otp.gif');
+assert.ok(stars.includes("img.classList.contains('hero-eye-3d')"), 'performance mode keeps hero centerpiece on animated gif');
+assert.ok(stars.includes('applyHeroLogoFallback'), 'hero centerpiece can fall back to static png only on load failure');
+assert.ok(stars.includes('otp-logo-transparent.png'), 'static png fallback asset remains available');
+assert.ok(stars.includes('beginPerformanceProbe'), 'fps probe waits until after initial page load');
 assert.ok(stars.includes('enablePerformanceMode'), 'adaptive starfield performance mode is preserved');
 assert.ok(stars.includes('probeAbsoluteStart'), 'adaptive performance detector keeps checking beyond the first sample');
 assert.ok(stars.includes("setAttribute('data-otp-performance-mode', 'stars')"), 'starfield activates CSS performance mode selectors');

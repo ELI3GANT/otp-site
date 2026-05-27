@@ -30,6 +30,7 @@
     let probeAbsoluteStart = 0;
     let probeFrames = 0;
     let probeComplete = false;
+    let performanceProbeEnabled = false;
     const mouse = { x: -9999, y: -9999, active: false, attractor: false };
     const sky = { drift: 0, shooting: [] };
 
@@ -97,17 +98,34 @@
         rebuildStars();
     }
 
+    function applyStaticLogoFallback(img) {
+        if (!img || img.classList.contains('hero-eye-3d')) return;
+        if (!img.dataset.animatedSrc) img.dataset.animatedSrc = img.getAttribute('src') || '';
+        img.src = '/assets/otp-logo-transparent.png';
+        img.classList.add('otp-static-performance-logo');
+    }
+
+    function applyHeroLogoFallback(img) {
+        if (!img) return;
+        if (!img.dataset.animatedSrc) img.dataset.animatedSrc = img.getAttribute('src') || '';
+        img.src = '/assets/otp-logo-transparent.png';
+        img.classList.add('otp-static-performance-logo');
+    }
+
     function enablePerformanceMode() {
         if (performanceMode) return;
         performanceMode = true;
         document.documentElement.classList.add('stars-performance-mode');
         document.documentElement.setAttribute('data-otp-performance-mode', 'stars');
         document.querySelectorAll('img[src*="assets/otp.gif"]').forEach((img) => {
-            if (!img.dataset.animatedSrc) img.dataset.animatedSrc = img.getAttribute('src') || '';
-            img.src = '/assets/otp-logo-transparent.png';
-            img.classList.add('otp-static-performance-logo');
+            if (img.classList.contains('hero-eye-3d')) return;
+            applyStaticLogoFallback(img);
         });
         resize();
+    }
+
+    function beginPerformanceProbe() {
+        performanceProbeEnabled = true;
     }
 
     function drawAtmosphere(rgb, light) {
@@ -198,7 +216,7 @@
 
     function draw(time) {
         window.requestAnimationFrame(draw);
-        if (!probeComplete && !performanceMode && !prefersReducedMotion.matches) {
+        if (performanceProbeEnabled && !probeComplete && !performanceMode && !prefersReducedMotion.matches) {
             if (!probeAbsoluteStart) probeAbsoluteStart = time;
             if (!probeStart) probeStart = time;
             probeFrames += 1;
@@ -302,6 +320,17 @@
         attributes: true,
         attributeFilter: ['data-theme', 'data-refresh-accent']
     });
+
+    const heroLogo = document.querySelector('.hero-eye-3d');
+    if (heroLogo) {
+        heroLogo.addEventListener('error', () => applyHeroLogoFallback(heroLogo), { once: true });
+    }
+
+    if (document.readyState === 'complete') {
+        setTimeout(beginPerformanceProbe, 1000);
+    } else {
+        window.addEventListener('load', () => setTimeout(beginPerformanceProbe, 1000), { once: true });
+    }
 
     resize();
     window.requestAnimationFrame(draw);
