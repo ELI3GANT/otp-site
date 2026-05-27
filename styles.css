@@ -2344,16 +2344,11 @@ html {
 
 /* Poster-first hero: stacked layers crossfade (GIF preloaded before reveal) */
 .hero-logo-wrap {
-  /* The PNG/GIF have different “visual centers” inside their transparent canvases.
-     Measured (PIL, alpha/luma centroids):
-     - poster PNG: ~ +1.97% X, -3.95% Y (needs left + down)
-     - animated GIF: ~ -1.07% X, -1.95% Y (needs right + down)
-     Apply per-layer object-position compensation so the aura center matches the mark
-     and the crossfade has no left↔right jump. */
-  --hero-poster-offset-x: -2.0%;
-  --hero-poster-offset-y: 4.0%;
-  --hero-animated-offset-x: 1.1%;
-  --hero-animated-offset-y: 2.0%;
+  /* Hero uses dedicated centered assets; offsets remain as an emergency trim knob. */
+  --hero-poster-offset-x: 0%;
+  --hero-poster-offset-y: 0%;
+  --hero-animated-offset-x: 0%;
+  --hero-animated-offset-y: 0%;
 }
 
 .hero-logo-wrap .hero-eye-poster {

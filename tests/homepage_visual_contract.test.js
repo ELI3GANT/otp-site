@@ -66,16 +66,16 @@ assert.ok(styles.includes('overflow-wrap: anywhere !important'), 'mobile spectra
 
 assert.ok(stars.includes("setAttribute('data-stars', 'mounted')"), 'starfield marks canvas-mounted state');
 assert.ok(stars.includes("setAttribute('data-stars', 'fallback')"), 'starfield marks safe fallback when canvas init fails');
-assert.ok(index.includes('hero-eye-3d') && index.includes('data-hero-animated-src="assets/otp.gif"'), 'homepage hero uses poster-first animated gif strategy');
+assert.ok(index.includes('hero-eye-3d') && index.includes('data-hero-animated-src="assets/otp-hero-centered.gif"'), 'homepage hero uses poster-first centered animated gif strategy');
 assert.ok(index.includes('hero-eye-poster'), 'homepage hero exposes poster layer for LCP');
 assert.ok(index.includes('hero-eye-animated'), 'homepage hero exposes animated gif layer');
 assert.ok(styles.includes('--hero-poster-offset-x') && styles.includes('--hero-animated-offset-x'), 'hero layers include small composition offset variables');
 assert.ok(styles.includes('hero-eye-animated') && styles.includes('object-position: calc(50% + var(--hero-animated-offset-x))'), 'animated hero layer uses centered object-position compensation');
 assert.ok(styles.includes('hero-eye-poster') && styles.includes('object-position: calc(50% + var(--hero-poster-offset-x))'), 'poster hero layer uses centered object-position compensation');
 assert.ok(!/hero-logo-wrap[\s\S]{0,420}opacity:\s*1\s*!important/.test(index), 'homepage hero avoids inline opacity overrides that block crossfade');
-assert.ok(index.includes('assets/otp-logo-transparent.png'), 'homepage hero poster uses lightweight png');
-assert.ok(index.includes('preload" href="assets/otp-logo-transparent.png"'), 'homepage preloads hero poster not full gif');
-assert.ok(!index.includes('preload" href="assets/otp.gif"'), 'homepage does not preload full hero gif');
+assert.ok(index.includes('assets/otp-hero-poster.png'), 'homepage hero poster uses dedicated centered png');
+assert.ok(index.includes('preload" href="assets/otp-hero-poster.png"'), 'homepage preloads hero poster not full gif');
+assert.ok(!index.includes('preload" href="assets/otp-hero-centered.gif"'), 'homepage does not preload full hero gif');
 assert.ok(siteInit.includes('activateHeroAnimatedLogo'), 'site-init activates hero gif after first paint');
 assert.ok(siteInit.includes('hero-eye-ready'), 'site-init crossfades hero after gif preload');
 assert.ok(siteInit.includes('probe.onload'), 'site-init preloads hero gif before reveal');
