@@ -62,7 +62,8 @@ assert.ok(
     'index homepage canonical/og use final www canonical host'
 );
 assert.ok(!index.includes('https://onlytrueperspective.tech/og.jpg'), 'index avoids apex social image URLs in head/schema because apex redirects to www');
-assert.ok(index.includes('OnlyTruePerspective (OTP) is a Rhode Island-based creative technology and media company'), 'index uses official OTP description');
+assert.ok(index.includes('helps artists, creators, and businesses build cinematic visuals'), 'index meta description uses SEO entity summary');
+assert.ok(index.includes('"@type": "ProfessionalService"'), 'index includes ProfessionalService entity schema');
 assert.ok(index.includes('ELI3GANT is the creative artist identity of Elijah Huertas'), 'index includes official ELI3GANT schema description');
 
 // insight.html: live apex redirects to www, so public metadata canonicalizes to www.
