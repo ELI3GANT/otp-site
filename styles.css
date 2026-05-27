@@ -11712,13 +11712,45 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
   }
 }
 
-/* Mobile hero title fit — final cascade guard (<=480px / <=390px).
-   Fixes late clamp overrides that clipped PERSPECTIVE on iPhone widths. */
+/* Mobile hero title fit + spacing/scroll polish — final cascade guard (<=480px / <=390px). */
 @media (max-width: 480px) {
+  .bg-fixed {
+    height: 100svh;
+    height: 100dvh;
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+
   .home-page .hero,
   .home-page .hero-content {
     overflow-x: clip;
     max-width: 100vw;
+  }
+
+  .home-page .hero {
+    min-height: auto !important;
+    padding-top: calc(96px + env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px)) !important;
+    content-visibility: visible !important;
+    contain-intrinsic-size: auto !important;
+  }
+
+  .home-page .hero::after {
+    height: 112px !important;
+    background: linear-gradient(180deg, rgba(3, 3, 5, 0), rgba(3, 3, 5, 0.88) 72%, #030305 100%) !important;
+  }
+
+  .home-page #cursor-canvas,
+  .home-page #cursor-canvas.stars-mounted {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100svh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    transform: none !important;
+    will-change: opacity;
   }
 
   .home-page .hero-content,
@@ -11728,6 +11760,11 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
     max-width: min(100%, calc(100vw - 32px)) !important;
     margin-inline: auto;
     box-sizing: border-box;
+  }
+
+  .home-page .hero h1.luxe-title {
+    gap: 2px !important;
+    margin-top: 0 !important;
   }
 
   .home-page .luxe-title .title {
@@ -11745,24 +11782,75 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
   }
 
   .home-page .hero .hero-logo-wrap {
-    width: clamp(104px, 28vw, 118px) !important;
-    max-width: min(118px, 34vw) !important;
+    width: clamp(132px, 36vw, 152px) !important;
+    max-width: min(152px, 42vw) !important;
     aspect-ratio: 1 / 1;
-    padding: 6%;
+    padding: 2% !important;
+    margin: 0 auto 14px !important;
     box-sizing: border-box;
     perspective: none;
     transform-style: flat;
   }
 
+  .home-page .hero-logo-wrap::before {
+    inset: -22% !important;
+    filter: blur(14px) saturate(1.1) !important;
+    opacity: 0.7 !important;
+  }
+
+  .home-page .hero-logo-wrap::after {
+    inset: -6px !important;
+    box-shadow:
+      inset 0 0 14px rgba(255, 255, 255, 0.05),
+      0 0 24px rgba(var(--accent2-rgb), 0.14) !important;
+  }
+
   .home-page .hero .hero-eye-3d {
-    width: 88% !important;
-    height: 88% !important;
+    width: 94% !important;
+    height: 94% !important;
     min-width: 0;
     margin: auto;
     object-fit: contain;
     object-position: center;
     transform-style: flat;
     animation: heroSigilFloat 9s ease-in-out infinite !important;
+  }
+
+  .home-page .hero-subline-alt {
+    margin-top: 12px !important;
+    font-size: 0.76rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .home-page .subtitle-lead {
+    margin-top: 8px !important;
+    font-size: 0.96rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .home-page .hero-cta {
+    width: 100%;
+    max-width: 312px;
+    margin-top: 16px !important;
+    gap: 10px !important;
+  }
+
+  .home-page .section-results-enhanced {
+    padding-top: 56px !important;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(var(--accent2-rgb), 0.06), transparent 24%),
+      linear-gradient(180deg, #030305 0%, #030305 100%) !important;
+  }
+
+  .home-page .section-results-enhanced::before {
+    height: 64px !important;
+    background: linear-gradient(180deg, rgba(var(--accent2-rgb), 0.04), transparent) !important;
+  }
+
+  .home-page .section-results-enhanced .pulse-beam-connector {
+    top: -24px !important;
+    height: 48px !important;
+    opacity: 0.24 !important;
   }
 }
 
@@ -11787,11 +11875,12 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
   }
 
   .home-page .hero .hero-logo-wrap {
-    width: clamp(96px, 27vw, 108px) !important;
+    width: clamp(124px, 34vw, 144px) !important;
+    max-width: min(144px, 40vw) !important;
   }
 
   .home-page .hero .hero-eye-3d {
-    width: 90% !important;
-    height: 90% !important;
+    width: 94% !important;
+    height: 94% !important;
   }
 }

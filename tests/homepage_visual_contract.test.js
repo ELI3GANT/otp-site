@@ -44,11 +44,17 @@ assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-ey
 assert.ok(styles.includes('html.stars-performance-mode .home-page .hero .hero-logo-wrap::before'), 'performance mode softens hero aura without flattening it');
 assert.ok(styles.includes('otp-static-performance-logo'), 'performance mode static logo style is present');
 assert.ok(styles.includes('Mobile hero title fit: keep ONLY TRUE / PERSPECTIVE complete on narrow screens.'), 'mobile hero title fit guard is documented');
-assert.ok(styles.includes('Mobile hero title fit — final cascade guard (<=480px / <=390px)'), 'mobile hero has late <=480px and <=390px overflow guards');
+assert.ok(styles.includes('Mobile hero title fit + spacing/scroll polish') && styles.includes('@media (max-width: 480px)') && styles.includes('@media (max-width: 390px)'), 'mobile hero has late <=480px and <=390px overflow guards');
 assert.ok(styles.includes('@media (max-width: 480px)') && styles.includes('@media (max-width: 390px)'), 'mobile hero uses narrow-width media guards');
 assert.ok(styles.includes('.home-page .luxe-title .title:last-child') && styles.includes('font-size: min(1.68rem, 7.1vw)'), 'PERSPECTIVE line uses viewport-capped min() sizing');
 assert.ok(styles.includes('width: min(100%, calc(100vw - 32px)) !important;'), 'mobile hero title lines use 32px viewport side gutter');
 assert.ok(styles.includes('overflow-x: clip'), 'mobile hero blocks horizontal overflow');
+assert.ok(styles.includes('Mobile hero title fit + spacing/scroll polish'), 'mobile hero spacing and scroll polish guard is documented');
+assert.ok(styles.includes('width: clamp(132px, 36vw, 152px)'), 'mobile hero logo has explicit larger sizing');
+assert.ok(styles.includes('height: 100svh !important'), 'mobile star canvas uses safe viewport height');
+assert.ok(styles.includes('min-height: auto !important'), 'mobile hero avoids rigid viewport min-height jumps');
+assert.ok(styles.includes('position: fixed !important') && styles.includes('max-height: 100dvh !important'), 'mobile star canvas stays fixed without layout height');
+assert.ok(styles.includes('inset: -22% !important'), 'mobile hero aura is tightened relative to logo');
 assert.ok(styles.includes('max-width: min(100%, calc(100vw - 36px)) !important;'), 'tablet hero title stays inside viewport side padding');
 assert.ok(!styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'removed oversized mobile PERSPECTIVE clamp that caused clipping');
 assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'day-mode services polish guard is documented');
