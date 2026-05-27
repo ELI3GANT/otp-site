@@ -2373,20 +2373,22 @@ html {
   object-fit: contain;
   object-position: calc(50% + var(--hero-animated-offset-x)) calc(50% + var(--hero-animated-offset-y));
   transition:
-    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 0.6s;
+    opacity 0.86s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.86s;
 }
 
 .hero-logo-wrap.hero-eye-ready .hero-eye-animated {
   opacity: 1;
   visibility: visible;
   transition:
-    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.86s cubic-bezier(0.22, 1, 0.36, 1),
     visibility 0s;
 }
 
 .hero-logo-wrap.hero-eye-ready .hero-eye-poster {
-  opacity: 0;
+  /* Let poster linger faintly to hide any frame/decoder pop. */
+  opacity: 0.14;
+  transition: opacity 0.92s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 [data-theme="light"] .hero-eye-3d {
@@ -10481,8 +10483,8 @@ section[id] {
   }
 
   .home-page .hero .hero-logo-wrap {
-    width: 98px;
-    max-width: 34vw;
+    width: clamp(132px, 38vw, 172px);
+    max-width: 44vw;
     margin-bottom: 22px;
   }
 
@@ -10912,7 +10914,7 @@ section[id] {
 }
 
 .home-page .hero .hero-logo-wrap {
-  width: clamp(126px, 11vw, 156px) !important;
+  width: clamp(164px, 14vw, 228px) !important;
   max-width: 36vw !important;
   margin: 0 auto 26px !important;
   opacity: 1 !important;
