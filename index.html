@@ -34,23 +34,17 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
   <link rel="manifest" href="site.webmanifest" />
 
-  <!-- Preloads & Prefetch -->
-  <link rel="preload" href="assets/otp.gif" as="image" fetchpriority="high" />
-  <link rel="dns-prefetch" href="https://js.stripe.com" />
-  <link rel="dns-prefetch" href="https://ckumhowhucbbmpdeqkrl.supabase.co" />
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-
-
-  <!-- Font (optional but makes it instantly cleaner) -->
+  <!-- Preloads: lightweight poster first; animated GIF loads after first paint -->
+  <link rel="preload" href="assets/otp-logo-transparent.png" as="image" fetchpriority="high" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://assets.calendly.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
   <script src="theme-chrono.js?v=8"></script>
-  <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
+  <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" media="print" onload="this.media='all'" />
+  <noscript><link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" /></noscript>
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=16.8.0" />
+  <link rel="stylesheet" href="./styles.css?v=16.8.1" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -163,7 +157,7 @@
   <header class="nav nav-split" id="top">
     <!-- Logo Left -->
     <a href="index.html" class="nav-logo" aria-label="OnlyTruePerspective Homepage">
-      <img src="assets/otp.gif" alt="OTP spinning 3D logo" class="otp-mark" id="nav-logo-neon" width="44" height="44" decoding="async" style="opacity: 1 !important; visibility: visible !important;" />
+      <img src="assets/otp-logo-transparent.png" alt="OTP spinning 3D logo" class="otp-mark" id="nav-logo-neon" width="44" height="44" decoding="async" style="opacity: 1 !important; visibility: visible !important;" />
     </a>
 
     <nav class="nav-links" aria-label="Primary">
@@ -203,7 +197,7 @@
 
     <div class="hero-content">
       <div class="hero-logo-wrap" style="will-change: transform;">
-        <img src="assets/otp.gif" alt="OTP spinning 3D emblem" class="hero-eye-3d" width="250" height="250" fetchpriority="high" loading="eager" decoding="async" style="opacity: 1 !important; visibility: visible !important;">
+        <img src="assets/otp-logo-transparent.png" alt="OTP spinning 3D emblem" class="hero-eye-3d" width="250" height="250" fetchpriority="high" loading="eager" decoding="async" data-hero-animated-src="assets/otp.gif" style="opacity: 1 !important; visibility: visible !important;">
       </div>
       <h1 class="hero-title-adjust luxe-title">
         <span class="title">ONLY TRUE</span>
@@ -1003,7 +997,7 @@
     <div class="wrap footer-inner">
       <div class="footer-left">
         <div class="footer-brand">
-          <img src="assets/otp.gif" alt="OTP Tactical Pulse Logo" class="nav-gif" id="footer-logo-neon" loading="lazy" decoding="async" style="opacity: 1 !important; visibility: visible !important; backface-visibility: hidden; transform: translateZ(0);" />
+          <img src="assets/otp-logo-transparent.png" alt="OTP Tactical Pulse Logo" class="nav-gif" id="footer-logo-neon" width="44" height="44" loading="lazy" decoding="async" style="opacity: 1 !important; visibility: visible !important; backface-visibility: hidden; transform: translateZ(0);" />
           <span class="brand-name">OnlyTruePerspective</span>
         </div>
         <div class="footer-status" id="siteStatus">
@@ -1052,9 +1046,9 @@
   <script src="https://unpkg.com/split-type" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
   <script src="https://unpkg.com/kursor" defer></script>
-  <script src="stars-v2.js?v=16.4.6" defer></script>
+  <script src="stars-v2.js?v=16.4.7" defer></script>
   <script src="otp-video-library.js?v=1.0.0" defer></script>
-  <script src="site-init.js?v=16.8.12" defer></script>
+  <script src="site-init.js?v=16.8.13" defer></script>
   <script src="audit-engine.js?v=16.3.5" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---

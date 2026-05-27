@@ -11326,6 +11326,22 @@ html[data-stars="disabled"] .home-page #cursor-canvas,
 
 /* Performance smoothness: hero uses contain (not content-visibility) to avoid frozen/deferred paint jank. */
 
+/* PageSpeed: lighter above-fold mobile hero compositing without flattening the brand mark. */
+@media (max-width: 768px) {
+  .home-page .hero .hero-logo-wrap::before {
+    opacity: 0.42 !important;
+    mix-blend-mode: normal !important;
+  }
+
+  .home-page .hero .hero-eye-3d {
+    filter: drop-shadow(0 0 14px rgba(var(--accent2-rgb), 0.16)) drop-shadow(0 10px 24px rgba(0, 0, 0, 0.42)) !important;
+  }
+
+  [data-theme="light"] .home-page .hero .hero-eye-3d {
+    filter: grayscale(1) opacity(0.88) drop-shadow(0 8px 18px rgba(0, 0, 0, 0.08)) !important;
+  }
+}
+
 /* Premium-lite adaptive performance: reduce cost without flat/bootleg visuals */
 html.stars-performance-mode .bg-grain,
 html.stars-performance-mode .scanline-overlay {

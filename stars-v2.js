@@ -38,6 +38,7 @@
     const LOW_FPS_SAMPLES_REQUIRED = 3;
     let resizeQueued = false;
     let drawFramePending = false;
+    const STARFIELD_BOOT_DELAY_MS = window.innerWidth < 700 ? 1500 : 900;
     const mouse = { x: -9999, y: -9999, active: false, attractor: false };
     const sky = { drift: 0, shooting: [] };
 
@@ -376,6 +377,13 @@
         window.addEventListener('load', () => setTimeout(beginPerformanceProbe, PROBE_DELAY_MS), { once: true });
     }
 
-    resize();
-    scheduleDrawFrame();
+    function bootStarfield() {
+        resize();
+        scheduleDrawFrame();
+    }
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(bootStarfield, { timeout: STARFIELD_BOOT_DELAY_MS + 600 });
+    } else {
+        setTimeout(bootStarfield, STARFIELD_BOOT_DELAY_MS);
+    }
 })();

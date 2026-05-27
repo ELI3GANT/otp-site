@@ -97,25 +97,54 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         }
     })();
 
-    // PREMIUM PRELOADER LOGIC
-    window.addEventListener('load', () => {
+    // PREMIUM PRELOADER LOGIC — dismiss on DOM ready so LCP is not blocked by window.load
+    function hidePageLoader() {
         const loader = document.getElementById('page-loader');
-        if (loader) {
-            loader.style.opacity = '0';
-            loader.style.visibility = 'hidden';
-            loader.style.pointerEvents = 'none';
-        }
-    });
-    
-    // FAILSAFE: Hide loader after 3s regardless of window.load performance
+        if (!loader || loader.style.visibility === 'hidden') return;
+        loader.style.opacity = '0';
+        loader.style.visibility = 'hidden';
+        loader.style.pointerEvents = 'none';
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hidePageLoader, { once: true });
+    } else {
+        hidePageLoader();
+    }
+    window.addEventListener('load', hidePageLoader, { once: true });
     setTimeout(() => {
-        const loader = document.getElementById('page-loader');
-        if (loader && loader.style.visibility !== 'hidden') {
-            loader.style.opacity = '0';
-            loader.style.visibility = 'hidden';
-            console.warn("[OTP] Loading timeout reached. Bypassing preloader.");
+        if (document.getElementById('page-loader')?.style.visibility !== 'hidden') {
+            hidePageLoader();
+            console.warn('[OTP] Loading timeout reached. Bypassing preloader.');
         }
-    }, 3000);
+    }, 1500);
+
+    function scheduleAfterFirstPaint(fn, timeoutMs = 2200) {
+        if (typeof fn !== 'function') return;
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(fn, { timeout: timeoutMs });
+        } else {
+            setTimeout(fn, Math.min(timeoutMs, 1400));
+        }
+    }
+
+    /** Poster-first hero: swap to animated GIF after first paint without layout shift. */
+    function activateHeroAnimatedLogo() {
+        const hero = document.querySelector('.hero-eye-3d');
+        if (!hero) return;
+        const animatedSrc = hero.getAttribute('data-hero-animated-src') || 'assets/otp.gif';
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const probe = new Image();
+        probe.decoding = 'async';
+        probe.onload = () => {
+            hero.src = animatedSrc;
+            hero.classList.add('hero-eye-animated');
+        };
+        probe.onerror = () => {
+            /* keep poster */
+        };
+        probe.src = animatedSrc;
+    }
+    scheduleAfterFirstPaint(activateHeroAnimatedLogo, 2600);
 
     // 1.5 Lenis Smooth Scroll REMOVED for native feel.
 
@@ -1540,7 +1569,8 @@ function initSite() {
 
     // --- IDENTITY CARD & PHYSICS ---
     const card = document.querySelector('.glass-manifesto');
-    if (card) {
+    const bootIdentityCard = () => {
+    if (!card) return;
         let targetX = 0, targetY = 0;
         let currentX = 0, currentY = 0;
         let targetEyeX = 0, targetEyeY = 0;
@@ -1675,7 +1705,8 @@ function initSite() {
             
             animationFrameId = requestAnimationFrame(update);
         }
-    }
+    };
+    if (card) scheduleAfterFirstPaint(bootIdentityCard, 2400);
 
     // --- MOBILE NAV DRAWER (iOS/Safari reliable) ---
     (function bindMobileNavDrawer() {

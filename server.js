@@ -2390,16 +2390,16 @@ app.use(express.static(staticPath, {
                 res.setHeader('Referrer-Policy', 'no-referrer');
             }
         } else if (ext === '.js' || ext === '.css') {
-            // Query ?v= busts deploys; short TTL limits stale JS/CSS without SW.
-            res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+            res.setHeader('Cache-Control', 'public, max-age=604800, must-revalidate');
         } else if (ext === '.xml' || ext === '.txt' || ext === '.webmanifest') {
             // Never immutable: sitemap/robots/manifest must reflect deploys quickly.
             const short = base === 'robots.txt' || base === 'sitemap.xml';
             const maxAge = short ? 120 : 600;
             res.setHeader('Cache-Control', `public, max-age=${maxAge}, must-revalidate`);
         } else if (['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico'].includes(ext)) {
-            // Avoid immutable without content hashes — og/favicon updates otherwise lag a week at CDNs.
-            res.setHeader('Cache-Control', 'public, max-age=86400, must-revalidate');
+            const inAssets = filePath.includes(`${path.sep}assets${path.sep}`);
+            const maxAge = inAssets ? 604800 : 86400;
+            res.setHeader('Cache-Control', `public, max-age=${maxAge}, must-revalidate`);
         }
     }
 }));
@@ -2417,11 +2417,15 @@ app.get('/:file', (req, res, next) => {
             else noStoreHtml(res);
         }
         else if (ext === '.js' || ext === '.css') {
-            res.set('Cache-Control', 'public, max-age=300, must-revalidate');
+            res.set('Cache-Control', 'public, max-age=604800, must-revalidate');
         } else if (ext === '.xml' || ext === '.txt' || ext === '.webmanifest') {
             const short = base === 'robots.txt' || base === 'sitemap.xml';
             const maxAge = short ? 120 : 600;
             res.set('Cache-Control', `public, max-age=${maxAge}, must-revalidate`);
+        } else if (['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico'].includes(ext)) {
+            const localPath = path.join(staticPath, file);
+            const inAssets = localPath.includes(`${path.sep}assets${path.sep}`);
+            res.set('Cache-Control', `public, max-age=${inAssets ? 604800 : 86400}, must-revalidate`);
         } else {
             res.set('Cache-Control', 'public, max-age=86400, must-revalidate');
         }
