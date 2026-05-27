@@ -1641,8 +1641,14 @@ function initSite() {
 
         observer.observe(card);
 
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && isCardVisible && !animationFrameId) {
+                update();
+            }
+        }, { passive: true });
+
         function update() {
-            if (!isCardVisible) {
+            if (!isCardVisible || document.visibilityState !== 'visible') {
                 animationFrameId = null;
                 return;
             }
@@ -1873,34 +1879,31 @@ function initSite() {
     
     if (heroEye && !isMobileHero && !prefersReducedHeroMotion) {
         let eyeTicking = false;
-        window.addEventListener('mousemove', (e) => {
+        const resetHeroEye = () => {
+            heroEye.style.transform = '';
+        };
+        const applyHeroEyeTilt = (clientX, clientY) => {
+            if (document.visibilityState !== 'visible') return;
             if (!eyeTicking) {
+                eyeTicking = true;
                 window.requestAnimationFrame(() => {
                     const rect = heroEye.getBoundingClientRect();
                     const centerX = rect.left + rect.width / 2;
                     const centerY = rect.top + rect.height / 2;
-                    
-                    const mouseX = e.clientX;
-                    const mouseY = e.clientY;
-                    
-                    // Calculate distance and angle
-                    const deltaX = (mouseX - centerX) / window.innerWidth;
-                    const deltaY = (mouseY - centerY) / window.innerHeight;
-                    
-                    // Keep the hero mark front-facing; the motion should feel alive, not flip edge-on.
-                    const rotateX = deltaY * 6; 
-                    const rotateY = deltaX * 6; 
-                    
+                    const deltaX = (clientX - centerX) / window.innerWidth;
+                    const deltaY = (clientY - centerY) / window.innerHeight;
+                    const rotateX = deltaY * 6;
+                    const rotateY = deltaX * 6;
                     heroEye.style.transform = `translateY(-2px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`;
                     eyeTicking = false;
                 });
-                eyeTicking = true;
             }
-        });
-        
-        window.addEventListener('mouseleave', () => {
-            heroEye.style.transform = '';
-        });
+        };
+        window.addEventListener('mousemove', (e) => applyHeroEyeTilt(e.clientX, e.clientY), { passive: true });
+        window.addEventListener('mouseleave', resetHeroEye, { passive: true });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState !== 'visible') resetHeroEye();
+        }, { passive: true });
     }
 
 

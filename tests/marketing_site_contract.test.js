@@ -44,6 +44,17 @@ assertSiteInitMatchesIndex(archive, 'archive.html');
 assertSiteInitMatchesIndex(terms, 'terms.html');
 assertSiteInitMatchesIndex(privacy, 'privacy.html');
 assertSiteInitMatchesIndex(notFound, '404.html');
+const indexStylesV = (index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1];
+const assertStylesMatchesIndex = (html, label) => {
+    const v = (html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1];
+    assert.strictEqual(v, indexStylesV, `${label} styles.css?v must match index.html`);
+};
+assertStylesMatchesIndex(insight, 'insight.html');
+assertStylesMatchesIndex(insightsList, 'insights.html');
+assertStylesMatchesIndex(archive, 'archive.html');
+assertStylesMatchesIndex(terms, 'terms.html');
+assertStylesMatchesIndex(privacy, 'privacy.html');
+assertStylesMatchesIndex(notFound, '404.html');
 assert.ok(index.includes('data-editable='), 'CMS-editable regions present');
 assert.match(index, /href="archive\.html"/, 'desktop nav includes Archive (parity with mobile drawer)');
 assert.ok(

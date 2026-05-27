@@ -2951,10 +2951,8 @@ body.nav-open .nav-scrim {
   text-align: center;
   /* Ultra-tight transition strategy + notch / home indicator */
   padding: calc(96px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) max(24px, env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
-  overflow: hidden; 
-  content-visibility: auto; /* Performance: Skip heavy 3D compute until visible */
-  contain-intrinsic-size: 100vh;
-  contain-intrinsic-size: 100dvh;
+  overflow: hidden;
+  contain: layout style paint;
 }
 
 /* Tighten the rhythm */
@@ -11325,6 +11323,8 @@ html[data-stars="disabled"] .home-page #cursor-canvas,
   opacity: 0 !important;
   visibility: hidden !important;
 }
+
+/* Performance smoothness: hero uses contain (not content-visibility) to avoid frozen/deferred paint jank. */
 
 /* Premium-lite adaptive performance: reduce cost without flat/bootleg visuals */
 html.stars-performance-mode .bg-grain,

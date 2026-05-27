@@ -33,9 +33,11 @@
     let performanceProbeEnabled = false;
     let lowFpsStreak = 0;
     const PROBE_WINDOW_MS = 2000;
-    const PROBE_DELAY_MS = 2500;
-    const FPS_TRIGGER = 38;
-    const LOW_FPS_SAMPLES_REQUIRED = 2;
+    const PROBE_DELAY_MS = 3200;
+    const FPS_TRIGGER = 42;
+    const LOW_FPS_SAMPLES_REQUIRED = 3;
+    let resizeQueued = false;
+    let drawFramePending = false;
     const mouse = { x: -9999, y: -9999, active: false, attractor: false };
     const sky = { drift: 0, shooting: [] };
 
@@ -103,6 +105,21 @@
         rebuildStars();
     }
 
+    function queueResize() {
+        if (resizeQueued) return;
+        resizeQueued = true;
+        window.requestAnimationFrame(() => {
+            resizeQueued = false;
+            resize();
+        });
+    }
+
+    function scheduleDrawFrame() {
+        if (drawFramePending) return;
+        drawFramePending = true;
+        window.requestAnimationFrame(draw);
+    }
+
     function applyStaticLogoFallback(img) {
         if (!img || img.classList.contains('hero-eye-3d')) return;
         if (!img.dataset.animatedSrc) img.dataset.animatedSrc = img.getAttribute('src') || '';
@@ -126,6 +143,7 @@
     }
 
     function beginPerformanceProbe() {
+        if (document.visibilityState !== 'visible' || prefersReducedMotion.matches) return;
         performanceProbeEnabled = true;
     }
 
@@ -222,7 +240,9 @@
     }
 
     function draw(time) {
-        window.requestAnimationFrame(draw);
+        drawFramePending = false;
+        if (document.visibilityState !== 'visible') return;
+        scheduleDrawFrame();
         if (performanceProbeEnabled && !probeComplete && !performanceMode && !prefersReducedMotion.matches) {
             if (!probeAbsoluteStart) probeAbsoluteStart = time;
             if (!probeStart) probeStart = time;
@@ -329,8 +349,16 @@
         if (event.touches.length) trackPointer(event.touches[0].clientX, event.touches[0].clientY);
     }, { passive: true });
     window.addEventListener('touchend', () => updateMouse(null, null), { passive: true });
-    window.addEventListener('resize', resize, { passive: true });
+    window.addEventListener('resize', queueResize, { passive: true });
     prefersReducedMotion.addEventListener?.('change', rebuildStars);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            scheduleDrawFrame();
+            if (!probeComplete && !performanceMode && !prefersReducedMotion.matches) {
+                beginPerformanceProbe();
+            }
+        }
+    }, { passive: true });
 
     new MutationObserver(rebuildStars).observe(document.documentElement, {
         attributes: true,
@@ -349,5 +377,5 @@
     }
 
     resize();
-    window.requestAnimationFrame(draw);
+    scheduleDrawFrame();
 })();

@@ -109,6 +109,21 @@ assert.ok(!insights.includes('padding-top: 140px'), 'insights removes duplicate 
 assert.ok(styles.includes('font-size: min(1.68rem, 7.1vw) !important;'), 'mobile PERSPECTIVE title sizing guard remains protected');
 assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'light-mode services polish remains protected');
 assert.ok(stars.includes("img.classList.contains('hero-eye-3d')"), 'animated hero gif performance guard remains protected');
+assert.ok(stars.includes('scheduleDrawFrame'), 'starfield schedules frames explicitly');
+assert.ok(stars.includes('drawFramePending'), 'starfield avoids duplicate animation frames');
+assert.ok(stars.includes("document.visibilityState !== 'visible'"), 'starfield pauses draw loop while tab is hidden');
+assert.ok(stars.includes('queueResize'), 'starfield coalesces resize work');
+assert.ok(stars.includes('FPS_TRIGGER = 42'), 'fps probe avoids premature performance-mode activation');
+assert.ok(stars.includes('LOW_FPS_SAMPLES_REQUIRED = 3'), 'fps probe requires sustained low fps');
+assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity card pauses motion while tab is hidden');
+assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
+assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
+assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.0', 'homepage styles cache-bust is current');
+['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
+  const html = read(file);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.0', `${file} styles cache-bust matches index`);
+});
 
 console.log('   OK: Homepage visual contract');
 console.log('HOMEPAGE VISUAL CONTRACT COMPLETE');
