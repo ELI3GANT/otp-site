@@ -72,6 +72,7 @@ assert.ok(index.includes('hero-eye-animated'), 'homepage hero exposes animated g
 assert.ok(styles.includes('--hero-poster-offset-x') && styles.includes('--hero-animated-offset-x'), 'hero layers include small composition offset variables');
 assert.ok(styles.includes('hero-eye-animated') && styles.includes('object-position: calc(50% + var(--hero-animated-offset-x))'), 'animated hero layer uses centered object-position compensation');
 assert.ok(styles.includes('hero-eye-poster') && styles.includes('object-position: calc(50% + var(--hero-poster-offset-x))'), 'poster hero layer uses centered object-position compensation');
+assert.ok(!styles.includes('[data-theme="light"] .home-page .hero-logo-wrap::after {\n  border-color: rgba(0, 0, 0, 0.08);\n  background: rgba(255, 255, 255, 0.32);'), 'light-mode hero ring no longer uses filled pale orb background');
 assert.ok(!/hero-logo-wrap[\s\S]{0,420}opacity:\s*1\s*!important/.test(index), 'homepage hero avoids inline opacity overrides that block crossfade');
 assert.ok(index.includes('assets/otp-hero-poster.png'), 'homepage hero poster uses dedicated centered png');
 assert.ok(index.includes('preload" href="assets/otp-hero-poster.png"'), 'homepage preloads hero poster not full gif');
