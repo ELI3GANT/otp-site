@@ -13,6 +13,7 @@
     "index.html",
     "insight.html",
     "insights.html",
+    "otp-attribution.js",
     "pricing-config.js",
     "privacy.html",
     "release-manifest.json",
@@ -28,6 +29,7 @@
     "terms.html",
     "tests/admin_sweep_auth_contract.test.js",
     "tests/api_surface_security_contract.test.js",
+    "tests/attribution_contract.test.js",
     "tests/bookings_contract.test.js",
     "tests/homepage_visual_contract.test.js",
     "tests/marketing_site_contract.test.js",
@@ -37,29 +39,12 @@
     "vercel.json"
   ],
   "excludedDirtyFiles": [
-    "AGENTS.md",
-    "README.md",
-    "admin-core.js",
-    "client.css",
-    "client.html",
-    "client.js",
-    "docs/CLIENT_PORTAL_FILE_DOWNLOAD_CONTRACT.md",
-    "docs/OTP_DATA_FLOW_CONTRACT.md",
-    "docs/business/Master_Service_Agreement.md",
-    "docs/business/Project_Onboarding_Questionnaire.md",
-    "otp-terminal.html",
-    "payment_success.html",
-    "portal-gate.html",
-    "portal.html",
-    "scripts/doc_templates_pull_and_inspect.js",
-    "site-config.js",
-    "site.webmanifest",
-    "sitemap.xml",
-    "supabase/migrations/SEED_ORACLE.sql",
-    "tests/client_portal_logic.test.js",
-    "tests/email_link_test.js",
-    "tests/portal_route_contract.test.js",
-    "theme-chrono.js"
+    "otp-site:test-report.xml (generated ignored test artifact)",
+    "otp-os:ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon 1.png (unrelated iOS icon work)",
+    "otp-os:ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json (unrelated iOS icon work)",
+    "otp-os:ios/App/App/Assets.xcassets/AppIcon.appiconset/image.png (unrelated iOS icon work)",
+    "otp-os:ios/App/App/Assets.xcassets/Contents.json (unrelated iOS icon work)",
+    "otp-os:.env and output/playwright screenshots (ignored local/generated artifacts)"
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -88,20 +73,24 @@
     },
     {
       "command": "npm run prod:full-sweep",
-      "status": "passed_public_admin_skipped_without_local_env"
+      "status": "passed_public"
+    },
+    {
+      "command": "authenticated prod full sweep with temporary runtime env",
+      "status": "passed"
     },
     {
       "command": "git diff --check",
       "status": "passed"
     },
     {
-      "command": "node --check server.js bookings.js client.js site-init.js stars-v2.js theme-chrono.js pricing-config.js scripts/prod_bootstrap_qa.js scripts/prod_full_sweep.js scripts/prod_sweep_v2_runner.js scripts/prod_terminal_sweep.js scripts/verify_release_scope.js",
+      "command": "node --check server.js bookings.js client.js site-init.js stars-v2.js theme-chrono.js pricing-config.js otp-attribution.js scripts/prod_bootstrap_qa.js scripts/prod_full_sweep.js scripts/prod_sweep_v2_runner.js scripts/prod_terminal_sweep.js scripts/verify_release_scope.js",
       "status": "passed"
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Desktop dark/light and mobile dark/light homepage passed with mounted canvas stars, clean hero pseudo-layer, no checkerboard, restored Visual Success Systems section, Enter Vault present, no console errors, and no overflow. Booking mobile package clicks stayed on Step 1; visible Fast Lane cards rendered for Same-Day Reel, Event Promo, Business Content Pack, and Brand Launch Pack; selections mapped Same-Day Reel and Event Promo to The Signal, Business Content Pack to The Engine, and Brand Launch Pack to Custom Build. Mocked submit preserved source tracking, selected_fast_offer, and fast_lane_package. Local /os assets returned 200."
+    "summary": "Local patched QA passed desktop dark/light and mobile dark/light homepage with mounted canvas stars, clean hero pseudo-layer, no checkerboard, ELI3GANT-only identity, Enter Vault present, no console errors, and no overflow. Adaptive performance mode activated on desktop; sampled headless FPS was 54.9 dark, 52.2 light, 60.4 mobile dark, and 60.4 mobile light. Booking mobile Fast Lane clicks stayed on Step 1; Same-Day Reel and Event Promo mapped to The Signal, Business Content Pack to The Engine, and Brand Launch Pack to Custom Build. Mocked submit preserved source tracking, selected_fast_offer, and fast_lane_package."
   },
   "authenticatedSweep": {
     "status": "passed",

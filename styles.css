@@ -11390,11 +11390,22 @@ html.stars-performance-mode .scanline-overlay {
 }
 
 html.stars-performance-mode .bg-grain {
-  opacity: 0.055 !important;
+  opacity: 0 !important;
 }
 
 html.stars-performance-mode .scanline-overlay {
-  opacity: 0.065 !important;
+  opacity: 0 !important;
+}
+
+html.stars-performance-mode .home-page #cursor-canvas,
+html.stars-performance-mode .home-page #cursor-canvas.stars-mounted {
+  filter: none !important;
+}
+
+html.stars-performance-mode[data-theme="light"] .home-page #cursor-canvas,
+html.stars-performance-mode[data-theme="light"] .home-page #cursor-canvas.stars-mounted {
+  opacity: 0.56 !important;
+  mix-blend-mode: multiply !important;
 }
 
 html.stars-performance-mode .home-page *:not(.cool-work-link):not(.cool-work-link *),
@@ -11419,8 +11430,8 @@ html.stars-performance-mode .home-page .hero .hero-logo-wrap::before,
 html.stars-performance-mode[data-theme="light"] .home-page .hero .hero-logo-wrap::before,
 html.stars-performance-mode[data-theme="dark"] .home-page .hero .hero-logo-wrap::before {
   animation: none !important;
-  filter: blur(14px) !important;
-  opacity: 0.44 !important;
+  filter: blur(8px) !important;
+  opacity: 0.38 !important;
   inset: -18% !important;
   background:
     radial-gradient(circle at 50% 50%, rgba(var(--accent2-rgb), 0.32), transparent 56%) !important;

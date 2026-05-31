@@ -22,6 +22,10 @@ assert.ok(/Clean scoped release/i.test(docs), 'guardrail docs define clean scope
 assert.ok(/Never deploy from `?\/Users\/eli\/OTP\/otp-site`?/i.test(docs), 'guardrail docs block dirty primary deploys');
 assert.ok(/Release manifest/i.test(docs), 'guardrail docs require release manifests');
 assert.ok(docs.includes('authenticated sweep'), 'guardrail docs require authenticated sweep evidence');
+assert.ok(docs.includes('git -C /Users/eli/OTP/otp-os status --short'), 'guardrail docs require OTP OS dirty-state audit');
+assert.ok(docs.includes('otp-os` is now a git repo'), 'guardrail docs document OTP OS git status');
+assert.ok(docs.includes('generated-artifact'), 'guardrail docs categorize generated artifacts');
+assert.ok(docs.includes('otp-attribution.js'), 'guardrail docs protect attribution source tracking');
 
 console.log('   OK: Release guardrails contract');
 console.log('RELEASE GUARDRAILS CONTRACT COMPLETE');

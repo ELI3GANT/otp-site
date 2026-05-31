@@ -36,6 +36,30 @@ The guard blocks:
 
 Only set `OTP_ALLOW_PRIMARY_DIRTY_DEPLOY=1` for a local diagnostic that will not be deployed.
 
+## Dirty Checkout Audit
+
+Before every scoped release, record the dirty state of both local workspaces:
+
+```bash
+git -C /Users/eli/OTP/otp-site status --short
+git -C /Users/eli/OTP/otp-os status --short
+find /Users/eli/OTP/otp-site -maxdepth 3 \( -name '*.har' -o -name 'test-report.xml' -o -path '*/output/playwright/*' -o -name '.env*' \) -print
+find /Users/eli/OTP/otp-os -maxdepth 4 \( -name '*.har' -o -name 'test-report.xml' -o -path '*/output/playwright/*' -o -name '.env*' \) -print
+```
+
+Categorize every finding before release:
+
+- `production-shipped`: already committed and represented in the clean release.
+- `experimental`: local work that must not ship until reviewed.
+- `generated-artifact`: test reports, HAR files, screenshots, build caches, and local output.
+- `docs-worth-keeping`: documentation that should ship in a separate docs release or be added to the manifest.
+- `safe-to-delete-after-approval`: generated files that can be removed only after approval.
+- `needs-stash`: local work to preserve outside the release.
+- `needs-separate-commit`: intentional work that should not ride with an unrelated release.
+- `should-be-gitignored`: repeat generated artifacts that should never appear in release scope.
+
+`otp-os` is now a git repo, so staged or modified dashboard/iOS files must be handled with the same discipline. Current unrelated app-icon asset work, local `.env`, and `output/playwright` screenshots are not release material for `otp-site`.
+
 ## Required Release Gates
 
 Before aliasing production:
@@ -74,6 +98,7 @@ Booking deploys must verify:
 - required fields block progression
 - source and UTM tracking stay in the booking payload and `OTP_BOOKING_META`
 - selected Fast Lane metadata stays in the booking payload and `OTP_BOOKING_META`
+- `otp-attribution.js` must not throw during `captureOnLoad`; UTM capture failures are release blockers because they silently weaken source tracking.
 - Fast Lane selections map canonically:
   - `Same-Day Reel` -> `The Signal`
   - `Event Promo` -> `The Signal`

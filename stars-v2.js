@@ -33,9 +33,9 @@
     let performanceProbeEnabled = false;
     let lowFpsStreak = 0;
     const PROBE_WINDOW_MS = 2000;
-    const PROBE_DELAY_MS = 3200;
-    const FPS_TRIGGER = 42;
-    const LOW_FPS_SAMPLES_REQUIRED = 3;
+    const PROBE_DELAY_MS = 1200;
+    const FPS_TRIGGER = 45;
+    const LOW_FPS_SAMPLES_REQUIRED = 1;
     let resizeQueued = false;
     let drawFramePending = false;
     const STARFIELD_BOOT_DELAY_MS = window.innerWidth < 700 ? 1500 : 900;

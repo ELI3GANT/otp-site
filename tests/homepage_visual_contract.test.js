@@ -37,6 +37,8 @@ assert.ok(!styles.includes('otp-static-star-drift'), 'old animated tiled fallbac
 assert.ok(styles.includes('opacity: 0.92 !important'), 'dark canvas stars remain visible');
 assert.ok(styles.includes('opacity: 0.46 !important'), 'day/light canvas stars remain visible');
 assert.ok(styles.includes('html.stars-performance-mode .bg-grain'), 'performance mode pauses grain overlays');
+assert.ok(styles.includes('html.stars-performance-mode .home-page #cursor-canvas'), 'performance mode removes expensive star canvas filter work');
+assert.ok(styles.includes('filter: none !important;'), 'performance mode keeps star canvas compositor lightweight');
 assert.ok(styles.includes('html.stars-performance-mode .home-page .glass-manifesto'), 'performance mode lightens identity card compositor work');
 assert.ok(styles.includes('backdrop-filter: blur(10px) saturate(1.05) !important'), 'performance mode keeps premium-lite identity card backdrop blur');
 assert.ok(styles.includes('glass-manifesto .sticker-base'), 'performance mode lightens identity card inner glass emblem');
@@ -122,8 +124,9 @@ assert.ok(stars.includes('scheduleDrawFrame'), 'starfield schedules frames expli
 assert.ok(stars.includes('drawFramePending'), 'starfield avoids duplicate animation frames');
 assert.ok(stars.includes("document.visibilityState !== 'visible'"), 'starfield pauses draw loop while tab is hidden');
 assert.ok(stars.includes('queueResize'), 'starfield coalesces resize work');
-assert.ok(stars.includes('FPS_TRIGGER = 42'), 'fps probe avoids premature performance-mode activation');
-assert.ok(stars.includes('LOW_FPS_SAMPLES_REQUIRED = 3'), 'fps probe requires sustained low fps');
+assert.ok(stars.includes('PROBE_DELAY_MS = 1200'), 'fps probe starts early enough to stabilize desktop hero rendering');
+assert.ok(stars.includes('FPS_TRIGGER = 45'), 'fps probe follows the desktop performance threshold');
+assert.ok(stars.includes('LOW_FPS_SAMPLES_REQUIRED = 1'), 'one sustained low-fps window activates performance mode');
 assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity card pauses motion while tab is hidden');
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');

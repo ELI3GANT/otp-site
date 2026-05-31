@@ -4,7 +4,7 @@
 (function initOtpAttribution(global) {
   const STORAGE_FIRST = 'otp_attribution_first';
   const STORAGE_LAST = 'otp_attribution_last';
-  const ALLOWED_KEYS = new Set([
+  const ALLOWED_KEYS = [
     'utm_source',
     'utm_medium',
     'utm_campaign',
@@ -13,9 +13,17 @@
     'ref',
     'source',
     'campaign'
-  ]);
+  ];
   const MAX_VALUE = 160;
   const MAX_LANDING = 240;
+  const TRACKING_PAYLOAD_KEYS = [
+    ...ALLOWED_KEYS,
+    'cta_source',
+    'first_touch',
+    'booking_route',
+    'platform',
+    'captured_at'
+  ];
 
   function cleanValue(value, max = MAX_VALUE) {
     return String(value || '')
@@ -61,6 +69,28 @@
     if (input.referrer) out.referrer = cleanValue(input.referrer, MAX_LANDING);
     if (input.first_seen_at) out.first_seen_at = cleanValue(input.first_seen_at, 40);
     if (input.last_seen_at) out.last_seen_at = cleanValue(input.last_seen_at, 40);
+    return out;
+  }
+
+  function sanitizeTrackingPayload(input = {}) {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) return {};
+    const out = {};
+    TRACKING_PAYLOAD_KEYS.forEach((key) => {
+      const value = cleanValue(input[key], key === 'booking_route' ? MAX_LANDING : MAX_VALUE);
+      if (value) out[key] = value;
+    });
+    if (input.landing_page) out.landing_page = cleanValue(input.landing_page, MAX_LANDING);
+    if (input.referrer) out.referrer = cleanValue(input.referrer, MAX_LANDING);
+    if (input.first_seen_at) out.first_seen_at = cleanValue(input.first_seen_at, 40);
+    if (input.last_seen_at) out.last_seen_at = cleanValue(input.last_seen_at, 40);
+    if (input.attribution_first && typeof input.attribution_first === 'object' && !Array.isArray(input.attribution_first)) {
+      const first = sanitizeAttribution(input.attribution_first);
+      if (Object.keys(first).length) out.attribution_first = first;
+    }
+    if (input.attribution_last && typeof input.attribution_last === 'object' && !Array.isArray(input.attribution_last)) {
+      const last = sanitizeAttribution(input.attribution_last);
+      if (Object.keys(last).length) out.attribution_last = last;
+    }
     return out;
   }
 
@@ -146,7 +176,7 @@
     const { first, last, merged } = getStoredAttribution();
     const active = last.utm_source || last.source ? last : first;
     const platform = global.matchMedia?.('(max-width: 768px)').matches ? 'mobile' : 'desktop';
-    return sanitizeAttribution({
+    return sanitizeTrackingPayload({
       cta_source: active.utm_source || active.source || active.ref || 'direct',
       first_touch: first.utm_source || first.source || first.ref || 'direct',
       booking_route: cleanValue(global.location?.pathname || '/bookings', MAX_LANDING),
@@ -193,6 +223,7 @@
   global.OTPAttribution = {
     getAttributionFromUrl,
     sanitizeAttribution,
+    sanitizeTrackingPayload,
     saveAttribution,
     getStoredAttribution,
     getSourceTrackingPayload,
