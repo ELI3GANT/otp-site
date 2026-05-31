@@ -11965,3 +11965,127 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
     height: 94% !important;
   }
 }
+
+/* Day-mode rendering stabilizer: preserve the clean light aesthetic while restoring contrast. */
+html[data-theme="light"] body.home-page .luxe-title .title,
+html[data-theme="light"].spectral-v-sync body.home-page .luxe-title .title,
+html[data-theme="light"] body.home-page.spectral-v-sync .luxe-title .title {
+  background: linear-gradient(180deg, #050507 0%, #15151b 45%, #76520c 100%) !important;
+  background-clip: text !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: #06070b !important;
+  -webkit-text-stroke: 0 transparent !important;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.78),
+    0 12px 34px rgba(14, 14, 22, 0.16) !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+html[data-theme="light"] body.home-page .hero-subline-alt {
+  color: rgba(5, 6, 10, 0.86) !important;
+}
+
+html[data-theme="light"] body.home-page .subtitle-lead {
+  color: rgba(5, 6, 10, 0.82) !important;
+}
+
+html[data-theme="light"] body.home-page .section-results-enhanced .section-head p {
+  color: rgba(12, 14, 20, 0.72) !important;
+  opacity: 1 !important;
+}
+
+body.home-page .section-results-enhanced .visual-success-heading::after {
+  content: none !important;
+  display: none !important;
+}
+
+html[data-theme="light"] body.home-page #cursor-canvas,
+html[data-theme="light"] body.home-page #cursor-canvas.stars-mounted {
+  opacity: 0.72 !important;
+  mix-blend-mode: multiply !important;
+  filter: saturate(1.16) contrast(1.28) !important;
+}
+
+html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas,
+html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas.stars-mounted {
+  opacity: 0.74 !important;
+  mix-blend-mode: multiply !important;
+  filter: contrast(1.22) saturate(1.12) !important;
+}
+
+html[data-theme="light"] body.home-page .nav-logo {
+  box-shadow:
+    0 10px 24px rgba(12, 12, 18, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.78) inset !important;
+}
+
+html[data-theme="light"] body.home-page .nav-logo .otp-mark,
+html[data-theme="light"] body.home-page .otp-mark#nav-logo-neon {
+  filter: brightness(0) contrast(1.12) !important;
+  mix-blend-mode: normal !important;
+  animation: none !important;
+}
+
+@media (max-width: 768px) {
+  html[data-theme="light"] body.home-page .luxe-title .title,
+  html[data-theme="light"].spectral-v-sync body.home-page .luxe-title .title,
+  html[data-theme="light"] body.home-page.spectral-v-sync .luxe-title .title {
+    background: none !important;
+    -webkit-text-fill-color: #08090d !important;
+    color: #08090d !important;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.76),
+      0 10px 24px rgba(12, 12, 18, 0.14) !important;
+  }
+
+  html[data-theme="light"] body.home-page #cursor-canvas,
+  html[data-theme="light"] body.home-page #cursor-canvas.stars-mounted {
+    opacity: 0.76 !important;
+    filter: saturate(1.12) contrast(1.34) !important;
+  }
+
+  html[data-theme="light"] body.home-page .nav-logo {
+    width: 44px !important;
+    height: 44px !important;
+    padding: 5px !important;
+    border-radius: 14px !important;
+  }
+
+  html[data-theme="light"] body.home-page .nav-logo .otp-mark,
+  html[data-theme="light"] body.home-page .otp-mark#nav-logo-neon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body.home-page .theme-toggle-btn:not(.mobile-theme-toggle) {
+    top: auto !important;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    right: calc(18px + env(safe-area-inset-right, 0px)) !important;
+    width: 46px !important;
+    height: 46px !important;
+    z-index: 11050 !important;
+  }
+
+  html[data-theme="light"] body.home-page .theme-toggle-btn:not(.mobile-theme-toggle) {
+    background: rgba(255, 255, 255, 0.88) !important;
+    border-color: rgba(20, 24, 34, 0.14) !important;
+    box-shadow: 0 12px 28px rgba(20, 24, 34, 0.14) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  html[data-theme="light"] body.home-page .hero::after {
+    height: 112px !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.86) 72%, #ffffff 100%) !important;
+  }
+
+  html[data-theme="light"] body.home-page .section-results-enhanced {
+    background:
+      radial-gradient(circle at 50% 0%, rgba(var(--accent2-rgb), 0.08), transparent 24%),
+      linear-gradient(180deg, #ffffff 0%, #f8f9fc 44%, #ffffff 100%) !important;
+  }
+}

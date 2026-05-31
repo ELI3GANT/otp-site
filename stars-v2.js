@@ -38,6 +38,7 @@
     const LOW_FPS_SAMPLES_REQUIRED = 1;
     let resizeQueued = false;
     let drawFramePending = false;
+    let drawFrameTimer = 0;
     const STARFIELD_BOOT_DELAY_MS = window.innerWidth < 700 ? 1500 : 900;
     const mouse = { x: -9999, y: -9999, active: false, attractor: false };
     const sky = { drift: 0, shooting: [] };
@@ -60,14 +61,14 @@
     function starCount() {
         if (prefersReducedMotion.matches) return 0;
         const area = Math.max(1, window.innerWidth * window.innerHeight);
-        const base = Math.round(area / (isLightMode() ? 14000 : 6500));
+        const base = Math.round(area / (isLightMode() ? 10000 : 6500));
         const mobile = window.innerWidth < 700;
         if (performanceMode) {
             const reduced = Math.round(base * 0.72);
-            if (isLightMode()) return Math.min(mobile ? 36 : 64, Math.max(24, reduced));
+            if (isLightMode()) return Math.min(mobile ? 44 : 72, Math.max(30, reduced));
             return Math.min(mobile ? 58 : 112, Math.max(36, reduced));
         }
-        if (isLightMode()) return Math.min(mobile ? 48 : 90, Math.max(28, base));
+        if (isLightMode()) return Math.min(mobile ? 72 : 126, Math.max(38, base));
         return Math.min(mobile ? 86 : 176, Math.max(52, base));
     }
 
@@ -115,10 +116,22 @@
         });
     }
 
-    function scheduleDrawFrame() {
-        if (drawFramePending) return;
-        drawFramePending = true;
-        window.requestAnimationFrame(draw);
+    function scheduleDrawFrame(delay = 0, force = false) {
+        if (force && drawFrameTimer) {
+            window.clearTimeout(drawFrameTimer);
+            drawFrameTimer = 0;
+        }
+        if (drawFramePending || drawFrameTimer) return;
+        const queueFrame = () => {
+            drawFrameTimer = 0;
+            drawFramePending = true;
+            window.requestAnimationFrame(draw);
+        };
+        if (delay > 0) {
+            drawFrameTimer = window.setTimeout(queueFrame, delay);
+            return;
+        }
+        queueFrame();
     }
 
     function applyStaticLogoFallback(img) {
@@ -150,6 +163,7 @@
 
     function drawAtmosphere(rgb, light) {
         if (performanceMode) {
+            if (light) return;
             const topGlow = ctx.createRadialGradient(width * 0.52, height * 0.12, 0, width * 0.52, height * 0.12, width * 0.72);
             topGlow.addColorStop(0, rgba(rgb, light ? 0.034 : 0.12));
             topGlow.addColorStop(0.42, rgba(rgb, light ? 0.008 : 0.034));
@@ -243,7 +257,8 @@
     function draw(time) {
         drawFramePending = false;
         if (document.visibilityState !== 'visible') return;
-        scheduleDrawFrame();
+        const perfThrottle = performanceMode && !mouse.attractor && probeComplete;
+        if (!perfThrottle) scheduleDrawFrame();
         if (performanceProbeEnabled && !probeComplete && !performanceMode && !prefersReducedMotion.matches) {
             if (!probeAbsoluteStart) probeAbsoluteStart = time;
             if (!probeStart) probeStart = time;
@@ -268,7 +283,10 @@
         }
         if (document.visibilityState !== 'visible') return;
         const frameInterval = performanceMode && !mouse.attractor ? 66 : 33;
-        if (time - lastFrame < frameInterval) return;
+        if (time - lastFrame < frameInterval) {
+            if (perfThrottle) scheduleDrawFrame(frameInterval - (time - lastFrame));
+            return;
+        }
         lastFrame = time;
 
         const light = isLightMode();
@@ -284,8 +302,8 @@
         for (const star of stars) {
             star.twinkle += star.speed;
             const wave = Math.sin(star.twinkle + sky.drift);
-            const baseAlpha = light ? 0.31 : star.alpha;
-            const alpha = Math.max(light ? 0.18 : 0.28, baseAlpha + wave * (light ? 0.072 : 0.2));
+            const baseAlpha = light ? (performanceMode ? 0.44 : 0.4) : star.alpha;
+            const alpha = Math.max(light ? (performanceMode ? 0.24 : 0.22) : 0.28, baseAlpha + wave * (light ? 0.1 : 0.2));
             let x = star.x + Math.sin(sky.drift * star.depth + star.y * 0.003) * star.depth * 3;
             let y = star.y + Math.cos(sky.drift * 0.6 + star.x * 0.002) * star.depth * 1.4;
             const nearMouse = mouse.active ? Math.hypot(mouse.x - x, mouse.y - y) : 9999;
@@ -301,15 +319,15 @@
 
             const fill = star.accent
                 ? rgba(accent, alpha + lift)
-                : (light ? `rgba(12, 12, 20, ${alpha})` : `rgba(255, 250, 236, ${alpha + lift * 0.7})`);
+                : (light ? `rgba(4, 6, 14, ${alpha})` : `rgba(255, 250, 236, ${alpha + lift * 0.7})`);
             ctx.beginPath();
             ctx.arc(x, y, size, 0, Math.PI * 2);
             ctx.shadowColor = star.accent
-                ? rgba(accent, light ? 0.16 : 0.38)
-                : (light ? 'rgba(20, 20, 30, 0.12)' : 'rgba(255, 250, 236, 0.28)');
+                ? rgba(accent, light ? 0.22 : 0.38)
+                : (light ? 'rgba(4, 6, 14, 0.18)' : 'rgba(255, 250, 236, 0.28)');
             ctx.shadowBlur = performanceMode
-                ? (star.depth > 0.65 ? (light ? 1.6 : 3.2) : (light ? 0.8 : 1.6))
-                : (star.depth > 0.65 ? (light ? 2.5 : 5.5) : (light ? 1 : 2.5));
+                ? (star.depth > 0.65 ? (light ? 2.2 : 3.2) : (light ? 1.1 : 1.6))
+                : (star.depth > 0.65 ? (light ? 3.5 : 5.5) : (light ? 1.4 : 2.5));
             ctx.fillStyle = fill;
             ctx.fill();
             ctx.shadowBlur = 0;
@@ -323,6 +341,7 @@
         }
 
         drawShootingStars();
+        if (perfThrottle) scheduleDrawFrame(frameInterval);
     }
 
     function updateMouse(x, y, attractor = false) {
@@ -330,6 +349,7 @@
         mouse.y = Number.isFinite(y) ? y : -9999;
         mouse.active = Number.isFinite(x) && Number.isFinite(y);
         mouse.attractor = mouse.active && Boolean(attractor);
+        if (mouse.attractor) scheduleDrawFrame(0, true);
     }
 
     function trackPointer(x, y) {

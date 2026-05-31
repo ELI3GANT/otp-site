@@ -35,7 +35,14 @@ assert.ok(!styles.includes('mix-blend-mode: color-burn'), 'identity card light-m
 assert.ok(!styles.includes('background-size: 150px 150px, 230px 230px, 310px 310px'), 'old tiled star fallback must not return');
 assert.ok(!styles.includes('otp-static-star-drift'), 'old animated tiled fallback must not return');
 assert.ok(styles.includes('opacity: 0.92 !important'), 'dark canvas stars remain visible');
-assert.ok(styles.includes('opacity: 0.46 !important'), 'day/light canvas stars remain visible');
+assert.ok(styles.includes('Day-mode rendering stabilizer'), 'final light-mode rendering stabilizer is documented');
+assert.ok(styles.includes('opacity: 0.72 !important'), 'day/light canvas stars remain visible on desktop');
+assert.ok(styles.includes('opacity: 0.76 !important'), 'day/light canvas stars remain visible on mobile');
+assert.ok(styles.includes('html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas'), 'performance mode preserves light-mode star visibility');
+assert.ok(styles.includes('html[data-theme="light"] body.home-page .luxe-title .title'), 'light-mode hero title contrast gets final cascade ownership');
+assert.ok(styles.includes('body.home-page .theme-toggle-btn:not(.mobile-theme-toggle)') && styles.includes('bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;'), 'mobile floating theme toggle stays clear of the hero title');
+assert.ok(styles.includes('html[data-theme="light"] body.home-page .hero::after') && styles.includes('#ffffff 100%) !important;'), 'mobile light hero fade cannot fall back to dark section wash');
+assert.ok(styles.includes('body.home-page .section-results-enhanced .visual-success-heading::after') && styles.includes('display: none !important;'), 'Visual Success heading does not render the old off-center underline artifact');
 assert.ok(styles.includes('html.stars-performance-mode .bg-grain'), 'performance mode pauses grain overlays');
 assert.ok(styles.includes('html.stars-performance-mode .home-page #cursor-canvas'), 'performance mode removes expensive star canvas filter work');
 assert.ok(styles.includes('filter: none !important;'), 'performance mode keeps star canvas compositor lightweight');
@@ -97,6 +104,9 @@ assert.ok(stars.includes('probeAbsoluteStart'), 'adaptive performance detector k
 assert.ok(stars.includes("setAttribute('data-otp-performance-mode', 'stars')"), 'starfield activates CSS performance mode selectors');
 assert.ok(stars.includes('performanceMode && !mouse.attractor ? 66 : 33'), 'starfield throttles non-interactive redraws in performance mode');
 assert.ok(stars.includes('ctx.shadowBlur = performanceMode'), 'starfield softens star glow in performance mode instead of removing it');
+assert.ok(stars.includes('area / (isLightMode() ? 10000 : 6500)'), 'light-mode star density is strong enough to remain visible');
+assert.ok(stars.includes('performanceMode ? 0.44 : 0.4'), 'light-mode star alpha is preserved in performance mode');
+assert.ok(stars.includes('if (performanceMode) {\n            if (light) return;'), 'light performance mode skips the expensive full-canvas atmosphere glow pass');
 assert.ok(!siteInit.includes("data-stars', starsDisabled ? 'disabled' : 'enabled'"), 'remote visuals must not overwrite mounted canvas state with a generic enabled flag');
 assert.ok(siteInit.includes("setAttribute('data-stars', 'mounted')"), 'runtime visuals preserve mounted state after config updates');
 assert.ok(siteInit.includes('identityMotionProfile'), 'identity card physics use adaptive motion profiles');
@@ -122,6 +132,8 @@ assert.ok(styles.includes('Premium day-mode services polish: richer depth withou
 assert.ok(stars.includes("img.classList.contains('hero-eye-3d')"), 'animated hero gif performance guard remains protected');
 assert.ok(stars.includes('scheduleDrawFrame'), 'starfield schedules frames explicitly');
 assert.ok(stars.includes('drawFramePending'), 'starfield avoids duplicate animation frames');
+assert.ok(stars.includes('drawFrameTimer'), 'performance-mode starfield avoids unnecessary per-frame scheduling');
+assert.ok(stars.includes('scheduleDrawFrame(frameInterval)'), 'performance-mode starfield schedules the next paint at the throttled interval');
 assert.ok(stars.includes("document.visibilityState !== 'visible'"), 'starfield pauses draw loop while tab is hidden');
 assert.ok(stars.includes('queueResize'), 'starfield coalesces resize work');
 assert.ok(stars.includes('PROBE_DELAY_MS = 1200'), 'fps probe starts early enough to stabilize desktop hero rendering');
@@ -131,10 +143,12 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.8', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.9', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '16.4.8', 'homepage stars cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.8', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.9', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '16.4.8', `${file} stars cache-bust matches index`);
 });
 
 console.log('   OK: Homepage visual contract');
