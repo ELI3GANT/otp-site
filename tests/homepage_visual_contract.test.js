@@ -38,6 +38,15 @@ assert.ok(styles.includes('opacity: 0.92 !important'), 'dark canvas stars remain
 assert.ok(styles.includes('Day-mode rendering stabilizer'), 'final light-mode rendering stabilizer is documented');
 assert.ok(styles.includes('opacity: 0.72 !important'), 'day/light canvas stars remain visible on desktop');
 assert.ok(styles.includes('opacity: 0.76 !important'), 'day/light canvas stars remain visible on mobile');
+assert.ok(styles.includes('Final day-mode star clarity'), 'final light-mode star clarity guard is documented');
+assert.ok(styles.includes('opacity: 0.9 !important'), 'day/light canvas stars are clearly visible on desktop');
+assert.ok(styles.includes('html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas') && styles.includes('opacity: 0.88 !important'), 'performance mode preserves visible black stars in light mode');
+assert.ok(styles.includes('html[data-theme="light"] body.home-page .bg-grain') && styles.includes('opacity: 0.004 !important'), 'light mode suppresses dusty grain so stars read cleanly');
+assert.ok(styles.includes('html[data-theme="light"].otp-brand-synced body.home-page .hero h1.hero-title-adjust.luxe-title .title'), 'light mode owns the hero wordmark even after runtime brand sync');
+assert.ok(styles.includes('html[data-theme="light"].spectral-v-sync body.home-page .hero h1.hero-title-adjust.luxe-title .title'), 'light mode blocks spectral variants from recoloring the hero wordmark');
+assert.ok(styles.includes('-webkit-text-fill-color: #050507 !important'), 'day-mode hero wordmark uses solid readable black text');
+assert.ok(styles.includes('html[data-theme="light"] body.home-page .nav-links a::after'), 'day-mode nav underline uses stable black-gold accenting');
+assert.ok(styles.includes('html[data-theme="light"].spectral-revelation body.home-page .nav-logo') && styles.includes('filter: none !important;'), 'light mode blocks spectral nav-logo glow contamination');
 assert.ok(styles.includes('html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas'), 'performance mode preserves light-mode star visibility');
 assert.ok(styles.includes('html[data-theme="light"] body.home-page .luxe-title .title'), 'light-mode hero title contrast gets final cascade ownership');
 assert.ok(styles.includes('body.home-page .theme-toggle-btn:not(.mobile-theme-toggle)') && styles.includes('bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;'), 'mobile floating theme toggle stays clear of the hero title');
@@ -105,7 +114,9 @@ assert.ok(stars.includes("setAttribute('data-otp-performance-mode', 'stars')"), 
 assert.ok(stars.includes('performanceMode && !mouse.attractor ? 66 : 33'), 'starfield throttles non-interactive redraws in performance mode');
 assert.ok(stars.includes('ctx.shadowBlur = performanceMode'), 'starfield softens star glow in performance mode instead of removing it');
 assert.ok(stars.includes('area / (isLightMode() ? 10000 : 6500)'), 'light-mode star density is strong enough to remain visible');
-assert.ok(stars.includes('performanceMode ? 0.44 : 0.4'), 'light-mode star alpha is preserved in performance mode');
+assert.ok(stars.includes('performanceMode ? 0.52 : 0.5'), 'light-mode star alpha is strong enough to stay visible');
+assert.ok(stars.includes('star.r * (light ? (performanceMode ? 1.18 : 1.24) : 1)'), 'light-mode stars get a subtle size lift instead of disappearing into dust');
+assert.ok(stars.includes('rgba(0, 0, 0,'), 'light-mode non-accent stars render as black stars');
 assert.ok(stars.includes('if (performanceMode) {\n            if (light) return;'), 'light performance mode skips the expensive full-canvas atmosphere glow pass');
 assert.ok(!siteInit.includes("data-stars', starsDisabled ? 'disabled' : 'enabled'"), 'remote visuals must not overwrite mounted canvas state with a generic enabled flag');
 assert.ok(siteInit.includes("setAttribute('data-stars', 'mounted')"), 'runtime visuals preserve mounted state after config updates');
@@ -144,13 +155,13 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.9', 'homepage styles cache-bust is current');
-assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-sync1', 'homepage stars cache-bust is current');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.10', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', 'homepage stars cache-bust is current');
 assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-sync1', 'homepage runtime cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.9', `${file} styles cache-bust matches index`);
-  assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-sync1', `${file} stars cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.10', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', `${file} stars cache-bust matches index`);
   assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-sync1', `${file} runtime cache-bust matches index`);
 });
 

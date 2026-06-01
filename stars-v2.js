@@ -302,8 +302,8 @@
         for (const star of stars) {
             star.twinkle += star.speed;
             const wave = Math.sin(star.twinkle + sky.drift);
-            const baseAlpha = light ? (performanceMode ? 0.44 : 0.4) : star.alpha;
-            const alpha = Math.max(light ? (performanceMode ? 0.24 : 0.22) : 0.28, baseAlpha + wave * (light ? 0.1 : 0.2));
+            const baseAlpha = light ? (performanceMode ? 0.52 : 0.5) : star.alpha;
+            const alpha = Math.max(light ? (performanceMode ? 0.34 : 0.32) : 0.28, baseAlpha + wave * (light ? 0.12 : 0.2));
             let x = star.x + Math.sin(sky.drift * star.depth + star.y * 0.003) * star.depth * 3;
             let y = star.y + Math.cos(sky.drift * 0.6 + star.x * 0.002) * star.depth * 1.4;
             const nearMouse = mouse.active ? Math.hypot(mouse.x - x, mouse.y - y) : 9999;
@@ -315,16 +315,16 @@
                 y += ((mouse.y - y) / nearMouse) * pull;
             }
             const lift = force * (mouse.attractor ? (light ? 0.48 : 0.9) : (light ? 0.12 : 0.28));
-            const size = star.r + lift;
+            const size = (star.r * (light ? (performanceMode ? 1.18 : 1.24) : 1)) + lift;
 
             const fill = star.accent
-                ? rgba(accent, alpha + lift)
-                : (light ? `rgba(4, 6, 14, ${alpha})` : `rgba(255, 250, 236, ${alpha + lift * 0.7})`);
+                ? (light ? `rgba(87, 56, 8, ${Math.min(0.72, alpha + lift)})` : rgba(accent, alpha + lift))
+                : (light ? `rgba(0, 0, 0, ${alpha})` : `rgba(255, 250, 236, ${alpha + lift * 0.7})`);
             ctx.beginPath();
             ctx.arc(x, y, size, 0, Math.PI * 2);
             ctx.shadowColor = star.accent
-                ? rgba(accent, light ? 0.22 : 0.38)
-                : (light ? 'rgba(4, 6, 14, 0.18)' : 'rgba(255, 250, 236, 0.28)');
+                ? (light ? 'rgba(87, 56, 8, 0.18)' : rgba(accent, 0.38))
+                : (light ? 'rgba(0, 0, 0, 0.22)' : 'rgba(255, 250, 236, 0.28)');
             ctx.shadowBlur = performanceMode
                 ? (star.depth > 0.65 ? (light ? 2.2 : 3.2) : (light ? 1.1 : 1.6))
                 : (star.depth > 0.65 ? (light ? 3.5 : 5.5) : (light ? 1.4 : 2.5));

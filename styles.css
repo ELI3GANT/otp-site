@@ -12089,3 +12089,163 @@ html[data-theme="light"] body.home-page .otp-mark#nav-logo-neon {
       linear-gradient(180deg, #ffffff 0%, #f8f9fc 44%, #ffffff 100%) !important;
   }
 }
+
+/* Final day-mode star clarity: visible black stars, cleaner sky, and brand-grade CTA contrast. */
+html[data-theme="light"] body.home-page,
+html[data-theme="light"] body.home-page .bg-fixed {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(11, 14, 22, 0.035), transparent 26rem),
+    radial-gradient(circle at 78% 28%, rgba(206, 151, 44, 0.09), transparent 24rem),
+    linear-gradient(180deg, #f8f9fb 0%, #ffffff 52%, #f7f8fb 100%) !important;
+}
+
+html[data-theme="light"] body.home-page .bg-grain {
+  opacity: 0.004 !important;
+  animation: none !important;
+  mix-blend-mode: multiply !important;
+}
+
+html[data-theme="light"] body.home-page .hero {
+  background:
+    radial-gradient(ellipse at 50% -8%, rgba(11, 14, 22, 0.05), transparent 34rem),
+    radial-gradient(circle at 52% 18%, rgba(212, 168, 71, 0.11), transparent 30rem),
+    linear-gradient(180deg, #f8f9fb 0%, #ffffff 68%, #ffffff 100%) !important;
+}
+
+html[data-theme="light"] body.home-page .hero-bg {
+  background:
+    radial-gradient(circle at 50% 20%, rgba(10, 14, 22, 0.055), transparent 34%),
+    radial-gradient(circle at 76% 72%, rgba(205, 151, 45, 0.075), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.84)) !important;
+  opacity: 0.74 !important;
+  mix-blend-mode: normal !important;
+}
+
+html[data-theme="light"] body.home-page #cursor-canvas,
+html[data-theme="light"] body.home-page #cursor-canvas.stars-mounted {
+  opacity: 0.9 !important;
+  mix-blend-mode: multiply !important;
+  filter: contrast(1.42) saturate(0.96) !important;
+}
+
+html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas,
+html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas.stars-mounted {
+  opacity: 0.88 !important;
+  mix-blend-mode: multiply !important;
+  filter: contrast(1.34) saturate(0.94) !important;
+}
+
+html[data-theme="light"]:not([data-stars="mounted"]):not([data-stars="disabled"]) body.home-page .hero::before {
+  opacity: 0.22 !important;
+  mix-blend-mode: multiply !important;
+  background:
+    radial-gradient(circle at 12% 24%, rgba(3, 5, 12, 0.54) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 32% 62%, rgba(92, 63, 14, 0.3) 0 1.15px, transparent 2px),
+    radial-gradient(circle at 72% 38%, rgba(3, 5, 12, 0.36) 0 1.1px, transparent 2px),
+    radial-gradient(ellipse at 50% 24%, rgba(205, 151, 45, 0.08), transparent 42%) !important;
+}
+
+html[data-theme="light"] body.home-page .hero-cta .book-btn {
+  background: linear-gradient(135deg, #07080c 0%, #18120a 54%, #9f721d 100%) !important;
+  color: #fff7df !important;
+  border-color: rgba(124, 88, 18, 0.68) !important;
+  box-shadow:
+    0 18px 38px rgba(9, 10, 14, 0.18),
+    0 0 26px rgba(205, 151, 45, 0.14) !important;
+}
+
+html[data-theme="light"] body.home-page .hero-cta .book-btn-ghost {
+  background: rgba(255, 255, 255, 0.86) !important;
+  color: #07080c !important;
+  border-color: rgba(124, 88, 18, 0.32) !important;
+  box-shadow: 0 14px 30px rgba(9, 10, 14, 0.08) !important;
+}
+
+html[data-theme="light"] body.home-page .nav {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border-bottom-color: rgba(16, 18, 24, 0.1) !important;
+  box-shadow: 0 12px 36px rgba(9, 10, 14, 0.06) !important;
+}
+
+html[data-theme="light"] body.home-page .nav-logo {
+  border-color: rgba(124, 88, 18, 0.2) !important;
+  filter: none !important;
+  box-shadow:
+    0 12px 28px rgba(9, 10, 14, 0.09),
+    0 0 0 1px rgba(255, 255, 255, 0.78) inset,
+    0 0 22px rgba(205, 151, 45, 0.08) !important;
+}
+
+html[data-theme="light"].otp-brand-synced body.home-page .hero h1.hero-title-adjust.luxe-title,
+html[data-theme="light"].spectral-v-sync body.home-page .hero h1.hero-title-adjust.luxe-title {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: #06070b !important;
+  animation: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+html[data-theme="light"].otp-brand-synced body.home-page .hero h1.hero-title-adjust.luxe-title .title,
+html[data-theme="light"].otp-brand-synced body.home-page .hero h1.hero-title-adjust.luxe-title .title *,
+html[data-theme="light"].spectral-v-sync body.home-page .hero h1.hero-title-adjust.luxe-title .title,
+html[data-theme="light"].spectral-v-sync body.home-page .hero h1.hero-title-adjust.luxe-title .title * {
+  background: none !important;
+  background-image: none !important;
+  background-size: 100% 100% !important;
+  background-attachment: scroll !important;
+  background-clip: initial !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: #050507 !important;
+  color: #06070b !important;
+  -webkit-text-stroke: 0 transparent !important;
+  animation: none !important;
+  filter: none !important;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.78),
+    0 12px 30px rgba(8, 9, 14, 0.16),
+    0 0 22px rgba(124, 88, 18, 0.08) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  will-change: auto !important;
+}
+
+html[data-theme="light"] body.home-page .nav-links a::after,
+html[data-theme="light"].spectral-v-sync body.home-page .nav-links a::after {
+  background: linear-gradient(90deg, rgba(124, 88, 18, 0.92), rgba(7, 8, 12, 0.62)) !important;
+}
+
+html[data-theme="light"].spectral-revelation body.home-page .nav-logo,
+html[data-theme="light"].spectral-revelation-gold body.home-page .nav-logo,
+html[data-theme="light"].spectral-revelation-neon body.home-page .nav-logo,
+html[data-theme="light"].spectral-v-sync body.home-page .nav-logo {
+  filter: none !important;
+}
+
+@media (max-width: 768px) {
+  html[data-theme="light"].otp-brand-synced body.home-page .hero h1.hero-title-adjust.luxe-title .title,
+  html[data-theme="light"].otp-brand-synced body.home-page .hero h1.hero-title-adjust.luxe-title .title *,
+  html[data-theme="light"].spectral-v-sync body.home-page .hero h1.hero-title-adjust.luxe-title .title,
+  html[data-theme="light"].spectral-v-sync body.home-page .hero h1.hero-title-adjust.luxe-title .title * {
+    background: none !important;
+    background-image: none !important;
+    -webkit-text-fill-color: #050507 !important;
+    color: #050507 !important;
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.76),
+      0 10px 24px rgba(12, 12, 18, 0.14) !important;
+  }
+
+  html[data-theme="light"] body.home-page #cursor-canvas,
+  html[data-theme="light"] body.home-page #cursor-canvas.stars-mounted {
+    opacity: 0.92 !important;
+    filter: contrast(1.48) saturate(0.94) !important;
+  }
+
+  html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas,
+  html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas.stars-mounted {
+    opacity: 0.9 !important;
+  }
+}
