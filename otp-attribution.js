@@ -193,6 +193,7 @@
       landing_page: active.landing_page || first.landing_page || '',
       first_seen_at: first.first_seen_at || '',
       last_seen_at: active.last_seen_at || first.last_seen_at || '',
+      captured_at: new Date().toISOString(),
       attribution_first: first,
       attribution_last: last
     });

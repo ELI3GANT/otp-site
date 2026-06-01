@@ -39,11 +39,22 @@ function fail(message, details = []) {
   process.exit(1);
 }
 
+function realPathOrResolved(inputPath) {
+  const resolved = path.resolve(inputPath);
+  try {
+    return fs.realpathSync.native(resolved);
+  } catch (_) {
+    return resolved;
+  }
+}
+
 const args = process.argv.slice(2);
 const manifestArg = args.find((arg) => arg.startsWith('--manifest='));
 const manifestPath = manifestArg ? manifestArg.split('=').slice(1).join('=') : process.env.OTP_RELEASE_MANIFEST;
 const primaryCheckout = path.resolve(process.env.OTP_PRIMARY_CHECKOUT || '/Users/eli/OTP/otp-site');
 const cwd = path.resolve(process.cwd());
+const primaryCheckoutReal = realPathOrResolved(primaryCheckout);
+const cwdReal = realPathOrResolved(cwd);
 const allowPrimaryDirtyDeploy = process.env.OTP_ALLOW_PRIMARY_DIRTY_DEPLOY === '1';
 const manifest = readManifest(manifestPath || '');
 const lines = gitStatus();
@@ -60,7 +71,7 @@ const artifactPatterns = [
 const artifacts = dirtyPaths.filter((file) => artifactPatterns.some((re) => re.test(file)));
 if (artifacts.length) fail('Release scope contains generated, local, or sensitive artifacts.', artifacts);
 
-if (cwd === primaryCheckout && lines.length && !allowPrimaryDirtyDeploy) {
+if ((cwd === primaryCheckout || cwdReal === primaryCheckoutReal) && lines.length && !allowPrimaryDirtyDeploy) {
   fail('Refusing to deploy from the primary dirty checkout. Create a clean scoped release/worktree first.', dirtyPaths);
 }
 
@@ -75,7 +86,9 @@ if (manifest) {
 console.log(JSON.stringify({
   ok: true,
   cwd,
+  cwdReal,
   primaryCheckout,
+  primaryCheckoutReal,
   dirtyCount: dirtyPaths.length,
   manifest: manifest ? short(manifest.abs) : null
 }, null, 2));

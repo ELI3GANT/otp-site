@@ -417,6 +417,12 @@ function selectPackage(packageName, options = {}) {
   const pkg = packageByName(packageName);
   state.selectedPackage = pkg ? pkg.name : text(packageName, '');
   if (els.package) els.package.value = state.selectedPackage;
+  if (!options.preserveService) {
+    const currentFastLanePackage = fastLanePackageFor(els.service.value);
+    if (currentFastLanePackage && currentFastLanePackage !== state.selectedPackage) {
+      els.service.value = '';
+    }
+  }
   applyActiveTheme(state.selectedPackage);
   renderPackages();
   renderFastLanes();
@@ -437,7 +443,7 @@ function applyFastLaneServiceSelection() {
     updateSummaries();
     return;
   }
-  selectPackage(mappedPackage, { advance: false });
+  selectPackage(mappedPackage, { advance: false, preserveService: true });
   renderFastLanes();
 }
 
@@ -451,7 +457,7 @@ function selectFastLane(service) {
   const mappedPackage = fastLanePackageFor(service);
   if (!mappedPackage) return;
   els.service.value = service;
-  selectPackage(mappedPackage, { advance: false });
+  selectPackage(mappedPackage, { advance: false, preserveService: true });
   renderFastLanes();
   showError('');
 }

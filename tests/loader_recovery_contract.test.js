@@ -22,6 +22,7 @@ assert.ok(index.includes('setTimeout(dismissPageLoader, 1600)'), 'inline loader 
 assert.ok(siteInit.includes('OTP.dismissPageLoader'), 'site-init delegates to inline loader dismiss');
 assert.ok(siteInit.includes('Loading timeout reached'), 'site-init keeps timeout bypass log');
 assert.ok(siteInit.includes('Theme init failed'), 'site-init catches theme init failures');
+assert.ok(siteInit.includes("typeof registration.addEventListener !== 'function'"), 'service worker registration tolerates blocked/undefined registrations');
 assert.ok(/try[\s\S]{0,220}OTPAttribution[\s\S]{0,220}catch/.test(siteInit), 'attribution capture cannot block boot');
 assert.ok(/try[\s\S]{0,260}activateHeroAnimatedLogo[\s\S]{0,220}catch/.test(siteInit), 'hero reveal cannot block boot');
 assert.ok(themeChrono.includes("resetParams.get('reset_theme') === '1'"), 'theme reset query clears stored theme');

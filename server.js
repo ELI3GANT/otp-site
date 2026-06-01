@@ -3302,6 +3302,7 @@ function cleanBookingSourceTracking(input = {}) {
         campaign: clean(body.campaign, 160),
         landing_page: clean(body.landing_page || body.landingPage, 240),
         first_seen_at: clean(body.first_seen_at || body.firstSeenAt, 40),
+        captured_at: clean(body.captured_at || body.capturedAt, 40),
         last_seen_at: clean(body.last_seen_at || body.lastSeenAt || body.captured_at || body.capturedAt, 40)
     };
     if (!tracked.cta_source && tracked.utm_source) tracked.cta_source = tracked.utm_source;

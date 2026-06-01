@@ -99,9 +99,16 @@ Booking deploys must verify:
 - source and UTM tracking stay in the booking payload and `OTP_BOOKING_META`
 - selected Fast Lane metadata stays in the booking payload and `OTP_BOOKING_META`
 - `otp-attribution.js` must not throw during `captureOnLoad`; UTM capture failures are release blockers because they silently weaken source tracking.
+- source tracking must preserve `platform` and a capture timestamp (`captured_at` or `last_seen_at`) so OTP OS can classify mobile/desktop leads and time attribution without guessing.
 - Fast Lane selections map canonically:
   - `Same-Day Reel` -> `The Signal`
   - `Event Promo` -> `The Signal`
   - `Business Content Pack` -> `The Engine`
   - `Brand Launch Pack` -> `Custom Build`
 - mocked browser submit is intercepted during QA; no real email, Stripe charge, or real client mutation
+
+## Manifest Freshness
+
+Treat `release-manifest.json` as the release ledger, not a scratchpad. Before every deploy, update or regenerate it so `excludedDirtyFiles` reflects the current audit result. Stale exclusions are release blockers because they hide whether a dirty file was actually handled, committed separately, ignored, or left for manual approval.
+
+For a fresh release, copy the fields from `docs/OTP_RELEASE_MANIFEST_GUIDE.md`, then fill in pass/fail results only after the commands, browser QA, and authenticated sweep have actually run.

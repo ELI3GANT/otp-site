@@ -136,7 +136,8 @@ assert.ok(stars.includes('drawFrameTimer'), 'performance-mode starfield avoids u
 assert.ok(stars.includes('scheduleDrawFrame(frameInterval)'), 'performance-mode starfield schedules the next paint at the throttled interval');
 assert.ok(stars.includes("document.visibilityState !== 'visible'"), 'starfield pauses draw loop while tab is hidden');
 assert.ok(stars.includes('queueResize'), 'starfield coalesces resize work');
-assert.ok(stars.includes('PROBE_DELAY_MS = 1200'), 'fps probe starts early enough to stabilize desktop hero rendering');
+assert.ok(stars.includes('PROBE_WINDOW_MS = 1600'), 'fps probe uses a short sustained sampling window before adaptive mode');
+assert.ok(stars.includes('PROBE_DELAY_MS = 600'), 'fps probe starts early enough to stabilize desktop hero rendering');
 assert.ok(stars.includes('FPS_TRIGGER = 45'), 'fps probe follows the desktop performance threshold');
 assert.ok(stars.includes('LOW_FPS_SAMPLES_REQUIRED = 1'), 'one sustained low-fps window activates performance mode');
 assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity card pauses motion while tab is hidden');
@@ -144,11 +145,13 @@ assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion w
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
 assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.9', 'homepage styles cache-bust is current');
-assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '16.4.8', 'homepage stars cache-bust is current');
+assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-sync1', 'homepage stars cache-bust is current');
+assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-sync1', 'homepage runtime cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
   assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.9', `${file} styles cache-bust matches index`);
-  assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '16.4.8', `${file} stars cache-bust matches index`);
+  assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-sync1', `${file} stars cache-bust matches index`);
+  assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-sync1', `${file} runtime cache-bust matches index`);
 });
 
 console.log('   OK: Homepage visual contract');

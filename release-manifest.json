@@ -12,6 +12,7 @@
     "client.html",
     "docs/OTP_ASSET_SYSTEM.md",
     "docs/OTP_CLEAN_RELEASE_GUARDRAILS.md",
+    "docs/OTP_RELEASE_MANIFEST_GUIDE.md",
     "docs/OTP_TERMINAL_ORACLE_BLUEPRINT.md",
     "docs/OTP_UNIFIED_DEPLOYMENT.md",
     "docs/OTP_UNIFIED_ENV_AUDIT.md",
@@ -26,6 +27,7 @@
     "og.jpg",
     "otp-attribution.js",
     "otp-terminal.html",
+    "package-lock.json",
     "payment_success.html",
     "portal-gate.html",
     "portal.html",
@@ -48,6 +50,7 @@
     "tests/attribution_contract.test.js",
     "tests/bookings_contract.test.js",
     "tests/homepage_visual_contract.test.js",
+    "tests/loader_recovery_contract.test.js",
     "tests/logo_asset_contract.test.js",
     "tests/marketing_site_contract.test.js",
     "tests/master_runner.js",
@@ -56,12 +59,9 @@
     "vercel.json"
   ],
   "excludedDirtyFiles": [
-    "otp-os:ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon 1.png (pre-existing unrelated staged iOS icon work)",
-    "otp-os:ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json (pre-existing unrelated staged iOS icon work)",
-    "otp-os:ios/App/App/Assets.xcassets/AppIcon.appiconset/image.png (pre-existing unrelated staged iOS icon work)",
-    "otp-os:ios/App/App/Assets.xcassets/Contents.json (pre-existing unrelated staged iOS icon work)",
+    "otp-os:ignored local .env, output/, node_modules/, .vercel/, .playwright-cli/, .DS_Store, and backup files (not release material)",
     "otp-site:test-report.xml (generated ignored test artifact)",
-    "otp-os:.env and output/playwright screenshots (ignored local/generated artifacts)"
+    "otp-site:old detached Codex worktrees under /Users/eli/.codex/worktrees (not release source)"
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -107,11 +107,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local patched QA passed desktop dark/light and mobile dark/light homepage with mounted canvas stars, clean hero pseudo-layer, no checkerboard, ELI3GANT-only identity, Enter Vault present, no console errors, and no overflow. Adaptive performance mode activated on desktop; sampled headless FPS was 54.9 dark, 52.2 light, 60.4 mobile dark, and 60.4 mobile light. Booking mobile Fast Lane clicks stayed on Step 1; Same-Day Reel and Event Promo mapped to The Signal, Business Content Pack to The Engine, and Brand Launch Pack to Custom Build. Mocked submit preserved source tracking, selected_fast_offer, and fast_lane_package."
+    "summary": "Local patched QA passed homepage desktop/mobile light-mode checks with mounted canvas stars, ELI3GANT-only identity, Enter Vault link present, no app console errors, and no overflow. Desktop headless early adaptive window sampled 33fps while performance mode activated; settled desktop sample reached 60.1fps with adaptive mode on. Mobile sample reached 60.4fps. Booking mobile Fast Lane clicks stayed on Step 1; mocked submit preserved service_type, package_interest, selected_fast_offer, fast_lane_package, source tracking, UTM values, platform, and timestamp."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Temporary Vercel production env pull used for runtime-only auth; E2E_TEST_MODE=true prod full sweep passed admin QA, knowledge, docs templates, schema migration, and terminal smoke checks. Temp env material deleted."
+    "summary": "Secure local hidden prompt supplied admin passcode only in subprocess memory. E2E_TEST_MODE=true prod full sweep authenticated through canonical login/JWT auth and passed admin QA, knowledge, docs templates, schema migration, terminal smoke, and safe fixture checks."
   },
   "deploymentTarget": {
     "project": "otp-site",

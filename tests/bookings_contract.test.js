@@ -85,6 +85,7 @@ assert.ok(html.includes('private OTP Client Portal link where you can view proje
 assert.ok(html.includes('Your request is in. OTP will review the scope and prepare the cleanest next step.'), 'success screen uses final OTP copy');
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
+assert.ok(html.includes('bookings.js?v=20260601-sync1'), 'booking script cache-bust moves with behavior fixes');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');
@@ -114,8 +115,12 @@ assert.ok(js.includes('makeBookingToken'), 'frontend sends a booking token for d
 assert.ok(js.includes('otp_company_website'), 'frontend submits honeypot field');
 assert.ok(js.includes('buildSourceTracking'), 'frontend captures sanitized source tracking');
 assert.ok(js.includes('source_tracking: state.sourceTracking'), 'booking payload includes source tracking');
+assert.ok(js.includes('platform:'), 'booking source tracking includes desktop/mobile platform');
+assert.ok(js.includes('captured_at'), 'booking source tracking includes a timestamp');
 assert.ok(js.includes('fastLanePackageFor'), 'booking frontend resolves fast lane package mapping');
 assert.ok(js.includes('applyFastLaneServiceSelection'), 'fast lane service selections sync the package without skipping Step 1');
+assert.ok(js.includes('preserveService'), 'manual package changes clear mismatched Fast Lane service state');
+assert.ok(js.includes("els.service.value = ''"), 'mismatched fast lane service is cleared before payload build');
 assert.ok(js.includes('FAST_LANE_DETAILS'), 'booking frontend has visible Fast Lane card metadata');
 assert.ok(js.includes('renderFastLanes'), 'booking frontend renders Fast Lane cards');
 assert.ok(js.includes('selectFastLane'), 'Fast Lane cards can select service/package state');
@@ -135,6 +140,7 @@ assert.ok(!js.includes('OTP_BOOKINGS_UPSTREAM'), 'client does not expose interna
 assert.ok(!js.includes('SUPABASE_SERVICE'), 'client does not expose service secrets');
 assert.ok(server.includes('cleanBookingSourceTracking'), 'server sanitizes booking source tracking');
 assert.ok(server.includes('source_tracking: payload.source_tracking || {}'), 'internal booking metadata preserves source tracking');
+assert.ok(server.includes('captured_at:'), 'server preserves source tracking capture timestamps');
 assert.ok(server.includes('bookingFastLaneMappings'), 'server exposes canonical fast lane mappings');
 assert.ok(server.includes('selected_fast_offer'), 'OTP_BOOKING_META preserves selected fast offer');
 assert.ok(server.includes('fast_lane_package'), 'OTP_BOOKING_META preserves the mapped fast lane package');

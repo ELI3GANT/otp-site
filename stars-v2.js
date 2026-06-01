@@ -32,8 +32,8 @@
     let probeComplete = false;
     let performanceProbeEnabled = false;
     let lowFpsStreak = 0;
-    const PROBE_WINDOW_MS = 2000;
-    const PROBE_DELAY_MS = 1200;
+    const PROBE_WINDOW_MS = 1600;
+    const PROBE_DELAY_MS = 600;
     const FPS_TRIGGER = 45;
     const LOW_FPS_SAMPLES_REQUIRED = 1;
     let resizeQueued = false;

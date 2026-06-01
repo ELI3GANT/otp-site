@@ -12,6 +12,7 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         window.addEventListener('load', async () => {
             try {
                 const registration = await navigator.serviceWorker.register('/sw.js');
+                if (!registration || typeof registration.addEventListener !== 'function') return;
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
                     if (!newWorker) return;

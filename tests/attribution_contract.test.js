@@ -68,6 +68,8 @@ const tracking = context.OTPAttribution.getSourceTrackingPayload();
 assert.equal(tracking.utm_source, 'instagram', 'source tracking preserves UTM source');
 assert.equal(tracking.utm_campaign, 'spring', 'source tracking preserves UTM campaign');
 assert.equal(tracking.cta_source, 'instagram', 'source tracking prefers captured UTM source');
+assert.equal(tracking.platform, 'desktop', 'source tracking preserves desktop/mobile platform');
+assert.ok(tracking.captured_at, 'source tracking includes a current capture timestamp');
 
 console.log('   OK: Attribution contract');
 console.log('ATTRIBUTION CONTRACT COMPLETE');
