@@ -19,7 +19,10 @@
     "prod:test:ci": "npm run master_test:ci && npm run prod:terminal-sweep",
     "health:terminal": "npm run prod:terminal-sweep",
     "health:post-deploy": "npm run prod:test:ci",
-    "security:scan": "node scripts/security_scan.js"
+    "security:scan": "node scripts/security_scan.js",
+    "release:scope": "node scripts/verify_release_scope.js --manifest=release-manifest.json",
+    "release:gate": "node scripts/verify_release_scope.js --manifest=release-manifest.json --deploy",
+    "vercel:ignore-build": "node scripts/vercel_ignore_build_step.js"
   },
   "keywords": [
     "otp",

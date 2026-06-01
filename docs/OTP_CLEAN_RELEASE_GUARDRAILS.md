@@ -24,17 +24,39 @@ Use `scripts/verify_release_scope.js` before any deploy:
 node scripts/verify_release_scope.js --manifest=release-manifest.json
 ```
 
+Use the deploy gate for production release candidates:
+
+```bash
+npm run release:gate
+```
+
 The guard blocks:
 
 - primary dirty checkout deploys
 - files outside the release manifest
+- missing files listed in the release manifest
 - `.env` files
 - HAR files
 - `output/playwright` artifacts
 - `test-report.xml`
 - `node_modules`
+- production release candidates without passed browser QA and authenticated sweep evidence
+- production release candidates missing the canonical OTP production aliases
 
 Only set `OTP_ALLOW_PRIMARY_DIRTY_DEPLOY=1` for a local diagnostic that will not be deployed.
+
+## CI-Enforced Production Path
+
+Production releases must use `.github/workflows/production-release.yml` or an equivalent clean scoped release worktree that runs `npm run release:gate` before `vercel build --prod` or `vercel deploy --prod`.
+
+The production workflow:
+
+- requires the `CLEAN_RELEASE` manual confirmation
+- runs the release gate, test suite, security scan, Speed Insights build, live CI checks, public production sweep, authenticated production sweep, syntax checks, and `git diff --check`
+- requires `OTP_ADMIN_PASSCODE`, `ADMIN_PASSCODE`, or `OTP_ADMIN_TOKEN` for authenticated sweep checks
+- deploys with `vercel build --prod` followed by `vercel deploy --prebuilt --prod`
+
+`vercel.json` uses `ignoreCommand` through `scripts/vercel_ignore_build_step.js` so Git-triggered production auto-deploys are ignored by default. Preview deploys and verified CLI/prebuilt deploys can continue. Do not set `OTP_ALLOW_VERCEL_GIT_PRODUCTION_DEPLOY=1` unless you are intentionally bypassing the clean-release workflow for an emergency and have recorded the reason.
 
 ## Dirty Checkout Audit
 

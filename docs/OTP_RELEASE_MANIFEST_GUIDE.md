@@ -45,6 +45,8 @@ Use this guide when preparing `release-manifest.json` for a clean scoped release
 - Never include `.env`, HAR files, local screenshots, test reports, Vercel state, or node modules.
 - Do not carry stale `excludedDirtyFiles` forward. Re-audit and rewrite the list for each release.
 - If a file is committed separately before release, remove it from `excludedDirtyFiles` and mention the commit in the final report instead.
+- Run `npm run release:gate` from the clean release workspace before production deploy. It requires a clean checkout, existing included files, passed browser QA evidence, passed authenticated sweep evidence, and the canonical production aliases.
+- Production deploys should go through `.github/workflows/production-release.yml`; direct Git-triggered production auto-deploys are ignored by Vercel through `scripts/vercel_ignore_build_step.js`.
 
 ## Required Evidence
 

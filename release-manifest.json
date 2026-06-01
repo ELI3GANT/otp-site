@@ -1,6 +1,8 @@
 {
   "releaseName": "otp-true-premium-visual-fast-lane-lock-clean-release",
   "includedFiles": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/production-release.yml",
     "404.html",
     "apple-touch-icon.png",
     "archive.html",
@@ -28,6 +30,7 @@
     "otp-attribution.js",
     "otp-terminal.html",
     "package-lock.json",
+    "package.json",
     "payment_success.html",
     "portal-gate.html",
     "portal.html",
@@ -38,6 +41,7 @@
     "scripts/prod_full_sweep.js",
     "scripts/prod_sweep_v2_runner.js",
     "scripts/prod_terminal_sweep.js",
+    "scripts/vercel_ignore_build_step.js",
     "scripts/verify_release_scope.js",
     "server.js",
     "site-init.js",

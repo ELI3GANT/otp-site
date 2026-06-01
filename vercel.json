@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "ignoreCommand": "node scripts/vercel_ignore_build_step.js",
   "builds": [
     {
       "src": "server.js",
