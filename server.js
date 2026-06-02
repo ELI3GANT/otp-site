@@ -2312,6 +2312,22 @@ app.get('/', (req, res) => {
     noStoreHtml(res);
     res.sendFile(path.join(staticPath, 'index.html'));
 });
+
+// `/packages` is an external-friendly alias for the homepage package section.
+// Redirect instead of serving duplicate HTML so the homepage canonical remains authoritative.
+app.get('/packages', (req, res) => {
+    const params = new URLSearchParams();
+    Object.entries(req.query || {}).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+            value.forEach((entry) => params.append(key, String(entry)));
+            return;
+        }
+        if (value !== undefined) params.append(key, String(value));
+    });
+    const query = params.toString();
+    return res.redirect(302, `/${query ? `?${query}` : ''}#packages`);
+});
+
 const staticAliases = {
     '/portal': 'portal.html',
     '/bookings': 'bookings.html',

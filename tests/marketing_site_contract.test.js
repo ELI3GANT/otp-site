@@ -21,6 +21,7 @@ const notFound = read('404.html');
 const terminal = read('otp-terminal.html');
 const themeChrono = read('theme-chrono.js');
 const siteInit = read('site-init.js');
+const server = read('server.js');
 
 assert.ok(index.includes('theme-chrono.js'), 'index loads theme-chrono (first paint)');
 assert.ok(index.includes('styles.css?v='), 'index loads styles.css');
@@ -93,6 +94,8 @@ assert.ok(siteInit.includes('sanitizeHttpUrl'), 'site-init exposes http(s) URL h
 assert.ok(siteInit.includes('/api/contact/submit'), 'site-init wires contact form to public submit API');
 assert.ok(siteInit.includes('otp-uplink'), 'site-init listens on same Realtime channel as OTP Terminal');
 assert.ok(siteInit.includes('Invalid response from server'), 'contact handler tolerates non-JSON error bodies');
+assert.ok(server.includes("app.get('/packages'"), 'server exposes /packages as a homepage package-section alias');
+assert.ok(server.includes('#packages'), '/packages alias redirects to homepage package section instead of duplicate HTML');
 assert.ok(!index.includes('onmouseenter='), 'Enter Vault has no inline hover handler');
 assert.ok(!index.includes('onmouseleave='), 'Enter Vault has no inline leave handler');
 assert.ok(siteInit.includes("warpBtn.dataset.vaultBound === '1'"), 'Enter Vault binding is guarded against duplicates');
