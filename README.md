@@ -1,46 +1,131 @@
-# OTP Site — Only True Perspective
+# OnlyTruePerspective — OTP Site
 
-A high-end, AI-integrated web platform for creative visionaries. Features include real-time analytics, automated lead auditing, and a custom admin portal for content management.
+**OnlyTruePerspective (OTP)** is the public-facing creative-tech platform for ELI3GANT and the OTP ecosystem.
 
-## Tech stack
+It connects the brand, booking flow, client discovery, creative services, and the foundation for OTP OS — the private operating system that powers internal work, client tracking, documents, deals, and automation.
 
-- **Frontend**: Vanilla JS, Chart.js, Supabase client. Marketing site may live on **Framer** (`onlytrueperspective.tech`); repo files can be mirrored from Git for admin HTML/JS or pasted/synced manually.
-- **Backend**: Node/Express on **Vercel** (`/api/*`, schema SQL endpoints), Supabase (PostgreSQL), OpenAI/Gemini APIs.
-- **Performance**: IntersectionObserver-based lazy loading, compression, client-side image optimization.
+---
 
-## Directory layout
+## What This Repo Powers
+
+- Public OTP website
+- Brand identity and landing pages
+- Booking and inquiry flows
+- Client portal entry points
+- SEO and structured data
+- Frontend experiments for the OTP ecosystem
+- Production-ready deployment workflow through Vercel
+
+---
+
+## Ecosystem Position
+
+```text
+otp-site  → public brand + client-facing website
+otp-os    → private internal control panel + operations layer
+Stripe    → payments
+Supabase  → data/auth/storage layer
+Vercel    → production hosting
+AI        → Oracle, automation, content, docs, workflow intelligence
+```
+
+The site is not just a portfolio. It is the front door to a larger creative-business operating system.
+
+---
+
+## Core Features
+
+- Responsive public website
+- Dark/light visual system
+- Booking and client intake routes
+- Client portal links
+- SEO metadata and structured schema
+- Production deployment on Vercel
+- Integration path for OTP OS, Stripe, Supabase, and AI tooling
+
+---
+
+## Tech Stack
+
+- HTML, CSS, JavaScript
+- Node / Express API routes where needed
+- Supabase client + backend data layer
+- Stripe payment infrastructure
+- Vercel hosting and deployment
+- AI integrations for Oracle/workflow systems
+
+---
+
+## Repo Structure
 
 | Path | Purpose |
-|------|---------|
-| **Root** (`*.html`, `site-*.js`, `*.css`) | Public site, shared scripts, and styles. Kept at root so asset URLs stay simple for static hosting. |
-| **`assets/`** | Brand media (e.g. animated logo). |
-| **`docs/business/`** | Internal business documents (MSA, onboarding questionnaire). |
-| **`scripts/`** | Node utilities: `prepare_deploy.js`, `bake_insights.js`, `watch_push.js`, etc. |
-| **`supabase/migrations/`** | SQL to run in the Supabase SQL editor (schema, hardening, seeds). |
-| **`supabase/functions/`** | Supabase Edge Function sources (when used). |
-| **`tests/`** | Automated checks; run via `npm run master_test`. |
+|---|---|
+| `/` | Public website pages, scripts, styles, assets |
+| `assets/` | Brand visuals, icons, media, UI assets |
+| `api/` | Serverless/API logic when used |
+| `docs/` | Business and technical documentation |
+| `scripts/` | Utility, deploy, testing, and automation scripts |
+| `supabase/` | Database migrations/functions where applicable |
+| `tests/` | Verification and regression checks |
 
-## Setup
+---
 
-1. Clone the repository.
-2. `npm install`
-3. Copy env: create `.env` from your secrets (Supabase, JWT, AI keys, Stripe, etc. — never commit `.env`).
-4. Local API: `npm start` or `npm run dev` (nodemon).
+## Local Setup
 
-## Daily workflow (push → Vercel)
+```bash
+npm install
+npm run dev
+```
 
-1. **`npm run watch:push`** — leave running; after you save, it debounces, then **commit + push** to the current branch.  
-   - Detached Cursor worktree: `WATCH_PUSH_TARGET=main npm run watch:push`
-2. **Vercel** rebuilds from **`main`** (or your connected branch).
-3. **Framer** — publish there when you change what Framer serves; Git does not replace Framer publish.
+Create a local `.env` file for private keys and service credentials. Never commit secrets.
 
-## Admin
+Typical required services may include:
 
-- Secure login with JWT.
-- Post/broadcast management, analytics, and client auditing from the terminal UI.
-- Schema SQL modal: **`GET /api/schema-migration`** (alias **`/api/deploy-sql`**) with **`Authorization: Bearer <JWT>`** (same token as the Terminal). Not public. Source file: `supabase/migrations/DEPLOY_V1.3.sql`.
+```env
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+STRIPE_SECRET_KEY=
+OPENAI_API_KEY=
+GEMINI_API_KEY=
+JWT_SECRET=
+```
 
-## Optional hosts
+---
 
-- **Netlify**: `netlify.toml` publishes repo **root** as static only (no API — use Vercel for `/api`).
-- **GitHub Pages**: `CNAME` + `.nojekyll` present if you point DNS/repo pages here.
+## Deployment
+
+Production is handled through Vercel.
+
+```bash
+git add .
+git commit -m "Update OTP site"
+git push origin main
+```
+
+Vercel rebuilds from `main` once connected.
+
+---
+
+## Current Priorities
+
+- Keep the public site clean, fast, and premium
+- Strengthen booking and client conversion
+- Improve SEO and social previews
+- Keep OTP OS connected cleanly without leaking private admin systems
+- Build trust through polished presentation and strong client-facing flow
+
+---
+
+## Brand Direction
+
+OTP is a creative-tech ecosystem combining:
+
+- media production
+- music and artist identity
+- websites and digital systems
+- AI-powered business workflow
+- client services
+- automation
+- community infrastructure
+
+**Built by ELI3GANT / OnlyTruePerspective.**
