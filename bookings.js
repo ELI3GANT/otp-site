@@ -183,6 +183,7 @@ const els = {
   successCopy: $('success-copy'),
   successMeta: $('success-meta'),
   successActions: $('success-actions'),
+  quickSelectors: [...document.querySelectorAll('[data-quick-service]')],
   service: $('booking-service'),
   package: $('booking-package'),
   name: $('booking-name'),
@@ -422,6 +423,7 @@ function updateSummaries() {
   els.formPackageNote.textContent = selected.message;
   const pillName = els.activePackagePill.querySelector('strong');
   if (pillName) pillName.textContent = selected.pill;
+  updateQuickSelectorState();
 }
 
 function selectPackage(packageName, options = {}) {
@@ -471,6 +473,54 @@ function selectFastLane(service) {
   selectPackage(mappedPackage, { advance: false, preserveService: true });
   renderFastLanes();
   showError('');
+}
+
+function setSelectIfAvailable(select, value) {
+  if (!select || !value) return false;
+  const exists = [...select.options].some((option) => option.value === value);
+  if (!exists) return false;
+  select.value = value;
+  return true;
+}
+
+function updateQuickSelectorState() {
+  if (!els.quickSelectors.length) return;
+  els.quickSelectors.forEach((control) => {
+    const service = control.dataset.quickService || '';
+    const packageName = control.dataset.quickPackage || '';
+    const selected = service
+      ? els.service.value === service
+      : Boolean(packageName && state.selectedPackage === packageName);
+    control.classList.toggle('active', selected);
+    control.setAttribute('aria-pressed', selected ? 'true' : 'false');
+  });
+}
+
+function selectQuickService(control) {
+  if (!control) return;
+  const service = cleanTrackingValue(control.dataset.quickService || '', 160);
+  const packageName = cleanTrackingValue(control.dataset.quickPackage || '', 160);
+  if (service) setSelectIfAvailable(els.service, service);
+  if (packageName) {
+    selectPackage(packageName, { advance: false, preserveService: true });
+  } else {
+    applyFastLaneServiceSelection();
+  }
+  renderFastLanes();
+  updateSummaries();
+  updateQuickSelectorState();
+  showError('');
+  window.requestAnimationFrame(() => {
+    els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
+  });
+}
+
+function wireQuickSelectors() {
+  if (!els.quickSelectors.length) return;
+  els.quickSelectors.forEach((control) => {
+    control.setAttribute('aria-pressed', 'false');
+    control.addEventListener('click', () => selectQuickService(control));
+  });
 }
 
 function renderFastLanes() {
@@ -774,7 +824,7 @@ function renderSuccess(data) {
   els.successActions.replaceChildren();
 
   const rows = [
-    ['Status', recommendation ? 'Booking saved with OTP Oracle guidance' : 'Booking saved. OTP Oracle recommendation is pending review.'],
+    ['Status', recommendation ? 'Request received with OTP recommendation' : 'Request received. OTP recommendation is pending review.'],
     ['Recommended Package', recommendation ? text(recommendation.recommendedPackage) : 'Recommendation pending review'],
     ['Quote Range', recommendation ? text(recommendation.quoteRange, 'Scope based') : 'Pending review'],
     ['Next Step', text(data.nextStep || recommendation?.nextAction, 'OTP will confirm scope and prepare the next step.')],
@@ -829,7 +879,7 @@ async function submitBooking(event) {
   els.submit.classList.add('is-loading');
   els.submit.textContent = 'Submitting';
   showError('');
-  showStatus('Saving booking request into OTP OS...');
+  showStatus('Sending booking request to OTP...');
 
   try {
     const response = await fetch('/api/bookings/submit', {
@@ -839,13 +889,13 @@ async function submitBooking(event) {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || data.ok === false || data.error) {
-      throw new Error(text(data.message, 'We could not submit the booking yet. Please check the required fields and try again.'));
+      throw new Error(text(data.message, 'Something blocked the request. Please check your contact info and try again.'));
     }
     renderSuccess(data);
     showStatus('');
   } catch (error) {
     showStatus('');
-    showError(text(error?.message, 'We could not submit the booking yet. Please check the required fields and try again.'));
+    showError(text(error?.message, 'Something blocked the request. Please check your contact info and try again.'));
   } finally {
     state.submitting = false;
     els.submit.classList.remove('is-loading');
@@ -885,6 +935,7 @@ async function init() {
     offlineMode = true;
   }
   fillSelects();
+  wireQuickSelectors();
   renderPackages();
   renderFastLanes();
   setStep(1);

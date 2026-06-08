@@ -56,8 +56,8 @@ for (const [offer, mappedPackage] of Object.entries(fastLaneMappings)) {
     assert.ok(js.includes(`'${offer}': '${mappedPackage}'`), `${offer} maps to ${mappedPackage} in booking fallback config`);
 }
 
-assert.ok(html.includes('Creative systems for brands, artists, and businesses ready to look official.'), 'booking hero is upgraded');
-assert.ok(html.includes('OTP Bookings'), 'booking hero label is visible');
+assert.ok(html.includes('Start a Project with OTP.'), 'booking hero is direct and conversion-focused');
+assert.ok(html.includes('Tell us what you are building. OTP will review the details and follow up with the best next step'), 'booking hero sets clear client expectations');
 assert.ok(html.includes('official-brand-mark'), 'header keeps the official OTP site mark');
 assert.ok(html.includes('/assets/otp-hero-poster-frame.png'), 'header uses the stable optimized OTP poster mark');
 assert.ok(!html.includes('/assets/otp-hero-centered.gif'), 'header does not render the edge-on spinning GIF as the primary mark');
@@ -70,14 +70,22 @@ assert.ok(html.includes('oracle-glyph'), 'Oracle sigil uses a distinct eye/logic
 assert.ok(html.includes('sigil-vector'), 'sigil includes inline SVG orbit lines');
 assert.ok(!html.includes('class="otp-booking-sigil brand-sigil"'), 'header does not reuse the booking portal sigil');
 assert.ok(!/<img[^>]+src="\/assets\/otp-logo-transparent\.png"/.test(html), 'portal sigils do not repeat the same OTP raster logo');
-assert.ok(html.includes('OTP OS Profile'), 'connected journey is visible');
-assert.ok(html.includes('Oracle'), 'Oracle flow chip is visible');
-assert.ok(html.includes('Documents'), 'Documents flow chip is visible');
-assert.ok(html.includes('Payment'), 'Payment flow chip is visible');
-assert.ok(html.includes('Client Portal'), 'Client Portal CTA/flow label is visible');
+assert.ok(html.includes('Tell us the project'), 'client-facing booking flow starts with project details');
+assert.ok(html.includes('OTP reviews'), 'client-facing booking flow explains review step');
+assert.ok(html.includes('Best next step'), 'client-facing booking flow explains recommendation step');
+assert.ok(html.includes('Proposal or portal'), 'client-facing booking flow explains portal/proposal step');
+assert.ok(html.includes('Build starts'), 'client-facing booking flow explains delivery step');
+assert.ok(html.includes('id="service-selector"'), 'service selector is visible before intake');
+assert.ok(html.includes('Video / Content'), 'service selector includes video/content lane');
+assert.ok(html.includes('Website / Digital System'), 'service selector includes website/digital lane');
+assert.ok(html.includes('Brand Launch'), 'service selector includes brand launch lane');
+assert.ok(html.includes('Fast Lane'), 'service selector includes fast lane lane');
+assert.ok(html.includes('Custom Build'), 'service selector includes custom build lane');
+assert.ok(html.indexOf('class="booking-shell"') < html.indexOf('id="packages"'), 'booking intake appears before deep package grids');
 assert.ok(html.includes('package-selection-summary'), 'selected package summary is present');
 assert.ok(html.includes('id="fast-lanes"'), 'Fast Lane section is visible on the bookings page');
 assert.ok(html.includes('id="fast-lane-grid"'), 'Fast Lane card grid is present');
+assert.ok(html.includes('Urgent work can still start cleanly.'), 'Fast Lane section remains visible after intake');
 assert.ok(html.includes('Same-day content, event promos, business packs, and launch work'), 'Fast Lane section explains the visible offer lanes');
 assert.ok(html.includes('booking-mini-summary'), 'desktop booking mini-summary is present');
 assert.ok(html.includes('Submit Booking Request'), 'final CTA is explicit');
@@ -90,13 +98,14 @@ assert.ok(html.includes('private OTP Client Portal link where you can view proje
 assert.ok(html.includes('Your request is in. OTP will review the details and follow up with the best next step.'), 'success screen uses final OTP copy');
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
-assert.ok(html.includes('bookings.css?v=20260608-intake2'), 'booking stylesheet cache-bust moves with visual fixes');
-assert.ok(html.includes('bookings.js?v=20260608-intake2'), 'booking script cache-bust moves with behavior fixes');
+assert.ok(html.includes('bookings.css?v=20260608-bookingflow3'), 'booking stylesheet cache-bust moves with booking flow fixes');
+assert.ok(html.includes('bookings.js?v=20260608-bookingflow3'), 'booking script cache-bust moves with booking flow fixes');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');
 assert.ok(html.includes('Open Secure Project Intake'), 'project intake button copy is explicit');
 assert.ok(html.includes('This page starts the conversation'), 'bookings explains public intake role');
+assert.ok(html.includes('next-steps-list'), 'what-happens-next list is visible near the intake form');
 for (const field of [
     'preferred_contact_method',
     'project_type',
@@ -141,6 +150,9 @@ assert.ok(js.includes("els.service.value = ''"), 'mismatched fast lane service i
 assert.ok(js.includes('FAST_LANE_DETAILS'), 'booking frontend has visible Fast Lane card metadata');
 assert.ok(js.includes('renderFastLanes'), 'booking frontend renders Fast Lane cards');
 assert.ok(js.includes('selectFastLane'), 'Fast Lane cards can select service/package state');
+assert.ok(js.includes('wireQuickSelectors'), 'service selector cards are wired to the existing intake state');
+assert.ok(js.includes('selectQuickService'), 'service selector cards update service/package without changing payload shape');
+assert.ok(js.includes('setSelectIfAvailable'), 'service selector cards only set supported select values');
 assert.ok(js.includes('selected_fast_offer'), 'booking payload preserves the selected fast offer');
 assert.ok(js.includes('fast_lane_package'), 'booking payload preserves the mapped fast lane package');
 assert.ok(js.includes("missing.push('email or phone')"), 'frontend accepts either email or phone as contact');
@@ -171,6 +183,8 @@ assert.ok(js.includes('The Engine is selected for connected brand assets.'), 'En
 assert.ok(js.includes('The System is selected for full creative/business structure.'), 'System selection message exists');
 assert.ok(js.includes('Custom Build is selected for a scoped custom project.'), 'Custom selection message exists');
 assert.ok(js.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle default message persists after JS init');
+assert.ok(js.includes('Sending booking request to OTP...'), 'submit loading copy stays client-facing');
+assert.ok(js.includes('Something blocked the request. Please check your contact info and try again.'), 'network error copy is client-ready');
 assert.ok(!js.includes('OTP_BOOKINGS_UPSTREAM'), 'client does not expose internal upstream config');
 assert.ok(!js.includes('SUPABASE_SERVICE'), 'client does not expose service secrets');
 assert.ok(server.includes('cleanBookingSourceTracking'), 'server sanitizes booking source tracking');
@@ -217,6 +231,9 @@ assert.ok(css.includes('data-package-theme="custom-build"'), 'Custom card theme 
 assert.ok(css.includes('fast-lane-grid'), 'Fast Lane grid is styled');
 assert.ok(css.includes('fast-lane-card'), 'Fast Lane cards are styled');
 assert.ok(css.includes('fast-lane-meta'), 'Fast Lane card metadata is styled');
+assert.ok(css.includes('service-selector-grid'), 'service selector grid is styled');
+assert.ok(css.includes('service-selector-card'), 'service selector cards are styled');
+assert.ok(css.includes('next-steps-list'), 'what-happens-next list is styled');
 assert.ok(css.includes('otpStarDrift'), 'animated star field is present');
 assert.ok(css.includes('otpOrbitalShift'), 'animated orbital glow is present');
 assert.ok(css.includes('sigilBreath'), 'sigil glow animation is present');

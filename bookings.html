@@ -20,7 +20,7 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/bookings.css?v=20260608-intake2" />
+    <link rel="stylesheet" href="/bookings.css?v=20260608-bookingflow3" />
   </head>
   <body>
     <main class="booking-page">
@@ -62,22 +62,20 @@
               <span class="sigil-particle p2"></span>
               <span class="sigil-particle p3"></span>
             </span>
-            <p class="hero-label">OTP Bookings Portal</p>
+            <p class="hero-label">Project intake</p>
           </div>
-          <h1 id="booking-title">Creative systems for brands, artists, and businesses ready to look official.</h1>
-          <p class="hero-copy">OTP builds visuals, content, websites, booking flows, and AI-powered systems that help ideas move like real brands.</p>
+          <h1 id="booking-title">Start a Project with OTP.</h1>
+          <p class="hero-copy">Tell us what you are building. OTP will review the details and follow up with the best next step for your content, website, brand, or custom system.</p>
           <div class="hero-actions">
             <a class="primary-action" href="#booking-form">Start Booking</a>
-            <a class="secondary-action" href="#packages">Build My Package</a>
+            <a class="secondary-action" href="#service-selector">Choose Service</a>
           </div>
           <div class="flow-chips" aria-label="OTP booking flow">
-            <span>Live Site</span>
-            <span>Bookings</span>
-            <span>OTP OS Profile</span>
-            <span>Oracle</span>
-            <span>Documents</span>
-            <span>Payment</span>
-            <span>Client Portal</span>
+            <span>Tell us the project</span>
+            <span>OTP reviews</span>
+            <span>Best next step</span>
+            <span>Proposal or portal</span>
+            <span>Build starts</span>
           </div>
         </div>
         <aside class="oracle-card" aria-label="OTP Oracle summary">
@@ -104,49 +102,59 @@
           <strong id="oracle-package-name">Package system standing by</strong>
           <p id="oracle-package-message">OTP Oracle reviews your request and helps recommend the right package, documents, and next action.</p>
           <div class="oracle-tags" aria-label="Oracle routing capabilities">
-            <span>Package Logic</span>
-            <span>Document Routing</span>
-            <span>Next Step Planning</span>
+            <span>Package Match</span>
+            <span>Fast Lane Check</span>
+            <span>Next Step Plan</span>
           </div>
         </aside>
       </section>
 
-      <section id="packages" class="section-block" aria-labelledby="packages-title">
+      <section id="service-selector" class="section-block service-selector-section" aria-labelledby="service-selector-title">
         <div class="section-heading">
-          <p>Packages</p>
-          <h2 id="packages-title">Pick the level of build.</h2>
-          <span>Video, logo, website, AI, automation, full systems, and custom bundles can all start here.</span>
+          <p>Service selector</p>
+          <h2 id="service-selector-title">Choose the lane closest to your project.</h2>
+          <span>Pick a starting point, then finish the short intake. You can still request custom work or ask OTP to recommend the cleanest package.</span>
         </div>
-        <div id="package-grid" class="package-grid" aria-live="polite">
-          <article class="package-card loading-card">Loading packages...</article>
-        </div>
-        <div id="package-selection-summary" class="package-selection-summary" aria-live="polite">
-          <span class="summary-signal" aria-hidden="true"></span>
-          <div>
-            <strong id="selected-package-name">No package selected</strong>
-            <p id="selected-package-message">Pick a system module to tune the booking flow, colors, and review summary.</p>
-          </div>
-          <span id="selected-package-price">Scope will appear here</span>
-        </div>
-      </section>
-
-      <section id="fast-lanes" class="section-block fast-lane-section" aria-labelledby="fast-lanes-title">
-        <div class="section-heading">
-          <p>Fast Lane</p>
-          <h2 id="fast-lanes-title">Start with the lane that matches the move.</h2>
-          <span>Same-day content, event promos, business packs, and launch work stay connected to the right OTP package before review.</span>
-        </div>
-        <div id="fast-lane-grid" class="fast-lane-grid" aria-live="polite">
-          <article class="fast-lane-card loading-card">Loading Fast Lane options...</article>
+        <div class="service-selector-grid" aria-label="Booking service shortcuts">
+          <button class="service-selector-card" type="button" data-quick-service="Video / Content" data-quick-package="The Engine">
+            <span>Video / Content</span>
+            <strong>Reels, edits, campaigns, recaps</strong>
+            <em>Best for content that needs to look ready to post.</em>
+          </button>
+          <button class="service-selector-card" type="button" data-quick-service="Website / Landing Page" data-quick-package="The Engine">
+            <span>Website / Digital System</span>
+            <strong>Landing pages, funnels, client flows</strong>
+            <em>Best for digital presence and conversion systems.</em>
+          </button>
+          <button class="service-selector-card" type="button" data-quick-service="Brand Launch Pack" data-quick-package="Custom Build">
+            <span>Brand Launch</span>
+            <strong>Identity, rollout, visuals, launch assets</strong>
+            <em>Best when the brand needs a full public push.</em>
+          </button>
+          <button class="service-selector-card" type="button" data-quick-service="Same-Day Reel" data-quick-package="The Signal">
+            <span>Fast Lane</span>
+            <strong>Urgent reel, event promo, quick content</strong>
+            <em>Best when speed matters and the ask is focused.</em>
+          </button>
+          <button class="service-selector-card" type="button" data-quick-service="Custom Request" data-quick-package="Custom Build">
+            <span>Custom Build</span>
+            <strong>Mixed, advanced, or unusual project</strong>
+            <em>Best when the project does not fit a standard lane.</em>
+          </button>
         </div>
       </section>
 
       <section class="booking-shell" aria-labelledby="form-title">
         <div class="booking-context">
           <p>What happens next</p>
-          <h2>OTP turns the request into an operating-system record.</h2>
-          <span>After submission, OTP reviews your request, confirms the scope, and prepares the right proposal, invoice, or agreement. If you choose “Not Sure Yet,” OTP Oracle can recommend the best package from your answers.</span>
+          <h2>OTP turns the request into a review-ready project record.</h2>
+          <span>After submission, OTP reviews your request, confirms the scope, and prepares the right proposal, invoice, agreement, or portal step. If you choose "Not Sure Yet," OTP Oracle can recommend the best package from your answers.</span>
           <span class="booking-intake-note">This page starts the conversation—package, scope, and contact. OTP Project Intake collects your full brief and file uploads when you are ready to move forward.</span>
+          <ol class="next-steps-list" aria-label="What happens after booking">
+            <li><strong>Review</strong><span>OTP checks fit, missing info, budget, and timeline.</span></li>
+            <li><strong>Plan</strong><span>You get the best next step: quote, call, portal, or intake.</span></li>
+            <li><strong>Build</strong><span>Once approved, OTP moves into production and delivery.</span></li>
+          </ol>
           <aside id="booking-mini-summary" class="mini-summary" aria-label="Selected booking summary">
             <div>
               <span>Package</span>
@@ -310,6 +318,36 @@
         </form>
       </section>
 
+      <section id="packages" class="section-block packages-section" aria-labelledby="packages-title">
+        <div class="section-heading">
+          <p>Packages</p>
+          <h2 id="packages-title">Package depth stays optional.</h2>
+          <span>Choose a package if you know the level of build. If not, submit the request and OTP will recommend the best fit.</span>
+        </div>
+        <div id="package-grid" class="package-grid" aria-live="polite">
+          <article class="package-card loading-card">Loading packages...</article>
+        </div>
+        <div id="package-selection-summary" class="package-selection-summary" aria-live="polite">
+          <span class="summary-signal" aria-hidden="true"></span>
+          <div>
+            <strong id="selected-package-name">No package selected</strong>
+            <p id="selected-package-message">Pick a system module to tune the booking flow, colors, and review summary.</p>
+          </div>
+          <span id="selected-package-price">Scope will appear here</span>
+        </div>
+      </section>
+
+      <section id="fast-lanes" class="section-block fast-lane-section" aria-labelledby="fast-lanes-title">
+        <div class="section-heading">
+          <p>Fast Lane</p>
+          <h2 id="fast-lanes-title">Urgent work can still start cleanly.</h2>
+          <span>Same-day content, event promos, business packs, and launch work stay connected to the right OTP package before review.</span>
+        </div>
+        <div id="fast-lane-grid" class="fast-lane-grid" aria-live="polite">
+          <article class="fast-lane-card loading-card">Loading Fast Lane options...</article>
+        </div>
+      </section>
+
       <section class="project-intake-panel" aria-labelledby="project-intake-title">
         <p class="project-intake-eyebrow">Secure next step</p>
         <h2 id="project-intake-title">Need to send files or references?</h2>
@@ -334,6 +372,6 @@
     </main>
 
     <script src="/otp-attribution.js?v=16.9.1" defer></script>
-    <script src="/bookings.js?v=20260608-intake2" defer></script>
+    <script src="/bookings.js?v=20260608-bookingflow3" defer></script>
   </body>
 </html>
