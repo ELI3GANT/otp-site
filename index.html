@@ -43,7 +43,7 @@
   <noscript><link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" /></noscript>
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=16.8.10" />
+  <link rel="stylesheet" href="./styles.css?v=16.8.12" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -217,11 +217,17 @@
     <div class="hero-bg" aria-hidden="true"></div>
 
     <div class="hero-content">
-      <!-- HERO LOGO REMOVED: prioritize stable wordmark hero above-the-fold -->
-      <h1 class="hero-title-adjust luxe-title">
-        <span class="title">ONLY TRUE</span>
-        <span class="title" id="perspective-neon">PERSPECTIVE</span>
-      </h1>
+      <div class="hero-identity" aria-label="OnlyTruePerspective">
+        <div class="hero-symbol-shell" aria-hidden="true">
+          <picture class="hero-symbol-picture">
+            <img src="assets/otp-hero-poster-frame.png" alt="" class="hero-symbol-mark" width="384" height="384" decoding="async" />
+          </picture>
+        </div>
+        <h1 class="hero-title-adjust luxe-title">
+          <span class="title">ONLY TRUE</span>
+          <span class="title" id="perspective-neon">PERSPECTIVE</span>
+        </h1>
+      </div>
       <div class="hero-subline-alt">Creative systems for brands, content, and businesses built to move.</div>
       <p class="subtitle-lead" id="hero-subtitle" data-editable="true">Branding, video editing, web design, content systems, and business automation, scoped cleanly through OTP Bookings.</p>
       
@@ -1068,12 +1074,12 @@
   <script src="otp-attribution.js?v=16.9.1" defer></script>
   <script src="stars-v2.js?v=20260601-daystars" defer></script>
   <script src="otp-video-library.js?v=1.0.0" defer></script>
-  <script src="site-init.js?v=20260601-sync1" defer></script>
+  <script src="site-init.js?v=20260607-herologo1" defer></script>
   <script src="audit-engine.js?v=16.3.5" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
     // Protocol: Desktop (Ctrl/Cmd + Click Logo) or Mobile (2s Long Press Logo).
-    const otpLogos = document.querySelectorAll('.hero-eye-poster, .hero-eye-3d:not(.hero-eye-animated), .otp-mark, #nav-logo-neon');
+    const otpLogos = document.querySelectorAll('.hero-symbol-mark, .otp-mark, #nav-logo-neon');
     let touchHoldTimer;
 
     otpLogos.forEach(logo => {

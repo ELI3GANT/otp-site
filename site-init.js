@@ -143,65 +143,13 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         }
     }
 
-    /** Poster-first hero: layered crossfade to GIF after preload (no visible src flash). */
+    /** Unified hero identity: a single picture/img mark with a static fallback on true load failure. */
     function activateHeroAnimatedLogo() {
-        // HERO ANIMATION DISABLED (stability): hero logo block removed from homepage.
-        return;
-        const wrap = document.querySelector('.home-page .hero-logo-wrap') || document.querySelector('.hero-logo-wrap');
-        if (!wrap) return;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-        const poster = wrap.querySelector('.hero-eye-poster');
-        const animatedLayer = wrap.querySelector('.hero-eye-animated');
-        const legacyHero = !animatedLayer ? wrap.querySelector('.hero-eye-3d[data-hero-animated-src]') : null;
-        const animatedSrc = (animatedLayer || legacyHero)?.getAttribute('data-hero-animated-src') || 'assets/otp.gif';
-
-        const revealCrossfade = (animatedImg) => {
-            const markReady = () => {
-                wrap.classList.add('hero-eye-ready');
-                animatedImg.classList.add('hero-eye-revealed');
-                animatedImg.removeAttribute('aria-hidden');
-                if (poster) poster.setAttribute('aria-hidden', 'true');
-            };
-            if (animatedImg.complete && animatedImg.naturalWidth > 0) {
-                requestAnimationFrame(() => requestAnimationFrame(markReady));
-                return;
-            }
-            animatedImg.addEventListener('load', () => {
-                requestAnimationFrame(() => requestAnimationFrame(markReady));
-            }, { once: true });
-            animatedImg.addEventListener('error', () => {
-                /* poster stays visible */
-            }, { once: true });
-        };
-
-        if (animatedLayer) {
-            if (wrap.classList.contains('hero-eye-ready')) return;
-            const probe = new Image();
-            probe.decoding = 'async';
-            probe.onload = () => {
-                animatedLayer.src = animatedSrc;
-                revealCrossfade(animatedLayer);
-            };
-            probe.onerror = () => {
-                /* keep poster only */
-            };
-            probe.src = animatedSrc;
-            return;
-        }
-
-        if (!legacyHero) return;
-        const probe = new Image();
-        probe.decoding = 'async';
-        probe.onload = () => {
-            legacyHero.src = animatedSrc;
-            legacyHero.classList.add('hero-eye-revealed');
-            revealCrossfade(legacyHero);
-        };
-        probe.onerror = () => {
-            /* keep poster */
-        };
-        probe.src = animatedSrc;
+        const heroMark = document.querySelector('.home-page .hero-symbol-mark');
+        if (!heroMark) return;
+        heroMark.addEventListener('error', () => {
+            heroMark.src = 'assets/otp-hero-poster-frame.png';
+        }, { once: true });
     }
     scheduleAfterFirstPaint(() => {
         try {
@@ -1982,39 +1930,8 @@ function initSite() {
         });
     });
 
-    // --- MAGNETIC HERO VISION ---
-    const heroEye = document.querySelector('.hero-logo-wrap') || document.querySelector('.hero-eye-poster') || document.querySelector('.hero-eye-3d');
-    const isMobileHero = window.matchMedia("(max-width: 768px)").matches;
-    const prefersReducedHeroMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    
-    if (heroEye && !isMobileHero && !prefersReducedHeroMotion) {
-        let eyeTicking = false;
-        const resetHeroEye = () => {
-            heroEye.style.transform = '';
-        };
-        const applyHeroEyeTilt = (clientX, clientY) => {
-            if (document.visibilityState !== 'visible') return;
-            if (!eyeTicking) {
-                eyeTicking = true;
-                window.requestAnimationFrame(() => {
-                    const rect = heroEye.getBoundingClientRect();
-                    const centerX = rect.left + rect.width / 2;
-                    const centerY = rect.top + rect.height / 2;
-                    const deltaX = (clientX - centerX) / window.innerWidth;
-                    const deltaY = (clientY - centerY) / window.innerHeight;
-                    const rotateX = deltaY * 6;
-                    const rotateY = deltaX * 6;
-                    heroEye.style.transform = `translateY(-2px) rotateX(${-rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`;
-                    eyeTicking = false;
-                });
-            }
-        };
-        window.addEventListener('mousemove', (e) => applyHeroEyeTilt(e.clientX, e.clientY), { passive: true });
-        window.addEventListener('mouseleave', resetHeroEye, { passive: true });
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState !== 'visible') resetHeroEye();
-        }, { passive: true });
-    }
+    // --- HERO IDENTITY ---
+    // Homepage hero logo motion is CSS-owned so the mark never receives stacked runtime transforms.
 
 
     // --- LOGO SCROLL TO TOP ---

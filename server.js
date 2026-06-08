@@ -2616,7 +2616,7 @@ const OTP_BOOKINGS_RESPONSE_HEADER_BLOCKLIST = new Set([
     'upgrade'
 ]);
 
-const BOOKING_CLIENT_MESSAGE = 'Your booking request was received. OTP will review your project and prepare the next step.';
+const BOOKING_CLIENT_MESSAGE = 'Your request is in. OTP will review the details and follow up with the best next step.';
 const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Booking received. OTP Oracle recommendation is pending review.';
 const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not submit the booking yet. Please check the required fields and try again.';
 const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit']);
@@ -3203,6 +3203,10 @@ function buildPublicBookingConfig() {
         budgetRanges: ['Under $500', '$500 to $1,200', '$1,200 to $2,000', '$2,000 to $3,500', '$3,500+', 'Not sure yet'],
         urgencyLevels: ['Flexible', 'Soon', 'Rush', 'Launch deadline'],
         depositReadiness: ['Ready if scope is clear', 'Need quote first', 'Not ready yet'],
+        preferredContactMethods: ['Email', 'Text message', 'Phone call', 'Instagram DM', 'No preference'],
+        projectTypes: ['Brand identity', 'Website / landing page', 'Video / content', 'AI / automation', 'Event / launch', 'Business system', 'Custom / mixed', 'Not sure yet'],
+        referralSources: ['Instagram', 'Referral', 'Google / search', 'YouTube', 'Live event', 'Returning client', 'Other'],
+        preferredNextSteps: ['Send me the best next step', 'Send a quote first', 'Book a scope call', 'Open secure project intake', 'Not sure yet'],
         upload: {
             supported: false,
             max_bytes: 25 * 1024 * 1024,
@@ -3220,10 +3224,17 @@ function bookingLeadText(payload) {
         payload.selected_fast_offer ? `Selected fast offer: ${payload.selected_fast_offer}` : '',
         payload.fast_lane_package ? `Fast lane package: ${payload.fast_lane_package}` : '',
         `Business / brand: ${payload.business_name}`,
+        `Preferred contact: ${payload.preferred_contact_method}`,
+        `Project type: ${payload.project_type}`,
+        `Desired deliverables: ${payload.desired_deliverables}`,
+        `Location: ${payload.location}`,
+        `Preferred next step: ${payload.preferred_next_step}`,
         `Budget: ${payload.budget_range}`,
         `Timeline: ${payload.ideal_deadline || payload.timeline}`,
         `Urgency: ${payload.urgency_level}`,
         `Deposit readiness: ${payload.deposit_readiness}`,
+        `Referral source: ${payload.referral_source}`,
+        `Contact consent: ${payload.contact_consent ? 'yes' : 'not confirmed'}`,
         tracking.cta_source ? `CTA source: ${tracking.cta_source}` : '',
         tracking.utm_campaign ? `Campaign: ${tracking.utm_campaign}` : '',
         `Reference link: ${payload.reference_link}`,
@@ -3265,6 +3276,13 @@ function buildBookingInternalNotes({ bookingId, payload, recommendation, recomme
         client_email: payload.email,
         client_phone: payload.phone || null,
         business_name: payload.business_name || null,
+        preferred_contact_method: payload.preferred_contact_method || null,
+        project_type: payload.project_type || null,
+        desired_deliverables: payload.desired_deliverables || null,
+        location: payload.location || null,
+        referral_source: payload.referral_source || null,
+        preferred_next_step: payload.preferred_next_step || null,
+        contact_consent: Boolean(payload.contact_consent),
         social_link: payload.social_link || null,
         reference_link: payload.reference_link || null,
         service_type: payload.service_type,
@@ -3337,6 +3355,12 @@ function cleanBookingSourceTracking(input = {}) {
     }));
 }
 
+function normalizeBookingBoolean(value) {
+    if (value === true) return true;
+    if (value === false || value == null) return false;
+    return /^(true|1|yes|y|on|confirmed)$/i.test(String(value).trim());
+}
+
 function parseBookingPayload(input) {
     const body = input && typeof input === 'object' ? input : {};
     const publicConfig = buildPublicBookingConfig();
@@ -3356,12 +3380,17 @@ function parseBookingPayload(input) {
         email: cleanBookingText(body.email, 254),
         phone: normalizeBookingPhone(body.phone),
         business_name: cleanBookingText(body.business_name || body.businessName || body.brand_name, 180),
+        preferred_contact_method: pickPublicOption(body.preferred_contact_method || body.preferredContactMethod || body.contact_method, publicConfig.preferredContactMethods)
+            || cleanBookingText(body.preferred_contact_method || body.preferredContactMethod || body.contact_method, 120),
         social_link: cleanBookingText(body.social_link || body.socialWebsiteLink || body.website, 300),
         service_type: serviceType,
+        project_type: pickPublicOption(body.project_type || body.projectType, publicConfig.projectTypes)
+            || cleanBookingText(body.project_type || body.projectType, 160),
         package_interest: packageInterest,
         selected_fast_offer: selectedFastOffer,
         fast_lane_package: fastLanePackage,
         project_description: cleanBookingText(body.project_description || body.projectDescription, 9000),
+        desired_deliverables: cleanBookingText(body.desired_deliverables || body.desiredDeliverables || body.deliverables, 2200),
         reference_link: cleanBookingText(body.reference_link || body.referenceLink, 500),
         budget_range: pickPublicOption(body.budget_range || body.budgetRange, publicConfig.budgetRanges)
             || cleanBookingText(body.budget_range || body.budgetRange, 160),
@@ -3370,12 +3399,18 @@ function parseBookingPayload(input) {
             || cleanBookingText(body.urgency_level || body.urgencyLevel, 80),
         deposit_readiness: pickPublicOption(body.deposit_readiness || body.depositReadiness, publicConfig.depositReadiness)
             || cleanBookingText(body.deposit_readiness || body.depositReadiness, 120),
+        location: cleanBookingText(body.location || body.project_location || body.projectLocation, 180),
+        referral_source: pickPublicOption(body.referral_source || body.referralSource || body.heard_about, publicConfig.referralSources)
+            || cleanBookingText(body.referral_source || body.referralSource || body.heard_about, 160),
+        preferred_next_step: pickPublicOption(body.preferred_next_step || body.preferredNextStep || body.next_step, publicConfig.preferredNextSteps)
+            || cleanBookingText(body.preferred_next_step || body.preferredNextStep || body.next_step, 180),
+        contact_consent: normalizeBookingBoolean(body.contact_consent || body.contactConsent),
         source_tracking: cleanBookingSourceTracking(body.source_tracking || body.sourceTracking || {}),
         upload_ids: Array.isArray(body.upload_ids) ? body.upload_ids.map((v) => cleanBookingText(v, 140)).filter(Boolean).slice(0, 20) : []
     };
     const missingFields = [];
     if (!payload.name) missingFields.push('name');
-    if (!payload.email) missingFields.push('email');
+    if (!payload.email && !payload.phone) missingFields.push('email_or_phone');
     if (payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) missingFields.push('valid_email');
     if (!payload.service_type) missingFields.push('service_type');
     if (!payload.package_interest) missingFields.push('package_interest');
@@ -3384,7 +3419,7 @@ function parseBookingPayload(input) {
 }
 
 async function createBookingContact(payload, recommendation) {
-    if (!supabaseAdmin) return null;
+    if (!supabaseAdmin || !payload.email) return null;
     const contactRow = {
         name: payload.name,
         email: payload.email,
@@ -3435,8 +3470,10 @@ async function runBookingOracle(payload, bookingId) {
             phone: payload.phone,
             company: payload.business_name,
             service: payload.service_type,
+            project_type: payload.project_type,
             message: bookingLeadText(payload),
             project_details: payload.project_description,
+            desired_deliverables: payload.desired_deliverables,
             budget: payload.budget_range,
             timeline: payload.ideal_deadline
         };
@@ -3464,6 +3501,7 @@ async function saveBookingOpsJob({ bookingId, payload, recommendation, recommend
     const deliverables = [
         packageCard?.purpose ? `Package purpose: ${packageCard.purpose}` : '',
         packageCard?.examples?.length ? `Service examples: ${packageCard.examples.join(', ')}` : '',
+        payload.desired_deliverables ? `Desired deliverables: ${payload.desired_deliverables}` : '',
         payload.reference_link ? `Reference: ${payload.reference_link}` : ''
     ].filter(Boolean).join('\n');
     const followUp = recommendation?.followUpMessage || BOOKING_PENDING_RECOMMENDATION_MESSAGE;
@@ -3482,7 +3520,12 @@ async function saveBookingOpsJob({ bookingId, payload, recommendation, recommend
         addOns: [
             payload.package_interest ? `Package interest: ${payload.package_interest}` : '',
             payload.budget_range ? `Budget range: ${payload.budget_range}` : '',
-            payload.urgency_level ? `Urgency: ${payload.urgency_level}` : ''
+            payload.urgency_level ? `Urgency: ${payload.urgency_level}` : '',
+            payload.project_type ? `Project type: ${payload.project_type}` : '',
+            payload.preferred_contact_method ? `Preferred contact: ${payload.preferred_contact_method}` : '',
+            payload.location ? `Location: ${payload.location}` : '',
+            payload.referral_source ? `Referral source: ${payload.referral_source}` : '',
+            payload.preferred_next_step ? `Preferred next step: ${payload.preferred_next_step}` : ''
         ].filter(Boolean).join('\n'),
         startDate: '',
         dueDate: '',

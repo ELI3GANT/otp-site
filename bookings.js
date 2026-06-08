@@ -57,7 +57,11 @@ const fallbackConfig = {
   packageOptions: ['The Signal', 'The Engine', 'The System', 'Custom Build', 'Not Sure Yet'],
   budgetRanges: ['Under $500', '$500 to $1,200', '$1,200 to $2,000', '$2,000 to $3,500', '$3,500+', 'Not sure yet'],
   urgencyLevels: ['Flexible', 'Soon', 'Rush', 'Launch deadline'],
-  depositReadiness: ['Ready if scope is clear', 'Need quote first', 'Not ready yet']
+  depositReadiness: ['Ready if scope is clear', 'Need quote first', 'Not ready yet'],
+  preferredContactMethods: ['Email', 'Text message', 'Phone call', 'Instagram DM', 'No preference'],
+  projectTypes: ['Brand identity', 'Website / landing page', 'Video / content', 'AI / automation', 'Event / launch', 'Business system', 'Custom / mixed', 'Not sure yet'],
+  referralSources: ['Instagram', 'Referral', 'Google / search', 'YouTube', 'Live event', 'Returning client', 'Other'],
+  preferredNextSteps: ['Send me the best next step', 'Send a quote first', 'Book a scope call', 'Open secure project intake', 'Not sure yet']
 };
 
 const PACKAGE_THEMES = {
@@ -185,13 +189,20 @@ const els = {
   email: $('booking-email'),
   phone: $('booking-phone'),
   business: $('booking-business'),
+  contactMethod: $('booking-contact-method'),
   social: $('booking-social'),
   description: $('booking-description'),
+  deliverables: $('booking-deliverables'),
+  projectType: $('booking-project-type'),
   reference: $('booking-reference'),
   budget: $('booking-budget'),
   deadline: $('booking-deadline'),
   urgency: $('booking-urgency'),
   deposit: $('booking-deposit'),
+  location: $('booking-location'),
+  referralSource: $('booking-referral-source'),
+  nextStep: $('booking-next-step'),
+  consent: $('booking-consent'),
   honeypot: $('otp-company-website')
 };
 
@@ -406,7 +417,7 @@ function updateSummaries() {
   els.miniPackage.textContent = selected.name;
   els.miniService.textContent = text(els.service.value, 'Not selected');
   els.miniBudget.textContent = text(els.budget.value, 'Not selected');
-  els.miniTimeline.textContent = formatDeadline(els.deadline.value);
+  els.miniTimeline.textContent = formatDeadline(els.deadline.value || els.urgency.value);
   els.formTitle.textContent = selected.formTitle;
   els.formPackageNote.textContent = selected.message;
   const pillName = els.activePackagePill.querySelector('strong');
@@ -626,6 +637,10 @@ function fillSelects() {
   optionList(els.budget, state.config.budgetRanges || fallbackConfig.budgetRanges, 'Select budget range');
   optionList(els.urgency, state.config.urgencyLevels || fallbackConfig.urgencyLevels, 'Select urgency');
   optionList(els.deposit, state.config.depositReadiness || fallbackConfig.depositReadiness, 'Select readiness');
+  optionList(els.contactMethod, state.config.preferredContactMethods || fallbackConfig.preferredContactMethods, 'Choose contact method');
+  optionList(els.projectType, state.config.projectTypes || fallbackConfig.projectTypes, 'Choose project type');
+  optionList(els.referralSource, state.config.referralSources || fallbackConfig.referralSources, 'Select source');
+  optionList(els.nextStep, state.config.preferredNextSteps || fallbackConfig.preferredNextSteps, 'Choose next step');
 }
 
 function payload() {
@@ -638,17 +653,24 @@ function payload() {
     email: els.email.value.trim(),
     phone: els.phone.value.trim(),
     business_name: els.business.value.trim(),
+    preferred_contact_method: els.contactMethod.value.trim(),
     social_link: els.social.value.trim(),
     service_type: els.service.value.trim(),
+    project_type: els.projectType.value.trim(),
     package_interest: els.package.value.trim(),
     selected_fast_offer: fastLanePackage ? els.service.value.trim() : '',
     fast_lane_package: fastLanePackage,
     project_description: els.description.value.trim(),
+    desired_deliverables: els.deliverables.value.trim(),
     reference_link: els.reference.value.trim(),
     budget_range: els.budget.value.trim(),
     ideal_deadline: els.deadline.value.trim(),
     urgency_level: els.urgency.value.trim(),
-    deposit_readiness: els.deposit.value.trim()
+    deposit_readiness: els.deposit.value.trim(),
+    location: els.location.value.trim(),
+    referral_source: els.referralSource.value.trim(),
+    preferred_next_step: els.nextStep.value.trim(),
+    contact_consent: Boolean(els.consent.checked)
   };
 }
 
@@ -656,8 +678,11 @@ function missingForStep(step) {
   const p = payload();
   if (step === 1) {
     const missing = [];
+    const hasEmail = Boolean(p.email);
+    const hasPhone = Boolean(p.phone);
     if (!p.name) missing.push('name');
-    if (!p.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) missing.push('valid email');
+    if (!hasEmail && !hasPhone) missing.push('email or phone');
+    if (hasEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) missing.push('valid email');
     return missing;
   }
   if (step === 2) {
@@ -666,6 +691,9 @@ function missingForStep(step) {
     if (!p.package_interest) missing.push('package interest');
     if (!p.project_description) missing.push('project description');
     return missing;
+  }
+  if (step === 4) {
+    return p.contact_consent ? [] : ['contact consent'];
   }
   return [];
 }
@@ -686,15 +714,20 @@ function renderReview() {
   const selectedSummary = selectedDisplay();
   const rows = [
     ['Client', `${text(p.name)}${p.business_name ? ` / ${p.business_name}` : ''}`],
-    ['Contact', `${text(p.email)}${p.phone ? ` / ${p.phone}` : ''}`],
+    ['Contact', `${text(p.email)}${p.phone ? ` / ${p.phone}` : ''}${p.preferred_contact_method ? ` / ${p.preferred_contact_method}` : ''}`],
     ['Service', text(p.service_type)],
+    ['Project Type', text(p.project_type)],
     ['Selected Package', text(p.package_interest)],
     ['Package Range', text(selected?.price, p.package_interest === 'Not Sure Yet' ? 'Oracle recommendation requested' : 'Not provided yet')],
     ['Package Fit', selectedSummary.message],
     ['Project Description', text(p.project_description)],
+    ['Deliverables', text(p.desired_deliverables)],
     ['Budget / Timeline', `${text(p.budget_range)} / ${formatDeadline(p.ideal_deadline)}`],
     ['Urgency', text(p.urgency_level)],
-    ['Reference', text(p.reference_link)]
+    ['Location / Source', `${text(p.location)} / ${text(p.referral_source)}`],
+    ['Preferred Next Step', text(p.preferred_next_step)],
+    ['Reference', text(p.reference_link)],
+    ['Contact Consent', p.contact_consent ? 'Confirmed' : 'Not confirmed yet']
   ];
   els.review.replaceChildren();
   rows.forEach(([label, value]) => {
@@ -735,7 +768,7 @@ function renderSuccess(data) {
   els.success.classList.remove('hidden');
   els.success.classList.toggle('partial', !recommendation);
   els.form.classList.add('submitted');
-  els.successTitle.textContent = 'Your request is in. OTP will review the scope and prepare the cleanest next step.';
+  els.successTitle.textContent = 'Your request is in. OTP will review the details and follow up with the best next step.';
   els.successCopy.textContent = 'After review, you may receive a private OTP Client Portal link where you can view project status, documents, payment steps, and approvals.';
   els.successMeta.replaceChildren();
   els.successActions.replaceChildren();
@@ -786,8 +819,8 @@ async function submitBooking(event) {
   event.preventDefault();
   if (state.submitting || state.submitted) return;
   state.sourceTracking = getAttributionTracking();
-  if (!validateStep(1) || !validateStep(2)) {
-    setStep(missingForStep(1).length ? 1 : 2);
+  if (!validateStep(1) || !validateStep(2) || !validateStep(4)) {
+    setStep(missingForStep(1).length ? 1 : missingForStep(2).length ? 2 : 4);
     return;
   }
 

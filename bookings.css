@@ -165,8 +165,10 @@ strong {
 }
 
 .official-brand-mark {
-  width: 46px;
-  height: 46px;
+  position: relative;
+  isolation: isolate;
+  width: 52px;
+  height: 52px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
@@ -176,14 +178,35 @@ strong {
   background:
     radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 62%),
     rgba(255, 255, 255, 0.045);
-  box-shadow: 0 0 22px rgba(53, 229, 255, 0.16);
+  box-shadow: 0 0 26px rgba(53, 229, 255, 0.2);
+}
+
+.official-brand-mark::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, rgba(53, 229, 255, 0.2), transparent 58%),
+    conic-gradient(from 130deg, rgba(53, 229, 255, 0), rgba(53, 229, 255, 0.22), rgba(154, 118, 255, 0.16), rgba(222, 184, 92, 0.12), rgba(53, 229, 255, 0));
+  filter: blur(8px);
+  opacity: 0.58;
+  pointer-events: none;
+}
+
+.official-brand-picture {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
 }
 
 .official-brand-mark img {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
-  filter: drop-shadow(0 0 8px rgba(53, 229, 255, 0.28));
+  filter: drop-shadow(0 0 9px rgba(53, 229, 255, 0.34));
 }
 
 .portal-sigil {
@@ -1350,6 +1373,10 @@ textarea {
   line-height: 1.45;
 }
 
+textarea.compact-textarea {
+  min-height: 106px;
+}
+
 input:focus,
 select:focus,
 textarea:focus {
@@ -1432,6 +1459,31 @@ button:focus-visible,
   border-color: rgba(255, 141, 141, 0.5);
   color: var(--danger);
   background: rgba(255, 141, 141, 0.08);
+}
+
+.checkbox-label {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--active-accent) 28%, var(--line));
+  border-radius: 8px;
+  background: var(--active-surface);
+}
+
+.checkbox-label input {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--active-accent);
+}
+
+.checkbox-label span {
+  color: var(--muted-2);
+  font-size: 0.86rem;
+  line-height: 1.4;
+  text-transform: none;
 }
 
 .hidden {
@@ -1861,6 +1913,16 @@ button:focus-visible,
 
   .brand {
     align-self: flex-start;
+  }
+
+  .official-brand-mark {
+    width: 48px;
+    height: 48px;
+  }
+
+  .official-brand-mark img {
+    width: 39px;
+    height: 39px;
   }
 
   .top-actions,

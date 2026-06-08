@@ -20,14 +20,16 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/bookings.css?v=20260525-fastlane1" />
+    <link rel="stylesheet" href="/bookings.css?v=20260608-intake2" />
   </head>
   <body>
     <main class="booking-page">
       <header class="booking-header">
         <a class="brand" href="/bookings" aria-label="OTP Bookings">
           <span class="official-brand-mark">
-            <img src="/assets/otp.gif" alt="OTP Signal Pulse Logo" width="250" height="250" decoding="async" />
+            <picture class="official-brand-picture">
+              <img src="/assets/otp-hero-poster-frame.png" alt="OnlyTruePerspective logo" width="384" height="384" decoding="async" />
+            </picture>
           </span>
           <span>
             <strong>OTP Bookings</strong>
@@ -198,16 +200,20 @@
                 <input id="booking-name" name="name" autocomplete="name" required />
               </label>
               <label>
-                Email <span>Required</span>
-                <input id="booking-email" name="email" type="text" inputmode="email" autocomplete="email" required />
+                Email <span>Email or phone required</span>
+                <input id="booking-email" name="email" type="text" inputmode="email" autocomplete="email" />
               </label>
               <label>
-                Phone
+                Phone <span>Email or phone required</span>
                 <input id="booking-phone" name="phone" type="tel" autocomplete="tel" />
               </label>
               <label>
                 Brand / Business
                 <input id="booking-business" name="business_name" autocomplete="organization" />
+              </label>
+              <label>
+                Preferred Contact
+                <select id="booking-contact-method" name="preferred_contact_method"></select>
               </label>
             </div>
             <label>
@@ -226,10 +232,18 @@
                 Package Interest <span>Required</span>
                 <select id="booking-package" name="package_interest" required></select>
               </label>
+              <label>
+                Project Type
+                <select id="booking-project-type" name="project_type"></select>
+              </label>
             </div>
             <label>
               Project Description <span>Required</span>
               <textarea id="booking-description" name="project_description" required placeholder="Tell OTP what needs to be built, edited, designed, automated, launched, or cleaned up. Include deliverables, must-have details, and the real goal."></textarea>
+            </label>
+            <label>
+              Desired Deliverables
+              <textarea id="booking-deliverables" name="desired_deliverables" class="compact-textarea" placeholder="Logo files, edited reel, landing page, launch graphics, workflow, content pack, or anything else you need in hand."></textarea>
             </label>
             <label>
               Reference Link
@@ -255,6 +269,14 @@
                 Deposit Readiness
                 <select id="booking-deposit" name="deposit_readiness"></select>
               </label>
+              <label>
+                Location
+                <input id="booking-location" name="location" autocomplete="address-level2" placeholder="City/state, venue, or online-only" />
+              </label>
+              <label>
+                How Did You Hear About OTP?
+                <select id="booking-referral-source" name="referral_source"></select>
+              </label>
             </div>
           </section>
 
@@ -267,6 +289,14 @@
               <div id="review-summary" class="review-summary"></div>
               <p class="next-step-note">After submission, OTP reviews your request, confirms the scope, and prepares the right proposal, invoice, or agreement.</p>
             </div>
+            <label>
+              Preferred Next Step
+              <select id="booking-next-step" name="preferred_next_step"></select>
+            </label>
+            <label class="checkbox-label">
+              <input id="booking-consent" name="contact_consent" type="checkbox" required />
+              <span>OTP may contact me about this request.</span>
+            </label>
           </section>
 
           <p id="booking-status" class="form-message hidden" aria-live="polite"></p>
@@ -291,7 +321,7 @@
       <section id="booking-success" class="success-panel hidden" aria-live="polite">
         <div class="success-mark" aria-hidden="true"><span></span></div>
         <p>Booking received</p>
-        <h2 id="success-title">Your request is in. OTP will review the scope and prepare the cleanest next step.</h2>
+        <h2 id="success-title">Your request is in. OTP will review the details and follow up with the best next step.</h2>
         <span id="success-copy">After review, you may receive a private OTP Client Portal link where you can view project status, documents, payment steps, and approvals.</span>
         <div id="success-meta" class="success-meta"></div>
         <div id="success-actions" class="success-actions"></div>
@@ -304,6 +334,6 @@
     </main>
 
     <script src="/otp-attribution.js?v=16.9.1" defer></script>
-    <script src="/bookings.js?v=20260601-sync1" defer></script>
+    <script src="/bookings.js?v=20260608-intake2" defer></script>
   </body>
 </html>
