@@ -12326,23 +12326,24 @@ html[data-theme="light"].spectral-v-sync body.home-page .nav-logo {
   }
 }
 
-/* Homepage hero identity rebuild: one centered OTP mark, one soft aura, one motion source. */
+/* Homepage hero identity rebuild: one centered animated OTP mark, one soft aura, one stack. */
 body.home-page .hero {
   min-height: min(760px, 88svh) !important;
-  padding-top: calc(132px + env(safe-area-inset-top, 0px)) !important;
-  padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-top: calc(118px + env(safe-area-inset-top, 0px)) !important;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   overflow-x: clip;
 }
 
 body.home-page .hero-content {
   width: min(100%, 1120px) !important;
   max-width: min(100%, 1120px) !important;
-  display: grid;
-  justify-items: center;
-  align-content: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 0;
   margin-inline: auto;
   text-align: center;
@@ -12351,9 +12352,11 @@ body.home-page .hero-content {
 
 body.home-page .hero-identity {
   width: min(100%, 1120px);
-  display: grid;
-  justify-items: center;
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 0.5vw, 8px);
   margin: 0 auto;
   isolation: isolate;
   transform: none !important;
@@ -12363,10 +12366,11 @@ body.home-page .hero-identity {
 body.home-page .hero-symbol-shell {
   position: relative;
   z-index: 2;
-  width: 184px;
-  height: 184px;
-  display: grid;
-  place-items: center;
+  width: clamp(148px, 11.4vw, 176px);
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0 auto;
   isolation: isolate;
   pointer-events: auto;
@@ -12394,19 +12398,16 @@ body.home-page .hero-symbol-shell::before {
   animation: heroIdentityAura 8.5s ease-in-out infinite;
 }
 
-body.home-page .hero-symbol-picture,
 body.home-page .hero-symbol-mark {
   display: block;
   width: 100%;
-  height: 100%;
-}
-
-body.home-page .hero-symbol-picture {
-  position: relative;
-  z-index: 1;
+  height: auto;
 }
 
 body.home-page .hero-symbol-mark {
+  position: relative;
+  z-index: 1;
+  aspect-ratio: 1 / 1;
   object-fit: contain;
   object-position: center;
   border-radius: 50%;
@@ -12457,15 +12458,15 @@ body.home-page .hero h1.hero-title-adjust.luxe-title .title:last-child {
 }
 
 body.home-page .hero-subline-alt {
-  margin-top: 24px !important;
+  margin-top: 20px !important;
 }
 
 body.home-page .subtitle-lead {
-  margin-top: 14px !important;
+  margin-top: 12px !important;
 }
 
 body.home-page .hero-cta {
-  margin-top: 28px !important;
+  margin-top: 24px !important;
 }
 
 html[data-theme="light"] body.home-page .hero-symbol-shell::before {
@@ -12525,8 +12526,7 @@ html.stars-performance-mode body.home-page .hero-symbol-mark {
 
 @media (max-width: 1024px) {
   body.home-page .hero-symbol-shell {
-    width: 168px;
-    height: 168px;
+    width: clamp(140px, 17vw, 160px);
   }
 
   body.home-page .hero h1.hero-title-adjust.luxe-title .title:first-child {
@@ -12541,7 +12541,7 @@ html.stars-performance-mode body.home-page .hero-symbol-mark {
 @media (max-width: 768px) {
   body.home-page .hero {
     min-height: auto !important;
-    padding-top: calc(106px + env(safe-area-inset-top, 0px)) !important;
+    padding-top: calc(94px + env(safe-area-inset-top, 0px)) !important;
     padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
@@ -12554,12 +12554,11 @@ html.stars-performance-mode body.home-page .hero-symbol-mark {
   }
 
   body.home-page .hero-identity {
-    gap: 14px;
+    gap: 4px;
   }
 
   body.home-page .hero-symbol-shell {
-    width: 138px;
-    height: 138px;
+    width: clamp(124px, 34vw, 138px);
   }
 
   body.home-page .hero-symbol-shell::before {
@@ -12606,17 +12605,16 @@ html.stars-performance-mode body.home-page .hero-symbol-mark {
 
 @media (max-width: 480px) {
   body.home-page .hero {
-    padding-top: calc(96px + env(safe-area-inset-top, 0px)) !important;
+    padding-top: calc(88px + env(safe-area-inset-top, 0px)) !important;
     padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   body.home-page .hero-identity {
-    gap: 12px;
+    gap: 4px;
   }
 
   body.home-page .hero-symbol-shell {
-    width: 122px;
-    height: 122px;
+    width: clamp(116px, 31vw, 128px);
   }
 
   body.home-page .hero-symbol-shell::before {
@@ -12657,7 +12655,6 @@ html.stars-performance-mode body.home-page .hero-symbol-mark {
 
   body.home-page .hero-symbol-shell {
     width: 112px;
-    height: 112px;
   }
 
   body.home-page .hero h1.hero-title-adjust.luxe-title .title:first-child {

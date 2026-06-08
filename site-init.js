@@ -143,12 +143,15 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
         }
     }
 
-    /** Unified hero identity: a single picture/img mark with a static fallback on true load failure. */
+    /** Unified hero identity: a single animated mark with a static fallback on true load failure. */
     function activateHeroAnimatedLogo() {
         const heroMark = document.querySelector('.home-page .hero-symbol-mark');
         if (!heroMark) return;
         heroMark.addEventListener('error', () => {
-            heroMark.src = 'assets/otp-hero-poster-frame.png';
+            const fallbackSrc = heroMark.dataset.fallbackSrc;
+            if (fallbackSrc && heroMark.getAttribute('src') !== fallbackSrc) {
+                heroMark.src = fallbackSrc;
+            }
         }, { once: true });
     }
     scheduleAfterFirstPaint(() => {
