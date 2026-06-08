@@ -10699,7 +10699,6 @@ section[id] {
 }
 
 /* --- OTP DAY/NIGHT VISUAL SYSTEM: final cascade overrides --- */
-.home-page .nav,
 .home-page .hero-content,
 .home-page .section,
 .home-page .section-studio,
@@ -11581,7 +11580,12 @@ html.stars-performance-mode .home-page .glass-manifesto .sticker-base {
 }
 
 .home-page .nav {
-  z-index: 1200;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 12000;
 }
 
 @media (max-width: 768px) {

@@ -47,6 +47,8 @@ assert.ok(styles.includes('html[data-theme="light"].spectral-v-sync body.home-pa
 assert.ok(styles.includes('-webkit-text-fill-color: #050507 !important'), 'day-mode hero wordmark uses solid readable black text');
 assert.ok(styles.includes('html[data-theme="light"] body.home-page .nav-links a::after'), 'day-mode nav underline uses stable black-gold accenting');
 assert.ok(styles.includes('html[data-theme="light"].spectral-revelation body.home-page .nav-logo') && styles.includes('filter: none !important;'), 'light mode blocks spectral nav-logo glow contamination');
+assert.ok(/\.home-page \.nav\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?z-index:\s*12000;[\s\S]*?\}/.test(styles), 'homepage nav remains fixed above hero and star layers');
+assert.ok(!/OTP DAY\/NIGHT VISUAL SYSTEM: final cascade overrides[\s\S]{0,180}\.home-page \.nav,/.test(styles), 'final homepage visual layering rule must not demote nav positioning');
 assert.ok(styles.includes('html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas'), 'performance mode preserves light-mode star visibility');
 assert.ok(styles.includes('html[data-theme="light"] body.home-page .luxe-title .title'), 'light-mode hero title contrast gets final cascade ownership');
 assert.ok(styles.includes('body.home-page .theme-toggle-btn:not(.mobile-theme-toggle)') && styles.includes('bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;'), 'mobile floating theme toggle stays clear of the hero title');
@@ -164,12 +166,12 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.12', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.13', 'homepage styles cache-bust is current');
 assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', 'homepage stars cache-bust is current');
 assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260607-herologo1', 'homepage runtime cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.12', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.13', `${file} styles cache-bust matches index`);
   assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', `${file} stars cache-bust matches index`);
   assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260607-herologo1', `${file} runtime cache-bust matches index`);
 });
