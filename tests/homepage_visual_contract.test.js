@@ -72,11 +72,14 @@ assert.ok(styles.includes('overflow-x: clip'), 'mobile hero blocks horizontal ov
 assert.ok(styles.includes('Mobile hero title fit + spacing/scroll polish'), 'mobile hero spacing and scroll polish guard is documented');
 assert.ok(styles.includes('Homepage hero identity rebuild') && styles.includes('one centered animated OTP mark'), 'homepage hero uses the animated unified identity rebuild styles');
 assert.ok(styles.includes('body.home-page .hero-identity') && styles.includes('flex-direction: column;'), 'homepage hero identity uses a stable centered flex stack');
-assert.ok(styles.includes('width: clamp(116px, 31vw, 128px);') && styles.includes('width: 112px;'), 'mobile hero symbol uses bounded responsive sizes');
+assert.ok(styles.includes('body.home-page .hero-symbol-shell::after'), 'homepage hero symbol has a lightweight premium aura ring');
+assert.ok(styles.includes('width: clamp(166px, 12.6vw, 204px);'), 'desktop hero symbol is slightly larger without becoming oversized');
+assert.ok(styles.includes('width: clamp(124px, 33vw, 138px);') && styles.includes('width: 118px;'), 'mobile hero symbol uses bounded responsive sizes');
 assert.ok(styles.includes('height: 100svh !important'), 'mobile star canvas uses safe viewport height');
 assert.ok(styles.includes('min-height: auto !important'), 'mobile hero avoids rigid viewport min-height jumps');
 assert.ok(styles.includes('position: fixed !important') && styles.includes('max-height: 100dvh !important'), 'mobile star canvas stays fixed without layout height');
-assert.ok(styles.includes('body.home-page .hero-symbol-shell::before') && styles.includes('opacity: 0.3;'), 'mobile hero keeps a softer bounded aura');
+assert.ok(styles.includes('body.home-page .hero-symbol-shell::before') && styles.includes('opacity: 0.34;'), 'mobile hero keeps a softer bounded aura');
+assert.ok(styles.includes('content: url("assets/otp-hero-poster-frame.png");'), 'reduced motion users get the static hero poster instead of the spinning mark');
 assert.ok(styles.includes('max-width: min(100%, calc(100vw - 36px)) !important;'), 'tablet hero title stays inside viewport side padding');
 assert.ok(!styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'removed oversized mobile PERSPECTIVE clamp that caused clipping');
 assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'day-mode services polish guard is documented');
@@ -93,6 +96,7 @@ const heroMarkPrimarySrc = (heroMarkTag.match(/<img\s+src="([^"]+)"/) || [])[1];
 assert.ok(index.includes('class="hero-identity"'), 'homepage hero renders one unified OTP identity composition');
 assert.ok(index.includes('class="hero-symbol-shell"'), 'homepage hero renders one centered symbol shell');
 assert.ok(index.includes('class="hero-symbol-mark"'), 'homepage hero renders one primary symbol image');
+assert.ok(heroMarkTag.includes('width="280"') && heroMarkTag.includes('height="280"'), 'homepage hero mark intrinsic dimensions match the larger display target');
 assert.strictEqual((index.match(/class="hero-symbol-mark"/g) || []).length, 1, 'homepage renders exactly one primary hero mark image');
 assert.strictEqual(heroMarkPrimarySrc, 'assets/otp-hero-centered.gif', 'homepage renders the spinning hero GIF as the primary hero mark');
 assert.ok(heroMarkTag.includes('data-fallback-src="assets/otp-hero-poster-frame.png"'), 'homepage keeps the static poster only as an explicit load-error fallback');
@@ -122,7 +126,7 @@ assert.ok(styles.includes('Premium-lite adaptive performance'), 'performance mod
 assert.ok(styles.includes('html.stars-performance-mode body.home-page .hero-symbol-mark'), 'performance mode keeps unified hero mark polish');
 assert.ok(styles.includes('animation: heroIdentityFloat 7.5s ease-in-out infinite;'), 'hero symbol uses one subtle CSS motion source');
 assert.ok(styles.includes('@media (prefers-reduced-motion: reduce) {\n  body.home-page .hero-symbol-shell,'), 'reduced motion disables the hero shell animation');
-assert.ok(styles.includes('width: clamp(148px, 11.4vw, 176px);'), 'desktop hero symbol is sized as a deliberate responsive animated emblem');
+assert.ok(styles.includes('width: clamp(166px, 12.6vw, 204px);'), 'desktop hero symbol is sized as a deliberate responsive animated emblem');
 assert.ok(!styles.includes('html.stars-performance-mode .home-page .hero .hero-eye-3d,\nhtml.stars-performance-mode[data-theme="light"] .home-page .hero .hero-eye-3d,\nhtml.stars-performance-mode[data-theme="dark"] .home-page .hero .hero-eye-3d {\n  animation: none !important;\n  transform: none !important;\n  will-change: auto !important;\n  filter: none !important;\n}'), 'performance mode no longer strips all hero logo rendering');
 assert.ok(stars.includes('enablePerformanceMode'), 'adaptive starfield performance mode is preserved');
 assert.ok(stars.includes('probeAbsoluteStart'), 'adaptive performance detector keeps checking beyond the first sample');
@@ -171,12 +175,12 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.15', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.16', 'homepage styles cache-bust is current');
 assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', 'homepage stars cache-bust is current');
 assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260608-herogif1', 'homepage runtime cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.15', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.16', `${file} styles cache-bust matches index`);
   assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', `${file} stars cache-bust matches index`);
   assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260608-herogif1', `${file} runtime cache-bust matches index`);
 });

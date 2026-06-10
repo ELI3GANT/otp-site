@@ -493,6 +493,8 @@ function updateQuickSelectorState() {
       : Boolean(packageName && state.selectedPackage === packageName);
     control.classList.toggle('active', selected);
     control.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    const stateLabel = control.querySelector('.service-card-state');
+    if (stateLabel) stateLabel.textContent = selected ? 'Selected' : 'Select';
   });
 }
 
