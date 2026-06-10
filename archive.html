@@ -42,7 +42,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
   <script src="theme-chrono.js?v=8"></script>
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
-  <link rel="stylesheet" href="./styles.css?v=16.8.16" />
+  <link rel="stylesheet" href="./styles.css?v=16.8.22" />
   <style>body { margin: 0 !important; }</style>
   
   <!-- FAVICON -->
@@ -285,6 +285,7 @@
             if (!window.matchMedia('(hover: hover)').matches) return;
             document.querySelectorAll('.project-card').forEach(card => {
                 if (card.dataset.liquidWired === 'true') return;
+                if (card.dataset.noLiquid === 'true') return;
                 const img = card.querySelector('img');
                 if (!img) return;
                 card.dataset.liquidWired = 'true';
@@ -325,9 +326,10 @@
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" defer></script>
+  <script src="otp-projects.js?v=20260609-hyh1" defer></script>
   <script src="otp-video-library.js?v=1.0.0" defer></script>
   <script src="otp-attribution.js?v=16.9.1" defer></script>
-  <script src="site-init.js?v=20260608-herogif1" defer></script>
+  <script src="site-init.js?v=20260609-hyh3" defer></script>
   <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>
 </body>
 </html>

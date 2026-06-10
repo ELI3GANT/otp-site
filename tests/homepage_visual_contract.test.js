@@ -175,14 +175,14 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.16', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.22', 'homepage styles cache-bust is current');
 assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', 'homepage stars cache-bust is current');
-assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260608-herogif1', 'homepage runtime cache-bust is current');
+assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260609-hyh3', 'homepage runtime cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.16', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.22', `${file} styles cache-bust matches index`);
   assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', `${file} stars cache-bust matches index`);
-  assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260608-herogif1', `${file} runtime cache-bust matches index`);
+  assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260609-hyh3', `${file} runtime cache-bust matches index`);
 });
 
 console.log('   OK: Homepage visual contract');

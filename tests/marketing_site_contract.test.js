@@ -21,6 +21,7 @@ const notFound = read('404.html');
 const terminal = read('otp-terminal.html');
 const themeChrono = read('theme-chrono.js');
 const siteInit = read('site-init.js');
+const otpProjects = read('otp-projects.js');
 const server = read('server.js');
 
 assert.ok(index.includes('theme-chrono.js'), 'index loads theme-chrono (first paint)');
@@ -28,6 +29,8 @@ assert.ok(index.includes('styles.css?v='), 'index loads styles.css');
 assert.ok(index.includes('gsap.min.js'), 'index loads GSAP');
 assert.ok(index.includes('ScrollTrigger.min.js'), 'index loads ScrollTrigger');
 assert.ok(index.includes('site-init.js?v='), 'index loads site-init');
+assert.ok(index.includes('otp-projects.js?v=20260609-hyh1'), 'index loads reusable public project library');
+assert.ok(archive.includes('otp-projects.js?v=20260609-hyh1'), 'archive loads reusable public project library');
 const indexSiteInitV = (index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
 const insightSiteInitV = (insight.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
 assert.ok(indexSiteInitV && insightSiteInitV, 'index and insight declare site-init cache-bust');
@@ -89,6 +92,7 @@ assert.ok(!archive.includes('https://onlytrueperspective.tech/archive.html'), 'a
 assert.ok(themeChrono.includes('OTP.getEffectiveThemeForPaint'), 'theme-chrono exposes paint theme API');
 assert.ok(siteInit.includes('data-theme') || siteInit.includes("getAttribute('data-theme')"), 'site-init references data-theme');
 assert.ok(siteInit.includes('OTPSetProjectType'), 'site-init exposes safe homepage package CTA helper');
+assert.ok(siteInit.includes('OTP_PROJECT_LIBRARY'), 'site-init reads reusable public project entries');
 assert.ok(siteInit.includes('sanitizeSlugParam'), 'site-init exposes slug sanitizer for insight query param');
 assert.ok(siteInit.includes('sanitizeHttpUrl'), 'site-init exposes http(s) URL helper for embeds and insight');
 assert.ok(siteInit.includes('/api/contact/submit'), 'site-init wires contact form to public submit API');
@@ -101,6 +105,16 @@ assert.ok(!index.includes('onmouseleave='), 'Enter Vault has no inline leave han
 assert.ok(siteInit.includes("warpBtn.dataset.vaultBound === '1'"), 'Enter Vault binding is guarded against duplicates');
 assert.ok(siteInit.includes("['off', 'none', 'disabled']"), 'remote visuals can only disable stars explicitly');
 assert.ok(!siteInit.includes("cursorCanvas.style.display = entry.isIntersecting"), 'IntersectionObserver does not hide star canvas');
+assert.ok(otpProjects.includes('HYH Architecture & Design'), 'HYH project is registered in public project library');
+assert.ok(otpProjects.includes('Website Transformation / Architecture Visualization Brand System'), 'HYH project type is explicit');
+assert.ok(otpProjects.includes('Previous Website'), 'HYH project exposes before-state label');
+assert.ok(otpProjects.includes('OTP Rebuild'), 'HYH project exposes after-state label');
+assert.ok(otpProjects.includes('assets/hyh-previous-website.jpg'), 'HYH previous-state image is public asset-backed');
+assert.ok(otpProjects.includes('assets/hyh-otp-rebuild.jpg'), 'HYH rebuild image is public asset-backed');
+assert.ok(otpProjects.includes('Architecture visualization positioning'), 'HYH project lists services OTP performed');
+for (const [label, body] of Object.entries({ otpProjects, siteInit, index, archive })) {
+    assert.ok(!/Wayback|web\.archive|Pops/i.test(body), `${label} contains no private/source-only HYH context`);
+}
 
 assert.ok(terminal.includes('toggleAdminTheme()'), 'OTP Terminal theme control');
 assert.ok(terminal.includes('data-theme'), 'OTP Terminal uses data-theme');

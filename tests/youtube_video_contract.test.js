@@ -16,6 +16,8 @@ const server = read('server.js');
 const index = read('index.html');
 const archive = read('archive.html');
 const siteInit = read('site-init.js');
+const styles = read('styles.css');
+const projects = read('otp-projects.js');
 
 const fallback = videos.getFallbackVideos();
 const tjVideos = fallback.filter((video) => video.id === 'j70o4Psmxfk');
@@ -68,13 +70,29 @@ for (const video of fallback) {
 }
 
 assert.ok(index.includes('data-video-feed="featured"'), 'homepage mounts Featured Work from video feed');
+assert.ok(index.includes('otp-projects.js?v='), 'homepage loads reusable project library before rendering work');
 assert.ok(index.includes('otp-video-library.js?v='), 'homepage loads shared video library');
 assert.ok(index.includes('Book OTP'), 'homepage video area keeps Book OTP CTA visible');
 assert.ok(archive.includes('data-video-feed="archive"'), 'archive mounts Vault from video feed');
 assert.ok(archive.includes('Video / Recap'), 'archive exposes requested category filters');
 assert.ok(archive.includes('Music / Visuals'), 'archive exposes requested category filters');
 assert.ok(archive.includes('Creative Systems'), 'archive exposes requested category filters');
+assert.ok(archive.includes('otp-projects.js?v='), 'archive loads reusable project library before rendering work');
 assert.ok(archive.includes('otp-video-library.js?v='), 'archive loads shared video library');
+assert.ok(projects.includes('hyh-architecture-design'), 'HYH exists as a reusable project entry');
+assert.ok(siteInit.includes('createFeaturedProjectCard'), 'client renderer can render reusable projects in Featured Work');
+assert.ok(siteInit.includes('createArchiveProjectCard'), 'client renderer can render reusable projects in the archive');
+assert.ok(siteInit.includes('projectEntries.map(createArchiveProjectCard)'), 'archive combines project entries with video entries');
+assert.ok(siteInit.includes('featuredProjectEntries.map(createFeaturedProjectCard)'), 'homepage combines project entries with video entries');
+assert.ok(siteInit.includes("card.dataset.noLiquid = 'true'"), 'reusable project screenshots opt out of archive liquid thumbnail distortion');
+assert.ok(archive.includes("card.dataset.noLiquid === 'true'"), 'archive liquid hover script skips reusable project screenshots');
+assert.ok(siteInit.includes('openProjectComparisonModal'), 'reusable projects can open an enlarged before/after view');
+assert.ok(siteInit.includes('otp-project-view-action'), 'project cards expose an explicit before/after action');
+assert.ok(siteInit.includes("role', 'dialog"), 'project before/after view is rendered as an accessible dialog');
+assert.ok(styles.includes('grid-column: 1 / -1;'), 'archive project cards span the full grid as landscape features');
+assert.ok(styles.includes('aspect-ratio: 1 / 1;'), 'archive video cards render as square tiles under featured projects');
+assert.ok(styles.includes('flex-direction: column;'), 'archive project card uses a media-first landscape feature layout');
+assert.ok(styles.includes('aspect-ratio: 16 / 5;'), 'desktop archive project media renders as a wide before/after strip');
 
 assert.match(server, /app\.get\('\/api\/youtube\/videos'/, 'server exposes YouTube videos API');
 assert.match(server, /'\/vault': 'archive\.html'/, 'server exposes Vault alias to archive');

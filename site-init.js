@@ -1164,6 +1164,19 @@ function initSite() {
         const fallbackVideos = lib && typeof lib.getFallbackVideos === 'function'
             ? lib.getFallbackVideos()
             : [];
+        const projectLib = window.OTP_PROJECT_LIBRARY;
+        const getProjectList = (getter) => {
+            try {
+                const list = typeof getter === 'function' ? getter() : [];
+                return Array.isArray(list) ? list.filter(Boolean) : [];
+            } catch (e) {
+                return [];
+            }
+        };
+        const projectEntries = getProjectList(projectLib && projectLib.getProjects);
+        const featuredProjectEntries = projectLib && typeof projectLib.getFeaturedProjects === 'function'
+            ? getProjectList(projectLib.getFeaturedProjects)
+            : projectEntries.filter((project) => project && project.featured !== false);
 
         const safeUrl = (raw) => {
             if (window.OTP && typeof window.OTP.sanitizeHttpUrl === 'function') {
@@ -1251,6 +1264,302 @@ function initSite() {
                 if (event.target && event.target.closest && event.target.closest('a, button, input, textarea, select')) return;
                 window.open(watchUrl, '_blank', 'noopener,noreferrer');
             });
+        };
+
+        const createProjectImage = (image, className) => {
+            const img = document.createElement('img');
+            img.className = className || '';
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            img.alt = text(image && image.alt, text(image && image.label, 'OTP project image'));
+            const src = safeUrl(image && image.src);
+            if (src) img.src = src;
+            img.addEventListener('error', () => {
+                img.removeAttribute('src');
+                img.classList.add('otp-project-img-missing');
+            }, { once: true });
+            return img;
+        };
+
+        const createProjectComparison = (project, variant) => {
+            const comparison = document.createElement('div');
+            comparison.className = `otp-project-comparison otp-project-comparison-${variant || 'feature'}`;
+
+            const beforeAfter = project && project.beforeAfter ? project.beforeAfter : {};
+            ['before', 'after'].forEach((key) => {
+                const image = beforeAfter[key] || {};
+                const panel = document.createElement('figure');
+                panel.className = `otp-project-panel otp-project-panel-${key}`;
+                panel.appendChild(createProjectImage(image, 'otp-project-image'));
+
+                const label = document.createElement('span');
+                label.className = 'otp-project-label';
+                label.textContent = text(image.label, key === 'before' ? 'Before' : 'After');
+                panel.appendChild(label);
+
+                const caption = document.createElement('figcaption');
+                caption.className = 'otp-project-caption';
+                caption.textContent = text(image.caption, key === 'before' ? 'Previous public experience.' : 'OTP rebuilt experience.');
+                panel.appendChild(caption);
+                comparison.appendChild(panel);
+            });
+
+            return comparison;
+        };
+
+        const createProjectPillList = (items, className, maxItems) => {
+            const cleanItems = Array.isArray(items)
+                ? items.map((item) => text(item)).filter(Boolean).slice(0, maxItems || items.length)
+                : [];
+            const list = document.createElement('div');
+            list.className = className;
+            cleanItems.forEach((item) => list.appendChild(createBadge(item, 'otp-project-chip')));
+            return list;
+        };
+
+        let activeProjectModal = null;
+        let lastProjectModalTrigger = null;
+
+        const closeProjectComparisonModal = () => {
+            if (!activeProjectModal) return;
+            const modal = activeProjectModal;
+            activeProjectModal = null;
+            if (modal._otpOnKeydown) document.removeEventListener('keydown', modal._otpOnKeydown);
+            modal.remove();
+            document.body.classList.remove('otp-project-modal-open');
+            if (lastProjectModalTrigger && typeof lastProjectModalTrigger.focus === 'function') {
+                lastProjectModalTrigger.focus();
+            }
+            lastProjectModalTrigger = null;
+        };
+
+        const createProjectModalPanel = (image, key) => {
+            const panel = document.createElement('figure');
+            panel.className = `otp-project-modal-panel otp-project-modal-panel-${key}`;
+
+            const label = document.createElement('span');
+            label.className = 'otp-project-modal-label';
+            label.textContent = text(image && image.label, key === 'before' ? 'Before' : 'After');
+            panel.appendChild(label);
+
+            const img = createProjectImage(image, 'otp-project-modal-image');
+            img.loading = 'eager';
+            panel.appendChild(img);
+
+            const caption = document.createElement('figcaption');
+            caption.className = 'otp-project-modal-caption';
+            caption.textContent = text(image && image.caption, key === 'before' ? 'Previous public experience.' : 'OTP rebuilt experience.');
+            panel.appendChild(caption);
+
+            return panel;
+        };
+
+        const openProjectComparisonModal = (project, trigger) => {
+            const beforeAfter = project && project.beforeAfter ? project.beforeAfter : {};
+            if (!beforeAfter.before && !beforeAfter.after) return;
+            closeProjectComparisonModal();
+            lastProjectModalTrigger = trigger || document.activeElement;
+
+            const modal = document.createElement('div');
+            modal.className = 'otp-project-modal';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.tabIndex = -1;
+
+            const titleId = `${text(project && project.id, 'otp-project')}-comparison-title`;
+            modal.setAttribute('aria-labelledby', titleId);
+
+            const shell = document.createElement('div');
+            shell.className = 'otp-project-modal-shell';
+
+            const header = document.createElement('div');
+            header.className = 'otp-project-modal-header';
+
+            const headerCopy = document.createElement('div');
+            headerCopy.className = 'otp-project-modal-copy';
+
+            const kicker = document.createElement('p');
+            kicker.className = 'otp-project-modal-kicker';
+            kicker.textContent = 'Before / After Website Project';
+            headerCopy.appendChild(kicker);
+
+            const title = document.createElement('h2');
+            title.id = titleId;
+            title.textContent = text(project && project.title, 'OTP project');
+            headerCopy.appendChild(title);
+
+            const type = document.createElement('p');
+            type.className = 'otp-project-modal-type';
+            type.textContent = text(project && project.type, 'Creative system');
+            headerCopy.appendChild(type);
+            header.appendChild(headerCopy);
+
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.className = 'otp-project-modal-close';
+            close.setAttribute('aria-label', 'Close before and after view');
+            close.textContent = 'Close';
+            close.addEventListener('click', closeProjectComparisonModal);
+            header.appendChild(close);
+            shell.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = 'otp-project-modal-grid';
+            grid.appendChild(createProjectModalPanel(beforeAfter.before, 'before'));
+            grid.appendChild(createProjectModalPanel(beforeAfter.after, 'after'));
+            shell.appendChild(grid);
+
+            const footer = document.createElement('div');
+            footer.className = 'otp-project-modal-footer';
+
+            const summary = document.createElement('p');
+            summary.textContent = text(project && project.shortDescription, 'A selected OTP project transformation.');
+            footer.appendChild(summary);
+
+            const book = document.createElement('a');
+            book.className = 'otp-video-action otp-video-action-primary';
+            book.href = safeUrl(project && project.ctaHref) || '/bookings';
+            book.textContent = text(project && project.ctaLabel, 'Start a Similar Project');
+            footer.appendChild(book);
+            shell.appendChild(footer);
+
+            modal.appendChild(shell);
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) closeProjectComparisonModal();
+            });
+            modal._otpOnKeydown = (event) => {
+                if (event.key === 'Escape') closeProjectComparisonModal();
+            };
+            document.addEventListener('keydown', modal._otpOnKeydown);
+            document.body.appendChild(modal);
+            document.body.classList.add('otp-project-modal-open');
+            activeProjectModal = modal;
+            window.setTimeout(() => close.focus(), 0);
+        };
+
+        const createProjectActions = (project) => {
+            const actions = document.createElement('div');
+            actions.className = 'otp-video-card-actions otp-project-actions';
+
+            const view = document.createElement('button');
+            view.type = 'button';
+            view.className = 'otp-video-action otp-video-action-secondary otp-project-view-action';
+            view.textContent = 'View Before / After';
+            view.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                openProjectComparisonModal(project, view);
+            });
+            actions.appendChild(view);
+
+            const book = document.createElement('a');
+            book.className = 'otp-video-action otp-video-action-primary';
+            book.href = safeUrl(project && project.ctaHref) || '/bookings';
+            book.textContent = text(project && project.ctaLabel, 'Start a Similar Project');
+            actions.appendChild(book);
+
+            return actions;
+        };
+
+        const makeProjectCardOpenModal = (card, project) => {
+            if (!card) return;
+            card.classList.add('is-clickable');
+            card.tabIndex = 0;
+            card.setAttribute('aria-label', `${text(project && project.title, 'OTP project')} - view before and after`);
+            card.addEventListener('click', (event) => {
+                if (event.target && event.target.closest && event.target.closest('a, button, input, textarea, select')) return;
+                openProjectComparisonModal(project, card);
+            });
+            card.addEventListener('keydown', (event) => {
+                if (event.target && event.target.closest && event.target.closest('a, button, input, textarea, select')) return;
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openProjectComparisonModal(project, card);
+                }
+            });
+        };
+
+        const createFeaturedProjectCard = (project) => {
+            const card = document.createElement('article');
+            card.className = 'work-card-mini otp-project-feature-card k-hover';
+            card.dataset.projectId = text(project && project.id, 'otp-project');
+
+            const thumb = document.createElement('div');
+            thumb.className = 'work-thumb-visual portfolio-visual otp-project-thumb';
+            thumb.appendChild(createProjectComparison(project, 'feature'));
+            card.appendChild(thumb);
+
+            const meta = document.createElement('div');
+            meta.className = 'work-meta-mini otp-video-meta otp-project-meta';
+            meta.appendChild(createBadge('Featured Project', 'otp-platform-badge'));
+
+            const title = document.createElement('h3');
+            title.className = 'work-title-mini';
+            title.textContent = text(project && project.title, 'OTP project');
+            meta.appendChild(title);
+
+            const type = document.createElement('p');
+            type.className = 'otp-project-type';
+            type.textContent = text(project && project.type, 'Creative system');
+            meta.appendChild(type);
+
+            const description = document.createElement('p');
+            description.className = 'otp-video-description otp-project-description';
+            description.textContent = text(project && project.shortDescription, 'A selected OTP project transformation.');
+            meta.appendChild(description);
+
+            meta.appendChild(createProjectPillList(project && project.tags, 'otp-project-tag-list', 6));
+
+            const row = document.createElement('div');
+            row.className = 'otp-card-meta-row';
+            row.appendChild(createBadge(text(project && project.category, 'Creative Systems'), 'otp-category-pill'));
+            row.appendChild(createBadge('Before / After', 'otp-date-pill'));
+            meta.appendChild(row);
+            meta.appendChild(createProjectActions(project));
+            card.appendChild(meta);
+            makeProjectCardOpenModal(card, project);
+            return card;
+        };
+
+        const createArchiveProjectCard = (project) => {
+            const card = document.createElement('article');
+            card.className = 'project-card otp-project-archive-card k-hover';
+            card.dataset.category = text(project && project.category, 'Creative Systems');
+            card.dataset.projectId = text(project && project.id, 'otp-project');
+            card.dataset.noLiquid = 'true';
+
+            const media = document.createElement('div');
+            media.className = 'otp-project-archive-media';
+            media.appendChild(createProjectComparison(project, 'archive'));
+            card.appendChild(media);
+
+            const overlay = document.createElement('div');
+            overlay.className = 'project-overlay otp-project-overlay';
+
+            const top = document.createElement('div');
+            top.className = 'otp-archive-card-topline';
+            top.appendChild(createBadge('Project', 'otp-platform-badge'));
+            top.appendChild(createBadge('Before / After', 'otp-date-pill'));
+            overlay.appendChild(top);
+
+            const title = document.createElement('h3');
+            title.textContent = text(project && project.title, 'OTP project');
+            overlay.appendChild(title);
+
+            const category = document.createElement('span');
+            category.className = 'otp-archive-category';
+            category.textContent = text(project && project.type, 'Creative system');
+            overlay.appendChild(category);
+
+            const description = document.createElement('p');
+            description.className = 'otp-video-description otp-project-description';
+            description.textContent = text(project && project.shortDescription, 'A selected OTP project transformation.');
+            overlay.appendChild(description);
+            overlay.appendChild(createProjectPillList(project && project.services, 'otp-project-service-list', 7));
+            overlay.appendChild(createProjectActions(project));
+            card.appendChild(overlay);
+            makeProjectCardOpenModal(card, project);
+            return card;
         };
 
         const createFeaturedCard = (video) => {
@@ -1346,15 +1655,19 @@ function initSite() {
             const selected = lib && typeof lib.getFeaturedVideos === 'function'
                 ? lib.getFeaturedVideos(videos, 4)
                 : videos.slice(0, 4);
-            if (!selected.length) return setEmptyState(featuredRoot, 'Recent work is updating. Check back shortly.');
-            featuredRoot.replaceChildren(...selected.map(createFeaturedCard));
+            const projectCards = featuredProjectEntries.map(createFeaturedProjectCard);
+            const videoCards = selected.map(createFeaturedCard);
+            if (!projectCards.length && !videoCards.length) return setEmptyState(featuredRoot, 'Recent work is updating. Check back shortly.');
+            featuredRoot.replaceChildren(...projectCards, ...videoCards);
             featuredRoot.dataset.syncState = fallbackUsed ? 'fallback' : 'live';
         };
 
         const renderArchive = (videos, fallbackUsed) => {
             if (!archiveRoot) return;
-            if (!videos.length) return setEmptyState(archiveRoot, 'The Vault is updating. Check back shortly.');
-            archiveRoot.replaceChildren(...videos.map(createArchiveCard));
+            const projectCards = projectEntries.map(createArchiveProjectCard);
+            const videoCards = videos.map(createArchiveCard);
+            if (!projectCards.length && !videoCards.length) return setEmptyState(archiveRoot, 'The Vault is updating. Check back shortly.');
+            archiveRoot.replaceChildren(...projectCards, ...videoCards);
             archiveRoot.dataset.syncState = fallbackUsed ? 'fallback' : 'live';
             wireArchiveFilters();
         };
