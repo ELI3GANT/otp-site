@@ -68,7 +68,7 @@
         label: 'Custom Build',
         price_display: 'Scope based',
         mode: 'custom',
-        summary: 'Scoped around projects that do not fit inside a box.',
+        summary: 'Scoped around projects that route into The System or manual OTP review.',
         best_for: Object.freeze([
           'custom app',
           'AI tool',
@@ -80,6 +80,32 @@
         ])
       })
     }),
+    mainPackageLadder: Object.freeze([
+      Object.freeze({
+        id: 'signal',
+        label: 'The Signal',
+        position: 'Focused output',
+        description: 'A focused creative deliverable built to make your brand, event, or project look ready fast.',
+        bestFor: 'Single asset, quick creative deliverable, short-form content, landing page polish, site/content fix, event recap, or clear project piece.',
+        chooseWhen: 'Choose this when one defined output needs to look professional fast.'
+      }),
+      Object.freeze({
+        id: 'engine',
+        label: 'The Engine',
+        position: 'Connected project build',
+        description: 'A connected project build for campaigns, websites, content systems, launches, or business presence upgrades.',
+        bestFor: 'Campaigns, website refreshes, content systems, booking flows, brand launches, multi-piece creative packages, or business presence upgrades.',
+        chooseWhen: 'Choose this when multiple pieces need to work together.'
+      }),
+      Object.freeze({
+        id: 'system',
+        label: 'The System',
+        position: 'Full operating layer',
+        description: 'A full operating layer for brands and businesses that need website, content, client flow, automation, and ongoing support working together.',
+        bestFor: 'Website, content, brand, client flow, automation, portal support, or monthly/retainer-style operating systems.',
+        chooseWhen: 'Choose this when the project touches the business layer, not just one deliverable.'
+      })
+    ]),
     bookingPackages: Object.freeze([
       Object.freeze({
         id: 'the-signal',
@@ -117,27 +143,20 @@
         cta: 'Build The System',
         recommended: false
       }),
-      Object.freeze({
-        id: 'custom-build',
-        internal_key: 'Custom',
-        name: 'Custom Build',
-        price: 'Scope based',
-        purpose: 'For anything unique, advanced, or mixed.',
-        description: 'Custom Build is for projects that do not fit inside a box. OTP scopes the work and builds around the real goal.',
-        best_for: Object.freeze(['Custom app', 'AI tool', 'Artist rollout', 'Product launch', 'Event coverage', 'Long-term creative support', 'Mixed video/logo/site/automation project']),
-        examples: Object.freeze(['Custom app', 'AI tool', 'Artist rollout', 'Event coverage']),
-        cta: 'Request Custom Build',
-        recommended: false
-      })
     ]),
     bookingServiceTypes: Object.freeze([
+      'Video / Content',
+      'Website / Digital System',
+      'Brand Launch',
+      'Fast Lane',
+      'Custom Build',
       'Same-Day Reel',
       'Event Promo',
+      'Website Cleanup',
       'Business Content Pack',
-      'Brand Launch Pack',
-      'Video / Content',
+      'Brand Launch Assets',
+      'Emergency Booking/Client Flow Fix',
       'Logo / Brand Identity',
-      'Website / Landing Page',
       'AI / Automation',
       'Business System',
       'Music / Artist Rollout',
@@ -147,9 +166,79 @@
     fastLaneMappings: Object.freeze({
       'Same-Day Reel': 'The Signal',
       'Event Promo': 'The Signal',
+      'Website Cleanup': 'The Signal',
       'Business Content Pack': 'The Engine',
-      'Brand Launch Pack': 'Custom Build'
+      'Brand Launch Assets': 'The Engine',
+      'Emergency Booking/Client Flow Fix': 'The System'
     }),
+    fastLaneOffers: Object.freeze([
+      Object.freeze({
+        id: 'same_day_reel',
+        label: 'Same-Day Reel',
+        package_fit: 'The Signal',
+        recommended_package: 'The Signal',
+        urgency: 'Urgent',
+        priority: 'High',
+        next_action: 'Confirm deadline, platform, references, and delivery format; then send The Signal quote.',
+        description: 'Same-day reel requests need a fast Signal lane and quick scope confirmation.',
+        missing: Object.freeze(['timeline', 'reference link'])
+      }),
+      Object.freeze({
+        id: 'event_promo',
+        label: 'Event Promo',
+        package_fit: 'The Signal / The Engine',
+        recommended_package: 'The Signal',
+        urgency: 'Time-sensitive',
+        priority: 'High',
+        next_action: 'Confirm event date, location, run of show, and delivery deadline; then send The Signal quote.',
+        description: 'Event promos are time-sensitive and need date/location before quoting cleanly.',
+        missing: Object.freeze(['event date', 'location'])
+      }),
+      Object.freeze({
+        id: 'business_content_pack',
+        label: 'Business Content Pack',
+        package_fit: 'The Engine',
+        recommended_package: 'The Engine',
+        urgency: 'Planning needed',
+        priority: 'Medium-High',
+        next_action: 'Confirm deliverables, platforms, posting cadence, and timeline; then scope The Engine.',
+        description: 'Business content packs need planning details across deliverables and channels.',
+        missing: Object.freeze(['deliverables/platforms', 'timeline'])
+      }),
+      Object.freeze({
+        id: 'website_cleanup',
+        label: 'Website Cleanup',
+        package_fit: 'The Signal',
+        recommended_package: 'The Signal',
+        urgency: 'Time-sensitive',
+        priority: 'Medium-High',
+        next_action: 'Confirm site link, issue list, access needs, and deadline; then send The Signal quote.',
+        description: 'Website cleanup is a fast fix when the work is focused on one visible output.',
+        missing: Object.freeze(['site link', 'issue list', 'deadline'])
+      }),
+      Object.freeze({
+        id: 'brand_launch_pack',
+        label: 'Brand Launch Assets',
+        package_fit: 'The Engine',
+        recommended_package: 'The Engine',
+        urgency: 'Strategic planning',
+        priority: 'High',
+        next_action: 'Confirm scope, brand goals, launch timeline, and budget range; then scope The Engine.',
+        description: 'Brand launch assets need a connected Engine plan across identity, launch content, and rollout pieces.',
+        missing: Object.freeze(['scope/brand goals', 'budget', 'timeline'])
+      }),
+      Object.freeze({
+        id: 'emergency_booking_flow_fix',
+        label: 'Emergency Booking/Client Flow Fix',
+        package_fit: 'The Signal / The System',
+        recommended_package: 'The System',
+        urgency: 'Urgent',
+        priority: 'High',
+        next_action: 'Confirm the broken flow, access needs, user impact, and deadline; then route the fix into The Signal or The System.',
+        description: 'Emergency flow fixes move fast, but the package depth depends on whether it is one visible fix or an operating-layer repair.',
+        missing: Object.freeze(['flow link', 'access needs', 'deadline'])
+      })
+    ]),
     services: Object.freeze({
       starterWebPresence: Object.freeze({ label: 'Starter Web Presence', price_display: 'Custom quote', type: 'one_time' }),
       businessWebsitePro: Object.freeze({ label: 'Business Website Pro', price_display: 'Tailored pricing', type: 'one_time' }),

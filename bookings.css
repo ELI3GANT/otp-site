@@ -1158,6 +1158,12 @@ h3 {
   --card-glow: rgba(184, 140, 255, 0.24);
 }
 
+.fast-lane-card[data-package-theme="the-system"] {
+  --card-accent: #f4cc6a;
+  --card-accent-2: #fff4ce;
+  --card-glow: rgba(244, 204, 106, 0.24);
+}
+
 .fast-lane-card[data-package-theme="custom-build"] {
   --card-accent: #49ead6;
   --card-accent-2: #ff76d7;

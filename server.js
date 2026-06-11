@@ -3079,20 +3079,61 @@ function normalizeBookingDeadline(value) {
     return raw;
 }
 
+function normalizeBookingServiceAlias(value) {
+    const clean = cleanBookingText(value, 160);
+    const lower = clean.toLowerCase();
+    if (lower === 'website / landing page' || lower === 'website / digital') return 'Website / Digital System';
+    if (lower === 'brand launch pack') return 'Brand Launch Assets';
+    return clean;
+}
+
 function bookingFastLaneMappings() {
-    const mappings = OTP_PRICING?.fastLaneMappings || {};
-    return {
-        'Same-Day Reel': mappings['Same-Day Reel'] || 'The Signal',
-        'Event Promo': mappings['Event Promo'] || 'The Signal',
-        'Business Content Pack': mappings['Business Content Pack'] || 'The Engine',
-        'Brand Launch Pack': mappings['Brand Launch Pack'] || 'Custom Build'
-    };
+    const configured = OTP_PRICING?.fastLaneMappings || {};
+    const offers = bookingFastLaneOffers();
+    return offers.reduce((acc, offer) => {
+        acc[offer.label] = offer.recommended_package;
+        return acc;
+    }, {
+        'Same-Day Reel': configured['Same-Day Reel'] || 'The Signal',
+        'Event Promo': configured['Event Promo'] || 'The Signal',
+        'Website Cleanup': configured['Website Cleanup'] || 'The Signal',
+        'Business Content Pack': configured['Business Content Pack'] || 'The Engine',
+        'Brand Launch Assets': configured['Brand Launch Assets'] || 'The Engine',
+        'Emergency Booking/Client Flow Fix': configured['Emergency Booking/Client Flow Fix'] || 'The System'
+    });
+}
+
+function bookingFastLaneOfferFor(value) {
+    const clean = normalizeBookingServiceAlias(value);
+    if (!clean) return null;
+    const normalized = clean.toLowerCase();
+    return bookingFastLaneOffers().find((offer) => {
+        return offer.label.toLowerCase() === normalized || offer.id.toLowerCase() === normalized;
+    }) || null;
 }
 
 function fastLanePackageFor(serviceType) {
     const clean = cleanBookingText(serviceType, 160);
     if (!clean) return '';
-    return bookingFastLaneMappings()[clean] || '';
+    const offer = bookingFastLaneOfferFor(clean);
+    return offer?.recommended_package || bookingFastLaneMappings()[clean] || '';
+}
+
+function fastLanePackageFitFor(serviceType) {
+    const clean = cleanBookingText(serviceType, 160);
+    if (!clean) return '';
+    const offer = bookingFastLaneOfferFor(clean);
+    return offer?.package_fit || '';
+}
+
+function serviceDefaultPackageFor(serviceType) {
+    const clean = normalizeBookingServiceAlias(serviceType).toLowerCase();
+    if (!clean) return '';
+    if (clean === 'website / digital system') return 'The Engine';
+    if (clean === 'brand launch') return 'The Engine';
+    if (clean === 'custom build' || clean === 'custom request') return 'The System';
+    if (clean === 'fast lane') return 'The Signal';
+    return '';
 }
 
 function bookingIdFromToken(token) {
@@ -3112,7 +3153,7 @@ function normalizeBookingPackageName(value) {
     if (lower.includes('signal')) return 'The Signal';
     if (lower.includes('engine')) return 'The Engine';
     if (lower.includes('system')) return 'The System';
-    if (lower.includes('custom')) return 'Custom Build';
+    if (lower.includes('custom')) return 'The System';
     return raw.slice(0, 80);
 }
 
@@ -3124,12 +3165,16 @@ function packageDisplayToOpsPackage(packageName) {
 
 function packageDisplayForPublic(packageName) {
     const normalized = normalizeBookingPackageName(packageName);
-    return normalized === 'Custom' ? 'Custom Build' : normalized;
+    return normalized === 'Custom' ? 'The System' : normalized;
 }
 
 function bookingPackageCards() {
     const cards = Array.isArray(OTP_PRICING?.bookingPackages) ? OTP_PRICING.bookingPackages : [];
-    if (cards.length) return cards.map((card) => ({ ...card }));
+    if (cards.length) {
+        return cards
+            .map((card) => ({ ...card, label: card.label || card.name }))
+            .filter((card) => ['The Signal', 'The Engine', 'The System'].includes(card.name || card.label || card.internal_key));
+    }
     const p = OTP_PRICING?.packages || {};
     return [
         {
@@ -3165,40 +3210,130 @@ function bookingPackageCards() {
             best_for: ['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business operating system'],
             examples: ['Full website', 'AI automation', 'Client portal', 'Document workflow'],
             cta: 'Build The System'
-        },
-        {
-            id: 'custom-build',
-            internal_key: 'Custom',
-            name: 'Custom Build',
-            price: p.custom?.price_display || 'Scope based',
-            purpose: 'For anything unique, advanced, or mixed.',
-            description: 'Custom Build is for projects that do not fit inside a box. OTP scopes the work and builds around the real goal.',
-            best_for: ['Custom app', 'AI tool', 'Artist rollout', 'Product launch', 'Event coverage', 'Long-term creative support', 'Mixed video/logo/site/automation project'],
-            examples: ['Custom app', 'AI tool', 'Artist rollout', 'Event coverage'],
-            cta: 'Request Custom Build'
         }
     ];
 }
 
+function bookingFastLaneOffers() {
+    const offers = Array.isArray(OTP_PRICING?.fastLaneOffers) ? OTP_PRICING.fastLaneOffers : [];
+    const fallback = [
+        {
+            id: 'same_day_reel',
+            label: 'Same-Day Reel',
+            package_fit: 'The Signal',
+            recommended_package: 'The Signal',
+            urgency: 'Urgent',
+            priority: 'High',
+            next_action: 'Confirm deadline, platform, references, and delivery format; then send The Signal quote.',
+            description: 'Same-day reel requests need a fast Signal lane and quick scope confirmation.',
+            missing: ['timeline', 'reference link']
+        },
+        {
+            id: 'event_promo',
+            label: 'Event Promo',
+            package_fit: 'The Signal / The Engine',
+            recommended_package: 'The Signal',
+            urgency: 'Time-sensitive',
+            priority: 'High',
+            next_action: 'Confirm event date, location, run of show, and delivery deadline; then send The Signal quote.',
+            description: 'Event promos are time-sensitive and need date/location before quoting cleanly.',
+            missing: ['event date', 'location']
+        },
+        {
+            id: 'business_content_pack',
+            label: 'Business Content Pack',
+            package_fit: 'The Engine',
+            recommended_package: 'The Engine',
+            urgency: 'Planning needed',
+            priority: 'Medium-High',
+            next_action: 'Confirm deliverables, platforms, posting cadence, and timeline; then scope The Engine.',
+            description: 'Business content packs need planning details across deliverables and channels.',
+            missing: ['deliverables/platforms', 'timeline']
+        },
+        {
+            id: 'website_cleanup',
+            label: 'Website Cleanup',
+            package_fit: 'The Signal',
+            recommended_package: 'The Signal',
+            urgency: 'Time-sensitive',
+            priority: 'Medium-High',
+            next_action: 'Confirm site link, issue list, access needs, and deadline; then send The Signal quote.',
+            description: 'Website cleanup is a fast fix when the work is focused on one visible output.',
+            missing: ['site link', 'issue list', 'deadline']
+        },
+        {
+            id: 'brand_launch_pack',
+            label: 'Brand Launch Assets',
+            package_fit: 'The Engine',
+            recommended_package: 'The Engine',
+            urgency: 'Strategic planning',
+            priority: 'High',
+            next_action: 'Confirm scope, brand goals, launch timeline, and budget range; then scope The Engine.',
+            description: 'Brand launch assets need a connected Engine plan across identity, launch content, and rollout pieces.',
+            missing: ['scope/brand goals', 'budget', 'timeline']
+        },
+        {
+            id: 'emergency_booking_flow_fix',
+            label: 'Emergency Booking/Client Flow Fix',
+            package_fit: 'The Signal / The System',
+            recommended_package: 'The System',
+            urgency: 'Urgent',
+            priority: 'High',
+            next_action: 'Confirm the broken flow, access needs, user impact, and deadline; then route the fix into The Signal or The System.',
+            description: 'Emergency flow fixes move fast, but the package depth depends on whether it is one visible fix or an operating-layer repair.',
+            missing: ['flow link', 'access needs', 'deadline']
+        }
+    ];
+    return (offers.length ? offers : fallback).map((offer) => ({
+        id: cleanBookingText(offer.id, 80),
+        label: cleanBookingText(offer.label, 120),
+        package_fit: cleanBookingText(offer.package_fit || offer.packageFit || offer.package, 120),
+        recommended_package: normalizeBookingPackageName(offer.recommended_package || offer.recommendedPackage || offer.package),
+        urgency: cleanBookingText(offer.urgency, 80),
+        priority: cleanBookingText(offer.priority, 80),
+        next_action: cleanBookingText(offer.next_action || offer.nextAction, 260),
+        description: cleanBookingText(offer.description || offer.reason, 320),
+        missing: Array.isArray(offer.missing) ? offer.missing.map((item) => cleanBookingText(item, 80)).filter(Boolean) : []
+    })).filter((offer) => offer.id && offer.label && ['The Signal', 'The Engine', 'The System'].includes(offer.recommended_package));
+}
+
+function bookingServiceTypes() {
+    const serviceTypes = Array.isArray(OTP_PRICING?.bookingServiceTypes) ? OTP_PRICING.bookingServiceTypes : [];
+    const values = [
+        ...serviceTypes,
+        'Video / Content',
+        'Website / Digital System',
+        'Brand Launch',
+        'Fast Lane',
+        'Custom Build',
+        ...bookingFastLaneOffers().map((offer) => offer.label),
+        'Logo / Brand Identity',
+        'AI / Automation',
+        'Business System',
+        'Music / Artist Rollout',
+        'Event Coverage',
+        'Custom Request'
+    ];
+    return [...new Set(values.map((value) => cleanBookingText(value, 160)).filter(Boolean))];
+}
+
 function buildPublicBookingConfig() {
-    const serviceTypes = Array.isArray(OTP_PRICING?.bookingServiceTypes)
-        ? OTP_PRICING.bookingServiceTypes
-        : [
-            'Video / Content',
-            'Logo / Brand Identity',
-            'Website / Landing Page',
-            'AI / Automation',
-            'Business System',
-            'Music / Artist Rollout',
-            'Event Coverage',
-            'Custom Request'
-        ];
+    const serviceTypes = bookingServiceTypes();
+    const fastLaneOffers = bookingFastLaneOffers();
     return {
         ok: true,
+        public_url: 'https://www.onlytrueperspective.tech/bookings',
+        production_url: 'https://www.onlytrueperspective.tech/bookings',
+        cta_text: 'Start a Project',
+        cta_copy: 'Choose a service lane, pick the package depth, and OTP will confirm the cleanest next step.',
+        dm_text: 'Book your creative project with OTP: https://www.onlytrueperspective.tech/bookings',
+        routes: ['/bookings', '/booking', '/book', '/book-otp'],
         packages: bookingPackageCards(),
+        fast_lane_offers: fastLaneOffers,
+        fastLaneOffers,
         serviceTypes,
         services: serviceTypes,
-        packageOptions: ['The Signal', 'The Engine', 'The System', 'Custom Build', 'Not Sure Yet'],
+        packageOptions: ['The Signal', 'The Engine', 'The System', 'Not Sure Yet'],
         fastLaneMappings: bookingFastLaneMappings(),
         budgetRanges: ['Under $500', '$500 to $1,200', '$1,200 to $2,000', '$2,000 to $3,500', '$3,500+', 'Not sure yet'],
         urgencyLevels: ['Flexible', 'Soon', 'Rush', 'Launch deadline'],
@@ -3364,12 +3499,16 @@ function normalizeBookingBoolean(value) {
 function parseBookingPayload(input) {
     const body = input && typeof input === 'object' ? input : {};
     const publicConfig = buildPublicBookingConfig();
-    const serviceType = pickPublicOption(body.service_type || body.serviceType, publicConfig.serviceTypes);
-    const fastLanePackage = fastLanePackageFor(serviceType);
-    const selectedFastOffer = fastLanePackage ? serviceType : cleanBookingText(body.selected_fast_offer || body.selectedFastOffer, 120);
+    const serviceType = pickPublicOption(normalizeBookingServiceAlias(body.service_type || body.serviceType), publicConfig.serviceTypes);
+    const selectedFastOfferRaw = cleanBookingText(body.selected_fast_offer || body.selectedFastOffer, 120);
+    const fastLaneOffer = bookingFastLaneOfferFor(selectedFastOfferRaw) || bookingFastLaneOfferFor(serviceType);
+    const fastLanePackage = fastLaneOffer?.recommended_package || '';
+    const fastLanePackageFit = fastLaneOffer?.package_fit || fastLanePackageFitFor(serviceType) || cleanBookingText(body.fast_lane_package || body.fastLanePackage, 120);
+    const selectedFastOffer = fastLaneOffer?.label || selectedFastOfferRaw;
     const packageRaw = normalizeBookingPackageName(body.package_interest || body.packageInterest);
     const requestedPackage = publicConfig.packageOptions.includes(packageRaw) ? packageRaw : '';
-    const packageInterest = fastLanePackage || requestedPackage;
+    const serviceDefaultPackage = serviceDefaultPackageFor(serviceType);
+    const packageInterest = fastLanePackage || requestedPackage || serviceDefaultPackage;
     const spamTrap = cleanBookingText(
         body.otp_company_website || body.company_website || body.website_url || body._gotcha,
         120
@@ -3388,7 +3527,7 @@ function parseBookingPayload(input) {
             || cleanBookingText(body.project_type || body.projectType, 160),
         package_interest: packageInterest,
         selected_fast_offer: selectedFastOffer,
-        fast_lane_package: fastLanePackage,
+        fast_lane_package: fastLanePackageFit,
         project_description: cleanBookingText(body.project_description || body.projectDescription, 9000),
         desired_deliverables: cleanBookingText(body.desired_deliverables || body.desiredDeliverables || body.deliverables, 2200),
         reference_link: cleanBookingText(body.reference_link || body.referenceLink, 500),
@@ -3492,7 +3631,7 @@ async function runBookingOracle(payload, bookingId) {
 async function saveBookingOpsJob({ bookingId, payload, recommendation, recommendationPending, clientId }) {
     if (!supabaseAdmin) throw new Error('ops_unavailable');
     const selectedPackage = payload.package_interest === 'Not Sure Yet'
-        ? (recommendation?.recommendedPackage || 'Custom Build')
+        ? (recommendation?.recommendedPackage || 'The System')
         : payload.package_interest;
     const packageType = packageDisplayToOpsPackage(selectedPackage);
     const titleBits = [payload.service_type, payload.business_name || payload.name].filter(Boolean);

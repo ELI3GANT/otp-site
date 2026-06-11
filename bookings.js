@@ -35,26 +35,79 @@ const fallbackConfig = {
       examples: ['Full website', 'AI automation', 'Client portal', 'Document workflow'],
       cta: 'Build The System'
     },
-    {
-      id: 'custom-build',
-      internal_key: 'Custom',
-      name: 'Custom Build',
-      price: 'Scope based',
-      purpose: 'For anything unique, advanced, or mixed.',
-      description: 'Custom Build is for projects that do not fit inside a box. OTP scopes the work and builds around the real goal.',
-      best_for: ['Custom app', 'AI tool', 'Artist rollout', 'Product launch', 'Event coverage', 'Long-term creative support', 'Mixed video/logo/site/automation project'],
-      examples: ['Custom app', 'AI tool', 'Artist rollout', 'Event coverage'],
-      cta: 'Request Custom Build'
-    }
   ],
-  serviceTypes: ['Same-Day Reel', 'Event Promo', 'Business Content Pack', 'Brand Launch Pack', 'Video / Content', 'Logo / Brand Identity', 'Website / Landing Page', 'AI / Automation', 'Business System', 'Music / Artist Rollout', 'Event Coverage', 'Custom Request'],
+  serviceTypes: ['Video / Content', 'Website / Digital System', 'Brand Launch', 'Fast Lane', 'Custom Build', 'Same-Day Reel', 'Event Promo', 'Website Cleanup', 'Business Content Pack', 'Brand Launch Assets', 'Emergency Booking/Client Flow Fix', 'Logo / Brand Identity', 'AI / Automation', 'Business System', 'Music / Artist Rollout', 'Event Coverage', 'Custom Request'],
   fastLaneMappings: {
     'Same-Day Reel': 'The Signal',
     'Event Promo': 'The Signal',
+    'Website Cleanup': 'The Signal',
     'Business Content Pack': 'The Engine',
-    'Brand Launch Pack': 'Custom Build'
+    'Brand Launch Assets': 'The Engine',
+    'Emergency Booking/Client Flow Fix': 'The System'
   },
-  packageOptions: ['The Signal', 'The Engine', 'The System', 'Custom Build', 'Not Sure Yet'],
+  fastLaneOffers: [
+    {
+      id: 'same_day_reel',
+      label: 'Same-Day Reel',
+      package_fit: 'The Signal',
+      recommended_package: 'The Signal',
+      urgency: 'Urgent',
+      priority: 'High',
+      next_action: 'Confirm deadline, platform, references, and delivery format; then send The Signal quote.',
+      description: 'Same-day reel requests need a fast Signal lane and quick scope confirmation.'
+    },
+    {
+      id: 'event_promo',
+      label: 'Event Promo',
+      package_fit: 'The Signal / The Engine',
+      recommended_package: 'The Signal',
+      urgency: 'Time-sensitive',
+      priority: 'High',
+      next_action: 'Confirm event date, location, run of show, and delivery deadline; then send The Signal quote.',
+      description: 'Event promos are time-sensitive and need date/location before quoting cleanly.'
+    },
+    {
+      id: 'business_content_pack',
+      label: 'Business Content Pack',
+      package_fit: 'The Engine',
+      recommended_package: 'The Engine',
+      urgency: 'Planning needed',
+      priority: 'Medium-High',
+      next_action: 'Confirm deliverables, platforms, posting cadence, and timeline; then scope The Engine.',
+      description: 'Business content packs need planning details across deliverables and channels.'
+    },
+    {
+      id: 'website_cleanup',
+      label: 'Website Cleanup',
+      package_fit: 'The Signal',
+      recommended_package: 'The Signal',
+      urgency: 'Time-sensitive',
+      priority: 'Medium-High',
+      next_action: 'Confirm site link, issue list, access needs, and deadline; then send The Signal quote.',
+      description: 'Website cleanup is a fast fix when the work is focused on one visible output.'
+    },
+    {
+      id: 'brand_launch_pack',
+      label: 'Brand Launch Assets',
+      package_fit: 'The Engine',
+      recommended_package: 'The Engine',
+      urgency: 'Strategic planning',
+      priority: 'High',
+      next_action: 'Confirm scope, brand goals, launch timeline, and budget range; then scope The Engine.',
+      description: 'Brand launch assets need a connected Engine plan across identity, launch content, and rollout pieces.'
+    },
+    {
+      id: 'emergency_booking_flow_fix',
+      label: 'Emergency Booking/Client Flow Fix',
+      package_fit: 'The Signal / The System',
+      recommended_package: 'The System',
+      urgency: 'Urgent',
+      priority: 'High',
+      next_action: 'Confirm the broken flow, access needs, user impact, and deadline; then route the fix into The Signal or The System.',
+      description: 'Emergency flow fixes move fast, but the package depth depends on whether it is one visible fix or an operating-layer repair.'
+    }
+  ],
+  packageOptions: ['The Signal', 'The Engine', 'The System', 'Not Sure Yet'],
   budgetRanges: ['Under $500', '$500 to $1,200', '$1,200 to $2,000', '$2,000 to $3,500', '$3,500+', 'Not sure yet'],
   urgencyLevels: ['Flexible', 'Soon', 'Rush', 'Launch deadline'],
   depositReadiness: ['Ready if scope is clear', 'Need quote first', 'Not ready yet'],
@@ -106,14 +159,14 @@ const PACKAGE_THEMES = {
     message: 'The System is selected for full creative/business structure.'
   },
   'custom-build': {
-    slug: 'custom-build',
-    accent: '#49ead6',
-    accent2: '#ff76d7',
-    glow: 'rgba(73, 234, 214, 0.24)',
-    glow2: 'rgba(255, 118, 215, 0.15)',
-    surface: 'rgba(73, 234, 214, 0.09)',
-    meta: '#061312',
-    message: 'Custom Build is selected for a scoped custom project.'
+    slug: 'the-system',
+    accent: '#f4cc6a',
+    accent2: '#fff4ce',
+    glow: 'rgba(244, 204, 106, 0.28)',
+    glow2: 'rgba(255, 244, 206, 0.13)',
+    surface: 'rgba(244, 204, 106, 0.1)',
+    meta: '#151106',
+    message: 'Custom Build routes into The System or manual OTP scoping.'
   }
 };
 
@@ -128,15 +181,25 @@ const FAST_LANE_DETAILS = {
     ideal: 'Nightlife, launches, pop-ups, performances, and local events',
     description: 'A promo lane for getting the event, date, location, and vibe moving fast.'
   },
+  'Website Cleanup': {
+    turnaround: 'Fast fix',
+    ideal: 'Sites, landing pages, booking flows, and content sections that need focused polish',
+    description: 'A time-sensitive Signal lane for one visible website or content fix.'
+  },
   'Business Content Pack': {
     turnaround: '2-5 days',
     ideal: 'Local businesses that need sharper web, social, and sales assets',
     description: 'A connected content lane for cleaner presence across posts, pages, and offers.'
   },
-  'Brand Launch Pack': {
+  'Brand Launch Assets': {
     turnaround: 'Scoped after review',
     ideal: 'New brands, artist rollouts, product drops, and custom launches',
-    description: 'A custom launch lane for brand direction, visual assets, content, and system pieces.'
+    description: 'A connected Engine lane for launch identity, content, and rollout pieces.'
+  },
+  'Emergency Booking/Client Flow Fix': {
+    turnaround: 'Urgent',
+    ideal: 'Broken booking, checkout, portal, or client-flow issues',
+    description: 'A speed layer for urgent client-flow repairs that may route to The Signal or The System.'
   }
 };
 
@@ -333,6 +396,14 @@ function optionList(select, values, placeholder) {
   });
 }
 
+function packageLabel(pkg = {}) {
+  return text(pkg.name || pkg.label || pkg.internal_key, 'Package');
+}
+
+function packagePrice(pkg = {}) {
+  return text(pkg.price || pkg.position || pkg.pricing_label, 'Scope based');
+}
+
 function packageSlug(name) {
   const lower = String(name || '').toLowerCase();
   if (lower.includes('signal')) return 'the-signal';
@@ -346,15 +417,72 @@ function packageByName(name) {
   const wanted = String(name || '').toLowerCase();
   return (state.config.packages || []).find((pkg) => {
     return String(pkg.name || '').toLowerCase() === wanted
+      || String(pkg.label || '').toLowerCase() === wanted
       || String(pkg.internal_key || '').toLowerCase() === wanted
       || String(pkg.id || '').toLowerCase() === wanted;
   }) || null;
 }
 
+function normalizeFastLaneOffer(offer = {}) {
+  return {
+    id: text(offer.id, '').trim(),
+    label: text(offer.label, '').trim(),
+    package_fit: text(offer.package_fit || offer.packageFit || offer.package, '').trim(),
+    recommended_package: text(offer.recommended_package || offer.recommendedPackage || offer.package, '').trim(),
+    urgency: text(offer.urgency, 'Scoped after review'),
+    priority: text(offer.priority, ''),
+    next_action: text(offer.next_action || offer.nextAction, ''),
+    description: text(offer.description || offer.reason, ''),
+    missing: Array.isArray(offer.missing) ? offer.missing.filter(Boolean) : []
+  };
+}
+
+function fastLaneOffers() {
+  const source = state.config.fast_lane_offers || state.config.fastLaneOffers || fallbackConfig.fastLaneOffers || [];
+  return source
+    .map(normalizeFastLaneOffer)
+    .filter((offer) => offer.id && offer.label && packageByName(offer.recommended_package));
+}
+
+function fastLaneOfferForService(serviceType) {
+  const service = text(serviceType, '').trim().toLowerCase();
+  if (!service) return null;
+  return fastLaneOffers().find((offer) => {
+    return offer.label.toLowerCase() === service || offer.id.toLowerCase() === service;
+  }) || null;
+}
+
 function fastLanePackageFor(serviceType) {
-  const mappings = state.config.fastLaneMappings || fallbackConfig.fastLaneMappings || {};
   const service = text(serviceType, '').trim();
+  const offer = fastLaneOfferForService(service);
+  if (offer) return offer.recommended_package;
+  const mappings = state.config.fastLaneMappings || fallbackConfig.fastLaneMappings || {};
   return typeof mappings[service] === 'string' ? mappings[service] : '';
+}
+
+function fastLanePackageFitFor(serviceType) {
+  const offer = fastLaneOfferForService(serviceType);
+  return offer?.package_fit || '';
+}
+
+function serviceOptions() {
+  const configured = state.config.serviceTypes || fallbackConfig.serviceTypes || [];
+  const labels = configured.map((entry) => {
+    if (typeof entry === 'string') return entry;
+    if (entry && typeof entry === 'object') return entry.label || entry.name || entry.stored_label || '';
+    return '';
+  });
+  const serviceObjects = Array.isArray(state.config.services) ? state.config.services.map((entry) => {
+    if (typeof entry === 'string') return entry;
+    if (entry && typeof entry === 'object') return entry.label || entry.name || entry.stored_label || '';
+    return '';
+  }) : [];
+  return [...new Set([...labels, ...serviceObjects, ...fastLaneOffers().map((offer) => offer.label)].map((value) => text(value, '').trim()).filter(Boolean))];
+}
+
+function packageOptions() {
+  const labels = (state.config.packages || []).map(packageLabel).filter((value) => value !== 'Package');
+  return [...new Set([...labels, 'Not Sure Yet'])];
 }
 
 function themeFor(packageName) {
@@ -380,12 +508,13 @@ function selectedDisplay() {
   const isOracle = raw === 'Not Sure Yet';
   const theme = themeFor(raw);
   if (pkg) {
+    const name = packageLabel(pkg);
     return {
-      name: text(pkg.name, 'Selected package'),
-      price: text(pkg.price, 'Scope based'),
+      name,
+      price: packagePrice(pkg),
       message: theme.message,
-      formTitle: `${text(pkg.name, 'Package')} request details.`,
-      pill: `${text(pkg.name, 'Package')} - ${text(pkg.price, 'Scope based')}`
+      formTitle: `${name} request details.`,
+      pill: `${name} - ${packagePrice(pkg)}`
     };
   }
   if (isOracle) {
@@ -428,7 +557,7 @@ function updateSummaries() {
 
 function selectPackage(packageName, options = {}) {
   const pkg = packageByName(packageName);
-  state.selectedPackage = pkg ? pkg.name : text(packageName, '');
+  state.selectedPackage = pkg ? packageLabel(pkg) : text(packageName, '');
   if (els.package) els.package.value = state.selectedPackage;
   if (!options.preserveService) {
     const currentFastLanePackage = fastLanePackageFor(els.service.value);
@@ -461,15 +590,14 @@ function applyFastLaneServiceSelection() {
 }
 
 function fastLaneServices() {
-  const mappings = state.config.fastLaneMappings || fallbackConfig.fastLaneMappings || {};
-  const serviceTypes = state.config.serviceTypes || state.config.services || fallbackConfig.serviceTypes;
-  return serviceTypes.filter((service) => typeof mappings[service] === 'string');
+  return fastLaneOffers().map((offer) => offer.label);
 }
 
 function selectFastLane(service) {
-  const mappedPackage = fastLanePackageFor(service);
+  const offer = typeof service === 'object' ? normalizeFastLaneOffer(service) : fastLaneOfferForService(service);
+  const mappedPackage = offer?.recommended_package || fastLanePackageFor(service);
   if (!mappedPackage) return;
-  els.service.value = service;
+  setSelectIfAvailable(els.service, offer?.label || service);
   selectPackage(mappedPackage, { advance: false, preserveService: true });
   renderFastLanes();
   showError('');
@@ -527,7 +655,7 @@ function wireQuickSelectors() {
 
 function renderFastLanes() {
   if (!els.fastLaneGrid) return;
-  const lanes = fastLaneServices();
+  const lanes = fastLaneOffers();
   els.fastLaneGrid.replaceChildren();
   if (!lanes.length) {
     const empty = document.createElement('article');
@@ -536,8 +664,9 @@ function renderFastLanes() {
     els.fastLaneGrid.append(empty);
     return;
   }
-  lanes.forEach((service) => {
-    const mappedPackage = fastLanePackageFor(service);
+  lanes.forEach((offer) => {
+    const service = offer.label;
+    const mappedPackage = offer.recommended_package;
     const pkg = packageByName(mappedPackage);
     const cardTheme = themeFor(mappedPackage);
     const details = FAST_LANE_DETAILS[service] || {};
@@ -549,7 +678,7 @@ function renderFastLanes() {
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
     card.setAttribute('aria-pressed', selected ? 'true' : 'false');
-    card.setAttribute('aria-label', `${service} maps to ${mappedPackage}${selected ? ' selected' : ''}`);
+    card.setAttribute('aria-label', `${service} maps to ${offer.package_fit || mappedPackage}${selected ? ' selected' : ''}`);
 
     const eyebrow = document.createElement('span');
     eyebrow.className = 'fast-lane-eyebrow';
@@ -567,14 +696,14 @@ function renderFastLanes() {
 
     const description = document.createElement('p');
     description.className = 'fast-lane-description';
-    description.textContent = text(details.description, 'A focused OTP lane for a scoped creative request.');
+    description.textContent = text(offer.description || details.description, 'A focused OTP lane for a scoped creative request.');
 
     const meta = document.createElement('div');
     meta.className = 'fast-lane-meta';
     [
-      ['Turnaround', details.turnaround || 'Scoped after review'],
+      ['Urgency', offer.urgency || details.turnaround || 'Scoped after review'],
       ['Best for', details.ideal || 'Fast creative requests'],
-      ['Package', `${mappedPackage}${pkg?.price ? ` / ${pkg.price}` : ''}`]
+      ['Package fit', `${offer.package_fit || mappedPackage}${pkg ? ` / Selects ${packageLabel(pkg)}` : ''}`]
     ].forEach(([label, value]) => {
       const item = document.createElement('span');
       const key = document.createElement('em');
@@ -589,7 +718,7 @@ function renderFastLanes() {
     cta.className = 'fast-lane-cta';
     cta.textContent = selected ? 'Lane selected' : 'Use this lane';
 
-    const handleSelect = () => selectFastLane(service);
+    const handleSelect = () => selectFastLane(offer);
     card.addEventListener('click', handleSelect);
     card.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -606,15 +735,16 @@ function renderPackages() {
   const packages = state.config.packages || [];
   els.packageGrid.replaceChildren();
   packages.forEach((pkg) => {
-    const selected = state.selectedPackage === pkg.name;
-    const cardTheme = themeFor(pkg.name);
+    const name = packageLabel(pkg);
+    const selected = state.selectedPackage === name;
+    const cardTheme = themeFor(name);
     const card = document.createElement('article');
     card.className = `package-card${selected ? ' active' : ''}`;
     card.dataset.packageTheme = cardTheme.slug;
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
     card.setAttribute('aria-pressed', selected ? 'true' : 'false');
-    card.setAttribute('aria-label', `${text(pkg.name, 'Package')} ${selected ? 'selected' : 'select package'}`);
+    card.setAttribute('aria-label', `${name} ${selected ? 'selected' : 'select package'}`);
 
     const moduleLabel = document.createElement('span');
     moduleLabel.className = 'module-label';
@@ -623,8 +753,8 @@ function renderPackages() {
     const head = document.createElement('div');
     head.className = 'package-card-head';
     const headCopy = document.createElement('div');
-    appendText(headCopy, 'h3', pkg.name, 'Package');
-    appendText(headCopy, 'strong', pkg.price, 'Scope based');
+    appendText(headCopy, 'h3', name, 'Package');
+    appendText(headCopy, 'strong', packagePrice(pkg), 'Scope based');
     head.append(headCopy);
 
     const status = document.createElement('span');
@@ -670,7 +800,7 @@ function renderPackages() {
     cta.className = 'package-cta';
     cta.textContent = selected ? 'Selected' : text(pkg.cta, 'Start Booking');
 
-    const handleSelect = () => selectPackage(pkg.name);
+    const handleSelect = () => selectPackage(name);
     card.addEventListener('click', handleSelect);
     card.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -684,8 +814,8 @@ function renderPackages() {
 }
 
 function fillSelects() {
-  optionList(els.service, state.config.serviceTypes || state.config.services || fallbackConfig.serviceTypes, 'Choose service type');
-  optionList(els.package, state.config.packageOptions || fallbackConfig.packageOptions, 'Choose package');
+  optionList(els.service, serviceOptions(), 'Choose service type');
+  optionList(els.package, packageOptions(), 'Choose package');
   optionList(els.budget, state.config.budgetRanges || fallbackConfig.budgetRanges, 'Select budget range');
   optionList(els.urgency, state.config.urgencyLevels || fallbackConfig.urgencyLevels, 'Select urgency');
   optionList(els.deposit, state.config.depositReadiness || fallbackConfig.depositReadiness, 'Select readiness');
@@ -696,7 +826,8 @@ function fillSelects() {
 }
 
 function payload() {
-  const fastLanePackage = fastLanePackageFor(els.service.value);
+  const selectedOffer = fastLaneOfferForService(els.service.value);
+  const fastLanePackage = selectedOffer ? fastLanePackageFitFor(els.service.value) : '';
   return {
     booking_token: state.bookingToken,
     source_tracking: state.sourceTracking,
@@ -710,7 +841,7 @@ function payload() {
     service_type: els.service.value.trim(),
     project_type: els.projectType.value.trim(),
     package_interest: els.package.value.trim(),
-    selected_fast_offer: fastLanePackage ? els.service.value.trim() : '',
+    selected_fast_offer: selectedOffer ? selectedOffer.label : '',
     fast_lane_package: fastLanePackage,
     project_description: els.description.value.trim(),
     desired_deliverables: els.deliverables.value.trim(),
@@ -770,7 +901,7 @@ function renderReview() {
     ['Service', text(p.service_type)],
     ['Project Type', text(p.project_type)],
     ['Selected Package', text(p.package_interest)],
-    ['Package Range', text(selected?.price, p.package_interest === 'Not Sure Yet' ? 'Oracle recommendation requested' : 'Not provided yet')],
+    ['Package Range', selected ? packagePrice(selected) : (p.package_interest === 'Not Sure Yet' ? 'Oracle recommendation requested' : 'Not provided yet')],
     ['Package Fit', selectedSummary.message],
     ['Project Description', text(p.project_description)],
     ['Deliverables', text(p.desired_deliverables)],

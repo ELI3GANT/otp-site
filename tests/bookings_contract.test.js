@@ -16,6 +16,8 @@ const html = read('bookings.html');
 const js = read('bookings.js');
 const css = read('bookings.css');
 const pricing = read('pricing-config.js');
+const pricingConfig = require('../pricing-config.js');
+const offerSystemKey = '20260610-offer-system-v1';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -40,24 +42,28 @@ assert.match(server, /BOOKING_PUBLIC_PROXY_PATHS/);
 assert.ok(pricing.includes('Starting at $500'), 'The Signal price is sourced from pricing-config');
 assert.ok(pricing.includes('$1,200 to $2,000'), 'The Engine range is sourced from pricing-config');
 assert.ok(pricing.includes('Starting at $3,500+'), 'The System price is sourced from pricing-config');
-assert.ok(pricing.includes('Custom Build'), 'Custom Build label is sourced from pricing-config');
-for (const fastOffer of ['Same-Day Reel', 'Event Promo', 'Business Content Pack', 'Brand Launch Pack']) {
-    assert.ok(pricing.includes(`'${fastOffer}'`), `${fastOffer} is sourced from pricing-config`);
-    assert.ok(js.includes(`'${fastOffer}'`), `${fastOffer} remains available in the browser fallback config`);
+assert.deepStrictEqual(pricingConfig.bookingPackages.map((pkg) => pkg.name), ['The Signal', 'The Engine', 'The System'], 'public booking package ladder has exactly three depths');
+assert.deepStrictEqual(pricingConfig.bookingPackages.map((pkg) => pkg.name).filter((name) => /custom/i.test(name)), [], 'Custom Build is not a fourth booking package');
+for (const fastOffer of ['Same-Day Reel', 'Event Promo', 'Website Cleanup', 'Business Content Pack', 'Brand Launch Assets', 'Emergency Booking/Client Flow Fix']) {
+    assert.ok(pricing.includes(`label: '${fastOffer}'`) || pricing.includes(`'${fastOffer}'`), `${fastOffer} is sourced from pricing-config`);
+    assert.ok(js.includes(`label: '${fastOffer}'`) || js.includes(`'${fastOffer}'`), `${fastOffer} remains available in the browser fallback config`);
 }
-const fastLaneMappings = {
-    'Same-Day Reel': 'The Signal',
-    'Event Promo': 'The Signal',
-    'Business Content Pack': 'The Engine',
-    'Brand Launch Pack': 'Custom Build'
-};
-for (const [offer, mappedPackage] of Object.entries(fastLaneMappings)) {
-    assert.ok(pricing.includes(`'${offer}': '${mappedPackage}'`), `${offer} maps to ${mappedPackage} in pricing-config`);
-    assert.ok(js.includes(`'${offer}': '${mappedPackage}'`), `${offer} maps to ${mappedPackage} in booking fallback config`);
+const fastLaneFits = new Map(pricingConfig.fastLaneOffers.map((offer) => [offer.label, offer.package_fit]));
+assert.strictEqual(fastLaneFits.get('Same-Day Reel'), 'The Signal');
+assert.strictEqual(fastLaneFits.get('Event Promo'), 'The Signal / The Engine');
+assert.strictEqual(fastLaneFits.get('Website Cleanup'), 'The Signal');
+assert.strictEqual(fastLaneFits.get('Business Content Pack'), 'The Engine');
+assert.strictEqual(fastLaneFits.get('Brand Launch Assets'), 'The Engine');
+assert.strictEqual(fastLaneFits.get('Emergency Booking/Client Flow Fix'), 'The Signal / The System');
+const mainPackageNames = new Set(pricingConfig.bookingPackages.map((pkg) => pkg.name));
+assert.ok(pricingConfig.fastLaneOffers.every((offer) => mainPackageNames.has(offer.recommended_package)), 'Fast Lane offers map back into the main package ladder');
+for (const source of [html, js, pricing, server]) {
+    assert.ok(!source.includes('20260609-polish3'), 'stale booking cache key is not referenced');
+    assert.ok(!source.includes('Brand Launch Pack'), 'old Brand Launch Pack wording is not referenced');
 }
 
 assert.ok(html.includes('Start a Project with OTP.'), 'booking hero is direct and conversion-focused');
-assert.ok(html.includes('Tell us what you are building. OTP will review the details and follow up with the best next step'), 'booking hero sets clear client expectations');
+assert.ok(html.includes('OTP will route the work into The Signal, The Engine, or The System'), 'booking hero sets current package ladder expectations');
 assert.ok(html.includes('official-brand-mark'), 'header keeps the official OTP site mark');
 assert.ok(html.includes('/assets/otp-hero-poster-frame.png'), 'header uses the stable optimized OTP poster mark');
 assert.ok(!html.includes('/assets/otp-hero-centered.gif'), 'header does not render the edge-on spinning GIF as the primary mark');
@@ -81,6 +87,8 @@ assert.ok(html.includes('Website / Digital System'), 'service selector includes 
 assert.ok(html.includes('Brand Launch'), 'service selector includes brand launch lane');
 assert.ok(html.includes('Fast Lane'), 'service selector includes fast lane lane');
 assert.ok(html.includes('Custom Build'), 'service selector includes custom build lane');
+assert.ok(html.includes('data-quick-service="Website / Digital System"'), 'website selector uses the public Website / Digital System value');
+assert.ok(html.includes('data-quick-package="The System"'), 'custom selector routes into The System');
 assert.ok(html.includes('service-card-badge') && html.includes('service-card-title') && html.includes('service-card-copy'), 'service selector cards use readable horizontal card structure');
 assert.ok(!html.includes('<em>Best for'), 'service selector cards do not use weak italic descriptions');
 assert.ok(html.indexOf('class="booking-shell"') < html.indexOf('id="packages"'), 'booking intake appears before deep package grids');
@@ -88,7 +96,7 @@ assert.ok(html.includes('package-selection-summary'), 'selected package summary 
 assert.ok(html.includes('id="fast-lanes"'), 'Fast Lane section is visible on the bookings page');
 assert.ok(html.includes('id="fast-lane-grid"'), 'Fast Lane card grid is present');
 assert.ok(html.includes('Urgent work can still start cleanly.'), 'Fast Lane section remains visible after intake');
-assert.ok(html.includes('Same-day content, event promos, business packs, and launch work'), 'Fast Lane section explains the visible offer lanes');
+assert.ok(html.includes('Same-day reels, event promos, website cleanup, business packs, brand launch assets, and urgent client-flow fixes'), 'Fast Lane section explains the visible offer lanes');
 assert.ok(html.includes('booking-mini-summary'), 'desktop booking mini-summary is present');
 assert.ok(html.includes('Submit Booking Request'), 'final CTA is explicit');
 assert.ok(html.includes('Not Sure Yet'), 'Oracle recommendation path is visible');
@@ -100,8 +108,8 @@ assert.ok(html.includes('private OTP Client Portal link where you can view proje
 assert.ok(html.includes('Your request is in. OTP will review the details and follow up with the best next step.'), 'success screen uses final OTP copy');
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
-assert.ok(html.includes('bookings.css?v=20260609-polish3'), 'booking stylesheet cache-bust moves with booking polish fixes');
-assert.ok(html.includes('bookings.js?v=20260609-polish3'), 'booking script cache-bust moves with booking polish fixes');
+assert.ok(html.includes(`bookings.css?v=${offerSystemKey}`), 'booking stylesheet cache-bust matches offer system release');
+assert.ok(html.includes(`bookings.js?v=${offerSystemKey}`), 'booking script cache-bust matches offer system release');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');
@@ -149,6 +157,7 @@ assert.ok(js.includes('fastLanePackageFor'), 'booking frontend resolves fast lan
 assert.ok(js.includes('applyFastLaneServiceSelection'), 'fast lane service selections sync the package without skipping Step 1');
 assert.ok(js.includes('preserveService'), 'manual package changes clear mismatched Fast Lane service state');
 assert.ok(js.includes("els.service.value = ''"), 'mismatched fast lane service is cleared before payload build');
+assert.ok(js.includes('fastLaneOffers'), 'booking frontend consumes Fast Lane offer objects');
 assert.ok(js.includes('FAST_LANE_DETAILS'), 'booking frontend has visible Fast Lane card metadata');
 assert.ok(js.includes('renderFastLanes'), 'booking frontend renders Fast Lane cards');
 assert.ok(js.includes('selectFastLane'), 'Fast Lane cards can select service/package state');
@@ -183,7 +192,7 @@ assert.ok(js.includes('--active-accent'), 'active accent CSS variable is updated
 assert.ok(js.includes('The Signal is selected for focused creative work.'), 'Signal selection message exists');
 assert.ok(js.includes('The Engine is selected for connected brand assets.'), 'Engine selection message exists');
 assert.ok(js.includes('The System is selected for full creative/business structure.'), 'System selection message exists');
-assert.ok(js.includes('Custom Build is selected for a scoped custom project.'), 'Custom selection message exists');
+assert.ok(js.includes('Custom Build routes into The System or manual OTP scoping.'), 'Custom selection routes into System/manual scope');
 assert.ok(js.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle default message persists after JS init');
 assert.ok(js.includes('Sending booking request to OTP...'), 'submit loading copy stays client-facing');
 assert.ok(js.includes('Something blocked the request. Please check your contact info and try again.'), 'network error copy is client-ready');
@@ -193,6 +202,7 @@ assert.ok(server.includes('cleanBookingSourceTracking'), 'server sanitizes booki
 assert.ok(server.includes('source_tracking: payload.source_tracking || {}'), 'internal booking metadata preserves source tracking');
 assert.ok(server.includes('captured_at:'), 'server preserves source tracking capture timestamps');
 assert.ok(server.includes('bookingFastLaneMappings'), 'server exposes canonical fast lane mappings');
+assert.ok(server.includes('fast_lane_offers'), 'server exposes the fresh Fast Lane offer config shape');
 assert.ok(server.includes('selected_fast_offer'), 'OTP_BOOKING_META preserves selected fast offer');
 assert.ok(server.includes('fast_lane_package'), 'OTP_BOOKING_META preserves the mapped fast lane package');
 assert.ok(server.includes("missingFields.push('email_or_phone')"), 'server accepts either email or phone as contact');
