@@ -1261,6 +1261,11 @@ h1, h2, h3 {
 
 /* Mobile nav open: hide the floating FAB so it can’t steal taps */
 @media (max-width: 768px) {
+  body.home-page .theme-toggle-btn:not(.mobile-theme-toggle) {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
   body.nav-open .theme-toggle-btn:not(.mobile-theme-toggle) {
     display: none !important;
     pointer-events: none !important;

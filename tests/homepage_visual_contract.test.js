@@ -51,7 +51,7 @@ assert.ok(/\.home-page \.nav\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?z-index:\s*12
 assert.ok(!/OTP DAY\/NIGHT VISUAL SYSTEM: final cascade overrides[\s\S]{0,180}\.home-page \.nav,/.test(styles), 'final homepage visual layering rule must not demote nav positioning');
 assert.ok(styles.includes('html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas'), 'performance mode preserves light-mode star visibility');
 assert.ok(styles.includes('html[data-theme="light"] body.home-page .luxe-title .title'), 'light-mode hero title contrast gets final cascade ownership');
-assert.ok(styles.includes('body.home-page .theme-toggle-btn:not(.mobile-theme-toggle)') && styles.includes('bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;'), 'mobile floating theme toggle stays clear of the hero title');
+assert.ok(/body\.home-page \.theme-toggle-btn:not\(\.mobile-theme-toggle\)\s*\{[\s\S]*?display:\s*none !important;/.test(styles), 'mobile homepage hides the fixed theme toggle so it cannot cover content');
 assert.ok(styles.includes('html[data-theme="light"] body.home-page .hero::after') && styles.includes('#ffffff 100%) !important;'), 'mobile light hero fade cannot fall back to dark section wash');
 assert.ok(styles.includes('body.home-page .section-results-enhanced .visual-success-heading::after') && styles.includes('display: none !important;'), 'Visual Success heading does not render the old off-center underline artifact');
 assert.ok(styles.includes('html.stars-performance-mode .bg-grain'), 'performance mode pauses grain overlays');
@@ -175,12 +175,13 @@ assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity
 assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.22', 'homepage styles cache-bust is current');
+assert.ok(styles.includes('body.home-page .theme-toggle-btn:not(.mobile-theme-toggle)'), 'mobile homepage hides fixed theme FAB so drawer toggle owns theme switching');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.23', 'homepage styles cache-bust is current');
 assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', 'homepage stars cache-bust is current');
 assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260609-hyh3', 'homepage runtime cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.22', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.23', `${file} styles cache-bust matches index`);
   assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', `${file} stars cache-bust matches index`);
   assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260609-hyh3', `${file} runtime cache-bust matches index`);
 });
