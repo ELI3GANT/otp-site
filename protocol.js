@@ -15,7 +15,7 @@
   const enterButton = document.querySelector('.protocol-enter');
   const panel = document.getElementById('protocol-panel');
   const statusText = document.getElementById('protocol-status');
-  const title = document.getElementById('protocol-title');
+  const signalTriggers = document.querySelectorAll('[data-signal-trigger]');
   const signalPanel = document.getElementById('protocol-signal');
   const audioSlot = document.querySelector('.protocol-audio-slot');
   const disabledLinks = document.querySelectorAll('[data-disabled-link="true"]');
@@ -23,6 +23,7 @@
   const targetTime = Date.parse(PROTOCOL_RELEASE_TARGET);
   let tapCount = 0;
   let tapTimer = null;
+  let lastTapTrigger = null;
 
   function pad(value) {
     return String(Math.max(0, value)).padStart(2, '0');
@@ -70,7 +71,6 @@
     pulseGlitch();
     window.requestAnimationFrame(() => {
       panel.classList.add('is-booting');
-      panel.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'nearest' });
     });
   }
 
@@ -87,17 +87,38 @@
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  function recordTitleTap() {
+  function recordSignalTap(event) {
+    const trigger = event.currentTarget;
+    if (trigger !== lastTapTrigger) {
+      tapCount = 0;
+      lastTapTrigger = trigger;
+    }
+
     tapCount += 1;
     window.clearTimeout(tapTimer);
     tapTimer = window.setTimeout(() => {
       tapCount = 0;
+      lastTapTrigger = null;
     }, EASTER_EGG_TAP_WINDOW_MS);
 
     if (tapCount >= EASTER_EGG_TAPS_REQUIRED) {
       tapCount = 0;
+      lastTapTrigger = null;
       window.clearTimeout(tapTimer);
       revealSignal();
+    }
+  }
+
+  function wireSignalTrigger(trigger) {
+    trigger.addEventListener('click', recordSignalTap);
+
+    if (trigger.tagName !== 'BUTTON') {
+      trigger.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          recordSignalTap(event);
+        }
+      });
     }
   }
 
@@ -132,15 +153,7 @@
   function wireInteractions() {
     if (enterButton) enterButton.addEventListener('click', enterProtocol);
 
-    if (title) {
-      title.addEventListener('click', recordTitleTap);
-      title.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          recordTitleTap();
-        }
-      });
-    }
+    signalTriggers.forEach(wireSignalTrigger);
 
     disabledLinks.forEach((link) => {
       link.addEventListener('click', (event) => {

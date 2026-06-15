@@ -15,9 +15,8 @@ assert.ok(html.includes('>PROTOCOL</h1>'), 'visible protocol name is just PROTOC
 assert.ok(!html.includes('PROTOCOL_OVERRIDE.EXE'), 'visible protocol name does not include override/exe language');
 assert.ok(html.includes('A transmission from the next ELI3GANT era.'), 'protocol subtitle/meta copy is present');
 assert.ok(html.includes('SYSTEM ONLINE // ACCESS PENDING'), 'protocol status copy is present');
-assert.ok(html.includes('TRANSMISSION UNLOCKS //'), 'visible release language is present');
-assert.ok(html.includes('06.26.26'), 'visible release date is present');
-assert.ok(html.includes('datetime="2026-06-26T00:00:00-04:00"'), 'release date semantic timestamp is official');
+assert.ok(!html.includes('TRANSMISSION UNLOCKS //'), 'visible release language is removed');
+assert.ok(!html.includes('06.26.26'), 'visible release date is removed');
 assert.ok(html.includes('ENTER PROTOCOL'), 'single primary enter button is present');
 assert.strictEqual((html.match(/class="protocol-enter"/g) || []).length, 1, 'only one primary protocol button is rendered initially');
 
@@ -51,10 +50,14 @@ assert.ok(html.includes('rel="noopener noreferrer"'), 'SoundCloud link uses safe
 assert.ok(html.includes('Built by OnlyTruePerspective'), 'footer credit is present');
 assert.ok(html.includes('aria-disabled="true"'), 'placeholder streaming link is accessibility-disabled');
 assert.ok(!html.includes('OVERRIDE ACTIVE'), 'visible active state avoids override naming');
+assert.strictEqual((html.match(/data-signal-trigger/g) || []).length, 2, 'hero title and panel status both unlock the hidden signal');
+assert.ok(html.includes('protocol-panel-status protocol-signal-trigger'), 'panel status is an easter egg trigger');
 
 assert.ok(js.includes("const PROTOCOL_RELEASE_TARGET = '2026-06-26T00:00:00-04:00'"), 'official release target is near top of JS');
 assert.ok(js.includes('EASTER_EGG_TAPS_REQUIRED = 3'), 'triple-tap signal unlock is implemented');
+assert.ok(js.includes("document.querySelectorAll('[data-signal-trigger]')"), 'multiple signal triggers are wired');
 assert.ok(js.includes('enterProtocol'), 'enter button reveal behavior is implemented');
+assert.ok(!js.includes('scrollIntoView'), 'entering protocol does not force-scroll the page');
 assert.ok(js.includes('audio.addEventListener'), 'audio fallback handling is implemented without autoplay');
 assert.ok(!js.includes('fetch('), 'protocol page does not collect or submit data');
 assert.ok(!js.includes('localStorage'), 'protocol page does not store visitor data');
