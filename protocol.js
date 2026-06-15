@@ -1,8 +1,7 @@
 (function () {
   'use strict';
 
-  // TODO: update PROTOCOL release target date
-  const PROTOCOL_RELEASE_TARGET = '2026-07-03T00:00:00-04:00';
+  const PROTOCOL_RELEASE_TARGET = '2026-06-26T00:00:00-04:00';
   const SNIPPET_PATH = '/assets/audio/protocol-snippet.mp3';
   const EASTER_EGG_TAPS_REQUIRED = 3;
   const EASTER_EGG_TAP_WINDOW_MS = 1600;
@@ -53,6 +52,7 @@
   }
 
   function pulseGlitch() {
+    if (prefersReducedMotion()) return;
     document.body.classList.remove('protocol-glitch');
     window.requestAnimationFrame(() => {
       document.body.classList.add('protocol-glitch');

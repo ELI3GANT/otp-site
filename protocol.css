@@ -93,7 +93,9 @@ a {
 
 .protocol-noise,
 .protocol-scanline,
-.protocol-grid-bg {
+.protocol-grid-bg,
+.protocol-haze,
+.protocol-interference {
   position: fixed;
   inset: 0;
   pointer-events: none;
@@ -124,6 +126,30 @@ a {
     repeating-linear-gradient(90deg, transparent 0 42px, rgba(190, 95, 255, 0.04) 43px 44px),
     repeating-linear-gradient(180deg, transparent 0 35px, rgba(190, 95, 255, 0.035) 36px 37px);
   opacity: 0.65;
+}
+
+.protocol-haze {
+  z-index: -3;
+  opacity: 0.62;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(156, 52, 255, 0.2), transparent 26rem),
+    radial-gradient(circle at 78% 74%, rgba(90, 18, 160, 0.24), transparent 25rem),
+    linear-gradient(115deg, transparent 10%, rgba(153, 48, 255, 0.08) 42%, transparent 68%);
+  filter: blur(0.2px);
+  animation: protocolHaze 16s ease-in-out infinite alternate;
+}
+
+.protocol-interference {
+  z-index: 1;
+  inset: -20% 0 auto;
+  height: 42%;
+  background:
+    linear-gradient(180deg, transparent 0 45%, rgba(226, 165, 255, 0.24) 50%, transparent 56%),
+    linear-gradient(90deg, transparent, rgba(190, 95, 255, 0.16), transparent);
+  opacity: 0.28;
+  mix-blend-mode: screen;
+  transform: translateY(-120%);
+  animation: protocolSweep 10.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
 .protocol-hero,
@@ -162,6 +188,22 @@ a {
   pointer-events: none;
 }
 
+.protocol-hero::after,
+.protocol-panel-inner::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: var(--protocol-radius);
+  background: linear-gradient(100deg, transparent 8%, rgba(242, 168, 255, 0.18) 32%, rgba(180, 92, 255, 0.48) 50%, transparent 74%);
+  opacity: 0.52;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: protocolBorderShimmer 8.5s ease-in-out infinite;
+}
+
 .protocol-hero {
   position: relative;
 }
@@ -181,6 +223,7 @@ a {
   clip-path: polygon(50% 0, 63% 42%, 100% 58%, 58% 61%, 50% 100%, 42% 61%, 0 58%, 37% 42%);
   background: linear-gradient(180deg, #f1d7ff, #9f42ff 54%, #4f0d86);
   box-shadow: 0 0 36px var(--protocol-shadow);
+  animation: protocolGlowPulse 5.8s ease-in-out infinite;
 }
 
 .protocol-status,
@@ -231,7 +274,11 @@ a {
 }
 
 .protocol-page.protocol-glitch .protocol-title {
-  animation: protocolTitleGlitch 520ms steps(2, jump-none);
+  animation: protocolTitleGlitch 520ms steps(2, jump-none), protocolRareTitleGlitch 13s steps(1, jump-none) infinite;
+}
+
+.protocol-title {
+  animation: protocolRareTitleGlitch 13s steps(1, jump-none) infinite;
 }
 
 .protocol-subtitle {
@@ -240,6 +287,16 @@ a {
   color: var(--protocol-muted);
   font-size: clamp(1rem, 3.4vw, 1.35rem);
   line-height: 1.5;
+}
+
+.protocol-release {
+  margin: clamp(0.55rem, 1.5vw, 0.8rem) 0 0;
+  color: rgba(242, 168, 255, 0.88);
+  font-family: var(--protocol-mono);
+  font-size: clamp(0.72rem, 2.2vw, 0.9rem);
+  line-height: 1.35;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(190, 95, 255, 0.3);
 }
 
 .protocol-title-hint {
@@ -285,6 +342,7 @@ a {
     0 0 10px rgba(221, 167, 255, 0.8),
     0 0 34px rgba(156, 58, 255, 0.74);
   font-variant-numeric: tabular-nums;
+  animation: protocolCountFlicker 6.8s steps(1, jump-none) infinite;
 }
 
 .protocol-count-label {
@@ -379,7 +437,7 @@ a {
   border-radius: var(--protocol-radius);
   background: rgba(8, 0, 14, 0.58);
   box-shadow: 0 0 22px rgba(173, 73, 255, 0.12) inset;
-  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
 
 .protocol-file-card:hover,
@@ -387,6 +445,10 @@ a {
   transform: translateY(-3px);
   border-color: var(--protocol-hot);
   background: rgba(47, 8, 74, 0.54);
+  box-shadow:
+    0 0 22px rgba(173, 73, 255, 0.2) inset,
+    0 0 28px rgba(190, 95, 255, 0.22);
+  animation: protocolCardPulse 760ms ease;
 }
 
 .protocol-file-icon {
@@ -435,7 +497,7 @@ a {
 }
 
 .protocol-signal.is-visible {
-  animation: protocolSignal 520ms ease both;
+  animation: protocolSignal 620ms ease both;
 }
 
 .protocol-signal-title {
@@ -497,6 +559,18 @@ a {
   text-decoration: none;
 }
 
+.protocol-cta .protocol-live-link {
+  color: var(--protocol-text);
+  border-bottom: 1px solid rgba(242, 168, 255, 0.42);
+  text-shadow: 0 0 16px rgba(190, 95, 255, 0.32);
+}
+
+.protocol-cta .protocol-live-link:hover,
+.protocol-cta .protocol-live-link:focus-visible {
+  color: #fff;
+  border-bottom-color: var(--protocol-hot);
+}
+
 .protocol-cta a[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.78;
@@ -522,12 +596,50 @@ a {
   80% { transform: translate3d(12px, 6px, 0); }
 }
 
+@keyframes protocolHaze {
+  0% { transform: translate3d(-1.5%, -1%, 0) scale(1); opacity: 0.42; }
+  100% { transform: translate3d(1.5%, 1%, 0) scale(1.04); opacity: 0.68; }
+}
+
+@keyframes protocolSweep {
+  0%, 78%, 100% { transform: translateY(-120%); opacity: 0; }
+  84% { opacity: 0.3; }
+  91% { transform: translateY(270%); opacity: 0.14; }
+}
+
+@keyframes protocolBorderShimmer {
+  0%, 68%, 100% { opacity: 0.18; transform: translateX(-22%); }
+  78% { opacity: 0.52; }
+  88% { opacity: 0.22; transform: translateX(22%); }
+}
+
+@keyframes protocolGlowPulse {
+  0%, 100% { filter: brightness(1); box-shadow: 0 0 26px rgba(159, 55, 255, 0.32); }
+  50% { filter: brightness(1.16); box-shadow: 0 0 44px rgba(210, 145, 255, 0.52); }
+}
+
 @keyframes protocolTitleGlitch {
   0%, 100% { transform: translateX(0); filter: none; }
   18% { transform: translateX(-3px); filter: hue-rotate(35deg); }
   36% { transform: translateX(3px); filter: brightness(1.4); }
   54% { transform: translateX(-1px); filter: contrast(1.2); }
   72% { transform: translateX(2px); filter: hue-rotate(-24deg); }
+}
+
+@keyframes protocolRareTitleGlitch {
+  0%, 91%, 93%, 100% { transform: translateX(0); text-shadow: 0 0 9px rgba(255, 255, 255, 0.45), 0 0 34px rgba(184, 90, 255, 0.65); }
+  91.6% { transform: translateX(-1px); text-shadow: -2px 0 rgba(255, 93, 241, 0.45), 2px 0 rgba(180, 92, 255, 0.46), 0 0 34px rgba(184, 90, 255, 0.65); }
+  92.2% { transform: translateX(1px); }
+}
+
+@keyframes protocolCountFlicker {
+  0%, 74%, 76%, 100% { opacity: 1; filter: brightness(1); }
+  75% { opacity: 0.84; filter: brightness(1.22); }
+}
+
+@keyframes protocolCardPulse {
+  0%, 100% { transform: translateY(-3px) scale(1); }
+  48% { transform: translateY(-3px) scale(1.018); }
 }
 
 @keyframes protocolBoot {
@@ -602,6 +714,11 @@ a {
     font-size: 1rem;
   }
 
+  .protocol-release {
+    margin-top: 0.4rem;
+    font-size: 0.72rem;
+  }
+
   .protocol-countdown {
     margin: 0.8rem 0 0.85rem;
     padding: 0.45rem;
@@ -666,5 +783,9 @@ a {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;
+  }
+
+  .protocol-interference {
+    display: none;
   }
 }
