@@ -2340,6 +2340,7 @@ const staticAliases = {
     '/vault': 'archive.html',
     '/insights': 'insights.html',
     '/insight': 'insight.html',
+    '/protocol': 'protocol.html',
     '/portal-gate': 'portal-gate.html',
     '/terminal': 'otp-terminal.html',
     '/otp-terminal': 'otp-terminal.html',
