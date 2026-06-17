@@ -2100,6 +2100,14 @@ const BUSINESS_EMAILS = {
     INFO: 'info@onlytrueperspective.tech'
 };
 
+function redactEmailForLog(value) {
+    const email = String(value || '').trim();
+    const match = email.match(/^([^@\s]{1,64})@([^@\s]{1,255})$/);
+    if (!match) return '[redacted]';
+    const local = match[1];
+    return `${local.slice(0, 2)}***@${match[2]}`;
+}
+
 async function sendSecureEmail({ to, subject, html, text, from = BUSINESS_EMAILS.CONTACT, replyTo = null, attachments = null }) {
     const key = process.env.RESEND_API_KEY; // Recommended service
     
@@ -2108,9 +2116,9 @@ async function sendSecureEmail({ to, subject, html, text, from = BUSINESS_EMAILS
         console.log(`
 [📩 EMAIL WORKFLOW SIMULATION]
 FROM: ${from}
-TO: ${to}
+TO: ${redactEmailForLog(to)}
 SUBJECT: ${subject}
-BODY: ${text || 'HTML Content Sent'}
+BODY: [redacted]
 ATTACHMENTS: ${Array.isArray(attachments) ? attachments.map(a => a?.filename).filter(Boolean).join(', ') : 'none'}
 -------------------------------
         `);
@@ -2175,7 +2183,7 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
         const email = session.customer_details ? session.customer_details.email : session.customer_email;
-        console.log(`✅ Payment Success Signal: ${session.id} for ${email}`);
+        console.log('✅ Payment Success Signal: checkout.session.completed');
         if (supabaseAdmin && email) {
             try {
                 await supabaseAdmin.from('contacts').update({ ai_status: 'paid' }).eq('email', email);
@@ -2644,6 +2652,49 @@ const bookingSubmitLimiter = rateLimit({
         message: 'Too many booking attempts. Please wait a few minutes and try again.',
         errorCode: 'rate_limited',
         missingFields: []
+    }
+});
+
+const publicContactLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Too many contact attempts. Please wait a few minutes and try again.'
+    }
+});
+
+const publicAuditLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 12,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Too many audit requests. Please wait a few minutes and try again.'
+    }
+});
+
+const analyticsViewLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 120,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Too many view updates. Please try again later.'
+    }
+});
+
+const checkoutSessionLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Too many checkout attempts. Please wait a few minutes and try again.'
     }
 });
 
@@ -7280,13 +7331,13 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
 });
 
 // 5. CONTACT AGENT (AI Auto-Draft)
-app.post('/api/contact/submit', async (req, res) => {
+app.post('/api/contact/submit', publicContactLimiter, async (req, res) => {
     const body = req.body && typeof req.body === 'object' ? req.body : {};
     const { name, email, project_type, project_details, budget, timeline, _gotcha } = body;
 
     // 0. Honeypot Spam Check
     if (_gotcha) {
-        console.warn(`🛑 Spam caught by honeypot: ${email}`);
+        console.warn('🛑 Spam caught by honeypot');
         return res.status(400).json({
             success: false,
             message: 'We could not submit this request. Please try again.',
@@ -7440,7 +7491,7 @@ app.post('/api/contact/submit', async (req, res) => {
 });
 
 // 6. PERSPECTIVE AUDIT ENGINE (AI Strategy Generator)
-app.post('/api/audit/submit', async (req, res) => {
+app.post('/api/audit/submit', publicAuditLimiter, async (req, res) => {
     const { email, answers } = req.body;
     
     if (!email || !answers) {
@@ -7669,7 +7720,7 @@ app.post('/api/admin/purge-contacts', verifyToken, async (req, res) => {
 // --- NEW SECURE PROXIES (Relay Client Actions to Service Role) ---
 
 // 6.1 Secure Analytics Tracking
-app.post('/api/analytics/view', async (req, res) => {
+app.post('/api/analytics/view', analyticsViewLimiter, async (req, res) => {
     const slug = sanitizeSlugInput(req.body?.slug);
     if (!slug) {
         return res.status(400).json({ success: false, message: "Invalid or missing slug" });
@@ -7755,7 +7806,7 @@ app.post('/api/content/update', verifyToken, async (req, res) => {
 
 // 7. STRIPE CHECKOUT SESSION (ADDED FOR PAYMENTS)
 app.route('/api/create-checkout-session')
-    .post(async (req, res) => {
+    .post(checkoutSessionLimiter, async (req, res) => {
     const { packageName, customerEmail } = req.body && typeof req.body === 'object' ? req.body : {};
     
     // Check if Stripe is actually ready (Key might be invalid or missing)

@@ -126,6 +126,30 @@ assert.ok(
     'POST /api/analytics/view must use a generic 500 body (no e.message leak)'
 );
 assert.ok(
+    serverSrc.includes("app.post('/api/contact/submit', publicContactLimiter"),
+    'POST /api/contact/submit must have a dedicated public form rate limiter'
+);
+assert.ok(
+    serverSrc.includes("app.post('/api/audit/submit', publicAuditLimiter"),
+    'POST /api/audit/submit must have a dedicated AI/audit abuse limiter'
+);
+assert.ok(
+    serverSrc.includes("app.post('/api/analytics/view', analyticsViewLimiter"),
+    'POST /api/analytics/view must have a dedicated analytics abuse limiter'
+);
+assert.ok(
+    serverSrc.includes('.post(checkoutSessionLimiter, async (req, res)'),
+    'POST /api/create-checkout-session must have a dedicated checkout abuse limiter'
+);
+assert.ok(
+    serverSrc.includes('function redactEmailForLog') && serverSrc.includes('BODY: [redacted]'),
+    'email simulation logs must redact recipient and message body'
+);
+assert.ok(
+    !serverSrc.includes('Payment Success Signal: ${session.id} for ${email}'),
+    'Stripe success logs must not include payment email addresses'
+);
+assert.ok(
     serverSrc.includes('Checkout could not be started'),
     'POST /api/create-checkout-session must not return raw Stripe exception text to clients'
 );
