@@ -23,6 +23,7 @@ const themeChrono = read('theme-chrono.js');
 const siteInit = read('site-init.js');
 const otpProjects = read('otp-projects.js');
 const server = read('server.js');
+const bookings = read('bookings.html');
 
 assert.ok(index.includes('theme-chrono.js'), 'index loads theme-chrono (first paint)');
 assert.ok(index.includes('styles.css?v='), 'index loads styles.css');
@@ -69,6 +70,29 @@ assert.ok(!index.includes('https://onlytrueperspective.tech/og.jpg'), 'index avo
 assert.ok(index.includes('helps artists, creators, and businesses build cinematic visuals'), 'index meta description uses SEO entity summary');
 assert.ok(index.includes('"@type": "ProfessionalService"'), 'index includes ProfessionalService entity schema');
 assert.ok(index.includes('ELI3GANT is the creative artist identity of Elijah Huertas'), 'index includes official ELI3GANT schema description');
+assert.ok(!index.includes('https://onlytrueperspective.tech/'), 'index avoids apex-only https homepage URLs in head/schema');
+assert.ok(index.includes('"name": "ELI3GANT"'), 'homepage schema identifies ELI3GANT as founder');
+assert.ok(index.includes('OnlyTruePerspective is the creative technology and media company founded by ELI3GANT'), 'homepage copy connects ELI3GANT to OTP naturally');
+const officialSocialImage = 'https://www.onlytrueperspective.tech/assets/seo/otp-og-image.webp';
+for (const [label, html] of [
+    ['index', index],
+    ['insight', insight],
+    ['archive', archive],
+    ['insights', insightsList],
+    ['terms', terms],
+    ['privacy', privacy],
+    ['bookings', bookings]
+]) {
+    assert.ok(html.includes(`property="og:image" content="${officialSocialImage}"`), `${label} uses official OTP OG image`);
+    assert.ok(html.includes(`name="twitter:image" content="${officialSocialImage}"`), `${label} uses official OTP Twitter image`);
+}
+assert.ok(![index, insight, archive, insightsList, terms, privacy, bookings].join('\n').includes('https://www.onlytrueperspective.tech/og.jpg'), 'public pages no longer point social cards at the generic OG image');
+assert.ok(index.includes('"image": "https://www.onlytrueperspective.tech/assets/seo/eli3gant-founder.webp"'), 'homepage schema keeps optimized ELI3GANT founder image');
+assert.ok(insight.includes('"image": "https://www.onlytrueperspective.tech/assets/seo/eli3gant-founder.webp"'), 'insight schema keeps optimized ELI3GANT founder image');
+assert.ok(!index.includes('founder-identity-card'), 'homepage does not render the SEO founder image as a visible card');
+assert.ok(!index.includes('src="assets/seo/eli3gant-founder.webp"'), 'homepage founder image remains metadata-only');
+assert.ok(!archive.includes('vault-preview-media'), 'archive does not render the SEO work preview as a splash image');
+assert.ok(!archive.includes('src="assets/seo/otp-work-preview.webp"'), 'archive work preview remains metadata/future-use only');
 
 // insight.html: live apex redirects to www, so public metadata canonicalizes to www.
 assert.ok(!insight.includes('https://onlytrueperspective.tech/insight.html'), 'insight canonical should not use redirecting apex host');
@@ -88,6 +112,25 @@ assert.ok(archive.includes('https://www.onlytrueperspective.tech/archive.html'),
 assert.ok(terms.includes('https://www.onlytrueperspective.tech/terms.html'), 'terms canonical/og use final www host');
 assert.ok(privacy.includes('https://www.onlytrueperspective.tech/privacy.html'), 'privacy canonical/og use final www host');
 assert.ok(!archive.includes('https://onlytrueperspective.tech/archive.html'), 'archive avoids redirecting apex page URL');
+
+for (const [label, html] of [
+    ['index', index],
+    ['archive', archive],
+    ['insights', insightsList],
+    ['terms', terms],
+    ['privacy', privacy],
+    ['bookings', bookings]
+]) {
+    assert.ok(
+        html.includes('https://www.reddit.com/r/OnlyTruePerspective'),
+        `${label} includes Official Reddit`
+    );
+}
+assert.ok(terms.includes('contact@onlytrueperspective.tech'), 'terms use business contact email');
+assert.ok(privacy.includes('contact@onlytrueperspective.tech'), 'privacy uses business contact email');
+assert.ok(!terms.includes('mailto:eli3gant@onlytrueperspective.tech'), 'terms do not list personal/founder mailbox as public legal contact');
+assert.ok(!privacy.includes('mailto:eli3gant@onlytrueperspective.tech'), 'privacy does not list personal/founder mailbox as public privacy contact');
+assert.ok(!/OnlyTruePerspective\.com|onlytrueperspective\.com|wixsite|lovable/i.test(index + archive + insightsList + terms + privacy + bookings), 'public SEO pages avoid stale builder or .com identity');
 
 assert.ok(themeChrono.includes('OTP.getEffectiveThemeForPaint'), 'theme-chrono exposes paint theme API');
 assert.ok(siteInit.includes('data-theme') || siteInit.includes("getAttribute('data-theme')"), 'site-init references data-theme');
@@ -120,7 +163,6 @@ assert.ok(terminal.includes('toggleAdminTheme()'), 'OTP Terminal theme control')
 assert.ok(terminal.includes('data-theme'), 'OTP Terminal uses data-theme');
 assert.ok(terminal.includes('admin-core.js?v='), 'OTP Terminal cache-busts admin-core');
 
-const bookings = read('bookings.html');
 assert.ok(bookings.includes('project-intake-panel'), 'bookings page bridges to secure project intake');
 assert.ok(bookings.includes('Open Secure Project Intake'), 'bookings exposes secure intake CTA label');
 assert.ok(bookings.includes('https://otp-os.vercel.app/bookings'), 'bookings links secure intake to OTP OS');

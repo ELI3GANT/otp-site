@@ -60,7 +60,7 @@
           'booking/payment workflow',
           'client portal',
           'document/invoice workflow',
-          'business operating system'
+          'business content system'
         ])
       }),
       custom: Object.freeze({
@@ -102,7 +102,7 @@
         label: 'The System',
         position: 'Full operating layer',
         description: 'A full operating layer for brands and businesses that need website, content, client flow, automation, and ongoing support working together.',
-        bestFor: 'Website, content, brand, client flow, automation, portal support, or monthly/retainer-style operating systems.',
+        bestFor: 'Website, content, brand, client flow, automation, portal support, or monthly/retainer-style creative systems.',
         chooseWhen: 'Choose this when the project touches the business layer, not just one deliverable.'
       })
     ]),
@@ -138,7 +138,7 @@
         price: 'Starting at $3,500+',
         purpose: 'Full creative and business system.',
         description: 'The System is for serious brands that need the full structure: visuals, website, automation, documents, and workflow.',
-        best_for: Object.freeze(['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business operating system']),
+        best_for: Object.freeze(['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business content system']),
         examples: Object.freeze(['Full website', 'AI automation', 'Client portal', 'Document workflow']),
         cta: 'Build The System',
         recommended: false
