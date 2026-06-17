@@ -44,8 +44,13 @@ assert.ok(styles.includes('html.stars-performance-mode[data-theme="light"] body.
 assert.ok(styles.includes('html[data-theme="light"] body.home-page .bg-grain') && styles.includes('opacity: 0.004 !important'), 'light mode suppresses dusty grain so stars read cleanly');
 assert.ok(styles.includes('html[data-theme="light"].otp-brand-synced body.home-page .hero h1.hero-title-adjust.luxe-title .title'), 'light mode owns the hero wordmark even after runtime brand sync');
 assert.ok(styles.includes('html[data-theme="light"].spectral-v-sync body.home-page .hero h1.hero-title-adjust.luxe-title .title'), 'light mode blocks spectral variants from recoloring the hero wordmark');
+assert.ok(styles.includes('html.otp-brand-synced .luxe-title .title'), 'first-paint brand title uses the active palette before deferred runtime');
+assert.ok(styles.includes('--spectral-gradient: var(--accent-gradient);'), 'spectral variants inherit the active palette gradient');
+assert.ok(!styles.includes('.spectral-revelation {\n  --accent2:'), 'spectral variants do not overwrite the active accent after first paint');
+assert.ok(!siteInit.includes('const spectralRoll = Math.random()'), 'runtime does not reroll a second spectral palette');
+assert.ok(index.includes('color: var(--accent2-text); text-align: center;'), 'homepage inline accent CTA uses palette contrast text');
 assert.ok(styles.includes('-webkit-text-fill-color: #050507 !important'), 'day-mode hero wordmark uses solid readable black text');
-assert.ok(styles.includes('html[data-theme="light"] body.home-page .nav-links a::after'), 'day-mode nav underline uses stable black-gold accenting');
+assert.ok(styles.includes('html[data-theme="light"] body.home-page .nav-links a::after'), 'day-mode nav underline uses the active palette accent');
 assert.ok(styles.includes('html[data-theme="light"].spectral-revelation body.home-page .nav-logo') && styles.includes('filter: none !important;'), 'light mode blocks spectral nav-logo glow contamination');
 assert.ok(/\.home-page \.nav\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?z-index:\s*12000;[\s\S]*?\}/.test(styles), 'homepage nav remains fixed above hero and star layers');
 assert.ok(!/OTP DAY\/NIGHT VISUAL SYSTEM: final cascade overrides[\s\S]{0,180}\.home-page \.nav,/.test(styles), 'final homepage visual layering rule must not demote nav positioning');
@@ -176,14 +181,18 @@ assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion w
 assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
 assert.ok(styles.includes('body.home-page .theme-toggle-btn:not(.mobile-theme-toggle)'), 'mobile homepage hides fixed theme FAB so drawer toggle owns theme switching');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.23', 'homepage styles cache-bust is current');
+assert.strictEqual((index.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9', 'homepage theme guard cache-bust is current');
+assert.ok(index.indexOf('theme-chrono.js?v=9') < index.indexOf('styles.css?v=16.8.25'), 'homepage theme guard loads before stylesheet');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.25', 'homepage styles cache-bust is current');
 assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', 'homepage stars cache-bust is current');
-assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260609-hyh3', 'homepage runtime cache-bust is current');
+assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260617-palette1', 'homepage runtime cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
   const html = read(file);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.23', `${file} styles cache-bust matches index`);
+  assert.strictEqual((html.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9', `${file} theme guard cache-bust matches index`);
+  assert.ok(html.indexOf('theme-chrono.js?v=9') < html.indexOf('styles.css?v=16.8.25'), `${file} theme guard loads before stylesheet`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.25', `${file} styles cache-bust matches index`);
   assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', `${file} stars cache-bust matches index`);
-  assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260609-hyh3', `${file} runtime cache-bust matches index`);
+  assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260617-palette1', `${file} runtime cache-bust matches index`);
 });
 
 console.log('   OK: Homepage visual contract');

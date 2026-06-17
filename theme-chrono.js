@@ -4,12 +4,14 @@
  */
 (function () {
     window.OTP = window.OTP || {};
-    function applyBrowserThemeHints(theme) {
+    function applyBrowserThemeHints(theme, palette) {
         try {
             document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
             var metaTheme = document.querySelector('meta[name="theme-color"]');
             if (metaTheme) {
-                metaTheme.setAttribute('content', theme === 'light' ? '#eceef2' : '#030305');
+                metaTheme.setAttribute('content', theme === 'light'
+                    ? ((palette && palette.themeColorLight) || '#eceef2')
+                    : ((palette && palette.themeColorDark) || '#030305'));
             }
         } catch (e) { /* ignore */ }
     }
@@ -94,75 +96,146 @@
         return luminance > 148 ? '#050609' : '#ffffff';
     }
 
-    window.OTP_HUES = [
+    window.OTP_PALETTES = [
         {
             name: 'purple',
             dark: '184, 140, 255',
             light: '92, 44, 168',
-            gradient: 'linear-gradient(135deg, #b88cff, #7b61ff, #ff76d7, #b88cff)'
+            gradient: 'linear-gradient(135deg, #b88cff, #7b61ff, #ff76d7, #b88cff)',
+            themeColorDark: '#090711',
+            themeColorLight: '#f4f1ff'
         },
         {
             name: 'orange',
             dark: '255, 111, 0',
             light: '174, 72, 0',
-            gradient: 'linear-gradient(135deg, #ff6f00, #ffb15f, #ffffff, #ff6f00)'
+            gradient: 'linear-gradient(135deg, #ff6f00, #ffb15f, #ffffff, #ff6f00)',
+            themeColorDark: '#110803',
+            themeColorLight: '#fff4e8'
         },
         {
             name: 'blue',
             dark: '0, 236, 255',
             light: '0, 100, 140',
-            gradient: 'linear-gradient(135deg, #00ecff, #2f6bff, #ffffff, #00ecff)'
+            gradient: 'linear-gradient(135deg, #00ecff, #2f6bff, #ffffff, #00ecff)',
+            themeColorDark: '#030b10',
+            themeColorLight: '#eef9fc'
         },
         {
             name: 'gold',
             dark: '244, 204, 106',
             light: '155, 106, 18',
-            gradient: 'linear-gradient(135deg, #f4cc6a, #fff4ce, #ff8a00, #f4cc6a)'
+            gradient: 'linear-gradient(135deg, #f4cc6a, #fff4ce, #ff8a00, #f4cc6a)',
+            themeColorDark: '#100d05',
+            themeColorLight: '#fff9eb'
         },
         {
             name: 'white',
             dark: '255, 255, 255',
             light: '88, 88, 96',
-            gradient: 'linear-gradient(135deg, #ffffff, #d8ecff, #b88cff, #ffffff)'
+            gradient: 'linear-gradient(135deg, #ffffff, #d8ecff, #b88cff, #ffffff)',
+            themeColorDark: '#030305',
+            themeColorLight: '#f7f8fb'
         },
         {
             name: 'glitch',
             dark: '255, 0, 204',
             light: '145, 0, 116',
-            gradient: 'linear-gradient(135deg, #00ecff, #ff00cc, #ffcc00, #00ecff)'
+            gradient: 'linear-gradient(135deg, #00ecff, #ff00cc, #ffcc00, #00ecff)',
+            spectralGradient: 'linear-gradient(90deg, #00ecff, #ff00cc, #ffcc00, #00ecff)',
+            themeColorDark: '#100410',
+            themeColorLight: '#fff0fb'
+        },
+        {
+            name: 'neon',
+            dark: '0, 255, 170',
+            light: '0, 130, 88',
+            gradient: 'linear-gradient(135deg, #00ffaa, #00ecff, #ffffff, #00ffaa)',
+            spectralGradient: 'linear-gradient(90deg, #00ffaa, #00ecff, #ffffff, #00ffaa)',
+            themeColorDark: '#03100d',
+            themeColorLight: '#ecfff9'
         }
     ];
+    window.OTP_HUES = window.OTP_PALETTES;
+
+    function findPalette(name) {
+        var palettes = window.OTP_PALETTES || [];
+        for (var i = 0; i < palettes.length; i += 1) {
+            if (palettes[i] && palettes[i].name === name) return palettes[i];
+        }
+        return null;
+    }
 
     var hueIndex = 0;
     try {
-        hueIndex = Math.floor(Math.random() * window.OTP_HUES.length);
+        hueIndex = Math.floor(Math.random() * window.OTP_PALETTES.length);
     } catch (e3) {
         hueIndex = 0;
     }
+
+    var selectedHue = window.OTP_PALETTES[hueIndex] || findPalette('blue') || window.OTP_PALETTES[0];
+    var spectralVariant = '';
+    try {
+        var spectralRoll = Math.random();
+        if (selectedHue && selectedHue.name === 'glitch') {
+            spectralVariant = 'spectral-revelation';
+        } else if (spectralRoll < 0.02) {
+            selectedHue = findPalette('glitch') || selectedHue;
+            spectralVariant = 'spectral-revelation';
+        } else if (spectralRoll < 0.04) {
+            selectedHue = findPalette('gold') || selectedHue;
+            spectralVariant = 'spectral-revelation-gold';
+        } else if (spectralRoll < 0.06) {
+            selectedHue = findPalette('neon') || selectedHue;
+            spectralVariant = 'spectral-revelation-neon';
+        }
+    } catch (eVariant) { /* keep selected palette */ }
+
+    hueIndex = Math.max(0, (window.OTP_PALETTES || []).indexOf(selectedHue));
     window.OTP_HUE_INDEX = hueIndex;
-    var selectedHue = window.OTP_HUES[hueIndex];
     window.OTP_ACTIVE_HUE = selectedHue;
+    window.OTP_ACTIVE_PALETTE = selectedHue;
+    window.OTP_ACTIVE_PALETTE_ID = (selectedHue && selectedHue.name) || 'blue';
+    window.OTP_SPECTRAL_VARIANT = spectralVariant;
 
     var theme = window.OTP.getEffectiveThemeForPaint();
     if (theme !== 'light' && theme !== 'dark') theme = 'dark';
 
-    var rootStyle = document.documentElement.style;
-    document.documentElement.setAttribute('data-refresh-accent', selectedHue.name || 'blue');
-    document.documentElement.setAttribute('data-chrono-phase',
-        typeof window.OTP.calculateChronoPhase === 'function' ? window.OTP.calculateChronoPhase() : (theme === 'light' ? 'day' : 'night')
-    );
-    rootStyle.setProperty('--accent-gradient', selectedHue.gradient || 'linear-gradient(135deg, #00ecff, #ff00cc, #ffcc00, #00ecff)');
+    window.OTP.getActivePalette = function () {
+        return window.OTP_ACTIVE_PALETTE || window.OTP_ACTIVE_HUE || findPalette('blue') || (window.OTP_PALETTES || [])[0] || {};
+    };
 
-    if (theme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-        rootStyle.setProperty('--accent2-rgb', selectedHue.light);
-        rootStyle.setProperty('--accent2', 'rgb(' + selectedHue.light + ')');
-        rootStyle.setProperty('--accent2-text', contrastText(selectedHue.light));
-    } else {
-        document.documentElement.removeAttribute('data-theme');
-        rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
-        rootStyle.setProperty('--accent2', 'rgb(' + selectedHue.dark + ')');
-        rootStyle.setProperty('--accent2-text', contrastText(selectedHue.dark));
+    window.OTP.applyPaletteForTheme = function (nextTheme) {
+        var normalized = nextTheme === 'light' ? 'light' : 'dark';
+        var palette = window.OTP.getActivePalette();
+        var root = document.documentElement;
+        var rootStyle = root.style;
+        var activeRgb = normalized === 'light' ? palette.light : palette.dark;
+
+        root.classList.add('otp-brand-synced');
+        root.setAttribute('data-palette', palette.name || 'blue');
+        root.setAttribute('data-refresh-accent', palette.name || 'blue');
+        root.setAttribute('data-chrono-phase',
+            typeof window.OTP.calculateChronoPhase === 'function' ? window.OTP.calculateChronoPhase() : (normalized === 'light' ? 'day' : 'night')
+        );
+        rootStyle.setProperty('--accent-gradient', palette.gradient || 'linear-gradient(135deg, #00ecff, #2f6bff, #ffffff, #00ecff)');
+        rootStyle.setProperty('--spectral-gradient', palette.spectralGradient || palette.gradient || 'linear-gradient(90deg, #00ecff, #ff00cc, #ffcc00, #00ecff)');
+
+        if (normalized === 'light') {
+            root.setAttribute('data-theme', 'light');
+        } else {
+            root.removeAttribute('data-theme');
+        }
+
+        rootStyle.setProperty('--accent2-rgb', activeRgb);
+        rootStyle.setProperty('--accent2', 'rgb(' + activeRgb + ')');
+        rootStyle.setProperty('--accent2-text', contrastText(activeRgb));
+        applyBrowserThemeHints(normalized, palette);
+        return palette;
+    };
+
+    if (spectralVariant) {
+        document.documentElement.classList.add(spectralVariant, 'spectral-v-sync');
     }
-    applyBrowserThemeHints(theme);
+    window.OTP.applyPaletteForTheme(theme);
 })();

@@ -133,6 +133,12 @@ assert.ok(!privacy.includes('mailto:eli3gant@onlytrueperspective.tech'), 'privac
 assert.ok(!/OnlyTruePerspective\.com|onlytrueperspective\.com|wixsite|lovable/i.test(index + archive + insightsList + terms + privacy + bookings), 'public SEO pages avoid stale builder or .com identity');
 
 assert.ok(themeChrono.includes('OTP.getEffectiveThemeForPaint'), 'theme-chrono exposes paint theme API');
+assert.ok(themeChrono.includes('OTP.applyPaletteForTheme'), 'theme-chrono exposes first-paint palette apply API');
+assert.ok(themeChrono.includes('OTP.getActivePalette'), 'theme-chrono exposes active palette API');
+assert.ok(themeChrono.includes("root.setAttribute('data-palette'"), 'theme-chrono stamps the active palette on html before CSS paint');
+assert.ok(themeChrono.includes('OTP_SPECTRAL_VARIANT'), 'theme-chrono chooses spectral variant before deferred runtime');
+assert.ok(siteInit.includes('OTP.applyPaletteForTheme'), 'site-init reuses the first-paint palette source of truth');
+assert.ok(!siteInit.includes('const spectralRoll = Math.random()'), 'site-init must not reroll spectral palette after first paint');
 assert.ok(siteInit.includes('data-theme') || siteInit.includes("getAttribute('data-theme')"), 'site-init references data-theme');
 assert.ok(siteInit.includes('OTPSetProjectType'), 'site-init exposes safe homepage package CTA helper');
 assert.ok(siteInit.includes('OTP_PROJECT_LIBRARY'), 'site-init reads reusable public project entries');

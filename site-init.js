@@ -363,10 +363,10 @@ window.OTP.setTheme = function(theme, isManual = false) {
     const html = document.documentElement;
     const rootStyle = html.style;
     
-    // Fallback if THEME GUARD didn't run for some reason
-    let hues = window.OTP_HUES || [{ dark: '0, 236, 255', light: '0, 170, 204' }];
-    let hueIndex = window.OTP_HUE_INDEX !== undefined ? window.OTP_HUE_INDEX : 0;
-    let selectedHue = hues[hueIndex];
+    // Fallback if the first-paint theme guard did not run for some reason.
+    const hues = window.OTP_HUES || [{ name: 'blue', dark: '0, 236, 255', light: '0, 170, 204' }];
+    const hueIndex = window.OTP_HUE_INDEX !== undefined ? window.OTP_HUE_INDEX : 0;
+    let selectedHue = (typeof window.OTP.getActivePalette === 'function' && window.OTP.getActivePalette()) || hues[hueIndex] || hues[0];
     const contrastText = (rgb) => {
         const parts = String(rgb || '').split(',').map((n) => Number(n.trim()));
         const luminance = ((parts[0] || 0) * 299 + (parts[1] || 0) * 587 + (parts[2] || 0) * 114) / 1000;
@@ -375,19 +375,29 @@ window.OTP.setTheme = function(theme, isManual = false) {
 
     // ZERO-BLUR PROTOCOL: Freeze transitions/filters during swap
     html.classList.add('is-theme-switching');
-    if (selectedHue.name) html.setAttribute('data-refresh-accent', selectedHue.name);
-    if (selectedHue.gradient) rootStyle.setProperty('--accent-gradient', selectedHue.gradient);
-
-    if (normalized === 'light') {
-        html.setAttribute('data-theme', 'light');
-        rootStyle.setProperty('--accent2-rgb', selectedHue.light);
-        rootStyle.setProperty('--accent2', `rgb(${selectedHue.light})`);
-        rootStyle.setProperty('--accent2-text', contrastText(selectedHue.light));
+    if (typeof window.OTP.applyPaletteForTheme === 'function') {
+        selectedHue = window.OTP.applyPaletteForTheme(normalized) || selectedHue;
     } else {
-        html.removeAttribute('data-theme');
-        rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
-        rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
-        rootStyle.setProperty('--accent2-text', contrastText(selectedHue.dark));
+        if (selectedHue.name) {
+            html.setAttribute('data-palette', selectedHue.name);
+            html.setAttribute('data-refresh-accent', selectedHue.name);
+        }
+        if (selectedHue.gradient) {
+            rootStyle.setProperty('--accent-gradient', selectedHue.gradient);
+            rootStyle.setProperty('--spectral-gradient', selectedHue.spectralGradient || selectedHue.gradient);
+        }
+
+        if (normalized === 'light') {
+            html.setAttribute('data-theme', 'light');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.light);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.light})`);
+            rootStyle.setProperty('--accent2-text', contrastText(selectedHue.light));
+        } else {
+            html.removeAttribute('data-theme');
+            rootStyle.setProperty('--accent2-rgb', selectedHue.dark);
+            rootStyle.setProperty('--accent2', `rgb(${selectedHue.dark})`);
+            rootStyle.setProperty('--accent2-text', contrastText(selectedHue.dark));
+        }
     }
 
     if (!isManual && typeof window.OTP.calculateChronoPhase === 'function') {
@@ -399,7 +409,9 @@ window.OTP.setTheme = function(theme, isManual = false) {
         html.style.colorScheme = normalized === 'light' ? 'light' : 'dark';
         const metaTheme = document.querySelector('meta[name="theme-color"]');
         if (metaTheme) {
-            metaTheme.setAttribute('content', normalized === 'light' ? '#eceef2' : '#030305');
+            metaTheme.setAttribute('content', normalized === 'light'
+                ? (selectedHue.themeColorLight || '#eceef2')
+                : (selectedHue.themeColorDark || '#030305'));
         }
     } catch (e) { /* ignore */ }
 
@@ -500,14 +512,14 @@ window.OTP.initTheme = function() {
     }, 5 * 60 * 1000);
 
     // 4. REFRESH ACCENT SYSTEM: day/night controls light; refresh owns OTP personality.
-    const activeHue = window.OTP_ACTIVE_HUE || ((window.OTP_HUES || [])[window.OTP_HUE_INDEX || 0]) || {};
-    const spectralRoll = Math.random();
-    let variant = '';
+    const activeHue = (typeof window.OTP.getActivePalette === 'function' && window.OTP.getActivePalette())
+        || window.OTP_ACTIVE_HUE
+        || ((window.OTP_HUES || [])[window.OTP_HUE_INDEX || 0])
+        || {};
+    const variant = window.OTP_SPECTRAL_VARIANT || (activeHue.name === 'glitch' ? 'spectral-revelation' : '');
     
-    // 6% Total Chance (2% each variant) for SITE-WIDE effects
-    if (activeHue.name === 'glitch' || spectralRoll < 0.02) variant = 'spectral-revelation'; // V1: Iridescent
-    else if (spectralRoll < 0.04) variant = 'spectral-revelation-gold'; // V2: Gold
-    else if (spectralRoll < 0.06) variant = 'spectral-revelation-neon'; // V3: Neon
+    // The head theme guard chooses any rare spectral variant before CSS paint.
+    // Runtime only mirrors that state so a refresh never repaints into a second palette.
 
     // CORE BRANDING FIX: "ONLY TRUE PERSPECTIVE" ALWAYS SHOWS SPECIAL COLOR
     // We add a permanent class for the brand itself to ensure it's always high-status.
@@ -519,9 +531,7 @@ window.OTP.initTheme = function() {
     }
 
     // Determine the active brand gradient. It follows the refresh accent; gold is one possible accent.
-    let brandGradient = activeHue.gradient || 'linear-gradient(135deg, #00ecff, #ff00cc, #ffcc00, #00ecff)';
-    if (variant === 'spectral-revelation-gold') brandGradient = 'linear-gradient(135deg, #ffcc00, #ff8800, #ffffff, #ffcc00)';
-    if (variant === 'spectral-revelation-neon') brandGradient = 'linear-gradient(135deg, #00ffaa, #00ecff, #ffffff, #00ffaa)';
+    let brandGradient = activeHue.gradient || 'var(--accent-gradient)';
 
     const style = document.createElement('style');
     style.textContent = `
@@ -638,7 +648,7 @@ window.OTP.showBroadcast = function(message) {
             <button onclick="this.closest('#otp-broadcast-overlay').remove()" style="position:fixed; top:40px; right:40px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.2); color:#fff; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; transition:0.3s; z-index:100; backdrop-filter:blur(10px);">×</button>
 
             <div class="bc-eyebrow" style="font-size: 0.7rem; letter-spacing: 0.5em; color: var(--accent2); margin-bottom: 30px; font-weight: 700; opacity: 0; transform: translateY(20px);">
-                <span style="display:inline-block; padding: 4px 12px; border: 1px solid var(--accent2); border-radius: 4px; background: rgba(0,195,255,0.05);">SYSTEM UPLINK ACTIVE</span>
+                <span style="display:inline-block; padding: 4px 12px; border: 1px solid var(--accent2); border-radius: 4px; background: rgba(var(--accent2-rgb),0.05);">SYSTEM UPLINK ACTIVE</span>
             </div>
             
             <h2 class="bc-title" style="font-size: clamp(1.8rem, 7vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 40px; text-transform: uppercase; font-family: 'Syne', sans-serif; opacity: 0; filter: blur(10px); color: #fff; text-shadow: 0 0 30px rgba(255,255,255,0.2);">
