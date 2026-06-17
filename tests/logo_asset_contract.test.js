@@ -37,6 +37,42 @@ function jpegSize(file) {
   throw new Error(`Could not read JPEG dimensions for ${file}`);
 }
 
+function webpSize(file) {
+  const buffer = read(file);
+  assert.equal(buffer.subarray(0, 4).toString('ascii'), 'RIFF', `${file} must be a RIFF file`);
+  assert.equal(buffer.subarray(8, 12).toString('ascii'), 'WEBP', `${file} must be a WebP image`);
+  let offset = 12;
+  while (offset + 8 <= buffer.length) {
+    const chunk = buffer.subarray(offset, offset + 4).toString('ascii');
+    const length = buffer.readUInt32LE(offset + 4);
+    const data = offset + 8;
+    if (chunk === 'VP8 ') {
+      assert.equal(buffer[data + 3], 0x9d, `${file} VP8 start code`);
+      assert.equal(buffer[data + 4], 0x01, `${file} VP8 start code`);
+      assert.equal(buffer[data + 5], 0x2a, `${file} VP8 start code`);
+      return {
+        width: buffer.readUInt16LE(data + 6) & 0x3fff,
+        height: buffer.readUInt16LE(data + 8) & 0x3fff
+      };
+    }
+    if (chunk === 'VP8X') {
+      return {
+        width: 1 + buffer.readUIntLE(data + 4, 3),
+        height: 1 + buffer.readUIntLE(data + 7, 3)
+      };
+    }
+    if (chunk === 'VP8L') {
+      const bits = buffer.readUInt32LE(data + 1);
+      return {
+        width: 1 + (bits & 0x3fff),
+        height: 1 + ((bits >> 14) & 0x3fff)
+      };
+    }
+    offset += 8 + length + (length % 2);
+  }
+  throw new Error(`Could not read WebP dimensions for ${file}`);
+}
+
 function walk(dir, files = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (['.git', 'node_modules', '.vercel'].includes(entry.name)) continue;
@@ -60,12 +96,19 @@ assertPng('icon-512.png', 512, 512);
 
 const og = jpegSize('og.jpg');
 assert.deepEqual(og, { width: 1200, height: 630 }, 'OG image must be 1200x630');
+assert.deepEqual(webpSize('assets/seo/otp-og-image.webp'), { width: 1200, height: 630 }, 'official OTP social preview is 1200x630 WebP');
+assert.deepEqual(webpSize('assets/seo/eli3gant-founder.webp'), { width: 720, height: 1080 }, 'ELI3GANT founder image is optimized portrait WebP');
+assert.deepEqual(webpSize('assets/seo/otp-work-preview.webp'), { width: 886, height: 886 }, 'OTP work preview is optimized square WebP');
 
 const manifest = JSON.parse(readText('site.webmanifest'));
 assert.deepEqual(
   manifest.icons.map((icon) => icon.src),
   ['/icon-192.png', '/icon-512.png'],
   'manifest uses dedicated app icons'
+);
+assert.ok(
+  Array.isArray(manifest.screenshots) && manifest.screenshots.some((shot) => shot.src === '/assets/seo/otp-og-image.webp' && shot.type === 'image/webp'),
+  'manifest exposes the official OTP social preview as a screenshot'
 );
 
 const htmlFiles = walk(root).filter((file) => file.endsWith('.html'));
@@ -79,6 +122,7 @@ const index = readText('index.html');
 assert.ok(index.includes('href="/favicon-32x32.png"'), 'homepage references root favicon');
 assert.ok(index.includes('href="/apple-touch-icon.png"'), 'homepage references root Apple touch icon');
 assert.ok(index.includes('src="assets/otp-logo-transparent.png"'), 'homepage header uses primary transparent logo');
+assert.ok(!index.includes('src="assets/seo/eli3gant-founder.webp"'), 'homepage keeps ELI3GANT founder image metadata-only for now');
 assert.ok(!index.includes('src="icon.png"'), 'homepage does not use square app icon as header logo');
 
 const allProjectFiles = walk(root);

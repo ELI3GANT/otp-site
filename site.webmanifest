@@ -1,6 +1,7 @@
 {
-  "name": "Only True Perspective",
+  "name": "OnlyTruePerspective",
   "short_name": "OTP",
+  "description": "OnlyTruePerspective.tech - creative technology, cinematic media, websites, and brand systems by ELI3GANT.",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -13,6 +14,15 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/seo/otp-og-image.webp",
+      "sizes": "1200x630",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "OnlyTruePerspective creative technology brand visual"
     }
   ],
   "theme_color": "#030305",

@@ -31,7 +31,7 @@ const fallbackConfig = {
       price: 'Starting at $3,500+',
       purpose: 'Full creative and business system.',
       description: 'The System is for serious brands that need the full structure: visuals, website, automation, documents, and workflow.',
-      best_for: ['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business operating system'],
+      best_for: ['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business content system'],
       examples: ['Full website', 'AI automation', 'Client portal', 'Document workflow'],
       cta: 'Build The System'
     },

@@ -2928,12 +2928,12 @@ function clientDocLabel(docType) {
 function clientDocMessage(docType, doc, paymentStatus) {
     const validation = doc?.validation || {};
     if (docType === 'Paid Receipt' && !/^(deposit paid|paid in full)$/i.test(String(paymentStatus || '').trim())) {
-        return 'Receipt unlocks after a saved payment is marked in OTP OS.';
+        return 'Receipt unlocks after a saved project payment is marked deposit paid or paid in full.';
     }
     if (validation.blocking) return validation.message || 'More saved project details are required before this document is ready.';
-    if (docType === 'Invoice') return 'Invoice preview uses the saved OTP OS total, deposit, remaining balance, and status.';
+    if (docType === 'Invoice') return 'Invoice preview uses the saved project total, deposit, remaining balance, and status.';
     if (docType === 'Service Summary') return 'Summary is generated from the live saved project scope.';
-    return 'Ready from the live OTP OS job record.';
+    return 'Ready from the live project record.';
 }
 
 function buildClientPortalData(jobRow) {
@@ -3208,7 +3208,7 @@ function bookingPackageCards() {
             price: p.theSystem?.price_display || 'Starting at $3,500+',
             purpose: 'Full creative and business system.',
             description: 'The System is for serious brands that need the full structure: visuals, website, automation, documents, and workflow.',
-            best_for: ['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business operating system'],
+            best_for: ['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business content system'],
             examples: ['Full website', 'AI automation', 'Client portal', 'Document workflow'],
             cta: 'Build The System'
         }

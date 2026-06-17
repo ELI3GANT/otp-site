@@ -1798,13 +1798,38 @@ button:focus-visible,
   flex-wrap: wrap;
   gap: 10px;
   justify-content: space-between;
+  align-items: center;
   padding: 22px 0 34px;
   border-top: 1px solid var(--line);
   color: var(--muted);
 }
 
+.booking-footer > div {
+  display: grid;
+  gap: 4px;
+}
+
 .booking-footer strong {
   color: var(--text);
+}
+
+.booking-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.booking-footer-links a {
+  color: var(--muted-2);
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.booking-footer-links a:hover,
+.booking-footer-links a:focus-visible {
+  color: var(--accent);
 }
 
 @keyframes pageRise {

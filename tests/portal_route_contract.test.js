@@ -74,14 +74,14 @@ assert.ok(!/admin|terminal|portal-gate/.test(portalJs), 'portal JS must not rout
 assert.ok(clientHtml.includes('/client.css'), 'client portal shell loads local CSS');
 assert.ok(clientHtml.includes('/client.js'), 'client portal shell loads local JS');
 assert.ok(clientHtml.includes('Private Client Portal'), 'client portal shell has private label');
-assert.ok(clientHtml.includes('Live OTP OS Profile'), 'client portal is aligned to OTP OS data');
+assert.ok(clientHtml.includes('Private Client Profile'), 'client portal uses client-safe project labels');
 assert.ok(clientHtml.includes('Powered by OnlyTruePerspective'), 'client portal has powered-by footer');
 assert.ok(!/otp-os\.vercel\.app|supabase|service[_-]?key|jwt|bearer/i.test(clientHtml), 'client portal HTML must not leak internals');
 
 assert.ok(clientJs.includes('/api/client-portal/'), 'client portal fetches the server-side portal API');
 assert.ok(clientJs.includes("cache: 'no-store'"), 'client portal fetch uses no-store');
 assert.ok(clientJs.includes('Locked until payment is saved'), 'client portal has locked receipt state');
-assert.ok(server.includes('Receipt unlocks after a saved payment'), 'server portal payload explains locked receipts');
+assert.ok(server.includes('Receipt unlocks after a saved project payment'), 'server portal payload explains locked receipts');
 assert.ok(clientJs.includes('textContent'), 'client portal renders with textContent');
 assert.ok(!/innerHTML\s*=/.test(clientJs), 'client portal JS must not assign unsafe HTML');
 assert.ok(!/insertAdjacentHTML/.test(clientJs), 'client portal JS must not inject adjacent HTML');
