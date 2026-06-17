@@ -6,7 +6,7 @@ const assert = require('assert');
 
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'client-portal-test-secret';
 process.env.CLIENT_PORTAL_TOKEN_TTL_DAYS = '180';
-process.env.OTP_PUBLIC_SITE_ORIGIN = 'https://onlytrueperspective.tech';
+process.env.OTP_PUBLIC_SITE_ORIGIN = 'https://www.onlytrueperspective.tech';
 
 const app = require('../server.js');
 const hooks = app.__clientPortalTestHooks;

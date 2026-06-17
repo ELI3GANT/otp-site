@@ -2427,7 +2427,7 @@ const OTP_BOOKINGS_UPSTREAM = String(
 ).replace(/\/+$/, '');
 const OTP_PUBLIC_SITE_ORIGIN = String(
     process.env.OTP_PUBLIC_SITE_ORIGIN
-    || 'https://onlytrueperspective.tech'
+    || 'https://www.onlytrueperspective.tech'
 ).replace(/\/+$/, '');
 const OTP_CLIENT_PORTAL_UPSTREAM = String(
     process.env.OTP_CLIENT_PORTAL_UPSTREAM_URL
@@ -2631,12 +2631,12 @@ function clientDocLabel(docType) {
 function clientDocMessage(docType, doc, paymentStatus) {
     const validation = doc?.validation || {};
     if (docType === 'Paid Receipt' && !/^(deposit paid|paid in full)$/i.test(String(paymentStatus || '').trim())) {
-        return 'Receipt unlocks after a saved payment is marked in OTP OS.';
+        return 'Receipt unlocks after a saved payment is confirmed.';
     }
     if (validation.blocking) return validation.message || 'More saved project details are required before this document is ready.';
-    if (docType === 'Invoice') return 'Invoice preview uses the saved OTP OS total, deposit, remaining balance, and status.';
+    if (docType === 'Invoice') return 'Invoice preview uses the saved project total, deposit, remaining balance, and status.';
     if (docType === 'Service Summary') return 'Summary is generated from the live saved project scope.';
-    return 'Ready from the live OTP OS job record.';
+    return 'Ready from the saved project record.';
 }
 
 function buildClientPortalData(jobRow) {
@@ -2797,9 +2797,9 @@ function bookingPackageCards() {
             internal_key: 'The System',
             name: 'The System',
             price: p.theSystem?.price_display || 'Starting at $3,500+',
-            purpose: 'Full creative and business system.',
+            purpose: 'Full creative and business workflow system.',
             description: 'The System is for serious brands that need the full structure: visuals, website, automation, documents, and workflow.',
-            best_for: ['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business operating system'],
+            best_for: ['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business workflow system'],
             examples: ['Full website', 'AI automation', 'Client portal', 'Document workflow'],
             cta: 'Build The System'
         },
@@ -3249,11 +3249,11 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
     }
 });
 
-// Public OTP BOOKINGS stays on onlytrueperspective.tech while the canonical
+// Public OTP BOOKINGS stays on www.onlytrueperspective.tech while the canonical
 // booking intake API continues to live inside OTP OS.
 app.use('/api/bookings', async (req, res) => {
     try {
-        const publicPath = new URL(req.originalUrl, 'https://onlytrueperspective.tech').pathname;
+        const publicPath = new URL(req.originalUrl, 'https://www.onlytrueperspective.tech').pathname;
         if (!BOOKING_PUBLIC_PROXY_PATHS.has(publicPath)) {
             return res.status(404).json({
                 ok: false,

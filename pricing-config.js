@@ -60,7 +60,7 @@
           'booking/payment workflow',
           'client portal',
           'document/invoice workflow',
-          'business operating system'
+          'business workflow system'
         ])
       }),
       custom: Object.freeze({
@@ -110,9 +110,9 @@
         internal_key: 'The System',
         name: 'The System',
         price: 'Starting at $3,500+',
-        purpose: 'Full creative and business system.',
+        purpose: 'Full creative and business workflow system.',
         description: 'The System is for serious brands that need the full structure: visuals, website, automation, documents, and workflow.',
-        best_for: Object.freeze(['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business operating system']),
+        best_for: Object.freeze(['Full website', 'Brand identity', 'Content system', 'AI/automation setup', 'Booking/payment workflow', 'Client portal', 'Document/invoice workflow', 'Business workflow system']),
         examples: Object.freeze(['Full website', 'AI automation', 'Client portal', 'Document workflow']),
         cta: 'Build The System',
         recommended: false

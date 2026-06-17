@@ -526,11 +526,19 @@ input:focus {
 }
 
 .portal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
   padding: 0 0 12px;
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 800;
   text-align: center;
+}
+
+.portal-footer a {
+  color: var(--accent);
 }
 
 @keyframes pageRise {

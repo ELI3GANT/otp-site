@@ -48,6 +48,7 @@ assert.ok(!/\/api\/admin|\/terminal|portal-gate/.test(portalHtml), 'public porta
 assert.ok(portalHtml.includes('OTP Client Portal'), 'portal page heading is present');
 assert.ok(portalHtml.includes('Access project status, documents, payment steps, and approvals.'), 'portal purpose copy is present');
 assert.ok(portalHtml.includes('/bookings'), 'portal links back to OTP Bookings');
+assert.ok(portalHtml.includes('https://www.reddit.com/r/OnlyTruePerspective'), 'portal footer includes Official Reddit');
 assert.ok(portalHtml.includes('portal-invite-form'), 'portal token form is present');
 assert.ok(portalHtml.includes('/portal.css'), 'portal CSS is loaded');
 assert.ok(portalHtml.includes('/portal.js'), 'portal JS is loaded');
@@ -74,9 +75,9 @@ assert.ok(!/admin|terminal|portal-gate/.test(portalJs), 'portal JS must not rout
 assert.ok(clientHtml.includes('/client.css'), 'client portal shell loads local CSS');
 assert.ok(clientHtml.includes('/client.js'), 'client portal shell loads local JS');
 assert.ok(clientHtml.includes('Private Client Portal'), 'client portal shell has private label');
-assert.ok(clientHtml.includes('Live OTP OS Profile'), 'client portal is aligned to OTP OS data');
+assert.ok(clientHtml.includes('Private Project Profile'), 'client portal uses client-safe project profile wording');
 assert.ok(clientHtml.includes('Powered by OnlyTruePerspective'), 'client portal has powered-by footer');
-assert.ok(!/otp-os\.vercel\.app|supabase|service[_-]?key|jwt|bearer/i.test(clientHtml), 'client portal HTML must not leak internals');
+assert.ok(!/otp-os\.vercel\.app|OTP OS|supabase|service[_-]?key|jwt|bearer/i.test(clientHtml), 'client portal HTML must not leak internals');
 
 assert.ok(clientJs.includes('/api/client-portal/'), 'client portal fetches the server-side portal API');
 assert.ok(clientJs.includes("cache: 'no-store'"), 'client portal fetch uses no-store');

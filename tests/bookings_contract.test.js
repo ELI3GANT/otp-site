@@ -54,11 +54,14 @@ assert.ok(html.includes('oracle-glyph'), 'Oracle sigil uses a distinct eye/logic
 assert.ok(html.includes('sigil-vector'), 'sigil includes inline SVG orbit lines');
 assert.ok(!html.includes('class="otp-booking-sigil brand-sigil"'), 'header does not reuse the booking portal sigil');
 assert.ok(!/<img[^>]+src="\/assets\/otp-logo-transparent\.png"/.test(html), 'portal sigils do not repeat the same OTP raster logo');
-assert.ok(html.includes('OTP OS Profile'), 'connected journey is visible');
+assert.ok(html.includes('Project Profile'), 'connected journey is visible without OTP OS product language');
+assert.ok(!html.includes('OTP OS Profile'), 'public booking page must not expose OTP OS profile language');
 assert.ok(html.includes('Oracle'), 'Oracle flow chip is visible');
 assert.ok(html.includes('Documents'), 'Documents flow chip is visible');
 assert.ok(html.includes('Payment'), 'Payment flow chip is visible');
 assert.ok(html.includes('Client Portal'), 'Client Portal CTA/flow label is visible');
+assert.ok(html.includes('https://www.reddit.com/r/OnlyTruePerspective'), 'Official Reddit link is present in booking footer');
+assert.ok(!html.includes('business operating system'), 'booking footer must not market OTP OS as a public product');
 assert.ok(html.includes('package-selection-summary'), 'selected package summary is present');
 assert.ok(html.includes('booking-mini-summary'), 'desktop booking mini-summary is present');
 assert.ok(html.includes('Submit Booking Request'), 'final CTA is explicit');
@@ -71,10 +74,12 @@ assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page lin
 
 assert.ok(js.includes('/api/bookings/config'), 'frontend loads booking config');
 assert.ok(js.includes('/api/bookings/submit'), 'frontend submits to booking API');
+assert.ok(js.includes('Saving booking request for OTP review'), 'booking submit status avoids internal OTP OS wording');
 assert.ok(js.includes('state.submitting'), 'duplicate submit prevention exists');
 assert.ok(js.includes('state.submitted'), 'post-success duplicate submit prevention exists');
 assert.ok(!js.includes("['Booking ID'"), 'booking success must not show internal booking IDs');
 assert.ok(!js.includes("['OTP OS Job'"), 'booking success must not show internal OTP OS job IDs');
+assert.ok(!js.includes('Saving booking request into OTP OS'), 'booking status must not expose OTP OS wording');
 assert.ok(js.includes('safePortalHref'), 'booking success only opens same-origin client portal links');
 assert.ok(js.includes("portalLink.href = portalHref || '/portal'"), 'booking success falls back to clean /portal entry');
 assert.ok(/recommendation pending review/i.test(js), 'frontend handles partial success');

@@ -17,6 +17,7 @@ const insightsList = read('insights.html');
 const archive = read('archive.html');
 const terms = read('terms.html');
 const privacy = read('privacy.html');
+const bookings = read('bookings.html');
 const notFound = read('404.html');
 const terminal = read('otp-terminal.html');
 const themeChrono = read('theme-chrono.js');
@@ -51,6 +52,8 @@ assert.ok(
     'index homepage canonical/og use www (matches site-config hub)'
 );
 assert.ok(!index.includes('https://onlytrueperspective.tech/'), 'index avoids apex-only https homepage URLs in head/schema');
+assert.ok(index.includes('"name": "ELI3GANT"'), 'homepage schema identifies ELI3GANT as founder');
+assert.ok(index.includes('OnlyTruePerspective is the creative technology and media company founded by ELI3GANT'), 'homepage copy connects ELI3GANT to OTP naturally');
 
 // insight.html: avoid apex vs www split (was breaking social consistency with JS-set og:url)
 assert.ok(!insight.includes('https://onlytrueperspective.tech/insight.html'), 'insight canonical should not use apex-only host');
@@ -70,6 +73,25 @@ assert.ok(archive.includes('https://www.onlytrueperspective.tech/archive.html'),
 assert.ok(terms.includes('https://www.onlytrueperspective.tech/terms.html'), 'terms canonical/og use www');
 assert.ok(privacy.includes('https://www.onlytrueperspective.tech/privacy.html'), 'privacy canonical/og use www');
 assert.ok(!archive.includes('https://onlytrueperspective.tech/archive.html'), 'archive avoids apex-only page URL');
+
+for (const [label, html] of [
+    ['index', index],
+    ['archive', archive],
+    ['insights', insightsList],
+    ['terms', terms],
+    ['privacy', privacy],
+    ['bookings', bookings]
+]) {
+    assert.ok(
+        html.includes('https://www.reddit.com/r/OnlyTruePerspective'),
+        `${label} includes Official Reddit`
+    );
+}
+assert.ok(terms.includes('contact@onlytrueperspective.tech'), 'terms use business contact email');
+assert.ok(privacy.includes('contact@onlytrueperspective.tech'), 'privacy uses business contact email');
+assert.ok(!terms.includes('mailto:eli3gant@onlytrueperspective.tech'), 'terms do not list personal/founder mailbox as public legal contact');
+assert.ok(!privacy.includes('mailto:eli3gant@onlytrueperspective.tech'), 'privacy does not list personal/founder mailbox as public privacy contact');
+assert.ok(!/OnlyTruePerspective\.com|onlytrueperspective\.com|wixsite|lovable/i.test(index + archive + insightsList + terms + privacy + bookings), 'public SEO pages avoid stale builder or .com identity');
 
 assert.ok(themeChrono.includes('OTP.getEffectiveThemeForPaint'), 'theme-chrono exposes paint theme API');
 assert.ok(siteInit.includes('data-theme') || siteInit.includes("getAttribute('data-theme')"), 'site-init references data-theme');
