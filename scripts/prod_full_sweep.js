@@ -3,14 +3,14 @@
  * OTP Production Full Sweep v2
  *
  * Broader public production health checks with optional admin-authenticated checks.
- * Admin checks prefer OTP_ADMIN_PASSCODE/ADMIN_PASSCODE login, then OTP_ADMIN_TOKEN fallback.
+ * Admin checks prefer OTP_SWEEP_ADMIN_PASSCODE login, then OTP_SWEEP_ADMIN_TOKEN fallback.
  * Useful for deploy verification when you want the whole public surface validated.
  */
 
 const { runSweep, short } = require('./prod_sweep_v2_runner');
 
 const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytrueperspective.tech').replace(/\/+$/, '');
-const TOKEN = String(process.env.OTP_ADMIN_TOKEN || '').trim();
+const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_TOKEN || '').trim();
 
 const publicTargets = [
   { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'Insights', '/bookings?source=', 'href="/portal"'] },
@@ -66,7 +66,7 @@ async function main() {
   });
 
   console.log(JSON.stringify(sweep, null, 2));
-  if (!sweep.publicChecks.every((check) => check.ok)) process.exit(1);
+  if (!sweep.ok) process.exit(1);
 }
 
 main().catch((error) => {
