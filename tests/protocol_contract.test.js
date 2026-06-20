@@ -37,6 +37,18 @@ function text(dom, selector) {
   return node.textContent.trim().replace(/\s+/g, ' ');
 }
 
+function visibleProtocolLinks(dom) {
+  return Array.from(dom.window.document.querySelectorAll('[data-protocol-link]')).filter((link) => !link.hidden);
+}
+
+function trackText(dom) {
+  return text(dom, '[data-protocol-tracks]');
+}
+
+function trackNames(dom) {
+  return Array.from(dom.window.document.querySelectorAll('[data-track-name]')).map((node) => node.textContent.trim().replace(/\s+/g, ' '));
+}
+
 function countNeedle(files, needle) {
   return files.reduce((total, file) => total + (file.match(new RegExp(needle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length, 0);
 }
@@ -73,17 +85,32 @@ assert.ok(html.includes(RELEASE_TARGET), 'official release target is configured'
 assert.strictEqual(countNeedle([html, css, js], DISTROKID_URL), 1, 'DistroKid URL is centralized once');
 
 [
-  'PO!NT',
-  'SIMULATION',
-  'BEZEL',
-  'NOINTRO',
-  'BETTER WAYS',
+  'TRACK 01 // NO INPUT',
+  'TRACK 02 // LOCKED',
+  'TRACK 03 // REDACTED',
+  'TRACK 04 // FINAL WAYPOINT',
+  'TRACK 05 // SIGNAL MASKED',
   'PARAGON to NXIS.ZIP to PROTOCOL to BLACK_BOX'
 ].forEach((copy) => {
   assert.ok(html.includes(copy), `${copy} appears on the protocol page`);
 });
 
-assert.ok(html.includes('Available everywhere after release.'), 'pre-release availability copy is present');
+[
+  'data-track-title="NO INTRO"',
+  'data-track-title="PO!NT"',
+  'data-track-title="BEZEL"',
+  'data-track-title="BETTER_WAYS"',
+  'data-track-title="SIMULATION"'
+].forEach((copy) => assert.ok(html.includes(copy), `${copy} is stored for release-state reveal`));
+
+const realTrackOrder = ['NO INTRO', 'PO!NT', 'BEZEL', 'BETTER_WAYS', 'SIMULATION'];
+let lastTrackIndex = -1;
+realTrackOrder.forEach((track) => {
+  const index = html.indexOf(`data-track-title="${track}"`);
+  assert.ok(index > lastTrackIndex, `${track} appears in correct source track order`);
+  lastTrackIndex = index;
+});
+assert.ok(html.includes('Link unlocks closer to release.'), 'early release window message is present');
 assert.ok(!html.includes('PROTOCOL_OVERRIDE.EXE'), 'old override language is removed');
 assert.ok(!html.includes('SYSTEM ONLINE'), 'old hacker-style status copy is removed');
 assert.ok(!html.includes('SoundCloud'), 'old SoundCloud CTA is removed');
@@ -101,13 +128,23 @@ assert.ok(css.includes('@media (max-width: 820px)'), 'protocol CSS has tablet an
 assert.ok(css.includes('@media (max-width: 390px)'), 'protocol CSS has small phone layout rules');
 assert.ok(css.includes('min-height: 48px'), 'primary links meet minimum tap target sizing');
 assert.ok(css.includes('backdrop-filter'), 'protocol page uses premium glass styling');
-assert.ok(css.includes('--protocol-drift-one'), 'release states can tune ambient timing without redesigning layout');
+assert.ok(css.includes('--protocol-purple: #8b5cf6'), 'purple accent system is present');
+assert.ok(css.includes('--protocol-violet: #a855f7'), 'electric violet accent is present');
+assert.ok(css.includes('--protocol-magenta: #d946ef'), 'magenta edge accent is present');
+assert.ok(!css.includes('--protocol-gold'), 'gold variables are not used as the protocol theme');
+assert.ok(!css.includes('213, 181, 108'), 'old amber RGB accent is not used as the main theme');
+assert.ok(css.includes('.protocol-noise'), 'background noise layer exists');
+assert.ok(css.includes('.protocol-scan'), 'background scan layer exists');
+assert.ok(css.includes('.protocol-glitch-field'), 'controlled background glitch layer exists');
+assert.ok(css.includes('protocolGlitchField'), 'controlled glitch animation exists');
 assert.ok(css.includes('.protocol-release-mark'), 'post-release marker styling is present');
 
 assert.ok(!js.includes('fetch('), 'protocol page does not collect or submit data');
 assert.ok(!js.includes('localStorage'), 'protocol page does not store visitor data');
 assert.ok(js.includes('getProtocolReleaseState'), 'release proximity logic is implemented');
 assert.ok(js.includes('data-protocol-secondary-cta'), 'secondary CTA changes with release state');
+assert.ok(js.includes('updateTracks'), 'track reveal behavior is state-driven');
+assert.ok(js.includes('updateTimeline'), 'timeline active state is state-driven');
 
 [
   {
@@ -117,6 +154,12 @@ assert.ok(js.includes('data-protocol-secondary-cta'), 'secondary CTA changes wit
     status: 'Archive sealed',
     cta: 'Pre-save PROTOCOL',
     secondaryCta: 'Open HyperFollow',
+    availability: 'Link unlocks closer to release.',
+    visibleCtas: [],
+    trackMode: 'locked',
+    tracks: ['TRACK 01 // NO INPUT', 'TRACK 02 // LOCKED', 'TRACK 03 // REDACTED', 'TRACK 04 // FINAL WAYPOINT', 'TRACK 05 // SIGNAL MASKED'],
+    hiddenTracks: ['NO INTRO', 'PO!NT', 'BEZEL', 'BETTER_WAYS', 'SIMULATION'],
+    protocolEraState: 'encrypted',
     countdownHidden: false,
     releaseMarkHidden: true
   },
@@ -125,8 +168,14 @@ assert.ok(js.includes('data-protocol-secondary-cta'), 'secondary CTA changes wit
     nowMs: releaseMs - (48 * 60 * 60 * 1000),
     state: 'approaching',
     status: 'Signal approaching.',
-    cta: 'Open HyperFollow',
-    secondaryCta: 'Pre-save PROTOCOL',
+    cta: 'Pre-save PROTOCOL',
+    secondaryCta: 'Open HyperFollow',
+    availability: 'Signal approaching.',
+    visibleCtas: ['Open HyperFollow'],
+    trackMode: 'locked',
+    tracks: ['TRACK 01 // NO INPUT', 'TRACK 02 // LOCKED', 'TRACK 03 // REDACTED', 'TRACK 04 // FINAL WAYPOINT', 'TRACK 05 // SIGNAL MASKED'],
+    hiddenTracks: ['NO INTRO', 'PO!NT', 'BEZEL', 'BETTER_WAYS', 'SIMULATION'],
+    protocolEraState: 'encrypted',
     countdownHidden: false,
     releaseMarkHidden: true
   },
@@ -137,6 +186,12 @@ assert.ok(js.includes('data-protocol-secondary-cta'), 'secondary CTA changes wit
     status: 'Archive unlock pending.',
     cta: 'Pre-save PROTOCOL',
     secondaryCta: 'Open HyperFollow',
+    availability: 'Archive unlock pending.',
+    visibleCtas: ['Pre-save PROTOCOL'],
+    trackMode: 'hints',
+    tracks: ['N. I....', 'P!', 'B....', 'B....._W...', 'S.........'],
+    hiddenTracks: ['NO INTRO', 'PO!NT', 'BEZEL', 'BETTER_WAYS', 'SIMULATION'],
+    protocolEraState: 'encrypted',
     countdownHidden: false,
     releaseMarkHidden: true
   },
@@ -145,8 +200,14 @@ assert.ok(js.includes('data-protocol-secondary-cta'), 'secondary CTA changes wit
     nowMs: releaseMs - (30 * 60 * 1000),
     state: 'hour',
     status: 'Final signal window.',
-    cta: 'Pre-save PROTOCOL',
+    cta: 'Open HyperFollow',
     secondaryCta: 'Open HyperFollow',
+    availability: 'Final signal window.',
+    visibleCtas: ['Open HyperFollow'],
+    trackMode: 'hints',
+    tracks: ['N. I....', 'P!', 'B....', 'B....._W...', 'S.........'],
+    hiddenTracks: ['NO INTRO', 'PO!NT', 'BEZEL', 'BETTER_WAYS', 'SIMULATION'],
+    protocolEraState: 'encrypted',
     countdownHidden: false,
     releaseMarkHidden: true
   },
@@ -157,26 +218,54 @@ assert.ok(js.includes('data-protocol-secondary-cta'), 'secondary CTA changes wit
     status: 'Stream PROTOCOL.',
     cta: 'Listen Everywhere',
     secondaryCta: 'Stream PROTOCOL',
+    availability: 'Stream PROTOCOL.',
+    visibleCtas: ['Listen Everywhere', 'Stream PROTOCOL'],
+    trackMode: 'revealed',
+    tracks: ['NO INTRO', 'PO!NT', 'BEZEL', 'BETTER_WAYS', 'SIMULATION'],
+    hiddenTracks: [],
+    protocolEraState: 'unlocked',
     countdownHidden: true,
     releaseMarkHidden: false
   }
 ].forEach((scenario) => {
   const dom = renderProtocolAt(scenario.nowMs);
   assert.strictEqual(dom.window.document.body.dataset.protocolState, scenario.state, `${scenario.label} state is set`);
+  assert.strictEqual(dom.window.document.body.dataset.trackMode, scenario.trackMode, `${scenario.label} track mode is set`);
   assert.strictEqual(text(dom, '[data-protocol-status]'), scenario.status, `${scenario.label} status appears`);
   assert.strictEqual(text(dom, '[data-protocol-cta]'), scenario.cta, `${scenario.label} CTA appears`);
   assert.strictEqual(text(dom, '[data-protocol-secondary-cta]'), scenario.secondaryCta, `${scenario.label} secondary CTA appears`);
+  assert.strictEqual(text(dom, '[data-protocol-availability]'), scenario.availability, `${scenario.label} availability copy appears`);
   assert.strictEqual(dom.window.document.querySelector('[data-protocol-countdown]').hidden, scenario.countdownHidden, `${scenario.label} countdown visibility is correct`);
   assert.strictEqual(dom.window.document.querySelector('[data-protocol-release-mark]').hidden, scenario.releaseMarkHidden, `${scenario.label} release marker visibility is correct`);
+  assert.strictEqual(dom.window.document.querySelector('[data-era="protocol"]').dataset.eraState, scenario.protocolEraState, `${scenario.label} timeline protocol node state is correct`);
+  assert.deepStrictEqual(visibleProtocolLinks(dom).map((link) => link.textContent.trim().replace(/\s+/g, ' ')), scenario.visibleCtas, `${scenario.label} visible CTAs are correct`);
+  assert.strictEqual(dom.window.document.querySelector('[data-protocol-actions]').hidden, scenario.visibleCtas.length === 0, `${scenario.label} CTA row visibility is correct`);
+  scenario.tracks.forEach((track) => assert.ok(trackText(dom).includes(track), `${scenario.label} shows ${track}`));
+  scenario.hiddenTracks.forEach((track) => assert.ok(!trackText(dom).includes(track), `${scenario.label} hides ${track}`));
   if (scenario.state === 'released') {
     assert.strictEqual(text(dom, '[data-protocol-release-mark]'), 'Stream PROTOCOL.', 'post-release marker is not an expired countdown');
+    assert.deepStrictEqual(trackNames(dom), realTrackOrder, 'post-release real track names reveal in correct order');
   }
-  dom.window.document.querySelectorAll('[data-protocol-link]').forEach((link) => {
+  visibleProtocolLinks(dom).forEach((link) => {
     assert.strictEqual(link.href, DISTROKID_URL, `${scenario.label} CTA uses DistroKid URL`);
     assert.strictEqual(link.getAttribute('target'), '_blank', `${scenario.label} CTA opens a new tab`);
     assert.strictEqual(link.getAttribute('rel'), 'noopener noreferrer', `${scenario.label} CTA has safe rel`);
   });
+  dom.window.document.querySelectorAll('[data-protocol-link][hidden]').forEach((link) => {
+    assert.ok(!link.hasAttribute('href'), `${scenario.label} hidden CTA does not expose DistroKid href`);
+  });
   dom.window.close();
+});
+
+const timelineOrder = ['PARAGON', 'NXIS.ZIP', 'PROTOCOL', 'BLACK_BOX'];
+let lastIndex = -1;
+timelineOrder.forEach((era) => {
+  const index = html.indexOf(`<span>${era}</span>`);
+  assert.ok(index > lastIndex, `${era} appears in correct timeline order`);
+  lastIndex = index;
+});
+['Origin signal', 'Compressed identity', 'Current system', 'Next archive'].forEach((caption) => {
+  assert.ok(html.includes(caption), `${caption} timeline caption is present`);
 });
 
 const forbiddenProtocolSitePath = path.join('/Users/eli/OTP', 'protocol-site');

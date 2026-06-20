@@ -23,7 +23,7 @@
   <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/otp-social-preview.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/protocol.css?v=20260626-release" />
+  <link rel="stylesheet" href="/protocol.css?v=20260626-purple" />
   <script id="protocol-config" type="application/json">
     {
       "releaseTarget": "2026-06-26T00:00:00-04:00",
@@ -35,6 +35,9 @@
   <a class="protocol-skip" href="#protocol-main">Skip to PROTOCOL</a>
 
   <main class="protocol-shell" id="protocol-main">
+    <div class="protocol-noise" aria-hidden="true"></div>
+    <div class="protocol-scan" aria-hidden="true"></div>
+    <div class="protocol-glitch-field" aria-hidden="true"></div>
     <div class="protocol-ambient protocol-ambient-one" aria-hidden="true"></div>
     <div class="protocol-ambient protocol-ambient-two" aria-hidden="true"></div>
 
@@ -66,13 +69,13 @@
       </div>
       <p class="protocol-release-mark" data-protocol-release-mark hidden>Stream PROTOCOL.</p>
 
-      <p class="protocol-availability" data-protocol-availability>Available everywhere after release.</p>
+      <p class="protocol-availability" data-protocol-availability>Link unlocks closer to release.</p>
 
-      <div class="protocol-actions" aria-label="PROTOCOL streaming links">
-        <a class="protocol-button protocol-button-primary" href="#" target="_blank" rel="noopener noreferrer" data-protocol-link data-protocol-cta>
+      <div class="protocol-actions" aria-label="PROTOCOL streaming links" data-protocol-actions hidden>
+        <a class="protocol-button protocol-button-primary" target="_blank" rel="noopener noreferrer" data-protocol-link data-protocol-role="primary" data-protocol-cta hidden>
           Pre-save PROTOCOL
         </a>
-        <a class="protocol-button protocol-button-secondary" href="#" target="_blank" rel="noopener noreferrer" data-protocol-link data-protocol-secondary-cta>
+        <a class="protocol-button protocol-button-secondary" target="_blank" rel="noopener noreferrer" data-protocol-link data-protocol-role="secondary" data-protocol-secondary-cta hidden>
           Open HyperFollow
         </a>
       </div>
@@ -83,12 +86,27 @@
         <p class="protocol-section-label">Five track EP</p>
         <h2 id="protocol-tracks-title">Track List</h2>
       </div>
-      <ol class="protocol-track-list">
-        <li><span>01</span> PO!NT</li>
-        <li><span>02</span> SIMULATION</li>
-        <li><span>03</span> BEZEL</li>
-        <li><span>04</span> NOINTRO</li>
-        <li><span>05</span> BETTER WAYS</li>
+      <ol class="protocol-track-list" data-protocol-tracks>
+        <li data-track-title="NO INTRO" data-track-locked="TRACK 01 // NO INPUT" data-track-hint="N. I....">
+          <span>01</span>
+          <strong data-track-name>TRACK 01 // NO INPUT</strong>
+        </li>
+        <li data-track-title="PO!NT" data-track-locked="TRACK 02 // LOCKED" data-track-hint="P!">
+          <span>02</span>
+          <strong data-track-name>TRACK 02 // LOCKED</strong>
+        </li>
+        <li data-track-title="BEZEL" data-track-locked="TRACK 03 // REDACTED" data-track-hint="B....">
+          <span>03</span>
+          <strong data-track-name>TRACK 03 // REDACTED</strong>
+        </li>
+        <li data-track-title="BETTER_WAYS" data-track-locked="TRACK 04 // FINAL WAYPOINT" data-track-hint="B....._W...">
+          <span>04</span>
+          <strong data-track-name>TRACK 04 // FINAL WAYPOINT</strong>
+        </li>
+        <li data-track-title="SIMULATION" data-track-locked="TRACK 05 // SIGNAL MASKED" data-track-hint="S.........">
+          <span>05</span>
+          <strong data-track-name>TRACK 05 // SIGNAL MASKED</strong>
+        </li>
       </ol>
     </section>
 
@@ -98,16 +116,28 @@
         <h2 id="protocol-timeline-title">PARAGON to NXIS.ZIP to PROTOCOL to BLACK_BOX</h2>
       </div>
       <ol class="protocol-timeline" aria-label="ELI3GANT release timeline">
-        <li>PARAGON</li>
-        <li>NXIS.ZIP</li>
-        <li aria-current="step">PROTOCOL</li>
-        <li>BLACK_BOX</li>
+        <li data-era="paragon">
+          <span>PARAGON</span>
+          <small>Origin signal</small>
+        </li>
+        <li data-era="nxis">
+          <span>NXIS.ZIP</span>
+          <small>Compressed identity</small>
+        </li>
+        <li data-era="protocol" aria-current="step">
+          <span>PROTOCOL</span>
+          <small data-protocol-era-status>Current system</small>
+        </li>
+        <li data-era="black-box">
+          <span>BLACK_BOX</span>
+          <small>Next archive</small>
+        </li>
       </ol>
     </section>
   </main>
 
   <footer class="protocol-footer">OnlyTruePerspective</footer>
 
-  <script src="/protocol.js?v=20260626-release" defer></script>
+  <script src="/protocol.js?v=20260626-purple" defer></script>
 </body>
 </html>

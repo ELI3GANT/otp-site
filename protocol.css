@@ -1,13 +1,16 @@
 :root {
   --protocol-bg: #050505;
-  --protocol-ink: #f6f0e6;
-  --protocol-muted: rgba(246, 240, 230, 0.7);
-  --protocol-soft: rgba(246, 240, 230, 0.5);
-  --protocol-gold: #d5b56c;
-  --protocol-gold-strong: #f1d789;
-  --protocol-line: rgba(213, 181, 108, 0.26);
-  --protocol-panel: rgba(12, 12, 12, 0.72);
-  --protocol-panel-strong: rgba(20, 18, 13, 0.82);
+  --protocol-ink: #f4efff;
+  --protocol-muted: rgba(226, 216, 255, 0.72);
+  --protocol-soft: rgba(196, 181, 253, 0.52);
+  --protocol-purple: #8b5cf6;
+  --protocol-violet: #a855f7;
+  --protocol-deep-violet: #4c1d95;
+  --protocol-magenta: #d946ef;
+  --protocol-lavender: #c4b5fd;
+  --protocol-line: rgba(168, 85, 247, 0.3);
+  --protocol-panel: rgba(11, 7, 20, 0.76);
+  --protocol-panel-strong: rgba(25, 10, 48, 0.84);
   --protocol-radius: 24px;
   --protocol-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --protocol-mono: "SFMono-Regular", "Cascadia Code", "Roboto Mono", "Courier New", monospace;
@@ -29,9 +32,9 @@ body.protocol-page {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 50% -10%, rgba(213, 181, 108, 0.2), transparent 34rem),
-    radial-gradient(circle at 10% 18%, rgba(255, 255, 255, 0.055), transparent 20rem),
-    linear-gradient(180deg, #090909 0%, #050505 54%, #020202 100%);
+    radial-gradient(circle at 50% -10%, rgba(139, 92, 246, 0.28), transparent 34rem),
+    radial-gradient(circle at 10% 18%, rgba(217, 70, 239, 0.09), transparent 20rem),
+    linear-gradient(180deg, #090611 0%, #050308 54%, #020104 100%);
   color: var(--protocol-ink);
   font-family: var(--protocol-sans);
   -webkit-font-smoothing: antialiased;
@@ -41,6 +44,7 @@ body.protocol-page {
   --protocol-drift-two: 30s;
   --protocol-sheen-opacity: 0.2;
   --protocol-sheen-duration: 18s;
+  --protocol-glitch-opacity: 0.12;
 }
 
 body.protocol-page::before {
@@ -56,6 +60,40 @@ body.protocol-page::before {
   mask-image: radial-gradient(circle at center, #000 0 40%, transparent 76%);
 }
 
+.protocol-noise,
+.protocol-scan,
+.protocol-glitch-field {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.protocol-noise {
+  z-index: -2;
+  opacity: 0.13;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  mix-blend-mode: screen;
+}
+
+.protocol-scan {
+  z-index: -1;
+  opacity: 0.22;
+  background:
+    repeating-linear-gradient(180deg, rgba(196, 181, 253, 0.08) 0 1px, transparent 1px 6px),
+    linear-gradient(90deg, transparent, rgba(217, 70, 239, 0.1), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 84%, transparent);
+}
+
+.protocol-glitch-field {
+  z-index: -1;
+  opacity: var(--protocol-glitch-opacity);
+  background:
+    linear-gradient(90deg, transparent 0 18%, rgba(168, 85, 247, 0.2) 19%, transparent 20% 72%, rgba(217, 70, 239, 0.18) 73%, transparent 74%),
+    linear-gradient(180deg, transparent 0 54%, rgba(196, 181, 253, 0.12) 55%, transparent 56%);
+  transform: translate3d(0, 0, 0);
+  animation: protocolGlitchField 11s steps(1, jump-none) infinite;
+}
+
 button,
 a {
   font: inherit;
@@ -66,7 +104,7 @@ a {
 }
 
 :where(a, button):focus-visible {
-  outline: 2px solid var(--protocol-gold-strong);
+  outline: 2px solid var(--protocol-magenta);
   outline-offset: 4px;
 }
 
@@ -119,7 +157,7 @@ a {
   height: min(72vw, 740px);
   top: -30vw;
   right: -24vw;
-  background: radial-gradient(circle, rgba(213, 181, 108, 0.24), transparent 68%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.32), transparent 68%);
   animation: protocolDrift var(--protocol-drift-one) ease-in-out infinite alternate;
 }
 
@@ -128,7 +166,7 @@ a {
   height: min(64vw, 620px);
   bottom: -34vw;
   left: -26vw;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 70%);
+  background: radial-gradient(circle, rgba(217, 70, 239, 0.16), transparent 70%);
   animation: protocolDrift var(--protocol-drift-two) ease-in-out infinite alternate-reverse;
 }
 
@@ -141,8 +179,9 @@ a {
     linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015)),
     var(--protocol-panel);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08) inset,
-    0 28px 90px rgba(0, 0, 0, 0.45);
+    0 1px 0 rgba(196, 181, 253, 0.1) inset,
+    0 28px 90px rgba(0, 0, 0, 0.45),
+    0 0 56px rgba(76, 29, 149, 0.2);
   backdrop-filter: blur(18px);
 }
 
@@ -163,7 +202,7 @@ a {
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  background: linear-gradient(112deg, transparent 0 38%, rgba(213, 181, 108, 0.18), transparent 62% 100%);
+  background: linear-gradient(112deg, transparent 0 38%, rgba(168, 85, 247, 0.24), transparent 62% 100%);
   opacity: var(--protocol-sheen-opacity);
   transform: translateX(-40%);
   animation: protocolSheen var(--protocol-sheen-duration) ease-in-out infinite;
@@ -199,24 +238,24 @@ a {
   border: 1px solid var(--protocol-line);
   border-radius: 999px;
   background: rgba(5, 5, 5, 0.5);
-  color: var(--protocol-gold-strong);
+  color: var(--protocol-lavender);
   font-size: clamp(0.76rem, 2vw, 0.9rem);
   letter-spacing: 0.05em;
   line-height: 1.25;
-  box-shadow: 0 0 28px rgba(213, 181, 108, 0.08);
+  box-shadow: 0 0 28px rgba(168, 85, 247, 0.12);
 }
 
 .protocol-title {
   max-width: 11ch;
   margin: 0;
-  color: #fff8ea;
+  color: #fbf7ff;
   font-size: clamp(4.2rem, 18vw, 13rem);
   font-weight: 800;
   line-height: 0.78;
   letter-spacing: -0.09em;
   text-wrap: balance;
   text-shadow:
-    0 0 32px rgba(213, 181, 108, 0.24),
+    0 0 32px rgba(168, 85, 247, 0.34),
     0 24px 64px rgba(0, 0, 0, 0.72);
 }
 
@@ -239,7 +278,7 @@ a {
 .protocol-count-card {
   min-width: 0;
   padding: clamp(0.8rem, 2vw, 1.1rem) 0.55rem;
-  border: 1px solid rgba(213, 181, 108, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.24);
   border-radius: 18px;
   background: rgba(0, 0, 0, 0.3);
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
@@ -274,16 +313,16 @@ a {
   width: fit-content;
   margin: clamp(1.5rem, 4vw, 2.4rem) 0 1rem;
   padding: 0.85rem 1.05rem;
-  border: 1px solid rgba(241, 215, 137, 0.44);
+  border: 1px solid rgba(217, 70, 239, 0.44);
   border-radius: 999px;
-  background: rgba(213, 181, 108, 0.1);
-  color: #fff8ea;
+  background: rgba(139, 92, 246, 0.14);
+  color: #fbf7ff;
   font-family: var(--protocol-mono);
   font-size: clamp(0.82rem, 2vw, 0.96rem);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow: 0 0 38px rgba(213, 181, 108, 0.18);
+  box-shadow: 0 0 38px rgba(168, 85, 247, 0.24);
 }
 
 .protocol-release-mark[hidden],
@@ -296,6 +335,10 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+
+.protocol-button[hidden] {
+  display: none;
 }
 
 .protocol-button {
@@ -313,10 +356,10 @@ a {
 }
 
 .protocol-button-primary {
-  border: 1px solid rgba(241, 215, 137, 0.6);
-  background: linear-gradient(180deg, rgba(241, 215, 137, 0.96), rgba(184, 140, 55, 0.95));
+  border: 1px solid rgba(217, 70, 239, 0.62);
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.98), rgba(76, 29, 149, 0.96));
   color: #080807;
-  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.36), 0 0 36px rgba(213, 181, 108, 0.18);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.36), 0 0 42px rgba(168, 85, 247, 0.26);
 }
 
 .protocol-button-secondary {
@@ -332,7 +375,7 @@ a {
 
 .protocol-button-primary:hover,
 .protocol-button-primary:focus-visible {
-  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.42), 0 0 52px rgba(213, 181, 108, 0.28);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.42), 0 0 56px rgba(217, 70, 239, 0.34);
 }
 
 .protocol-section {
@@ -346,7 +389,7 @@ a {
 
 .protocol-section h2 {
   margin: 0;
-  color: #fff8ea;
+  color: #fbf7ff;
   font-size: clamp(1.5rem, 4vw, 2.6rem);
   line-height: 1.05;
   letter-spacing: -0.04em;
@@ -355,7 +398,7 @@ a {
 
 .protocol-section-label {
   margin: 0 0 0.6rem;
-  color: var(--protocol-gold);
+  color: var(--protocol-lavender);
   font-size: 0.72rem;
   letter-spacing: 0.2em;
 }
@@ -378,10 +421,11 @@ a {
   display: grid;
   grid-template-columns: 3.2rem minmax(0, 1fr);
   align-items: center;
-  border-bottom: 1px solid rgba(213, 181, 108, 0.16);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.18);
   color: var(--protocol-ink);
   font-size: clamp(1rem, 2.4vw, 1.18rem);
   letter-spacing: 0.08em;
+  transition: color 180ms ease, text-shadow 180ms ease, border-color 180ms ease;
 }
 
 .protocol-track-list li:last-child {
@@ -394,7 +438,26 @@ a {
   letter-spacing: 0.14em;
 }
 
+.protocol-track-list strong {
+  min-width: 0;
+  color: var(--protocol-lavender);
+  font-size: clamp(0.9rem, 2.2vw, 1.08rem);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.protocol-page[data-track-mode="hints"] .protocol-track-list strong,
+.protocol-page[data-track-mode="revealed"] .protocol-track-list strong {
+  color: #fbf7ff;
+  text-shadow: 0 0 20px rgba(168, 85, 247, 0.32);
+}
+
+.protocol-page[data-track-mode="revealed"] .protocol-track-list li {
+  border-color: rgba(217, 70, 239, 0.28);
+}
+
 .protocol-timeline {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.5rem;
@@ -403,22 +466,69 @@ a {
   letter-spacing: 0.1em;
 }
 
+.protocol-timeline::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 7%;
+  right: 7%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.2), rgba(217, 70, 239, 0.58), rgba(139, 92, 246, 0.2));
+  transform: translateY(-50%);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.22);
+}
+
 .protocol-timeline li {
+  position: relative;
+  z-index: 1;
   min-height: 54px;
   padding: 0.85rem 0.55rem;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(213, 181, 108, 0.16);
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.22);
+  gap: 0.35rem;
+  border: 1px solid rgba(168, 85, 247, 0.18);
+  border-radius: 18px;
+  background: rgba(5, 3, 12, 0.78);
   text-align: center;
   overflow-wrap: anywhere;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.protocol-timeline li:hover,
+.protocol-timeline li:focus-within {
+  border-color: rgba(217, 70, 239, 0.46);
+  box-shadow: 0 0 28px rgba(168, 85, 247, 0.18);
+  transform: translateY(-1px);
+}
+
+.protocol-timeline span {
+  color: #fbf7ff;
+  font-weight: 800;
+}
+
+.protocol-timeline small {
+  color: var(--protocol-soft);
+  font-family: var(--protocol-sans);
+  font-size: 0.72rem;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
 
 .protocol-timeline [aria-current="step"] {
-  border-color: rgba(241, 215, 137, 0.5);
-  color: #fff8ea;
-  background: rgba(213, 181, 108, 0.12);
+  border-color: rgba(217, 70, 239, 0.54);
+  color: #fbf7ff;
+  background: rgba(139, 92, 246, 0.16);
+  box-shadow: 0 0 34px rgba(168, 85, 247, 0.24);
+}
+
+.protocol-page:not([data-protocol-state="released"]) .protocol-timeline [data-era="protocol"] small::after {
+  content: " // encrypted";
+  color: var(--protocol-magenta);
+}
+
+.protocol-timeline [data-era="black-box"] {
+  opacity: 0.72;
 }
 
 .protocol-footer {
@@ -470,22 +580,22 @@ a {
 
 .protocol-page[data-protocol-state="day"] .protocol-button-primary,
 .protocol-page[data-protocol-state="hour"] .protocol-button-primary {
-  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.42), 0 0 64px rgba(213, 181, 108, 0.32);
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.42), 0 0 68px rgba(168, 85, 247, 0.36);
 }
 
 .protocol-page[data-protocol-state="day"] .protocol-count-card,
 .protocol-page[data-protocol-state="hour"] .protocol-count-card {
-  border-color: rgba(241, 215, 137, 0.34);
-  background: rgba(213, 181, 108, 0.055);
-  box-shadow: 0 0 32px rgba(213, 181, 108, 0.08);
+  border-color: rgba(217, 70, 239, 0.36);
+  background: rgba(139, 92, 246, 0.08);
+  box-shadow: 0 0 34px rgba(168, 85, 247, 0.12);
 }
 
 .protocol-page[data-protocol-state="released"] .protocol-hero {
-  border-color: rgba(241, 215, 137, 0.5);
+  border-color: rgba(217, 70, 239, 0.54);
 }
 
 .protocol-page[data-protocol-state="released"] .protocol-button-primary {
-  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.42), 0 0 72px rgba(213, 181, 108, 0.34);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.42), 0 0 76px rgba(217, 70, 239, 0.38);
 }
 
 @keyframes protocolDrift {
@@ -513,10 +623,29 @@ a {
 
 @keyframes protocolPulse {
   0%, 100% {
-    box-shadow: 0 0 28px rgba(213, 181, 108, 0.08);
+    box-shadow: 0 0 28px rgba(168, 85, 247, 0.12);
   }
   50% {
-    box-shadow: 0 0 42px rgba(213, 181, 108, 0.24);
+    box-shadow: 0 0 42px rgba(217, 70, 239, 0.26);
+  }
+}
+
+@keyframes protocolGlitchField {
+  0%, 86%, 100% {
+    transform: translate3d(0, 0, 0);
+    opacity: var(--protocol-glitch-opacity);
+  }
+  87% {
+    transform: translate3d(-8px, 0, 0);
+    opacity: calc(var(--protocol-glitch-opacity) + 0.04);
+  }
+  88% {
+    transform: translate3d(7px, 0, 0);
+    opacity: calc(var(--protocol-glitch-opacity) + 0.02);
+  }
+  89% {
+    transform: translate3d(0, 0, 0);
+    opacity: var(--protocol-glitch-opacity);
   }
 }
 
@@ -544,6 +673,16 @@ a {
 
   .protocol-timeline {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .protocol-timeline::before {
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: auto;
+    transform: translateX(-50%);
   }
 }
 
@@ -605,5 +744,12 @@ a {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;
+  }
+
+  .protocol-noise,
+  .protocol-scan,
+  .protocol-glitch-field {
+    animation: none !important;
+    opacity: 0.05;
   }
 }

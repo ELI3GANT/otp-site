@@ -17,14 +17,22 @@
       secondaryCta: 'Stream PROTOCOL',
       availability: 'Stream PROTOCOL.',
       releaseMark: 'Stream PROTOCOL.',
+      primaryVisible: true,
+      secondaryVisible: true,
+      trackMode: 'revealed',
+      protocolEraState: 'unlocked',
       isReleased: true
     },
     {
       id: 'hour',
       status: 'Final signal window.',
-      cta: 'Pre-save PROTOCOL',
+      cta: 'Open HyperFollow',
       secondaryCta: 'Open HyperFollow',
-      availability: 'Available everywhere after release.',
+      availability: 'Final signal window.',
+      primaryVisible: true,
+      secondaryVisible: false,
+      trackMode: 'hints',
+      protocolEraState: 'encrypted',
       threshold: HOUR_MS
     },
     {
@@ -32,15 +40,23 @@
       status: 'Archive unlock pending.',
       cta: 'Pre-save PROTOCOL',
       secondaryCta: 'Open HyperFollow',
-      availability: 'Available everywhere after release.',
+      availability: 'Archive unlock pending.',
+      primaryVisible: true,
+      secondaryVisible: false,
+      trackMode: 'hints',
+      protocolEraState: 'encrypted',
       threshold: DAY_MS
     },
     {
       id: 'approaching',
       status: 'Signal approaching.',
-      cta: 'Open HyperFollow',
-      secondaryCta: 'Pre-save PROTOCOL',
-      availability: 'Available everywhere after release.',
+      cta: 'Pre-save PROTOCOL',
+      secondaryCta: 'Open HyperFollow',
+      availability: 'Signal approaching.',
+      primaryVisible: false,
+      secondaryVisible: true,
+      trackMode: 'locked',
+      protocolEraState: 'encrypted',
       threshold: 3 * DAY_MS
     },
     {
@@ -48,7 +64,11 @@
       status: 'Archive sealed',
       cta: 'Pre-save PROTOCOL',
       secondaryCta: 'Open HyperFollow',
-      availability: 'Available everywhere after release.'
+      availability: 'Link unlocks closer to release.',
+      primaryVisible: false,
+      secondaryVisible: false,
+      trackMode: 'locked',
+      protocolEraState: 'encrypted'
     }
   ];
 
@@ -97,11 +117,46 @@
     setText(countFields.seconds, pad(seconds));
   }
 
-  function setProtocolLinks(url) {
-    if (!url) return;
-    document.querySelectorAll('[data-protocol-link]').forEach((link) => {
+  function setLinkState(link, visible, url) {
+    if (!link) return;
+    link.hidden = !visible;
+    if (visible && url) {
       link.href = url;
+      return;
+    }
+    link.removeAttribute('href');
+  }
+
+  function setProtocolLinks(url, state) {
+    setLinkState(document.querySelector('[data-protocol-role="primary"]'), state.primaryVisible, url);
+    setLinkState(document.querySelector('[data-protocol-role="secondary"]'), state.secondaryVisible, url);
+    const actions = document.querySelector('[data-protocol-actions]');
+    if (actions) actions.hidden = !(state.primaryVisible || state.secondaryVisible);
+  }
+
+  function updateTracks(trackMode) {
+    document.body.dataset.trackMode = trackMode;
+    document.querySelectorAll('[data-track-title]').forEach((track) => {
+      const name = track.querySelector('[data-track-name]');
+      if (!name) return;
+      const title = track.getAttribute('data-track-title') || '';
+      const locked = track.getAttribute('data-track-locked') || 'Signal masked.';
+      const hint = track.getAttribute('data-track-hint') || 'Signal masked.';
+      if (trackMode === 'revealed') {
+        setText(name, title);
+      } else if (trackMode === 'hints') {
+        setText(name, `${locked} // ${hint}`);
+      } else {
+        setText(name, locked);
+      }
     });
+  }
+
+  function updateTimeline(state) {
+    const protocolEra = document.querySelector('[data-era="protocol"]');
+    const protocolStatus = document.querySelector('[data-protocol-era-status]');
+    if (protocolEra) protocolEra.dataset.eraState = state.protocolEraState;
+    setText(protocolStatus, 'Current system');
   }
 
   function renderProtocolState(config) {
@@ -111,10 +166,13 @@
     const remaining = Number.isFinite(targetMs) ? targetMs - nowMs : 0;
 
     document.body.dataset.protocolState = state.id;
+    setProtocolLinks(config.distroKidUrl, state);
     setText(document.querySelector('[data-protocol-status]'), state.status);
     setText(document.querySelector('[data-protocol-cta]'), state.cta);
     setText(document.querySelector('[data-protocol-secondary-cta]'), state.secondaryCta);
     setText(document.querySelector('[data-protocol-availability]'), state.availability);
+    updateTracks(state.trackMode);
+    updateTimeline(state);
 
     const countdown = document.querySelector('[data-protocol-countdown]');
     const releaseMark = document.querySelector('[data-protocol-release-mark]');
@@ -134,7 +192,6 @@
 
   function initProtocolPage() {
     const config = readProtocolConfig();
-    setProtocolLinks(config.distroKidUrl);
     renderProtocolState(config);
     window.setInterval(() => renderProtocolState(config), 1000);
   }
