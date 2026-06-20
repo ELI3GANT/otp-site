@@ -14,13 +14,16 @@
       id: 'released',
       status: 'Stream PROTOCOL.',
       cta: 'Listen Everywhere',
+      secondaryCta: 'Stream PROTOCOL',
       availability: 'Stream PROTOCOL.',
+      releaseMark: 'Stream PROTOCOL.',
       isReleased: true
     },
     {
       id: 'hour',
       status: 'Final signal window.',
       cta: 'Pre-save PROTOCOL',
+      secondaryCta: 'Open HyperFollow',
       availability: 'Available everywhere after release.',
       threshold: HOUR_MS
     },
@@ -28,6 +31,7 @@
       id: 'day',
       status: 'Archive unlock pending.',
       cta: 'Pre-save PROTOCOL',
+      secondaryCta: 'Open HyperFollow',
       availability: 'Available everywhere after release.',
       threshold: DAY_MS
     },
@@ -35,6 +39,7 @@
       id: 'approaching',
       status: 'Signal approaching.',
       cta: 'Open HyperFollow',
+      secondaryCta: 'Pre-save PROTOCOL',
       availability: 'Available everywhere after release.',
       threshold: 3 * DAY_MS
     },
@@ -42,6 +47,7 @@
       id: 'sealed',
       status: 'Archive sealed',
       cta: 'Pre-save PROTOCOL',
+      secondaryCta: 'Open HyperFollow',
       availability: 'Available everywhere after release.'
     }
   ];
@@ -107,7 +113,16 @@
     document.body.dataset.protocolState = state.id;
     setText(document.querySelector('[data-protocol-status]'), state.status);
     setText(document.querySelector('[data-protocol-cta]'), state.cta);
+    setText(document.querySelector('[data-protocol-secondary-cta]'), state.secondaryCta);
     setText(document.querySelector('[data-protocol-availability]'), state.availability);
+
+    const countdown = document.querySelector('[data-protocol-countdown]');
+    const releaseMark = document.querySelector('[data-protocol-release-mark]');
+    if (countdown) countdown.hidden = Boolean(state.isReleased);
+    if (releaseMark) {
+      releaseMark.hidden = !state.isReleased;
+      setText(releaseMark, state.releaseMark || '');
+    }
 
     updateCountdown({
       days: document.querySelector('[data-count="days"]'),

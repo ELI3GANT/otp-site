@@ -36,6 +36,11 @@ body.protocol-page {
   font-family: var(--protocol-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
+  --protocol-ambient-opacity: 0.48;
+  --protocol-drift-one: 24s;
+  --protocol-drift-two: 30s;
+  --protocol-sheen-opacity: 0.2;
+  --protocol-sheen-duration: 18s;
 }
 
 body.protocol-page::before {
@@ -105,7 +110,7 @@ a {
   z-index: -3;
   border-radius: 999px;
   filter: blur(4px);
-  opacity: 0.48;
+  opacity: var(--protocol-ambient-opacity);
   transform: translate3d(0, 0, 0);
 }
 
@@ -115,7 +120,7 @@ a {
   top: -30vw;
   right: -24vw;
   background: radial-gradient(circle, rgba(213, 181, 108, 0.24), transparent 68%);
-  animation: protocolDrift 24s ease-in-out infinite alternate;
+  animation: protocolDrift var(--protocol-drift-one) ease-in-out infinite alternate;
 }
 
 .protocol-ambient-two {
@@ -124,7 +129,7 @@ a {
   bottom: -34vw;
   left: -26vw;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 70%);
-  animation: protocolDrift 30s ease-in-out infinite alternate-reverse;
+  animation: protocolDrift var(--protocol-drift-two) ease-in-out infinite alternate-reverse;
 }
 
 .protocol-hero,
@@ -159,9 +164,9 @@ a {
   pointer-events: none;
   border-radius: inherit;
   background: linear-gradient(112deg, transparent 0 38%, rgba(213, 181, 108, 0.18), transparent 62% 100%);
-  opacity: 0.2;
+  opacity: var(--protocol-sheen-opacity);
   transform: translateX(-40%);
-  animation: protocolSheen 18s ease-in-out infinite;
+  animation: protocolSheen var(--protocol-sheen-duration) ease-in-out infinite;
 }
 
 .protocol-kicker,
@@ -237,6 +242,7 @@ a {
   border: 1px solid rgba(213, 181, 108, 0.2);
   border-radius: 18px;
   background: rgba(0, 0, 0, 0.3);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
 .protocol-count-value {
@@ -262,6 +268,27 @@ a {
   color: var(--protocol-soft);
   font-size: 0.78rem;
   letter-spacing: 0.1em;
+}
+
+.protocol-release-mark {
+  width: fit-content;
+  margin: clamp(1.5rem, 4vw, 2.4rem) 0 1rem;
+  padding: 0.85rem 1.05rem;
+  border: 1px solid rgba(241, 215, 137, 0.44);
+  border-radius: 999px;
+  background: rgba(213, 181, 108, 0.1);
+  color: #fff8ea;
+  font-family: var(--protocol-mono);
+  font-size: clamp(0.82rem, 2vw, 0.96rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 0 38px rgba(213, 181, 108, 0.18);
+}
+
+.protocol-release-mark[hidden],
+.protocol-countdown[hidden] {
+  display: none;
 }
 
 .protocol-actions {
@@ -405,14 +432,34 @@ a {
   letter-spacing: 0.14em;
 }
 
-.protocol-page[data-protocol-state="approaching"] .protocol-ambient,
-.protocol-page[data-protocol-state="day"] .protocol-ambient {
-  opacity: 0.62;
+.protocol-page[data-protocol-state="approaching"] {
+  --protocol-ambient-opacity: 0.58;
+  --protocol-drift-one: 21s;
+  --protocol-drift-two: 26s;
+  --protocol-sheen-duration: 15s;
 }
 
-.protocol-page[data-protocol-state="hour"] .protocol-ambient,
-.protocol-page[data-protocol-state="released"] .protocol-ambient {
-  opacity: 0.76;
+.protocol-page[data-protocol-state="day"] {
+  --protocol-ambient-opacity: 0.68;
+  --protocol-drift-one: 18s;
+  --protocol-drift-two: 23s;
+  --protocol-sheen-opacity: 0.28;
+  --protocol-sheen-duration: 12s;
+}
+
+.protocol-page[data-protocol-state="hour"] {
+  --protocol-ambient-opacity: 0.78;
+  --protocol-drift-one: 15s;
+  --protocol-drift-two: 20s;
+  --protocol-sheen-opacity: 0.34;
+  --protocol-sheen-duration: 10s;
+}
+
+.protocol-page[data-protocol-state="released"] {
+  --protocol-ambient-opacity: 0.72;
+  --protocol-drift-one: 22s;
+  --protocol-drift-two: 28s;
+  --protocol-sheen-opacity: 0.22;
 }
 
 .protocol-page[data-protocol-state="approaching"] .protocol-status,
@@ -426,12 +473,19 @@ a {
   box-shadow: 0 20px 54px rgba(0, 0, 0, 0.42), 0 0 64px rgba(213, 181, 108, 0.32);
 }
 
-.protocol-page[data-protocol-state="released"] .protocol-countdown {
-  display: none;
+.protocol-page[data-protocol-state="day"] .protocol-count-card,
+.protocol-page[data-protocol-state="hour"] .protocol-count-card {
+  border-color: rgba(241, 215, 137, 0.34);
+  background: rgba(213, 181, 108, 0.055);
+  box-shadow: 0 0 32px rgba(213, 181, 108, 0.08);
 }
 
 .protocol-page[data-protocol-state="released"] .protocol-hero {
   border-color: rgba(241, 215, 137, 0.5);
+}
+
+.protocol-page[data-protocol-state="released"] .protocol-button-primary {
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.42), 0 0 72px rgba(213, 181, 108, 0.34);
 }
 
 @keyframes protocolDrift {
@@ -509,6 +563,15 @@ a {
 
   .protocol-title {
     letter-spacing: -0.1em;
+  }
+
+  .protocol-description {
+    margin-top: 1rem;
+    line-height: 1.58;
+  }
+
+  .protocol-countdown {
+    margin: 1rem 0 0.75rem;
   }
 
   .protocol-actions {

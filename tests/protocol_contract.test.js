@@ -16,6 +16,7 @@ const vercelProject = JSON.parse(read('.vercel/project.json'));
 
 const DISTROKID_URL = 'https://distrokid.com/hyperfollow/eli711/protocol?ref=release';
 const RELEASE_TARGET = '2026-06-26T00:00:00-04:00';
+const EP_DESCRIPTION = 'PROTOCOL is a dark, focused EP built on control, pressure, and transformation. A cinematic entry into ELI3GANT’s next phase. Precise, intentional, and fully independent.';
 const releaseMs = Date.parse(RELEASE_TARGET);
 
 function renderProtocolAt(nowMs) {
@@ -67,6 +68,7 @@ assert.ok(html.includes('<title>PROTOCOL — ELI3GANT</title>'), 'protocol title
 assert.ok(html.includes('rel="canonical" href="https://www.onlytrueperspective.tech/protocol"'), 'canonical protocol URL is set');
 assert.ok(html.includes('property="og:title"'), 'Open Graph metadata is present');
 assert.ok(html.includes('name="twitter:card"'), 'Twitter metadata is present');
+assert.ok(html.includes(EP_DESCRIPTION), 'exact approved EP description is present');
 assert.ok(html.includes(RELEASE_TARGET), 'official release target is configured');
 assert.strictEqual(countNeedle([html, css, js], DISTROKID_URL), 1, 'DistroKid URL is centralized once');
 
@@ -99,10 +101,13 @@ assert.ok(css.includes('@media (max-width: 820px)'), 'protocol CSS has tablet an
 assert.ok(css.includes('@media (max-width: 390px)'), 'protocol CSS has small phone layout rules');
 assert.ok(css.includes('min-height: 48px'), 'primary links meet minimum tap target sizing');
 assert.ok(css.includes('backdrop-filter'), 'protocol page uses premium glass styling');
+assert.ok(css.includes('--protocol-drift-one'), 'release states can tune ambient timing without redesigning layout');
+assert.ok(css.includes('.protocol-release-mark'), 'post-release marker styling is present');
 
 assert.ok(!js.includes('fetch('), 'protocol page does not collect or submit data');
 assert.ok(!js.includes('localStorage'), 'protocol page does not store visitor data');
 assert.ok(js.includes('getProtocolReleaseState'), 'release proximity logic is implemented');
+assert.ok(js.includes('data-protocol-secondary-cta'), 'secondary CTA changes with release state');
 
 [
   {
@@ -110,41 +115,62 @@ assert.ok(js.includes('getProtocolReleaseState'), 'release proximity logic is im
     nowMs: releaseMs - (4 * 24 * 60 * 60 * 1000),
     state: 'sealed',
     status: 'Archive sealed',
-    cta: 'Pre-save PROTOCOL'
+    cta: 'Pre-save PROTOCOL',
+    secondaryCta: 'Open HyperFollow',
+    countdownHidden: false,
+    releaseMarkHidden: true
   },
   {
     label: 'within 72 hours',
     nowMs: releaseMs - (48 * 60 * 60 * 1000),
     state: 'approaching',
     status: 'Signal approaching.',
-    cta: 'Open HyperFollow'
+    cta: 'Open HyperFollow',
+    secondaryCta: 'Pre-save PROTOCOL',
+    countdownHidden: false,
+    releaseMarkHidden: true
   },
   {
     label: 'within 24 hours',
     nowMs: releaseMs - (12 * 60 * 60 * 1000),
     state: 'day',
     status: 'Archive unlock pending.',
-    cta: 'Pre-save PROTOCOL'
+    cta: 'Pre-save PROTOCOL',
+    secondaryCta: 'Open HyperFollow',
+    countdownHidden: false,
+    releaseMarkHidden: true
   },
   {
     label: 'within 1 hour',
     nowMs: releaseMs - (30 * 60 * 1000),
     state: 'hour',
     status: 'Final signal window.',
-    cta: 'Pre-save PROTOCOL'
+    cta: 'Pre-save PROTOCOL',
+    secondaryCta: 'Open HyperFollow',
+    countdownHidden: false,
+    releaseMarkHidden: true
   },
   {
     label: 'after release',
     nowMs: releaseMs + 1000,
     state: 'released',
     status: 'Stream PROTOCOL.',
-    cta: 'Listen Everywhere'
+    cta: 'Listen Everywhere',
+    secondaryCta: 'Stream PROTOCOL',
+    countdownHidden: true,
+    releaseMarkHidden: false
   }
 ].forEach((scenario) => {
   const dom = renderProtocolAt(scenario.nowMs);
   assert.strictEqual(dom.window.document.body.dataset.protocolState, scenario.state, `${scenario.label} state is set`);
   assert.strictEqual(text(dom, '[data-protocol-status]'), scenario.status, `${scenario.label} status appears`);
   assert.strictEqual(text(dom, '[data-protocol-cta]'), scenario.cta, `${scenario.label} CTA appears`);
+  assert.strictEqual(text(dom, '[data-protocol-secondary-cta]'), scenario.secondaryCta, `${scenario.label} secondary CTA appears`);
+  assert.strictEqual(dom.window.document.querySelector('[data-protocol-countdown]').hidden, scenario.countdownHidden, `${scenario.label} countdown visibility is correct`);
+  assert.strictEqual(dom.window.document.querySelector('[data-protocol-release-mark]').hidden, scenario.releaseMarkHidden, `${scenario.label} release marker visibility is correct`);
+  if (scenario.state === 'released') {
+    assert.strictEqual(text(dom, '[data-protocol-release-mark]'), 'Stream PROTOCOL.', 'post-release marker is not an expired countdown');
+  }
   dom.window.document.querySelectorAll('[data-protocol-link]').forEach((link) => {
     assert.strictEqual(link.href, DISTROKID_URL, `${scenario.label} CTA uses DistroKid URL`);
     assert.strictEqual(link.getAttribute('target'), '_blank', `${scenario.label} CTA opens a new tab`);
