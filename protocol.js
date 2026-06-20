@@ -1,29 +1,73 @@
 (function () {
   'use strict';
 
-  const PROTOCOL_RELEASE_TARGET = '2026-06-26T00:00:00-04:00';
-  const SNIPPET_PATH = '/assets/audio/protocol-snippet.mp3';
-  const EASTER_EGG_TAPS_REQUIRED = 3;
-  const EASTER_EGG_TAP_WINDOW_MS = 1600;
-
-  const countFields = {
-    days: document.querySelector('[data-count="days"]'),
-    hours: document.querySelector('[data-count="hours"]'),
-    minutes: document.querySelector('[data-count="minutes"]'),
-    seconds: document.querySelector('[data-count="seconds"]')
+  const DEFAULT_PROTOCOL_CONFIG = {
+    releaseTarget: '2026-06-26T00:00:00-04:00',
+    distroKidUrl: ''
   };
-  const enterButton = document.querySelector('.protocol-enter');
-  const panel = document.getElementById('protocol-panel');
-  const statusText = document.getElementById('protocol-status');
-  const signalTriggers = document.querySelectorAll('[data-signal-trigger]');
-  const signalPanel = document.getElementById('protocol-signal');
-  const audioSlot = document.querySelector('.protocol-audio-slot');
-  const disabledLinks = document.querySelectorAll('[data-disabled-link="true"]');
 
-  const targetTime = Date.parse(PROTOCOL_RELEASE_TARGET);
-  let tapCount = 0;
-  let tapTimer = null;
-  let lastTapTrigger = null;
+  const HOUR_MS = 60 * 60 * 1000;
+  const DAY_MS = 24 * HOUR_MS;
+
+  const RELEASE_STATES = [
+    {
+      id: 'released',
+      status: 'Stream PROTOCOL.',
+      cta: 'Listen Everywhere',
+      availability: 'Stream PROTOCOL.',
+      isReleased: true
+    },
+    {
+      id: 'hour',
+      status: 'Final signal window.',
+      cta: 'Pre-save PROTOCOL',
+      availability: 'Available everywhere after release.',
+      threshold: HOUR_MS
+    },
+    {
+      id: 'day',
+      status: 'Archive unlock pending.',
+      cta: 'Pre-save PROTOCOL',
+      availability: 'Available everywhere after release.',
+      threshold: DAY_MS
+    },
+    {
+      id: 'approaching',
+      status: 'Signal approaching.',
+      cta: 'Open HyperFollow',
+      availability: 'Available everywhere after release.',
+      threshold: 3 * DAY_MS
+    },
+    {
+      id: 'sealed',
+      status: 'Archive sealed',
+      cta: 'Pre-save PROTOCOL',
+      availability: 'Available everywhere after release.'
+    }
+  ];
+
+  function readProtocolConfig() {
+    const configNode = document.getElementById('protocol-config');
+    if (!configNode) return DEFAULT_PROTOCOL_CONFIG;
+
+    try {
+      return {
+        ...DEFAULT_PROTOCOL_CONFIG,
+        ...JSON.parse(configNode.textContent || '{}')
+      };
+    } catch (error) {
+      return DEFAULT_PROTOCOL_CONFIG;
+    }
+  }
+
+  function getProtocolReleaseState(nowMs, targetMs) {
+    const remaining = Number.isFinite(targetMs) ? targetMs - nowMs : 0;
+    if (remaining <= 0) return RELEASE_STATES[0];
+    if (remaining <= HOUR_MS) return RELEASE_STATES[1];
+    if (remaining <= DAY_MS) return RELEASE_STATES[2];
+    if (remaining <= 3 * DAY_MS) return RELEASE_STATES[3];
+    return RELEASE_STATES[4];
+  }
 
   function pad(value) {
     return String(Math.max(0, value)).padStart(2, '0');
@@ -33,9 +77,8 @@
     if (node && node.textContent !== value) node.textContent = value;
   }
 
-  function renderCountdown() {
-    const now = Date.now();
-    const remaining = Number.isFinite(targetTime) ? Math.max(0, targetTime - now) : 0;
+  function updateCountdown(countFields, remainingMs) {
+    const remaining = Math.max(0, remainingMs);
     const totalSeconds = Math.floor(remaining / 1000);
     const days = Math.floor(totalSeconds / 86400);
     const hours = Math.floor((totalSeconds % 86400) / 3600);
@@ -46,125 +89,45 @@
     setText(countFields.hours, pad(hours));
     setText(countFields.minutes, pad(minutes));
     setText(countFields.seconds, pad(seconds));
-
-    if (remaining <= 0) {
-      setText(statusText, 'SYSTEM ONLINE // PROTOCOL ACTIVE');
-    }
   }
 
-  function pulseGlitch() {
-    if (prefersReducedMotion()) return;
-    document.body.classList.remove('protocol-glitch');
-    window.requestAnimationFrame(() => {
-      document.body.classList.add('protocol-glitch');
-      window.setTimeout(() => document.body.classList.remove('protocol-glitch'), 620);
+  function setProtocolLinks(url) {
+    if (!url) return;
+    document.querySelectorAll('[data-protocol-link]').forEach((link) => {
+      link.href = url;
     });
   }
 
-  function enterProtocol() {
-    if (!panel || !enterButton) return;
-    panel.hidden = false;
-    panel.classList.remove('is-booting');
-    document.body.classList.add('protocol-entered');
-    enterButton.setAttribute('aria-expanded', 'true');
-    setText(statusText, 'SYSTEM ONLINE // PROTOCOL ACTIVE');
-    pulseGlitch();
-    window.requestAnimationFrame(() => {
-      panel.classList.add('is-booting');
-    });
+  function renderProtocolState(config) {
+    const targetMs = Date.parse(config.releaseTarget);
+    const nowMs = Date.now();
+    const state = getProtocolReleaseState(nowMs, targetMs);
+    const remaining = Number.isFinite(targetMs) ? targetMs - nowMs : 0;
+
+    document.body.dataset.protocolState = state.id;
+    setText(document.querySelector('[data-protocol-status]'), state.status);
+    setText(document.querySelector('[data-protocol-cta]'), state.cta);
+    setText(document.querySelector('[data-protocol-availability]'), state.availability);
+
+    updateCountdown({
+      days: document.querySelector('[data-count="days"]'),
+      hours: document.querySelector('[data-count="hours"]'),
+      minutes: document.querySelector('[data-count="minutes"]'),
+      seconds: document.querySelector('[data-count="seconds"]')
+    }, remaining);
   }
 
-  function revealSignal() {
-    if (!signalPanel) return;
-    if (panel && panel.hidden) enterProtocol();
-    signalPanel.hidden = false;
-    signalPanel.classList.add('is-visible');
-    setText(statusText, 'SIGNAL DETECTED // ACCESS PENDING');
-    pulseGlitch();
+  function initProtocolPage() {
+    const config = readProtocolConfig();
+    setProtocolLinks(config.distroKidUrl);
+    renderProtocolState(config);
+    window.setInterval(() => renderProtocolState(config), 1000);
   }
 
-  function prefersReducedMotion() {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  }
+  window.ProtocolRelease = {
+    getProtocolReleaseState,
+    defaultConfig: DEFAULT_PROTOCOL_CONFIG
+  };
 
-  function recordSignalTap(event) {
-    const trigger = event.currentTarget;
-    if (trigger !== lastTapTrigger) {
-      tapCount = 0;
-      lastTapTrigger = trigger;
-    }
-
-    tapCount += 1;
-    window.clearTimeout(tapTimer);
-    tapTimer = window.setTimeout(() => {
-      tapCount = 0;
-      lastTapTrigger = null;
-    }, EASTER_EGG_TAP_WINDOW_MS);
-
-    if (tapCount >= EASTER_EGG_TAPS_REQUIRED) {
-      tapCount = 0;
-      lastTapTrigger = null;
-      window.clearTimeout(tapTimer);
-      revealSignal();
-    }
-  }
-
-  function wireSignalTrigger(trigger) {
-    trigger.addEventListener('click', recordSignalTap);
-
-    if (trigger.tagName !== 'BUTTON') {
-      trigger.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          recordSignalTap(event);
-        }
-      });
-    }
-  }
-
-  function wireAudioPlaceholder() {
-    if (!audioSlot) return;
-    const button = audioSlot.querySelector('.protocol-audio-button');
-    const message = audioSlot.querySelector('.protocol-audio-message');
-    const source = audioSlot.getAttribute('data-audio-src') || SNIPPET_PATH;
-    if (!button || !message) return;
-
-    button.addEventListener('click', () => {
-      if (audioSlot.querySelector('audio')) return;
-      const audio = document.createElement('audio');
-      audio.controls = true;
-      audio.preload = 'metadata';
-      audio.src = source;
-      audio.setAttribute('aria-label', 'PROTOCOL snippet preview');
-      audio.addEventListener('error', () => {
-        audio.remove();
-        button.hidden = false;
-        setText(message, 'Snippet file not installed yet.');
-      }, { once: true });
-      audio.addEventListener('loadedmetadata', () => {
-        button.hidden = true;
-        setText(message, 'Snippet channel ready.');
-      }, { once: true });
-      button.after(audio);
-      audio.load();
-    });
-  }
-
-  function wireInteractions() {
-    if (enterButton) enterButton.addEventListener('click', enterProtocol);
-
-    signalTriggers.forEach(wireSignalTrigger);
-
-    disabledLinks.forEach((link) => {
-      link.addEventListener('click', (event) => {
-        event.preventDefault();
-      });
-    });
-
-    wireAudioPlaceholder();
-  }
-
-  renderCountdown();
-  window.setInterval(renderCountdown, 1000);
-  wireInteractions();
+  initProtocolPage();
 }());
