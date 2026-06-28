@@ -8,6 +8,9 @@
     "archive.html",
     "assets/otp-app-icon.png",
     "assets/otp-social-preview.png",
+    "assets/songwars/otp-mark.png",
+    "assets/songwars/songwars-poster.jpg",
+    "assets/songwars/songwars-poster.png",
     "bookings.css",
     "bookings.html",
     "bookings.js",
@@ -45,6 +48,9 @@
     "scripts/verify_release_scope.js",
     "server.js",
     "site-init.js",
+    "songwars-config.js",
+    "songwars.css",
+    "songwars.html",
     "site.webmanifest",
     "stars-v2.js",
     "styles.css",
@@ -59,6 +65,8 @@
     "tests/marketing_site_contract.test.js",
     "tests/master_runner.js",
     "tests/release_guardrails_contract.test.js",
+    "tests/seo_indexing_contract.test.js",
+    "tests/songwars_contract.test.js",
     "tests/vercel_route_precedence.test.js",
     "vercel.json"
   ],
@@ -111,7 +119,7 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local patched QA passed homepage desktop/mobile light-mode checks with mounted canvas stars, ELI3GANT-only identity, Enter Vault link present, no app console errors, and no overflow. Desktop headless early adaptive window sampled 33fps while performance mode activated; settled desktop sample reached 60.1fps with adaptive mode on. Mobile sample reached 60.4fps. Booking mobile Fast Lane clicks stayed on Step 1; mocked submit preserved service_type, package_interest, selected_fast_offer, fast_lane_package, source tracking, UTM values, platform, and timestamp."
+    "summary": "Local patched QA passed homepage desktop/mobile light-mode checks with mounted canvas stars, ELI3GANT-only identity, Enter Vault link present, no app console errors, and no overflow. Desktop headless early adaptive window sampled 33fps while performance mode activated; settled desktop sample reached 60.1fps with adaptive mode on. Mobile sample reached 60.4fps. Booking mobile Fast Lane clicks stayed on Step 1; mocked submit preserved service_type, package_interest, selected_fast_offer, fast_lane_package, source tracking, UTM values, platform, and timestamp. Song Wars preview passed at 390px and 430px without overflow; Discord CTA resolves to discord.com/invite/Awk2b7RSW; poster metadata and preview asset return HTTP 200."
   },
   "authenticatedSweep": {
     "status": "passed",

@@ -15,6 +15,8 @@ const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_
 const publicTargets = [
   { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'Insights', '/bookings?source=', 'href="/portal"'] },
   { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css', '/bookings.js', 'canonical', 'Start a Project with OTP.', 'service-selector'] },
+  { name: 'songwars', path: '/songwars', kind: 'html', markers: ['Song Wars Weekend', 'data-songwars-poster', 'discord.gg/Awk2b7RSW', 'rel="canonical" href="https://www.onlytrueperspective.tech/songwars"'] },
+  { name: 'songwars-poster', path: '/assets/songwars/songwars-poster.jpg', kind: 'jpg' },
   { name: 'booking-alias', path: '/booking', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
   { name: 'book-alias', path: '/book', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
   { name: 'bookings-html', path: '/bookings.html', kind: 'html', markers: ['Start a Project with OTP.', '/bookings.css'] },

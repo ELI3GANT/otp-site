@@ -105,6 +105,7 @@ const sitemap = read('sitemap.xml');
 const requiredUrls = [
   'https://www.onlytrueperspective.tech/',
   'https://www.onlytrueperspective.tech/bookings',
+  'https://www.onlytrueperspective.tech/songwars',
   'https://www.onlytrueperspective.tech/archive.html',
   'https://www.onlytrueperspective.tech/insights.html',
   'https://www.onlytrueperspective.tech/terms.html',

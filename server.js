@@ -73,6 +73,7 @@ try {
 } catch (e) {
     OTP_VIDEO_LIBRARY = null;
 }
+const SONG_WARS_CONFIG = require('./songwars-config.js');
 
 function positiveNumber(value, fallback) {
     const parsed = Number(value);
@@ -2196,6 +2197,42 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
 
 // --- STATIC ASSETS (CRITICAL FIX) ---
 const staticPath = __dirname;
+
+function renderSongWarsPage(origin = SONG_WARS_CONFIG.canonicalUrl) {
+    const template = fs.readFileSync(path.join(staticPath, 'songwars.html'), 'utf8');
+    const posterImageUrl = new URL(SONG_WARS_CONFIG.posterImagePath, origin).toString();
+    const replacements = {
+        SEO_TITLE: SONG_WARS_CONFIG.seoTitle,
+        SEO_DESCRIPTION: SONG_WARS_CONFIG.seoDescription,
+        POSTER_IMAGE_URL: posterImageUrl,
+        POSTER_IMAGE_PATH: SONG_WARS_CONFIG.posterImagePath,
+        POSTER_ALT: SONG_WARS_CONFIG.posterAlt,
+        EVENT_TITLE: SONG_WARS_CONFIG.eventTitle,
+        HEADLINE: SONG_WARS_CONFIG.headline,
+        SUBHEADLINE: SONG_WARS_CONFIG.subheadline,
+        CONFIRMED_COUNT: SONG_WARS_CONFIG.confirmedCount,
+        GOAL_COUNT: SONG_WARS_CONFIG.goalCount,
+        SPOTS_LEFT: SONG_WARS_CONFIG.spotsLeft,
+        PROGRESS_PERCENT: SONG_WARS_CONFIG.progressPercent,
+        DISCORD_INVITE_URL: SONG_WARS_CONFIG.discordInviteUrl,
+        OTP_LOGO_PATH: SONG_WARS_CONFIG.otpLogoPath,
+        EVENT_DATE_LABEL: SONG_WARS_CONFIG.eventDateLabel,
+        PRIMARY_HOST: SONG_WARS_CONFIG.primaryHost,
+        FEATURED_PARTICIPANTS: SONG_WARS_CONFIG.featuredParticipants.join(' / ')
+    };
+
+    return template.replace(/\{\{([A-Z_]+)\}\}/g, (token, key) => {
+        if (!Object.prototype.hasOwnProperty.call(replacements, key)) return token;
+        return escapeHtml(replacements[key]);
+    });
+}
+
+function getRequestOrigin(req) {
+    const canonicalHost = new URL(SONG_WARS_CONFIG.canonicalUrl).host;
+    const host = req.get('host') || canonicalHost;
+    const protocol = req.protocol === 'http' ? 'http' : 'https';
+    return `${protocol}://${host}`;
+}
 console.log("Static Path Configured:", staticPath);
 
 /** HTML documents must not be cached long at CDN/browser (avoids stale shell after deploy). */
@@ -2320,6 +2357,13 @@ app.get('/', (req, res) => {
     noStoreHtml(res);
     res.sendFile(path.join(staticPath, 'index.html'));
 });
+
+app.get(['/songwars', '/songwars/'], (req, res) => {
+    noStoreHtml(res);
+    res.type('html').send(renderSongWarsPage(getRequestOrigin(req)));
+});
+
+app.get('/songwars.html', (req, res) => res.redirect(308, '/songwars'));
 
 // `/packages` is an external-friendly alias for the homepage package section.
 // Redirect instead of serving duplicate HTML so the homepage canonical remains authoritative.
@@ -8080,4 +8124,8 @@ module.exports.__clientPortalTestHooks = {
     buildClientPortalData,
     portalTokenFromInternalNotes,
     storedClientPortalState
+};
+module.exports.__songWarsTestHooks = {
+    renderSongWarsPage,
+    getRequestOrigin
 };
