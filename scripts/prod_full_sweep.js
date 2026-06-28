@@ -49,6 +49,22 @@ const publicTargets = [
   { name: 'bookings-config', path: '/api/bookings/config', kind: 'json', shape: (payload) => Boolean(payload && Array.isArray(payload.services) && payload.upload) }
 ];
 
+function partitionPublicTargets(targets) {
+  const defer = new Set(
+    String(process.env.OTP_SWEEP_DEFER || '')
+      .split(',')
+      .map((name) => name.trim())
+      .filter(Boolean)
+  );
+  if (!defer.size) {
+    return { active: targets, deferred: [] };
+  }
+  return {
+    active: targets.filter((target) => !defer.has(target.name)),
+    deferred: targets.filter((target) => defer.has(target.name))
+  };
+}
+
 const adminTargets = [
   { name: 'admin-qa-sweep', path: '/api/admin/qa/sweep', kind: 'json', shape: (payload) => Boolean(payload && payload.success === true && payload.fixtures && payload.mutationPolicy) },
   { name: 'admin-knowledge-meta', path: '/api/admin/knowledge/meta', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },
@@ -58,14 +74,22 @@ const adminTargets = [
 ];
 
 async function main() {
+  const { active, deferred } = partitionPublicTargets(publicTargets);
   const sweep = await runSweep({
     baseUrl: BASE_URL,
     schema: 'otp-prod-full-sweep-v2',
-    publicTargets,
+    publicTargets: active,
     adminTargets,
     browserSmoke: true,
     token: TOKEN
   });
+
+  if (deferred.length) {
+    sweep.skipped.push(...deferred.map((target) => target.name));
+    sweep.warnings.push(
+      `Deferred pre-live public checks until after deploy: ${deferred.map((target) => target.name).join(', ')}`
+    );
+  }
 
   console.log(JSON.stringify(sweep, null, 2));
   if (!sweep.ok) process.exit(1);

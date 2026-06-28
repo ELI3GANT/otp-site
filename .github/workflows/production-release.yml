@@ -60,6 +60,8 @@ jobs:
         run: npm run master_test:ci
 
       - name: Run public production sweep
+        env:
+          OTP_SWEEP_DEFER: songwars,songwars-poster
         run: npm run prod:full-sweep
 
       - name: Require authenticated sweep credentials
@@ -75,6 +77,7 @@ jobs:
 
       - name: Run authenticated production sweep
         env:
+          OTP_SWEEP_DEFER: songwars,songwars-poster
           OTP_ADMIN_PASSCODE: ${{ secrets.OTP_ADMIN_PASSCODE }}
           ADMIN_PASSCODE: ${{ secrets.ADMIN_PASSCODE }}
           OTP_ADMIN_TOKEN: ${{ secrets.OTP_ADMIN_TOKEN }}
@@ -141,3 +144,6 @@ jobs:
 
       - name: Deploy prebuilt production output
         run: npx --yes vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
+      - name: Post-deploy public production sweep
+        run: npm run prod:full-sweep
