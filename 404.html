@@ -6,71 +6,241 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="description" content="OnlyTruePerspective page not found. Return to the official OTP creative technology and media site.">
     <meta name="theme-color" content="#030305" />
-    <meta name="color-scheme" content="dark light" />
+    <meta name="color-scheme" content="dark" />
     <title>Page Not Found | OnlyTruePerspective</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-    <script src="theme-chrono.js?v=9"></script>
-  <link rel="stylesheet" href="./styles.css?v=16.8.25" />
+    <link rel="stylesheet" href="/styles.css?v=16.8.25" />
     <style>
+        html {
+            min-width: 320px;
+            background: #030305;
+        }
+
         .error-page {
+            --error-accent: #d5b56c;
+            --error-ink: #050505;
+            position: relative;
+            isolation: isolate;
             min-height: 100vh;
             min-height: 100dvh;
-            display: flex;
+            display: grid;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            text-align: center;
+            overflow: hidden;
             background: #030305;
-            padding: 24px 16px;
+            color: #f7f7f2;
+            padding: max(28px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
             box-sizing: border-box;
         }
+
+        .error-page::before,
+        .error-page::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .error-page::before {
+            z-index: 0;
+            background:
+                radial-gradient(circle at 50% 42%, rgba(213, 181, 108, 0.12), transparent 34%),
+                radial-gradient(circle, rgba(255, 255, 255, 0.19) 0 1px, transparent 1.5px) 0 0 / 34px 34px;
+            opacity: 0.58;
+            mask-image: linear-gradient(to bottom, transparent 0%, #000 24%, #000 78%, transparent 100%);
+        }
+
+        .error-page::after {
+            z-index: 2;
+            background: linear-gradient(180deg, rgba(3, 3, 5, 0.18), rgba(3, 3, 5, 0.62));
+        }
+
+        .error-particles {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            background:
+                radial-gradient(circle, rgba(213, 181, 108, 0.32) 0 1px, transparent 1.6px) 7% 18% / 122px 122px,
+                radial-gradient(circle, rgba(255, 255, 255, 0.2) 0 1px, transparent 1.5px) 68% 8% / 168px 168px,
+                radial-gradient(circle, rgba(101, 218, 255, 0.18) 0 1px, transparent 1.4px) 28% 72% / 146px 146px;
+            opacity: 0.72;
+            mask-image: radial-gradient(circle at 50% 50%, #000 0 62%, transparent 88%);
+        }
+
+        .error-shell {
+            position: relative;
+            z-index: 3;
+            width: min(100%, 760px);
+            display: grid;
+            justify-items: center;
+            text-align: center;
+        }
+
+        .error-mark-link {
+            width: 74px;
+            height: 74px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 50%;
+            background: rgba(3, 3, 5, 0.72);
+            transition: transform 140ms ease-out, border-color 140ms ease-out;
+        }
+
+        .error-mark-link:hover,
+        .error-mark-link:focus-visible {
+            border-color: var(--error-accent);
+            transform: translateY(-2px);
+        }
+
+        .error-mark-link:focus-visible,
+        .error-action:focus-visible {
+            outline: 2px solid var(--error-accent);
+            outline-offset: 4px;
+        }
+
+        .error-mark {
+            width: 54px;
+            height: 54px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .error-kicker {
+            margin: 0 0 12px;
+            color: var(--error-accent);
+            font: 700 0.72rem/1.2 'Space Grotesk', sans-serif;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
         .error-code {
+            display: block;
+            margin: 0;
             font-family: 'Syne', sans-serif;
-            font-size: clamp(5rem, 15vw, 10rem);
+            font-size: clamp(5.2rem, 19vw, 10rem);
             font-weight: 800;
-            line-height: 1;
+            letter-spacing: -0.07em;
+            line-height: 0.82;
             background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.1) 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
         }
+
+        .error-title {
+            display: block;
+            margin-top: 18px;
+            color: #f7f7f2;
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(1.7rem, 5.5vw, 3.25rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            text-wrap: balance;
+        }
+
         .error-message {
-            font-size: 1.25rem;
-            color: var(--muted);
-            margin-bottom: 40px;
-            max-width: 40ch;
+            max-width: 46ch;
+            margin: 22px auto 0;
+            color: rgba(247, 247, 242, 0.68);
+            font: 500 clamp(1rem, 2.6vw, 1.18rem)/1.65 'Space Grotesk', sans-serif;
+            text-wrap: pretty;
         }
-        html[data-theme="light"] .error-page {
-            background: #eceef2;
+
+        .error-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 34px;
         }
-        html[data-theme="light"] .error-code {
-            background: linear-gradient(180deg, #0a0a0f 0%, rgba(10,10,15,0.35) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+
+        .error-action {
+            min-height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 18px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 4px;
+            background: rgba(3, 3, 5, 0.68);
+            color: #f7f7f2;
+            font: 700 0.78rem/1 'Space Grotesk', sans-serif;
+            letter-spacing: 0.04em;
+            text-decoration: none;
+            transition: transform 140ms ease-out, border-color 140ms ease-out, background 140ms ease-out;
         }
-        html[data-theme="light"] .error-message {
-            color: #444;
+
+        .error-action-primary {
+            border-color: var(--error-accent);
+            background: var(--error-accent);
+            color: var(--error-ink);
+        }
+
+        .error-action:hover {
+            border-color: var(--error-accent);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 480px) {
+            .error-mark-link {
+                width: 64px;
+                height: 64px;
+                margin-bottom: 24px;
+            }
+
+            .error-mark {
+                width: 46px;
+                height: 46px;
+            }
+
+            .error-actions {
+                width: 100%;
+                display: grid;
+            }
+
+            .error-action {
+                width: 100%;
+                box-sizing: border-box;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .error-mark-link,
+            .error-action {
+                transition: none;
+            }
         }
     </style>
 </head>
-<body class="error-page k-cursor-ready">
-    <canvas id="cursor-canvas"></canvas>
-    <div class="bg-fixed"></div>
-    <div class="error-code">404</div>
-    <div class="error-message">You've reached a blind spot in the vision. This perspective doesn't exist yet.</div>
-    <a href="index.html" class="book-btn">Back to Reality</a>
-    
-    <script src="site-config.js?v=16.4.2" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" defer></script>
-    <script src="stars-v2.js?v=20260601-daystars" defer></script>
-  <script src="otp-attribution.js?v=16.9.1" defer></script>
-  <script src="site-init.js?v=20260617-palette1" defer></script>
-  <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>
+<body class="error-page" data-disable-service-worker="true">
+    <div class="error-particles" aria-hidden="true"></div>
+    <main class="error-shell">
+        <a href="/" class="error-mark-link" aria-label="Return to OnlyTruePerspective home">
+            <img src="/assets/otp-logo-transparent.png" width="1536" height="1536" alt="OnlyTruePerspective" class="error-mark" />
+        </a>
+        <p class="error-kicker">OTP / Route unavailable</p>
+        <h1>
+            <span class="error-code">404</span>
+            <span class="error-title">Perspective not found.</span>
+        </h1>
+        <p class="error-message">The route you requested is outside the current archive. Return home, explore the work, or start a new project with OTP.</p>
+        <nav class="error-actions" aria-label="404 recovery actions">
+            <a href="/" class="error-action error-action-primary">Return Home</a>
+            <a href="/archive" class="error-action">View Archive</a>
+            <a href="/bookings" class="error-action">Book OTP</a>
+        </nav>
+    </main>
+
+    <script type="module" src="/speed-insights-bundle.js?v=2.0.1"></script>
 </body>
 </html>

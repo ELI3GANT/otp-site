@@ -85,7 +85,7 @@ assert.ok(siteInit.includes('createArchiveProjectCard'), 'client renderer can re
 assert.ok(siteInit.includes('projectEntries.map(createArchiveProjectCard)'), 'archive combines project entries with video entries');
 assert.ok(siteInit.includes('featuredProjectEntries.map(createFeaturedProjectCard)'), 'homepage combines project entries with video entries');
 assert.ok(siteInit.includes("card.dataset.noLiquid = 'true'"), 'reusable project screenshots opt out of archive liquid thumbnail distortion');
-assert.ok(archive.includes("card.dataset.noLiquid === 'true'"), 'archive liquid hover script skips reusable project screenshots');
+assert.ok(!archive.includes('liquid-distortion'), 'archive avoids legacy liquid-distortion work on project and video media');
 assert.ok(siteInit.includes('openProjectComparisonModal'), 'reusable projects can open an enlarged before/after view');
 assert.ok(siteInit.includes('otp-project-view-action'), 'project cards expose an explicit before/after action');
 assert.ok(siteInit.includes("role', 'dialog"), 'project before/after view is rendered as an accessible dialog');

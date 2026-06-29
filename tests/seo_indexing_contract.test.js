@@ -35,7 +35,7 @@ const pages = {
   },
   'archive.html': {
     title: 'Creative Archive | OnlyTruePerspective',
-    canonical: 'https://www.onlytrueperspective.tech/archive.html',
+    canonical: 'https://www.onlytrueperspective.tech/archive',
     descriptionSnippet: 'Explore OnlyTruePerspective projects',
     indexable: true
   },
@@ -106,7 +106,8 @@ const requiredUrls = [
   'https://www.onlytrueperspective.tech/',
   'https://www.onlytrueperspective.tech/bookings',
   'https://www.onlytrueperspective.tech/songwars',
-  'https://www.onlytrueperspective.tech/archive.html',
+  'https://www.onlytrueperspective.tech/protocol',
+  'https://www.onlytrueperspective.tech/archive',
   'https://www.onlytrueperspective.tech/insights.html',
   'https://www.onlytrueperspective.tech/terms.html',
   'https://www.onlytrueperspective.tech/privacy.html'

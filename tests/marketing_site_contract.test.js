@@ -30,8 +30,8 @@ assert.ok(index.includes('styles.css?v='), 'index loads styles.css');
 assert.ok(index.includes('gsap.min.js'), 'index loads GSAP');
 assert.ok(index.includes('ScrollTrigger.min.js'), 'index loads ScrollTrigger');
 assert.ok(index.includes('site-init.js?v='), 'index loads site-init');
-assert.ok(index.includes('otp-projects.js?v=20260609-hyh1'), 'index loads reusable public project library');
-assert.ok(archive.includes('otp-projects.js?v=20260609-hyh1'), 'archive loads reusable public project library');
+assert.ok(index.includes('otp-projects.js?v=20260629-archive1'), 'index loads reusable public project library');
+assert.ok(archive.includes('otp-projects.js?v=20260629-archive1'), 'archive loads reusable public project library');
 const indexSiteInitV = (index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
 const insightSiteInitV = (insight.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
 assert.ok(indexSiteInitV && insightSiteInitV, 'index and insight declare site-init cache-bust');
@@ -48,7 +48,9 @@ assertSiteInitMatchesIndex(insightsList, 'insights.html');
 assertSiteInitMatchesIndex(archive, 'archive.html');
 assertSiteInitMatchesIndex(terms, 'terms.html');
 assertSiteInitMatchesIndex(privacy, 'privacy.html');
-assertSiteInitMatchesIndex(notFound, '404.html');
+assert.ok(!notFound.includes('site-init.js'), '404 stays standalone and does not load site-init on unknown nested routes');
+assert.ok(!notFound.includes('theme-chrono.js'), '404 stays standalone and does not run theme switching');
+assert.ok(!notFound.includes('stars-v2.js'), '404 stays standalone and does not run the animated starfield');
 const indexStylesV = (index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1];
 const assertStylesMatchesIndex = (html, label) => {
     const v = (html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1];
@@ -61,7 +63,7 @@ assertStylesMatchesIndex(terms, 'terms.html');
 assertStylesMatchesIndex(privacy, 'privacy.html');
 assertStylesMatchesIndex(notFound, '404.html');
 assert.ok(index.includes('data-editable='), 'CMS-editable regions present');
-assert.match(index, /href="archive\.html"/, 'desktop nav includes Archive (parity with mobile drawer)');
+assert.match(index, /href="\/archive"/, 'desktop nav includes the canonical Archive route (parity with mobile drawer)');
 assert.ok(
     index.includes('https://www.onlytrueperspective.tech/') && index.includes('rel="canonical"'),
     'index homepage canonical/og use final www canonical host'
@@ -108,10 +110,11 @@ assert.ok(
 );
 assert.ok(!insightsList.includes('https://onlytrueperspective.tech/insights.html'), 'insights list avoids redirecting apex insight index URL');
 
-assert.ok(archive.includes('https://www.onlytrueperspective.tech/archive.html'), 'archive canonical/og use final www host');
+assert.ok(archive.includes('https://www.onlytrueperspective.tech/archive'), 'archive canonical/og use final www host and clean route');
 assert.ok(terms.includes('https://www.onlytrueperspective.tech/terms.html'), 'terms canonical/og use final www host');
 assert.ok(privacy.includes('https://www.onlytrueperspective.tech/privacy.html'), 'privacy canonical/og use final www host');
-assert.ok(!archive.includes('https://onlytrueperspective.tech/archive.html'), 'archive avoids redirecting apex page URL');
+assert.ok(!archive.includes('https://onlytrueperspective.tech/archive'), 'archive avoids redirecting apex page URL');
+assert.ok(!archive.includes('https://www.onlytrueperspective.tech/archive.html'), 'archive avoids duplicate .html metadata URLs');
 
 for (const [label, html] of [
     ['index', index],

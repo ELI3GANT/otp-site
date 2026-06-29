@@ -8,6 +8,7 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
  */
 
     (function() {
+        if (document.body && document.body.dataset.disableServiceWorker === 'true') return;
         if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
         window.addEventListener('load', async () => {
             try {
@@ -1184,6 +1185,7 @@ function initSite() {
             }
         };
         const projectEntries = getProjectList(projectLib && projectLib.getProjects);
+        const hasDedicatedArchiveProjects = Boolean(document.querySelector('[data-archive-projects]'));
         const featuredProjectEntries = projectLib && typeof projectLib.getFeaturedProjects === 'function'
             ? getProjectList(projectLib.getFeaturedProjects)
             : projectEntries.filter((project) => project && project.featured !== false);
@@ -1674,7 +1676,7 @@ function initSite() {
 
         const renderArchive = (videos, fallbackUsed) => {
             if (!archiveRoot) return;
-            const projectCards = projectEntries.map(createArchiveProjectCard);
+            const projectCards = hasDedicatedArchiveProjects ? [] : projectEntries.map(createArchiveProjectCard);
             const videoCards = videos.map(createArchiveCard);
             if (!projectCards.length && !videoCards.length) return setEmptyState(archiveRoot, 'The Vault is updating. Check back shortly.');
             archiveRoot.replaceChildren(...projectCards, ...videoCards);
@@ -1729,6 +1731,14 @@ function initSite() {
                 window.clearTimeout(timer);
             }
         };
+
+        if (archiveRoot && archiveRoot.dataset.videoSync === 'curated' && !featuredRoot) {
+            renderArchive(fallbackVideos, true);
+            document.dispatchEvent(new CustomEvent('otp:videos-rendered', {
+                detail: { fallbackUsed: true, count: fallbackVideos.length }
+            }));
+            return;
+        }
 
         getVideos()
             .catch(() => ({ videos: fallbackVideos, fallbackUsed: true }))

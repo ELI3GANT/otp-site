@@ -151,6 +151,38 @@ All spacing derives from a 4px base.
 - **Motion**: opacity, transform, and blur removal using the emphasis easing.
 - **Accessibility**: all reveals render immediately when reduced motion is requested.
 
+### Archive collection rail
+
+- **Structure**: horizontally scrollable collection controls above the detailed filters; one active collection at a time.
+- **States**: default, hover, focus-visible, and `aria-pressed` active state.
+- **Accessibility**: controls remain native buttons with 44px minimum targets and do not rely on color alone.
+
+### Archive filter panel
+
+- **Structure**: project search plus category, status, year, and technology selects sourced from the central project library.
+- **Surface**: compact bordered field with no modal or hidden filter state.
+- **Accessibility**: every control has a visible label, keyboard focus, live result count, and a clear-filter action.
+
+### Archive case-study card
+
+- **Structure**: intrinsic project artwork, status and launch metadata, title, summary, disciplines, services, technology, and action row.
+- **Variants**: featured two-up card and full-width standard card; both collapse to a single media-first column on mobile.
+- **Actions**: live project link is primary; unavailable full case studies use an explicit disabled state until a durable URL exists.
+- **Media**: source dimensions are declared to prevent layout shift; artwork may use `contain` only when the full composition must remain visible.
+
+### Archive timeline
+
+- **Structure**: chronological project entries rendered from the same project data as the cards.
+- **Desktop**: restrained horizontal rule with one marker per project.
+- **Mobile**: single vertical rule with readable stacked entries and no horizontal scrolling.
+
+### Branded route fallback
+
+- **Structure**: OTP mark, compact error label, clear message, and a restrained action group for Home, Archive, and booking.
+- **Surface**: always-dark layered field using the shared off-black, warm-white, border, and accent tokens; subtle dot/orbit detail stays decorative and pointer-transparent.
+- **Routing**: all fallback assets and destinations are root-relative so the page remains intact at nested unknown paths.
+- **Accessibility**: the mark has a useful label, the error title is the main heading, actions use visible focus treatment, and decorative layers are hidden from assistive technology.
+
 ## 6. Motion & Interaction
 
 | Type | Duration | Easing | Usage |

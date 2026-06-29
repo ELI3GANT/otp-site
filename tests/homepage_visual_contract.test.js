@@ -185,15 +185,26 @@ assert.strictEqual((index.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9
 assert.ok(index.indexOf('theme-chrono.js?v=9') < index.indexOf('styles.css?v=16.8.25'), 'homepage theme guard loads before stylesheet');
 assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.25', 'homepage styles cache-bust is current');
 assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', 'homepage stars cache-bust is current');
-assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260617-palette1', 'homepage runtime cache-bust is current');
-['archive.html', 'insights.html', 'terms.html', 'privacy.html', '404.html', 'insight.html'].forEach((file) => {
+assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260629-archive3', 'homepage runtime cache-bust is current');
+['archive.html', 'insights.html', 'terms.html', 'privacy.html', 'insight.html'].forEach((file) => {
   const html = read(file);
   assert.strictEqual((html.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9', `${file} theme guard cache-bust matches index`);
   assert.ok(html.indexOf('theme-chrono.js?v=9') < html.indexOf('styles.css?v=16.8.25'), `${file} theme guard loads before stylesheet`);
   assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.25', `${file} styles cache-bust matches index`);
-  assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', `${file} stars cache-bust matches index`);
-  assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260617-palette1', `${file} runtime cache-bust matches index`);
+  if (file === 'archive.html') {
+    assert.ok(!html.includes('stars-v2.js'), 'archive omits the animated starfield from its performance-critical project index');
+  } else {
+    assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', `${file} stars cache-bust matches index`);
+  }
+  assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260629-archive3', `${file} runtime cache-bust matches index`);
 });
+
+const notFound = read('404.html');
+assert.strictEqual((notFound.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.25', '404 uses the current shared stylesheet cache-bust');
+assert.ok(notFound.includes('class="error-particles"'), '404 uses a CSS-only particle layer');
+assert.ok(!notFound.includes('theme-chrono.js'), '404 does not load runtime theme switching');
+assert.ok(!notFound.includes('stars-v2.js'), '404 does not load the animated starfield runtime');
+assert.ok(!notFound.includes('site-init.js'), '404 does not load the global site runtime');
 
 console.log('   OK: Homepage visual contract');
 console.log('HOMEPAGE VISUAL CONTRACT COMPLETE');

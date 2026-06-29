@@ -71,7 +71,7 @@ assert.deepStrictEqual(
     seoDescription,
     eventDateLabel: 'Sunday, July 5, 2026',
     primaryHost: '4reign',
-    featuredParticipants: ['A1ZEK', 'SPOOKY', 'ELI3GANT', 'YUNG HAVOC', 'JD REVENGE'],
+    featuredParticipants: ['A1ZEK', 'SPOOKY', 'ELI3GANT', 'YUNG HAVOC', 'JDRVENGE'],
     publicShareUrl: 'https://onlytrueperspective.tech/songwars'
   },
   'the editable config contains the approved event and sharing values'
@@ -96,7 +96,7 @@ assert.deepStrictEqual(
     { displayName: 'SPOOKY', role: 'Featured Artist / The Smack Club', instagramUrl: 'https://www.instagram.com/akidnamedspooky' },
     { displayName: 'A1ZEK', role: 'Featured Artist', instagramUrl: 'https://www.instagram.com/a1z3k' },
     { displayName: 'YUNG HAVOC', role: 'Featured Artist', instagramUrl: 'https://www.instagram.com/yungxhavoc' },
-    { displayName: 'JD REVENGE', role: 'Featured Artist', instagramUrl: 'https://www.instagram.com/jdrvenge' },
+    { displayName: 'JDRVENGE', role: 'Featured Artist', instagramUrl: 'https://www.instagram.com/jdrvenge' },
     { displayName: 'ONLYTRUEPERSPECTIVE', role: 'Production / Creative Direction / Platform', instagramUrl: 'https://www.instagram.com/onlytrueperspective' }
   ],
   'the approved roles and Instagram destinations stay editable in one config'
@@ -191,8 +191,9 @@ assert.strictEqual(renderedDocument.querySelectorAll('.artist-node').length, 20,
 assert.strictEqual(renderedDocument.querySelectorAll('.artist-node.is-confirmed').length, 12, 'registration rail fills twelve confirmed spots');
 assert.strictEqual(renderedDocument.querySelectorAll('.person-card').length, 7, 'all approved people render');
 assert.strictEqual(renderedDocument.querySelectorAll('.person-card a[target="_blank"]').length, 7, 'all Instagram profiles open in a new tab');
-assert.ok(previewHtml.includes('JD REVENGE'), 'JD REVENGE is included in the rendered page');
-assert.ok(previewHtml.includes('https://www.instagram.com/jdrvenge'), 'JD REVENGE Instagram link is rendered');
+assert.ok(previewHtml.includes('JDRVENGE'), 'JDRVENGE is included in the rendered page');
+assert.ok(previewHtml.includes('https://www.instagram.com/jdrvenge'), 'JDRVENGE Instagram link is rendered');
+assert.ok(!previewHtml.includes('JD REVENGE'), 'retired JD REVENGE display name is not rendered');
 
 const workflow = read('.github/workflows/production-release.yml');
 const sweep = read('scripts/prod_full_sweep.js');

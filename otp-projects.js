@@ -125,6 +125,7 @@
         width: 1600,
         height: 869
       }),
+      heroFit: 'contain',
       beforeAfter: Object.freeze({
         before: Object.freeze({
           label: 'Previous Website',
