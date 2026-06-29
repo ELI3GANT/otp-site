@@ -31,6 +31,8 @@
   --border-strong-width: 2px;
   --tap-target: 48px;
   --transition-micro: 140ms ease-out;
+  --transition-standard: 240ms ease-in-out;
+  --transition-emphasis: 480ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *,
@@ -96,8 +98,73 @@ a {
 .site-header,
 main,
 .site-footer {
+  position: relative;
+  z-index: 1;
   width: min(100%, var(--content-width));
   margin-inline: auto;
+}
+
+main {
+  overflow: clip;
+}
+
+.songwars-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.songwars-atmosphere span {
+  position: absolute;
+  display: block;
+}
+
+.atmosphere-light {
+  top: -20%;
+  right: -28%;
+  width: 70vw;
+  height: 70vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-event) 14%, transparent), transparent 68%);
+  filter: blur(var(--space-8));
+  opacity: 0.42;
+  animation: songwars-light-drift 18s ease-in-out infinite alternate;
+}
+
+.atmosphere-grain {
+  inset: -40%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+  opacity: 0.035;
+  animation: songwars-grain-shift 12s steps(6) infinite;
+}
+
+.atmosphere-dust {
+  width: var(--space-1);
+  height: var(--space-1);
+  border-radius: 50%;
+  background: var(--text-primary);
+  opacity: 0.12;
+  filter: blur(1px);
+  animation: songwars-dust-drift 14s ease-in-out infinite alternate;
+}
+
+.dust-one {
+  top: 18%;
+  left: 12%;
+}
+
+.dust-two {
+  top: 52%;
+  right: 18%;
+  animation-delay: -5s;
+}
+
+.dust-three {
+  bottom: 14%;
+  left: 44%;
+  animation-delay: -9s;
 }
 
 .site-header {
@@ -169,7 +236,10 @@ main,
 .hero,
 .stats,
 .details,
-.process {
+.process,
+.mid-cta,
+.event-intel,
+.people {
   padding: var(--space-12) var(--space-4);
   border-bottom: var(--border-default-width) solid var(--border-default);
 }
@@ -288,12 +358,34 @@ main,
   transform: translate(var(--space-2), var(--space-2));
 }
 
+.poster-frame::after {
+  position: absolute;
+  inset: calc(var(--space-1) * -1);
+  z-index: 1;
+  border: var(--border-default-width) solid var(--accent-event);
+  content: "";
+  opacity: 0.16;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0) scale(1);
+  animation: songwars-poster-float 12s ease-in-out infinite;
+}
+
 .poster-frame img {
   width: 100%;
   height: auto;
   background: var(--text-primary);
   image-rendering: auto;
   object-fit: contain;
+  transition: filter var(--transition-standard), transform var(--transition-standard);
+}
+
+.poster-frame picture {
+  display: block;
+}
+
+.poster-frame:hover img {
+  filter: contrast(1.02);
+  transform: scale(1.002);
 }
 
 .hero-message {
@@ -346,7 +438,7 @@ main,
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
-  transition: background-color var(--transition-micro), color var(--transition-micro), transform var(--transition-micro);
+  transition: background-color var(--transition-micro), border-color var(--transition-micro), color var(--transition-micro), filter var(--transition-standard), transform var(--transition-micro);
 }
 
 .button-primary {
@@ -414,6 +506,36 @@ main,
 
 .progress-block {
   margin-top: var(--space-8);
+}
+
+.artist-node-track {
+  display: grid;
+  margin-top: var(--space-5);
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.artist-node {
+  width: var(--space-3);
+  height: var(--space-3);
+  justify-self: center;
+  border: var(--border-strong-width) solid var(--text-inverse);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.artist-node.is-confirmed {
+  border-color: var(--accent-event-ink);
+  background: var(--accent-event);
+  animation: songwars-node-breathe 4.8s ease-in-out infinite;
+}
+
+.artist-node.is-confirmed:nth-child(3n) {
+  animation-delay: -1.6s;
+}
+
+.artist-node.is-confirmed:nth-child(3n + 1) {
+  animation-delay: -3.2s;
 }
 
 .progress-copy {
@@ -489,6 +611,180 @@ progress::-moz-progress-bar {
   letter-spacing: -0.02em;
 }
 
+.mid-cta {
+  display: grid;
+  align-items: end;
+  gap: var(--space-8);
+  border-left: var(--space-1) solid var(--accent-event);
+  background: var(--surface-secondary);
+}
+
+.mid-cta h2 {
+  max-width: 54rem;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 8vw, 5.5rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+
+.mid-cta p:not(.section-index) {
+  margin: var(--space-5) 0 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.event-intel,
+.people {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
+.intel-grid {
+  display: grid;
+  margin-top: var(--space-8);
+  border-top: var(--border-default-width) solid var(--border-default);
+}
+
+.intel-grid article {
+  min-height: 13rem;
+  padding: var(--space-6) 0;
+  border-bottom: var(--border-default-width) solid var(--border-default);
+}
+
+.intel-grid article > p {
+  margin: 0 0 var(--space-8);
+  color: var(--accent-event);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.intel-grid h3 {
+  max-width: 28rem;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.intel-grid span {
+  display: block;
+  max-width: 30rem;
+  margin-top: var(--space-4);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 550;
+  line-height: 1.5;
+}
+
+.people-intro {
+  max-width: 40rem;
+  margin: var(--space-6) 0 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.people-grid {
+  display: grid;
+  margin-top: var(--space-8);
+  gap: var(--space-3);
+}
+
+.person-card {
+  display: grid;
+  min-width: 0;
+  min-height: 7rem;
+  grid-template-columns: var(--space-16) minmax(0, 1fr) auto;
+  align-items: center;
+  padding: var(--space-4);
+  gap: var(--space-4);
+  border: var(--border-default-width) solid var(--border-default);
+  background: color-mix(in srgb, var(--surface-secondary) 92%, transparent);
+  transition: border-color var(--transition-standard), transform var(--transition-standard);
+}
+
+.person-card-host {
+  border-left: var(--space-1) solid var(--accent-event);
+}
+
+.person-avatar {
+  display: grid;
+  width: var(--space-16);
+  height: var(--space-16);
+  place-items: center;
+  overflow: hidden;
+  border: var(--border-default-width) solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface-elevated);
+  color: var(--accent-event);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.person-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.person-copy {
+  min-width: 0;
+}
+
+.person-copy h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.person-copy p {
+  margin: var(--space-2) 0 0;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 550;
+  line-height: 1.5;
+}
+
+.instagram-link {
+  display: inline-grid;
+  width: var(--tap-target);
+  min-height: var(--tap-target);
+  place-items: center;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-micro), transform var(--transition-micro);
+}
+
+.instagram-link svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+}
+
+.instagram-link span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .final-cta {
   width: min(100%, var(--content-width));
   margin-inline: auto;
@@ -542,6 +838,13 @@ progress::-moz-progress-bar {
 }
 
 .button-primary:hover,
+.button-primary:focus-visible,
+.button-final:hover,
+.button-final:focus-visible {
+  filter: drop-shadow(0 0 var(--space-3) color-mix(in srgb, var(--accent-event) 44%, transparent));
+}
+
+.button-primary:hover,
 .button-primary:focus-visible {
   background: var(--accent-event-hover);
 }
@@ -560,6 +863,101 @@ progress::-moz-progress-bar {
 .button:active,
 .otp-mark:active {
   transform: translateY(0);
+}
+
+.person-card:hover,
+.person-card:focus-within {
+  border-color: var(--accent-event);
+  transform: translate3d(0, calc(var(--space-1) * -1), 0);
+}
+
+.instagram-link:hover,
+.instagram-link:focus-visible {
+  color: var(--accent-event);
+  transform: scale(1.06);
+}
+
+.songwars-js [data-reveal] {
+  opacity: 0;
+  filter: blur(var(--space-2));
+  transform: translate3d(0, var(--space-6), 0);
+  transition: filter var(--transition-emphasis), opacity var(--transition-emphasis), transform var(--transition-emphasis);
+}
+
+.songwars-js [data-reveal].is-visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0);
+}
+
+.songwars-js .people-grid .person-card:nth-child(2n).is-visible {
+  transition-delay: 80ms;
+}
+
+.songwars-js .people-grid .person-card:nth-child(3n).is-visible {
+  transition-delay: 140ms;
+}
+
+@keyframes songwars-poster-float {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.34;
+    transform: translate3d(0, calc(var(--space-1) * -1), 0) scale(1.006);
+  }
+}
+
+@keyframes songwars-light-drift {
+  from {
+    transform: translate3d(-8%, -4%, 0) scale(0.92);
+    opacity: 0.28;
+  }
+  to {
+    transform: translate3d(8%, 6%, 0) scale(1.08);
+    opacity: 0.46;
+  }
+}
+
+@keyframes songwars-grain-shift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    transform: translate3d(2%, -3%, 0);
+  }
+  50% {
+    transform: translate3d(-3%, 2%, 0);
+  }
+  75% {
+    transform: translate3d(3%, 3%, 0);
+  }
+}
+
+@keyframes songwars-dust-drift {
+  from {
+    transform: translate3d(0, var(--space-6), 0) scale(0.8);
+    opacity: 0.04;
+  }
+  to {
+    transform: translate3d(var(--space-6), calc(var(--space-8) * -1), 0) scale(1.2);
+    opacity: 0.18;
+  }
+}
+
+@keyframes songwars-node-breathe {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
 }
 
 :focus-visible {
@@ -583,6 +981,10 @@ progress::-moz-progress-bar {
   .button-final {
     width: fit-content;
   }
+
+  .artist-node-track {
+    grid-template-columns: repeat(20, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 768px) {
@@ -591,6 +993,9 @@ progress::-moz-progress-bar {
   .stats,
   .details,
   .process,
+  .mid-cta,
+  .event-intel,
+  .people,
   .final-cta,
   .site-footer {
     padding-inline: var(--space-8);
@@ -628,7 +1033,10 @@ progress::-moz-progress-bar {
   }
 
   .details,
-  .process {
+  .process,
+  .mid-cta,
+  .event-intel,
+  .people {
     padding-block: var(--space-20);
   }
 
@@ -645,6 +1053,24 @@ progress::-moz-progress-bar {
   .final-cta {
     padding-block: var(--space-20);
   }
+
+  .mid-cta {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .intel-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-left: var(--border-default-width) solid var(--border-default);
+  }
+
+  .intel-grid article {
+    padding: var(--space-6);
+    border-right: var(--border-default-width) solid var(--border-default);
+  }
+
+  .people-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 1024px) {
@@ -653,6 +1079,9 @@ progress::-moz-progress-bar {
   .stats,
   .details,
   .process,
+  .mid-cta,
+  .event-intel,
+  .people,
   .final-cta,
   .site-footer {
     padding-inline: var(--space-12);
@@ -721,6 +1150,27 @@ progress::-moz-progress-bar {
   .final-cta h2 {
     max-width: 64rem;
   }
+
+  .people {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--space-6);
+  }
+
+  .people-heading {
+    grid-column: 1 / span 7;
+  }
+
+  .people-intro {
+    grid-column: 8 / -1;
+    align-self: end;
+    margin: 0;
+  }
+
+  .people-grid {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -729,5 +1179,13 @@ progress::-moz-progress-bar {
   *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .songwars-js [data-reveal] {
+    opacity: 1;
+    filter: none;
+    transform: none;
   }
 }

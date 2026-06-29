@@ -120,6 +120,37 @@ All spacing derives from a 4px base.
 - **Variants**: header and footer.
 - **Rules**: monochrome, low visual weight, and smaller than the event identity.
 
+### Artist registration rail
+
+- **Structure**: one node per available artist slot, with confirmed nodes filled and remaining nodes outlined.
+- **Accessibility**: supplements the visible count and native progress element; it never carries status by color alone.
+- **Motion**: confirmed nodes may breathe with opacity and transform only, and become static under reduced motion.
+
+### Event announcement panel
+
+- **Structure**: compact bracket, judging, and prize updates grouped as one bordered editorial field.
+- **Surface**: borders-only with a single event-accent edge; no glass treatment or repeated shadows.
+- **Content**: unresolved details remain explicitly pending and never imply finalized tournament rules.
+
+### Featured person card
+
+- **Structure**: circular local avatar or durable monogram fallback, display name, role, and an Instagram action.
+- **Surface**: compact bordered row; the host receives the only accent-border variant.
+- **States**: subtle lift and border-color change on hover, clear focus-visible treatment on the profile link.
+- **Accessibility**: profile links name the person and destination; decorative monograms are hidden from assistive technology.
+
+### Atmospheric field
+
+- **Structure**: fixed, pointer-transparent green light, grain, and dust layers behind page content.
+- **Motion**: slow transform and opacity only; no canvas, timers, scroll listeners, or layout animation.
+- **Restraint**: atmosphere remains subordinate to the poster and preserves text contrast.
+
+### Scroll reveal
+
+- **Structure**: progressive enhancement on section-level groups only; content remains visible when JavaScript is unavailable.
+- **Motion**: opacity, transform, and blur removal using the emphasis easing.
+- **Accessibility**: all reveals render immediately when reduced motion is requested.
+
 ## 6. Motion & Interaction
 
 | Type | Duration | Easing | Usage |
@@ -127,6 +158,8 @@ All spacing derives from a 4px base.
 | Micro | 140ms | ease-out | Button hover and press |
 | Standard | 240ms | ease-in-out | Small surface transitions |
 | Emphasis | 480ms | cubic-bezier(0.16, 1, 0.3, 1) | Optional hero entry |
+
+Ambient loops run between 8 and 18 seconds with linear or ease-in-out timing. They remain subtle, use only transform and opacity, and stop under reduced motion.
 
 - Animate only `transform`, `opacity`, or `filter`.
 - Every interactive element has hover, active, and focus-visible states.
@@ -142,4 +175,3 @@ The default public campaign strategy is **borders-only**. Strong rules, contrast
 | Default | `1px solid var(--border-default)` | Section and tile structure |
 | Strong | `2px solid var(--border-strong)` | Featured poster and major fields |
 | Accent | `4px solid var(--accent-event)` | One campaign emphasis edge |
-

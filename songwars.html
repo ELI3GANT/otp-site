@@ -25,16 +25,36 @@
   <meta name="twitter:image" content="{{POSTER_IMAGE_URL}}" />
   <meta name="twitter:image:alt" content="{{POSTER_ALT}}" />
 
+  <script type="application/ld+json">{{SONG_WARS_SCHEMA}}</script>
+
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="preload" as="image" href="{{POSTER_IMAGE_PATH}}" fetchpriority="high" />
-  <link rel="stylesheet" href="/songwars.css?v=20260628" />
+  <link
+    rel="preload"
+    as="image"
+    href="/assets/songwars/songwars-poster-672.webp"
+    type="image/webp"
+    imagesrcset="{{POSTER_IMAGE_SRCSET}}"
+    imagesizes="(min-width: 1024px) min(43vw, 620px), (min-width: 768px) 560px, calc(100vw - 32px)"
+    fetchpriority="high"
+  />
+  <script>document.documentElement.classList.add('songwars-js');</script>
+  <link rel="stylesheet" href="/songwars.css?v=20260628b" />
+  <script src="/songwars.js?v=20260628b" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to Song Wars</a>
 
+  <div class="songwars-atmosphere" aria-hidden="true">
+    <span class="atmosphere-light"></span>
+    <span class="atmosphere-grain"></span>
+    <span class="atmosphere-dust dust-one"></span>
+    <span class="atmosphere-dust dust-two"></span>
+    <span class="atmosphere-dust dust-three"></span>
+  </div>
+
   <header class="site-header" aria-label="Song Wars campaign header">
-    <a class="event-mark" href="#main-content" aria-label="Song Wars home">
+    <a class="event-mark" href="#main-content" aria-label="The Smack Club Song Wars home">
       <span>THE SMACK CLUB</span>
       <strong>SONG WARS</strong>
     </a>
@@ -57,13 +77,22 @@
       </div>
 
       <figure class="poster-frame">
-        <img
-          src="{{POSTER_IMAGE_PATH}}"
-          alt="{{POSTER_ALT}}"
-          fetchpriority="high"
-          decoding="async"
-          data-songwars-poster
-        />
+        <picture>
+          <source
+            type="image/webp"
+            srcset="{{POSTER_IMAGE_SRCSET}}"
+            sizes="(min-width: 1024px) min(43vw, 620px), (min-width: 768px) 560px, calc(100vw - 32px)"
+          />
+          <img
+            src="{{POSTER_IMAGE_PATH}}"
+            srcset="{{POSTER_IMAGE_FALLBACK_SRCSET}}"
+            sizes="(min-width: 1024px) min(43vw, 620px), (min-width: 768px) 560px, calc(100vw - 32px)"
+            alt="{{POSTER_ALT}}"
+            fetchpriority="high"
+            decoding="async"
+            data-songwars-poster
+          />
+        </picture>
       </figure>
 
       <div class="hero-message">
@@ -77,7 +106,7 @@
       </div>
     </section>
 
-    <section class="stats" aria-labelledby="stats-title">
+    <section class="stats" aria-labelledby="stats-title" data-reveal>
       <div class="section-heading stats-heading">
         <p class="section-index">LIVE REGISTRATION</p>
         <h2 id="stats-title">The bracket is filling.</h2>
@@ -108,10 +137,11 @@
           <strong>{{CONFIRMED_COUNT}} / {{GOAL_COUNT}}</strong>
         </div>
         <progress value="{{CONFIRMED_COUNT}}" max="{{GOAL_COUNT}}" aria-label="{{CONFIRMED_COUNT}} of {{GOAL_COUNT}} artist spots confirmed">{{PROGRESS_PERCENT}}%</progress>
+        <div class="artist-node-track" aria-hidden="true">{{ARTIST_NODES}}</div>
       </div>
     </section>
 
-    <section class="details" id="details" aria-labelledby="details-title">
+    <section class="details" id="details" aria-labelledby="details-title" data-reveal>
       <div class="section-heading details-heading">
         <p class="section-index">01 / THE BRIEF</p>
         <h2 id="details-title">Songs enter.<br />The community decides.</h2>
@@ -119,7 +149,7 @@
       <p class="overview-copy">Song Wars is a community music battle hosted for Independence Day Weekend. Artists submit music, get matched into battles, and the community votes through Discord.</p>
     </section>
 
-    <section class="process" aria-labelledby="process-title">
+    <section class="process" aria-labelledby="process-title" data-reveal>
       <div class="section-heading process-heading">
         <p class="section-index">02 / HOW IT WORKS</p>
         <h2 id="process-title">Four moves. One bracket.</h2>
@@ -132,7 +162,49 @@
       </ol>
     </section>
 
-    <section class="final-cta" aria-labelledby="final-cta-title">
+    <section class="mid-cta" aria-labelledby="mid-cta-title" data-reveal>
+      <div>
+        <p class="section-index">THE RUN</p>
+        <h2 id="mid-cta-title">One Bracket. Twenty Artists. One Champion.</h2>
+        <p>Community powered. Every vote matters.</p>
+      </div>
+      <a class="button button-primary" href="{{DISCORD_INVITE_URL}}" target="_blank" rel="noopener noreferrer" data-discord-cta>Join the Discord</a>
+    </section>
+
+    <section class="event-intel" aria-labelledby="event-intel-title" data-reveal>
+      <div class="section-heading intel-heading">
+        <p class="section-index">03 / WHAT COMES NEXT</p>
+        <h2 id="event-intel-title">Built for the reveal.</h2>
+      </div>
+      <div class="intel-grid">
+        <article>
+          <p>Bracket</p>
+          <h3>Official Bracket Coming Soon</h3>
+          <span>Bracket reveals after registration closes.</span>
+        </article>
+        <article>
+          <p>Voting</p>
+          <h3>Community Voting + Official Judges</h3>
+          <span>Final announcements coming soon.</span>
+        </article>
+        <article>
+          <p>Prize</p>
+          <h3>Prize Announcement Coming Soon.</h3>
+          <span>Winner earns the crown. More information before tournament day.</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="people" aria-labelledby="people-title" data-reveal>
+      <div class="section-heading people-heading">
+        <p class="section-index">04 / THE PEOPLE</p>
+        <h2 id="people-title">Behind Song Wars.</h2>
+      </div>
+      <p class="people-intro">Hosted by 4REIGN. Built with The Smack Club, featured artists, and OnlyTruePerspective.</p>
+      <div class="people-grid">{{FEATURED_PEOPLE_CARDS}}</div>
+    </section>
+
+    <section class="final-cta" aria-labelledby="final-cta-title" data-reveal>
       <p class="section-index">REGISTRATION OPEN</p>
       <h2 id="final-cta-title">Only {{SPOTS_LEFT}} spots left. Lock in before the bracket fills.</h2>
       <a class="button button-final" href="{{DISCORD_INVITE_URL}}" target="_blank" rel="noopener noreferrer" data-discord-cta>Join the Discord</a>

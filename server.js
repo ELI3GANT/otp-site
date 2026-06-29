@@ -2201,11 +2201,64 @@ const staticPath = __dirname;
 function renderSongWarsPage(origin = SONG_WARS_CONFIG.canonicalUrl) {
     const template = fs.readFileSync(path.join(staticPath, 'songwars.html'), 'utf8');
     const posterImageUrl = new URL(SONG_WARS_CONFIG.posterImagePath, origin).toString();
+    const canonicalPosterUrl = new URL(SONG_WARS_CONFIG.posterImagePath, SONG_WARS_CONFIG.canonicalUrl).toString();
+    const posterImageSrcset = SONG_WARS_CONFIG.posterResponsiveSources
+        .map((source) => `${source.path} ${source.width}w`)
+        .join(', ');
+    const posterImageFallbackSrcset = SONG_WARS_CONFIG.posterFallbackSources
+        .map((source) => `${source.path} ${source.width}w`)
+        .join(', ');
+    const instagramIcon = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4.25"></circle><circle cx="17.4" cy="6.7" r="1"></circle></svg>';
+    const featuredPeopleCards = SONG_WARS_CONFIG.people.map((person, index) => {
+        const avatar = person.avatarImagePath
+            ? `<img src="${escapeHtml(person.avatarImagePath)}" alt="" width="96" height="96" loading="lazy" decoding="async" />`
+            : `<span aria-hidden="true">${escapeHtml(person.initials)}</span>`;
+        const hostClass = index === 0 ? ' person-card-host' : '';
+        return `<article class="person-card${hostClass}" data-reveal>
+            <div class="person-avatar">${avatar}</div>
+            <div class="person-copy">
+                <h3>${escapeHtml(person.displayName)}</h3>
+                <p>${escapeHtml(person.role)}</p>
+            </div>
+            <a class="instagram-link" href="${escapeHtml(person.instagramUrl)}" target="_blank" rel="noopener noreferrer" aria-label="View ${escapeHtml(person.displayName)} on Instagram">${instagramIcon}<span>Instagram</span></a>
+        </article>`;
+    }).join('');
+    const artistNodes = Array.from({ length: SONG_WARS_CONFIG.goalCount }, (_, index) => {
+        const stateClass = index < SONG_WARS_CONFIG.confirmedCount ? ' is-confirmed' : '';
+        return `<span class="artist-node${stateClass}"></span>`;
+    }).join('');
+    const schema = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: SONG_WARS_CONFIG.eventTitle,
+        description: SONG_WARS_CONFIG.seoDescription,
+        startDate: SONG_WARS_CONFIG.eventDateIso,
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+        url: SONG_WARS_CONFIG.canonicalUrl,
+        image: canonicalPosterUrl,
+        location: {
+            '@type': 'VirtualLocation',
+            url: SONG_WARS_CONFIG.discordInviteUrl
+        },
+        organizer: {
+            '@type': 'Organization',
+            name: 'OnlyTruePerspective',
+            url: 'https://www.onlytrueperspective.tech/'
+        },
+        performer: SONG_WARS_CONFIG.people.slice(0, 6).map((person) => ({
+            '@type': 'Person',
+            name: person.displayName,
+            sameAs: person.instagramUrl
+        }))
+    }).replace(/</g, '\\u003c');
     const replacements = {
         SEO_TITLE: SONG_WARS_CONFIG.seoTitle,
         SEO_DESCRIPTION: SONG_WARS_CONFIG.seoDescription,
         POSTER_IMAGE_URL: posterImageUrl,
         POSTER_IMAGE_PATH: SONG_WARS_CONFIG.posterImagePath,
+        POSTER_IMAGE_SRCSET: posterImageSrcset,
+        POSTER_IMAGE_FALLBACK_SRCSET: posterImageFallbackSrcset,
         POSTER_ALT: SONG_WARS_CONFIG.posterAlt,
         EVENT_TITLE: SONG_WARS_CONFIG.eventTitle,
         HEADLINE: SONG_WARS_CONFIG.headline,
@@ -2218,11 +2271,17 @@ function renderSongWarsPage(origin = SONG_WARS_CONFIG.canonicalUrl) {
         OTP_LOGO_PATH: SONG_WARS_CONFIG.otpLogoPath,
         EVENT_DATE_LABEL: SONG_WARS_CONFIG.eventDateLabel,
         PRIMARY_HOST: SONG_WARS_CONFIG.primaryHost,
-        FEATURED_PARTICIPANTS: SONG_WARS_CONFIG.featuredParticipants.join(' / ')
+        FEATURED_PARTICIPANTS: SONG_WARS_CONFIG.featuredParticipants.join(' / '),
+        ARTIST_NODES: artistNodes,
+        FEATURED_PEOPLE_CARDS: featuredPeopleCards,
+        SONG_WARS_SCHEMA: schema
     };
+
+    const rawReplacementKeys = new Set(['ARTIST_NODES', 'FEATURED_PEOPLE_CARDS', 'SONG_WARS_SCHEMA']);
 
     return template.replace(/\{\{([A-Z_]+)\}\}/g, (token, key) => {
         if (!Object.prototype.hasOwnProperty.call(replacements, key)) return token;
+        if (rawReplacementKeys.has(key)) return replacements[key];
         return escapeHtml(replacements[key]);
     });
 }
