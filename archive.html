@@ -7,11 +7,11 @@
   <meta http-equiv="Expires" content="0" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Creative Archive | OnlyTruePerspective</title>
-  <meta name="description" content="Explore OnlyTruePerspective projects, visuals, media experiments, and creative technology work." />
+  <meta name="description" content="Explore OnlyTruePerspective projects, case studies, live launches, internal products, client work, and creative technology systems." />
 
   <!-- SEO / Social -->
   <meta property="og:title" content="Creative Archive | OnlyTruePerspective" />
-  <meta property="og:description" content="Explore OnlyTruePerspective projects, visuals, media experiments, and creative technology work." />
+  <meta property="og:description" content="Explore OnlyTruePerspective projects, case studies, live launches, internal products, client work, and creative technology systems." />
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="OnlyTruePerspective" />
@@ -22,48 +22,67 @@
   <meta name="color-scheme" content="dark light" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Creative Archive | OnlyTruePerspective" />
-  <meta name="twitter:description" content="Explore OnlyTruePerspective projects, visuals, media experiments, and creative technology work." />
+  <meta name="twitter:description" content="Explore OnlyTruePerspective projects, case studies, live launches, internal products, client work, and creative technology systems." />
   <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/seo/otp-og-image.webp" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": "https://www.onlytrueperspective.tech/#organization",
-    "name": "OnlyTruePerspective",
-    "alternateName": ["OTP", "Only True Perspective"],
-    "url": "https://www.onlytrueperspective.tech/",
-    "logo": "https://www.onlytrueperspective.tech/icon.png",
-    "image": "https://www.onlytrueperspective.tech/assets/seo/otp-og-image.webp",
-    "description": "OnlyTruePerspective (OTP) is a Rhode Island-based creative technology and media company focused on cinematic storytelling, branding, digital experiences, and AI-powered creative systems. OTP combines visual direction, content production, automation, and modern web infrastructure to build immersive digital identities and scalable creative ecosystems.",
-    "email": "contact@onlytrueperspective.tech",
-    "sameAs": [
-      "https://instagram.com/onlytrueperspective",
-      "https://youtube.com/@onlytrueperspective",
-      "https://www.reddit.com/r/OnlyTruePerspective"
-    ],
-    "founder": {
-      "@type": "Person",
-      "name": "ELI3GANT",
-      "alternateName": "Elijah Huertas",
-      "jobTitle": "Founder / Creative Director",
-      "image": "https://www.onlytrueperspective.tech/assets/seo/eli3gant-founder.webp",
-      "url": "https://www.onlytrueperspective.tech/#eli3gant"
-    }
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.onlytrueperspective.tech/#organization",
+        "name": "OnlyTruePerspective",
+        "alternateName": ["OTP", "Only True Perspective"],
+        "url": "https://www.onlytrueperspective.tech/",
+        "logo": "https://www.onlytrueperspective.tech/icon.png",
+        "sameAs": [
+          "https://instagram.com/onlytrueperspective",
+          "https://youtube.com/@onlytrueperspective",
+          "https://www.reddit.com/r/OnlyTruePerspective"
+        ]
+      },
+      {
+        "@type": "CollectionPage",
+        "@id": "https://www.onlytrueperspective.tech/archive.html#archive",
+        "url": "https://www.onlytrueperspective.tech/archive.html",
+        "name": "Creative Archive | OnlyTruePerspective",
+        "description": "A living record of OnlyTruePerspective projects, launches, client work, and creative systems.",
+        "isPartOf": { "@id": "https://www.onlytrueperspective.tech/#organization" },
+        "mainEntity": { "@id": "https://www.onlytrueperspective.tech/archive.html#projects" }
+      },
+      {
+        "@type": "ItemList",
+        "@id": "https://www.onlytrueperspective.tech/archive.html#projects",
+        "name": "OnlyTruePerspective selected projects",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "url": "https://www.onlytrueperspective.tech/songwars",
+            "name": "The Smack Club: Song Wars"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "url": "https://www.onlytrueperspective.tech/protocol",
+            "name": "PROTOCOL"
+          }
+        ]
+      }
+    ]
   }
   </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Space+Grotesk:wght@500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
   <script src="theme-chrono.js?v=9"></script>
-  <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" />
   <link rel="stylesheet" href="./styles.css?v=16.8.25" />
+  <link rel="stylesheet" href="./archive.css?v=20260629-archive2" />
   <style>body { margin: 0 !important; }</style>
   
   <!-- FAVICON -->
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 </head>
-<body class="archive-page k-cursor-ready">
+<body class="archive-page" data-disable-service-worker="true">
+  <a class="archive-skip" href="#archive-content">Skip to the Archive</a>
   <div class="bg-fixed"></div>
 
   <header class="nav nav-split">
@@ -101,50 +120,111 @@
     </nav>
   </header>
 
-  <main class="archive-main">
+  <main class="archive-main" id="archive-content">
     <div class="wrap">
-      <div class="secondary-intro">
-        <div class="header-visual" style="margin: 0 auto 30px; display: flex; justify-content: center; align-items: center;">
-          <svg class="neon-icon neon-folder" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 80px; height: 80px;">
-            <path d="M10 30C10 24.4772 14.4772 20 20 20H40L50 30H80C85.5228 30 90 34.4772 90 40V70C90 75.5228 85.5228 80 80 80H20C14.4772 80 10 75.5228 10 70V30Z" stroke="var(--accent2)" stroke-width="2" class="folder-outline"/>
-            <path d="M30 45H70" stroke="var(--accent2)" stroke-width="1.5" stroke-linecap="round" class="file-line line-1"/>
-            <path d="M30 55H60" stroke="var(--accent2)" stroke-width="1.5" stroke-linecap="round" class="file-line line-2"/>
-            <path d="M30 65H50" stroke="var(--accent2)" stroke-width="1.5" stroke-linecap="round" class="file-line line-3"/>
-            <circle cx="80" cy="40" r="3" fill="var(--accent)" class="status-dot"/>
-          </svg>
-        </div>
-        <div class="secondary-header">
-          <h1>THE ARCHIVE</h1>
-        </div>
-         <p class="intro-text">The Vault is where OTP stores the moments, visuals, and projects that shaped the perspective.</p>
-         <p class="sub-text">A living record of videos, visuals, brand work, and creative systems.</p>
-        <p class="vault-text">Explore the vault.</p>
-      </div>
+      <section class="archive-hero" aria-labelledby="archive-title">
+        <p class="archive-eyebrow">OTP / Public Archive</p>
+        <h1 id="archive-title">THE ARCHIVE</h1>
+        <p class="archive-lede">A living record of what OnlyTruePerspective builds, launches, and evolves.</p>
+        <p class="archive-note">Music worlds, live experiences, client transformations, internal products, and creative systems—organized as proof, not posts.</p>
+      </section>
 
-      <!-- TAG FILTER -->
-      <div id="filter-wrap">
-          <button class="filter-btn active" data-filter="All">All</button>
-          <button class="filter-btn" data-filter="Video / Recap">Video / Recap</button>
-          <button class="filter-btn" data-filter="Music / Visuals">Music / Visuals</button>
-          <button class="filter-btn" data-filter="Culture">Culture</button>
-          <button class="filter-btn" data-filter="Brand Work">Brand Work</button>
-          <button class="filter-btn" data-filter="Events">Events</button>
-          <button class="filter-btn" data-filter="Creative Systems">Creative Systems</button>
-      </div>
-
-      <div class="archive-grid" data-video-feed="archive" aria-live="polite">
-        <div class="otp-video-loading">Syncing the OTP Vault...</div>
-      </div>
-
-      <div class="archive-footer-cta center-text" style="margin-top: 80px; padding-bottom: 40px; display: flex; flex-direction: column; align-items: center;">
-        <h2 class="syne-bold" style="margin-bottom: 20px;">Your vision belongs here.</h2>
-        <div style="display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap;">
-          <a href="/bookings" class="book-btn k-hover" style="background: var(--accent2); color: var(--accent2-text); padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center;">Book OTP</a>
-                      <a href="mailto:contact@onlytrueperspective.tech" class="book-btn-ghost k-hover" style="color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 12px 24px; border-radius: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Get in touch
-          </a>
+      <section class="archive-projects-section" aria-labelledby="selected-projects-title">
+        <div class="archive-section-heading">
+          <div>
+            <p class="archive-section-kicker">Selected work</p>
+            <h2 id="selected-projects-title">Projects &amp; Case Studies</h2>
+          </div>
+          <p>Browse the work by what it is, when it launched, and how OTP built it.</p>
         </div>
-      </div>
+
+        <div class="archive-collections" aria-label="Project collections" data-archive-collections>
+          <button type="button" class="archive-collection-btn is-active" data-archive-collection="Everything" aria-pressed="true">Everything</button>
+          <button type="button" class="archive-collection-btn" data-archive-collection="Featured Projects" aria-pressed="false">Featured Projects</button>
+          <button type="button" class="archive-collection-btn" data-archive-collection="Newest" aria-pressed="false">Newest</button>
+          <button type="button" class="archive-collection-btn" data-archive-collection="Internal Products" aria-pressed="false">Internal Products</button>
+          <button type="button" class="archive-collection-btn" data-archive-collection="Client Projects" aria-pressed="false">Client Projects</button>
+          <button type="button" class="archive-collection-btn" data-archive-collection="Music" aria-pressed="false">Music</button>
+          <button type="button" class="archive-collection-btn" data-archive-collection="Events" aria-pressed="false">Events</button>
+          <button type="button" class="archive-collection-btn" data-archive-collection="Software" aria-pressed="false">Software</button>
+        </div>
+
+        <form class="archive-filter-panel" data-archive-filters>
+          <label class="archive-search-field">
+            <span>Search projects</span>
+            <input type="search" inputmode="search" autocomplete="off" placeholder="Search title, service, or technology" data-archive-search />
+          </label>
+          <label>
+            <span>Category</span>
+            <select data-archive-category><option value="">All categories</option></select>
+          </label>
+          <label>
+            <span>Status</span>
+            <select data-archive-status><option value="">All statuses</option></select>
+          </label>
+          <label>
+            <span>Year</span>
+            <select data-archive-year><option value="">All years</option></select>
+          </label>
+          <label>
+            <span>Technology</span>
+            <select data-archive-technology><option value="">All technology</option></select>
+          </label>
+        </form>
+
+        <div class="archive-results-bar">
+          <p data-archive-result-count aria-live="polite">Loading projects…</p>
+          <button type="button" class="archive-clear-btn" data-archive-clear>Clear filters</button>
+        </div>
+
+        <div class="archive-case-study-grid" data-archive-projects aria-live="polite" aria-busy="true"></div>
+        <div class="archive-empty" data-archive-empty hidden>
+          <h3>No projects match those filters.</h3>
+          <p>Clear the filters to return to the full Archive.</p>
+        </div>
+      </section>
+
+      <section class="archive-timeline-section" aria-labelledby="archive-timeline-title">
+        <div class="archive-section-heading">
+          <div>
+            <p class="archive-section-kicker">Living history</p>
+            <h2 id="archive-timeline-title">OTP Timeline</h2>
+          </div>
+          <p>The record grows with every release, client transformation, event, and internal system.</p>
+        </div>
+        <ol class="archive-timeline" data-archive-timeline></ol>
+      </section>
+
+      <section class="archive-vault-section" aria-labelledby="visual-vault-title">
+        <div class="archive-section-heading">
+          <div>
+            <p class="archive-section-kicker">Motion archive</p>
+            <h2 id="visual-vault-title">Visual Vault</h2>
+          </div>
+          <p>Selected recaps, music visuals, culture, and production work from the OTP channel.</p>
+        </div>
+        <div id="filter-wrap" class="active" aria-label="Visual Vault filters">
+          <button class="filter-btn active" type="button" data-filter="All">All</button>
+          <button class="filter-btn" type="button" data-filter="Video / Recap">Video / Recap</button>
+          <button class="filter-btn" type="button" data-filter="Music / Visuals">Music / Visuals</button>
+          <button class="filter-btn" type="button" data-filter="Culture">Culture</button>
+          <button class="filter-btn" type="button" data-filter="Brand Work">Brand Work</button>
+          <button class="filter-btn" type="button" data-filter="Events">Events</button>
+          <button class="filter-btn" type="button" data-filter="Creative Systems">Creative Systems</button>
+        </div>
+        <div class="archive-grid" data-video-feed="archive" data-video-sync="curated" aria-live="polite">
+          <div class="otp-video-loading">Syncing the OTP Vault...</div>
+        </div>
+      </section>
+
+      <section class="archive-footer-cta center-text" aria-labelledby="archive-cta-title">
+        <p class="archive-section-kicker">Build the next entry</p>
+        <h2 class="syne-bold" id="archive-cta-title">Your vision belongs here.</h2>
+        <div class="archive-cta-actions">
+          <a href="/bookings" class="book-btn k-hover">Book OTP</a>
+          <a href="mailto:contact@onlytrueperspective.tech" class="book-btn-ghost k-hover">Get in touch</a>
+        </div>
+      </section>
 
     </div>
   </main>
@@ -178,174 +258,12 @@
     </div>
   </footer>
 
-  <canvas id="cursor-canvas"></canvas>
-
-  <!-- SVG Filter for Liquid Distortion (Works with YouTube/External Images) -->
-  <svg style="position: absolute; width: 0; height: 0; pointer-events: none;">
-    <defs>
-      <filter id="liquid-distortion">
-        <feTurbulence type="fractalNoise" baseFrequency="0.01 0.01" numOctaves="1" result="warp"></feTurbulence>
-        <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="0" in="SourceGraphic" in2="warp"></feDisplacementMap>
-      </filter>
-    </defs>
-  </svg>
-
   <script src="site-config.js?v=16.4.2"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/kursor"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  
-  <script>
-    // Page-specific: Project Reveal & 3D Parallax & Filters
-    document.addEventListener("DOMContentLoaded", (event) => {
-       // Filter Logic
-       const filterIcon = document.querySelector('.neon-folder');
-       const filterWrap = document.getElementById('filter-wrap');
-       if (filterWrap) filterWrap.classList.add('active'); // Added this line
-       const filterBtns = document.querySelectorAll('.filter-btn');
-       const projects = document.querySelectorAll('.project-card');
-
-       if (filterIcon && filterWrap) {
-           const filterToggleHost = filterIcon.parentElement;
-           if (filterToggleHost) {
-               filterIcon.style.cursor = 'pointer';
-               filterToggleHost.addEventListener('click', () => {
-                   const isVisible = filterWrap.classList.contains('active');
-                   if (isVisible) {
-                       filterWrap.classList.remove('active');
-                   } else {
-                       filterWrap.classList.add('active');
-                   }
-               });
-           }
-       }
-
-       filterBtns.forEach(btn => {
-           btn.addEventListener('click', () => {
-               // Update active class
-               filterBtns.forEach(b => b.classList.remove('active'));
-               btn.classList.add('active');
-
-               const filter = btn.dataset.filter;
-               let delay = 0;
-
-               projects.forEach(project => {
-                   if (filter === 'All' || project.dataset.category === filter) {
-                       project.style.display = 'block';
-                       // Animate in
-                       if (typeof gsap !== 'undefined') {
-                           gsap.fromTo(project, 
-                               { opacity: 0, y: 20 }, 
-                               { opacity: 1, y: 0, duration: 0.5, delay: delay }
-                           );
-                           delay += 0.05;
-                       }
-                   } else {
-                       project.style.display = 'none';
-                   }
-               });
-           });
-       });
-
-       if (typeof gsap !== 'undefined') {
-          const animateProjectCards = () => {
-              const cards = Array.from(document.querySelectorAll('.project-card'));
-              if (!cards.length) return;
-
-              gsap.from(cards, {
-                  opacity: 0,
-                  y: 30,
-                  rotationX: 10,
-                  stagger: 0.05,
-                  duration: 0.6,
-                  ease: 'power2.out'
-              });
-
-              if (window.innerWidth > 1024 && !window.OTP_ARCHIVE_PARALLAX_WIRED) {
-                  window.OTP_ARCHIVE_PARALLAX_WIRED = true;
-                  document.addEventListener('mousemove', (e) => {
-                      const liveCards = document.querySelectorAll('.project-card');
-                      if (!liveCards.length) return;
-                      const xNorm = (e.clientX / window.innerWidth) - 0.5;
-                      const yNorm = (e.clientY / window.innerHeight) - 0.5;
-                      liveCards.forEach(card => {
-                          gsap.to(card, {
-                              rotationY: xNorm * 8,
-                              rotationX: -yNorm * 8,
-                              duration: 1.2,
-                              ease: 'power1.out'
-                          });
-                      });
-                  });
-              }
-          };
-
-          animateProjectCards();
-          document.addEventListener('otp:videos-rendered', animateProjectCards, { once: true });
-       }
-    });
-  </script>
-
-  <script src="stars-v2.js?v=20260601-daystars"></script>
-  <script>
-    // Page-specific: SVG Liquid Distortion Effect
-    document.addEventListener("DOMContentLoaded", () => {
-        const turbulence = document.querySelector('#liquid-distortion feTurbulence');
-        const displacement = document.querySelector('#liquid-distortion feDisplacementMap');
-
-        if (typeof gsap === 'undefined' || !turbulence || !displacement) return;
-
-        const wireLiquidCards = () => {
-            if (!window.matchMedia('(hover: hover)').matches) return;
-            document.querySelectorAll('.project-card').forEach(card => {
-                if (card.dataset.liquidWired === 'true') return;
-                if (card.dataset.noLiquid === 'true') return;
-                const img = card.querySelector('img');
-                if (!img) return;
-                card.dataset.liquidWired = 'true';
-
-                card.addEventListener('mouseenter', () => {
-                    img.style.filter = 'url(#liquid-distortion)';
-                    gsap.to(displacement, {
-                        attr: { scale: 150 },
-                        duration: 1.2,
-                        ease: 'power3.out'
-                    });
-                    gsap.to(turbulence, {
-                        attr: { baseFrequency: '0.02 0.05' },
-                        duration: 1.2,
-                        ease: 'power2.out'
-                    });
-                });
-
-                card.addEventListener('mouseleave', () => {
-                    gsap.to(displacement, {
-                        attr: { scale: 0 },
-                        duration: 0.8,
-                        ease: 'power2.inOut',
-                        onComplete: () => {
-                            img.style.filter = 'none';
-                        }
-                    });
-                    gsap.to(turbulence, {
-                        attr: { baseFrequency: '0.01 0.01' },
-                        duration: 0.8
-                    });
-                });
-            });
-        };
-
-        wireLiquidCards();
-        document.addEventListener('otp:videos-rendered', wireLiquidCards, { once: true });
-    });
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" defer></script>
-  <script src="otp-projects.js?v=20260609-hyh1" defer></script>
+  <script src="otp-projects.js?v=20260629-archive1" defer></script>
+  <script src="archive.js?v=20260629-archive2" defer></script>
   <script src="otp-video-library.js?v=1.0.0" defer></script>
   <script src="otp-attribution.js?v=16.9.1" defer></script>
-  <script src="site-init.js?v=20260617-palette1" defer></script>
+  <script src="site-init.js?v=20260629-archive3" defer></script>
   <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>
 </body>
 </html>

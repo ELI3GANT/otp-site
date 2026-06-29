@@ -19,8 +19,14 @@
     <priority>0.85</priority>
   </url>
   <url>
+    <loc>https://www.onlytrueperspective.tech/protocol</loc>
+    <lastmod>2026-06-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
     <loc>https://www.onlytrueperspective.tech/archive.html</loc>
-    <lastmod>2026-05-27</lastmod>
+    <lastmod>2026-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

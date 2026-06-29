@@ -37,7 +37,7 @@ const people = [
     avatarImagePath: ''
   },
   {
-    displayName: 'JD REVENGE',
+    displayName: 'JDRVENGE',
     initials: 'JD',
     role: 'Featured Artist',
     instagramUrl: 'https://www.instagram.com/jdrvenge',
@@ -82,7 +82,7 @@ const SONG_WARS_CONFIG = Object.freeze({
   eventDateLabel: 'Sunday, July 5, 2026',
   eventDateIso: '2026-07-05',
   primaryHost: '4reign',
-  featuredParticipants: Object.freeze(['A1ZEK', 'SPOOKY', 'ELI3GANT', 'YUNG HAVOC', 'JD REVENGE']),
+  featuredParticipants: Object.freeze(['A1ZEK', 'SPOOKY', 'ELI3GANT', 'YUNG HAVOC', 'JDRVENGE']),
   people: Object.freeze(people),
   publicShareUrl: 'https://onlytrueperspective.tech/songwars',
   canonicalUrl: 'https://www.onlytrueperspective.tech/songwars',
