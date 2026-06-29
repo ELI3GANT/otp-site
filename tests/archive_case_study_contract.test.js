@@ -79,6 +79,10 @@ assert.strictEqual(songWars.status, 'Live');
 
 assert.ok(hyh && hyh.beforeAfter, 'HYH keeps its existing before-and-after case-study media');
 assert.strictEqual(hyh.heroFit, 'contain', 'HYH Archive card contains the project screenshot instead of cropping it');
+assert.strictEqual(hyh.beforeAfter.before.width, 1600, 'HYH previous-state image declares its width');
+assert.strictEqual(hyh.beforeAfter.before.height, 816, 'HYH previous-state image declares its height');
+assert.strictEqual(hyh.beforeAfter.after.width, 1600, 'HYH rebuild image declares its width');
+assert.strictEqual(hyh.beforeAfter.after.height, 869, 'HYH rebuild image declares its height');
 assert.deepStrictEqual(
   library.getFeaturedProjects().map((project) => project.id),
   ['hyh-architecture-design'],
@@ -108,8 +112,14 @@ assert.ok(archiveClient.includes('replaceChildren'), 'renderer updates project r
 assert.ok(archiveClient.includes('textContent'), 'renderer treats project copy as text');
 assert.ok(archiveClient.includes("new URL("), 'renderer validates project links');
 assert.ok(archiveClient.includes("aria-disabled"), 'future case-study action has an accessible unavailable state');
+assert.ok(archiveClient.includes('archive-project-comparison'), 'archive renderer builds a real before-and-after comparison block');
+assert.ok(archiveClient.includes('hasComparison') && archiveClient.includes(' has-comparison'), 'HYH comparison receives a dedicated contained card layout');
 assert.ok(archiveStyles.includes('minmax(0, 1fr)'), 'archive grids prevent horizontal overflow');
 assert.ok(archiveStyles.includes('object-fit: cover'), 'project card art preserves its aspect ratio');
+assert.ok(archiveStyles.includes('.archive-page .bg-fixed::before'), 'archive renders a scoped CSS-only star/dot atmosphere');
+assert.ok(archiveStyles.includes('.archive-project-comparison-image'), 'archive comparison screenshots are contained by a dedicated media class');
+assert.ok(archiveStyles.includes('object-fit: contain'), 'archive comparison screenshots preserve their full aspect ratio');
+assert.ok(/\[data-theme="light"\]\s+\.archive-page[\s\S]*?--archive-surface:\s*rgba\(9,\s*9,\s*12/.test(archiveStyles), 'archive keeps dark OTP case-study surfaces under global light theme');
 assert.ok(
   /\.archive-case-study-card:not\(\.is-featured\)[\s\S]*?height:\s*clamp\(280px,\s*31vw,\s*430px\)/.test(archiveStyles),
   'standard Archive cards keep project screenshots bounded on desktop'
@@ -146,6 +156,11 @@ const renderedDocument = dom.window.document;
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action.is-unavailable[aria-disabled="true"]').length, projects.length, 'future case-study actions remain non-interactive');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action.is-unavailable[href]').length, 0, 'unavailable actions never receive a fallback URL');
+const hyhCard = renderedDocument.querySelector('[data-project-id="hyh-architecture-design"]');
+assert.ok(hyhCard && hyhCard.classList.contains('has-comparison'), 'HYH renders as a dedicated before-and-after card');
+assert.strictEqual(hyhCard.querySelectorAll('.archive-project-comparison-panel').length, 2, 'HYH renders both before and after panels');
+assert.ok(hyhCard.textContent.includes('Previous Website'), 'HYH before panel is explicitly labeled');
+assert.ok(hyhCard.textContent.includes('OTP Rebuild'), 'HYH after panel is explicitly labeled');
 
 console.log('   OK: OTP Archive case-study system');
 console.log('OTP ARCHIVE CASE-STUDY CONTRACT COMPLETE');

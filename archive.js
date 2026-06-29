@@ -83,6 +83,64 @@
     return list;
   };
 
+  const createProjectImage = (imageData, className, fallbackAlt, loading) => {
+    const image = document.createElement('img');
+    image.className = className || '';
+    image.src = safeHref(imageData && imageData.src);
+    image.alt = cleanText(imageData && imageData.alt, fallbackAlt);
+    image.width = Number(imageData && imageData.width) || 1200;
+    image.height = Number(imageData && imageData.height) || 800;
+    image.loading = loading || 'lazy';
+    image.decoding = 'async';
+    return image;
+  };
+
+  const createComparisonPanel = (imageData, key, index) => {
+    const isBefore = key === 'before';
+    const label = cleanText(imageData && imageData.label, isBefore ? 'Before' : 'After');
+    const panel = element('figure', `archive-project-comparison-panel archive-project-comparison-panel-${key}`);
+
+    const imageSrc = safeHref(imageData && imageData.src);
+    if (imageSrc) {
+      const image = createProjectImage(
+        imageData,
+        'archive-project-comparison-image',
+        `${label} project screenshot`,
+        index < 2 ? 'eager' : 'lazy'
+      );
+      image.addEventListener('error', () => {
+        image.removeAttribute('src');
+        panel.classList.add('is-missing');
+        panel.appendChild(element('span', 'archive-project-comparison-fallback', `${label} image unavailable`));
+      }, { once: true });
+      panel.appendChild(image);
+    } else {
+      panel.classList.add('is-placeholder');
+      panel.appendChild(element('span', 'archive-project-comparison-fallback', `${label} image reserved`));
+    }
+
+    panel.appendChild(element('span', 'archive-project-comparison-label', label));
+    panel.appendChild(element(
+      'figcaption',
+      'archive-project-comparison-caption',
+      imageData && imageData.caption
+        ? imageData.caption
+        : isBefore
+          ? 'Previous public experience.'
+          : 'OTP rebuilt experience.'
+    ));
+    return panel;
+  };
+
+  const createComparisonMedia = (project, index) => {
+    const comparison = element('div', 'archive-project-comparison');
+    const beforeAfter = project && project.beforeAfter ? project.beforeAfter : {};
+    comparison.setAttribute('aria-label', `${cleanText(project && project.title, 'Project')} before and after`);
+    comparison.appendChild(createComparisonPanel(beforeAfter.before, 'before', index));
+    comparison.appendChild(createComparisonPanel(beforeAfter.after, 'after', index));
+    return comparison;
+  };
+
   const createAction = (project, kind) => {
     const isCaseStudy = kind === 'case-study';
     const href = safeHref(isCaseStudy ? project.caseStudyUrl : project.projectUrl);
@@ -108,26 +166,30 @@
   };
 
   const createProjectCard = (project, index) => {
-    const card = element('article', `archive-case-study-card${project.featured ? ' is-featured' : ''}`);
+    const hasComparison = Boolean(project.beforeAfter && (project.beforeAfter.before || project.beforeAfter.after));
+    const card = element('article', `archive-case-study-card${project.featured ? ' is-featured' : ''}${hasComparison ? ' has-comparison' : ''}`);
     const titleId = `archive-project-${cleanText(project.id, String(index + 1))}`;
     card.setAttribute('aria-labelledby', titleId);
     card.dataset.projectId = cleanText(project.id);
     card.dataset.status = cleanText(project.status);
 
     const media = element('div', `archive-project-media${project.heroFit === 'contain' ? ' is-contain' : ''}`);
-    const image = document.createElement('img');
-    image.src = safeHref(project.heroImage && project.heroImage.src);
-    image.alt = cleanText(project.heroImage && project.heroImage.alt, `${project.title} project artwork`);
-    image.width = Number(project.heroImage && project.heroImage.width) || 1200;
-    image.height = Number(project.heroImage && project.heroImage.height) || 800;
-    image.loading = index < 2 ? 'eager' : 'lazy';
-    image.decoding = 'async';
-    image.addEventListener('error', () => {
-      image.removeAttribute('src');
-      media.classList.add('is-missing');
-      media.appendChild(element('span', 'archive-project-media-fallback', project.title));
-    }, { once: true });
-    media.appendChild(image);
+    if (hasComparison) {
+      media.appendChild(createComparisonMedia(project, index));
+    } else {
+      const image = createProjectImage(
+        project.heroImage,
+        '',
+        `${project.title} project artwork`,
+        index < 2 ? 'eager' : 'lazy'
+      );
+      image.addEventListener('error', () => {
+        image.removeAttribute('src');
+        media.classList.add('is-missing');
+        media.appendChild(element('span', 'archive-project-media-fallback', project.title));
+      }, { once: true });
+      media.appendChild(image);
+    }
 
     const mediaMeta = element('div', 'archive-project-media-meta');
     mediaMeta.appendChild(element('span', 'archive-project-status', project.status));

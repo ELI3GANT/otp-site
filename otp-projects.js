@@ -131,12 +131,16 @@
           label: 'Previous Website',
           src: 'assets/hyh-previous-website.jpg',
           alt: 'Previous HYH Architecture and Design website homepage',
+          width: 1600,
+          height: 816,
           caption: 'The previous public web presence had limited hierarchy, sparse navigation, and a basic presentation of architecture visuals.'
         }),
         after: Object.freeze({
           label: 'OTP Rebuild',
           src: 'assets/hyh-otp-rebuild.jpg',
           alt: 'OTP rebuild of the HYH Architecture and Design homepage',
+          width: 1600,
+          height: 869,
           caption: 'OTP rebuilt the homepage into a cinematic architecture and visualization experience with premium navigation and clear project-start CTAs.'
         })
       }),
