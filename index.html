@@ -619,7 +619,7 @@
           <span class="step-indicator">05 / 05</span>
           <h3>What is your main goal for this year?</h3>
           <div class="audit-input-wrap">
-            <textarea id="audit-goal-input" class="audit-textarea" placeholder="e.g. Hit 100k subscribers, Launch my mentorship, Rebrand for high-ticket clients..."></textarea>
+            <textarea id="audit-goal-input" class="audit-textarea" aria-label="Main goal for this year" placeholder="e.g. Hit 100k subscribers, Launch my mentorship, Rebrand for high-ticket clients..."></textarea>
           </div>
           <button class="book-btn k-hover" onclick="window.AuditEngine.submitGoal()" style="margin-top: 20px; width: 100%;">Analyze My Intent</button>
         </div>
@@ -638,7 +638,7 @@
             <h3>Get Your Analysis</h3>
             <p>Enter your email to receive your custom brand roadmap.</p>
             <div class="audit-form">
-              <input type="email" id="audit-email" placeholder="your@email.com" class="audit-input" autocomplete="off" />
+              <input type="email" id="audit-email" aria-label="Email address for audit results" placeholder="your@email.com" class="audit-input" autocomplete="off" />
               <button onclick="window.AuditEngine.submit()" id="audit-submit-btn" class="book-btn k-hover magnetic-btn">View My Strategy</button>
               <div id="audit-error-msg" style="opacity:0; transition: opacity 0.3s; color:#ff4444; font-size:0.75rem; margin-top:8px; font-weight:700;"></div>
               <p class="audit-privacy-text" style="margin-top: 15px; font-size: 0.75rem; opacity: 0.5;">
