@@ -20,9 +20,10 @@
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/bookings.css?v=20260610-offer-system-v1" />
+    <link rel="stylesheet" href="/bookings.css?v=20260630-booking-perf-v1" />
   </head>
   <body>
+    <a class="skip-link" href="#booking-form">Skip to booking form</a>
     <main class="booking-page">
       <header class="booking-header">
         <a class="brand" href="/bookings" aria-label="OTP Bookings">
@@ -155,6 +156,7 @@
           <h2>OTP turns the request into a review-ready project record.</h2>
           <span>After submission, OTP reviews your request, confirms the scope, and prepares the right proposal, invoice, agreement, or portal step. If you choose "Not Sure Yet," OTP Oracle can recommend The Signal, The Engine, or The System from your answers.</span>
           <span class="booking-intake-note">This page starts the conversation—package, scope, and contact. OTP Project Intake collects your full brief and file uploads when you are ready to move forward.</span>
+          <span class="booking-intake-note">No payment is collected here. This is a quote request, not a final commitment.</span>
           <ol class="next-steps-list" aria-label="What happens after booking">
             <li><strong>Review</strong><span>OTP checks fit, missing info, budget, and timeline.</span></li>
             <li><strong>Plan</strong><span>You get the best next step: quote, call, portal, or intake.</span></li>
@@ -180,7 +182,7 @@
           </aside>
         </div>
 
-        <form id="booking-form" class="booking-form" novalidate>
+        <form id="booking-form" class="booking-form" novalidate tabindex="-1">
           <label class="honeypot" aria-hidden="true" tabindex="-1">
             Company website
             <input id="otp-company-website" name="otp_company_website" tabindex="-1" autocomplete="off" />
@@ -388,6 +390,6 @@
     </main>
 
     <script src="/otp-attribution.js?v=16.9.1" defer></script>
-    <script src="/bookings.js?v=20260610-offer-system-v1" defer></script>
+    <script src="/bookings.js?v=20260630-booking-perf-v1" defer></script>
   </body>
 </html>

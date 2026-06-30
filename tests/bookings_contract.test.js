@@ -17,7 +17,7 @@ const js = read('bookings.js');
 const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
-const offerSystemKey = '20260610-offer-system-v1';
+const offerSystemKey = '20260630-booking-perf-v1';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -64,6 +64,8 @@ for (const source of [html, js, pricing, server]) {
 }
 
 assert.ok(html.includes('Start a Project with OTP.'), 'booking hero is direct and conversion-focused');
+assert.ok(html.includes('class="skip-link"') && html.includes('href="#booking-form"'), 'booking page provides a keyboard skip link to the intake form');
+assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');
 assert.ok(html.includes('OTP will route the work into The Signal, The Engine, or The System'), 'booking hero sets current package ladder expectations');
 assert.ok(html.includes('official-brand-mark'), 'header keeps the official OTP site mark');
 assert.ok(html.includes('/assets/otp-hero-poster-frame.png'), 'header uses the stable optimized OTP poster mark');
@@ -116,6 +118,8 @@ assert.ok(html.includes('Need to send files or references?'), 'project intake se
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');
 assert.ok(html.includes('Open Secure Project Intake'), 'project intake button copy is explicit');
 assert.ok(html.includes('This page starts the conversation'), 'bookings explains public intake role');
+assert.ok(html.includes('No payment is collected here.'), 'booking intake states that payment is not collected with the request');
+assert.ok(html.includes('quote request, not a final commitment'), 'booking intake distinguishes a quote request from a final commitment');
 assert.ok(html.includes('next-steps-list'), 'what-happens-next list is visible near the intake form');
 for (const field of [
     'preferred_contact_method',
@@ -252,6 +256,8 @@ assert.ok(css.includes('display: flex;') && css.includes('flex-direction: column
 assert.ok(css.includes('word-break: normal;') && css.includes('overflow-wrap: normal;'), 'service selector badges cannot collapse into vertical letters');
 assert.ok(css.includes('grid-template-columns: 1fr;') && !css.includes('scroll-snap-type: x mandatory'), 'mobile service selector stacks as readable one-card rows');
 assert.ok(css.includes('next-steps-list'), 'what-happens-next list is styled');
+assert.ok(/\.booking-footer-links a\s*\{[^}]*min-height:\s*44px/.test(css), 'booking footer links keep mobile-safe tap targets');
+assert.ok(!/\.booking-page\s*\{[^}]*animation:\s*pageRise/.test(css), 'booking entry motion must not animate the entire page subtree');
 assert.ok(css.includes('otpStarDrift'), 'animated star field is present');
 assert.ok(css.includes('otpOrbitalShift'), 'animated orbital glow is present');
 assert.ok(css.includes('sigilBreath'), 'sigil glow animation is present');
