@@ -608,6 +608,12 @@
   color: var(--archive-accent-ink);
 }
 
+.archive-project-action-conversion {
+  border-color: rgba(213, 181, 108, 0.72);
+  background: rgba(213, 181, 108, 0.12);
+  color: var(--archive-text);
+}
+
 .archive-project-action:not(.is-unavailable):hover {
   transform: translateY(-2px);
 }
@@ -871,6 +877,10 @@
 
   .archive-project-action {
     width: 100%;
+  }
+
+  .archive-project-action-conversion {
+    order: -1;
   }
 
   .archive-results-bar {

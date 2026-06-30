@@ -2729,7 +2729,7 @@ const OTP_BOOKINGS_RESPONSE_HEADER_BLOCKLIST = new Set([
     'upgrade'
 ]);
 
-const BOOKING_CLIENT_MESSAGE = 'Your request is in. OTP will review the details and follow up with the best next step.';
+const BOOKING_CLIENT_MESSAGE = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
 const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Booking received. OTP Oracle recommendation is pending review.';
 const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not submit the booking yet. Please check the required fields and try again.';
 const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit']);

@@ -165,6 +165,14 @@
     return link;
   };
 
+  const createBookingAction = (project) => {
+    const href = safeHref(project.bookingUrl || project.ctaHref || '/bookings?source=archive-card');
+    const label = cleanText(project.bookingCtaLabel || project.ctaLabel, 'Build something like this');
+    const link = element('a', 'archive-project-action archive-project-action-conversion', label);
+    link.href = href || '/bookings?source=archive-card';
+    return link;
+  };
+
   const createProjectCard = (project, index) => {
     const hasComparison = Boolean(project.beforeAfter && (project.beforeAfter.before || project.beforeAfter.after));
     const card = element('article', `archive-case-study-card${project.featured ? ' is-featured' : ''}${hasComparison ? ' has-comparison' : ''}`);
@@ -223,6 +231,7 @@
 
     const actions = element('div', 'archive-project-actions');
     actions.appendChild(createAction(project, 'project'));
+    actions.appendChild(createBookingAction(project));
     actions.appendChild(createAction(project, 'case-study'));
     content.appendChild(actions);
     card.appendChild(content);

@@ -19,6 +19,14 @@ assert.ok(index.includes('Visual Success <span class="visual-success-accent">Sys
 assert.ok(index.includes('Quote-First Project Intake'), 'Visual Success section includes quote-first intake card');
 assert.ok(index.includes('Fast-Lane Asset Path'), 'Visual Success section includes fast-lane card');
 assert.ok(index.includes('Private Delivery Workspace'), 'Visual Success section includes portal delivery card');
+assert.ok(index.includes('Proof first: live projects, before/after rebuilds, event pages, artist rollouts, and client-ready production systems.'), 'homepage hero adds proof-first trust line');
+assert.ok(index.includes('id="fast-lane-capture"'), 'homepage exposes the fast client capture section');
+assert.ok(index.includes('Same-Day Signal'), 'homepage fast capture includes Same-Day Signal lane');
+assert.ok(index.includes('Website / Brand Fix'), 'homepage fast capture includes Website / Brand Fix lane');
+assert.ok(index.includes('Launch Package'), 'homepage fast capture includes Launch Package lane');
+assert.ok(index.includes('Need a page like Song Wars?'), 'homepage routes Song Wars proof to booking');
+assert.ok(index.includes('Need a transformation like HYH?'), 'homepage routes HYH proof to booking');
+assert.ok(index.includes('Need a rollout like PROTOCOL?'), 'homepage routes PROTOCOL proof to booking');
 assert.ok(!index.includes('ENGINEERED_STATISTICS'), 'reverted statistics eyebrow must not return');
 assert.ok(!index.includes('Viewer Engagement Growth'), 'unverified engagement-growth claim must not return');
 assert.ok(!index.includes('Visions Delivered Globally'), 'unverified delivered-globally claim must not return');
@@ -76,6 +84,13 @@ assert.ok(styles.includes('width: min(100%, calc(100vw - 32px)) !important;'), '
 assert.ok(styles.includes('overflow-x: clip'), 'mobile hero blocks horizontal overflow');
 assert.ok(styles.includes('Mobile hero title fit + spacing/scroll polish'), 'mobile hero spacing and scroll polish guard is documented');
 assert.ok(styles.includes('Homepage hero identity rebuild') && styles.includes('one centered animated OTP mark'), 'homepage hero uses the animated unified identity rebuild styles');
+assert.ok(styles.includes('section-conversion-capture'), 'homepage conversion capture section is styled');
+assert.ok(styles.includes('conversion-lane-grid'), 'homepage conversion lane grid is styled');
+assert.ok(styles.includes('prospect-cta-grid'), 'homepage prospect CTA grid is styled');
+assert.ok(styles.includes('body.archive-page.nav-open .nav-drawer'), 'archive-style subpage mobile drawer gets a full-screen open-state override');
+assert.ok(styles.includes('height: 100dvh !important'), 'archive-style subpage drawer fills the mobile viewport');
+assert.ok(styles.includes('mix-blend-mode: normal !important'), 'archive-style drawer cannot blend with hero text behind it');
+assert.ok(/body\.archive-page \.theme-toggle-btn:not\(\.mobile-theme-toggle\)\s*\{[\s\S]*?display:\s*none !important;/.test(styles), 'mobile archive hides the fixed theme FAB so card media and CTAs stay unobstructed');
 assert.ok(styles.includes('body.home-page .hero-identity') && styles.includes('flex-direction: column;'), 'homepage hero identity uses a stable centered flex stack');
 assert.ok(styles.includes('body.home-page .hero-symbol-shell::after'), 'homepage hero symbol has a lightweight premium aura ring');
 assert.ok(styles.includes('width: clamp(166px, 12.6vw, 204px);'), 'desktop hero symbol is slightly larger without becoming oversized');
@@ -185,15 +200,15 @@ assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint conta
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
 assert.ok(styles.includes('body.home-page .theme-toggle-btn:not(.mobile-theme-toggle)'), 'mobile homepage hides fixed theme FAB so drawer toggle owns theme switching');
 assert.strictEqual((index.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9', 'homepage theme guard cache-bust is current');
-assert.ok(index.indexOf('theme-chrono.js?v=9') < index.indexOf('styles.css?v=16.8.26'), 'homepage theme guard loads before stylesheet');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.26', 'homepage styles cache-bust is current');
+assert.ok(index.indexOf('theme-chrono.js?v=9') < index.indexOf('styles.css?v=16.8.27'), 'homepage theme guard loads before stylesheet');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.27', 'homepage styles cache-bust is current');
 assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', 'homepage stars cache-bust is current');
 assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260629-archive3', 'homepage runtime cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', 'insight.html'].forEach((file) => {
   const html = read(file);
   assert.strictEqual((html.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9', `${file} theme guard cache-bust matches index`);
-  assert.ok(html.indexOf('theme-chrono.js?v=9') < html.indexOf('styles.css?v=16.8.26'), `${file} theme guard loads before stylesheet`);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.26', `${file} styles cache-bust matches index`);
+  assert.ok(html.indexOf('theme-chrono.js?v=9') < html.indexOf('styles.css?v=16.8.27'), `${file} theme guard loads before stylesheet`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.27', `${file} styles cache-bust matches index`);
   if (file === 'archive.html') {
     assert.ok(!html.includes('stars-v2.js'), 'archive omits the animated starfield from its performance-critical project index');
   } else {
@@ -203,7 +218,7 @@ assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '2026
 });
 
 const notFound = read('404.html');
-assert.strictEqual((notFound.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.26', '404 uses the current shared stylesheet cache-bust');
+assert.strictEqual((notFound.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.27', '404 uses the current shared stylesheet cache-bust');
 assert.ok(notFound.includes('class="error-particles"'), '404 uses a CSS-only particle layer');
 assert.ok(!notFound.includes('theme-chrono.js'), '404 does not load runtime theme switching');
 assert.ok(!notFound.includes('stars-v2.js'), '404 does not load the animated starfield runtime');

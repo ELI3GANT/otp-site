@@ -30,8 +30,8 @@ assert.ok(index.includes('styles.css?v='), 'index loads styles.css');
 assert.ok(index.includes('gsap.min.js'), 'index loads GSAP');
 assert.ok(index.includes('ScrollTrigger.min.js'), 'index loads ScrollTrigger');
 assert.ok(index.includes('site-init.js?v='), 'index loads site-init');
-assert.ok(index.includes('otp-projects.js?v=20260629-archive4'), 'index loads reusable public project library');
-assert.ok(archive.includes('otp-projects.js?v=20260629-archive4'), 'archive loads reusable public project library');
+assert.ok(index.includes('otp-projects.js?v=20260629-conversion1'), 'index loads reusable public project library');
+assert.ok(archive.includes('otp-projects.js?v=20260629-conversion1'), 'archive loads reusable public project library');
 const indexSiteInitV = (index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
 const insightSiteInitV = (insight.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
 assert.ok(indexSiteInitV && insightSiteInitV, 'index and insight declare site-init cache-bust');
@@ -64,6 +64,10 @@ assertStylesMatchesIndex(privacy, 'privacy.html');
 assertStylesMatchesIndex(notFound, '404.html');
 assert.ok(index.includes('data-editable='), 'CMS-editable regions present');
 assert.match(index, /href="\/archive"/, 'desktop nav includes the canonical Archive route (parity with mobile drawer)');
+assert.ok(index.includes('id="fast-lane-capture"'), 'homepage includes fast client capture path');
+assert.ok(index.includes('/bookings?source=homepage-fast-lane&service=same-day-signal'), 'homepage fast lane CTA routes into bookings with source tracking');
+assert.ok(index.includes('/bookings?source=homepage-site-fix&service=website-brand-fix'), 'homepage site fix CTA routes into bookings with source tracking');
+assert.ok(index.includes('/bookings?source=homepage-launch-package&service=launch-package'), 'homepage launch CTA routes into bookings with source tracking');
 assert.ok(
     index.includes('https://www.onlytrueperspective.tech/') && index.includes('rel="canonical"'),
     'index homepage canonical/og use final www canonical host'

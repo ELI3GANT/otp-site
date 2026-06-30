@@ -52,6 +52,8 @@ projects.forEach((project) => {
     'status',
     'launchDate',
     'projectUrl',
+    'bookingUrl',
+    'bookingCtaLabel',
     'heroImage'
   ].forEach((field) => assert.ok(project[field], `${project.id} supplies ${field}`));
   ['categories', 'disciplines', 'services', 'technology', 'tags', 'collections'].forEach((field) => {
@@ -67,17 +69,20 @@ const hyh = projects.find((project) => project.id === 'hyh-architecture-design')
 
 assert.ok(protocol && protocol.featured, 'PROTOCOL is a featured Archive case study');
 assert.strictEqual(protocol.projectUrl, '/protocol', 'PROTOCOL links to its live project');
+assert.strictEqual(protocol.bookingUrl, '/bookings?source=archive-protocol&service=artist-campaign', 'PROTOCOL routes conversion CTA to artist campaign intake');
 assert.ok(protocol.disciplines.includes('Music Rollout'), 'PROTOCOL exposes rollout discipline');
 assert.ok(protocol.disciplines.includes('Brand Identity'), 'PROTOCOL exposes identity discipline');
 assert.strictEqual(protocol.status, 'Released');
 
 assert.ok(songWars && songWars.featured, 'Song Wars is a featured Archive case study');
 assert.strictEqual(songWars.projectUrl, '/songwars', 'Song Wars links to its live project');
+assert.strictEqual(songWars.bookingUrl, '/bookings?source=archive-songwars&service=event-community-rollout', 'Song Wars routes conversion CTA to event rollout intake');
 assert.ok(songWars.disciplines.includes('Live Event'), 'Song Wars exposes event discipline');
 assert.ok(songWars.disciplines.includes('Community'), 'Song Wars exposes community discipline');
 assert.strictEqual(songWars.status, 'Live');
 
 assert.ok(hyh && hyh.beforeAfter, 'HYH keeps its existing before-and-after case-study media');
+assert.strictEqual(hyh.bookingUrl, '/bookings?source=archive-hyh&service=website-business-fix', 'HYH routes conversion CTA to website/business fix intake');
 assert.strictEqual(hyh.heroFit, 'contain', 'HYH Archive card contains the project screenshot instead of cropping it');
 assert.strictEqual(hyh.beforeAfter.before.width, 1600, 'HYH previous-state image declares its width');
 assert.strictEqual(hyh.beforeAfter.before.height, 816, 'HYH previous-state image declares its height');
@@ -113,11 +118,14 @@ assert.ok(archiveClient.includes('textContent'), 'renderer treats project copy a
 assert.ok(archiveClient.includes("new URL("), 'renderer validates project links');
 assert.ok(archiveClient.includes("aria-disabled"), 'future case-study action has an accessible unavailable state');
 assert.ok(archiveClient.includes('archive-project-comparison'), 'archive renderer builds a real before-and-after comparison block');
+assert.ok(archiveClient.includes('createBookingAction'), 'archive renderer builds booking-focused conversion actions');
+assert.ok(archiveClient.includes('archive-project-action-conversion'), 'archive conversion actions receive dedicated styling hook');
 assert.ok(archiveClient.includes('hasComparison') && archiveClient.includes(' has-comparison'), 'HYH comparison receives a dedicated contained card layout');
 assert.ok(archiveStyles.includes('minmax(0, 1fr)'), 'archive grids prevent horizontal overflow');
 assert.ok(archiveStyles.includes('object-fit: cover'), 'project card art preserves its aspect ratio');
 assert.ok(archiveStyles.includes('.archive-page .bg-fixed::before'), 'archive renders a scoped CSS-only star/dot atmosphere');
 assert.ok(archiveStyles.includes('.archive-project-comparison-image'), 'archive comparison screenshots are contained by a dedicated media class');
+assert.ok(archiveStyles.includes('.archive-project-action-conversion'), 'archive conversion actions have scoped styles');
 assert.ok(archiveStyles.includes('object-fit: contain'), 'archive comparison screenshots preserve their full aspect ratio');
 assert.ok(/\[data-theme="light"\]\s+\.archive-page[\s\S]*?--archive-surface:\s*rgba\(9,\s*9,\s*12/.test(archiveStyles), 'archive keeps dark OTP case-study surfaces under global light theme');
 assert.ok(
@@ -154,6 +162,7 @@ dom.window.eval(read('otp-projects.js'));
 dom.window.eval(archiveClient);
 const renderedDocument = dom.window.document;
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
+assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-conversion').length, projects.length, 'runtime renders one booking conversion action per project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action.is-unavailable[aria-disabled="true"]').length, projects.length, 'future case-study actions remain non-interactive');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action.is-unavailable[href]').length, 0, 'unavailable actions never receive a fallback URL');
 const hyhCard = renderedDocument.querySelector('[data-project-id="hyh-architecture-design"]');

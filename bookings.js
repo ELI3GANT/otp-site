@@ -951,8 +951,8 @@ function renderSuccess(data) {
   els.success.classList.remove('hidden');
   els.success.classList.toggle('partial', !recommendation);
   els.form.classList.add('submitted');
-  els.successTitle.textContent = 'Your request is in. OTP will review the details and follow up with the best next step.';
-  els.successCopy.textContent = 'After review, you may receive a private OTP Client Portal link where you can view project status, documents, payment steps, and approvals.';
+  els.successTitle.textContent = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
+  els.successCopy.textContent = 'After review, OTP may send scope questions, a package recommendation, a proposal, or a private Client Portal link for documents, payment steps, and approvals.';
   els.successMeta.replaceChildren();
   els.successActions.replaceChildren();
 

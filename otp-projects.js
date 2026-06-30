@@ -67,6 +67,8 @@
       heroFit: 'contain',
       projectUrl: '/songwars',
       projectCtaLabel: 'Visit Song Wars',
+      bookingUrl: '/bookings?source=archive-songwars&service=event-community-rollout',
+      bookingCtaLabel: 'Book OTP for a launch',
       caseStudyUrl: '',
       caseStudyCtaLabel: 'Read Case Study'
     }),
@@ -97,6 +99,8 @@
       }),
       projectUrl: '/protocol',
       projectCtaLabel: 'Visit PROTOCOL',
+      bookingUrl: '/bookings?source=archive-protocol&service=artist-campaign',
+      bookingCtaLabel: 'Plan an artist rollout',
       caseStudyUrl: '',
       caseStudyCtaLabel: 'Read Case Study'
     }),
@@ -146,6 +150,8 @@
       }),
       projectUrl: '/bookings?source=hyh-project',
       projectCtaLabel: 'Start a Similar Project',
+      bookingUrl: '/bookings?source=archive-hyh&service=website-business-fix',
+      bookingCtaLabel: 'Get a site fix quote',
       caseStudyUrl: '',
       caseStudyCtaLabel: 'Read Case Study',
       ctaHref: '/bookings?source=hyh-project',
