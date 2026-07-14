@@ -17,7 +17,7 @@ const js = read('bookings.js');
 const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
-const offerSystemKey = '20260630-booking-perf-v1';
+const offerSystemKey = '20260713-mobile-input-v1';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -228,6 +228,7 @@ for (const key of [
 assert.ok(css.includes('@media (max-width: 640px)'), 'mobile breakpoint exists');
 assert.ok(css.includes('@media (max-width: 430px)'), 'small iPhone breakpoint exists');
 assert.ok(css.includes('@media (max-width: 768px)'), 'tablet breakpoint exists');
+assert.match(css, /@media \(max-width: 768px\) \{[\s\S]*input:not\(\[type="checkbox"\]\):not\(\[type="radio"\]\):not\(\[type="range"\]\):not\(\[type="hidden"\]\),[\s\S]*font-size: 16px;/, 'mobile booking fields prevent iPhone focus zoom');
 assert.ok(css.includes('overflow-wrap: anywhere'), 'long values cannot overflow profile rows');
 assert.ok(css.includes('--surface-soft'), 'booking color system exposes surface-soft variable');
 assert.ok(css.includes('--border'), 'booking color system exposes border variable');
