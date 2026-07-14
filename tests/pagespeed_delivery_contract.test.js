@@ -19,6 +19,8 @@ const prodFullSweep = read('scripts/prod_full_sweep.js');
 
 assert.ok(!index.includes('preconnect" href="https://assets.calendly.com"'), 'homepage avoids non-critical calendly preconnect');
 assert.ok((index.match(/rel="preconnect"/g) || []).length <= 2, 'homepage keeps at most two preconnect hints');
+assert.ok(!index.includes('https://js.stripe.com/v3/'), 'homepage avoids loading Stripe before a payment action exists');
+assert.ok(!index.includes('pay_v2.js'), 'homepage avoids the unused legacy payment bridge');
 const heroMarkTag = (index.match(/<img[^>]*class="hero-symbol-mark"[^>]*>/) || [''])[0];
 assert.ok(heroMarkTag.includes('src="assets/otp-hero-centered.gif"'), 'homepage hero uses the animated optimized hero mark');
 assert.ok(heroMarkTag.includes('data-fallback-src="assets/otp-hero-poster-frame.png"'), 'homepage hero keeps a poster only as a load-error fallback');

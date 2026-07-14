@@ -148,6 +148,7 @@ assert.ok(styles.includes('Premium-lite adaptive performance'), 'performance mod
 assert.ok(styles.includes('html.stars-performance-mode body.home-page .hero-symbol-mark'), 'performance mode keeps unified hero mark polish');
 assert.ok(styles.includes('animation: heroIdentityFloat 7.5s ease-in-out infinite;'), 'hero symbol uses one subtle CSS motion source');
 assert.ok(styles.includes('@media (prefers-reduced-motion: reduce) {\n  body.home-page .hero-symbol-shell,'), 'reduced motion disables the hero shell animation');
+assert.match(styles, /@media \(prefers-reduced-motion: reduce\) \{\s*\*,\s*\*::before,\s*\*::after \{[^}]*animation-duration: 0\.001ms !important;[^}]*animation-iteration-count: 1 !important;[^}]*transition-duration: 0\.001ms !important;/, 'reduced motion globally stops decorative animation loops');
 assert.ok(styles.includes('width: clamp(166px, 12.6vw, 204px);'), 'desktop hero symbol is sized as a deliberate responsive animated emblem');
 assert.ok(!styles.includes('html.stars-performance-mode .home-page .hero .hero-eye-3d,\nhtml.stars-performance-mode[data-theme="light"] .home-page .hero .hero-eye-3d,\nhtml.stars-performance-mode[data-theme="dark"] .home-page .hero .hero-eye-3d {\n  animation: none !important;\n  transform: none !important;\n  will-change: auto !important;\n  filter: none !important;\n}'), 'performance mode no longer strips all hero logo rendering');
 assert.ok(stars.includes('enablePerformanceMode'), 'adaptive starfield performance mode is preserved');
@@ -202,15 +203,15 @@ assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint conta
 assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
 assert.ok(styles.includes('body.home-page .theme-toggle-btn:not(.mobile-theme-toggle)'), 'mobile homepage hides fixed theme FAB so drawer toggle owns theme switching');
 assert.strictEqual((index.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9', 'homepage theme guard cache-bust is current');
-assert.ok(index.indexOf('theme-chrono.js?v=9') < index.indexOf('styles.css?v=16.8.27'), 'homepage theme guard loads before stylesheet');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.27', 'homepage styles cache-bust is current');
+assert.ok(index.indexOf('theme-chrono.js?v=9') < index.indexOf('styles.css?v=16.8.28'), 'homepage theme guard loads before stylesheet');
+assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.28', 'homepage styles cache-bust is current');
 assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260601-daystars', 'homepage stars cache-bust is current');
 assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260629-archive3', 'homepage runtime cache-bust is current');
 ['archive.html', 'insights.html', 'terms.html', 'privacy.html', 'insight.html'].forEach((file) => {
   const html = read(file);
   assert.strictEqual((html.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9', `${file} theme guard cache-bust matches index`);
-  assert.ok(html.indexOf('theme-chrono.js?v=9') < html.indexOf('styles.css?v=16.8.27'), `${file} theme guard loads before stylesheet`);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.27', `${file} styles cache-bust matches index`);
+  assert.ok(html.indexOf('theme-chrono.js?v=9') < html.indexOf('styles.css?v=16.8.28'), `${file} theme guard loads before stylesheet`);
+  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.28', `${file} styles cache-bust matches index`);
   if (file === 'archive.html') {
     assert.ok(!html.includes('stars-v2.js'), 'archive omits the animated starfield from its performance-critical project index');
   } else {
@@ -220,7 +221,7 @@ assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '2026
 });
 
 const notFound = read('404.html');
-assert.strictEqual((notFound.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.27', '404 uses the current shared stylesheet cache-bust');
+assert.strictEqual((notFound.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.28', '404 uses the current shared stylesheet cache-bust');
 assert.ok(notFound.includes('class="error-particles"'), '404 uses a CSS-only particle layer');
 assert.ok(!notFound.includes('theme-chrono.js'), '404 does not load runtime theme switching');
 assert.ok(!notFound.includes('stars-v2.js'), '404 does not load the animated starfield runtime');

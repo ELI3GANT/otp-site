@@ -13624,3 +13624,25 @@ body.home-page .conversion-confirmation-note {
     background: rgba(255, 255, 255, 0.64) !important;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  html:root body .luxe-title .title,
+  html:root body .cool-work-link,
+  html:root body .pulse-beam-connector,
+  html:root body .pulse-beam-connector::after,
+  html:root body .decor-circle,
+  html:root body .decor-circle::after,
+  html:root body .status-indicator,
+  html:root body .status-indicator::after {
+    animation: none !important;
+  }
+}
