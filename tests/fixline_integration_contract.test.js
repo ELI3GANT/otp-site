@@ -39,6 +39,7 @@ assert.ok(server.includes("'/services/consultant-audit'"), 'Express serves the c
 assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/fixline</loc>'), 'sitemap contains FIXLINE');
 assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/services/consultant-audit</loc>'), 'sitemap contains consultant audit');
 assert.ok(fixlineStyles.includes('.fixline-service-page .nav-links a'), 'FIXLINE pages own a readable navigation color');
+assert.ok(fixlineStyles.includes('.fixline-service-page .nav.scrolled'), 'FIXLINE keeps its dark navigation contrast after scrolling');
 assert.ok(sharedStyles.includes('.archive-page.nav-open .nav-drawer a.active'), 'Archive mobile navigation preserves current-route emphasis');
 
 const routes = vercelConfig.routes || [];

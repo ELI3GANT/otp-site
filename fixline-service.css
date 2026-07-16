@@ -12,9 +12,12 @@
   color: var(--fix-text-primary);
 }
 
-.fixline-service-page .nav {
-  background: rgba(5, 5, 5, 0.92);
-  border-bottom: 1px solid var(--fix-border-default);
+.fixline-service-page .nav,
+.fixline-service-page .nav.scrolled,
+[data-theme="light"] .fixline-service-page .nav,
+[data-theme="light"] .fixline-service-page .nav.scrolled {
+  background: rgba(5, 5, 5, 0.96) !important;
+  border-bottom: 1px solid var(--fix-border-default) !important;
 }
 
 .fixline-service-page .nav-links a,
