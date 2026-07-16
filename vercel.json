@@ -27,6 +27,15 @@
     }
   ],
   "routes": [
+    { "src": "^/fixline/intake/?$", "dest": "https://otp-fixline.vercel.app/fixline/intake" },
+    { "src": "^/fixline/api/review/submit/?$", "dest": "https://otp-fixline.vercel.app/fixline/api/review/submit" },
+    { "src": "^/fixline/api/events/?$", "dest": "https://otp-fixline.vercel.app/fixline/api/events" },
+    { "src": "^/fixline/(privacy|terms|contact)/?$", "dest": "https://otp-fixline.vercel.app/fixline/$1" },
+    { "src": "^/fixline/status/([^/]+)/?$", "dest": "https://otp-fixline.vercel.app/fixline/status/$1" },
+    { "src": "^/fixline/review-result/([^/]+)/?$", "dest": "https://otp-fixline.vercel.app/fixline/review-result/$1" },
+    { "src": "^/fixline/_next/(.*)$", "dest": "https://otp-fixline.vercel.app/fixline/_next/$1" },
+    { "src": "^/fixline/otp-logo-animated\\.gif$", "dest": "https://otp-fixline.vercel.app/fixline/otp-logo-animated.gif" },
+    { "src": "^/fixline/favicon\\.ico$", "dest": "https://otp-fixline.vercel.app/fixline/favicon.ico" },
     { "src": "^/os/?$", "dest": "/server.js" },
     { "src": "^/os/(.*)$", "dest": "/server.js" },
     { "src": "/(bookings|booking|book|book-otp)/?", "dest": "/bookings.html" },

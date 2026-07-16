@@ -183,6 +183,25 @@ All spacing derives from a 4px base.
 - **Routing**: all fallback assets and destinations are root-relative so the page remains intact at nested unknown paths.
 - **Accessibility**: the mark has a useful label, the error title is the main heading, actions use visible focus treatment, and decorative layers are hidden from assistive technology.
 
+### FIXLINE service hero
+
+- **Structure**: restricted-beta eyebrow, direct business-diagnostic headline, concise consultant-review framing, primary intake action, secondary process anchor, and a restrained signal field.
+- **Surface**: core OTP black, warm white, quiet gold, tonal bands, and structural borders; no disconnected SaaS dashboard treatment.
+- **States**: actions use the shared hover, active, and focus-visible behavior; signal cells remain static because they are explanatory, not interactive.
+- **Accessibility**: one page heading, explicit intake/process labels, 48px actions, and no meaning conveyed through color alone.
+
+### Diagnostic signal grid
+
+- **Structure**: compact cards for inspectable business surfaces or review categories, using a label and one factual supporting line.
+- **Responsive**: one column at 320px, two from 640px, and three from 1024px without horizontal scrolling.
+- **Surface**: borders-only cards with a single gold index detail; no repeated shadows.
+
+### Consultant audit process rail
+
+- **Structure**: numbered steps that distinguish automated intake, consultant review, and separately scoped paid implementation.
+- **Content**: promises only prioritized findings, observations, recommended next moves, and an optional implementation path.
+- **Accessibility**: ordered-list semantics, visible phase labels, and natural document flow at every breakpoint.
+
 ## 6. Motion & Interaction
 
 | Type | Duration | Easing | Usage |

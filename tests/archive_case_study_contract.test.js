@@ -20,7 +20,7 @@ const projects = library.getProjects();
 assert.ok(Array.isArray(projects) && projects.length >= 3, 'archive exposes an initial multi-project collection');
 assert.deepStrictEqual(
   library.getStatuses(),
-  ['Live', 'Released', 'In Progress', 'Archived', 'Internal', 'Coming Soon'],
+  ['Live', 'Released', 'In Progress', 'Archived', 'Internal', 'Restricted Beta', 'Coming Soon'],
   'archive statuses remain standardized'
 );
 
@@ -38,7 +38,8 @@ const requiredCategories = [
   'Product Design',
   'Web Development',
   'Client Work',
-  'Experimental'
+  'Experimental',
+  'Business Diagnostic'
 ];
 requiredCategories.forEach((category) => {
   assert.ok(library.getCategories().includes(category), `standard category is available: ${category}`);

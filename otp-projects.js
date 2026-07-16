@@ -7,6 +7,7 @@
     'In Progress',
     'Archived',
     'Internal',
+    'Restricted Beta',
     'Coming Soon'
   ]);
 
@@ -24,7 +25,8 @@
     'Product Design',
     'Web Development',
     'Client Work',
-    'Experimental'
+    'Experimental',
+    'Business Diagnostic'
   ]);
 
   const COLLECTIONS = Object.freeze([
@@ -39,6 +41,38 @@
   ]);
 
   const PROJECTS = Object.freeze([
+    Object.freeze({
+      id: 'otp-fixline',
+      slug: 'otp-fixline',
+      title: 'OTP FIXLINE',
+      type: 'Product / Business Diagnostic',
+      category: 'Business Diagnostic',
+      categories: Object.freeze(['Business Diagnostic', 'Software', 'Internal Systems', 'Web Development']),
+      disciplines: Object.freeze(['Multi-source Intake', 'Consultant Audit', 'Duplicate Protection', 'Secure Persistence', 'Mobile Support', 'Consultant Conversion']),
+      collections: Object.freeze(['Featured Projects', 'Newest', 'Internal Products', 'Software', 'Everything']),
+      featured: true,
+      homepageFeatured: false,
+      pinned: true,
+      status: 'Restricted Beta',
+      launchDate: '2026-07-14',
+      year: 2026,
+      shortDescription: 'A structured business-presence intake and consultant-audit system built by OnlyTruePerspective to turn public business signals into prioritized review requests and an honest implementation path.',
+      tags: Object.freeze(['FIXLINE', 'Business Diagnosis', 'Consultant Audit', 'Digital Presence', 'Secure Intake']),
+      services: Object.freeze(['Business-presence intake', 'Diagnostic structuring', 'Consultant review workflow', 'Priority recommendations', 'Implementation scoping']),
+      technology: Object.freeze(['Next.js', 'TypeScript', 'React', 'Supabase', 'Vercel']),
+      heroImage: Object.freeze({
+        src: '/assets/fixline-product-preview.png',
+        alt: 'OTP FIXLINE business-presence diagnostic landing page',
+        width: 1440,
+        height: 705
+      }),
+      projectUrl: '/fixline',
+      projectCtaLabel: 'Explore OTP FIXLINE',
+      bookingUrl: '/fixline/intake?source=archive-fixline',
+      bookingCtaLabel: 'Run a FIXLINE Audit',
+      caseStudyUrl: '',
+      caseStudyCtaLabel: 'View Future Case Studies'
+    }),
     Object.freeze({
       id: 'song-wars',
       slug: 'songwars',

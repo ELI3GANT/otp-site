@@ -44,6 +44,7 @@
   
   <!-- Styles -->
   <link rel="stylesheet" href="./styles.css?v=16.8.28" />
+  <link rel="stylesheet" href="./fixline-service.css?v=20260716" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -95,7 +96,9 @@
           "Custom Web Development",
           "Brand Visual Systems",
           "Media Production",
-          "Creative Technology"
+          "Creative Technology",
+          "Business Presence Diagnostics",
+          "Consultant Audits"
         ],
         "sameAs": [
           "https://instagram.com/onlytrueperspective",
@@ -189,6 +192,7 @@
     <nav class="nav-links" aria-label="Primary">
       <a href="#work" class="active k-hover">Work</a>
       <a href="#packages" class="k-hover">Packages</a>
+      <a href="/fixline" class="k-hover">FIXLINE</a>
       <a href="/bookings?source=homepage" class="k-hover">Book OTP</a>
       <a href="/portal" class="k-hover">Client Portal</a>
       <a href="#about" class="k-hover">About</a>
@@ -205,6 +209,7 @@
     <nav class="nav-drawer" aria-label="Mobile">
       <a href="#work">Work</a>
       <a href="#packages">Packages</a>
+      <a href="/fixline">FIXLINE</a>
       <a href="/bookings?source=homepage">Book OTP</a>
       <a href="/portal">Client Portal</a>
       <a href="#about">About</a>
@@ -545,24 +550,27 @@
 
   
 
-  <!-- PERSPECTIVE AUDIT (The Audit Engine) -->
   <section id="audit" class="section section-audit">
     <div class="wrap">
       <div class="audit-card glass-panel" id="audit-container">
-        <!-- Intro State -->
         <div id="audit-intro" class="audit-step active">
-          <div class="audit-badge" style="background: rgba(var(--accent2-rgb), 0.1); color: var(--accent2); border: 1px solid rgba(var(--accent2-rgb), 0.2); font-size: 0.65rem; padding: 4px 10px; border-radius: 4px; letter-spacing: 2px; display: inline-block; margin-bottom: 20px;">V1.5 ACCESS</div>
-          <h2 class="syne-bold">The Perspective Audit<sup>™</sup></h2>
-          <p>Get a direct creative strategy for your brand. Built for creators and professionals.</p>
+          <div class="audit-badge" style="background: rgba(var(--accent2-rgb), 0.1); color: var(--accent2); border: 1px solid rgba(var(--accent2-rgb), 0.2); font-size: 0.65rem; padding: 4px 10px; border-radius: 4px; letter-spacing: 2px; display: inline-block; margin-bottom: 20px;">OTP PRODUCT / RESTRICTED BETA</div>
+          <h2 class="syne-bold">Find the break in your business presence.</h2>
+          <p>FIXLINE turns your website, listings, social profiles, and customer journey into a structured audit request. Automated intake first. Human consultant review and implementation are clearly scoped after submission.</p>
           <div class="audit-visual-decor">
             <div class="decor-circle"></div>
             <div class="decor-line"></div>
           </div>
-          <button onclick="window.AuditEngine.nextStep()" class="book-btn k-hover magnetic-btn">Initiate Audit</button>
+          <div class="fixline-actions" style="justify-content: center;">
+            <a href="/fixline" class="book-btn k-hover magnetic-btn" data-fixline-event="homepage_to_fixline">Explore FIXLINE</a>
+            <a href="/fixline/intake?source=homepage" class="book-btn-ghost k-hover magnetic-btn" data-fixline-event="audit_cta_selected">Run the audit</a>
+            <a href="/services/consultant-audit" class="book-btn-ghost k-hover">Consultant audit</a>
+          </div>
+          <p class="audit-privacy-text" style="margin-top: 18px;">No instant score or simulated diagnosis. Your submission creates a real review request.</p>
         </div>
 
         <!-- Quiz Step 1 -->
-        <div id="audit-step-1" class="audit-step">
+        <div id="audit-step-1" class="audit-step" hidden aria-hidden="true">
           <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()" style="display: none;">← BACK</button>
           <span class="step-indicator">01 / 05</span>
           <h3>What is your primary objective?</h3>
@@ -575,7 +583,7 @@
         </div>
 
         <!-- Quiz Step 2 -->
-        <div id="audit-step-2" class="audit-step">
+        <div id="audit-step-2" class="audit-step" hidden aria-hidden="true">
           <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
           <span class="step-indicator">02 / 05</span>
           <h3>Your biggest hurdle right now?</h3>
@@ -588,7 +596,7 @@
         </div>
 
         <!-- Quiz Step 3 -->
-        <div id="audit-step-3" class="audit-step">
+        <div id="audit-step-3" class="audit-step" hidden aria-hidden="true">
           <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
           <span class="step-indicator">03 / 05</span>
           <h3>Your primary platform?</h3>
@@ -601,7 +609,7 @@
         </div>
 
         <!-- Quiz Step 4 -->
-        <div id="audit-step-4" class="audit-step">
+        <div id="audit-step-4" class="audit-step" hidden aria-hidden="true">
           <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
           <span class="step-indicator">04 / 05</span>
           <h3>Desired Vibe?</h3>
@@ -614,7 +622,7 @@
         </div>
 
         <!-- Quiz Step 5 (NEW) -->
-        <div id="audit-step-5" class="audit-step">
+        <div id="audit-step-5" class="audit-step" hidden aria-hidden="true">
           <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
           <span class="step-indicator">05 / 05</span>
           <h3>What is your main goal for this year?</h3>
@@ -624,7 +632,7 @@
           <button class="book-btn k-hover" onclick="window.AuditEngine.submitGoal()" style="margin-top: 20px; width: 100%;">Analyze My Intent</button>
         </div>
 
-        <div id="audit-capture" class="audit-step">
+        <div id="audit-capture" class="audit-step" hidden aria-hidden="true">
           <button class="audit-back-btn" onclick="window.AuditEngine.prevStep()">← BACK</button>
           <div class="decryption-status">
             <div class="status-text" style="font-family: monospace; letter-spacing: 2px;">Processing Your Input...</div>
@@ -649,7 +657,7 @@
         </div>
 
         <!-- Result State -->
-        <div id="audit-result" class="audit-step">
+        <div id="audit-result" class="audit-step" hidden aria-hidden="true">
           <div class="result-header">
             <span class="eyebrow-mini" style="color: var(--accent2); letter-spacing: 3px;">YOUR_RESULT</span>
             <h3 id="audit-result-title">Strategy Complete</h3>
@@ -1108,6 +1116,7 @@
           <a href="https://youtube.com/@onlytrueperspective" class="k-hover">YouTube</a>
           <a href="https://www.reddit.com/r/OnlyTruePerspective" target="_blank" rel="noopener noreferrer" aria-label="Open OnlyTruePerspective official Reddit" class="k-hover">Official Reddit</a>
           <a href="/bookings?source=homepage" class="k-hover">Book OTP</a>
+          <a href="/fixline" class="k-hover">FIXLINE</a>
           <a href="/portal" class="k-hover">Client Portal</a>
                       <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Email</a>        </div>
         <div class="fineprint">© <span id="year">2026</span> OnlyTruePerspective. Directed by ELI3GANT.</div>
@@ -1124,6 +1133,7 @@
         <nav class="footer-nav">
           <a href="#work">Work</a>
           <a href="#services">Services</a>
+          <a href="/fixline">FIXLINE</a>
           <a href="/bookings?source=homepage">Book OTP</a>
           <a href="/portal">Client Portal</a>
           <a href="#about">About</a>
@@ -1147,11 +1157,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
   <script src="https://unpkg.com/kursor" defer></script>
   <script src="otp-attribution.js?v=16.9.1" defer></script>
+  <script src="fixline-analytics.js?v=20260716" defer></script>
   <script src="stars-v2.js?v=20260601-daystars" defer></script>
   <script src="otp-projects.js?v=20260629-conversion1" defer></script>
   <script src="otp-video-library.js?v=1.0.0" defer></script>
   <script src="site-init.js?v=20260629-archive3" defer></script>
-  <script src="audit-engine.js?v=16.3.5" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
     // Protocol: Desktop (Ctrl/Cmd + Click Logo) or Mobile (2s Long Press Logo).

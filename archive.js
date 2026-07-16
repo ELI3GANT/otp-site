@@ -158,6 +158,9 @@
 
     const link = element('a', `archive-project-action ${isCaseStudy ? 'archive-project-action-secondary' : 'archive-project-action-primary'}`, label);
     link.href = href;
+    if (!isCaseStudy && project.id === 'otp-fixline') {
+      link.dataset.fixlineEvent = 'archive_to_fixline';
+    }
     if (/^https?:\/\//.test(href)) {
       link.target = '_blank';
       link.rel = 'noopener noreferrer';
@@ -170,6 +173,9 @@
     const label = cleanText(project.bookingCtaLabel || project.ctaLabel, 'Build something like this');
     const link = element('a', 'archive-project-action archive-project-action-conversion', label);
     link.href = href || '/bookings?source=archive-card';
+    if (project.id === 'otp-fixline') {
+      link.dataset.fixlineEvent = 'audit_cta_selected';
+    }
     return link;
   };
 

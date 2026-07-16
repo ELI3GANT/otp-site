@@ -39,6 +39,18 @@ const pages = {
     descriptionSnippet: 'Explore OnlyTruePerspective projects',
     indexable: true
   },
+  'fixline.html': {
+    title: 'FIXLINE Business Diagnostic | OnlyTruePerspective',
+    canonical: 'https://www.onlytrueperspective.tech/fixline',
+    descriptionSnippet: 'Find what is weakening your business presence',
+    indexable: true
+  },
+  'consultant-audit.html': {
+    title: 'Consultant Audit Service | OnlyTruePerspective',
+    canonical: 'https://www.onlytrueperspective.tech/services/consultant-audit',
+    descriptionSnippet: 'Start an OTP consultant audit',
+    indexable: true
+  },
   'insights.html': {
     title: 'Insights | OnlyTruePerspective',
     canonical: 'https://www.onlytrueperspective.tech/insights.html',
@@ -108,6 +120,8 @@ const requiredUrls = [
   'https://www.onlytrueperspective.tech/songwars',
   'https://www.onlytrueperspective.tech/protocol',
   'https://www.onlytrueperspective.tech/archive',
+  'https://www.onlytrueperspective.tech/fixline',
+  'https://www.onlytrueperspective.tech/services/consultant-audit',
   'https://www.onlytrueperspective.tech/insights.html',
   'https://www.onlytrueperspective.tech/terms.html',
   'https://www.onlytrueperspective.tech/privacy.html'

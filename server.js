@@ -2417,6 +2417,14 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));
 });
 
+app.get(['/fixline', '/fixline/'], (req, res) => {
+    res.sendFile(path.join(staticPath, 'fixline.html'));
+});
+
+app.get(['/services/consultant-audit', '/services/consultant-audit/'], (req, res) => {
+    res.sendFile(path.join(staticPath, 'consultant-audit.html'));
+});
+
 app.get(['/songwars', '/songwars/'], (req, res) => {
     noStoreHtml(res);
     res.type('html').send(renderSongWarsPage(getRequestOrigin(req)));

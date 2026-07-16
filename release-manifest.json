@@ -1,5 +1,5 @@
 {
-  "releaseName": "otp-true-premium-visual-fast-lane-lock-clean-release",
+  "releaseName": "otp-fixline-official-site-integration-20260716",
   "includedFiles": [
     ".github/workflows/ci.yml",
     ".github/workflows/production-release.yml",
@@ -7,6 +7,8 @@
     "DESIGN.md",
     "apple-touch-icon.png",
     "archive.html",
+    "archive.js",
+    "assets/fixline-product-preview.png",
     "assets/otp-app-icon.png",
     "assets/otp-social-preview.png",
     "assets/songwars/otp-mark.png",
@@ -25,6 +27,7 @@
     "bookings.html",
     "bookings.js",
     "client.html",
+    "consultant-audit.html",
     "docs/OTP_ASSET_SYSTEM.md",
     "docs/OTP_CLEAN_RELEASE_GUARDRAILS.md",
     "docs/OTP_RELEASE_MANIFEST_GUIDE.md",
@@ -33,6 +36,9 @@
     "docs/OTP_UNIFIED_ENV_AUDIT.md",
     "favicon-32x32.png",
     "favicon.png",
+    "fixline-analytics.js",
+    "fixline-service.css",
+    "fixline.html",
     "icon-192.png",
     "icon-512.png",
     "icon.png",
@@ -41,6 +47,7 @@
     "insights.html",
     "og.jpg",
     "otp-attribution.js",
+    "otp-projects.js",
     "otp-terminal.html",
     "package-lock.json",
     "package.json",
@@ -58,6 +65,7 @@
     "scripts/verify_release_scope.js",
     "server.js",
     "site-init.js",
+    "sitemap.xml",
     "songwars-config.js",
     "songwars.css",
     "songwars.html",
@@ -68,8 +76,10 @@
     "terms.html",
     "tests/admin_sweep_auth_contract.test.js",
     "tests/api_surface_security_contract.test.js",
+    "tests/archive_case_study_contract.test.js",
     "tests/attribution_contract.test.js",
     "tests/bookings_contract.test.js",
+    "tests/fixline_integration_contract.test.js",
     "tests/homepage_visual_contract.test.js",
     "tests/loader_recovery_contract.test.js",
     "tests/logo_asset_contract.test.js",
@@ -128,6 +138,14 @@
       "status": "passed"
     },
     {
+      "command": "Playwright FIXLINE intake QA in Chromium and WebKit at 1440, 1024, 390, and 320 widths",
+      "status": "passed"
+    },
+    {
+      "command": "Playwright otp-site FIXLINE, homepage, Archive, and consultant-audit QA in Chromium at 1440, 1024, 390, and 320 widths",
+      "status": "passed"
+    },
+    {
       "command": "Programmatic Lighthouse via Chrome for Testing, three-run medians",
       "status": "passed"
     },
@@ -138,11 +156,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Existing homepage and booking QA evidence remains intact. Final local Song Wars QA passed at 390, 430, 768, 1366, and 1440 widths with no clipping, stretching, horizontal overflow, console errors, page errors, or failed requests. The responsive WebP poster remained fully visible in the initial viewport at every size, all 14 scroll reveals completed, reduced motion disabled nonessential animation, all three Discord CTAs used the centralized invite, and all seven Instagram links resolved. Three-run Lighthouse medians were 99/100/100/100 mobile and 100/100/100/100 desktop; mobile retained the sharper high-DPI poster rather than lowering source density for one synthetic performance point."
+    "summary": "FIXLINE intake and legal pages passed 10 Chromium and WebKit browser tests across 1440, 1024, 390, and 320 widths. Native otp-site homepage, FIXLINE, Archive, and consultant-audit pages passed Chromium interaction, overflow, local-resource, and page-error checks at the same widths. Local WebKit layout requests were verified, but its upgrade-insecure-requests behavior on the HTTP-only development server prevented same-origin script execution; final WebKit interaction acceptance is required on production HTTPS."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Secure local hidden prompt supplied admin passcode only in subprocess memory. E2E_TEST_MODE=true prod full sweep authenticated through canonical login/JWT auth and passed admin QA, knowledge, docs templates, schema migration, terminal smoke, and safe fixture checks."
+    "summary": "Current automated admin authorization, login configuration, logout, route locking, RLS, and private-surface tests passed. No admin route is exposed by the otp-site proxy. Final production lock and logout acceptance remains part of post-deploy verification."
   },
   "deploymentTarget": {
     "project": "otp-site",
