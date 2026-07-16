@@ -27,8 +27,8 @@ assert.ok(index.includes('Launch Package'), 'homepage fast capture includes Laun
 assert.ok(index.includes('Need a page like Song Wars?'), 'homepage routes Song Wars proof to booking');
 assert.ok(index.includes('Need a transformation like HYH?'), 'homepage routes HYH proof to booking');
 assert.ok(index.includes('Need a rollout like PROTOCOL?'), 'homepage routes PROTOCOL proof to booking');
-assert.ok(index.includes('id="audit-goal-input"') && index.includes('aria-label="Main goal for this year"'), 'Perspective Audit goal textarea has a programmatic label');
-assert.ok(index.includes('id="audit-email"') && index.includes('aria-label="Email address for audit results"'), 'Perspective Audit email capture has a programmatic label');
+assert.ok(!index.includes('id="audit-goal-input"'), 'homepage does not ship the retired simulated audit questionnaire');
+assert.ok(!index.includes('id="audit-email"'), 'homepage does not ship the retired simulated strategy capture');
 assert.ok(!index.includes('ENGINEERED_STATISTICS'), 'reverted statistics eyebrow must not return');
 assert.ok(!index.includes('Viewer Engagement Growth'), 'unverified engagement-growth claim must not return');
 assert.ok(!index.includes('Visions Delivered Globally'), 'unverified delivered-globally claim must not return');

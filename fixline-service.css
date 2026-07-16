@@ -17,9 +17,26 @@
   border-bottom: 1px solid var(--fix-border-default);
 }
 
+.fixline-service-page .nav-links a,
+.fixline-service-page .nav-drawer a {
+  color: var(--fix-text-secondary) !important;
+}
+
+.fixline-service-page .nav-links a:hover,
+.fixline-service-page .nav-drawer a:hover {
+  color: var(--fix-text-primary) !important;
+}
+
 .fixline-service-page .nav-links a.active,
 .fixline-service-page .nav-drawer a.active {
   color: var(--fix-accent) !important;
+}
+
+@media (max-width: 520px) {
+  .fixline-service-page .theme-toggle-btn:not(.mobile-theme-toggle) {
+    display: none !important;
+    pointer-events: none !important;
+  }
 }
 
 .fixline-page-main {

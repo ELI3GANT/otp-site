@@ -7826,6 +7826,14 @@ html[data-theme="light"] body.archive-page .theme-toggle-btn:not(.mobile-theme-t
   }
 }
 
+@media (max-width: 360px) {
+  .post-header h1 {
+    font-size: 2rem;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+}
+
 /* STUDIO / PHILOSOPHY SECTION (Refined) */
 .section-studio {
   position: relative;
@@ -13568,6 +13576,14 @@ body.home-page .conversion-confirmation-note {
     border-color: rgba(var(--accent2-rgb), 0.52) !important;
   }
 
+  body.archive-page.nav-open .nav-drawer a.active,
+  .archive-page.nav-open .nav-drawer a.active {
+    background: rgba(var(--accent2-rgb), 0.2) !important;
+    border-color: rgba(var(--accent2-rgb), 0.9) !important;
+    color: var(--accent2) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 24px rgba(var(--accent2-rgb), 0.16) !important;
+  }
+
   body.archive-page.nav-open .nav-scrim,
   .archive-page.nav-open .nav-scrim {
     z-index: 13030 !important;
@@ -13617,6 +13633,14 @@ body.home-page .conversion-confirmation-note {
     background: linear-gradient(135deg, rgba(var(--accent2-rgb), 0.82), rgba(var(--accent2-rgb), 0.54)) !important;
     border-color: rgba(var(--accent2-rgb), 0.54) !important;
     color: var(--accent2-text) !important;
+  }
+
+  [data-theme="light"] body.archive-page.nav-open .nav-drawer a.active,
+  [data-theme="light"] .archive-page.nav-open .nav-drawer a.active {
+    background: rgba(var(--accent2-rgb), 0.16) !important;
+    border-color: rgba(var(--accent2-rgb), 0.72) !important;
+    color: #07070a !important;
+    box-shadow: 0 12px 28px rgba(var(--accent2-rgb), 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
   }
 
   [data-theme="light"] body.archive-page.nav-open .nav-scrim,
