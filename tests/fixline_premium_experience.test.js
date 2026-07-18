@@ -27,6 +27,14 @@ assert.ok(!pageHtml.includes('Restricted Beta'), 'public FIXLINE page no longer 
 assert.ok(pageHtml.includes('OTP FIXLINE // PRIVATE BETA'), 'public FIXLINE page uses consistent private beta terminology');
 assert.ok((pageHtml.match(/Start My FIXLINE Review/g) || []).length >= 4, 'primary CTA copy is consistent');
 assert.ok(pageHtml.includes('href="/fixline/intake"'), 'primary CTA uses the canonical intake route');
+const fixlineTypeSources = `${serviceCss}\n${intakeCss}`;
+assert.ok(serviceCss.includes('Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'), 'FIXLINE uses the exact OTP Bookings typography stack');
+assert.ok(!/(Georgia|Times New Roman|SFMono-Regular|Consolas|Liberation Mono|\bcursive\b)/i.test(fixlineTypeSources), 'FIXLINE CSS contains no serif, script, or decorative interface font families');
+assert.ok(!/font-style:\s*(italic|oblique)/i.test(fixlineTypeSources), 'FIXLINE CSS contains no decorative italic styles');
+assert.ok(!/fonts\.googleapis\.com|Space\+Grotesk/.test(`${pageHtml}\n${intakeHtml}`), 'FIXLINE does not request the retired decorative font source');
+assert.ok(serviceCss.includes('font-size: clamp(2.2rem, 4.55vw, 4.05rem)') && serviceCss.includes('letter-spacing: 0'), 'FIXLINE headings reuse the Bookings scale and spacing treatment');
+assert.ok(pageHtml.includes('See the diagnosis clearly.'), 'public product copy removes awkward score language');
+assert.strictEqual((pageHtml.match(/A concise consultant diagnosis built around priority/g) || []).length, 1, 'deliverable copy is not duplicated');
 assert.ok(serviceCss.includes('prefers-reduced-motion: reduce'), 'public page disables nonessential motion');
 assert.ok(intakeCss.includes('prefers-reduced-motion: reduce'), 'intake disables nonessential motion');
 assert.ok(intakeCss.includes('position: fixed'), 'mobile intake controls support sticky progression');
@@ -138,10 +146,12 @@ function completeToReview(dom) {
     adminRoute: '/admin/tickets/internal-ticket-id'
   });
   const success = dom.window.document.querySelector('.fixline-success-card');
-  assert.ok(success.textContent.includes('FIXLINE REQUEST CREATED'), 'successful submission renders the premium confirmation state');
+  assert.ok(success.textContent.includes('SUBMISSION COMPLETE'), 'successful submission renders the premium confirmation state');
+  assert.ok(success.textContent.includes('We received your FIXLINE request.'), 'confirmation copy is direct and clear');
   assert.strictEqual(success.getAttribute('tabindex'), '-1', 'confirmation can receive focus after submission');
   assert.ok(success.textContent.includes('FIX-260718-DEMO'), 'confirmation exposes the public-safe reference');
-  assert.ok(success.textContent.includes('Process — not a live tracker'), 'lifecycle is explicitly process guidance');
+  assert.ok(success.textContent.includes('Review process'), 'lifecycle is labeled as process guidance');
+  assert.ok(success.textContent.includes('It is not a live status tracker.'), 'confirmation does not overstate lifecycle status');
   assert.ok(!success.textContent.includes('internal-ticket-id'), 'confirmation does not expose internal ticket IDs');
   assert.ok(!success.textContent.includes('internal-secret-hash'), 'confirmation does not expose secure hashes');
   assert.ok(!success.innerHTML.includes('/admin/tickets'), 'confirmation does not expose admin routes');

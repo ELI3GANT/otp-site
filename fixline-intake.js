@@ -195,7 +195,7 @@
   function renderLinks() {
     const rows = state.links.map((link, index) => `<div class="fixline-link-row"><div class="fixline-field"><label class="sr-only" for="review-link-${index}">Public link ${index + 1}</label><input class="fixline-input" id="review-link-${index}" type="url" inputmode="url" autocomplete="url" placeholder="https://" data-link-index="${index}" value="${escapeHtml(link)}"></div><button class="fixline-remove-button" type="button" data-remove-link="${index}" aria-label="Remove public link ${index + 1}">Remove</button></div>`).join('');
     const addButton = state.links.length < 10 ? '<button class="fixline-text-button" type="button" data-add-link>+ Add another public link</button>' : '';
-    return `${headingMarkup('Paste the public links.', 'Add the website, profile, listing, video, booking path, or offer you want OTP to review.')}<div class="fixline-link-list">${rows}</div>${addButton}<p class="fixline-helper">At least one public HTTP or HTTPS link is required. Never include private dashboards, passwords, tokens, or credentialed URLs.</p>`;
+    return `${headingMarkup('Add the public links to review.', 'Include the website, profile, listing, video, booking path, or offer you want OTP to assess.')}<div class="fixline-link-list">${rows}</div>${addButton}<p class="fixline-helper">At least one public HTTP or HTTPS link is required. Never include private dashboards, passwords, tokens, or credentialed URLs.</p>`;
   }
 
   function renderDetails() {
@@ -213,7 +213,7 @@
 
   function renderBudget() {
     const options = BUDGETS.map(([value, label]) => choiceMarkup('radio', 'budgetRange', value, label, state.budgetRange === value, 'budgetRange')).join('');
-    return `${headingMarkup('What range is realistic if implementation is recommended?', 'The review itself is diagnostic. This range helps OTP recommend a practical next move, not force a project.')}<div class="fixline-choice-list">${options}</div>`;
+    return `${headingMarkup('What implementation range feels realistic?', 'The review is diagnostic. This range helps OTP recommend a practical next move if implementation is appropriate.')}<div class="fixline-choice-list">${options}</div>`;
   }
 
   function renderContact() {
@@ -231,7 +231,7 @@
     const links = state.links.map((link) => link.trim()).filter(Boolean).join('\n');
     const timing = `${DEADLINE_LABELS.get(state.deadlineType) || state.deadlineType}${state.deadlineType === 'specific_date' && state.deadlineDate ? ` · ${state.deadlineDate}` : ''}`;
     const contact = [state.contactName, state.businessName, state.email, state.phone, `Preferred contact: ${CONTACT_LABELS.get(state.preferredContactMethod)}`].filter(Boolean).join('\n');
-    return `${headingMarkup('Review your submission.', 'Confirm the public signal and contact details before creating the request.')}<dl class="fixline-review-list">${reviewRow('Surfaces', categories, 0)}${reviewRow('Public links', links, 1)}${reviewRow('Goal', GOAL_LABELS.get(state.primaryGoal), 2)}${reviewRow('Details', state.description.trim(), 2)}${reviewRow('Timing', timing, 3)}${reviewRow('Budget', BUDGET_LABELS.get(state.budgetRange), 4)}${reviewRow('Contact', contact, 5)}</dl><p class="fixline-submit-note">Submitting requests a consultant review. It does not authorize changes, publishing, account access, implementation, or payment.</p>`;
+    return `${headingMarkup('Review your FIXLINE request.', 'Confirm the public signal and contact details before submitting.')}<dl class="fixline-review-list">${reviewRow('Surfaces', categories, 0)}${reviewRow('Public links', links, 1)}${reviewRow('Goal', GOAL_LABELS.get(state.primaryGoal), 2)}${reviewRow('Details', state.description.trim(), 2)}${reviewRow('Timing', timing, 3)}${reviewRow('Budget', BUDGET_LABELS.get(state.budgetRange), 4)}${reviewRow('Contact', contact, 5)}</dl><p class="fixline-submit-note">Submitting requests a consultant review. It does not authorize changes, publishing, account access, implementation, or payment.</p>`;
   }
 
   function renderStep(options = {}) {
@@ -374,13 +374,13 @@
     progressTrack.parentElement.hidden = true;
     controls.hidden = true;
     errorNode.hidden = true;
-    panel.outerHTML = `<div id="intake-panel" class="fixline-success-card" role="status" aria-live="polite" tabindex="-1"><div class="fixline-success-icon" aria-hidden="true">✓</div><p class="fixline-system-label">FIXLINE REQUEST CREATED</p><h2>Your signal is received.</h2><p class="fixline-reference-label">Public-safe reference</p><p class="fixline-reference">${safeTicket}</p><dl class="fixline-success-details"><div><dt>Status</dt><dd>Received</dd></div><div><dt>Submitted surfaces</dt><dd>${categories}</dd></div><div><dt>Current stage</dt><dd>Structured for consultant review</dd></div><div><dt>Next step</dt><dd>An OTP consultant reviews the submitted public signal and prepares initial priorities.</dd></div><div><dt>Expected communication</dt><dd>${communication}</dd></div><div><dt>Response window</dt><dd>${windowText}</dd></div><div><dt>Public status</dt><dd>${statusLink}</dd></div></dl><p class="fixline-lifecycle-title">Process — not a live tracker</p><ol class="fixline-lifecycle"><li class="is-current">Received</li><li>Structured</li><li>Reviewing</li><li>Findings ready</li></ol><p class="fixline-process-note">This lifecycle explains the review process. It does not claim real-time status updates.</p><div class="fixline-success-actions"><a class="fixline-button fixline-button-secondary" href="/fixline">Return to FIXLINE</a><button class="fixline-button fixline-button-primary" type="button" data-start-another>Start another signal</button></div></div>`;
+    panel.outerHTML = `<div id="intake-panel" class="fixline-success-card" role="status" aria-live="polite" tabindex="-1"><div class="fixline-success-icon" aria-hidden="true">✓</div><p class="fixline-system-label">SUBMISSION COMPLETE</p><h2>We received your FIXLINE request.</h2><p class="fixline-reference-label">Public-safe reference</p><p class="fixline-reference">${safeTicket}</p><dl class="fixline-success-details"><div><dt>Status</dt><dd>Received</dd></div><div><dt>Submitted surfaces</dt><dd>${categories}</dd></div><div><dt>Current stage</dt><dd>Structured for consultant review</dd></div><div><dt>Next step</dt><dd>An OTP consultant reviews the submitted public signal and prepares initial priorities.</dd></div><div><dt>Expected communication</dt><dd>${communication}</dd></div><div><dt>Response window</dt><dd>${windowText}</dd></div><div><dt>Public status</dt><dd>${statusLink}</dd></div></dl><p class="fixline-lifecycle-title">Review process</p><ol class="fixline-lifecycle"><li class="is-current">Received</li><li>Structured</li><li>Reviewing</li><li>Findings ready</li></ol><p class="fixline-process-note">This shows the standard review path. It is not a live status tracker.</p><div class="fixline-success-actions"><a class="fixline-button fixline-button-secondary" href="/fixline">Return to FIXLINE</a><button class="fixline-button fixline-button-primary" type="button" data-start-another>Start another review</button></div></div>`;
     panel = global.document.getElementById('intake-panel');
     panel.addEventListener('input', handlePanelInput);
     panel.addEventListener('change', handlePanelChange);
     panel.addEventListener('click', handlePanelClick);
     track('intake_submitted');
-    announce(`FIXLINE request created. Public reference ${payload.ticketNumber || ''}.`);
+    announce(`FIXLINE request received. Public reference ${payload.ticketNumber || ''}.`);
     schedule(() => panel.focus());
   }
 

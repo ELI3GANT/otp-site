@@ -1,5 +1,5 @@
 {
-  "releaseName": "otp-fixline-premium-public-experience-20260718",
+  "releaseName": "otp-fixline-typography-copy-20260718",
   "includedFiles": [
     ".github/workflows/ci.yml",
     ".github/workflows/production-release.yml",
@@ -96,9 +96,8 @@
     "vercel.json"
   ],
   "excludedDirtyFiles": [
-    "otp-os:ignored local .env, output/, node_modules/, .vercel/, .playwright-cli/, .DS_Store, and backup files (not release material)",
-    "otp-site:test-report.xml (generated ignored test artifact)",
-    "otp-site:old detached Codex worktrees under /Users/eli/.codex/worktrees (not release source)"
+    "otp-site:ignored .vercel/.env.production.local, output/playwright/, and test-report.xml are local or generated artifacts and are not release material",
+    "otp-os:modified .codex/config.toml and ignored .env, .vercel, and output/playwright artifacts belong to the separate otp-os workspace and are excluded"
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -114,6 +113,10 @@
       "status": "passed"
     },
     {
+      "command": "npm run master_test:ci",
+      "status": "passed"
+    },
+    {
       "command": "npm run security:scan",
       "status": "passed"
     },
@@ -124,6 +127,10 @@
     {
       "command": "npm run prod:full-sweep",
       "status": "passed_public"
+    },
+    {
+      "command": "npm run prod:full-sweep with a short-lived production-signed admin JWT",
+      "status": "passed_authenticated_read_only"
     },
     {
       "command": "node --check fixline-intake.js fixline-analytics.js server.js",
@@ -138,17 +145,17 @@
       "status": "passed"
     },
     {
-      "command": "Playwright FIXLINE public, intake, and mocked-success QA at 320, 375, 390, 430, 768, 1024, 1280, and 1440 widths",
+      "command": "Playwright FIXLINE public, intake, review, and mocked-success QA at 320, 375, 390, 430, 768, 1024, 1280, and 1440 widths",
       "status": "passed"
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Chromium acceptance passed for the native FIXLINE public page and seven-step intake at 320, 375, 390, 430, 768, 1024, 1280, and 1440 widths. The mocked submission contract and public-safe success state passed at 390 and 1440 widths with no console errors, page errors, failed changed-route requests, missing images, or horizontal overflow."
+    "summary": "Local Chromium acceptance passed across 18 FIXLINE public, intake, review, and mocked-success scenarios at 320, 375, 390, 430, 768, 1024, 1280, and 1440 widths. Computed typography matched the OTP Bookings Inter/system hierarchy with zero forbidden font or italic results. There were no console errors, page errors, failed requests, failed responses, missing images, or horizontal overflow, and the mocked 390px and 1440px submissions preserved the existing backend enums."
   },
   "authenticatedSweep": {
-    "status": "not_run_not_in_scope",
-    "summary": "No authentication or private admin surface changed. The public production sweep passed; authenticated production checks were intentionally not run without runtime credentials."
+    "status": "passed",
+    "summary": "The read-only authenticated production sweep passed using a short-lived production-signed JWT held only in subprocess memory. No credential values were printed or retained. The configured passcode login was separately observed returning 401 and was not used as pass evidence."
   },
   "deploymentTarget": {
     "project": "otp-site",

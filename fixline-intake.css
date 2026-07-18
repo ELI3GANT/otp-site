@@ -39,11 +39,11 @@
 
 .fixline-intake-intro h1 {
   margin-top: 18px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.7rem, 7vw, 5rem);
-  font-weight: 400;
+  font-family: var(--fix-font);
+  font-size: clamp(2.2rem, 4.55vw, 4.05rem);
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.045em;
+  letter-spacing: 0;
 }
 
 .fixline-intake-intro > div > p:last-child {
@@ -86,10 +86,10 @@
 
 #step-count,
 #step-label {
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.09em;
+  font-family: var(--fix-font);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -137,11 +137,11 @@
 }
 
 .fixline-step-heading h2 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 5vw, 3.35rem);
-  font-weight: 400;
-  line-height: 1.05;
-  letter-spacing: -0.035em;
+  font-family: var(--fix-font);
+  font-size: clamp(1.38rem, 3vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: 0;
 }
 
 .fixline-step-heading p {
@@ -155,10 +155,10 @@
 .fixline-required {
   flex: none;
   color: var(--fix-accent);
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--fix-font);
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -184,10 +184,10 @@
 .fixline-surface-group legend {
   padding: 0 8px;
   color: var(--fix-accent);
-  font-family: "SFMono-Regular", Consolas, monospace;
+  font-family: var(--fix-font);
   font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-weight: 950;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -209,7 +209,7 @@
   color: var(--fix-text-soft);
   cursor: pointer;
   font-size: 0.86rem;
-  font-weight: 600;
+  font-weight: 850;
   line-height: 1.35;
   transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
 }
@@ -276,12 +276,14 @@
   margin-bottom: 8px;
   color: var(--fix-text);
   font-size: 0.84rem;
-  font-weight: 650;
+  font-weight: 850;
 }
 
 .fixline-optional {
   color: var(--fix-text-muted);
-  font-weight: 400;
+  font-size: 0.68rem;
+  font-weight: 950;
+  text-transform: uppercase;
 }
 
 .fixline-input,
@@ -357,7 +359,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
-  font-weight: 650;
+  font-weight: 850;
 }
 
 .fixline-remove-button {
@@ -432,9 +434,10 @@
 
 .fixline-review-row dt {
   color: var(--fix-text-muted);
-  font-family: "SFMono-Regular", Consolas, monospace;
+  font-family: var(--fix-font);
   font-size: 0.68rem;
-  letter-spacing: 0.07em;
+  font-weight: 950;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -456,7 +459,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.76rem;
-  font-weight: 650;
+  font-weight: 850;
 }
 
 .fixline-submit-note {
@@ -496,7 +499,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.88rem;
-  font-weight: 650;
+  font-weight: 850;
   transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, opacity 180ms ease;
 }
 
@@ -513,6 +516,7 @@
   border: 1px solid var(--fix-accent);
   background: linear-gradient(135deg, #e4c77d, var(--fix-accent));
   color: #11110e;
+  font-weight: 950;
 }
 
 .fixline-button-secondary {
@@ -558,18 +562,20 @@
 
 .fixline-success-card h2 {
   margin-top: 22px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 6vw, 3.6rem);
-  font-weight: 400;
-  letter-spacing: -0.035em;
+  font-family: var(--fix-font);
+  font-size: clamp(1.38rem, 3vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: 0;
 }
 
 .fixline-reference-label {
   margin-top: 26px;
   color: var(--fix-text-muted);
-  font-family: "SFMono-Regular", Consolas, monospace;
+  font-family: var(--fix-font);
   font-size: 0.65rem;
-  letter-spacing: 0.08em;
+  font-weight: 950;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -581,9 +587,11 @@
   border: 1px solid var(--fix-accent);
   border-radius: 8px;
   color: var(--fix-text);
-  font-family: "SFMono-Regular", Consolas, monospace;
+  font-family: var(--fix-font);
   font-size: clamp(1rem, 4vw, 1.35rem);
-  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
+  letter-spacing: 0;
   overflow-wrap: anywhere;
 }
 
@@ -603,9 +611,10 @@
 
 .fixline-success-details dt {
   color: var(--fix-text-muted);
-  font-family: "SFMono-Regular", Consolas, monospace;
+  font-family: var(--fix-font);
   font-size: 0.67rem;
-  letter-spacing: 0.07em;
+  font-weight: 950;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -619,9 +628,10 @@
 .fixline-lifecycle-title {
   margin-top: 28px;
   color: var(--fix-text-muted);
-  font-family: "SFMono-Regular", Consolas, monospace;
+  font-family: var(--fix-font);
   font-size: 0.67rem;
-  letter-spacing: 0.08em;
+  font-weight: 950;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -731,7 +741,7 @@
   }
 
   .fixline-intake-intro h1 {
-    font-size: clamp(2.55rem, 13vw, 3.7rem);
+    font-size: clamp(2.2rem, 12vw, 3.65rem);
   }
 
   .fixline-step-heading {

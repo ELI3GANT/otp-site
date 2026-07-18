@@ -40,9 +40,9 @@ const pages = {
     indexable: true
   },
   'fixline.html': {
-    title: 'OTP FIXLINE — Find What Is Weakening Your Business Presence',
+    title: 'OTP FIXLINE — A Clear Diagnosis for Your Business Presence',
     canonical: 'https://www.onlytrueperspective.tech/fixline',
-    descriptionSnippet: 'Submit your website, social profile, offer, campaign',
+    descriptionSnippet: 'Submit your public business presence',
     indexable: true
   },
   'consultant-audit.html': {
