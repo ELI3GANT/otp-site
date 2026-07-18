@@ -20,7 +20,7 @@ const projects = library.getProjects();
 assert.ok(Array.isArray(projects) && projects.length >= 3, 'archive exposes an initial multi-project collection');
 assert.deepStrictEqual(
   library.getStatuses(),
-  ['Live', 'Released', 'In Progress', 'Archived', 'Internal', 'Restricted Beta', 'Coming Soon'],
+  ['Live', 'Released', 'In Progress', 'Archived', 'Internal', 'Private Beta', 'Coming Soon'],
   'archive statuses remain standardized'
 );
 

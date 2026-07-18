@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Start My FIXLINE Review — OTP FIXLINE // PRIVATE BETA</title>
+  <meta name="description" content="Submit public business links and context for an OTP FIXLINE consultant review." />
+  <link rel="canonical" href="https://www.onlytrueperspective.tech/fixline/intake" />
+  <meta property="og:title" content="Start My FIXLINE Review — OTP FIXLINE" />
+  <meta property="og:description" content="Submit your public business presence and receive a prioritized consultant diagnosis." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.onlytrueperspective.tech/fixline/intake" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#050606" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/theme-chrono.js?v=9"></script>
+  <link rel="stylesheet" href="/styles.css?v=16.8.27" />
+  <link rel="stylesheet" href="/fixline-service.css?v=4" />
+  <link rel="stylesheet" href="/fixline-intake.css?v=2" />
+</head>
+<body class="fixline-service-page fixline-intake-page" data-disable-service-worker="true" data-fixline-page="true">
+  <a class="skip" href="#intake-form">Skip to intake form</a>
+  <header class="nav nav-split" id="top">
+    <a href="/fixline" class="nav-logo" aria-label="OTP FIXLINE home"><img src="/assets/otp-logo-transparent.png" alt="OTP" class="otp-mark" width="44" height="44" /></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="/">Home</a><a href="/fixline">FIXLINE</a><a href="/services/consultant-audit">Consultant Audit</a><a href="/archive">Archive</a><a class="fixline-nav-cta active" href="/fixline/intake">Start My FIXLINE Review</a>
+    </nav>
+    <button class="nav-toggle" type="button" aria-label="Open primary navigation menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav class="nav-drawer" aria-label="Mobile">
+      <a href="/">Home</a><a href="/fixline">FIXLINE</a><a href="/fixline/intake" class="active">Start My FIXLINE Review</a><a href="/services/consultant-audit">Consultant Audit</a><a href="/archive">Archive</a>
+    </nav>
+  </header>
+  <div id="navDrawerScrim" class="nav-scrim" aria-hidden="true"></div>
+
+  <main class="fixline-intake-main" id="main-content">
+    <section class="fixline-intake-intro" aria-labelledby="intake-title">
+      <div class="fixline-intake-wrap">
+        <p class="fixline-system-label">OTP FIXLINE // PRIVATE BETA</p>
+        <h1 id="intake-title">Start My FIXLINE Review</h1>
+        <p>Share public links and clear business context. OTP will identify the strongest first move. Direct uploads are not accepted.</p>
+      </div>
+    </section>
+
+    <section class="fixline-intake-stage" aria-label="FIXLINE intake">
+      <div class="fixline-intake-wrap">
+        <form id="intake-form" class="fixline-intake-form" novalidate>
+          <div class="fixline-honeypot" aria-hidden="true">
+            <label for="companyWebsite">Company website</label>
+            <input id="companyWebsite" name="companyWebsite" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="fixline-progress-header">
+            <div>
+              <p id="step-count">Step 1 of 7</p>
+              <p id="step-label">Surfaces</p>
+            </div>
+            <div class="fixline-progress-track" role="progressbar" aria-label="Intake progress" aria-valuemin="1" aria-valuemax="7" aria-valuenow="1">
+              <span id="progress-bar"></span>
+            </div>
+          </div>
+
+          <div id="intake-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+          <div id="intake-panel" class="fixline-intake-panel">
+            <noscript><p class="fixline-form-error">JavaScript is required to complete the FIXLINE intake.</p></noscript>
+          </div>
+          <p id="form-error" class="fixline-form-error" role="alert" aria-live="assertive" hidden></p>
+
+          <div id="intake-controls" class="fixline-intake-controls">
+            <button id="back-button" class="fixline-button fixline-button-secondary" type="button" disabled>Back</button>
+            <button id="continue-button" class="fixline-button fixline-button-primary" type="submit">Continue <span aria-hidden="true">→</span></button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="wrap footer-inner"><div class="footer-left"><div class="footer-brand-text">OTP FIXLINE</div><p class="fixline-intake-footer-note">Reviewed through OTP FIXLINE. Delivered through OnlyTruePerspective.</p><div class="footer-legal"><a href="/fixline">FIXLINE</a><a href="/fixline/privacy">Privacy</a><a href="/fixline/terms">Private beta terms</a><a href="/fixline/contact">Contact and deletion</a></div><div class="footer-copy">© 2026 OnlyTruePerspective. OTP FIXLINE // PRIVATE BETA.</div></div></div></footer>
+  <script src="/otp-attribution.js?v=16.9.1" defer></script>
+  <script src="/fixline-analytics.js?v=2" defer></script>
+  <script src="/fixline-intake.js?v=2" defer></script>
+  <script src="/site-init.js?v=20260629-archive3" defer></script>
+  <script src="/_vercel/speed-insights/script.js" defer></script>
+</body>
+</html>

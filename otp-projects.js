@@ -7,7 +7,7 @@
     'In Progress',
     'Archived',
     'Internal',
-    'Restricted Beta',
+    'Private Beta',
     'Coming Soon'
   ]);
 
@@ -53,7 +53,7 @@
       featured: true,
       homepageFeatured: false,
       pinned: true,
-      status: 'Restricted Beta',
+      status: 'Private Beta',
       launchDate: '2026-07-14',
       year: 2026,
       shortDescription: 'A structured business-presence intake and consultant-audit system built by OnlyTruePerspective to turn public business signals into prioritized review requests and an honest implementation path.',
@@ -69,7 +69,7 @@
       projectUrl: '/fixline',
       projectCtaLabel: 'Explore OTP FIXLINE',
       bookingUrl: '/fixline/intake?source=archive-fixline',
-      bookingCtaLabel: 'Run a FIXLINE Audit',
+      bookingCtaLabel: 'Start My FIXLINE Review',
       caseStudyUrl: '',
       caseStudyCtaLabel: 'View Future Case Studies'
     }),

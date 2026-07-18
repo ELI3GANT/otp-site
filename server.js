@@ -2421,6 +2421,10 @@ app.get(['/fixline', '/fixline/'], (req, res) => {
     res.sendFile(path.join(staticPath, 'fixline.html'));
 });
 
+app.get(['/fixline/intake', '/fixline/intake/'], (req, res) => {
+    res.sendFile(path.join(staticPath, 'fixline-intake.html'));
+});
+
 app.get(['/services/consultant-audit', '/services/consultant-audit/'], (req, res) => {
     res.sendFile(path.join(staticPath, 'consultant-audit.html'));
 });

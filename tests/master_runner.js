@@ -39,6 +39,7 @@ const tests = [
     { name: 'Homepage Visual Contract', path: 'tests/homepage_visual_contract.test.js' },
     { name: 'Archive Case Study Contract', path: 'tests/archive_case_study_contract.test.js' },
     { name: 'FIXLINE Integration Contract', path: 'tests/fixline_integration_contract.test.js' },
+    { name: 'FIXLINE Premium Experience', path: 'tests/fixline_premium_experience.test.js' },
     { name: 'YouTube Video Contract', path: 'tests/youtube_video_contract.test.js' },
     { name: 'PROTOCOL Countdown Contract', path: 'tests/protocol_contract.test.js' },
     { name: 'Song Wars Landing Page Contract', path: 'tests/songwars_contract.test.js' },

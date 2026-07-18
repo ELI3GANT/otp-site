@@ -14,6 +14,8 @@ const server = read('server.js');
 const sitemap = read('sitemap.xml');
 const vercelConfig = JSON.parse(read('vercel.json'));
 const fixlinePage = read('fixline.html');
+const fixlineIntakePage = read('fixline-intake.html');
+const fixlineIntakeScript = read('fixline-intake.js');
 const consultantAuditPage = read('consultant-audit.html');
 const sharedStyles = read('styles.css');
 const fixlineStyles = read('fixline-service.css');
@@ -32,6 +34,10 @@ assert.ok(projectLibrary.includes("bookingUrl: '/fixline/intake"), 'Archive FIXL
 
 assert.ok(fixlinePage.includes('rel="canonical" href="https://www.onlytrueperspective.tech/fixline"'), 'FIXLINE page owns the canonical URL');
 assert.ok(fixlinePage.includes('href="/fixline/intake"'), 'FIXLINE page starts the real intake');
+assert.ok(fixlinePage.includes('Start My FIXLINE Review'), 'FIXLINE uses one primary intake action');
+assert.ok(fixlineIntakePage.includes('OTP FIXLINE // PRIVATE BETA'), 'native intake uses the public product terminology');
+assert.ok(fixlineIntakeScript.includes("fetch('/fixline/api/review/submit'"), 'native intake preserves the submission endpoint');
+assert.ok(server.includes("['/fixline/intake', '/fixline/intake/']"), 'Express serves the native FIXLINE intake');
 assert.ok(fixlinePage.includes('href="/services/consultant-audit"'), 'FIXLINE page connects to consultant audit');
 assert.ok(consultantAuditPage.includes('rel="canonical" href="https://www.onlytrueperspective.tech/services/consultant-audit"'), 'consultant audit owns its canonical URL');
 assert.ok(consultantAuditPage.includes('href="/fixline/intake"'), 'consultant audit starts with FIXLINE');
