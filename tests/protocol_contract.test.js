@@ -12,7 +12,11 @@ const js = read('protocol.js');
 const server = read('server.js');
 const index = read('index.html');
 const packageJson = JSON.parse(read('package.json'));
-const vercelProject = JSON.parse(read('.vercel/project.json'));
+const releaseManifest = JSON.parse(read('release-manifest.json'));
+const vercelProjectPath = path.join(root, '.vercel', 'project.json');
+const vercelProject = fs.existsSync(vercelProjectPath)
+  ? JSON.parse(fs.readFileSync(vercelProjectPath, 'utf8'))
+  : null;
 
 const DISTROKID_URL = 'https://distrokid.com/hyperfollow/eli711/protocol?ref=release';
 const RELEASE_TARGET = '2026-06-26T00:00:00-04:00';
@@ -273,7 +277,10 @@ walkSourceFiles(root).forEach((file) => {
   assert.ok(!fs.readFileSync(file, 'utf8').includes(forbiddenProtocolSitePath), `${path.relative(root, file)} does not reference abandoned protocol-site path`);
 });
 
-assert.strictEqual(vercelProject.projectName, 'otp-site', 'Vercel project remains otp-site');
+assert.strictEqual(releaseManifest.deploymentTarget.project, 'otp-site', 'release target remains otp-site');
+if (vercelProject) {
+  assert.strictEqual(vercelProject.projectName, 'otp-site', 'local Vercel link remains otp-site');
+}
 assert.ok(!JSON.stringify(vercelProject).includes('protocol-site'), 'Vercel project does not reference protocol-site');
 Object.values(packageJson.scripts || {}).forEach((script) => {
   assert.ok(!script.includes('vercel link'), 'package scripts do not relink Vercel projects');

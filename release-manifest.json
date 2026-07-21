@@ -89,6 +89,7 @@
     "tests/logo_asset_contract.test.js",
     "tests/marketing_site_contract.test.js",
     "tests/master_runner.js",
+    "tests/protocol_contract.test.js",
     "tests/release_guardrails_contract.test.js",
     "tests/seo_indexing_contract.test.js",
     "tests/songwars_contract.test.js",
