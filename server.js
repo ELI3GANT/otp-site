@@ -2417,13 +2417,14 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));
 });
 
-app.get(['/fixline', '/fixline/'], (req, res) => {
-    res.sendFile(path.join(staticPath, 'fixline.html'));
-});
+function redirectToFixlineApp(req, res) {
+    const queryIndex = req.originalUrl.indexOf('?');
+    const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
+    const pathname = req.path.endsWith('/') ? req.path.slice(0, -1) : req.path;
+    return res.redirect(307, `https://otp-fixline.vercel.app${pathname}${query}`);
+}
 
-app.get(['/fixline/intake', '/fixline/intake/'], (req, res) => {
-    res.sendFile(path.join(staticPath, 'fixline-intake.html'));
-});
+app.get(['/fixline', '/fixline/', '/fixline/intake', '/fixline/intake/'], redirectToFixlineApp);
 
 app.get(['/services/consultant-audit', '/services/consultant-audit/'], (req, res) => {
     res.sendFile(path.join(staticPath, 'consultant-audit.html'));

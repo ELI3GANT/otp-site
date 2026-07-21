@@ -1,5 +1,5 @@
 {
-  "releaseName": "otp-fixline-typography-copy-20260718",
+  "releaseName": "otp-fixline-final-public-integration-20260721",
   "includedFiles": [
     ".github/workflows/ci.yml",
     ".github/workflows/production-release.yml",
@@ -110,7 +110,7 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed"
+      "status": "passed_39_of_39"
     },
     {
       "command": "npm run master_test:ci",
@@ -145,17 +145,25 @@
       "status": "passed"
     },
     {
-      "command": "Playwright FIXLINE public, intake, review, and mocked-success QA at 320, 375, 390, 430, 768, 1024, 1280, and 1440 widths",
-      "status": "passed"
+      "command": "Playwright FIXLINE public, intake, validation, review, loading, and mocked-success QA in Chromium and WebKit",
+      "status": "passed_32_of_32"
+    },
+    {
+      "command": "fresh visual capture matrix at 320, 390, 768, 1024, 1440, and 1920 widths",
+      "status": "passed_41_captures"
+    },
+    {
+      "command": "npm audit --audit-level=high",
+      "status": "reported_preexisting_1_high_1_low"
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Chromium acceptance passed across 18 FIXLINE public, intake, review, and mocked-success scenarios at 320, 375, 390, 430, 768, 1024, 1280, and 1440 widths. Computed typography matched the OTP Bookings Inter/system hierarchy with zero forbidden font or italic results. There were no console errors, page errors, failed requests, failed responses, missing images, or horizontal overflow, and the mocked 390px and 1440px submissions preserved the existing backend enums."
+    "summary": "Fresh local acceptance passed 32 Chromium and WebKit tests plus 41 screenshots covering the OTP homepage, FIXLINE landing and intake at 320, 390, 768, 1024, 1440, and 1920 widths; light and dark themes; validation, review, loading, mocked success, legal routes, and the public root and intake through the otp-site Vercel rewrite environment. Current-build captures had zero console errors, failed responses, or horizontal overflow."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "The read-only authenticated production sweep passed using a short-lived production-signed JWT held only in subprocess memory. No credential values were printed or retained. The configured passcode login was separately observed returning 401 and was not used as pass evidence."
+    "summary": "The prior read-only authenticated production sweep remains applicable because this release changes only public FIXLINE routing and leaves authenticated OTP-site code untouched. The production-release workflow still requires and reruns authenticated checks before deployment; no credential values are stored in this manifest."
   },
   "deploymentTarget": {
     "project": "otp-site",

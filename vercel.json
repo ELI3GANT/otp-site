@@ -27,7 +27,8 @@
     }
   ],
   "routes": [
-    { "src": "^/fixline/intake/?$", "dest": "/server.js" },
+    { "src": "^/fixline/?$", "dest": "https://otp-fixline.vercel.app/fixline" },
+    { "src": "^/fixline/intake/?$", "dest": "https://otp-fixline.vercel.app/fixline/intake" },
     { "src": "^/fixline/api/review/submit/?$", "dest": "https://otp-fixline.vercel.app/fixline/api/review/submit" },
     { "src": "^/fixline/api/events/?$", "dest": "https://otp-fixline.vercel.app/fixline/api/events" },
     { "src": "^/fixline/(privacy|terms|contact)/?$", "dest": "https://otp-fixline.vercel.app/fixline/$1" },
