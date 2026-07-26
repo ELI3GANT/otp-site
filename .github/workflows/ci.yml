@@ -57,6 +57,7 @@ jobs:
     timeout-minutes: 20
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     env:
+      OTP_ADMIN_PASSCODE: ${{ secrets.OTP_ADMIN_PASSCODE || secrets.ADMIN_PASSCODE }}
       OTP_ADMIN_TOKEN: ${{ secrets.OTP_ADMIN_TOKEN }}
     steps:
       - uses: actions/checkout@v4

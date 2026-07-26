@@ -107,15 +107,29 @@ async function resolveAdminToken(baseUrl, token = '') {
 
   const provided = adminSweepTokenEnv(token);
   if (provided.value) {
-    if (!hasUsableAdminToken(provided.value)) {
-      return {
-        token: '',
-        source: '',
-        attempted: true,
-        error: `${provided.source} is not a usable admin JWT.`
-      };
+    if (hasUsableAdminToken(provided.value)) {
+      return { token: provided.value, source: provided.source, attempted: true, method: 'token' };
     }
-    return { token: provided.value, source: provided.source, attempted: true, method: 'token' };
+
+    try {
+      const { response, text } = await fetchText(normalizePath(baseUrl, '/api/auth/login'), {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: provided.value })
+      });
+      const payload = text ? JSON.parse(text) : {};
+      const jwtToken = String(payload.token || payload.data?.token || '').trim();
+      if (response.ok && hasUsableAdminToken(jwtToken)) {
+        return { token: jwtToken, source: `${provided.source}_login`, attempted: true, method: 'login' };
+      }
+    } catch (_) {}
+
+    return {
+      token: '',
+      source: '',
+      attempted: true,
+      error: `${provided.source} is not a usable admin JWT.`
+    };
   }
 
   return {
