@@ -2412,6 +2412,8 @@ app.get(/^\/os$/, (req, res) => {
 app.all(/^\/os(?:\/.*)?$/, proxyOtpOs);
 
 // Root + clean URL aliases BEFORE express.static so `/` is not served as a long-cache static file.
+app.use(['/fixline', '/fixline/*'], proxyFixlineApp);
+
 app.get('/', (req, res) => {
     noStoreHtml(res);
     res.sendFile(path.join(staticPath, 'index.html'));
@@ -2449,8 +2451,6 @@ async function proxyFixlineApp(req, res) {
         return res.redirect(307, `https://otp-fixline.vercel.app${pathname}${query}`);
     }
 }
-
-app.use(['/fixline', '/fixline/*'], proxyFixlineApp);
 
 app.get(['/services/consultant-audit', '/services/consultant-audit/'], (req, res) => {
     res.sendFile(path.join(staticPath, 'consultant-audit.html'));
