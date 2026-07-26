@@ -27,8 +27,8 @@ async function main() {
   const rootProxy = vercel.routes.find((route) => route.src === '^/fixline/?$');
   assert.strictEqual(
     rootProxy?.dest,
-    '/server.js',
-    'Vercel routes public FIXLINE root to server.js Express proxy',
+    'https://otp-fixline.vercel.app/',
+    'Vercel proxies public FIXLINE root directly to root of target app',
   );
 
   const server = app.listen(0, '127.0.0.1');
