@@ -2422,7 +2422,8 @@ async function proxyFixlineApp(req, res) {
         const queryIndex = req.originalUrl.indexOf('?');
         const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
         const rawPath = req.path.endsWith('/') && req.path.length > 1 ? req.path.slice(0, -1) : req.path;
-        const targetUrl = `https://otp-fixline.vercel.app${rawPath}${query}`;
+        const mappedPath = (rawPath === '/fixline' || rawPath === '') ? '' : rawPath;
+        const targetUrl = `https://otp-fixline.vercel.app${mappedPath}${query}`;
 
         const upstream = await fetch(targetUrl, {
             headers: {
