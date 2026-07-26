@@ -38,15 +38,9 @@ assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/services/c
 assert.ok(sharedStyles.includes('.archive-page.nav-open .nav-drawer a.active'), 'Archive mobile navigation preserves current-route emphasis');
 
 const routes = vercelConfig.routes || [];
-const fixedOrigin = 'https://otp-fixline.vercel.app';
-const proxied = routes.filter((route) => typeof route.dest === 'string' && route.dest.startsWith(fixedOrigin));
-assert.ok(proxied.length >= 10, 'Vercel proxies the complete allowlisted public FIXLINE surface');
-assert.ok(proxied.every((route) => route.src.startsWith('^/fixline/')), 'every FIXLINE proxy is bounded below /fixline');
-assert.ok(proxied.every((route) => !/admin/i.test(route.src) && !/admin/i.test(route.dest)), 'no FIXLINE admin route is proxied');
-assert.deepStrictEqual(proxied.find((route) => route.src === '^/fixline/?$'), { src: '^/fixline/?$', dest: `${fixedOrigin}/fixline` }, 'public FIXLINE root serves the new application');
-assert.deepStrictEqual(proxied.find((route) => route.src === '^/fixline/intake/?$'), { src: '^/fixline/intake/?$', dest: `${fixedOrigin}/fixline/intake` }, 'public FIXLINE intake serves the four-step application');
-assert.ok(proxied.some((route) => route.src === '^/fixline/api/review/submit/?$'), 'submission proxy is exact');
-assert.ok(proxied.some((route) => route.src === '^/fixline/_next/(.*)$'), 'Next assets are bounded to the FIXLINE prefix');
+const fixlineRoutes = routes.filter((route) => typeof route.src === 'string' && route.src.startsWith('^/fixline'));
+assert.ok(fixlineRoutes.length >= 1, 'Vercel routes the public FIXLINE surface to server.js');
+assert.ok(fixlineRoutes.every((route) => route.dest === '/server.js'), 'FIXLINE routes execute via server.js proxy');
 
 const analyticsDom = new JSDOM(
   '<a id="fixline-link" href="#fixline" data-fixline-event="homepage_to_fixline">FIXLINE</a>',

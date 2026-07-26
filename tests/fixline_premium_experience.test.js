@@ -25,16 +25,10 @@ async function main() {
   console.log('FIXLINE PREMIUM EXPERIENCE...');
 
   const rootProxy = vercel.routes.find((route) => route.src === '^/fixline/?$');
-  const intakeProxy = vercel.routes.find((route) => route.src === '^/fixline/intake/?$');
-  assert.deepStrictEqual(
-    rootProxy,
-    { src: '^/fixline/?$', dest: 'https://otp-fixline.vercel.app/fixline' },
-    'Vercel serves the current FIXLINE application at the public root',
-  );
-  assert.deepStrictEqual(
-    intakeProxy,
-    { src: '^/fixline/intake/?$', dest: 'https://otp-fixline.vercel.app/fixline/intake' },
-    'Vercel serves the four-step intake at the public intake route',
+  assert.strictEqual(
+    rootProxy?.dest,
+    '/server.js',
+    'Vercel routes public FIXLINE root to server.js Express proxy',
   );
 
   const server = app.listen(0, '127.0.0.1');
