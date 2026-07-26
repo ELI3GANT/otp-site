@@ -2417,14 +2417,39 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(staticPath, 'index.html'));
 });
 
-function redirectToFixlineApp(req, res) {
-    const queryIndex = req.originalUrl.indexOf('?');
-    const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
-    const pathname = req.path.endsWith('/') ? req.path.slice(0, -1) : req.path;
-    return res.redirect(307, `https://otp-fixline.vercel.app${pathname}${query}`);
+async function proxyFixlineApp(req, res) {
+    try {
+        const queryIndex = req.originalUrl.indexOf('?');
+        const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
+        const rawPath = req.path.endsWith('/') && req.path.length > 1 ? req.path.slice(0, -1) : req.path;
+        const targetUrl = `https://otp-fixline.vercel.app${rawPath}${query}`;
+
+        const upstream = await fetch(targetUrl, {
+            headers: {
+                'x-forwarded-host': req.headers.host || 'www.onlytrueperspective.tech',
+                'x-forwarded-proto': 'https',
+                'accept': req.headers.accept || '*/*',
+                'user-agent': req.headers['user-agent'] || ''
+            }
+        });
+        res.status(upstream.status);
+        upstream.headers.forEach((val, key) => {
+            const lowerKey = key.toLowerCase();
+            if (lowerKey !== 'content-encoding' && lowerKey !== 'transfer-encoding' && lowerKey !== 'content-length') {
+                res.setHeader(key, val);
+            }
+        });
+        const arrayBuf = await upstream.arrayBuffer();
+        return res.send(Buffer.from(arrayBuf));
+    } catch (err) {
+        const queryIndex = req.originalUrl.indexOf('?');
+        const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
+        const pathname = req.path.endsWith('/') ? req.path.slice(0, -1) : req.path;
+        return res.redirect(307, `https://otp-fixline.vercel.app${pathname}${query}`);
+    }
 }
 
-app.get(['/fixline', '/fixline/', '/fixline/intake', '/fixline/intake/'], redirectToFixlineApp);
+app.use(['/fixline', '/fixline/*'], proxyFixlineApp);
 
 app.get(['/services/consultant-audit', '/services/consultant-audit/'], (req, res) => {
     res.sendFile(path.join(staticPath, 'consultant-audit.html'));
