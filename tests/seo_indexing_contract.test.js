@@ -39,12 +39,6 @@ const pages = {
     descriptionSnippet: 'Explore OnlyTruePerspective projects',
     indexable: true
   },
-  'fixline.html': {
-    title: 'OTP FIXLINE — A Clear Diagnosis for Your Business Presence',
-    canonical: 'https://www.onlytrueperspective.tech/fixline',
-    descriptionSnippet: 'Submit your public business presence',
-    indexable: true
-  },
   'consultant-audit.html': {
     title: 'Consultant Audit Service | OnlyTruePerspective',
     canonical: 'https://www.onlytrueperspective.tech/services/consultant-audit',
