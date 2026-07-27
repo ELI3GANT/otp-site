@@ -127,7 +127,7 @@ html.spectral-v-sync body.fixline-service-page .nav-logo {
   padding: 132px 0 34px;
   border-bottom: 1px solid var(--fix-border);
   background:
-    radial-gradient(circle at 82% 20%, rgba(215, 182, 106, 0.14), transparent 26%),
+    radial-gradient(circle at 82% 20%, rgba(215, 182, 106, 0.16), transparent 28%),
     linear-gradient(180deg, #080909 0%, var(--fix-bg) 78%);
 }
 
@@ -137,12 +137,49 @@ html.spectral-v-sync body.fixline-service-page .nav-logo {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.18;
+  opacity: 0.25;
   background-image:
-    linear-gradient(rgba(166, 170, 167, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(166, 170, 167, 0.08) 1px, transparent 1px);
+    linear-gradient(rgba(215, 182, 106, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(215, 182, 106, 0.16) 1px, transparent 1px);
   background-size: 64px 64px;
-  mask-image: linear-gradient(to bottom, black, transparent 78%);
+  mask-image: linear-gradient(to bottom, black, transparent 82%);
+  animation: fixlineGridPan 18s linear infinite, fixlineGridPulse 4s ease-in-out infinite alternate;
+}
+
+/* ANIMATED LASER SCANNER BEAM ON FIXLINE HERO */
+.fixline-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(215, 182, 106, 0.04) 45%,
+    rgba(215, 182, 106, 0.35) 50%,
+    rgba(215, 182, 106, 0.04) 55%,
+    transparent 100%
+  );
+  background-size: 100% 200%;
+  animation: fixlineLaserSweep 7s ease-in-out infinite;
+  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+}
+
+@keyframes fixlineGridPan {
+  0% { background-position: 0 0; }
+  100% { background-position: 64px 64px; }
+}
+
+@keyframes fixlineGridPulse {
+  0% { opacity: 0.18; filter: drop-shadow(0 0 2px rgba(215, 182, 106, 0.1)); }
+  100% { opacity: 0.35; filter: drop-shadow(0 0 10px rgba(215, 182, 106, 0.35)); }
+}
+
+@keyframes fixlineLaserSweep {
+  0% { transform: translateY(-100%); }
+  50% { transform: translateY(100%); }
+  100% { transform: translateY(-100%); }
 }
 
 .fixline-hero-grid {
