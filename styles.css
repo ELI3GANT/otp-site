@@ -13771,12 +13771,23 @@ body.home-page .conversion-lane-card:hover {
   box-shadow: 0 14px 38px rgba(0, 0, 0, 0.05) !important;
 }
 
-[data-theme="light"] .capability-pillar-card p {
-  color: rgba(10, 10, 14, 0.78) !important;
-}
-
-[data-theme="light"] .capability-pillar-card ul li {
-  color: rgba(10, 10, 14, 0.88) !important;
+[data-theme="light"] .section-capabilities .section-head h2,
+[data-theme="light"] .section-capabilities .section-head p,
+[data-theme="light"] .capability-pillar-card h3,
+[data-theme="light"] .capability-pillar-card p,
+[data-theme="light"] .capability-pillar-card ul,
+[data-theme="light"] .capability-pillar-card ul li,
+[data-theme="light"] .capability-pillar-card ul li strong,
+[data-theme="light"] #pillar-business-card h3,
+[data-theme="light"] #pillar-business-card p,
+[data-theme="light"] #pillar-business-card ul li,
+[data-theme="light"] #pillar-business-card ul li strong,
+[data-theme="light"] #pillar-creative-card h3,
+[data-theme="light"] #pillar-creative-card p,
+[data-theme="light"] #pillar-creative-card ul li,
+[data-theme="light"] #pillar-creative-card ul li strong {
+  color: #0b0b0e !important;
+  opacity: 1 !important;
 }
 
 [data-theme="light"] .lens-tab {
