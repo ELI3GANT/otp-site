@@ -1,9 +1,23 @@
-(function initOtpArchive(root) {
+(function initOtpArchiveWrapper(root) {
   'use strict';
 
-  const library = root.OTP_PROJECT_LIBRARY;
-  const projectRoot = document.querySelector('[data-archive-projects]');
-  if (!library || !projectRoot) return;
+  function runArchiveInit() {
+    const library = root.OTP_PROJECT_LIBRARY;
+    const projectRoot = document.querySelector('[data-archive-projects]');
+    if (!library || !projectRoot) return false;
+    initOtpArchiveCore(root, library, projectRoot);
+    return true;
+  }
+
+  if (!runArchiveInit()) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', runArchiveInit);
+    } else {
+      setTimeout(runArchiveInit, 30);
+    }
+  }
+
+  function initOtpArchiveCore(root, library, projectRoot) {
 
   const state = {
     collection: 'Everything',
@@ -338,8 +352,7 @@
     });
   });
 
-  if (controls.clear) controls.clear.addEventListener('click', resetFilters);
-
   renderTimeline();
   renderProjects();
+  }
 })(window);
