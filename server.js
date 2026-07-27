@@ -2411,7 +2411,28 @@ app.get(/^\/os$/, (req, res) => {
 });
 app.all(/^\/os(?:\/.*)?$/, proxyOtpOs);
 
-// Root + clean URL aliases BEFORE express.static so `/` is not served as a long-cache static file.
+app.use(['/_next', '/_next/*'], async (req, res) => {
+    try {
+        const upstream = await fetch(`http://127.0.0.1:3001${req.originalUrl}`, {
+            headers: {
+                'accept': req.headers.accept || '*/*',
+                'user-agent': req.headers['user-agent'] || ''
+            }
+        });
+        res.status(upstream.status);
+        upstream.headers.forEach((val, key) => {
+            const lowerKey = key.toLowerCase();
+            if (lowerKey !== 'content-encoding' && lowerKey !== 'transfer-encoding' && lowerKey !== 'content-length') {
+                res.setHeader(key, val);
+            }
+        });
+        const arrayBuf = await upstream.arrayBuffer();
+        return res.send(Buffer.from(arrayBuf));
+    } catch (_err) {
+        return res.status(404).end();
+    }
+});
+
 app.use(['/fixline', '/fixline/*'], proxyFixlineApp);
 
 app.get('/', (req, res) => {
@@ -2425,16 +2446,29 @@ async function proxyFixlineApp(req, res) {
         const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
         const rawPath = req.path.endsWith('/') && req.path.length > 1 ? req.path.slice(0, -1) : req.path;
         const mappedPath = (rawPath === '/fixline' || rawPath === '') ? '' : rawPath;
-        const targetUrl = `https://otp-fixline.vercel.app${mappedPath}${query}`;
 
-        const upstream = await fetch(targetUrl, {
-            headers: {
-                'x-forwarded-host': req.headers.host || 'www.onlytrueperspective.tech',
-                'x-forwarded-proto': 'https',
-                'accept': req.headers.accept || '*/*',
-                'user-agent': req.headers['user-agent'] || ''
-            }
-        });
+        let targetUrl = `http://127.0.0.1:3001${mappedPath}${query}`;
+        let upstream;
+        try {
+            upstream = await fetch(targetUrl, {
+                headers: {
+                    'x-forwarded-host': req.headers.host || 'localhost:3000',
+                    'x-forwarded-proto': 'http',
+                    'accept': req.headers.accept || '*/*',
+                    'user-agent': req.headers['user-agent'] || ''
+                }
+            });
+        } catch (_localErr) {
+            targetUrl = `https://otp-fixline.vercel.app${mappedPath}${query}`;
+            upstream = await fetch(targetUrl, {
+                headers: {
+                    'x-forwarded-host': req.headers.host || 'www.onlytrueperspective.tech',
+                    'x-forwarded-proto': 'https',
+                    'accept': req.headers.accept || '*/*',
+                    'user-agent': req.headers['user-agent'] || ''
+                }
+            });
+        }
         res.status(upstream.status);
         upstream.headers.forEach((val, key) => {
             const lowerKey = key.toLowerCase();
