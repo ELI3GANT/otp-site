@@ -13790,14 +13790,18 @@ body.home-page .conversion-lane-card:hover {
   opacity: 1 !important;
 }
 
-[data-theme="light"] .lens-tab {
-  background: #eef1f6 !important;
-  border-color: rgba(10, 10, 14, 0.12) !important;
-  color: rgba(10, 10, 14, 0.75) !important;
+[data-theme="light"] .dual-lens-bar .lens-tab,
+[data-theme="light"] .dual-lens-bar #lens-business,
+[data-theme="light"] .dual-lens-bar #lens-creative,
+[data-theme="light"] .lens-tab,
+[data-theme="light"] #lens-business,
+[data-theme="light"] #lens-creative {
+  color: #0b0b0e !important;
 }
 
 [data-theme="light"] .lens-tab.active {
-  background: #0b0b0e !important;
-  color: #ffffff !important;
+  background: #eef2fa !important;
+  color: #0b0b0e !important;
   border-color: #0b0b0e !important;
+  font-weight: 800 !important;
 }

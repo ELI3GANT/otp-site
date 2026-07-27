@@ -259,10 +259,10 @@
 
         <!-- DUAL-LENS AUDIENCE SWITCHER -->
         <div class="dual-lens-bar" style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 40px; flex-wrap: wrap;">
-          <button id="lens-business" type="button" class="lens-tab active" style="padding: 10px 24px; border-radius: 30px; background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.4); color: #fff; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 220ms ease;">
+          <button id="lens-business" type="button" class="lens-tab active" style="padding: 10px 24px; border-radius: 30px; background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.4); font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 220ms ease;">
             💼 For Businesses &amp; Brands
           </button>
-          <button id="lens-creative" type="button" class="lens-tab" style="padding: 10px 24px; border-radius: 30px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7); font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 220ms ease;">
+          <button id="lens-creative" type="button" class="lens-tab" style="padding: 10px 24px; border-radius: 30px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 220ms ease;">
             🎨 For Creators &amp; Artists
           </button>
         </div>
@@ -1283,13 +1283,12 @@
       if (!btnBiz || !btnCreative || !cardBiz || !cardCreative) return;
 
       btnBiz.addEventListener('click', function() {
+        btnBiz.classList.add('active');
+        btnCreative.classList.remove('active');
         btnBiz.style.background = 'rgba(0, 240, 255, 0.15)';
         btnBiz.style.borderColor = 'rgba(0, 240, 255, 0.4)';
-        btnBiz.style.color = '#fff';
-
-        btnCreative.style.background = 'rgba(255, 255, 255, 0.04)';
-        btnCreative.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-        btnCreative.style.color = 'rgba(255, 255, 255, 0.7)';
+        btnCreative.style.background = 'transparent';
+        btnCreative.style.borderColor = 'rgba(255, 255, 255, 0.15)';
 
         cardBiz.style.borderColor = 'rgba(0, 240, 255, 0.4)';
         cardBiz.style.boxShadow = '0 0 30px rgba(0, 240, 255, 0.18)';
@@ -1298,13 +1297,12 @@
       });
 
       btnCreative.addEventListener('click', function() {
+        btnCreative.classList.add('active');
+        btnBiz.classList.remove('active');
         btnCreative.style.background = 'rgba(255, 180, 0, 0.15)';
         btnCreative.style.borderColor = 'rgba(255, 180, 0, 0.4)';
-        btnCreative.style.color = '#fff';
-
-        btnBiz.style.background = 'rgba(255, 255, 255, 0.04)';
-        btnBiz.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-        btnBiz.style.color = 'rgba(255, 255, 255, 0.7)';
+        btnBiz.style.background = 'transparent';
+        btnBiz.style.borderColor = 'rgba(255, 255, 255, 0.15)';
 
         cardCreative.style.borderColor = 'rgba(255, 180, 0, 0.4)';
         cardCreative.style.boxShadow = '0 0 30px rgba(255, 180, 0, 0.18)';
