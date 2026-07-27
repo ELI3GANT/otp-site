@@ -19,7 +19,7 @@ assert.ok(index.includes('Visual Success <span class="visual-success-accent">Sys
 assert.ok(index.includes('Quote-First Project Intake'), 'Visual Success section includes quote-first intake card');
 assert.ok(index.includes('Fast-Lane Asset Path'), 'Visual Success section includes fast-lane card');
 assert.ok(index.includes('Private Delivery Workspace'), 'Visual Success section includes portal delivery card');
-assert.ok(index.includes('Proof first: live projects, before/after rebuilds, event pages, artist rollouts, and client-ready production systems.'), 'homepage hero adds proof-first trust line');
+assert.ok(index.includes('Proof first: live business platforms, emergency tech repairs, event pages, artist rollouts, and custom video production.'), 'homepage hero adds proof-first trust line');
 assert.ok(index.includes('id="fast-lane-capture"'), 'homepage exposes the fast client capture section');
 assert.ok(index.includes('Same-Day Signal'), 'homepage fast capture includes Same-Day Signal lane');
 assert.ok(index.includes('Website / Brand Fix'), 'homepage fast capture includes Website / Brand Fix lane');
