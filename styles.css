@@ -217,6 +217,29 @@ html.nav-open, body.nav-open {
   --ring: 0 0 0 2px rgba(var(--accent2-rgb), 0.2);
 }
 
+/* FIXED BACKGROUND LAYER & STARFIELD CANVAS */
+.bg-fixed {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  background: var(--bg, #030305);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#cursor-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  display: block;
+}
+
 /* Light Mode Specific Adjustments */
 [data-theme="light"] .bg-fixed {
   background: #f2f2f5; 

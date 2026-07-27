@@ -245,59 +245,53 @@
   <canvas id="cursor-canvas"></canvas>
   <div class="bg-fixed"></div>
   
-  <header class="nav nav-split">
-    <a href="index.html" class="nav-logo" aria-label="OTP">
-      <img src="assets/otp.gif" alt="OTP" class="otp-mark" id="nav-logo-neon" />
+  <header class="nav nav-split" id="top">
+    <!-- Logo Left -->
+    <a href="index.html" class="nav-logo" aria-label="OnlyTruePerspective Homepage">
+      <img src="assets/otp-logo-transparent.png" alt="OTP spinning 3D logo" class="otp-mark" id="nav-logo-neon" width="44" height="44" decoding="async" style="opacity: 1 !important; visibility: visible !important;" />
     </a>
-    <nav class="nav-links">
-      <a href="insights.html" class="k-hover">← THE VAULT</a>
+
+    <!-- Links Right -->
+    <nav class="nav-links" aria-label="Primary">
+      <a href="index.html#services" class="k-hover">Services</a>
+      <a href="index.html#packages" class="k-hover">Packages</a>
+      <a href="/fixline" class="k-hover">FIXLINE</a>
+      <a href="/bookings" class="k-hover">Book OTP</a>
+      <a href="/portal" class="k-hover">Client Portal</a>
+      <a href="index.html#work" class="k-hover">Work</a>
+      <a href="index.html#contact" class="k-hover">Contact</a>
+      <a href="/archive" class="k-hover nav-secondary">Archive</a>
+      <a href="insights.html" class="active k-hover nav-secondary">Insights Vault</a>
+    </nav>
+
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav-drawer" aria-label="Mobile">
+      <a href="index.html#services">Services</a>
+      <a href="index.html#packages">Packages</a>
+      <a href="/fixline">FIXLINE</a>
+      <a href="/bookings">Book OTP</a>
+      <a href="/portal">Client Portal</a>
+      <a href="index.html#work">Work</a>
+      <a href="index.html#contact">Contact</a>
+      <a href="/archive">Archive</a>
+      <a href="insights.html" class="active">Insights Vault</a>
     </nav>
   </header>
 
-  <main class="wrap" style="padding-top: 150px;">
-    <!-- SHARED SVG DEFS -->
-    <svg style="width:0; height:0; position:absolute;">
-      <defs>
-        <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#fff" />
-          <stop offset="50%" stop-color="var(--accent2)" />
-          <stop offset="100%" stop-color="var(--accent2)" />
-        </linearGradient>
-      </defs>
-    </svg>
-
-    <div class="post-header">
-        <a href="insights.html" class="back-to-vault k-hover">BACK TO VAULT</a>
-        
-        <div style="display: flex; justify-content: center; margin-bottom: 30px;">
-            <!-- MINIMAL SHARD STAR : DEEP GLASS -->
-            <div class="star-4d-container k-hover" style="transform: scale(0.9);">
-              <div class="sticker-base"></div>
-              <div class="sticker-resonance"></div>
-              <svg class="sticker-hieroglyphic" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- SHARD 1 (Vertical High) -->
-                <path d="M50 5 L53 47 L50 53 L47 47 Z" fill="currentColor"/>
-                <!-- SHARD 2 (Horizontal Right) -->
-                <path d="M95 50 L53 53 L47 50 L53 47 Z" fill="currentColor"/>
-                <!-- SHARD 3 (Vertical Low) -->
-                <path d="M50 95 L47 53 L50 47 L53 53 Z" fill="currentColor"/>
-                <!-- SHARD 4 (Horizontal Left) -->
-                <path d="M5 50 L47 47 L53 50 L47 53 Z" fill="currentColor"/>
-                
-                <!-- INNER CORE SHARDS -->
-                <path d="M50 35 L55 50 L50 55 L45 50 Z" fill="currentColor" opacity="0.8"/>
-                <path d="M65 50 L50 55 L45 50 L50 45 Z" fill="currentColor" opacity="0.6"/>
-              </svg>
-            </div>
-        </div>
-
+  <main class="wrap" style="padding-top: 130px; max-width: 880px; margin: 0 auto; position: relative; z-index: 1;">
+    <div class="post-header" style="text-align: center; margin-bottom: 40px;">
+        <a href="insights.html" class="back-to-vault k-hover" style="margin-bottom: 24px; display: inline-flex; align-items: center; gap: 8px;">BACK TO VAULT</a>
         <div class="header-content">
-          <span class="post-meta" id="postMeta">UPLINK ESTABLISHED</span>
-          <h1 id="postTitle" class="syne-extra-bold" style="letter-spacing: -4px;">DECRYPTING...</h1>
+          <span class="post-meta" id="postMeta" style="margin-bottom: 16px;">UPLINK ESTABLISHED</span>
+          <h1 id="postTitle" class="syne-extra-bold" style="font-size: clamp(2rem, 5vw, 3.2rem); margin: 0; line-height: 1.2; text-transform: uppercase;">DECRYPTING...</h1>
         </div>
     </div>
 
-    <div class="post-content blog-content">
+    <div class="post-content blog-content" style="background: rgba(12, 12, 20, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; padding: 44px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 25px 60px rgba(0,0,0,0.6);">
         <div id="loader" style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
             <div class="loader-pulse" style="width:40px;height:40px;border-radius:50%;background:var(--accent2);animation:pulse-cyan 1.5s infinite alternate;"></div>
         </div>
@@ -320,26 +314,108 @@
             : String(rawSlug || '').trim();
         if (!slug) { window.location.href = 'insights.html'; return; }
 
+        const BAKED_POSTS = {
+            'spooky-luh-ooky': {
+                id: 'baked-1',
+                title: 'Deconstruction: Spooky (Luh Ooky)',
+                slug: 'spooky-luh-ooky',
+                category: 'Visuals',
+                created_at: '2026-01-08T12:00:00Z',
+                image_url: 'assets/seo/otp-og-image.webp',
+                content: `### Visual Architecture & Atmospheric Direction
+
+OnlyTruePerspective deconstructs the aesthetic markers that define the dark-modernist visual rollout:
+
+* **High-Contrast Low-Key Lighting**: Combining deep shadows with sharp cyan and magenta accents to isolate subjects with striking visual weight.
+* **Transient-Based Motion Synchronization**: Precision editing cut directly to 808 transients, snares, and vocal stabs for maximum viewer retention.
+* **Cinematic Color Grading**: Muted deep blacks mixed with vibrant highlights to give digital footage an analog film feel.
+
+> "Visual direction isn't just styling—it's creating an inescapable atmosphere that commands attention." — ELI3GANT`
+            },
+            'whats-elegant-about-eli3gant': {
+                id: 'baked-2',
+                title: 'The Architecture of ELI3GANT',
+                slug: 'whats-elegant-about-eli3gant',
+                category: 'Strategy',
+                created_at: '2026-01-12T12:00:00Z',
+                image_url: 'assets/seo/otp-og-image.webp',
+                content: `### Strategic Core & Brand Foundation
+
+OnlyTruePerspective bridges high-end media production with modern web architecture and automation pipelines:
+
+* **Unified Brand Identity**: Building cohesive visual identities across cinematic music videos, web applications, and physical release rollouts.
+* **Technical & Tactical Execution**: Deploying custom client management portals, instant booking intake pipelines, and automated CRM workflows.
+* **Directorial Autonomy**: Maintaining 100% creative control while helping independent creators and brands scale efficiently.
+
+> "We don't just edit visuals; we build the infrastructure for projects that move the needle." — ELI3GANT`
+            },
+            '24h-tech-repair-fixline-playbook': {
+                id: 'baked-3',
+                title: '24h FIXLINE: Emergency Tech Diagnostics & Repair Playbook',
+                slug: '24h-tech-repair-fixline-playbook',
+                category: 'Strategy',
+                created_at: '2026-01-20T12:00:00Z',
+                image_url: 'assets/seo/otp-og-image.webp',
+                content: `### Rapid Tech Diagnostics & Hotfix Architecture
+
+When business websites, client portals, or automation pipelines break, speed and accuracy are everything:
+
+* **Root-Cause Analysis**: Isolating underlying API breaks, database schema mismatches, or route failures instead of applying temporary patches.
+* **Automated Client Intake & Triage**: Capturing diagnostic signals via the 24h FIXLINE portal to initiate immediate scoping.
+* **24-72h Hotfix Deployment**: Refactoring broken codebases, updating auth flows, and deploying zero-downtime production patches.
+
+> "A broken site or failing intake funnel costs revenue every hour it sits idle. FIXLINE restores momentum in 24 hours." — OTP Engineering`
+            },
+            'next-gen-web-portals-for-creators': {
+                id: 'baked-4',
+                title: 'High-Converting Client Portals: Elevating Creator Commerce',
+                slug: 'next-gen-web-portals-for-creators',
+                category: 'Visuals',
+                created_at: '2026-01-24T12:00:00Z',
+                image_url: 'assets/seo/otp-og-image.webp',
+                content: `### The Shift From Static Pages to Interactive Portals
+
+Static landing pages are no longer enough to manage complex creative services and client relationships:
+
+* **Interactive Milestone Dashboards**: Giving clients real-time visibility into project status, asset deliverables, and approval stages.
+* **Frictionless Intake & Payments**: Integrating secure payment links and deposit steps directly into intake flows to boost conversions.
+* **Glassmorphic UI Design**: Delivering a sleek, dark-mode user experience that matches the quality of high-end media productions.
+
+> "Modern clients don't want email clutter—they want a clean, dedicated portal to manage their projects." — OnlyTruePerspective`
+            }
+        };
+
         // Wait for OTP_CONFIG to be available
         let attempts = 0;
-        while (!window.OTP_CONFIG && attempts < 20) {
-            await new Promise(r => setTimeout(r, 150));
+        while (!window.OTP_CONFIG && attempts < 10) {
+            await new Promise(r => setTimeout(r, 100));
             attempts++;
         }
 
+        let post = null;
         try {
-            if (!window.supabase || !window.OTP_CONFIG) throw new Error('CONFIG_MISSING');
+            if (window.supabase && window.OTP_CONFIG && typeof window.OTP?.getSupabase === 'function') {
+                const supabase = window.OTP.getSupabase();
+                const { data, error } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .eq('slug', slug)
+                    .neq('slug', 'system-global-state')
+                    .eq('published', true)
+                    .single();
 
-            const supabase = window.OTP.getSupabase();
-            const { data: post, error } = await supabase
-                .from('posts')
-                .select('*')
-                .eq('slug', slug)
-                .neq('slug', 'system-global-state')
-                .eq('published', true)  // Block drafts from being accessed directly
-                .single();
+                if (!error && data) post = data;
+            }
+        } catch (e) {
+            // Silently handle offline / config fallback
+        }
 
-            if (error || !post) throw new Error("POST_NOT_FOUND");
+        if (!post && BAKED_POSTS[slug]) {
+            post = BAKED_POSTS[slug];
+        }
+
+        try {
+            if (!post) throw new Error("POST_NOT_FOUND");
 
             // --- Update Page Meta ---
             document.title = `${post.title} | OnlyTruePerspective`;

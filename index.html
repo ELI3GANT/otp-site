@@ -45,6 +45,7 @@
   <!-- Styles -->
   <link rel="stylesheet" href="./styles.css?v=16.8.28" />
   <link rel="stylesheet" href="./fixline-service.css?v=4" />
+  <link rel="stylesheet" href="./components/otp-media-showcase.css?v=1.0.0" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -166,6 +167,11 @@
         loader.style.opacity = '0';
         loader.style.visibility = 'hidden';
         loader.style.pointerEvents = 'none';
+        setTimeout(function () {
+          if (loader && loader.parentNode) {
+            loader.style.display = 'none';
+          }
+        }, 600);
       }
       window.OTP = window.OTP || {};
       window.OTP.dismissPageLoader = dismissPageLoader;
@@ -175,7 +181,10 @@
         dismissPageLoader();
       }
       window.addEventListener('load', dismissPageLoader, { once: true });
-      setTimeout(dismissPageLoader, 1600);
+      window.addEventListener('pageshow', function (e) {
+        if (e.persisted) dismissPageLoader();
+      });
+      setTimeout(dismissPageLoader, 1000);
     })();
   </script>
 
@@ -190,8 +199,8 @@
     </a>
 
     <nav class="nav-links" aria-label="Primary">
-        <a href="#capabilities" class="active k-hover">Services</a>
-        <a href="#fast-lane-capture" class="k-hover">Packages</a>
+        <a href="#services" class="active k-hover">Services</a>
+        <a href="#packages" class="k-hover">Packages</a>
         <a href="/fixline" class="k-hover">FIXLINE</a>
         <a href="/bookings?source=homepage" class="k-hover">Book OTP</a>
         <a href="/portal" class="k-hover">Client Portal</a>
@@ -207,8 +216,8 @@
     </button>
 
     <nav class="nav-drawer" aria-label="Mobile">
-        <a href="#capabilities">Services</a>
-        <a href="#fast-lane-capture">Packages</a>
+        <a href="#services">Services</a>
+        <a href="#packages">Packages</a>
         <a href="/fixline">FIXLINE</a>
         <a href="/bookings?source=homepage">Book OTP</a>
         <a href="/portal">Client Portal</a>
@@ -571,72 +580,62 @@
   
 
   <!-- SERVICES -->
-  <section id="services" class="section section-alt">
-    <!-- Services List (New Visual Revamp) -->
+  <section id="services" class="section section-alt" id="capabilities">
     <div class="wrap">
       <header class="section-head center-text">
-        <span class="eyebrow-mini">CAPABILITIES</span>
-        <h2>Services</h2>
-        <p id="services-desc" data-editable="true">Clear creative services built for founders, artists, creators, and businesses that need sharper presence and cleaner systems.</p>
+        <span class="eyebrow-mini">WHAT WE DO</span>
+        <h2>Services &amp; Capabilities</h2>
+        <p id="services-desc" data-editable="true">Clear, high-impact services built for founders, artists, creators, and businesses that need a sharper presence and cleaner systems.</p>
       </header>
 
       <div class="services-list">
-        <article class="service-item k-hover" style="padding: 45px; border-radius: 20px;">
-          <div class="service-head" style="margin-bottom: 30px;">
-            <span class="service-tag">UPLINK_01 / VISUALS</span>
-            <h3>Visual Operations</h3>
-            <div class="service-icons" style="display: flex; gap: 12px;">
-               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16v-7H4v7zm0-11h16V3H4v5zM9 20h6v-2H9v2z"/></svg>
-            </div>
+        <!-- SERVICE 1: VIDEO & MEDIA -->
+        <article class="service-item k-hover" style="padding: 40px; border-radius: 20px; text-align: left;">
+          <div class="service-head" style="margin-bottom: 24px; text-align: left;">
+            <span class="service-tag" style="color: var(--accent2); font-weight: 700; letter-spacing: 1px; display: block; text-align: left;">01 / MEDIA PRODUCTION</span>
+            <h3 style="font-size: 1.6rem; margin-top: 6px; text-align: left;">Video &amp; Cinematic Media</h3>
           </div>
-          <div class="service-body">
-            <p>From narrative music videos to high-conversion commercial ads. We handle the full spectrum: cinematic editing, visual effects, and master-level color grading. Built for high-retention and maximum impact.</p>
-            <ul class="service-details">
-              <li>Cinematic Music Videos (VFX / SFX)</li>
-              <li>Viral Short-Form & Vertical Content</li>
-              <li>Experimental Motion Graphics</li>
-              <li>Directorial Editing & Narrative Polish</li>
+          <div class="service-body" style="text-align: left;">
+            <p style="font-size: 1rem; line-height: 1.6; color: var(--text-dim, #bbbbcc); margin-bottom: 20px; text-align: left;">High-end video production, editing, and visual effects built to captivate your audience and elevate your brand status.</p>
+            <ul class="service-details" style="display: flex; flex-direction: column; gap: 12px; font-weight: 500; padding: 0 !important; margin: 0 !important; list-style: none !important; text-align: left !important;">
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">🎥</span> <span>Cinematic Music Videos (VFX, SFX &amp; Color Grading)</span></li>
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">📱</span> <span>Social Reels &amp; High-Retention Short-Form Kits</span></li>
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">🎬</span> <span>Tour Recaps &amp; Live Event Documentaries</span></li>
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">✨</span> <span>Commercial Ads, Promos &amp; Visualizers</span></li>
             </ul>
           </div>
         </article>
 
-        <article class="service-item k-hover" style="padding: 45px; border-radius: 20px;">
-          <div class="service-head" style="margin-bottom: 30px;">
-            <span class="service-tag">STRATEGY_02 / ARCHITECTURE</span>
-            <h3>Creative Direction</h3>
-            <div class="service-icons" style="display: flex; gap: 12px;">
-               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2A10 10 0 1 0 22 12 10 10 0 0 0 12 2zm1 14h-2v-2h2zm0-4h-2V7h2z"/></svg>
-               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            </div>
+        <!-- SERVICE 2: WEB & PORTALS -->
+        <article class="service-item k-hover" style="padding: 40px; border-radius: 20px; text-align: left;">
+          <div class="service-head" style="margin-bottom: 24px; text-align: left;">
+            <span class="service-tag" style="color: var(--accent2); font-weight: 700; letter-spacing: 1px; display: block; text-align: left;">02 / WEB &amp; SYSTEMS</span>
+            <h3 style="font-size: 1.6rem; margin-top: 6px; text-align: left;">Web Apps &amp; Client Portals</h3>
           </div>
-          <div class="service-body">
-            <p>The blue-print for your brand's true perspective. We bridge the gap between abstract vision and tactical reality—defining the aesthetic markers that set your project apart from the collective.</p>
-            <ul class="service-details">
-              <li>Visual World-Building & Mood</li>
-              <li>Brand Identity Strategy</li>
-              <li>Social Presence Architecture</li>
-              <li>Aesthetic Quality Control</li>
+          <div class="service-body" style="text-align: left;">
+            <p style="font-size: 1rem; line-height: 1.6; color: var(--text-dim, #bbbbcc); margin-bottom: 20px; text-align: left;">Fast, modern websites and client management portals designed to convert casual visitors into active clients.</p>
+            <ul class="service-details" style="display: flex; flex-direction: column; gap: 12px; font-weight: 500; padding: 0 !important; margin: 0 !important; list-style: none !important; text-align: left !important;">
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">💻</span> <span>High-Converting Websites &amp; Landing Pages</span></li>
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">🔐</span> <span>Interactive Client Portals &amp; Dashboards</span></li>
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">📅</span> <span>Booking Engines &amp; Automated Intake Forms</span></li>
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">⚡</span> <span>Ultra-Fast Glassmorphic Mobile UX</span></li>
             </ul>
           </div>
         </article>
 
-        <article class="service-item k-hover" style="padding: 45px; border-radius: 20px;">
-          <div class="service-head" style="margin-bottom: 30px;">
-            <span class="service-tag">SYSTEMS_03 / EXECUTION</span>
-            <h3>Technical Execution</h3>
-            <div class="service-icons" style="display: flex; gap: 12px;">
-               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-               <svg viewBox="0 0 24 24" class="svc-icon" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            </div>
+        <!-- SERVICE 3: AUTOMATION & FIXLINE -->
+        <article class="service-item k-hover" style="padding: 40px; border-radius: 20px; text-align: left;">
+          <div class="service-head" style="margin-bottom: 24px; text-align: left;">
+            <span class="service-tag" style="color: var(--accent2); font-weight: 700; letter-spacing: 1px; display: block; text-align: left;">03 / REPAIR &amp; AUTOMATION</span>
+            <h3 style="font-size: 1.6rem; margin-top: 6px; text-align: left;">Automation &amp; 24h FIXLINE</h3>
           </div>
-          <div class="service-body">
-            <p>Direct implementation and technical builds. We ensure your assets aren't just produced, but correctly deployed across all platforms—handling the master files, technical specs, and help others scale their unique rollouts.</p>
-            <ul class="service-details">
-              <li>Project Lifecycle Management</li>
-              <li>High-End Asset Distribution</li>
-              <li>Technical Asset Packaging</li>
-              <li>Full System Implementation</li>
+          <div class="service-body" style="text-align: left;">
+            <p style="font-size: 1rem; line-height: 1.6; color: var(--text-dim, #bbbbcc); margin-bottom: 20px; text-align: left;">Emergency 24-hour tech repair, code fixes, database syncs, and workflow automations that remove operational headaches.</p>
+            <ul class="service-details" style="display: flex; flex-direction: column; gap: 12px; font-weight: 500; padding: 0 !important; margin: 0 !important; list-style: none !important; text-align: left !important;">
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">⚡</span> <span>24h Emergency Code &amp; Site Repair (FIXLINE)</span></li>
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">⚙️</span> <span>Automated Lead Capture &amp; CRM Workflows</span></li>
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">🚀</span> <span>PageSpeed &amp; Performance Optimization</span></li>
+              <li style="text-align: left !important; padding-left: 0 !important; margin-left: 0 !important; display: flex; align-items: flex-start; gap: 10px;"><span style="flex-shrink: 0;">🔒</span> <span>Database, API &amp; Auth Integration Support</span></li>
             </ul>
           </div>
         </article>
@@ -648,21 +647,22 @@
 
   <section id="audit" class="section section-audit">
     <div class="wrap">
-      <div class="audit-card glass-panel" id="audit-container">
+      <div class="audit-card glass-panel" id="audit-container" style="padding: 40px 30px; text-align: center;">
         <div id="audit-intro" class="audit-step active">
-          <div class="audit-badge" style="background: rgba(var(--accent2-rgb), 0.1); color: var(--accent2); border: 1px solid rgba(var(--accent2-rgb), 0.2); font-size: 0.65rem; padding: 4px 10px; border-radius: 4px; letter-spacing: 2px; display: inline-block; margin-bottom: 20px;">OTP FIXLINE // PRIVATE BETA</div>
-          <h2 class="syne-bold">Find the break in your business presence.</h2>
-          <p>FIXLINE turns your website, listings, social profiles, and customer journey into a structured audit request. Automated intake first. Human consultant review and implementation are clearly scoped after submission.</p>
-          <div class="audit-visual-decor">
-            <div class="decor-circle"></div>
-            <div class="decor-line"></div>
+          <div class="audit-badge" style="background: rgba(var(--accent2-rgb), 0.15); color: var(--accent2); border: 1px solid rgba(var(--accent2-rgb), 0.3); font-size: 0.7rem; padding: 6px 14px; border-radius: 999px; letter-spacing: 2px; display: inline-block; margin-bottom: 16px; font-weight: 700;">OTP FIXLINE // 24H TECH REPAIR</div>
+          <h2 class="syne-bold" style="font-size: 2.2rem; margin-bottom: 12px;">24h Code, Site &amp; Systems Repair</h2>
+          <p style="max-width: 620px; margin: 0 auto 24px auto; font-size: 1.05rem; color: var(--text-dim, #aaaaaa); line-height: 1.6;">Broken website, buggy code, or failing workflow? Get a rapid expert diagnostic and fix in 24 hours.</p>
+          
+          <div class="fixline-highlights" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-bottom: 28px;">
+            <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">⚡ 24h Turnaround Available</span>
+            <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">🛠️ Code, Site &amp; API Repairs</span>
+            <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">🔒 Guaranteed Expert Audit</span>
           </div>
-          <div class="fixline-actions" style="justify-content: center;">
-            <a href="/fixline" class="book-btn k-hover magnetic-btn" data-fixline-event="homepage_to_fixline">Explore FIXLINE</a>
-            <a href="/fixline/intake?source=homepage" class="book-btn-ghost k-hover magnetic-btn" data-fixline-event="intake_started">Start My FIXLINE Review</a>
-            <a href="/services/consultant-audit" class="book-btn-ghost k-hover">Consultant audit</a>
+
+          <div class="fixline-actions" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px;">
+            <a href="/fixline" class="book-btn k-hover magnetic-btn" data-fixline-event="homepage_to_fixline" style="padding: 14px 28px; text-decoration: none;">Get 24h Tech Repair &rarr;</a>
+            <a href="/fixline/intake?source=homepage" class="book-btn-ghost k-hover magnetic-btn" data-fixline-event="intake_started" style="padding: 14px 28px; text-decoration: none;">Start Rapid Intake</a>
           </div>
-          <p class="audit-privacy-text" style="margin-top: 18px;">No instant score or simulated diagnosis. Your submission creates a real review request.</p>
         </div>
       </div>
     </div>
@@ -724,9 +724,21 @@
 
   </section>
 
-  
+  <!-- FEATURED CREATIVE MEDIA SHOWCASE -->
+  <section id="work" class="section">
+    <div class="wrap">
+      <header class="section-head center-text">
+        <span class="eyebrow-mini">PORTFOLIO &amp; REELS</span>
+        <h2 class="syne-bold">Creative Media Showcase</h2>
+        <p>Interactive catalog of cinematic video productions, music visuals, tour recaps, and creative systems.</p>
+      </header>
+      
+      <!-- Mount container for OTP Media Showcase -->
+      <div id="otpMediaShowcaseMount"></div>
+    </div>
+  </section>
 
-      <section id="packages" class="section section-alt">
+  <section id="packages" class="section section-alt">
     <div class="wrap">
       <header class="section-head center-text">
         <span class="eyebrow-mini">CREATIVE SCOPE</span>
@@ -1352,6 +1364,10 @@
       budgetEl.addEventListener('change', updateScopeMatch);
     })();
   </script>
+  <!-- OTP Analytics Engine & Media Showcase -->
+  <script src="./otp-analytics-engine.js?v=1.0.0" defer></script>
+  <script src="./otp-video-library.js?v=1.0.0" defer></script>
+  <script src="./components/otp-media-showcase.js?v=1.0.0" defer></script>
   <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>
 </body>
 </html>
