@@ -248,48 +248,58 @@
     </div>
   </main>
   
-  <!-- TWO-PILLAR CAPABILITIES: BUSINESS & CREATIVE -->
-  <section id="capabilities" class="section section-capabilities" style="padding-top: 80px; padding-bottom: 40px;">
-    <div class="wrap">
-      <header class="section-head center-text" style="margin-bottom: 50px;">
-        <span class="eyebrow-mini" style="color: var(--accent2, #00f0ff); letter-spacing: 4px; display: block; margin-bottom: 12px;">WHAT WE DO</span>
-        <h2 class="syne-bold" style="font-size: 3rem; margin-bottom: 15px; letter-spacing: -1.5px; line-height: 1.1;">Business Systems &amp; <span class="visual-success-accent">Creative Media</span></h2>
-        <p style="font-size: 1.1rem; opacity: 0.7; max-width: 680px; margin: 0 auto; line-height: 1.6;">We build high-performance business infrastructure and high-converting visual media under one roof.</p>
-      </header>
+    <!-- TWO-PILLAR CAPABILITIES: BUSINESS & CREATIVE -->
+    <section id="capabilities" class="section section-capabilities" style="padding-top: 80px; padding-bottom: 40px;">
+      <div class="wrap">
+        <header class="section-head center-text" style="margin-bottom: 40px;">
+          <span class="eyebrow-mini" style="color: var(--accent2, #00f0ff); letter-spacing: 4px; display: block; margin-bottom: 12px;">WHAT WE DO</span>
+          <h2 class="syne-bold" style="font-size: 3rem; margin-bottom: 15px; letter-spacing: -1.5px; line-height: 1.1;">Business Systems &amp; <span class="visual-success-accent">Creative Media</span></h2>
+          <p style="font-size: 1.1rem; opacity: 0.7; max-width: 680px; margin: 0 auto; line-height: 1.6;">Engineered business infrastructure and cinematic visual media tailored for your goals.</p>
+        </header>
 
-      <div class="grid-2" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
-        <!-- PILLAR 1: BUSINESS & TECH -->
-        <article class="capability-pillar-card k-hover" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 36px;">
-          <div class="pillar-tag" style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(0, 240, 255, 0.1); color: var(--accent2, #00f0ff); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 20px;">Pillar 01 · Business &amp; Technology</div>
-          <h3 style="font-size: 1.8rem; margin: 0 0 15px; color: #fff;">Business Infrastructure &amp; Code Repair</h3>
-          <p style="font-size: 0.95rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 25px;">Engineered systems that remove operational drag, fix broken technology, and convert visitors into paying clients.</p>
-          
-          <ul style="list-style: none; padding: 0; margin: 0 0 30px; display: grid; gap: 14px; font-size: 0.92rem; color: rgba(255,255,255,0.85);">
-            <li style="display: flex; align-items: center; gap: 10px;">⚡ <strong>24h FIXLINE Audits</strong> — Emergency code, site, and proxy diagnostics</li>
-            <li style="display: flex; align-items: center; gap: 10px;">⚙️ <strong>Business Automation</strong> — Custom web applications &amp; client portals</li>
-            <li style="display: flex; align-items: center; gap: 10px;">📈 <strong>Growth Engine</strong> — High-converting landing pages &amp; booking systems</li>
-          </ul>
+        <!-- DUAL-LENS AUDIENCE SWITCHER -->
+        <div class="dual-lens-bar" style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 40px; flex-wrap: wrap;">
+          <button id="lens-business" type="button" class="lens-tab active" style="padding: 10px 24px; border-radius: 30px; background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.4); color: #fff; font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 220ms ease;">
+            💼 For Businesses &amp; Brands
+          </button>
+          <button id="lens-creative" type="button" class="lens-tab" style="padding: 10px 24px; border-radius: 30px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7); font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 220ms ease;">
+            🎨 For Creators &amp; Artists
+          </button>
+        </div>
 
-          <a href="/fixline" class="book-btn magnetic-btn" style="display: block; width: 100%; text-align: center; box-sizing: border-box;">Explore FIXLINE Tech Repair</a>
-        </article>
+        <div class="grid-2" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
+          <!-- PILLAR 1: BUSINESS & TECH -->
+          <article id="pillar-business-card" class="capability-pillar-card k-hover" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(0,240,255,0.3); border-radius: 16px; padding: 36px; transition: all 300ms ease;">
+            <div class="pillar-tag" style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(0, 240, 255, 0.1); color: var(--accent2, #00f0ff); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 20px;">Pillar 01 · Business &amp; Technology</div>
+            <h3 style="font-size: 1.8rem; margin: 0 0 15px; color: #fff;">Business Infrastructure &amp; Code Repair</h3>
+            <p style="font-size: 0.95rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 25px;">Engineered systems that remove operational drag, fix broken technology, and convert visitors into paying clients.</p>
+            
+            <ul style="list-style: none; padding: 0; margin: 0 0 30px; display: grid; gap: 14px; font-size: 0.92rem; color: rgba(255,255,255,0.85);">
+              <li style="display: flex; align-items: center; gap: 10px;">⚡ <strong>24h FIXLINE Audits</strong> — Emergency code, site, and proxy diagnostics</li>
+              <li style="display: flex; align-items: center; gap: 10px;">⚙️ <strong>Business Automation</strong> — Custom web applications &amp; client portals</li>
+              <li style="display: flex; align-items: center; gap: 10px;">📈 <strong>Growth Engine</strong> — High-converting landing pages &amp; booking systems</li>
+            </ul>
 
-        <!-- PILLAR 2: CREATIVE & MEDIA -->
-        <article class="capability-pillar-card k-hover" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 36px;">
-          <div class="pillar-tag" style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(255, 180, 0, 0.1); color: var(--accent1, #ffb400); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 20px;">Pillar 02 · Creative &amp; Media</div>
-          <h3 style="font-size: 1.8rem; margin: 0 0 15px; color: #fff;">Cinematic Media &amp; Brand Visuals</h3>
-          <p style="font-size: 0.95rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 25px;">High-end visual storytelling and brand assets designed to capture attention and build authority.</p>
+            <a href="/fixline" class="book-btn magnetic-btn" style="display: block; width: 100%; text-align: center; box-sizing: border-box;">Explore FIXLINE Tech Repair</a>
+          </article>
 
-          <ul style="list-style: none; padding: 0; margin: 0 0 30px; display: grid; gap: 14px; font-size: 0.92rem; color: rgba(255,255,255,0.85);">
-            <li style="display: flex; align-items: center; gap: 10px;">🎬 <strong>Cinematic Video Editing</strong> — Music videos, reels &amp; commercial promos</li>
-            <li style="display: flex; align-items: center; gap: 10px;">🎨 <strong>Brand Visual Identity</strong> — Logo systems, typography &amp; style guides</li>
-            <li style="display: flex; align-items: center; gap: 10px;">🚀 <strong>Content Rollouts</strong> — Campaign media kits, cover art &amp; promo suites</li>
-          </ul>
+          <!-- PILLAR 2: CREATIVE & MEDIA -->
+          <article id="pillar-creative-card" class="capability-pillar-card k-hover" style="background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 36px; transition: all 300ms ease;">
+            <div class="pillar-tag" style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(255, 180, 0, 0.1); color: var(--accent1, #ffb400); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 20px;">Pillar 02 · Creative &amp; Media</div>
+            <h3 style="font-size: 1.8rem; margin: 0 0 15px; color: #fff;">Cinematic Media &amp; Brand Visuals</h3>
+            <p style="font-size: 0.95rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 25px;">High-end visual storytelling and brand assets designed to capture attention and build authority.</p>
 
-          <a href="/bookings?source=homepage-creative" class="book-btn-ghost magnetic-btn" style="display: block; width: 100%; text-align: center; box-sizing: border-box;">Book Creative Production</a>
-        </article>
+            <ul style="list-style: none; padding: 0; margin: 0 0 30px; display: grid; gap: 14px; font-size: 0.92rem; color: rgba(255,255,255,0.85);">
+              <li style="display: flex; align-items: center; gap: 10px;">🎬 <strong>Cinematic Video Editing</strong> — Music videos, reels &amp; commercial promos</li>
+              <li style="display: flex; align-items: center; gap: 10px;">🎨 <strong>Brand Visual Identity</strong> — Logo systems, typography &amp; style guides</li>
+              <li style="display: flex; align-items: center; gap: 10px;">🚀 <strong>Content Rollouts</strong> — Campaign media kits, cover art &amp; promo suites</li>
+            </ul>
+
+            <a href="/bookings?source=homepage-creative" class="book-btn-ghost magnetic-btn" style="display: block; width: 100%; text-align: center; box-sizing: border-box;">Book Creative Production</a>
+          </article>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
   <!-- PROVEN RESULTS (ROI MAPPING) -->
   <section id="results" class="section section-results-enhanced" style="margin-top: 0; padding-top: 120px; scroll-margin-top: 100px;">
@@ -370,6 +380,50 @@
         <h2>Need the next clean move?</h2>
         <p>Choose the closest lane. OTP reviews the real scope, timeline, and assets before confirming what can be done and how fast.</p>
       </header>
+
+      <!-- INTERACTIVE SCOPE CALCULATOR TEASER -->
+      <div class="interactive-scope-teaser" style="margin-bottom: 50px; background: rgba(255,255,255,0.025); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 20px; padding: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.4);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 24px;">
+          <div>
+            <span style="color: var(--accent2, #00f0ff); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase;">INTERACTIVE ESTIMATOR</span>
+            <h3 style="margin: 4px 0 0; font-size: 1.4rem; color: #fff;">Calculate Project Scope &amp; Instant Match</h3>
+          </div>
+          <span style="padding: 4px 12px; border-radius: 999px; background: rgba(0, 240, 255, 0.1); color: var(--accent2, #00f0ff); font-size: 0.75rem; font-weight: 700;">Localhost Teaser</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div>
+            <label style="display: block; font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">1. Select Need</label>
+            <select id="scope-type" style="width: 100%; padding: 12px; border-radius: 10px; background: #0a0a10; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.9rem;">
+              <option value="fixline">Emergency Code &amp; Site Repair (24h)</option>
+              <option value="site">Custom Business Website / Portal</option>
+              <option value="video">Cinematic Video &amp; Content Package</option>
+              <option value="launch">Complete Brand &amp; Rollout System</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">2. Turnaround</label>
+            <select id="scope-speed" style="width: 100%; padding: 12px; border-radius: 10px; background: #0a0a10; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.9rem;">
+              <option value="urgent">24-Hour Fast-Lane</option>
+              <option value="standard">Standard (3–5 Days)</option>
+              <option value="retainer">Monthly Retainer</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">3. Instant Match</label>
+            <div id="scope-result" style="padding: 12px; border-radius: 10px; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.2); color: var(--accent2, #00f0ff); font-size: 0.85rem; font-weight: 700; text-align: center;">
+              Matched: FIXLINE Fast-Lane ($500)
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+          <small style="color: rgba(255,255,255,0.5); font-size: 0.8rem;">⚡ Instant quote estimation — no commitment required.</small>
+          <a id="scope-action-link" href="/fixline" class="book-btn magnetic-btn" style="display: inline-block;">Proceed to FIXLINE Intake →</a>
+        </div>
+      </div>
 
       <div class="conversion-lane-grid" aria-label="Fast client capture options">
         <article class="conversion-lane-card k-hover">
@@ -1218,6 +1272,83 @@
       100% { filter: none; transform: scale(1); }
     }
   </style>
+  <!-- DUAL-LENS AUDIENCE SWITCHER SCRIPT -->
+  <script>
+    (function() {
+      const btnBiz = document.getElementById('lens-business');
+      const btnCreative = document.getElementById('lens-creative');
+      const cardBiz = document.getElementById('pillar-business-card');
+      const cardCreative = document.getElementById('pillar-creative-card');
+      if (!btnBiz || !btnCreative || !cardBiz || !cardCreative) return;
+
+      btnBiz.addEventListener('click', function() {
+        btnBiz.style.background = 'rgba(0, 240, 255, 0.15)';
+        btnBiz.style.borderColor = 'rgba(0, 240, 255, 0.4)';
+        btnBiz.style.color = '#fff';
+
+        btnCreative.style.background = 'rgba(255, 255, 255, 0.04)';
+        btnCreative.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        btnCreative.style.color = 'rgba(255, 255, 255, 0.7)';
+
+        cardBiz.style.borderColor = 'rgba(0, 240, 255, 0.4)';
+        cardBiz.style.boxShadow = '0 0 30px rgba(0, 240, 255, 0.18)';
+        cardCreative.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+        cardCreative.style.boxShadow = 'none';
+      });
+
+      btnCreative.addEventListener('click', function() {
+        btnCreative.style.background = 'rgba(255, 180, 0, 0.15)';
+        btnCreative.style.borderColor = 'rgba(255, 180, 0, 0.4)';
+        btnCreative.style.color = '#fff';
+
+        btnBiz.style.background = 'rgba(255, 255, 255, 0.04)';
+        btnBiz.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        btnBiz.style.color = 'rgba(255, 255, 255, 0.7)';
+
+        cardCreative.style.borderColor = 'rgba(255, 180, 0, 0.4)';
+        cardCreative.style.boxShadow = '0 0 30px rgba(255, 180, 0, 0.18)';
+        cardBiz.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+        cardBiz.style.boxShadow = 'none';
+      });
+    })();
+  </script>
+
+  <!-- INTERACTIVE SCOPE ESTIMATOR CALCULATOR SCRIPT -->
+  <script>
+    (function() {
+      const typeEl = document.getElementById('scope-type');
+      const speedEl = document.getElementById('scope-speed');
+      const resultEl = document.getElementById('scope-result');
+      const actionLinkEl = document.getElementById('scope-action-link');
+      if (!typeEl || !speedEl || !resultEl || !actionLinkEl) return;
+
+      function updateScopeMatch() {
+        const type = typeEl.value;
+        const speed = speedEl.value;
+
+        if (type === 'fixline' || speed === 'urgent') {
+          resultEl.textContent = 'Matched: 24h FIXLINE Tech Repair ($500)';
+          actionLinkEl.href = '/fixline';
+          actionLinkEl.textContent = 'Proceed to FIXLINE Intake →';
+        } else if (type === 'site') {
+          resultEl.textContent = 'Matched: Custom Web & Portal Fix ($500+)';
+          actionLinkEl.href = '/bookings?source=estimator-site&service=website-brand-fix';
+          actionLinkEl.textContent = 'Book Site Fix Scope →';
+        } else if (type === 'video') {
+          resultEl.textContent = 'Matched: Cinematic Media Package ($150–$500)';
+          actionLinkEl.href = '/bookings?source=estimator-video&service=same-day-signal';
+          actionLinkEl.textContent = 'Book Video Production →';
+        } else {
+          resultEl.textContent = 'Matched: Complete Launch System ($1,200+)';
+          actionLinkEl.href = '/bookings?source=estimator-launch&service=launch-package';
+          actionLinkEl.textContent = 'Plan Launch Rollout →';
+        }
+      }
+
+      typeEl.addEventListener('change', updateScopeMatch);
+      speedEl.addEventListener('change', updateScopeMatch);
+    })();
+  </script>
   <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>
 </body>
 </html>
