@@ -13466,6 +13466,12 @@ body.home-page .conversion-confirmation-note {
   color: rgba(20, 24, 34, 0.82);
 }
 
+[data-theme="light"] body.home-page .prospect-cta-card strong,
+[data-theme="light"] .result-card .result-value,
+[data-theme="light"] .result-card .result-label {
+  color: #08090f !important;
+}
+
 @media (max-width: 980px) {
   body.home-page .conversion-lane-grid,
   body.home-page .prospect-cta-grid {
