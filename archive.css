@@ -642,26 +642,60 @@
   color: var(--archive-muted);
 }
 
+/* CONTINUOUS GLOWING VERTICAL TIMELINE TRACK & BRANCH CONNECTORS */
 .archive-timeline {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
-  margin: 32px 0 0;
-  padding: 0;
-  list-style: none;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin: 40px 0 0;
+  padding: 0 0 0 44px;
+  list-style: none;
 }
 
+/* THE CONTINUOUS GLOWING GOLD TIMELINE VERTICAL LINE TRACK */
+.archive-timeline::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 14px;
+  width: 3px;
+  background: linear-gradient(
+    180deg,
+    var(--archive-accent, #d5b56c) 0%,
+    rgba(213, 181, 108, 0.85) 50%,
+    rgba(213, 181, 108, 0.25) 100%
+  );
+  box-shadow: 0 0 12px rgba(213, 181, 108, 0.6), 0 0 24px rgba(213, 181, 108, 0.3);
+  border-radius: 999px;
+  z-index: 1;
+}
+
+/* INDIVIDUAL TIMELINE CARD NODES CONNECTED TO THE TRACK */
 .archive-timeline-item {
   position: relative;
   min-width: 0;
-  padding: 24px 26px;
+  padding: 24px 28px;
   border-radius: 14px;
-  background: var(--archive-surface-raised, rgba(17, 17, 21, 0.92));
+  background: var(--archive-surface-raised, rgba(17, 17, 21, 0.94));
   border: 1px solid var(--archive-border, rgba(255, 255, 255, 0.14));
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
-  overflow: hidden;
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  z-index: 2;
+}
+
+/* HORIZONTAL CONNECTOR LINE FROM VERTICAL TRACK TO CARD */
+.archive-timeline-item::after {
+  content: "";
+  position: absolute;
+  top: 30px;
+  left: -30px;
+  width: 30px;
+  height: 2px;
+  background: var(--archive-accent, #d5b56c);
+  box-shadow: 0 0 8px rgba(213, 181, 108, 0.6);
+  z-index: 2;
 }
 
 .archive-timeline-item::before {
@@ -677,9 +711,9 @@
 }
 
 .archive-timeline-item:hover {
-  transform: translateY(-4px);
+  transform: translateX(6px);
   border-color: var(--archive-accent, #d5b56c);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(213, 181, 108, 0.15);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(213, 181, 108, 0.2);
 }
 
 .archive-timeline-item:hover::before {
@@ -687,22 +721,25 @@
   height: 4px;
 }
 
+/* GLOWING NODE BEACON ON THE VERTICAL TRACK LINE */
 .archive-timeline-marker {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  left: auto;
-  width: 10px;
-  height: 10px;
+  top: 23px;
+  left: -39px;
+  right: auto;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
-  background: var(--archive-accent, #d5b56c);
-  box-shadow: 0 0 10px var(--archive-accent, #d5b56c), 0 0 20px rgba(213, 181, 108, 0.5);
+  background: #050505;
+  border: 3px solid var(--archive-accent, #d5b56c);
+  box-shadow: 0 0 10px var(--archive-accent, #d5b56c), 0 0 20px rgba(213, 181, 108, 0.8);
+  z-index: 3;
   animation: timelineMarkerPulse 3s ease-in-out infinite alternate;
 }
 
 @keyframes timelineMarkerPulse {
-  0% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 6px var(--archive-accent, #d5b56c); }
-  100% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px var(--archive-accent, #d5b56c), 0 0 28px rgba(213, 181, 108, 0.7); }
+  0% { transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 8px var(--archive-accent, #d5b56c); }
+  100% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 16px var(--archive-accent, #d5b56c), 0 0 32px rgba(213, 181, 108, 0.9); }
 }
 
 .archive-timeline-copy {
