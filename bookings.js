@@ -986,7 +986,7 @@ function renderSuccess(data) {
   const portalHref = safePortalHref(data);
   const portalLink = document.createElement('a');
   portalLink.href = portalHref || '/portal';
-  portalLink.textContent = portalHref ? 'Open Client Portal' : 'Client Portal';
+  portalLink.textContent = portalHref ? '🏛️ Open Private Portal Room →' : '🏛️ Access Client Portal →';
   els.successActions.append(portalLink);
 
   const newBooking = document.createElement('button');
