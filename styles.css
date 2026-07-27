@@ -13698,3 +13698,65 @@ body.home-page .conversion-lane-card:hover {
 .capability-pillar-card:hover .book-btn-ghost {
   transform: translateY(-2px) !important;
 }
+
+/* LIGHT MODE STYLING FOR INTERACTIVE ESTIMATOR & DUAL-LENS SWITCHER */
+[data-theme="light"] .interactive-scope-teaser {
+  background: #ffffff !important;
+  border-color: rgba(0, 160, 220, 0.25) !important;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.07) !important;
+}
+
+[data-theme="light"] .interactive-scope-teaser h3 {
+  color: #0b0b0e !important;
+}
+
+[data-theme="light"] .interactive-scope-teaser label {
+  color: rgba(10, 10, 14, 0.65) !important;
+}
+
+[data-theme="light"] #scope-type,
+[data-theme="light"] #scope-budget {
+  background: #f4f6fa !important;
+  color: #0b0b0e !important;
+  border-color: rgba(10, 10, 14, 0.18) !important;
+}
+
+[data-theme="light"] #scope-result {
+  background: rgba(0, 160, 220, 0.08) !important;
+  border-color: rgba(0, 160, 220, 0.3) !important;
+  color: #007799 !important;
+}
+
+[data-theme="light"] .interactive-scope-teaser small {
+  color: rgba(10, 10, 14, 0.68) !important;
+}
+
+[data-theme="light"] .capability-pillar-card {
+  background: #ffffff !important;
+  border-color: rgba(10, 10, 14, 0.1) !important;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .capability-pillar-card h3 {
+  color: #0b0b0e !important;
+}
+
+[data-theme="light"] .capability-pillar-card p {
+  color: rgba(10, 10, 14, 0.72) !important;
+}
+
+[data-theme="light"] .capability-pillar-card ul li {
+  color: rgba(10, 10, 14, 0.84) !important;
+}
+
+[data-theme="light"] .lens-tab {
+  background: #eef1f6 !important;
+  border-color: rgba(10, 10, 14, 0.12) !important;
+  color: rgba(10, 10, 14, 0.75) !important;
+}
+
+[data-theme="light"] .lens-tab.active {
+  background: #0b0b0e !important;
+  color: #ffffff !important;
+  border-color: #0b0b0e !important;
+}
