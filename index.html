@@ -385,10 +385,10 @@
       <div class="interactive-scope-teaser" style="margin-bottom: 50px; background: rgba(255,255,255,0.025); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 20px; padding: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.4);">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 24px;">
           <div>
-            <span style="color: var(--accent2, #00f0ff); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase;">INTERACTIVE ESTIMATOR</span>
-            <h3 style="margin: 4px 0 0; font-size: 1.4rem; color: #fff;">Calculate Project Scope &amp; Instant Match</h3>
+            <span style="color: var(--accent2, #00f0ff); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase;">INTERACTIVE PROJECT MATCH</span>
+            <h3 style="margin: 4px 0 0; font-size: 1.4rem; color: #fff;">Calculate Scope &amp; Find Your Flexible Plan</h3>
           </div>
-          <span style="padding: 4px 12px; border-radius: 999px; background: rgba(0, 240, 255, 0.1); color: var(--accent2, #00f0ff); font-size: 0.75rem; font-weight: 700;">Localhost Teaser</span>
+          <span style="padding: 4px 12px; border-radius: 999px; background: rgba(0, 240, 255, 0.1); color: var(--accent2, #00f0ff); font-size: 0.75rem; font-weight: 700;">🤝 We Work With Your Budget</span>
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
@@ -397,31 +397,32 @@
             <select id="scope-type" style="width: 100%; padding: 12px; border-radius: 10px; background: #0a0a10; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.9rem;">
               <option value="fixline">Emergency Code &amp; Site Repair (24h)</option>
               <option value="site">Custom Business Website / Portal</option>
-              <option value="video">Cinematic Video &amp; Content Package</option>
+              <option value="video">Cinematic Video &amp; Editing</option>
               <option value="launch">Complete Brand &amp; Rollout System</option>
             </select>
           </div>
 
           <div>
-            <label style="display: block; font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">2. Turnaround</label>
-            <select id="scope-speed" style="width: 100%; padding: 12px; border-radius: 10px; background: #0a0a10; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.9rem;">
-              <option value="urgent">24-Hour Fast-Lane</option>
-              <option value="standard">Standard (3–5 Days)</option>
-              <option value="retainer">Monthly Retainer</option>
+            <label style="display: block; font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">2. Your Budget Range</label>
+            <select id="scope-budget" style="width: 100%; padding: 12px; border-radius: 10px; background: #0a0a10; border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.9rem;">
+              <option value="flexible">Flexible / Work With My Budget</option>
+              <option value="micro">Single Asset / Quick Fix ($75 – $250)</option>
+              <option value="standard">Standard Project ($250 – $750)</option>
+              <option value="full">Full Custom Build ($750+)</option>
             </select>
           </div>
 
           <div>
             <label style="display: block; font-size: 0.75rem; color: rgba(255,255,255,0.6); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">3. Instant Match</label>
             <div id="scope-result" style="padding: 12px; border-radius: 10px; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.2); color: var(--accent2, #00f0ff); font-size: 0.85rem; font-weight: 700; text-align: center;">
-              Matched: FIXLINE Fast-Lane ($500)
+              Matched: Flexible Budget Option (From $75)
             </div>
           </div>
         </div>
 
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
-          <small style="color: rgba(255,255,255,0.5); font-size: 0.8rem;">⚡ Instant quote estimation — no commitment required.</small>
-          <a id="scope-action-link" href="/fixline" class="book-btn magnetic-btn" style="display: inline-block;">Proceed to FIXLINE Intake →</a>
+          <small style="color: rgba(255,255,255,0.6); font-size: 0.82rem;">🤝 We review every request — no rigid minimums. Tell us what you need and we'll make it fit.</small>
+          <a id="scope-action-link" href="/bookings?source=estimator-flexible" class="book-btn magnetic-btn" style="display: inline-block;">Request Flexible Quote →</a>
         </div>
       </div>
 
@@ -1317,36 +1318,40 @@
   <script>
     (function() {
       const typeEl = document.getElementById('scope-type');
-      const speedEl = document.getElementById('scope-speed');
+      const budgetEl = document.getElementById('scope-budget');
       const resultEl = document.getElementById('scope-result');
       const actionLinkEl = document.getElementById('scope-action-link');
-      if (!typeEl || !speedEl || !resultEl || !actionLinkEl) return;
+      if (!typeEl || !budgetEl || !resultEl || !actionLinkEl) return;
 
       function updateScopeMatch() {
         const type = typeEl.value;
-        const speed = speedEl.value;
+        const budget = budgetEl.value;
 
-        if (type === 'fixline' || speed === 'urgent') {
-          resultEl.textContent = 'Matched: 24h FIXLINE Tech Repair ($500)';
+        if (budget === 'flexible') {
+          resultEl.textContent = 'Matched: Flexible Budget Option (We work with your budget!)';
+          actionLinkEl.href = `/bookings?source=estimator-flexible&service=${type}`;
+          actionLinkEl.textContent = 'Request Flexible Quote →';
+        } else if (type === 'fixline') {
+          resultEl.textContent = 'Matched: 24h FIXLINE Tech Repair (Flexible Starting $75)';
           actionLinkEl.href = '/fixline';
           actionLinkEl.textContent = 'Proceed to FIXLINE Intake →';
         } else if (type === 'site') {
-          resultEl.textContent = 'Matched: Custom Web & Portal Fix ($500+)';
+          resultEl.textContent = 'Matched: Custom Web & Portal Fix (Starting $150)';
           actionLinkEl.href = '/bookings?source=estimator-site&service=website-brand-fix';
           actionLinkEl.textContent = 'Book Site Fix Scope →';
         } else if (type === 'video') {
-          resultEl.textContent = 'Matched: Cinematic Media Package ($150–$500)';
+          resultEl.textContent = 'Matched: Cinematic Media Package (Starting $75)';
           actionLinkEl.href = '/bookings?source=estimator-video&service=same-day-signal';
           actionLinkEl.textContent = 'Book Video Production →';
         } else {
-          resultEl.textContent = 'Matched: Complete Launch System ($1,200+)';
+          resultEl.textContent = 'Matched: Complete Rollout System (Custom Budget)';
           actionLinkEl.href = '/bookings?source=estimator-launch&service=launch-package';
           actionLinkEl.textContent = 'Plan Launch Rollout →';
         }
       }
 
       typeEl.addEventListener('change', updateScopeMatch);
-      speedEl.addEventListener('change', updateScopeMatch);
+      budgetEl.addEventListener('change', updateScopeMatch);
     })();
   </script>
   <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>
