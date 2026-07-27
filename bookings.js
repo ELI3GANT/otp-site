@@ -750,10 +750,11 @@ function renderPackages() {
     moduleLabel.className = 'module-label';
     moduleLabel.textContent = 'System module';
 
+    const pkgIcon = name.includes('Signal') ? '⚡ ' : name.includes('Engine') ? '⚙️ ' : name.includes('System') ? '🏛️ ' : '🎨 ';
     const head = document.createElement('div');
     head.className = 'package-card-head';
     const headCopy = document.createElement('div');
-    appendText(headCopy, 'h3', name, 'Package');
+    appendText(headCopy, 'h3', pkgIcon + name, 'Package');
     appendText(headCopy, 'strong', packagePrice(pkg), 'Scope based');
     head.append(headCopy);
 
