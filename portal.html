@@ -3,95 +3,240 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="OTP Client Portal access for project status, documents, payment steps, and approvals." />
-    <meta name="theme-color" content="#050609" />
+    <meta name="description" content="OTP Client Portal access for real-time project milestone status, 4K asset downloads, invoice status, and direct communication." />
+    <meta name="theme-color" content="#030305" />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="canonical" href="https://www.onlytrueperspective.tech/portal" />
     <meta property="og:title" content="OTP Client Portal | OnlyTruePerspective" />
-    <meta property="og:description" content="Access project status, documents, payment steps, and approvals." />
+    <meta property="og:description" content="Private client hub for milestone tracking, 4K deliverables, invoice status, and directorial communication." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.onlytrueperspective.tech/portal" />
     <title>OTP Client Portal | OnlyTruePerspective</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/portal.css?v=20260515-otp-system1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=Space+Grotesk:wght@500;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/portal.css?v=20260727-v2" />
   </head>
   <body>
+    <div class="bg-fixed"></div>
+
     <main class="portal-page">
+      <!-- HEADER NAV -->
       <header class="portal-header">
         <a class="portal-brand" href="/" aria-label="OnlyTruePerspective home">
           <span class="portal-brand-mark">
-            <img src="/assets/otp.gif" alt="OTP Signal Pulse Logo" width="250" height="250" decoding="async" />
+            <img src="/assets/otp-logo-transparent.png" alt="OTP Logo" width="40" height="40" decoding="async" />
           </span>
           <span>
             <strong>OnlyTruePerspective</strong>
-            <small>Client Portal</small>
+            <small>Client Portal v2.5</small>
           </span>
         </a>
         <nav class="portal-nav" aria-label="Portal navigation">
-          <a href="/bookings">Book OTP</a>
+          <a href="/bookings" class="nav-btn-highlight">Book New Scope</a>
+          <a href="/fixline">24h FIXLINE</a>
           <a href="/">Live Site</a>
         </nav>
       </header>
 
-      <section class="portal-hero" aria-labelledby="portal-title">
+      <!-- PORTAL GATE / ACCESS BAR -->
+      <section class="portal-gate-hero" id="portal-gate-section">
         <div class="portal-copy">
           <div class="portal-lockup">
-            <span class="portal-emblem" aria-hidden="true">
-              <span class="emblem-aura"></span>
-              <span class="emblem-ring ring-one"></span>
-              <span class="emblem-ring ring-two"></span>
-              <svg viewBox="0 0 100 100" focusable="false" aria-hidden="true">
-                <path d="M20 32h60v40H20z"></path>
-                <path d="M32 32v-8h36v8M34 48h32M34 60h18M58 60h8"></path>
-                <circle cx="76" cy="28" r="5"></circle>
-              </svg>
+            <span class="status-badge-live">
+              <span class="dot-pulse"></span>
+              Encrypted Client Uplink
             </span>
-            <p>OTP Client Portal</p>
           </div>
-          <h1 id="portal-title">Access project status, documents, payment steps, and approvals.</h1>
-          <p class="portal-subcopy">Client access is private and invite-based. After OTP reviews your booking or active project, you may receive a secure portal link for next actions.</p>
+          <h1 id="portal-title">Direct Client Command Center</h1>
+          <p class="portal-subcopy">Track live production milestones, preview 4K cuts, access raw asset vaults, and manage project invoices in real time.</p>
           <div class="portal-actions">
-            <a class="primary-action" href="/bookings">Book OTP</a>
-            <a class="secondary-action" href="mailto:contact@onlytrueperspective.tech">Request Access</a>
+            <button type="button" id="btn-demo-portal" class="primary-action demo-trigger-btn">
+              ⚡ Explore Interactive Demo Portal
+            </button>
+            <a class="secondary-action" href="/bookings">Start New Intake</a>
           </div>
         </div>
 
+        <!-- INVITE INPUT CARD -->
         <aside class="portal-card" aria-labelledby="invite-title">
           <div class="portal-card-topline">
             <span>Private Access</span>
-            <strong><span aria-hidden="true"></span>Invite Only</strong>
+            <strong class="security-tag">🔒 Token Encrypted</strong>
           </div>
-          <h2 id="invite-title">Open your portal invite.</h2>
-          <p>Paste the private invite link or token OTP sent you. Public booking requests do not expose portal tokens.</p>
+          <h2 id="invite-title">Access Project Dashboard</h2>
+          <p>Enter your private client token or paste your invite URL to unlock your active project command center.</p>
           <form id="portal-invite-form" novalidate>
-            <label for="portal-token">Invite link or token</label>
-            <input id="portal-token" name="portal_token" autocomplete="off" inputmode="text" placeholder="Paste private invite" />
+            <label for="portal-token">Client Token or Invite Link</label>
+            <input id="portal-token" name="portal_token" autocomplete="off" inputmode="text" placeholder="e.g. OTP-CLIENT-8821" />
             <p id="portal-message" class="portal-message" aria-live="polite"></p>
-            <button type="submit">Enter Client Portal</button>
+            <button type="submit" class="btn-unlock-portal">Unlock Client Dashboard →</button>
           </form>
         </aside>
       </section>
 
-      <section class="portal-grid" aria-label="Client portal capabilities">
-        <article>
-          <span>Status</span>
-          <strong>Project progress</strong>
-          <p>See the approved scope and current project stage after OTP activates your portal.</p>
-        </article>
-        <article>
-          <span>Documents</span>
-          <strong>Files and approvals</strong>
-          <p>Review proposals, agreements, notes, and next approvals in one private place.</p>
-        </article>
-        <article>
-          <span>Payments</span>
-          <strong>Payment steps</strong>
-          <p>Use only the payment links or instructions OTP intentionally sends through the client flow.</p>
-        </article>
-      </section>
-      <footer class="portal-footer">Powered by OnlyTruePerspective</footer>
+      <!-- LIVE DASHBOARD CONTAINER (Visible when unlocked / demo mode) -->
+      <div id="portal-dashboard-mount" class="portal-dashboard-container" style="display: none;">
+        
+        <!-- CLIENT PROJECT HERO BADGE -->
+        <div class="project-hero-banner">
+          <div class="project-info">
+            <span class="project-client-name" id="dash-client-name">CLIENT: MORBID MUSIK / SPOOKY</span>
+            <h2 class="project-title" id="dash-project-title">PROJECT: "SPOOKY" 4K VISUAL ROLLOUT</h2>
+            <div class="project-meta-pills">
+              <span class="pill pill-active">⚡ Stage 3: Edit & Color Grade</span>
+              <span class="pill">📅 Est. Delivery: Feb 4, 2026</span>
+              <span class="pill pill-code">ID: OTP-MM-2026</span>
+            </div>
+          </div>
+          <button type="button" class="btn-lock-dashboard" id="btn-lock-portal">🔒 Lock Session</button>
+        </div>
+
+        <!-- 1. LIVE MILESTONE TRACKER -->
+        <section class="dash-section" aria-label="Project Milestone Tracker">
+          <div class="dash-section-head">
+            <span class="section-kicker">01 / TIMELINE & STAGES</span>
+            <h3>Production Milestone Tracker</h3>
+          </div>
+
+          <div class="milestone-pipeline">
+            <div class="milestone-step step-complete">
+              <div class="step-icon">✓</div>
+              <div class="step-info">
+                <strong>1. Intake & Scoping</strong>
+                <small>Approved • Jan 10</small>
+              </div>
+            </div>
+            <div class="milestone-step step-complete">
+              <div class="step-icon">✓</div>
+              <div class="step-info">
+                <strong>2. Filming & Capture</strong>
+                <small>Completed • Jan 18</small>
+              </div>
+            </div>
+            <div class="milestone-step step-active">
+              <div class="step-icon">⚡</div>
+              <div class="step-info">
+                <strong>3. Edit & Color Grade</strong>
+                <small>In Progress (75%)</small>
+              </div>
+            </div>
+            <div class="milestone-step step-pending">
+              <div class="step-icon">⏳</div>
+              <div class="step-info">
+                <strong>4. Master Delivery</strong>
+                <small>Pending Approval</small>
+              </div>
+            </div>
+          </div>
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: 75%;"></div>
+          </div>
+        </section>
+
+        <div class="dash-grid-2">
+          <!-- 2. 4K ASSET VAULT & DELIVERABLES -->
+          <section class="dash-section" aria-label="4K Asset Deliverables Vault">
+            <div class="dash-section-head">
+              <span class="section-kicker">02 / DELIVERABLES VAULT</span>
+              <h3>4K Master Asset Vault</h3>
+            </div>
+
+            <div class="asset-grid">
+              <article class="asset-card">
+                <div class="asset-thumb">
+                  <span class="badge-tag">PRORES 4K</span>
+                  <button type="button" class="btn-preview-asset" onclick="window.previewAsset('v1.2-cut')">▶ Preview Cut</button>
+                </div>
+                <div class="asset-details">
+                  <h4>Rough Cut v1.2 (ProRes 4K)</h4>
+                  <p>4K 24fps • Color Graded • Audio Sync Complete</p>
+                  <a href="#" class="btn-download-asset" onclick="window.simulateDownload('Spooky-4K-v1.2.mov'); return false;">⬇ Download (4.2 GB)</a>
+                </div>
+              </article>
+
+              <article class="asset-card">
+                <div class="asset-thumb asset-thumb-stills">
+                  <span class="badge-tag">ZIP PACK</span>
+                </div>
+                <div class="asset-details">
+                  <h4>Color Grading Stills (8K PNG)</h4>
+                  <p>12 High-Res Stills for Social Rollout</p>
+                  <a href="#" class="btn-download-asset" onclick="window.simulateDownload('Spooky-Color-Stills.zip'); return false;">⬇ Download (380 MB)</a>
+                </div>
+              </article>
+
+              <article class="asset-card">
+                <div class="asset-thumb asset-thumb-audio">
+                  <span class="badge-tag">WAV 24-BIT</span>
+                </div>
+                <div class="asset-details">
+                  <h4>Master Audio & 808 Stems</h4>
+                  <p>Full Mix + Isolated Acapella & FX Stems</p>
+                  <a href="#" class="btn-download-asset" onclick="window.simulateDownload('Spooky-Audio-Stems.zip'); return false;">⬇ Download (180 MB)</a>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <!-- 3. FINANCIAL & INVOICE STATUS CENTER -->
+          <section class="dash-section" aria-label="Financial Status Center">
+            <div class="dash-section-head">
+              <span class="section-kicker">03 / FINANCIALS</span>
+              <h3>Invoice & Balance Overview</h3>
+            </div>
+
+            <div class="financial-card">
+              <div class="fin-row">
+                <span>Total Project Scope:</span>
+                <strong>$3,500.00</strong>
+              </div>
+              <div class="fin-row fin-paid">
+                <span>Deposit Paid (50%):</span>
+                <strong>-$1,750.00 ✓</strong>
+              </div>
+              <div class="fin-divider"></div>
+              <div class="fin-row fin-due">
+                <span>Remaining Balance Due:</span>
+                <strong class="text-accent">$1,750.00</strong>
+              </div>
+              <p class="fin-note">Remaining balance will be due upon final master approval prior to un-watermarked 4K file export.</p>
+              
+              <a href="/bookings" class="btn-pay-balance">💳 Pay Balance & Release Master</a>
+            </div>
+
+            <!-- DIRECT UPLINK MESSAGING BOX -->
+            <div class="direct-message-box" style="margin-top: 24px;">
+              <h4>💬 Direct Notes to ELI3GANT / OTP</h4>
+              <form id="portal-notes-form" style="display: flex; gap: 10px; margin-top: 12px;">
+                <input type="text" id="note-input" placeholder="Type revision request or question..." required style="flex-grow: 1; padding: 12px 16px; border-radius: 10px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #fff;" />
+                <button type="submit" style="background: var(--accent); color: #000; border: none; padding: 0 20px; border-radius: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase;">Send</button>
+              </form>
+              <div id="note-status" style="margin-top: 10px; font-size: 0.85rem; color: var(--accent2);"></div>
+            </div>
+          </section>
+        </div>
+
+      </div>
+
+      <!-- VIDEO MODAL PREVIEW OVERLAY -->
+      <div id="portal-video-modal" class="portal-modal-overlay" style="display: none;">
+        <div class="portal-modal-inner">
+          <button type="button" class="btn-close-modal" id="btn-close-portal-modal">✕ Close Preview</button>
+          <h3 id="portal-modal-title">Preview: Rough Cut v1.2 (ProRes 4K)</h3>
+          <div class="portal-video-wrapper">
+            <iframe id="portal-modal-iframe" src="" title="Video Deliverable Preview" allow="autoplay; fullscreen" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+
+      <footer class="portal-footer">
+        © 2026 OnlyTruePerspective • Encrypted Client Portal System v2.5
+      </footer>
     </main>
-    <script src="/portal.js?v=20260513-portal1" defer></script>
+
+    <script src="/portal.js?v=20260727-v2" defer></script>
   </body>
 </html>

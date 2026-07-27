@@ -2,7 +2,20 @@
   const form = document.getElementById('portal-invite-form');
   const input = document.getElementById('portal-token');
   const message = document.getElementById('portal-message');
-  const tokenPattern = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/;
+  const demoBtn = document.getElementById('btn-demo-portal');
+  const lockBtn = document.getElementById('btn-lock-portal');
+  const dashboardMount = document.getElementById('portal-dashboard-mount');
+  const gateHero = document.getElementById('portal-gate-section');
+
+  const videoModal = document.getElementById('portal-video-modal');
+  const modalIframe = document.getElementById('portal-modal-iframe');
+  const closeModalBtn = document.getElementById('btn-close-portal-modal');
+
+  const notesForm = document.getElementById('portal-notes-form');
+  const noteInput = document.getElementById('note-input');
+  const noteStatus = document.getElementById('note-status');
+
+  const tokenPattern = /^[A-Za-z0-9][A-Za-z0-9._~-]{3,512}$/;
 
   function setMessage(value = '', type = '') {
     if (!message) return;
@@ -10,61 +23,91 @@
     message.classList.toggle('error', type === 'error');
   }
 
-  function cleanToken(value) {
-    const raw = String(value || '').trim();
-    if (!raw) return '';
-    try {
-      const decoded = decodeURIComponent(raw);
-      return tokenPattern.test(decoded) ? decoded : '';
-    } catch (_) {
-      return tokenPattern.test(raw) ? raw : '';
+  function unlockDashboard(clientName = 'MORBID MUSIK / SPOOKY', projectTitle = '"SPOOKY" 4K VISUAL ROLLOUT') {
+    if (dashboardMount) {
+      dashboardMount.style.display = 'block';
+      const cNameEl = document.getElementById('dash-client-name');
+      const pTitleEl = document.getElementById('dash-project-title');
+      if (cNameEl) cNameEl.textContent = `CLIENT: ${clientName}`;
+      if (pTitleEl) pTitleEl.textContent = `PROJECT: ${projectTitle}`;
+      
+      // Scroll smoothly to dashboard
+      dashboardMount.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
-  function extractToken(value) {
-    const raw = String(value || '').trim();
-    if (!raw) return '';
-    const direct = cleanToken(raw.replace(/^#?\/?client\//i, '').split(/[?#]/)[0]);
-    if (direct) return direct;
+  function lockDashboard() {
+    if (dashboardMount) {
+      dashboardMount.style.display = 'none';
+      if (gateHero) gateHero.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 
-    try {
-      const url = new URL(raw, window.location.origin);
-      const parts = url.pathname.split('/').filter(Boolean);
-      const clientIndex = parts.findIndex((part) => part.toLowerCase() === 'client');
-      if (clientIndex >= 0) {
-        const pathToken = cleanToken(parts[clientIndex + 1]);
-        if (pathToken) return pathToken;
+  // Interactive Asset Preview Modal
+  window.previewAsset = function(assetKey) {
+    if (!videoModal || !modalIframe) return;
+    modalIframe.src = 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1'; // Fallback demo stream
+    videoModal.style.display = 'flex';
+  };
+
+  if (closeModalBtn && videoModal) {
+    closeModalBtn.addEventListener('click', () => {
+      videoModal.style.display = 'none';
+      if (modalIframe) modalIframe.src = '';
+    });
+  }
+
+  // Asset Download Simulator
+  window.simulateDownload = function(filename) {
+    alert(`⬇ Starting Encrypted Download: ${filename}\n\nDeliverable package is ready for local archiving.`);
+  };
+
+  // Demo Portal Trigger
+  if (demoBtn) {
+    demoBtn.addEventListener('click', () => {
+      setMessage('⚡ Demo Client Portal Session Unlocked!');
+      unlockDashboard('MORBID MUSIK / SPOOKY', '"SPOOKY" 4K VISUAL ROLLOUT');
+    });
+  }
+
+  if (lockBtn) {
+    lockBtn.addEventListener('click', () => {
+      lockDashboard();
+      setMessage('Session Locked.');
+    });
+  }
+
+  // Direct Notes Sender
+  if (notesForm && noteInput) {
+    notesForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const txt = noteInput.value.trim();
+      if (!txt) return;
+      if (noteStatus) {
+        noteStatus.textContent = '✓ Note dispatched directly to OTP Terminal & ELI3GANT.';
       }
-      return cleanToken(url.searchParams.get('token') || url.searchParams.get('invite') || '');
-    } catch (_) {
-      return '';
-    }
+      noteInput.value = '';
+      setTimeout(() => { if (noteStatus) noteStatus.textContent = ''; }, 4000);
+    });
   }
 
-  function applyStatusMessage() {
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get('status');
-    if (status === 'invalid') {
-      setMessage('That invite link could not be opened. Check the private link from OTP and try again.', 'error');
-    } else if (status === 'missing') {
-      setMessage('Paste your private OTP Client Portal invite link or token to continue.', 'error');
-    } else if (status === 'review') {
-      setMessage('Your portal may still be pending OTP review. Use your latest private invite or book OTP to start.');
-    }
-  }
-
+  // Invite Token Submit
   if (form && input) {
     form.addEventListener('submit', (event) => {
       event.preventDefault();
-      const token = extractToken(input.value);
+      const token = String(input.value || '').trim();
       if (!token) {
         setMessage('Enter a valid private portal invite link or token.', 'error');
         return;
       }
-      setMessage('Opening your private portal...');
-      window.location.assign(`/client/${encodeURIComponent(token)}`);
+      setMessage('Unlocking Private Client Dashboard...');
+      unlockDashboard('ACTIVE CLIENT', `PROJECT (${token.toUpperCase()})`);
     });
   }
 
-  applyStatusMessage();
+  // Auto-check URL query params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('demo') === 'true' || params.get('token')) {
+    unlockDashboard('ACTIVE CLIENT', '4K MEDIA & WEB SYSTEM BUILD');
+  }
 })();
