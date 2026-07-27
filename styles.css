@@ -13805,3 +13805,16 @@ body.home-page .conversion-lane-card:hover {
   border-color: #0b0b0e !important;
   font-weight: 800 !important;
 }
+
+[data-theme="light"] .capability-pillar-card .book-btn,
+[data-theme="light"] .capability-pillar-card .book-btn-ghost,
+[data-theme="light"] #pillar-business-card .book-btn,
+[data-theme="light"] #pillar-creative-card .book-btn-ghost {
+  color: #0b0b0e !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .capability-pillar-card .book-btn-ghost {
+  border-color: rgba(10, 10, 14, 0.25) !important;
+  background: rgba(10, 10, 14, 0.05) !important;
+}
