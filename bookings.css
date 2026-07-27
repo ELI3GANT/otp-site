@@ -2345,3 +2345,51 @@ button:focus-visible,
     transition-duration: 0.01ms !important;
   }
 }
+
+/* LIGHT MODE THEME FOR OTP BOOKINGS */
+[data-theme="light"] body,
+[data-theme="light"] .booking-page {
+  background: #ffffff !important;
+  color: #0b0b0e !important;
+}
+
+[data-theme="light"] .hero h1,
+[data-theme="light"] .section-heading h2,
+[data-theme="light"] .booking-context h2,
+[data-theme="light"] .form-topline h2,
+[data-theme="light"] .service-card-title,
+[data-theme="light"] .package-card h3,
+[data-theme="light"] .oracle-card strong,
+[data-theme="light"] label {
+  color: #0b0b0e !important;
+}
+
+[data-theme="light"] .hero-copy,
+[data-theme="light"] .section-heading span,
+[data-theme="light"] .booking-context span,
+[data-theme="light"] .service-card-copy,
+[data-theme="light"] .package-description,
+[data-theme="light"] .package-purpose,
+[data-theme="light"] .oracle-card p,
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  color: #12141c !important;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  background: #f4f6fa !important;
+  border-color: rgba(10, 10, 14, 0.18) !important;
+}
+
+[data-theme="light"] .service-selector-card,
+[data-theme="light"] .package-card,
+[data-theme="light"] .oracle-card,
+[data-theme="light"] .booking-shell,
+[data-theme="light"] .booking-form {
+  background: #ffffff !important;
+  border-color: rgba(10, 10, 14, 0.12) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.05) !important;
+}
