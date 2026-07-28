@@ -1381,3 +1381,145 @@ html.spectral-v-sync body.fixline-service-page .nav-logo {
   color: var(--fix-accent);
 }
 
+.fixline-final .fixline-actions,
+.fixline-section-heading + .fixline-actions {
+  justify-content: center;
+}
+
+/* ==========================================================================
+   DAY / NIGHT LIGHT THEME OVERRIDES FOR FIXLINE & AUDIT PAGES
+   ========================================================================== */
+[data-theme="light"] .fixline-service-page,
+html[data-theme="light"] .fixline-service-page,
+body[data-theme="light"].fixline-service-page {
+  --fix-bg: #f8fafc;
+  --fix-bg-soft: #f1f5f9;
+  --fix-surface: #ffffff;
+  --fix-surface-raised: #ffffff;
+  --fix-text: #0f172a;
+  --fix-text-soft: #334155;
+  --fix-text-muted: #64748b;
+  --fix-border: #cbd5e1;
+  --fix-border-strong: #94a3b8;
+  --fix-silver: #475569;
+  --fix-accent: #b89a55;
+  --fix-accent-soft: rgba(184, 154, 85, 0.14);
+  --fix-danger: #c2410c;
+  color-scheme: light;
+  background: var(--fix-bg) !important;
+  color: var(--fix-text) !important;
+}
+
+[data-theme="light"] .fixline-service-page .fixline-page-main {
+  background: var(--fix-bg) !important;
+}
+
+[data-theme="light"] .fixline-service-page .audit-vibe-card,
+[data-theme="light"] .fixline-service-page .audit-audience-card,
+[data-theme="light"] .fixline-service-page .audit-boundary-card,
+[data-theme="light"] .fixline-service-page .fixline-signal-card,
+[data-theme="light"] .fixline-service-page .fixline-proof-line {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .fixline-service-page .audit-vibe-card:hover,
+[data-theme="light"] .fixline-service-page .audit-audience-card:hover {
+  background: #ffffff !important;
+  border-color: var(--fix-accent) !important;
+  box-shadow: 0 10px 28px rgba(184, 154, 85, 0.15);
+}
+
+[data-theme="light"] .fixline-service-page .audit-card-icon-wrap {
+  background: rgba(184, 154, 85, 0.12) !important;
+  border-color: rgba(184, 154, 85, 0.3) !important;
+  color: #947630 !important;
+}
+
+[data-theme="light"] .fixline-service-page .audit-vibe-card:hover .audit-card-icon-wrap {
+  background: var(--fix-accent) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .fixline-service-page .audit-card-tag {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+[data-theme="light"] .fixline-service-page .audit-vibe-card.featured .audit-card-tag {
+  background: var(--fix-accent);
+  color: #000000;
+}
+
+[data-theme="light"] .fixline-service-page .audit-audience-icon {
+  background: rgba(184, 154, 85, 0.1);
+  border-color: rgba(184, 154, 85, 0.25);
+  color: #947630;
+}
+
+[data-theme="light"] .fixline-service-page .fixline-action {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .fixline-service-page .fixline-action:hover {
+  border-color: var(--fix-accent) !important;
+  background: #f8fafc !important;
+  color: #000000 !important;
+}
+
+[data-theme="light"] .fixline-service-page .fixline-action-primary {
+  background: var(--fix-accent) !important;
+  color: #000000 !important;
+  border-color: var(--fix-accent) !important;
+}
+
+[data-theme="light"] .fixline-service-page .fixline-action-primary:hover {
+  background: #c5a456 !important;
+  color: #000000 !important;
+}
+
+[data-theme="light"] .fixline-service-page .nav,
+[data-theme="light"] .fixline-service-page .nav.scrolled {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-bottom: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="light"] .fixline-service-page .nav-links a,
+[data-theme="light"] .fixline-service-page .nav-drawer a {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .fixline-service-page .nav-links a:hover,
+[data-theme="light"] .fixline-service-page .nav-drawer a:hover {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .fixline-service-page .nav-links a.active,
+[data-theme="light"] .fixline-service-page .nav-drawer a.active {
+  color: #947630 !important;
+}
+
+[data-theme="light"] .fixline-service-page .fixline-section-alt {
+  background: #f1f5f9 !important;
+}
+
+[data-theme="light"] .fixline-service-page .fixline-final {
+  background: radial-gradient(circle at 50% 100%, rgba(184, 154, 85, 0.14), transparent 45%), #f8fafc !important;
+}
+
+[data-theme="light"] .fixline-service-page .footer {
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .fixline-service-page .footer-brand-text,
+[data-theme="light"] .fixline-service-page .footer-legal a {
+  color: #334155 !important;
+}
+
+
