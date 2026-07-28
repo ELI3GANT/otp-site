@@ -1149,3 +1149,235 @@ html.spectral-v-sync body.fixline-service-page .nav-logo {
     transform: none;
   }
 }
+
+/* ==========================================================================
+   CONSULTANT AUDIT - MODERN REVAMP & ICON CARDS
+   ========================================================================== */
+.audit-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: var(--fix-accent-soft);
+  border: 1px solid rgba(215, 182, 106, 0.35);
+  color: var(--fix-accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.audit-pill-badge svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--fix-accent);
+}
+
+.audit-card-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--fix-surface-raised) 70%, var(--fix-accent) 30%);
+  border: 1px solid rgba(215, 182, 106, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: var(--fix-accent);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.audit-vibe-card:hover .audit-card-icon-wrap {
+  transform: translateY(-2px) scale(1.05);
+  background: var(--fix-accent);
+  color: #050606;
+  box-shadow: 0 0 20px rgba(215, 182, 106, 0.4);
+}
+
+.audit-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.audit-vibe-card {
+  position: relative;
+  background: var(--fix-surface);
+  border: 1px solid var(--fix-border);
+  border-radius: 16px;
+  padding: 28px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.audit-vibe-card:hover {
+  border-color: var(--fix-accent);
+  background: var(--fix-surface-raised);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(215, 182, 106, 0.2);
+}
+
+.audit-vibe-card h3 {
+  font-size: 1.18rem !important;
+  font-weight: 700 !important;
+  margin: 0 0 8px 0 !important;
+}
+
+.audit-vibe-card p {
+  font-size: 0.92rem;
+  color: var(--fix-text-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.audit-card-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--fix-text-soft);
+  margin-bottom: 12px;
+  width: fit-content;
+}
+
+.audit-vibe-card.featured {
+  border-color: var(--fix-accent);
+  background: linear-gradient(135deg, rgba(215, 182, 106, 0.08) 0%, var(--fix-surface) 100%);
+}
+
+.audit-vibe-card.featured .audit-card-tag {
+  background: var(--fix-accent);
+  color: #050606;
+}
+
+.audit-audience-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 32px;
+}
+
+.audit-audience-card {
+  background: rgba(18, 21, 21, 0.6);
+  border: 1px solid var(--fix-border);
+  backdrop-filter: blur(12px);
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: all 0.25s ease;
+}
+
+.audit-audience-card:hover {
+  border-color: var(--fix-border-strong);
+  background: var(--fix-surface-raised);
+  transform: translateY(-2px);
+}
+
+.audit-audience-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--fix-accent);
+}
+
+.audit-audience-content h3 {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  margin: 0 0 6px 0 !important;
+}
+
+.audit-audience-content p {
+  font-size: 0.88rem;
+  color: var(--fix-text-soft);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.audit-boundary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 28px;
+}
+
+.audit-boundary-card {
+  background: rgba(13, 16, 16, 0.8);
+  border: 1px solid var(--fix-border);
+  border-radius: 14px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.audit-boundary-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--fix-border-strong);
+}
+
+.audit-boundary-card.no-fluff::before {
+  background: var(--fix-danger);
+}
+
+.audit-boundary-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  margin: 0 0 8px 0 !important;
+}
+
+.audit-boundary-card p {
+  font-size: 0.9rem;
+  color: var(--fix-text-soft);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.audit-stat-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  padding: 20px 24px;
+  background: var(--fix-surface-raised);
+  border: 1px solid var(--fix-border);
+  border-radius: 14px;
+  margin-top: 24px;
+  align-items: center;
+}
+
+.audit-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--fix-text);
+}
+
+.audit-stat-item svg {
+  color: var(--fix-accent);
+}
+
