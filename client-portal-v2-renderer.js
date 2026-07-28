@@ -186,6 +186,44 @@ function projectsCard(view) {
   return card;
 }
 
+function assistantCard(view) {
+  const card = sectionCard('Oracle + IEI Assistant', 'portal-v2-assistant');
+  const badge = node('span', 'badge ready', '🧠 Oracle + 👁️ IEI Active');
+  const promptText = node('p', 'portal-v2-summary', 'Ask Oracle + IEI any question about your project scope, payment status, timeline, or deliverables.');
+  const inputGroup = node('div', 'portal-v2-actions');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'portal-v2-assistant-input';
+  input.placeholder = 'e.g. What is my next milestone?';
+  input.style.cssText = 'flex: 1; min-height: 44px; padding: 0 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--line-strong); border-radius: 8px; color: var(--text); font-size: 14px;';
+
+  const askBtn = node('button', 'button-link', 'Ask IEI');
+  askBtn.type = 'button';
+
+  const responseBox = node('div', 'portal-v2-assistant-response');
+  responseBox.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 8px; font-size: 13px; display: none;';
+
+  askBtn.addEventListener('click', () => {
+    const query = input.value.trim().toLowerCase();
+    if (!query) return;
+    responseBox.style.display = 'block';
+
+    if (query.includes('status') || query.includes('phase') || query.includes('milestone')) {
+      responseBox.textContent = `🧠 Oracle + 👁️ IEI: Your project is currently in the ${view.overview.currentPhase} phase. Status: ${view.overview.status}. Next action: ${view.overview.nextClientAction}`;
+    } else if (query.includes('pay') || query.includes('deposit') || query.includes('invoice') || query.includes('money') || query.includes('cost')) {
+      responseBox.textContent = `🧠 Oracle + 👁️ IEI: Payment state: ${view.payment.stateLabel}. Receipt status: ${view.payment.receiptStatus}. ${view.payment.message}`;
+    } else if (query.includes('deliverable') || query.includes('file') || query.includes('link') || query.includes('download') || query.includes('proof')) {
+      responseBox.textContent = `🧠 Oracle + 👁️ IEI: Delivery proof status: ${view.delivery.proofStatus}. ${view.delivery.nextStep}`;
+    } else {
+      responseBox.textContent = `🧠 Oracle + 👁️ IEI: Your ${view.identity.projectTitle} project is currently ${view.overview.status}. Contact OTP support at ${view.contact.email} for custom requests.`;
+    }
+  });
+
+  inputGroup.append(input, askBtn);
+  card.append(badge, promptText, inputGroup, responseBox);
+  return card;
+}
+
 export function renderClientPortalViewV2(view) {
   const masthead = node('section', 'hero portal-v2-masthead');
   const mastheadTop = node('div', 'portal-v2-masthead-top');
@@ -201,7 +239,7 @@ export function renderClientPortalViewV2(view) {
   const grid = node('div', 'portal-v2-grid');
   const documentColumn = node('div', 'portal-v2-column');
   const statusColumn = node('div', 'portal-v2-column');
-  documentColumn.append(documentsCard(view));
+  documentColumn.append(documentsCard(view), assistantCard(view));
   const projectsList = projectsCard(view);
   if (projectsList) statusColumn.append(projectsList);
   statusColumn.append(paymentCard(view), timelineCard(view), deliveryCard(view));
