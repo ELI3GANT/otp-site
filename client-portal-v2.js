@@ -192,21 +192,25 @@ function deliveryView(payload = {}, project = {}) {
 export function buildClientPortalViewV2(payload = {}, options = {}) {
   const client = payload.client && typeof payload.client === 'object' ? payload.client : {};
   const project = payload.project && typeof payload.project === 'object' ? payload.project : {};
+  const clientNameResolved = text(client.name || client.clientName || client.client_name || client.brandBusiness || client.brand_business || client.contact_name || payload.client_name || payload.clientName || payload.contact_name || (payload.email ? payload.email.split('@')[0] : ''));
+  const projectTitleResolved = text(project.title || project.projectTitle || project.project_title || project.service || project.service_type || project.name || payload.project_title || payload.projectTitle);
+  const jobTypeResolved = text(project.projectType || project.project_type || project.jobType || project.job_type || project.service || project.service_type);
+
   const identity = Object.freeze({
     businessName: 'OnlyTruePerspective LLC',
-    clientName: text(client.name) || 'Client details pending',
-    projectTitle: text(project.title) || 'Project details pending',
-    jobType: text(project.projectType || project.project_type) || 'Project type pending'
+    clientName: clientNameResolved || 'Valued Client',
+    projectTitle: projectTitleResolved || 'OTP Project',
+    jobType: jobTypeResolved || 'Custom Project'
   });
   const documents = Object.freeze(safeDocuments(payload.documents));
   const payment = paymentView(payload.payment, identity, options);
   const delivery = deliveryView(payload.delivery, project);
   const phase = currentPhase(project.status);
-  const manualReviewRequired = payment.manualReviewRequired || !text(client.name) || !text(project.title);
+  const manualReviewRequired = payment.manualReviewRequired;
   const overview = Object.freeze({
     projectTitle: identity.projectTitle,
     jobType: identity.jobType,
-    service: text(project.service) || 'Service details pending OTP review',
+    service: text(project.service) || identity.jobType || 'OTP Custom Service',
     status: text(project.status) || 'Pending Review',
     currentPhase: phase,
     summary: text(project.clientFacingSummary || project.client_facing_summary || project.description) || 'Project details are being reviewed by OTP.',

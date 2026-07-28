@@ -267,7 +267,7 @@ export function normalizePortalPayload(data = {}) {
         : {}
     },
     client: {
-      name: cleanPortalValue(client.name) || 'Client details pending',
+      name: cleanPortalValue(client.name || client.clientName || client.client_name || client.brandBusiness || client.brand_business || client.contact_name || data.client_name || data.clientName) || 'Valued Client',
       brandBusiness: cleanPortalValue(client.brandBusiness || client.brand_business) || '',
       email: cleanPortalValue(client.email) || '',
       phone: cleanPortalValue(client.phone) || ''
