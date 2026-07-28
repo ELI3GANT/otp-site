@@ -66,22 +66,37 @@ function currentPhase(status = '') {
   return 'Request received';
 }
 
-function safeDocuments(documents = []) {
+function safeDocuments(documents = [], rootPayload = {}) {
+  const sourceDocs = Array.isArray(documents) && documents.length
+    ? documents
+    : Array.isArray(rootPayload.docs) && rootPayload.docs.length
+      ? rootPayload.docs
+      : Array.isArray(rootPayload.job_documents) && rootPayload.job_documents.length
+        ? rootPayload.job_documents
+        : Array.isArray(rootPayload.documents) ? rootPayload.documents : [];
+
   const byType = new Map();
-  for (const document of Array.isArray(documents) ? documents : []) {
-    const type = text(document?.type).toLowerCase().replace(/_/g, '-');
+  for (const document of sourceDocs) {
+    const type = text(document?.type || document?.docType || document?.doc_type).toLowerCase().replace(/_/g, '-');
     if (!DOCUMENT_TYPES.includes(type) || byType.has(type)) continue;
-    const ready = document.ready === true;
-    const viewUrl = ready ? safeUrl(document.viewUrl || document.view_url) : '';
-    const downloadUrl = ready ? safeUrl(document.downloadUrl || document.download_url) : '';
+    const readyExplicit = document.ready === true;
+    const rawDocUrl = document.viewUrl || document.view_url || document.url || document.link;
+    const validDocUrl = safeUrl(rawDocUrl);
+    const isReady = readyExplicit || (document.ready !== false && (
+      String(document.status || document.doc_status || '').toLowerCase() === 'ready'
+      || String(document.status || document.doc_status || '').toLowerCase() === 'available'
+      || Boolean(validDocUrl)
+    ) && (!rawDocUrl || Boolean(validDocUrl)));
+    const viewUrl = isReady ? safeUrl(document.viewUrl || document.view_url || document.url || document.link) : '';
+    const downloadUrl = isReady ? safeUrl(document.downloadUrl || document.download_url || document.downloadLink || document.download_link) : '';
     byType.set(type, Object.freeze({
       type,
-      label: text(document.label) || type.split('-').map((part) => `${part[0]?.toUpperCase() || ''}${part.slice(1)}`).join(' '),
-      ready,
-      status: ready ? 'Available' : 'Draft pending OTP review',
-      message: ready ? 'This document is available for client review.' : 'No document is available yet. OTP will add it after review.',
-      actionLabel: ready ? 'Ready for review' : 'Not available yet',
-      updatedAt: text(document.updatedAt || document.updated_at),
+      label: text(document.label || document.title) || type.split('-').map((part) => `${part[0]?.toUpperCase() || ''}${part.slice(1)}`).join(' '),
+      ready: isReady,
+      status: isReady ? 'Available' : 'Draft pending OTP review',
+      message: isReady ? 'This document is available for client review.' : 'No document is available yet. OTP will add it after review.',
+      actionLabel: isReady ? 'Ready for review' : 'Not available yet',
+      updatedAt: text(document.updatedAt || document.updated_at || document.createdAt || document.created_at),
       viewUrl,
       downloadUrl
     }));
@@ -89,34 +104,45 @@ function safeDocuments(documents = []) {
   return DOCUMENT_TYPES.filter((type) => byType.has(type)).map((type) => byType.get(type));
 }
 
-function paymentView(payload = {}, identity = {}, options = {}) {
-  const raw = payload && typeof payload === 'object' ? payload : {};
-  const total = cents(raw.totalAmountCents ?? raw.total_amount_cents);
-  const deposit = cents(raw.depositDueCents ?? raw.deposit_amount_cents ?? raw.deposit_cents);
-  const paid = cents(raw.amountPaidCents ?? raw.amount_paid_cents);
-  const balance = cents(raw.remainingBalanceCents ?? raw.remaining_balance_cents ?? raw.amountDueCents ?? raw.amount_due_cents);
-  const rawLink = text(raw.paymentLink || raw.payment_link || raw.stripe_link);
+function paymentView(payload = {}, identity = {}, options = {}, rootPayload = {}) {
+  const p = (payload && typeof payload === 'object' && Object.keys(payload).length)
+    ? payload
+    : (rootPayload.payment && typeof rootPayload.payment === 'object')
+      ? rootPayload.payment
+      : (rootPayload.job && typeof rootPayload.job === 'object')
+        ? rootPayload.job
+        : rootPayload;
+
+  const total = cents(p.totalAmountCents ?? p.total_amount_cents ?? p.quoted_price_cents ?? p.total_price_cents ?? p.totalCents ?? p.total_cents ?? p.quotedPriceCents ?? p.totalPriceCents);
+  const deposit = cents(p.depositDueCents ?? p.deposit_amount_cents ?? p.deposit_cents ?? p.depositDue ?? p.depositCents);
+  const paid = cents(p.amountPaidCents ?? p.amount_paid_cents ?? p.paid_cents ?? p.paidCents);
+  const balance = cents(p.remainingBalanceCents ?? p.remaining_balance_cents ?? p.amountDueCents ?? p.amount_due_cents ?? p.balanceCents ?? p.balance_cents);
+  const rawLink = text(p.paymentLink || p.payment_link || p.stripe_link || p.stripeLink);
   const paymentLink = safeUrl(rawLink);
   const unsafeLink = Boolean(rawLink && !paymentLink);
+  const jobStatus = text(rootPayload.project?.status || rootPayload.job_status || rootPayload.status || p.job_status || p.status).toLowerCase();
+  const isCompletedJob = /complete|paid|delivered|archive/.test(jobStatus);
+
   const summary = buildPaymentSummaryV2({
     clientName: identity.clientName,
     projectTitle: identity.projectTitle,
     jobType: identity.jobType,
     totalAmountCents: total ?? undefined,
     depositAmountCents: deposit ?? undefined,
-    amountPaidCents: paid ?? undefined,
-    remainingBalanceCents: balance ?? undefined,
-    dueDate: text(raw.dueDate || raw.due_date),
-    paymentStatus: text(raw.status || raw.paymentStatus || raw.payment_status),
-    paymentMethod: text(raw.method || raw.paymentMethod || raw.payment_method),
+    amountPaidCents: paid ?? (isCompletedJob && total ? total : undefined),
+    remainingBalanceCents: balance ?? (isCompletedJob ? 0 : undefined),
+    dueDate: text(p.dueDate || p.due_date),
+    paymentStatus: text(p.status || p.paymentStatus || p.payment_status || (isCompletedJob ? 'Paid' : '')),
+    paymentMethod: text(p.method || p.paymentMethod || p.payment_method),
     paymentLink,
-    paymentLinkStatus: text(raw.paymentLinkStatus || raw.payment_link_status),
-    receiptStatus: text(raw.receiptStatus || raw.receipt_status),
-    receiptGeneratedAt: text(raw.receiptGeneratedAt || raw.receipt_generated_at),
-    receiptSentAt: text(raw.receiptSentAt || raw.receipt_sent_at),
-    invoiceStatus: text(raw.invoiceStatus || raw.invoice_status)
+    paymentLinkStatus: text(p.paymentLinkStatus || p.payment_link_status),
+    receiptStatus: text(p.receiptStatus || p.receipt_status || (isCompletedJob ? 'Receipt ready' : '')),
+    receiptGeneratedAt: text(p.receiptGeneratedAt || p.receipt_generated_at),
+    receiptSentAt: text(p.receiptSentAt || p.receipt_sent_at),
+    invoiceStatus: text(p.invoiceStatus || p.invoice_status)
   }, { now: options.now });
-  const manualReviewRequired = summary.manualReviewRequired || unsafeLink;
+
+  const manualReviewRequired = (summary.manualReviewRequired && !isCompletedJob && total === null) || unsafeLink;
   const state = manualReviewRequired ? 'manual_review_required' : summary.state;
   return Object.freeze({
     state,
@@ -127,22 +153,24 @@ function paymentView(payload = {}, identity = {}, options = {}) {
     balanceCents: manualReviewRequired ? null : summary.balanceCents,
     dueDate: manualReviewRequired ? '' : summary.dueDate,
     depositPaid: summary.depositPaid,
-    paidInFull: summary.paidInFull,
+    paidInFull: summary.paidInFull || isCompletedJob,
     overdue: summary.overdue,
-    receiptReady: summary.receiptReady,
-    receiptStatus: summary.receiptSent ? 'Receipt sent' : summary.receiptReady ? 'Receipt ready after OTP review' : 'Locked until payment is saved',
+    receiptReady: summary.receiptReady || isCompletedJob,
+    receiptStatus: summary.receiptSent ? 'Receipt sent' : (summary.receiptReady || isCompletedJob) ? 'Receipt ready after OTP review' : 'Locked until payment is saved',
     reminderReady: summary.reminderReady,
     paymentLinkReady: !manualReviewRequired && summary.paymentLinkReady && Boolean(paymentLink),
     paymentLink: !manualReviewRequired && summary.paymentLinkReady ? paymentLink : '',
     message: manualReviewRequired
       ? 'Payment details are being reviewed by OTP. No payment action is required until OTP confirms the next step.'
-      : summary.paidInFull
+      : (summary.paidInFull || isCompletedJob)
         ? 'Payment is recorded as paid in full. Receipt status is shown below.'
-        : summary.depositPaid
-          ? 'Deposit received. The remaining balance will be confirmed before final delivery.'
-          : summary.balanceDue
-            ? 'A balance is recorded. Use only the reviewed payment link shown here.'
-            : 'No payment action is required until OTP confirms the next step.',
+        : summary.overdue
+          ? 'Payment is overdue. Please process payment using the link below.'
+          : summary.depositPaid
+            ? 'Deposit is recorded as paid. Remaining balance will be due according to schedule.'
+            : summary.paymentLinkReady
+              ? 'Payment link is ready. Use the button below to complete deposit/payment.'
+              : 'Payment terms established. Payment action will be enabled when due.',
     nextAction: manualReviewRequired ? 'OTP must review payment details before client action.' : summary.nextAction,
     manualReviewRequired
   });
@@ -202,8 +230,8 @@ export function buildClientPortalViewV2(payload = {}, options = {}) {
     projectTitle: projectTitleResolved || 'OTP Project',
     jobType: jobTypeResolved || 'Custom Project'
   });
-  const documents = Object.freeze(safeDocuments(payload.documents));
-  const payment = paymentView(payload.payment, identity, options);
+  const documents = Object.freeze(safeDocuments(payload.documents, payload));
+  const payment = paymentView(payload.payment, identity, options, payload);
   const delivery = deliveryView(payload.delivery, project);
   const phase = currentPhase(project.status);
   const manualReviewRequired = payment.manualReviewRequired;
