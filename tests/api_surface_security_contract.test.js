@@ -27,6 +27,7 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/bookings/submit',
     'GET /api/client-portal/:token',
     'GET /api/youtube/videos',
+    'POST /api/contact',
     'POST /api/contact/submit',
     'POST /api/audit/submit',
     'POST /api/analytics/view',

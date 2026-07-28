@@ -7521,6 +7521,11 @@ app.post('/api/ai/generate-image', verifyToken, async (req, res) => {
 });
 
 // 5. CONTACT AGENT (AI Auto-Draft)
+app.post('/api/contact', publicContactLimiter, (req, res, next) => {
+    req.url = '/api/contact/submit';
+    return app._router.handle(req, res, next);
+});
+
 app.post('/api/contact/submit', publicContactLimiter, async (req, res) => {
     const body = req.body && typeof req.body === 'object' ? req.body : {};
     const { name, email, project_type, project_details, budget, timeline, _gotcha } = body;
