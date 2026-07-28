@@ -3972,6 +3972,16 @@ app.get('/api/client-portal/:token', async (req, res) => {
         return res.json(buildSafeE2EClientPortalData());
     }
     if (!supabaseAdmin) {
+        try {
+            const upstreamUrl = `${OTP_CLIENT_PORTAL_UPSTREAM}/api/client-portal/${encodeURIComponent(req.params.token)}`;
+            const response = await fetch(upstreamUrl, { headers: { Accept: 'application/json' } });
+            const data = await response.json().catch(() => null);
+            if (response.ok && data) {
+                return res.json(data);
+            }
+        } catch (upstreamErr) {
+            console.error('Upstream portal fetch failed:', upstreamErr?.message);
+        }
         return res.status(503).json({
             ok: false,
             errorCode: 'otp_os_unavailable',
