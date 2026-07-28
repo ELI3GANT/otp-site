@@ -247,7 +247,7 @@ export function renderClientPortalViewV2(view) {
   const grid = node('div', 'portal-v2-grid');
   const documentColumn = node('div', 'portal-v2-column');
   const statusColumn = node('div', 'portal-v2-column');
-  documentColumn.append(documentsCard(view), assistantCard(view));
+  documentColumn.append(assistantCard(view), documentsCard(view));
   const projectsList = projectsCard(view);
   if (projectsList) statusColumn.append(projectsList);
   statusColumn.append(paymentCard(view), timelineCard(view), deliveryCard(view));

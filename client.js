@@ -504,13 +504,21 @@ function renderDashboard(data, token = '') {
   const { portal, client, project, retainer, documents, payment, nextStep, followUp, contact, projects, approvals, references, account } = normalizePortalPayload(data);
   const view = buildClientPortalViewV2(data, { now: portal.lastUpdated });
   const { masthead, grid, footer } = renderClientPortalViewV2(view);
+  const columns = grid.querySelectorAll('.portal-v2-column');
+  const documentColumn = columns[0];
+  const statusColumn = columns[1];
+
   const visibleRetainerCard = retainerCard(retainer);
-  if (visibleRetainerCard) grid.append(visibleRetainerCard);
-  grid.append(
-    approvalsCard(token, approvals, client),
-    referencesCard(token, references),
-    nextStepCard(nextStep, followUp, contact)
-  );
+  if (visibleRetainerCard && statusColumn) statusColumn.append(visibleRetainerCard);
+
+  const appCard = approvalsCard(token, approvals, client);
+  if (appCard && documentColumn) documentColumn.append(appCard);
+
+  const refCard = referencesCard(token, references);
+  if (refCard && statusColumn) statusColumn.append(refCard);
+
+  const nsCard = nextStepCard(nextStep, followUp, contact);
+  if (nsCard && documentColumn) documentColumn.append(nsCard);
 
   portalRoot.replaceChildren(masthead, grid, footer);
   setStatus('Portal Active', 'ready');
