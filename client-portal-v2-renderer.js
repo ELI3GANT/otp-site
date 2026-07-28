@@ -203,7 +203,7 @@ function assistantCard(view) {
   const responseBox = node('div', 'portal-v2-assistant-response');
   responseBox.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 8px; font-size: 13px; display: none;';
 
-  askBtn.addEventListener('click', () => {
+  function handleAsk() {
     const query = input.value.trim().toLowerCase();
     if (!query) return;
     responseBox.style.display = 'block';
@@ -216,6 +216,14 @@ function assistantCard(view) {
       responseBox.textContent = `🧠 Oracle + 👁️ IEI: Delivery proof status: ${view.delivery.proofStatus}. ${view.delivery.nextStep}`;
     } else {
       responseBox.textContent = `🧠 Oracle + 👁️ IEI: Your ${view.identity.projectTitle} project is currently ${view.overview.status}. Contact OTP support at ${view.contact.email} for custom requests.`;
+    }
+  }
+
+  askBtn.addEventListener('click', handleAsk);
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleAsk();
     }
   });
 
