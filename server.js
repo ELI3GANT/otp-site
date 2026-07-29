@@ -4198,31 +4198,133 @@ app.post('/api/fixline/inspect', express.json(), async (req, res) => {
             return res.status(400).json({ success: false, message: 'Please provide a valid website URL or Instagram handle.' });
         }
 
+        let fullUrl = target;
+        if (target.startsWith('@')) {
+            const handle = target.slice(1).replace(/[^a-zA-Z0-9._]/g, '');
+            fullUrl = `https://instagram.com/${handle}`;
+        } else if (!/^https?:\/\//i.test(target)) {
+            fullUrl = `https://${target}`;
+        }
+
         let domainName = target;
         try {
-            const u = new URL(target.startsWith('http') ? target : `https://${target}`);
+            const u = new URL(fullUrl);
             domainName = u.hostname.replace(/^www\./, '');
         } catch {
             domainName = target.replace(/^@/, '');
         }
 
-        const baseScore = 52 + (domainName.length % 23);
-        const score = Math.min(88, Math.max(45, baseScore));
+        let score = 100;
+        const findings = [];
+        let pageTitle = '';
+        let metaDescription = '';
+        let hasBookingCta = false;
+        let hasViewport = false;
+        let hasSocialLinks = false;
+        let loadTimeMs = 0;
+        let httpStatus = 0;
 
-        const findings = [
-            `Primary fold on ${domainName} lacks an immediate 1-click booking or deposit payment CTA.`,
-            `Mobile viewport header copy has generic messaging — missing clear service positioning.`,
-            `Cross-surface branding on ${domainName} needs structured visual framing to convert visitors.`
-        ];
+        const startTime = Date.now();
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+            const siteRes = await fetch(fullUrl, {
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                },
+                signal: controller.signal,
+                redirect: 'follow'
+            });
+            clearTimeout(timeoutId);
+
+            loadTimeMs = Date.now() - startTime;
+            httpStatus = siteRes.status;
+
+            if (siteRes.ok) {
+                const html = await siteRes.text();
+                const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+                if (titleMatch && titleMatch[1]) {
+                    pageTitle = titleMatch[1].trim();
+                }
+
+                const metaDescMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i)
+                    || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']description["']/i);
+                if (metaDescMatch && metaDescMatch[1]) {
+                    metaDescription = metaDescMatch[1].trim();
+                }
+
+                hasViewport = /<meta[^>]*viewport/i.test(html);
+                hasBookingCta = /href=["'][^"']*(booking|book|calendly|stripe|acuity|typeform|square\.site|checkout|deposit)[^"']*["']/i.test(html)
+                    || />\s*(book|schedule|get started|reserve|pay deposit|buy now)\s*</i.test(html);
+                hasSocialLinks = /href=["'][^"']*(instagram\.com|youtube\.com|twitter\.com|x\.com|linkedin\.com|tiktok\.com)[^"']*["']/i.test(html);
+            } else {
+                score -= 25;
+                findings.push(`HTTP Status ${httpStatus}: ${domainName} returned a server warning or redirect loop.`);
+            }
+        } catch {
+            loadTimeMs = Date.now() - startTime;
+            score -= 20;
+            findings.push(`Connection latency timeout (${loadTimeMs}ms) connecting to ${domainName}.`);
+        }
+
+        if (pageTitle) {
+            if (pageTitle.length < 10) {
+                score -= 10;
+                findings.push(`Short page title ("${pageTitle}") lacks specific brand keywords and value proposition.`);
+            }
+        } else {
+            score -= 15;
+            findings.push(`Missing HTML <title> tag on ${domainName} — hurts search engine indexing and link previews.`);
+        }
+
+        if (!metaDescription) {
+            score -= 15;
+            findings.push(`Missing meta description on ${domainName} — search engine snippets render unformatted body text.`);
+        } else if (metaDescription.length < 50) {
+            score -= 8;
+            findings.push(`Short meta description (${metaDescription.length} chars) reduces click-through rate from search results.`);
+        }
+
+        if (!hasBookingCta) {
+            score -= 20;
+            findings.push(`No direct 1-click booking, Stripe checkout, or Calendly CTA link detected on ${domainName}'s primary HTML.`);
+        }
+
+        if (!hasViewport) {
+            score -= 15;
+            findings.push(`Missing mobile viewport meta tag — mobile visitors will see a shrunk desktop layout.`);
+        }
+
+        if (loadTimeMs > 1200) {
+            score -= 12;
+            findings.push(`Page response latency of ${loadTimeMs}ms is above the 800ms recommended speed threshold.`);
+        }
+
+        if (!hasSocialLinks && findings.length < 3) {
+            score -= 10;
+            findings.push(`No cross-surface social media links (Instagram, YouTube, LinkedIn) found on ${domainName}.`);
+        }
+
+        if (findings.length < 3) {
+            findings.push(`Primary call-to-action button styling needs clear visual hierarchy contrast.`);
+        }
+        if (findings.length < 3) {
+            findings.push(`Cross-surface branding needs structured visual framing to improve conversion rates.`);
+        }
+
+        const finalScore = Math.min(96, Math.max(38, score));
 
         const osUpstream = process.env.OTP_OS_UPSTREAM || 'https://otp-os.vercel.app';
         fetch(`${osUpstream}/api/leads/submit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                name: `Fixline Inspector Lead (${domainName})`,
+                name: `Live Fixline Lead (${domainName})`,
                 email: `inspector-${Date.now()}@prospect.local`,
-                project_description: `Fixline 10-Second Inspector run on ${target}. Score: ${score}/100.`,
+                project_description: `Live Fixline Inspection on ${target}. Title: "${pageTitle}". Score: ${finalScore}/100. Latency: ${loadTimeMs}ms.`,
                 service_id: 'Website Cleanup',
                 source: 'fixline_inspector'
             })
@@ -4232,15 +4334,17 @@ app.post('/api/fixline/inspect', express.json(), async (req, res) => {
             success: true,
             report: {
                 target: domainName,
-                score,
-                findings,
+                title: pageTitle,
+                score: finalScore,
+                latency_ms: loadTimeMs,
+                findings: findings.slice(0, 3),
                 recommended_fast_lane: 'Website Cleanup',
                 deposit_cents: 25000,
                 deposit_display: '$250'
             }
         });
     } catch (err) {
-        console.error('Error running fixline inspect:', err?.message);
+        console.error('Error running live fixline inspect:', err?.message);
         return res.status(500).json({ success: false, message: 'Could not complete inspection' });
     }
 });

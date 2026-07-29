@@ -107,12 +107,10 @@
 
     els.results.classList.remove('hidden');
     if (els.targetDomain) {
-      try {
-        const u = new URL(targetUrl);
-        els.targetDomain.textContent = u.hostname.replace(/^www\./, '');
-      } catch {
-        els.targetDomain.textContent = targetUrl;
-      }
+      const displayDomain = report.target || targetUrl;
+      const displayTitle = report.title ? ` — "${report.title}"` : '';
+      const displayLatency = report.latency_ms ? ` (${report.latency_ms}ms load)` : '';
+      els.targetDomain.textContent = `${displayDomain}${displayTitle}${displayLatency}`;
     }
 
     animateScore(report.score || 58);
