@@ -2497,47 +2497,78 @@ button:focus-visible,
   transform: none;
 }
 
-/* Unified Selection Suite Group Headers */
+/* Unified Selection Suite Group Headers - Premium Luxe Glass Design */
 .selection-group-header {
-  margin: 2.2rem 0 1.2rem;
+  margin: 3rem 0 1.5rem;
+  padding: 1.6rem 2rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(53, 229, 255, 0.07) 0%, rgba(184, 140, 255, 0.05) 100%), rgba(14, 18, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.selection-group-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, #35e5ff 0%, #a482ff 100%);
+  border-radius: 4px 0 0 4px;
 }
 
 .selection-group-header h3 {
-  font-size: 1.35rem;
+  font-size: 1.65rem;
   font-weight: 800;
-  margin: 0.4rem 0 0.25rem;
-  color: var(--text);
-  letter-spacing: -0.02em;
+  margin: 0.6rem 0 0.35rem;
+  color: #ffffff;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
 }
 
 .selection-group-header p {
-  font-size: 0.92rem;
-  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.82);
   margin: 0;
+  max-width: 860px;
 }
 
 .selection-group-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.76rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 3px 10px;
+  letter-spacing: 0.06em;
+  padding: 5px 14px;
   border-radius: 999px;
   color: #35e5ff;
-  background: rgba(53, 229, 255, 0.12);
-  border: 1px solid rgba(53, 229, 255, 0.25);
+  background: rgba(53, 229, 255, 0.16);
+  border: 1px solid rgba(53, 229, 255, 0.38);
+  box-shadow: 0 4px 14px rgba(53, 229, 255, 0.18);
 }
 
 .fast-lane-group-header {
-  margin-top: 3.2rem;
+  margin-top: 3.8rem;
+  background: linear-gradient(135deg, rgba(184, 140, 255, 0.09) 0%, rgba(53, 229, 255, 0.05) 100%), rgba(14, 18, 26, 0.85);
+  border-color: rgba(184, 140, 255, 0.28);
+}
+
+.fast-lane-group-header::before {
+  background: linear-gradient(180deg, #b88cff 0%, #35e5ff 100%);
 }
 
 .fast-lane-badge {
   color: #b88cff;
-  background: rgba(184, 140, 255, 0.12);
-  border-color: rgba(184, 140, 255, 0.25);
+  background: rgba(184, 140, 255, 0.16);
+  border-color: rgba(184, 140, 255, 0.38);
+  box-shadow: 0 4px 14px rgba(184, 140, 255, 0.18);
 }
