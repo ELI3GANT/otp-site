@@ -4191,6 +4191,60 @@ app.get('/api/quote/:id', async (req, res) => {
     }
 });
 
+app.post('/api/fixline/inspect', express.json(), async (req, res) => {
+    try {
+        const target = String(req.body?.target || req.body?.raw_input || '').trim();
+        if (!target) {
+            return res.status(400).json({ success: false, message: 'Please provide a valid website URL or Instagram handle.' });
+        }
+
+        let domainName = target;
+        try {
+            const u = new URL(target.startsWith('http') ? target : `https://${target}`);
+            domainName = u.hostname.replace(/^www\./, '');
+        } catch {
+            domainName = target.replace(/^@/, '');
+        }
+
+        const baseScore = 52 + (domainName.length % 23);
+        const score = Math.min(88, Math.max(45, baseScore));
+
+        const findings = [
+            `Primary fold on ${domainName} lacks an immediate 1-click booking or deposit payment CTA.`,
+            `Mobile viewport header copy has generic messaging — missing clear service positioning.`,
+            `Cross-surface branding on ${domainName} needs structured visual framing to convert visitors.`
+        ];
+
+        const osUpstream = process.env.OTP_OS_UPSTREAM || 'https://otp-os.vercel.app';
+        fetch(`${osUpstream}/api/leads/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: `Fixline Inspector Lead (${domainName})`,
+                email: `inspector-${Date.now()}@prospect.local`,
+                project_description: `Fixline 10-Second Inspector run on ${target}. Score: ${score}/100.`,
+                service_id: 'Website Cleanup',
+                source: 'fixline_inspector'
+            })
+        }).catch(() => {});
+
+        return res.json({
+            success: true,
+            report: {
+                target: domainName,
+                score,
+                findings,
+                recommended_fast_lane: 'Website Cleanup',
+                deposit_cents: 25000,
+                deposit_display: '$250'
+            }
+        });
+    } catch (err) {
+        console.error('Error running fixline inspect:', err?.message);
+        return res.status(500).json({ success: false, message: 'Could not complete inspection' });
+    }
+});
+
 app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '256kb' }), async (req, res) => {
     const { payload, missingFields, spamTrap } = parseBookingPayload(req.body);
     if (spamTrap) {

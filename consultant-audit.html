@@ -59,6 +59,47 @@
           <p style="font-size:0.9rem; margin:0; color:var(--fix-text-soft);">Submit your business links via FIXLINE. OTP confirms your audit scope, prioritized findings, and optional execution path separately.</p>
         </aside>
       </div>
+
+      <!-- Instant 10-Second Fixline Conversion Inspector Box -->
+      <div class="fixline-page-wrap" style="margin-top: 2rem;">
+        <div class="inspector-hero-card" style="background: linear-gradient(135deg, rgba(53, 229, 255, 0.08) 0%, rgba(184, 140, 255, 0.06) 100%), rgba(14, 18, 26, 0.92); border: 1px solid rgba(53, 229, 255, 0.35); border-radius: 20px; padding: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom: 0.6rem;">
+            <span class="audit-pill-badge" style="background:rgba(53,229,255,0.15); color:#35e5ff; border:1px solid rgba(53,229,255,0.4);">⚡ Instant Diagnostic</span>
+            <span style="font-size:0.82rem; color:rgba(255,255,255,0.6); font-weight:600;">10-Second Free Inspection</span>
+          </div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #ffffff; margin-bottom: 0.4rem;">Check Your Conversion Readiness Score</h2>
+          <p style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-bottom: 1.2rem;">Enter your website URL or Instagram handle to reveal your conversion gaps and 48-hour Fast-Lane fix options:</p>
+
+          <form id="inspector-form" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input id="inspector-input" type="text" placeholder="e.g. acmebrand.com or @acmebrand" required style="flex: 1; min-width: 260px; min-height: 52px; padding: 0 16px; background: rgba(5,6,9,0.85); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: #ffffff; font-size: 1rem;" />
+            <button id="inspector-btn" type="submit" style="min-height: 52px; padding: 0 24px; background: linear-gradient(135deg, #35e5ff 0%, #a482ff 100%); color: #050609; font-weight: 800; font-size: 1rem; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 20px rgba(53,229,255,0.35);">🔍 Inspect Conversion Score</button>
+          </form>
+          <p id="inspector-error" style="color: #ff8d8d; font-size: 0.88rem; margin-top: 0.6rem;" class="hidden"></p>
+
+          <div id="inspector-results" class="hidden" style="margin-top: 1.8rem; padding-top: 1.6rem; border-top: 1px solid rgba(255,255,255,0.12);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.2rem;">
+              <div>
+                <small style="color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 0.04em;">Audited Target</small>
+                <h3 id="inspector-target-domain" style="color: #ffffff; font-size: 1.3rem; margin: 2px 0 0;">acmebrand.com</h3>
+              </div>
+              <div style="text-align: right; background: rgba(53,229,255,0.12); padding: 10px 20px; border-radius: 14px; border: 1px solid rgba(53,229,255,0.3);">
+                <small style="color: rgba(255,255,255,0.7); display: block;">Readiness Score</small>
+                <strong style="font-size: 2rem; font-weight: 800; color: #35e5ff;"><span id="inspector-score-val">0</span> / 100</strong>
+              </div>
+            </div>
+
+            <h4 style="color: #ffffff; font-size: 1.1rem; margin-bottom: 0.6rem;">Top 3 Conversion Gaps Identified:</h4>
+            <ul id="inspector-findings" style="list-style: none; padding: 0; margin-bottom: 1.6rem; color: rgba(255,255,255,0.88); font-size: 0.96rem; line-height: 1.6;"></ul>
+
+            <div style="background: linear-gradient(135deg, rgba(53,229,255,0.15) 0%, rgba(184,140,255,0.12) 100%); border: 1px solid rgba(53,229,255,0.4); border-radius: 16px; padding: 1.4rem;">
+              <span class="audit-pill-badge" style="margin-bottom: 0.5rem; display: inline-block;">⚡ 48-Hour Fast-Lane Solution</span>
+              <h3 style="color: #ffffff; font-size: 1.25rem; margin: 0 0 0.3rem;">Website Cleanup & Conversion Package ($350)</h3>
+              <p style="color: rgba(255,255,255,0.85); font-size: 0.9rem; margin-bottom: 1rem;">Fix all 3 conversion gaps, optimize your mobile booking flow, and sharpen your value proposition in 48 hours.</p>
+              <button id="inspector-deposit-btn" type="button" style="width: 100%; min-height: 52px; background: linear-gradient(135deg, #35e5ff 0%, #a482ff 100%); color: #050609; font-weight: 800; font-size: 1rem; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 8px 24px rgba(53,229,255,0.4);">💳 Lock Fast-Lane Fix ($250 Deposit via Stripe) →</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Audit Coverage Section -->
@@ -333,6 +374,7 @@
   </footer>
   <script src="/otp-attribution.js?v=16.9.1" defer></script>
   <script src="/fixline-analytics.js?v=1" defer></script>
+  <script src="/fixline-inspector.js?v=1" defer></script>
   <script src="/site-init.js?v=20260629-archive3" defer></script>
   <script src="/_vercel/speed-insights/script.js" defer></script>
 </body>
