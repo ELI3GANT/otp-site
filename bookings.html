@@ -112,10 +112,11 @@
 
       <section id="service-selector" class="section-block service-selector-section" aria-labelledby="service-selector-title">
         <div class="section-heading">
-          <p>Service selector</p>
-          <h2 id="service-selector-title">Choose the lane closest to your project.</h2>
-          <span>Pick a starting point, then finish the short intake. You can still request custom work or ask OTP to recommend the cleanest package.</span>
+          <p>Choose your starting path</p>
+          <h2 id="service-selector-title">Core Packages & Priority Fast Lanes.</h2>
+          <span>Select your project category, pick a package tier, or reserve an urgent Fast-Lane slot below.</span>
         </div>
+
         <div class="service-selector-grid" aria-label="Booking service shortcuts">
           <button class="service-selector-card" type="button" data-quick-service="Video / Content" data-quick-package="The Engine">
             <span class="service-card-badge">🎬 Video / Content</span>
@@ -144,9 +145,36 @@
           <button class="service-selector-card" type="button" data-quick-service="Custom Build" data-quick-package="The System">
             <span class="service-card-badge">⚙️ Custom Build</span>
             <strong class="service-card-title">Mixed, advanced, or unusual project</strong>
-            <span class="service-card-copy">Best when the work should route into The System or manual scoping.</span>
+            <span class="service-card-copy">Best when the work should route into The System.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
+        </div>
+
+        <div class="selection-group-header">
+          <span class="selection-group-badge">🎯 Standard Build Tiers</span>
+          <h3>Core Package Modules</h3>
+          <p>Choose a package tier if you know your scope level, or select an urgent Fast-Lane offer below.</p>
+        </div>
+        <div id="package-grid" class="package-grid" aria-live="polite">
+          <article class="package-card loading-card">Loading packages...</article>
+        </div>
+
+        <div id="fast-lanes" class="selection-group-header fast-lane-group-header">
+          <span class="selection-group-badge fast-lane-badge">⚡ 24/48-Hour Speed Layer</span>
+          <h3 id="fast-lanes-title">Priority Fast Lanes</h3>
+          <p>Urgent work can still start cleanly. Same-day reels, event promos, website cleanup, business packs, brand launch assets, and urgent client-flow fixes stay connected to the right OTP package before review.</p>
+        </div>
+        <div id="fast-lane-grid" class="fast-lane-grid" aria-live="polite">
+          <article class="fast-lane-card loading-card">Loading Fast Lane options...</article>
+        </div>
+
+        <div id="package-selection-summary" class="package-selection-summary" aria-live="polite">
+          <span class="summary-signal" aria-hidden="true"></span>
+          <div>
+            <strong id="selected-package-name">No package selected</strong>
+            <p id="selected-package-message">Select any package or Fast Lane above to pre-fill your request form below.</p>
+          </div>
+          <span id="selected-package-price">Scope will appear here</span>
         </div>
       </section>
 
@@ -325,35 +353,7 @@
         </form>
       </section>
 
-      <section id="packages" class="section-block packages-section" aria-labelledby="packages-title">
-        <div class="section-heading">
-          <p>Packages</p>
-          <h2 id="packages-title">Package depth stays optional.</h2>
-          <span>Choose a package if you know the level of build. If not, submit the request and OTP will recommend the best fit.</span>
-        </div>
-        <div id="package-grid" class="package-grid" aria-live="polite">
-          <article class="package-card loading-card">Loading packages...</article>
-        </div>
-        <div id="package-selection-summary" class="package-selection-summary" aria-live="polite">
-          <span class="summary-signal" aria-hidden="true"></span>
-          <div>
-            <strong id="selected-package-name">No package selected</strong>
-            <p id="selected-package-message">Pick a system module to tune the booking flow, colors, and review summary.</p>
-          </div>
-          <span id="selected-package-price">Scope will appear here</span>
-        </div>
-      </section>
 
-      <section id="fast-lanes" class="section-block fast-lane-section" aria-labelledby="fast-lanes-title">
-        <div class="section-heading">
-          <p>Fast Lane</p>
-          <h2 id="fast-lanes-title">Urgent work can still start cleanly.</h2>
-          <span>Same-day reels, event promos, website cleanup, business packs, brand launch assets, and urgent client-flow fixes stay connected to the right OTP package before review.</span>
-        </div>
-        <div id="fast-lane-grid" class="fast-lane-grid" aria-live="polite">
-          <article class="fast-lane-card loading-card">Loading Fast Lane options...</article>
-        </div>
-      </section>
 
       <section class="project-intake-panel" aria-labelledby="project-intake-title">
         <p class="project-intake-eyebrow">Secure next step</p>

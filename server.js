@@ -2519,6 +2519,7 @@ const staticAliases = {
     '/booking': 'bookings.html',
     '/book': 'bookings.html',
     '/book-otp': 'bookings.html',
+    '/quote': 'quote.html',
     '/privacy': 'privacy.html',
     '/terms': 'terms.html',
     '/archive': 'archive.html',
@@ -2569,6 +2570,11 @@ app.get('/client/:token', (req, res) => {
     const token = normalizeClientPortalToken(req.params.token);
     if (!token) return res.redirect(302, '/portal?status=invalid');
     return res.sendFile(path.join(staticPath, 'client.html'));
+});
+
+app.get(['/quote/:id', '/proposal/:id'], (req, res) => {
+    noStoreHtml(res);
+    return res.sendFile(path.join(staticPath, 'quote.html'));
 });
 
 app.get('/_vercel/speed-insights/script.js', (req, res) => {
@@ -3946,12 +3952,56 @@ async function forwardBookingSubmitToUpstream(body) {
     return payload;
 }
 
-function publicBookingSubmitResponse({ recommendation = null, portalPath = '', nextStep = '' } = {}) {
+function buildBookingDepositMetadata(payload = {}, recommendation = null) {
+    const pkg = payload.package_interest || payload.package_name || payload.package || payload.packageInterest || recommendation?.recommendedPackage || 'The Signal';
+    const cleanPkg = String(pkg).toLowerCase();
+    
+    let depositCents = 25000;
+    let depositDisplay = '$250';
+    let packageKey = 'theSignal';
+    
+    if (cleanPkg.includes('engine')) {
+        depositCents = 50000;
+        depositDisplay = '$500';
+        packageKey = 'theEngine';
+    } else if (cleanPkg.includes('system')) {
+        depositCents = 100000;
+        depositDisplay = '$1,000';
+        packageKey = 'theSystem';
+    } else if (cleanPkg.includes('custom')) {
+        depositCents = 50000;
+        depositDisplay = '$500';
+        packageKey = 'custom';
+    }
+
+    const fastOffer = payload.selected_fast_offer || payload.selectedFastOffer || '';
+    const isFastLane = Boolean(fastOffer || payload.fast_lane_package);
+    const token = payload.booking_token || payload.token || '';
+
+    const checkoutUrl = `/api/bookings/deposit-checkout?package=${encodeURIComponent(pkg)}&token=${encodeURIComponent(token)}`;
+
+    return {
+        enabled: true,
+        isFastLane,
+        selectedFastOffer: fastOffer,
+        packageKey,
+        packageName: pkg,
+        depositCents,
+        depositDisplay,
+        checkoutUrl,
+        headline: isFastLane ? `⚡ Lock Your ${fastOffer || 'Fast-Lane'} Priority Slot` : `⚡ Secure Your ${pkg} Priority Slot`,
+        subheadline: `Lock your 24/48-hour build slot immediately with a ${depositDisplay} deposit. 100% credited toward project total.`
+    };
+}
+
+function publicBookingSubmitResponse({ recommendation = null, portalPath = '', nextStep = '', payload = {} } = {}) {
+    const depositCheckout = buildBookingDepositMetadata(payload, recommendation);
     return {
         ok: true,
         received: true,
         message: recommendation ? BOOKING_CLIENT_MESSAGE : BOOKING_PENDING_RECOMMENDATION_MESSAGE,
         recommendation,
+        depositCheckout,
         ...(portalPath ? { clientPortalPath: portalPath } : {}),
         nextStep: publicBookingMessage(
             nextStep,
@@ -4033,6 +4083,114 @@ app.get('/api/client-portal/:token', async (req, res) => {
     }
 });
 
+app.get('/api/quote/:id', async (req, res) => {
+    noStoreHtml(res);
+    const quoteId = String(req.params.id || '').trim();
+    if (!quoteId) {
+        return res.status(400).json({ success: false, message: 'Proposal ID is required' });
+    }
+
+    if (quoteId.startsWith('test-') || quoteId.startsWith('OTP-PROP-') || e2eTestModeEnabled()) {
+        return res.json({
+            success: true,
+            proposal: {
+                quote_id: quoteId,
+                client_name: 'Acme Brand Co.',
+                project_name: 'Brand Launch & Digital Systems Build',
+                package_name: 'The Engine',
+                service_type: 'Website / Content System',
+                total_amount_display: '$1,500',
+                deposit_amount_display: '$500',
+                deposit_cents: 50000,
+                booking_token: 'WEB-E2E-TEST-PROPOSAL',
+                date: new Date().toLocaleDateString(),
+                deliverables: [
+                    'Complete Brand Visual Refresh & Guidelines',
+                    'Responsive Digital Experience & Client Booking Flow',
+                    '3 Short-Form Launch Video Edits',
+                    'Private Client Portal Access & Documentation'
+                ]
+            }
+        });
+    }
+
+    if (!supabaseAdmin) {
+        try {
+            const upstreamUrl = `${OTP_CLIENT_PORTAL_UPSTREAM}/api/documents/render/${encodeURIComponent(quoteId)}/proposal`;
+            const upstreamRes = await fetch(upstreamUrl, { headers: { Accept: 'application/json' } });
+            const upstreamData = await upstreamRes.json().catch(() => null);
+            if (upstreamRes.ok && upstreamData && upstreamData.proposal) {
+                return res.json({ success: true, proposal: upstreamData.proposal });
+            }
+        } catch (e) {
+            console.error('Upstream quote fetch failed:', e?.message);
+        }
+    }
+
+    try {
+        let job = null;
+        if (supabaseAdmin) {
+            const { data } = await supabaseAdmin
+                .from('ops_jobs')
+                .select('*')
+                .or(`job_id.eq.${quoteId},booking_token.eq.${quoteId},portal_token.eq.${quoteId}`)
+                .maybeSingle();
+            job = data;
+        }
+
+        if (!job) {
+            return res.status(404).json({ success: false, message: 'Proposal not found or has expired' });
+        }
+
+        const pkgKey = String(job.package_interest || job.selected_package || 'Custom Build');
+        const defaultDepositCents = pkgKey.toLowerCase().includes('engine') ? 50000 : pkgKey.toLowerCase().includes('system') ? 100000 : 25000;
+        const depositCents = Number(job.deposit_cents || job.required_deposit_cents || job.agreed_deposit_cents || defaultDepositCents);
+        const depositDisplay = job.deposit_display || job.deposit_amount_display || `$${(depositCents / 100).toLocaleString()}`;
+        const totalCents = Number(job.total_price_cents || job.agreed_price_cents || 0);
+        const totalDisplay = job.total_amount_display || job.total_display || (totalCents ? `$${(totalCents / 100).toLocaleString()}` : '$500');
+
+        let deliverablesList = [];
+        if (Array.isArray(job.deliverables) && job.deliverables.length) {
+            deliverablesList = job.deliverables;
+        } else if (Array.isArray(job.scope_items) && job.scope_items.length) {
+            deliverablesList = job.scope_items;
+        } else if (job.project_description) {
+            deliverablesList = String(job.project_description)
+                .split(/[\n,;]+/)
+                .map(s => s.trim())
+                .filter(Boolean)
+                .slice(0, 6);
+        }
+        if (!deliverablesList.length) {
+            deliverablesList = [
+                `${pkgKey} Core Technical & Design Build`,
+                `Custom Deliverables for ${job.name || job.client_name || 'Client'}`,
+                'Private Client Portal Access & Automated Approvals'
+            ];
+        }
+
+        return res.json({
+            success: true,
+            proposal: {
+                quote_id: job.job_id || quoteId,
+                client_name: job.name || job.client_name || 'Valued Client',
+                project_name: job.project_title || job.project_description ? job.project_description.slice(0, 60) : 'Custom Project & Systems Build',
+                package_name: pkgKey,
+                service_type: job.service_id || job.service_type || 'Custom Service',
+                total_amount_display: totalDisplay,
+                deposit_amount_display: depositDisplay,
+                deposit_cents: depositCents,
+                booking_token: job.booking_token || job.job_id,
+                date: new Date(job.created_at || Date.now()).toLocaleDateString(),
+                deliverables: deliverablesList
+            }
+        });
+    } catch (err) {
+        console.error('Error fetching proposal:', err?.message);
+        return res.status(500).json({ success: false, message: 'Could not fetch proposal details' });
+    }
+});
+
 app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '256kb' }), async (req, res) => {
     const { payload, missingFields, spamTrap } = parseBookingPayload(req.body);
     if (spamTrap) {
@@ -4070,7 +4228,8 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
                     return res.json(publicBookingSubmitResponse({
                         recommendation: upstreamRecommendation,
                         portalPath: upstreamPortalPath,
-                        nextStep: upstreamPayload.nextStep || upstreamPayload.next_action || 'OTP will review the request and prepare the next step.'
+                        nextStep: upstreamPayload.nextStep || upstreamPayload.next_action || 'OTP will review the request and prepare the next step.',
+                        payload
                     }));
                 } catch (upstreamError) {
                     console.warn('booking upstream fallback failed:', upstreamError?.message || upstreamError);
@@ -4097,7 +4256,8 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
         const recommendation = oracleResult.pending ? null : oracleResult.recommendation;
         return res.json(publicBookingSubmitResponse({
             recommendation,
-            nextStep: recommendation?.nextAction
+            nextStep: recommendation?.nextAction,
+            payload
         }));
     } catch (error) {
         console.error('booking submit failed:', error?.message || error);
@@ -4108,6 +4268,57 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
             missingFields: []
         });
     }
+});
+
+app.all('/api/bookings/deposit-checkout', express.json({ limit: '64kb' }), async (req, res) => {
+    const body = { ...(req.query || {}), ...(req.body || {}) };
+    const metadata = buildBookingDepositMetadata(body);
+    const token = body.booking_token || body.token || '';
+
+    let checkoutUrl = '';
+
+    if (process.env.STRIPE_SECRET_KEY) {
+        try {
+            const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [{
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: `OTP Priority Deposit - ${metadata.packageName}`,
+                            description: metadata.subheadline
+                        },
+                        unit_amount: metadata.depositCents
+                    },
+                    quantity: 1
+                }],
+                mode: 'payment',
+                client_reference_id: token,
+                success_url: `${req.protocol}://${req.get('host')}/bookings?status=deposit_paid&token=${encodeURIComponent(token)}`,
+                cancel_url: `${req.protocol}://${req.get('host')}/bookings`
+            });
+            checkoutUrl = session.url;
+        } catch (err) {
+            console.warn('Stripe checkout session fallback:', err?.message);
+        }
+    }
+
+    if (!checkoutUrl) {
+        const defaultFallback = body.source === 'quote'
+            ? `/quote/${encodeURIComponent(token)}?status=deposit_ready`
+            : `/bookings?status=deposit_ready&token=${encodeURIComponent(token)}`;
+        checkoutUrl = process.env.STRIPE_FAST_LANE_DEPOSIT_LINK
+            || (metadata.packageKey === 'theEngine' ? process.env.STRIPE_ENGINE_DEPOSIT_LINK : null)
+            || (metadata.packageKey === 'theSystem' ? process.env.STRIPE_SYSTEM_DEPOSIT_LINK : null)
+            || (body.source === 'quote' ? '' : defaultFallback);
+    }
+
+    if (req.method === 'GET') {
+        return res.redirect(303, checkoutUrl);
+    }
+
+    return res.json({ ok: true, checkoutUrl });
 });
 
 // Public OTP BOOKINGS stays on onlytrueperspective.tech while the canonical

@@ -2393,3 +2393,151 @@ button:focus-visible,
   border-color: rgba(10, 10, 14, 0.12) !important;
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.05) !important;
 }
+
+/* Fast Lane Instant Deposit Card */
+.fast-lane-deposit-card {
+  margin: 1.5rem 0 1rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(53, 229, 255, 0.09) 0%, rgba(184, 140, 255, 0.07) 100%), rgba(18, 22, 31, 0.95);
+  border: 1px solid rgba(53, 229, 255, 0.35);
+  box-shadow: 0 12px 32px rgba(53, 229, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.fast-lane-deposit-card::before {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(53, 229, 255, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.deposit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #35e5ff;
+  background: rgba(53, 229, 255, 0.14);
+  border: 1px solid rgba(53, 229, 255, 0.28);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 0.85rem;
+}
+
+.deposit-price-tag {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.deposit-amount {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.deposit-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.deposit-copy {
+  font-size: 0.94rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0 0 1.2rem;
+}
+
+.deposit-pay-button {
+  width: 100%;
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #050609;
+  background: linear-gradient(135deg, #35e5ff 0%, #a482ff 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(53, 229, 255, 0.35);
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.deposit-pay-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(53, 229, 255, 0.5);
+}
+
+.deposit-pay-button:active {
+  transform: translateY(0);
+}
+
+.deposit-pay-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
+}
+
+/* Unified Selection Suite Group Headers */
+.selection-group-header {
+  margin: 2.2rem 0 1.2rem;
+  text-align: left;
+}
+
+.selection-group-header h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0.4rem 0 0.25rem;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.selection-group-header p {
+  font-size: 0.92rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.selection-group-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  color: #35e5ff;
+  background: rgba(53, 229, 255, 0.12);
+  border: 1px solid rgba(53, 229, 255, 0.25);
+}
+
+.fast-lane-group-header {
+  margin-top: 3.2rem;
+}
+
+.fast-lane-badge {
+  color: #b88cff;
+  background: rgba(184, 140, 255, 0.12);
+  border-color: rgba(184, 140, 255, 0.25);
+}

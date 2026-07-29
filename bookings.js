@@ -371,11 +371,13 @@ function motionBehavior() {
 }
 
 function showError(message = '') {
+  if (!els.error) return;
   els.error.textContent = message;
   els.error.classList.toggle('hidden', !message);
 }
 
 function showStatus(message = '') {
+  if (!els.status) return;
   els.status.textContent = message;
   els.status.classList.toggle('hidden', !message);
 }
@@ -601,6 +603,9 @@ function selectFastLane(service) {
   selectPackage(mappedPackage, { advance: false, preserveService: true });
   renderFastLanes();
   showError('');
+  window.requestAnimationFrame(() => {
+    if (els.form) els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
+  });
 }
 
 function setSelectIfAvailable(select, value) {
@@ -801,7 +806,12 @@ function renderPackages() {
     cta.className = 'package-cta';
     cta.textContent = selected ? 'Selected' : text(pkg.cta, 'Start Booking');
 
-    const handleSelect = () => selectPackage(name);
+    const handleSelect = () => {
+      selectPackage(name);
+      window.requestAnimationFrame(() => {
+        if (els.form) els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
+      });
+    };
     card.addEventListener('click', handleSelect);
     card.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -983,6 +993,69 @@ function renderSuccess(data) {
     els.successMeta.append(reason);
   }
 
+  const depositInfo = data.depositCheckout || null;
+  if (depositInfo && depositInfo.enabled) {
+    const depositCard = document.createElement('div');
+    depositCard.className = 'fast-lane-deposit-card';
+
+    const badge = document.createElement('div');
+    badge.className = 'deposit-badge';
+    badge.textContent = depositInfo.headline || '⚡ Lock Priority Build Slot';
+
+    const depositBody = document.createElement('div');
+    depositBody.className = 'deposit-body';
+
+    const priceTag = document.createElement('div');
+    priceTag.className = 'deposit-price-tag';
+
+    const amountSpan = document.createElement('span');
+    amountSpan.className = 'deposit-amount';
+    amountSpan.textContent = depositInfo.depositDisplay || '$250 Deposit';
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'deposit-label';
+    labelSpan.textContent = '100% Credited Priority Deposit';
+
+    priceTag.append(amountSpan, labelSpan);
+
+    const copy = document.createElement('p');
+    copy.className = 'deposit-copy';
+    copy.textContent = depositInfo.subheadline || `Secure your priority 24/48-hour build slot for ${text(depositInfo.packageName)} immediately.`;
+
+    const depositBtn = document.createElement('button');
+    depositBtn.type = 'button';
+    depositBtn.className = 'deposit-pay-button';
+    depositBtn.textContent = `💳 Lock Fast-Lane Slot (${text(depositInfo.depositDisplay)}) →`;
+
+    depositBtn.addEventListener('click', async () => {
+      depositBtn.disabled = true;
+      depositBtn.textContent = 'Preparing Secure Checkout...';
+      try {
+        const res = await fetch('/api/bookings/deposit-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            package_name: depositInfo.packageName,
+            booking_token: state.bookingToken || data.booking_token || '',
+            selected_fast_offer: depositInfo.selectedFastOffer
+          })
+        });
+        const checkoutData = await res.json().catch(() => ({}));
+        if (checkoutData.checkoutUrl) {
+          window.location.href = checkoutData.checkoutUrl;
+        } else {
+          window.location.href = depositInfo.checkoutUrl || '/bookings?status=deposit_ready';
+        }
+      } catch {
+        window.location.href = depositInfo.checkoutUrl || '/bookings?status=deposit_ready';
+      }
+    });
+
+    depositBody.append(priceTag, copy, depositBtn);
+    depositCard.append(badge, depositBody);
+    els.successActions.append(depositCard);
+  }
+
   const portalHref = safePortalHref(data);
   const portalLink = document.createElement('a');
   portalLink.href = portalHref || '/portal';
@@ -1074,6 +1147,14 @@ async function init() {
   renderFastLanes();
   setStep(1);
   if (offlineMode) showStatus('Booking options loaded in offline mode.');
+
+  const urlParams = new URLSearchParams(window.location.search || '');
+  const statusParam = urlParams.get('status');
+  if (statusParam === 'deposit_paid') {
+    showStatus('⚡ Deposit Received! Your Fast-Lane priority slot is locked. OTP team will confirm scope details with you shortly.');
+  } else if (statusParam === 'deposit_ready') {
+    showStatus('⚡ Your Fast-Lane booking deposit is ready. Select your preferred payment option.');
+  }
 }
 
 if (els.next) els.next.addEventListener('click', () => {

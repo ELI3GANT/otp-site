@@ -94,7 +94,7 @@ assert.ok(html.includes('data-quick-service="Website / Digital System"'), 'websi
 assert.ok(html.includes('data-quick-package="The System"'), 'custom selector routes into The System');
 assert.ok(html.includes('service-card-badge') && html.includes('service-card-title') && html.includes('service-card-copy'), 'service selector cards use readable horizontal card structure');
 assert.ok(!html.includes('<em>Best for'), 'service selector cards do not use weak italic descriptions');
-assert.ok(html.indexOf('class="booking-shell"') < html.indexOf('id="packages"'), 'booking intake appears before deep package grids');
+assert.ok(html.indexOf('id="service-selector"') < html.indexOf('class="booking-shell"'), 'unified selection suite appears before booking intake form');
 assert.ok(html.includes('package-selection-summary'), 'selected package summary is present');
 assert.ok(html.includes('id="fast-lanes"'), 'Fast Lane section is visible on the bookings page');
 assert.ok(html.includes('id="fast-lane-grid"'), 'Fast Lane card grid is present');

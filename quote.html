@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" style="color-scheme: dark;">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Service Proposal & Agreement | OnlyTruePerspective</title>
+  <meta name="description" content="Official OTP Service Proposal & Scope Approval. Review project deliverables, package breakdown, and lock your deposit via secure Stripe payment." />
+  <meta name="theme-color" content="#030406" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      background: #030406 !important;
+      color: #f8f7f2 !important;
+      min-height: 100vh;
+      width: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: 
+        radial-gradient(ellipse at 15% 15%, rgba(53, 229, 255, 0.12), transparent 45%),
+        radial-gradient(ellipse at 85% 75%, rgba(184, 140, 255, 0.1), transparent 45%),
+        linear-gradient(180deg, #050609 0%, #030406 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Top Nav */
+    .quote-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      background: rgba(5, 6, 9, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.85rem 1.5rem;
+    }
+    .quote-nav-inner {
+      max-width: 1140px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .quote-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+    }
+    .quote-brand img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+    }
+    .quote-nav-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    .quote-nav-links a {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 150ms ease;
+    }
+    .quote-nav-links a:hover {
+      color: #35e5ff;
+    }
+
+    /* Main Container */
+    .quote-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1040px;
+      margin: 2.5rem auto 6rem;
+      padding: 0 1.25rem;
+    }
+
+    .quote-card {
+      background: rgba(13, 16, 23, 0.92);
+      border: 1px solid rgba(53, 229, 255, 0.28);
+      border-radius: 24px;
+      padding: 2.5rem;
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8), 0 0 40px rgba(53, 229, 255, 0.08);
+    }
+
+    .quote-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 1.8rem;
+      margin-bottom: 2rem;
+    }
+    .quote-client-name {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, #d1d5db 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0.4rem 0 0.2rem;
+      letter-spacing: -0.025em;
+      line-height: 1.25;
+    }
+    .quote-badge-row {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+    .quote-badge {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 4px 14px;
+      border-radius: 999px;
+      background: rgba(53, 229, 255, 0.14);
+      color: #35e5ff;
+      border: 1px solid rgba(53, 229, 255, 0.32);
+    }
+
+    .quote-grid {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 2.2rem;
+    }
+    @media (max-width: 860px) {
+      .quote-grid {
+        grid-template-columns: 1fr;
+      }
+      .quote-card {
+        padding: 1.6rem;
+      }
+      .quote-client-name {
+        font-size: 1.7rem;
+      }
+    }
+
+    .deliverables-list {
+      list-style: none;
+      padding: 0;
+      margin: 1.2rem 0;
+    }
+    .deliverables-list li {
+      position: relative;
+      padding-left: 2.2rem;
+      margin-bottom: 1rem;
+      font-size: 1.02rem;
+      color: rgba(255, 255, 255, 0.92);
+      line-height: 1.55;
+    }
+    .deliverables-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: -1px;
+      color: #35e5ff;
+      font-weight: 900;
+      font-size: 1.25rem;
+    }
+
+    .payment-summary-box {
+      background: linear-gradient(135deg, rgba(53, 229, 255, 0.1) 0%, rgba(184, 140, 255, 0.08) 100%), rgba(18, 22, 31, 0.96);
+      border: 1px solid rgba(53, 229, 255, 0.35);
+      border-radius: 18px;
+      padding: 1.8rem;
+      height: fit-content;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.85rem;
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    .price-row.total-row {
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      padding-top: 1rem;
+      margin-top: 1rem;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .quote-pay-btn {
+      width: 100%;
+      min-height: 56px;
+      margin-top: 1.4rem;
+      padding: 0 1.5rem;
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: #050609;
+      background: linear-gradient(135deg, #35e5ff 0%, #a482ff 100%);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 28px rgba(53, 229, 255, 0.4);
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+    .quote-pay-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(53, 229, 255, 0.55);
+    }
+    .quote-pay-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Modal Overlay */
+    .quote-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(3, 4, 6, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .quote-modal-card {
+      background: #0e121a;
+      border: 1px solid rgba(53, 229, 255, 0.4);
+      border-radius: 22px;
+      max-width: 520px;
+      width: 100%;
+      padding: 2.2rem;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.9);
+      position: relative;
+    }
+    .quote-modal-close {
+      position: absolute;
+      top: 1.2rem;
+      right: 1.4rem;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    .quote-modal-close:hover {
+      color: #ffffff;
+    }
+    .alt-pay-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.85rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 150ms ease, border-color 150ms ease;
+    }
+    .alt-pay-option:hover {
+      background: rgba(53, 229, 255, 0.14);
+      border-color: rgba(53, 229, 255, 0.45);
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="quote-nav">
+    <div class="quote-nav-inner">
+      <a href="/" class="quote-brand">
+        <img src="/assets/otp-logo-transparent.png" alt="OTP" />
+        <span>ONLYTRUEPERSPECTIVE</span>
+      </a>
+      <nav class="quote-nav-links">
+        <a href="/">Home</a>
+        <a href="/fixline">FIXLINE</a>
+        <a href="/bookings">Book OTP</a>
+        <a href="/portal">Client Portal</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="quote-wrapper" id="main-content">
+    <div id="quote-loading" class="quote-card">
+      <h2>Loading Proposal & Scope...</h2>
+      <p style="color: #9ca3af; margin-top: 6px;">Fetching official OTP quote details.</p>
+    </div>
+
+    <div id="quote-error" class="quote-card hidden">
+      <h2 style="color: #ff8d8d;">Proposal Link Not Available</h2>
+      <p id="quote-error-msg" style="margin-top: 6px; color: #d1d5db;">This proposal link could not be found or may have expired.</p>
+      <a href="/bookings" style="display:inline-block; margin-top:1.4rem; padding: 12px 24px; background:#35e5ff; color:#050609; text-decoration:none; font-weight:700; border-radius:10px;">Start a New Project Request</a>
+    </div>
+
+    <div id="quote-container" class="quote-card hidden">
+      <div class="quote-header-top">
+        <div>
+          <span class="quote-badge">Official OTP Proposal</span>
+          <h1 class="quote-client-name" id="q-title">Project Service Proposal</h1>
+          <p style="color: #9ca3af; margin:0; font-size:1.02rem;" id="q-subtitle">Prepared for Client</p>
+          <div class="quote-badge-row">
+            <span class="quote-badge" id="q-package-badge">The Signal</span>
+            <span class="quote-badge" style="background:rgba(255,255,255,0.08); color:#f8f7f2; border-color:rgba(255,255,255,0.2);" id="q-service-badge">Website / Content</span>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <small style="color: #9ca3af; display:block; text-transform:uppercase; letter-spacing:0.04em;">Proposal ID</small>
+          <strong id="q-id" style="font-family: monospace; color:#35e5ff; font-size:1.1rem;">OTP-PROP-001</strong>
+          <small style="color: #9ca3af; display:block; margin-top:6px;" id="q-date">Date: July 2026</small>
+        </div>
+      </div>
+
+      <div class="quote-grid">
+        <div>
+          <h3 style="margin-top:0; font-size:1.35rem; color:#ffffff;">Deliverables & Scope Checklist</h3>
+          <p style="color: #9ca3af; font-size:0.95rem; margin-top: 4px;">Review the line-item scope below. Upon deposit payment, this proposal converts directly into an Active Job in the OTP Ecosystem.</p>
+          <ul class="deliverables-list" id="q-deliverables">
+            <li>Loading project deliverables...</li>
+          </ul>
+
+          <div style="margin-top: 2.2rem; padding: 1.2rem; background: rgba(255,255,255,0.03); border-radius: 14px; border: 1px solid rgba(255,255,255,0.12);">
+            <strong style="color: #ffffff; display: block; margin-bottom: 0.35rem; font-size:1rem;">🛡️ OTP Quality Guarantee</strong>
+            <p style="color: #9ca3af; font-size: 0.9rem; margin: 0; line-height:1.5;">100% of today's deposit applies directly toward your total project balance. Private Client Portal access is unlocked immediately upon payment confirmation.</p>
+          </div>
+        </div>
+
+        <aside class="payment-summary-box">
+          <h3 style="margin-top:0; font-size:1.25rem; color:#ffffff;">Scope & Payment Summary</h3>
+          <div class="price-row" style="margin-top:1rem;">
+            <span>Package Tier</span>
+            <strong id="q-summary-pkg" style="color:#ffffff;">The Signal</strong>
+          </div>
+          <div class="price-row">
+            <span>Total Scope Value</span>
+            <strong id="q-summary-total" style="color:#ffffff;">$500</strong>
+          </div>
+          <div class="price-row total-row">
+            <span>Deposit Due Today</span>
+            <strong id="q-summary-deposit" style="color: #35e5ff; font-size:1.4rem;">$250</strong>
+          </div>
+
+          <button id="q-pay-btn" type="button" class="quote-pay-btn">💳 Approve Scope & Pay Deposit ($250) →</button>
+          <p style="font-size: 0.8rem; text-align: center; color: #9ca3af; margin-top: 0.9rem;">Secured by Stripe SSL 256-bit encryption</p>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <!-- Instant Payment & Deposit Gateway Modal -->
+  <div id="quote-checkout-modal" class="quote-modal-overlay hidden" aria-modal="true" role="dialog">
+    <div class="quote-modal-card">
+      <button id="modal-close-btn" class="quote-modal-close" type="button" aria-label="Close">✕</button>
+      <span class="quote-badge" style="margin-bottom:0.75rem; display:inline-block;">⚡ Deposit Gateway</span>
+      <h2 style="margin:0.2rem 0 0.5rem; font-size:1.55rem; color:#ffffff;">Lock Priority Build Deposit</h2>
+      <p style="color:#9ca3af; font-size:0.94rem; margin-bottom:1.6rem;">Select your preferred payment channel below to lock your project slot (<strong id="modal-deposit-amt" style="color:#35e5ff;">$250</strong>):</p>
+
+      <a id="modal-stripe-link" href="#" class="alt-pay-option" style="background:linear-gradient(135deg, rgba(53,229,255,0.18) 0%, rgba(184,140,255,0.18) 100%); border-color:rgba(53,229,255,0.45);">
+        <span>💳 Pay via Credit / Debit Card (Stripe)</span>
+        <span>→</span>
+      </a>
+
+      <a id="modal-portal-link" href="/portal" class="alt-pay-option">
+        <span>🔓 Approve Scope & Open Client Portal Room</span>
+        <span>→</span>
+      </a>
+
+      <div style="margin-top:1.4rem; padding-top:1.1rem; border-top:1px solid rgba(255,255,255,0.12);">
+        <small style="color:#9ca3af; display:block; margin-bottom:0.65rem; font-size:0.82rem; text-transform:uppercase; letter-spacing:0.04em;">Direct Mobile & Cash Options:</small>
+        <div style="font-size:0.92rem; color:rgba(255,255,255,0.9); line-height:1.7;">
+          <div>• <strong>Cash App:</strong> <code style="color:#35e5ff; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:4px;">$OnlyTruePerspective</code></div>
+          <div>• <strong>Zelle:</strong> <code style="color:#35e5ff; background:rgba(255,255,255,0.06); padding:2px 8px; border-radius:4px;">payments@onlytrueperspective.tech</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/quote.js?v=1.0.2" defer></script>
+</body>
+</html>

@@ -19,6 +19,8 @@
         label: 'The Signal',
         price_display: 'Starting at $500',
         mode: 'starting_at',
+        deposit_cents: 25000,
+        deposit_display: '$250 Deposit',
         summary: 'Focused creative work that gives your brand a sharper first impression.',
         best_for: Object.freeze([
           'logo refresh',
@@ -35,6 +37,8 @@
         label: 'The Engine',
         price_display: '$1,200 to $2,000',
         mode: 'range',
+        deposit_cents: 50000,
+        deposit_display: '$500 Deposit',
         summary: 'Connected assets your brand needs to look real, move faster, and convert better.',
         best_for: Object.freeze([
           'logo + brand kit',
@@ -51,6 +55,8 @@
         label: 'The System',
         price_display: 'Starting at $3,500+',
         mode: 'starting_at',
+        deposit_cents: 100000,
+        deposit_display: '$1,000 Deposit',
         summary: 'Full structure for visuals, website, automation, documents, and workflow.',
         best_for: Object.freeze([
           'full website',
@@ -68,6 +74,8 @@
         label: 'Custom Build',
         price_display: 'Scope based',
         mode: 'custom',
+        deposit_cents: 50000,
+        deposit_display: '$500 Deposit',
         summary: 'Scoped around projects that route into The System or manual OTP review.',
         best_for: Object.freeze([
           'custom app',
