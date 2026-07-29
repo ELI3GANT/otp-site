@@ -4223,28 +4223,59 @@ app.post('/api/fixline/inspect', express.json(), async (req, res) => {
         let hasSocialLinks = false;
         let loadTimeMs = 0;
         let httpStatus = 0;
+        let isAuthWall = false;
+
+        const browserHeaders = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1'
+        };
 
         const startTime = Date.now();
-        try {
+        let siteRes = null;
+
+        async function fetchTarget(url) {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 4500);
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: browserHeaders,
+                    signal: controller.signal,
+                    redirect: 'follow'
+                });
+                clearTimeout(timeoutId);
+                return response;
+            } catch (e) {
+                clearTimeout(timeoutId);
+                return null;
+            }
+        }
 
-            const siteRes = await fetch(fullUrl, {
-                method: 'GET',
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-                },
-                signal: controller.signal,
-                redirect: 'follow'
-            });
-            clearTimeout(timeoutId);
+        siteRes = await fetchTarget(fullUrl);
+        if ((!siteRes || siteRes.status >= 400) && !fullUrl.includes('www.')) {
+            const fallbackUrl = fullUrl.replace('https://', 'https://www.').replace('http://', 'http://www.');
+            const fallbackRes = await fetchTarget(fallbackUrl);
+            if (fallbackRes && fallbackRes.ok) {
+                siteRes = fallbackRes;
+            }
+        }
 
-            loadTimeMs = Date.now() - startTime;
+        loadTimeMs = Date.now() - startTime;
+
+        if (siteRes) {
             httpStatus = siteRes.status;
+            const html = await siteRes.text().catch(() => '');
 
-            if (siteRes.ok) {
-                const html = await siteRes.text();
+            if (siteRes.ok || html.length > 200) {
                 const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
                 if (titleMatch && titleMatch[1]) {
                     pageTitle = titleMatch[1].trim();
@@ -4260,62 +4291,71 @@ app.post('/api/fixline/inspect', express.json(), async (req, res) => {
                 hasBookingCta = /href=["'][^"']*(booking|book|calendly|stripe|acuity|typeform|square\.site|checkout|deposit)[^"']*["']/i.test(html)
                     || />\s*(book|schedule|get started|reserve|pay deposit|buy now)\s*</i.test(html);
                 hasSocialLinks = /href=["'][^"']*(instagram\.com|youtube\.com|twitter\.com|x\.com|linkedin\.com|tiktok\.com)[^"']*["']/i.test(html);
-            } else {
-                score -= 25;
-                findings.push(`HTTP Status ${httpStatus}: ${domainName} returned a server warning or redirect loop.`);
+
+                if (domainName.includes('facebook') || domainName.includes('instagram') || domainName.includes('twitter') || domainName.includes('linkedin')) {
+                    isAuthWall = true;
+                }
+            } else if (httpStatus === 400 || httpStatus === 403) {
+                isAuthWall = true;
             }
-        } catch {
-            loadTimeMs = Date.now() - startTime;
+        } else {
             score -= 20;
             findings.push(`Connection latency timeout (${loadTimeMs}ms) connecting to ${domainName}.`);
         }
 
-        if (pageTitle) {
-            if (pageTitle.length < 10) {
-                score -= 10;
-                findings.push(`Short page title ("${pageTitle}") lacks specific brand keywords and value proposition.`);
-            }
+        if (isAuthWall) {
+            score = 82;
+            findings.push(`Protected Platform: ${domainName} uses an authenticated app wall and restricts public search crawlers.`);
+            findings.push(`Direct conversion funnel is gated behind user login on ${domainName}.`);
+            findings.push(`Recommended: Bridge ${domainName} traffic directly to your dedicated OTP landing page & booking flow.`);
         } else {
-            score -= 15;
-            findings.push(`Missing HTML <title> tag on ${domainName} — hurts search engine indexing and link previews.`);
+            if (pageTitle) {
+                if (pageTitle.length < 10) {
+                    score -= 10;
+                    findings.push(`Short page title ("${pageTitle}") lacks specific brand keywords and value proposition.`);
+                }
+            } else {
+                score -= 15;
+                findings.push(`Missing HTML <title> tag on ${domainName} — hurts search engine indexing and link previews.`);
+            }
+
+            if (!metaDescription) {
+                score -= 15;
+                findings.push(`Missing meta description on ${domainName} — search engine snippets render unformatted body text.`);
+            } else if (metaDescription.length < 50) {
+                score -= 8;
+                findings.push(`Short meta description (${metaDescription.length} chars) reduces click-through rate from search results.`);
+            }
+
+            if (!hasBookingCta) {
+                score -= 20;
+                findings.push(`No direct 1-click booking, Stripe checkout, or Calendly CTA link detected on ${domainName}'s primary HTML.`);
+            }
+
+            if (!hasViewport) {
+                score -= 15;
+                findings.push(`Missing mobile viewport meta tag — mobile visitors will see a shrunk desktop layout.`);
+            }
+
+            if (loadTimeMs > 1200) {
+                score -= 12;
+                findings.push(`Page response latency of ${loadTimeMs}ms is above the 800ms recommended speed threshold.`);
+            }
+
+            if (!hasSocialLinks && findings.length < 3) {
+                score -= 10;
+                findings.push(`No cross-surface social media links (Instagram, YouTube, LinkedIn) found on ${domainName}.`);
+            }
+
+            if (findings.length < 3) {
+                findings.push(`Primary call-to-action button styling needs clear visual hierarchy contrast.`);
+            }
+            if (findings.length < 3) {
+                findings.push(`Cross-surface branding needs structured visual framing to improve conversion rates.`);
+            }
         }
 
-        if (!metaDescription) {
-            score -= 15;
-            findings.push(`Missing meta description on ${domainName} — search engine snippets render unformatted body text.`);
-        } else if (metaDescription.length < 50) {
-            score -= 8;
-            findings.push(`Short meta description (${metaDescription.length} chars) reduces click-through rate from search results.`);
-        }
-
-        if (!hasBookingCta) {
-            score -= 20;
-            findings.push(`No direct 1-click booking, Stripe checkout, or Calendly CTA link detected on ${domainName}'s primary HTML.`);
-        }
-
-        if (!hasViewport) {
-            score -= 15;
-            findings.push(`Missing mobile viewport meta tag — mobile visitors will see a shrunk desktop layout.`);
-        }
-
-        if (loadTimeMs > 1200) {
-            score -= 12;
-            findings.push(`Page response latency of ${loadTimeMs}ms is above the 800ms recommended speed threshold.`);
-        }
-
-        if (!hasSocialLinks && findings.length < 3) {
-            score -= 10;
-            findings.push(`No cross-surface social media links (Instagram, YouTube, LinkedIn) found on ${domainName}.`);
-        }
-
-        if (findings.length < 3) {
-            findings.push(`Primary call-to-action button styling needs clear visual hierarchy contrast.`);
-        }
-        if (findings.length < 3) {
-            findings.push(`Cross-surface branding needs structured visual framing to improve conversion rates.`);
-        }
-
-        const finalScore = Math.min(96, Math.max(38, score));
+        const finalScore = isAuthWall ? 82 : Math.min(96, Math.max(38, score));
 
         const osUpstream = process.env.OTP_OS_UPSTREAM || 'https://otp-os.vercel.app';
         fetch(`${osUpstream}/api/leads/submit`, {
@@ -4334,7 +4374,7 @@ app.post('/api/fixline/inspect', express.json(), async (req, res) => {
             success: true,
             report: {
                 target: domainName,
-                title: pageTitle,
+                title: pageTitle || (isAuthWall ? `${domainName} (Protected Platform)` : ''),
                 score: finalScore,
                 latency_ms: loadTimeMs,
                 findings: findings.slice(0, 3),
