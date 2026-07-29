@@ -293,6 +293,25 @@ html.nav-open, body.nav-open {
   100% { transform: rotate(360deg); }
 }
 
+/* Clean High-Converting Header CTA Pill */
+.nav-cta-btn {
+  background: linear-gradient(135deg, #35e5ff 0%, #a482ff 100%) !important;
+  color: #050609 !important;
+  font-weight: 800 !important;
+  font-size: 0.88rem !important;
+  padding: 8px 18px !important;
+  border-radius: 999px !important;
+  box-shadow: 0 4px 16px rgba(53, 229, 255, 0.35) !important;
+  text-decoration: none !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.nav-cta-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 22px rgba(53, 229, 255, 0.5) !important;
+  color: #050609 !important;
+}
+
 /* Footer Logo Light Mode */
 [data-theme="light"] .nav-gif {
   filter: brightness(0) !important;
