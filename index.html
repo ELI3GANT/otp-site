@@ -37,7 +37,8 @@
   <!-- Preloads -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" /></noscript>
   <script src="theme-chrono.js?v=9"></script>
   <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" media="print" onload="this.media='all'" />
   <noscript><link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" /></noscript>
@@ -180,10 +181,7 @@
       } else {
         dismissPageLoader();
       }
-      window.addEventListener('load', dismissPageLoader, { once: true });
-      window.addEventListener('pageshow', function (e) {
-        if (e.persisted) dismissPageLoader();
-      });
+      if (window.innerWidth < 768 || ('ontouchstart' in window)) { dismissPageLoader(); }
       setTimeout(dismissPageLoader, 1600);
     })();
   </script>

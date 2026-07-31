@@ -126,14 +126,14 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
     } else {
         hidePageLoader();
     }
-    window.addEventListener('load', hidePageLoader, { once: true });
+    const isMobileClient = window.innerWidth < 768 || ('ontouchstart' in window);
     setTimeout(() => {
         const loader = document.getElementById('page-loader');
         if (loader && loader.getAttribute('data-dismissed') !== '1') {
             hidePageLoader();
             console.warn('[OTP] Loading timeout reached. Bypassing preloader.');
         }
-    }, 1600);
+    }, isMobileClient ? 400 : 1200);
 
     function scheduleAfterFirstPaint(fn, timeoutMs = 2200) {
         if (typeof fn !== 'function') return;
