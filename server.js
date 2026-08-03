@@ -4094,22 +4094,54 @@ app.post('/api/quote/create', express.json({ limit: '64kb' }), (req, res) => {
     noStoreHtml(res);
     const body = req.body || {};
     const quoteId = String(body.quote_id || body.id || `PROP-${Date.now().toString(36).toUpperCase()}`).trim();
+    const clientName = String(body.client_name || body.clientName || 'Valued Client').trim();
+    const projectName = String(body.project_name || body.projectName || body.projectTitle || 'Custom Digital & Creative Systems').trim();
+    const packageName = String(body.package_name || body.packageName || 'The Signal').trim();
+
+    function generateSmartDeliverables(client, project, pkg) {
+        const text = `${client} ${project} ${pkg}`.toLowerCase();
+        if (text.includes('fitness') || text.includes('gym')) {
+            return [
+                `Mobile Member Pass & Trial Booking System for ${client}`,
+                'High-Converting Landing Page & Google Search Snippet Optimization',
+                'Stripe Deposit Checkout & Automated Client Portal Access'
+            ];
+        }
+        if (text.includes('artist') || text.includes('music') || text.includes('rollout')) {
+            return [
+                `Cinematic Media & Content Rollout Package for ${client}`,
+                'Custom Link-in-Bio Campaign Landing Page & Stream Links',
+                'Automated Client Portal Access & Revision Approvals'
+            ];
+        }
+        if (text.includes('barber') || text.includes('salon') || text.includes('restaurant')) {
+            return [
+                `Mobile Appointment & Order Booking Flow for ${client}`,
+                'Search Engine Snippet & Social Media Link Integration',
+                'Automated Client Portal Access & Project Documentation'
+            ];
+        }
+        return [
+            `${pkg} Core Technical & Design Build for ${client}`,
+            'Responsive Digital Experience & Priority Deposit Integration',
+            'Automated Private Client Portal Access & Documentation'
+        ];
+    }
+
     const proposal = {
         quote_id: quoteId,
-        client_name: String(body.client_name || body.clientName || 'Valued Client').trim(),
-        project_name: String(body.project_name || body.projectName || body.projectTitle || 'Custom Digital & Creative Systems').trim(),
-        package_name: String(body.package_name || body.packageName || 'The Signal').trim(),
+        client_name: clientName,
+        project_name: projectName,
+        package_name: packageName,
         service_type: String(body.service_type || body.serviceType || 'Creative Technology').trim(),
         total_amount_display: String(body.total_amount_display || body.totalDisplay || '$500').trim(),
         deposit_amount_display: String(body.deposit_amount_display || body.depositDisplay || '$250').trim(),
         deposit_cents: Number(body.deposit_cents || 25000),
         booking_token: String(body.booking_token || quoteId).trim(),
         date: String(body.date || new Date().toLocaleDateString()).trim(),
-        deliverables: Array.isArray(body.deliverables) && body.deliverables.length ? body.deliverables : [
-            'Custom Brand & Digital Deliverables',
-            'Responsive Digital Experience / Booking Flow',
-            'Automated Client Portal Access & Documentation'
-        ]
+        deliverables: Array.isArray(body.deliverables) && body.deliverables.length
+            ? body.deliverables
+            : generateSmartDeliverables(clientName, projectName, packageName)
     };
 
     IN_MEMORY_QUOTES.set(quoteId, proposal);
