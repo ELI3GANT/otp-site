@@ -1161,7 +1161,7 @@ async function init() {
     else if (lowerPkg.includes('system')) matchedPkg = 'The System';
     else if (lowerPkg.includes('signal')) matchedPkg = 'The Signal';
 
-    selectPackage(matchedPkg, { advance: true });
+    selectPackage(matchedPkg, { advance: false });
   }
 
   if (fastParam && els.service) {
