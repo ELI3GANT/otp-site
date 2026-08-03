@@ -12966,7 +12966,7 @@ body.home-page .hero-identity {
 body.home-page .hero-symbol-shell {
   position: relative;
   z-index: 2;
-  width: clamp(175px, 13.5vw, 215px);
+  width: clamp(166px, 12.6vw, 204px);
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
@@ -13226,7 +13226,7 @@ html.stars-performance-mode body.home-page .hero-symbol-mark {
 
   body.home-page .hero-symbol-shell::before {
     inset: -34%;
-    opacity: 0.78;
+    opacity: 0.34;
     filter: blur(20px) saturate(1.3);
   }
 
@@ -14028,5 +14028,23 @@ body.home-page .conversion-lane-card:hover {
   transform: translateY(-2px) scale(1.02) !important;
   box-shadow: 0 8px 25px rgba(255, 255, 255, 0.15) !important;
 }
+
+/* MOBILE PERFORMANCE & HARDWARE ACCELERATION OPTIMIZATIONS */
+@media (max-width: 768px) {
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+  .bg-grain {
+    display: none !important;
+  }
+  .nav, .hero-symbol-shell, #cursor-canvas {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  .nav.scrolled {
+    background: rgba(3, 3, 5, 0.96) !important;
+  }
+}
+
 
 

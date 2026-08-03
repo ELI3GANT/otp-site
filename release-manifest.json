@@ -1,6 +1,7 @@
 {
   "releaseName": "otp-fixline-final-public-integration-20260721",
   "includedFiles": [
+    ".env.example",
     ".github/workflows/ci.yml",
     ".github/workflows/production-release.yml",
     "404.html",
@@ -57,6 +58,9 @@
     "portal.html",
     "pricing-config.js",
     "privacy.html",
+    "protocol.css",
+    "protocol.html",
+    "protocol.js",
     "release-manifest.json",
     "scripts/prod_bootstrap_qa.js",
     "scripts/prod_full_sweep.js",

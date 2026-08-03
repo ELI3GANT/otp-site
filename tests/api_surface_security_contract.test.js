@@ -34,6 +34,7 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/audit/submit',
     'POST /api/fixline/inspect',
     'POST /api/analytics/view',
+    'POST /api/quote/create',
     'POST /api/create-checkout-session'
 ]);
 

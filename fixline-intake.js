@@ -498,9 +498,12 @@
     panel.addEventListener('input', handlePanelInput);
     panel.addEventListener('change', handlePanelChange);
     panel.addEventListener('click', handlePanelClick);
-    global.document.getElementById('companyWebsite').addEventListener('input', (event) => {
-      state.companyWebsite = event.target.value;
-    });
+    const companyWebsiteEl = global.document.getElementById('companyWebsite');
+    if (companyWebsiteEl) {
+      companyWebsiteEl.addEventListener('input', (event) => {
+        state.companyWebsite = event.target.value;
+      });
+    }
     initialized = true;
     renderStep();
   }

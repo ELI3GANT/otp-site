@@ -322,15 +322,20 @@
                 : (light ? `rgba(0, 0, 0, ${alpha})` : `rgba(255, 250, 236, ${alpha + lift * 0.7})`);
             ctx.beginPath();
             ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.shadowColor = star.accent
-                ? (light ? 'rgba(87, 56, 8, 0.18)' : rgba(accent, 0.38))
-                : (light ? 'rgba(0, 0, 0, 0.22)' : 'rgba(255, 250, 236, 0.28)');
-            ctx.shadowBlur = performanceMode
-                ? (star.depth > 0.65 ? (light ? 2.2 : 3.2) : (light ? 1.1 : 1.6))
-                : (star.depth > 0.65 ? (light ? 3.5 : 5.5) : (light ? 1.4 : 2.5));
+            const useShadow = !performanceMode && window.innerWidth >= 768;
+            if (useShadow) {
+                ctx.shadowColor = star.accent
+                    ? (light ? 'rgba(87, 56, 8, 0.18)' : rgba(accent, 0.38))
+                    : (light ? 'rgba(0, 0, 0, 0.22)' : 'rgba(255, 250, 236, 0.28)');
+                ctx.shadowBlur = performanceMode
+                    ? (star.depth > 0.65 ? (light ? 2.2 : 3.2) : (light ? 1.1 : 1.6))
+                    : (star.depth > 0.65 ? (light ? 3.5 : 5.5) : (light ? 1.4 : 2.5));
+            }
             ctx.fillStyle = fill;
             ctx.fill();
-            ctx.shadowBlur = 0;
+            if (useShadow) {
+                ctx.shadowBlur = 0;
+            }
 
             if (!light && star.depth > 0.9 && alpha > 0.58) {
                 ctx.beginPath();

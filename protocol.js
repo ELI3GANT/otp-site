@@ -193,7 +193,11 @@
   function initProtocolPage() {
     const config = readProtocolConfig();
     renderProtocolState(config);
-    window.setInterval(() => renderProtocolState(config), 1000);
+    window.setInterval(() => {
+      if (document.visibilityState !== 'hidden') {
+        renderProtocolState(config);
+      }
+    }, 1000);
   }
 
   window.ProtocolRelease = {
