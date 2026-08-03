@@ -44,7 +44,7 @@
   <noscript><link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" /></noscript>
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=16.8.28" />
+  <link rel="stylesheet" href="./styles.css?v=17.3.0-LENS-BUTTONS-COMPLETE" />
   <link rel="stylesheet" href="./fixline-service.css?v=4" />
   <link rel="stylesheet" href="./components/otp-media-showcase.css?v=1.0.0" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
@@ -239,15 +239,15 @@
           <span class="title" id="perspective-neon">PERSPECTIVE</span>
         </h1>
       </div>
-      <div class="hero-subline-alt">Business Systems Architecture &amp; Creative Media Studio</div>
-      <p class="subtitle-lead" id="hero-subtitle" data-editable="true">We build high-converting web applications, business automation pipelines, brand visual identity, and cinematic media.</p>
+      <div class="hero-subline-alt">Websites · Video Production · Brand Kits · Tech Repair</div>
+      <p class="subtitle-lead" id="hero-subtitle" data-editable="true">We build high-converting websites, edit fire video promos &amp; reels, design custom logos &amp; brand kits, and fix broken tech. Built for local businesses, creators, underground artists, and brands who need real output fast.</p>
       
       <div class="hero-cta">
-        <a href="/bookings?source=homepage" class="book-btn magnetic-btn">Start a Project</a>
-        <a href="/fixline" class="book-btn-ghost magnetic-btn">24h FIXLINE Tech Repair</a>
-        <a href="https://calendly.com/onlytrueperspective/30min" target="_blank" rel="noopener noreferrer" class="book-btn-ghost magnetic-btn">Book Strategy Call</a>
+        <a href="/bookings?source=homepage" class="book-btn magnetic-btn">⚡ Fast-Lane Booking ($250 Deposit)</a>
+        <a href="/consultant-audit.html" class="book-btn-ghost magnetic-btn">🔍 Free Business Audit</a>
+        <a href="/fixline" class="book-btn-ghost magnetic-btn">🛠️ 24h FIXLINE Tech Repair</a>
       </div>
-      <p class="hero-trust-line">Proof first: live business platforms, emergency tech repairs, event pages, artist rollouts, and custom video production.</p>
+      <p class="hero-trust-line">Turnarounds available: Same-Day Reels ($500), Website Cleanup ($500), Event Promos, and Full Digital Systems ($3,500+).</p>
     </div>
   </main>
   
@@ -262,10 +262,10 @@
 
         <!-- DUAL-LENS AUDIENCE SWITCHER -->
         <div class="dual-lens-bar" style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 40px; flex-wrap: wrap;">
-          <button id="lens-business" type="button" class="lens-tab active" style="padding: 10px 24px; border-radius: 30px; background: rgba(0, 240, 255, 0.15); border: 1px solid rgba(0, 240, 255, 0.4); font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 220ms ease;">
+          <button id="lens-business" type="button" class="lens-tab active">
             💼 For Businesses &amp; Brands
           </button>
-          <button id="lens-creative" type="button" class="lens-tab" style="padding: 10px 24px; border-radius: 30px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: all 220ms ease;">
+          <button id="lens-creative" type="button" class="lens-tab">
             🎨 For Creators &amp; Artists
           </button>
         </div>
@@ -1292,29 +1292,19 @@
       btnBiz.addEventListener('click', function() {
         btnBiz.classList.add('active');
         btnCreative.classList.remove('active');
-        btnBiz.style.background = 'rgba(0, 240, 255, 0.15)';
-        btnBiz.style.borderColor = 'rgba(0, 240, 255, 0.4)';
-        btnCreative.style.background = 'transparent';
-        btnCreative.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-
-        cardBiz.style.borderColor = 'rgba(0, 240, 255, 0.4)';
-        cardBiz.style.boxShadow = '0 0 30px rgba(0, 240, 255, 0.18)';
-        cardCreative.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-        cardCreative.style.boxShadow = 'none';
+        btnBiz.removeAttribute('style');
+        btnCreative.removeAttribute('style');
+        cardBiz.classList.add('lens-focused');
+        cardCreative.classList.remove('lens-focused');
       });
 
       btnCreative.addEventListener('click', function() {
         btnCreative.classList.add('active');
         btnBiz.classList.remove('active');
-        btnCreative.style.background = 'rgba(255, 180, 0, 0.15)';
-        btnCreative.style.borderColor = 'rgba(255, 180, 0, 0.4)';
-        btnBiz.style.background = 'transparent';
-        btnBiz.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-
-        cardCreative.style.borderColor = 'rgba(255, 180, 0, 0.4)';
-        cardCreative.style.boxShadow = '0 0 30px rgba(255, 180, 0, 0.18)';
-        cardBiz.style.borderColor = 'rgba(255, 255, 255, 0.08)';
-        cardBiz.style.boxShadow = 'none';
+        btnBiz.removeAttribute('style');
+        btnCreative.removeAttribute('style');
+        cardCreative.classList.add('lens-focused');
+        cardBiz.classList.remove('lens-focused');
       });
     })();
   </script>

@@ -61,6 +61,7 @@ const app = express();
 app.disable('x-powered-by'); // Hide stack details
 app.set('trust proxy', 1); // Trust Vercel proxy before any rate limiter reads req.ip.
 const port = process.env.PORT || 3000;
+const IN_MEMORY_QUOTES = new Map();
 let OTP_PRICING = null;
 try {
     OTP_PRICING = require('./pricing-config.js');
@@ -4089,11 +4090,50 @@ app.get('/api/client-portal/:token', async (req, res) => {
     }
 });
 
+app.post('/api/quote/create', express.json({ limit: '64kb' }), (req, res) => {
+    noStoreHtml(res);
+    const body = req.body || {};
+    const quoteId = String(body.quote_id || body.id || `PROP-${Date.now().toString(36).toUpperCase()}`).trim();
+    const proposal = {
+        quote_id: quoteId,
+        client_name: String(body.client_name || body.clientName || 'Valued Client').trim(),
+        project_name: String(body.project_name || body.projectName || body.projectTitle || 'Custom Digital & Creative Systems').trim(),
+        package_name: String(body.package_name || body.packageName || 'The Signal').trim(),
+        service_type: String(body.service_type || body.serviceType || 'Creative Technology').trim(),
+        total_amount_display: String(body.total_amount_display || body.totalDisplay || '$500').trim(),
+        deposit_amount_display: String(body.deposit_amount_display || body.depositDisplay || '$250').trim(),
+        deposit_cents: Number(body.deposit_cents || 25000),
+        booking_token: String(body.booking_token || quoteId).trim(),
+        date: String(body.date || new Date().toLocaleDateString()).trim(),
+        deliverables: Array.isArray(body.deliverables) && body.deliverables.length ? body.deliverables : [
+            'Custom Brand & Digital Deliverables',
+            'Responsive Digital Experience / Booking Flow',
+            'Automated Client Portal Access & Documentation'
+        ]
+    };
+
+    IN_MEMORY_QUOTES.set(quoteId, proposal);
+
+    return res.json({
+        success: true,
+        quote_id: quoteId,
+        link: `/quote?id=${encodeURIComponent(quoteId)}`,
+        proposal
+    });
+});
+
 app.get('/api/quote/:id', async (req, res) => {
     noStoreHtml(res);
     const quoteId = String(req.params.id || '').trim();
     if (!quoteId) {
         return res.status(400).json({ success: false, message: 'Proposal ID is required' });
+    }
+
+    if (IN_MEMORY_QUOTES.has(quoteId)) {
+        return res.json({
+            success: true,
+            proposal: IN_MEMORY_QUOTES.get(quoteId)
+        });
     }
 
     if (quoteId.startsWith('test-') || quoteId.startsWith('OTP-PROP-') || e2eTestModeEnabled()) {
