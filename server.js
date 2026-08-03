@@ -2185,12 +2185,67 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
         const email = session.customer_details ? session.customer_details.email : session.customer_email;
-        console.log('✅ Payment Success Signal: checkout.session.completed');
+        const name = session.customer_details ? session.customer_details.name : (session.metadata?.client_name || 'Client');
+        const metadata = session.metadata || {};
+        const amountCents = session.amount_total || 25000;
+        const amountDollars = (amountCents / 100).toFixed(2);
+        const targetDomain = metadata.client_domain || metadata.clientLabel || metadata.cleanDomain || 'OTP Deposit Client';
+        const packageName = metadata.packageName || metadata.packageKey || 'The Signal';
+        const portalToken = metadata.bookingToken || metadata.proposalId || `INSPECT-${Date.now().toString(36).toUpperCase()}`;
+
+        console.log(`✅ PAYMENT RECEIVED: $${amountDollars} from ${email} for ${packageName} (${targetDomain})`);
+
+        // 1. Update Supabase Contacts & Leads
         if (supabaseAdmin && email) {
             try {
                 await supabaseAdmin.from('contacts').update({ ai_status: 'paid' }).eq('email', email);
                 await supabaseAdmin.from('leads').update({ status: 'paid' }).eq('email', email);
-            } catch (dbErr) { console.warn("⚠️ CRM Update failed:", dbErr.message); }
+            } catch (dbErr) { console.warn("⚠️ CRM Contact Update failed:", dbErr.message); }
+        }
+
+        // 2. Register Active Job in Supabase ops_jobs CRM
+        if (supabaseAdmin) {
+            try {
+                await supabaseAdmin.from('ops_jobs').insert({
+                    job_name: `${packageName} - ${targetDomain}`,
+                    client_name: name,
+                    client_email: email,
+                    job_status: 'Active Deposit',
+                    payment_status: 'deposit_paid',
+                    deposit_amount: amountCents,
+                    portal_token: portalToken,
+                    created_at: new Date().toISOString()
+                });
+            } catch (jobErr) { console.warn("⚠️ ops_jobs Insert failed:", jobErr.message); }
+        }
+
+        // 3. Fallback Local CRM File Logger (data/crm_jobs.json)
+        try {
+            const fs = require('fs');
+            const path = require('path');
+            const crmPath = path.join(__dirname, 'data', 'crm_jobs.json');
+            let jobs = [];
+            if (fs.existsSync(crmPath)) {
+                try { jobs = JSON.parse(fs.readFileSync(crmPath, 'utf8')); } catch (e) {}
+            } else {
+                fs.mkdirSync(path.dirname(crmPath), { recursive: true });
+            }
+            jobs.unshift({
+                id: `JOB-${Date.now().toString(36).toUpperCase()}`,
+                email,
+                name,
+                domain: targetDomain,
+                package: packageName,
+                amount_dollars: amountDollars,
+                portal_token: portalToken,
+                portal_url: `https://www.onlytrueperspective.tech/client/${portalToken}`,
+                status: 'deposit_paid',
+                timestamp: new Date().toISOString()
+            });
+            fs.writeFileSync(crmPath, JSON.stringify(jobs.slice(0, 200), null, 2));
+            console.log(`📁 Local CRM Logged: ${crmPath}`);
+        } catch (fileErr) {
+            console.warn("⚠️ Local CRM Backup write failed:", fileErr.message);
         }
     }
     res.json({ received: true });
