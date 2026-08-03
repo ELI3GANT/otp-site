@@ -133,6 +133,10 @@
     }
 
     if (els.depositBtn) {
+      const displayDomain = report.target || targetUrl;
+      const cleanDomain = String(displayDomain).replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+      const bookingToken = `INSPECT-${cleanDomain.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${Date.now().toString(36)}`;
+
       els.depositBtn.onclick = async () => {
         els.depositBtn.disabled = true;
         els.depositBtn.textContent = 'Preparing Secure Fast-Lane Checkout...';
@@ -143,6 +147,10 @@
             body: JSON.stringify({
               package_name: 'The Signal',
               selected_fast_offer: 'Website Cleanup',
+              client_name: cleanDomain,
+              target_domain: cleanDomain,
+              target_url: targetUrl,
+              booking_token: bookingToken,
               source: 'inspector'
             })
           });
@@ -155,12 +163,12 @@
           if (checkoutUrl && (checkoutUrl.includes('stripe.com') || checkoutUrl.includes('buy.stripe.com'))) {
             global.location.href = checkoutUrl;
           } else {
-            global.location.href = `/bookings?status=deposit_ready&package=The+Signal&fast=website_cleanup`;
+            global.location.href = `/bookings?status=deposit_ready&package=The+Signal&fast=website_cleanup&token=${encodeURIComponent(bookingToken)}&client=${encodeURIComponent(cleanDomain)}`;
           }
         } catch {
           els.depositBtn.disabled = false;
           els.depositBtn.textContent = '💳 Lock Fast-Lane Fix ($250 Deposit via Stripe) →';
-          global.location.href = `/bookings?status=deposit_ready&package=The+Signal&fast=website_cleanup`;
+          global.location.href = `/bookings?status=deposit_ready&package=The+Signal&fast=website_cleanup&token=${encodeURIComponent(bookingToken)}&client=${encodeURIComponent(cleanDomain)}`;
         }
       };
     }

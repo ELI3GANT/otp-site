@@ -4524,14 +4524,23 @@ app.all('/api/bookings/deposit-checkout', express.json({ limit: '64kb' }), async
     if (process.env.STRIPE_SECRET_KEY) {
         try {
             const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+            const clientLabel = body.target_domain || body.client_name || body.client || body.target_url || '';
+            const cleanLabel = String(clientLabel).replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+            const itemTitle = cleanLabel
+                ? `OTP Priority Deposit - ${metadata.packageName} (${cleanLabel})`
+                : `OTP Priority Deposit - ${metadata.packageName}`;
+            const itemDesc = cleanLabel
+                ? `Lock 24/48-hour build slot for ${cleanLabel} with a ${metadata.depositDisplay} deposit. 100% credited toward project.`
+                : metadata.subheadline;
+
             const session = await stripe.checkout.sessions.create({
                 payment_method_types: ['card'],
                 line_items: [{
                     price_data: {
                         currency: 'usd',
                         product_data: {
-                            name: `OTP Priority Deposit - ${metadata.packageName}`,
-                            description: metadata.subheadline
+                            name: itemTitle,
+                            description: itemDesc
                         },
                         unit_amount: metadata.depositCents
                     },
@@ -4539,7 +4548,12 @@ app.all('/api/bookings/deposit-checkout', express.json({ limit: '64kb' }), async
                 }],
                 mode: 'payment',
                 client_reference_id: token,
-                success_url: `${req.protocol}://${req.get('host')}/bookings?status=deposit_paid&token=${encodeURIComponent(token)}`,
+                metadata: {
+                    target_domain: cleanLabel,
+                    booking_token: token,
+                    source: body.source || 'checkout'
+                },
+                success_url: `${req.protocol}://${req.get('host')}/bookings?status=deposit_paid&token=${encodeURIComponent(token)}&client=${encodeURIComponent(cleanLabel)}`,
                 cancel_url: `${req.protocol}://${req.get('host')}/bookings`
             });
             checkoutUrl = session.url;
