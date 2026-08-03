@@ -1150,6 +1150,36 @@ async function init() {
 
   const urlParams = new URLSearchParams(window.location.search || '');
   const statusParam = urlParams.get('status');
+  const packageParam = urlParams.get('package') || urlParams.get('pkg');
+  const fastParam = urlParams.get('fast') || urlParams.get('fast_offer') || urlParams.get('service');
+  const clientParam = urlParams.get('client') || urlParams.get('target') || urlParams.get('business');
+
+  if (packageParam) {
+    let matchedPkg = 'The Signal';
+    const lowerPkg = packageParam.toLowerCase();
+    if (lowerPkg.includes('engine')) matchedPkg = 'The Engine';
+    else if (lowerPkg.includes('system')) matchedPkg = 'The System';
+    else if (lowerPkg.includes('signal')) matchedPkg = 'The Signal';
+
+    selectPackage(matchedPkg, { advance: true });
+  }
+
+  if (fastParam && els.service) {
+    const cleanFast = fastParam.replace(/_/g, ' ').replace(/-/g, ' ');
+    const matchedService = Array.from(els.service.options).find(opt => opt.value.toLowerCase() === cleanFast.toLowerCase() || opt.value.toLowerCase().includes(cleanFast.toLowerCase()));
+    if (matchedService) {
+      els.service.value = matchedService.value;
+      applyFastLaneServiceSelection();
+    }
+  }
+
+  if (clientParam && els.business) {
+    els.business.value = clientParam;
+    if (els.description && !els.description.value) {
+      els.description.value = `Conversion & digital experience optimization for ${clientParam}`;
+    }
+  }
+
   if (statusParam === 'deposit_paid') {
     showStatus('⚡ Deposit Received! Your Fast-Lane priority slot is locked. OTP team will confirm scope details with you shortly.');
   } else if (statusParam === 'deposit_ready') {
