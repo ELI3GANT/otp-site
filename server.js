@@ -4029,7 +4029,7 @@ app.get('/api/client-portal/:token', async (req, res) => {
     privatePortalApi(res);
     const safeToken = normalizeClientPortalToken(req.params.token);
     const rawToken = String(req.params.token || '');
-    if ((e2eTestModeEnabled() || !supabaseAdmin) && (safeToken === SAFE_E2E_PORTAL_FIXTURE.portalToken || rawToken.includes('PROP') || rawToken.includes('PROPOSAL') || rawToken.includes('WEB-') || safeToken.startsWith('test-'))) {
+    if ((e2eTestModeEnabled() || !supabaseAdmin) && (safeToken === SAFE_E2E_PORTAL_FIXTURE.portalToken || rawToken.includes('PROP') || rawToken.includes('INSPECT') || rawToken.includes('PROPOSAL') || rawToken.includes('WEB-') || safeToken.startsWith('test-') || safeToken.startsWith('inspect-'))) {
         return res.json(buildSafeE2EClientPortalData(rawToken));
     }
     if (!supabaseAdmin) {
