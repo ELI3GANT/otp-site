@@ -6,13 +6,21 @@ console.log('OTP BOOKING WRITER POLICY...');
 
 assert.deepStrictEqual(resolveBookingWriterPolicy({}), {
     primary: 'otp_os',
-    legacyDirectFallbackEnabled: true
-}, 'OTP OS is the default operational writer while the direct-write fallback remains explicit and bounded');
+    legacyDirectFallbackEnabled: false
+}, 'OTP OS is the default operational writer and the legacy fallback fails closed');
 
 assert.deepStrictEqual(resolveBookingWriterPolicy({ OTP_BOOKINGS_WRITER_MODE: 'legacy_direct' }), {
     primary: 'legacy_direct',
+    legacyDirectFallbackEnabled: false
+}, 'legacy mode alone cannot activate direct operational writes');
+
+assert.deepStrictEqual(resolveBookingWriterPolicy({
+    OTP_BOOKINGS_WRITER_MODE: 'legacy_direct',
+    OTP_BOOKINGS_LEGACY_DIRECT_WRITE_ENABLED: '1'
+}), {
+    primary: 'legacy_direct',
     legacyDirectFallbackEnabled: true
-}, 'operators can explicitly preserve the legacy writer during rollout');
+}, 'operators must explicitly opt into the legacy writer');
 
 assert.deepStrictEqual(resolveBookingWriterPolicy({
     OTP_BOOKINGS_WRITER_MODE: 'otp_os',

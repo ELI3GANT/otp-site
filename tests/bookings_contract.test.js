@@ -42,6 +42,9 @@ assert.match(server, /BOOKING_PUBLIC_PROXY_PATHS/);
 assert.match(server, /resolveBookingWriterPolicy/);
 assert.match(server, /primary === 'otp_os'/, 'OTP OS must be the default booking writer path');
 assert.match(server, /legacyDirectFallbackEnabled/, 'direct booking writes must be an explicit legacy fallback');
+assert.match(server, /errorCode: 'legacy_booking_writer_disabled'/, 'legacy direct writes remain blocked unless the explicit gate is enabled');
+assert.match(server, /writerEvidence/, 'public booking responses identify the writer without exposing database records');
+assert.match(server, /Idempotency-Key/, 'Site forwards the canonical idempotency key to OTP OS');
 assert.match(server, /otp-booking-intake-v1/, 'booking responses identify the versioned intake contract');
 assert.match(server, /otp-lineage-v1/, 'direct-write fallback preserves the lineage envelope');
 

@@ -8,7 +8,7 @@ function resolveBookingWriterPolicy(env = process.env) {
 
     return Object.freeze({
         primary,
-        legacyDirectFallbackEnabled: env.OTP_BOOKINGS_LEGACY_DIRECT_WRITE_ENABLED !== '0'
+        legacyDirectFallbackEnabled: env.OTP_BOOKINGS_LEGACY_DIRECT_WRITE_ENABLED === '1'
     });
 }
 

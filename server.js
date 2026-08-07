@@ -26,6 +26,13 @@ const Docxtemplater = require('docxtemplater');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const JSZip = require('jszip');
 const { resolveBookingWriterPolicy } = require('./server/booking-writer-policy.js');
+const {
+    bookingIdFromToken,
+    createBookingIntakeEnvelope,
+    legacySiteWriterEvidence,
+    publicWriterEvidenceFromOtpOs,
+    validateOtpOsBookingResponse
+} = require('./server/booking-handoff.js');
 
 /** Transparent OTP mark (`assets/otp-mark-doc.png`) as data URI for self-contained Oracle HTML. */
 let _otpDocLogoDataUri;
@@ -3441,15 +3448,6 @@ function serviceDefaultPackageFor(serviceType) {
     return '';
 }
 
-function bookingIdFromToken(token) {
-    const clean = cleanBookingText(token, 120);
-    if (clean) {
-        const hash = crypto.createHash('sha256').update(clean).digest('hex').slice(0, 12).toUpperCase();
-        return `BOOK-${hash}`;
-    }
-    return `BOOK-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`.toUpperCase();
-}
-
 function normalizeBookingPackageName(value) {
     const raw = String(value || '').trim();
     const lower = raw.toLowerCase();
@@ -4020,7 +4018,11 @@ async function forwardBookingSubmitToUpstream(body) {
     try {
         const upstream = await fetch(upstreamUrl.href, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'Idempotency-Key': body.idempotency_key
+            },
             body: JSON.stringify(body || {}),
             redirect: 'manual',
             signal: controller.signal
@@ -4033,8 +4035,12 @@ async function forwardBookingSubmitToUpstream(body) {
             payload = {};
         }
         if (!upstream.ok || payload.ok === false || payload.error) {
-            throw new Error(payload.message || `upstream_${upstream.status}`);
+            const error = new Error(payload.message || `upstream_${upstream.status}`);
+            error.statusCode = upstream.status;
+            error.errorCode = String(payload.errorCode || payload.error_code || 'otp_os_upstream_error');
+            throw error;
         }
+        validateOtpOsBookingResponse(payload, body.booking_id, { throwOnError: true });
         return payload;
     } finally {
         clearTimeout(timer);
@@ -4056,30 +4062,13 @@ function publicBookingResponseFromUpstream(upstreamPayload, payload) {
         recommendation: upstreamRecommendation,
         portalPath: upstreamPortalPath,
         nextStep: upstreamPayload.nextStep || upstreamPayload.next_action || 'OTP will review the request and prepare the next step.',
-        payload
+        payload,
+        writerEvidence: publicWriterEvidenceFromOtpOs(upstreamPayload)
     });
 }
 
 function bookingIntakeUpstreamPayload(payload) {
-    const bookingId = bookingIdFromToken(payload.booking_token);
-    return {
-        schema_version: 'otp-booking-intake-v1',
-        booking_id: bookingId,
-        ...payload,
-        lineage: {
-            schema_version: 'otp-lineage-v1',
-            capture_id: bookingId,
-            source_id: bookingId,
-            originating_system: 'otp-site',
-            originating_record_id: bookingId,
-            created_at: new Date().toISOString(),
-            provenance: {
-                source_type: 'public_booking',
-                source_reference: bookingId,
-                trust_level: 'user_submitted'
-            }
-        }
-    };
+    return createBookingIntakeEnvelope(payload);
 }
 
 function buildBookingDepositMetadata(payload = {}, recommendation = null) {
@@ -4124,7 +4113,7 @@ function buildBookingDepositMetadata(payload = {}, recommendation = null) {
     };
 }
 
-function publicBookingSubmitResponse({ recommendation = null, portalPath = '', nextStep = '', payload = {} } = {}) {
+function publicBookingSubmitResponse({ recommendation = null, portalPath = '', nextStep = '', payload = {}, writerEvidence = null } = {}) {
     const depositCheckout = buildBookingDepositMetadata(payload, recommendation);
     return {
         schema_version: 'otp-booking-intake-v1',
@@ -4133,6 +4122,7 @@ function publicBookingSubmitResponse({ recommendation = null, portalPath = '', n
         message: recommendation ? BOOKING_CLIENT_MESSAGE : BOOKING_PENDING_RECOMMENDATION_MESSAGE,
         recommendation,
         depositCheckout,
+        ...(writerEvidence ? { writerEvidence } : {}),
         ...(portalPath ? { clientPortalPath: portalPath } : {}),
         nextStep: publicBookingMessage(
             nextStep,
@@ -4651,18 +4641,29 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
         if (OTP_BOOKING_WRITER_POLICY.primary === 'otp_os') {
             try {
                 const upstreamPayload = await forwardBookingSubmitToUpstream(bookingIntakeUpstreamPayload(payload));
-                return res.json(publicBookingResponseFromUpstream(upstreamPayload, payload));
+                const response = publicBookingResponseFromUpstream(upstreamPayload, payload);
+                console.info('OTP booking handoff', { event: 'booking_response_sent', ...response.writerEvidence });
+                return res.json(response);
             } catch (upstreamError) {
                 console.warn('booking OTP OS writer unavailable:', upstreamError?.message || upstreamError);
-                if (!OTP_BOOKING_WRITER_POLICY.legacyDirectFallbackEnabled) {
-                    return res.status(503).json({
-                        ok: false,
-                        message: BOOKING_GENERIC_ERROR_MESSAGE,
-                        errorCode: 'otp_os_unavailable',
-                        missingFields: []
-                    });
-                }
+                const idempotencyConflict = upstreamError?.statusCode === 409
+                    && upstreamError?.errorCode === 'idempotency_conflict';
+                return res.status(idempotencyConflict ? 409 : 503).json({
+                    ok: false,
+                    message: BOOKING_GENERIC_ERROR_MESSAGE,
+                    errorCode: idempotencyConflict ? 'booking_idempotency_conflict' : 'otp_os_unavailable',
+                    missingFields: []
+                });
             }
+        }
+
+        if (!OTP_BOOKING_WRITER_POLICY.legacyDirectFallbackEnabled) {
+            return res.status(503).json({
+                ok: false,
+                message: BOOKING_GENERIC_ERROR_MESSAGE,
+                errorCode: 'legacy_booking_writer_disabled',
+                missingFields: []
+            });
         }
 
         if (!supabaseAdmin) {
@@ -4688,7 +4689,8 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
         return res.json(publicBookingSubmitResponse({
             recommendation,
             nextStep: recommendation?.nextAction,
-            payload
+            payload,
+            writerEvidence: legacySiteWriterEvidence(bookingId)
         }));
     } catch (error) {
         console.error('booking submit failed:', error?.message || error);
