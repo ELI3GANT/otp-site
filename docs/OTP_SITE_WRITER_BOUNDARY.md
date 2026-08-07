@@ -51,7 +51,7 @@ This path was proven locally on 2026-08-07 through the actual Site and OS HTTP a
 | `/api/admin/ops/jobs/portal-link` | Credential-bearing operational update | Level 2 | Remaining OS migration candidate with higher trust-boundary risk |
 | `/api/admin/ops/jobs/upsert`, `/from-oracle` | Broad create/update with price and payment-shaped fields | Level 2 with payment coupling | Remaining legacy writer; do not migrate as one arbitrary patch |
 | `/api/admin/ops/jobs/update-status` | Allowlisted reversible status transition | Level 2 | Migrated to OTP OS; no direct Site writer |
-| `/api/admin/ops/jobs/archive` | Reversible archive | Level 2 | Strong next candidate after production observation |
+| `/api/admin/ops/jobs/archive`, `/restore` | Reversible archive lifecycle | Level 2 | Migrated to OTP OS; no direct Site writer or fallback; restore requires a preserved prior status |
 | `/api/admin/ops/jobs/delete` | Permanent delete | Level 3 | Excluded; do not proxy as implemented |
 | `/api/admin/ops/docs/generate`, `/packets/*`, `/knowledge/recommend`, `/docs/packet` | Draft/generate | Level 1 or Level 2 when persisted | Review ownership separately; no external send implied |
 | `/api/admin/ops/send/prepare`, `/docs/approve`, `/docs/signature/*`, `/docs/templates/upload` | Draft/approval/evidence mutation | Level 1-2 | Separate bounded families with explicit evidence requirements |
@@ -68,5 +68,8 @@ This path was proven locally on 2026-08-07 through the actual Site and OS HTTP a
 - `OTP_OS_JOB_MUTATION_UPSTREAM_URL` identifies the server-side OTP OS base URL for governed admin job mutations and defaults to the booking upstream.
 - `OTP_OS_JOB_MUTATION_TOKEN` is the Site-held scoped credential for this one mutation capability; OTP OS verifies the corresponding `OTP_SITE_JOB_MUTATION_TOKEN`.
 - `OTP_OS_JOB_MUTATION_TIMEOUT_MS` bounds the job mutation call; default is 8000 ms.
+- `OTP_OS_JOB_ARCHIVE_UPSTREAM_URL` identifies the server-side OTP OS base URL for governed archive/restore and defaults to the job-mutation upstream.
+- `OTP_OS_JOB_ARCHIVE_TOKEN` is scoped only to archive/restore; OTP OS verifies the corresponding `OTP_SITE_JOB_ARCHIVE_TOKEN`.
+- `OTP_OS_JOB_ARCHIVE_TIMEOUT_MS` bounds the archive call; default is 8000 ms.
 
 No payment behavior changed in this architecture pass.

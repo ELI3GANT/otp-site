@@ -15,6 +15,12 @@
       "version": "1"
     },
     {
+      "contract": "otp-job-archive-v1",
+      "digest": "sha256:0e1c178b85546e21a12ca792e9aeedd1e89b1374a81db468b351d41b42f55db5",
+      "file": "otp-job-archive-v1.json",
+      "version": "1"
+    },
+    {
       "contract": "otp-lineage-v1",
       "digest": "sha256:317498277c7e8d088005b18fc31ee826ca06a7f248ff98fb3fa20122fc210750",
       "file": "otp-lineage-v1.json",

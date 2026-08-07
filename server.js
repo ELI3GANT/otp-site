@@ -40,6 +40,11 @@ const {
     createJobAdminMutationEnvelope,
     forwardJobAdminMutation
 } = require('./server/job-admin-handoff.js');
+const {
+    adminSafeJobArchiveResult,
+    createJobArchiveEnvelope,
+    forwardJobArchiveMutation
+} = require('./server/job-archive-handoff.js');
 
 /** Transparent OTP mark (`assets/otp-mark-doc.png`) as data URI for self-contained Oracle HTML. */
 let _otpDocLogoDataUri;
@@ -2865,6 +2870,9 @@ const OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS = positiveNumber(process.env.OTP_BOOKINGS
 const OTP_OS_JOB_MUTATION_UPSTREAM = String(process.env.OTP_OS_JOB_MUTATION_UPSTREAM_URL || OTP_BOOKINGS_UPSTREAM).replace(/\/+$/, '');
 const OTP_OS_JOB_MUTATION_TOKEN = String(process.env.OTP_OS_JOB_MUTATION_TOKEN || '').trim();
 const OTP_OS_JOB_MUTATION_TIMEOUT_MS = positiveNumber(process.env.OTP_OS_JOB_MUTATION_TIMEOUT_MS, 8000);
+const OTP_OS_JOB_ARCHIVE_UPSTREAM = String(process.env.OTP_OS_JOB_ARCHIVE_UPSTREAM_URL || OTP_OS_JOB_MUTATION_UPSTREAM).replace(/\/+$/, '');
+const OTP_OS_JOB_ARCHIVE_TOKEN = String(process.env.OTP_OS_JOB_ARCHIVE_TOKEN || '').trim();
+const OTP_OS_JOB_ARCHIVE_TIMEOUT_MS = positiveNumber(process.env.OTP_OS_JOB_ARCHIVE_TIMEOUT_MS, 8000);
 const OTP_BOOKINGS_PROXY_HEADERS = new Set([
     'accept',
     'content-type',
@@ -6022,6 +6030,9 @@ function mapOpsJobRowToApi(row) {
         agreementSigned: !!r.agreement_signed,
         invoiceSent: !!r.invoice_sent,
         jobStatus: r.job_status,
+        archiveState: r.archived_at || r.job_status === 'Archived' ? 'archived' : 'active',
+        archivedAt: r.archived_at || '',
+        archivedFromStatus: r.archived_from_status || '',
         createdBy: r.created_by,
         updatedBy: r.updated_by
     };
@@ -6401,26 +6412,49 @@ app.post('/api/admin/ops/jobs/update-status', verifyToken, async (req, res) => {
     }
 });
 
-app.post('/api/admin/ops/jobs/archive', verifyToken, async (req, res) => {
-    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
+async function handleJobArchiveLifecycle(req, res, operation) {
     try {
         const jobId = String(req.body?.jobId || '').trim();
-        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
-        const nowIso = new Date().toISOString();
-        const actor = String(req.auth?.role || 'admin');
-        const { data, error } = await supabaseAdmin
-            .from('ops_jobs')
-            .update({ job_status: 'Archived', updated_at: nowIso, updated_by: actor })
-            .eq('job_id', jobId)
-            .select('*')
-            .maybeSingle();
-        if (error) throw error;
-        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
-        res.json({ success: true, row: mapOpsJobRowToApi(data) });
+        const expectedArchiveState = String(req.body?.expectedArchiveState || '').trim();
+        const requestedArchiveState = String(req.body?.requestedArchiveState || '').trim();
+        const reason = String(req.body?.reason || '').trim();
+        const confirmed = req.body?.confirmed === true;
+        const bodyIdempotencyKey = String(req.body?.idempotencyKey || '').trim();
+        const headerIdempotencyKey = String(req.headers['idempotency-key'] || '').trim();
+        if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId', errorCode: 'missing_job_id' });
+        if (!confirmed) return res.status(400).json({ success: false, message: 'Operator confirmation is required.', errorCode: 'missing_confirmation' });
+        if (!reason) return res.status(400).json({ success: false, message: 'Missing reason', errorCode: 'missing_reason' });
+        if (!expectedArchiveState || !requestedArchiveState) return res.status(400).json({ success: false, message: 'Missing archive state', errorCode: 'missing_expected_state' });
+        if (!headerIdempotencyKey || !bodyIdempotencyKey) return res.status(400).json({ success: false, message: 'Missing idempotency key', errorCode: 'missing_idempotency_key' });
+        if (headerIdempotencyKey !== bodyIdempotencyKey) return res.status(400).json({ success: false, message: 'Idempotency key mismatch', errorCode: 'idempotency_key_mismatch' });
+        if (!OTP_OS_JOB_ARCHIVE_TOKEN) return res.status(503).json({ success: false, message: 'OTP OS job archive integration is not configured.', errorCode: 'integration_not_configured' });
+        const envelope = createJobArchiveEnvelope({
+            operation, jobId, expectedArchiveState, requestedArchiveState,
+            actor: `otp-site:${String(req.auth?.role || 'admin')}`, reason, idempotencyKey: bodyIdempotencyKey
+        });
+        const payload = await forwardJobArchiveMutation(envelope, {
+            baseUrl: OTP_OS_JOB_ARCHIVE_UPSTREAM,
+            token: OTP_OS_JOB_ARCHIVE_TOKEN,
+            timeoutMs: OTP_OS_JOB_ARCHIVE_TIMEOUT_MS,
+            fetchImpl: fetch
+        });
+        const response = adminSafeJobArchiveResult(payload);
+        console.info('OTP job archive handoff', { event: response.writerEvidence.replay ? 'job_archive_replayed' : 'job_archive_response_sent', ...response.writerEvidence });
+        return res.json(response);
     } catch (error) {
-        console.error("ops-jobs-archive:", error.message);
-        res.status(500).json({ success: false, message: error.message });
+        const statusCode = [400, 403, 404, 409, 502, 503, 504].includes(error?.statusCode) ? error.statusCode : 500;
+        const errorCode = String(error?.errorCode || 'job_archive_failed');
+        console.warn('OTP job archive handoff', { event: 'job_archive_failed', job_id: String(req.body?.jobId || ''), operation, error_code: errorCode });
+        return res.status(statusCode).json({ success: false, message: error.message || 'Job archive operation failed.', errorCode });
     }
+}
+
+app.post('/api/admin/ops/jobs/archive', verifyToken, async (req, res) => {
+    return handleJobArchiveLifecycle(req, res, 'archive');
+});
+
+app.post('/api/admin/ops/jobs/restore', verifyToken, async (req, res) => {
+    return handleJobArchiveLifecycle(req, res, 'restore');
 });
 
 // 2.10.6 Ops Jobs → hard delete (admin-only trash)

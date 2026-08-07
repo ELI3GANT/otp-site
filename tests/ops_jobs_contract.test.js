@@ -23,6 +23,7 @@ assert.match(server, /\/api\/admin\/ops\/jobs\/from-oracle/);
 assert.match(server, /buildOpsJobPayloadFromLeadAndOracle/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/update-status/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/archive/);
+assert.match(server, /\/api\/admin\/ops\/jobs\/restore/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/delete/);
 const statusRoute = server.slice(
     server.indexOf("app.post('/api/admin/ops/jobs/update-status'"),
@@ -31,6 +32,13 @@ const statusRoute = server.slice(
 assert.match(statusRoute, /createJobAdminMutationEnvelope/);
 assert.match(statusRoute, /forwardJobAdminMutation/);
 assert.doesNotMatch(statusRoute, /supabaseAdmin|\.from\(['"]ops_jobs['"]\)|\.update\(/, 'default status route cannot directly mutate ops_jobs');
+const archiveRoute = server.slice(
+    server.indexOf('async function handleJobArchiveLifecycle'),
+    server.indexOf("app.post('/api/admin/ops/jobs/delete'")
+);
+assert.match(server, /createJobArchiveEnvelope/);
+assert.match(server, /forwardJobArchiveMutation/);
+assert.doesNotMatch(archiveRoute, /supabaseAdmin|\.from\(['"]ops_jobs['"]\)|\.update\(/, 'archive and restore routes cannot directly mutate ops_jobs');
 
 // Core business rule enforcement hints (static)
 assert.match(server, /Deposit Amount cannot exceed Total Price/);
@@ -56,6 +64,8 @@ assert.ok(adminCore.includes('This document needs a price before it can be gener
 assert.ok(adminCore.includes("sourceType: currentJob.sourceType || 'manualIntake'"), 'saving an existing booking/oracle job preserves sourceType');
 assert.ok(adminCore.includes("'Idempotency-Key': idempotencyKey"), 'status transition includes an idempotency key');
 assert.ok(adminCore.includes('expectedCurrentStatus, reason, idempotencyKey'), 'status transition includes expected state and operator reason');
+assert.ok(adminCore.includes('window.restoreOpsJob'), 'archived jobs expose a restore action');
+assert.ok(adminCore.includes('expectedArchiveState, requestedArchiveState, reason, confirmed: true, idempotencyKey'), 'archive lifecycle includes expected state, confirmation, reason, and idempotency');
 assert.ok(adminCore.includes("['New Lead', 'In Progress', 'Ready for Review'].includes(r.jobStatus)"), 'status action remains reachable for the shared non-payment New Lead state');
 
 console.log('   ✅ Ops jobs contract OK');

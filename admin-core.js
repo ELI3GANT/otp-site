@@ -2199,6 +2199,7 @@
                 const upd = r.updatedAt ? new Date(r.updatedAt).toLocaleString() : '';
                 const pay = r.paymentStatus || '—';
                 const st = bookingMeta?.requested_job_status ? readableStatus(bookingMeta.requested_job_status) : (r.jobStatus || '—');
+                const isArchived = r.archiveState === 'archived' || Boolean(r.archivedAt) || r.jobStatus === 'Archived';
                 const markCompletedButton = ['New Lead', 'In Progress', 'Ready for Review'].includes(r.jobStatus)
                     ? `<button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.updateOpsJobStatus('${window.escapeHtml(String(r.jobId || ''))}','Completed','${window.escapeHtml(String(r.jobStatus || ''))}')">MARK COMPLETED</button>`
                     : '';
@@ -2217,7 +2218,9 @@
                             <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.openOpsJobEditor('${window.escapeHtml(String(r.jobId || ''))}')">OPEN / EDIT</button>
                                 ${markCompletedButton}
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.archiveOpsJob('${window.escapeHtml(String(r.jobId || ''))}')">ARCHIVE</button>
+                                ${isArchived
+                                    ? `<button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.restoreOpsJob('${window.escapeHtml(String(r.jobId || ''))}')">RESTORE</button>`
+                                    : `<button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.archiveOpsJob('${window.escapeHtml(String(r.jobId || ''))}')">ARCHIVE</button>`}
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;background:rgba(255,68,68,0.12);border:1px solid rgba(255,68,68,0.28);color:var(--admin-text);" onclick="window.deleteOpsJob('${window.escapeHtml(String(r.jobId || ''))}')">TRASH</button>
                             </div>
                         </div>
@@ -2629,24 +2632,40 @@
         }
     };
 
-    window.archiveOpsJob = async function(jobId) {
+    window.mutateOpsJobArchiveState = async function(jobId, operation, expectedArchiveState, requestedArchiveState) {
         if (!state.token) { showToast('LOGIN REQUIRED'); return; }
         if (!jobId) return;
-        if (!confirm(`Archive job ${jobId}?`)) return;
+        const actionLabel = operation === 'restore' ? 'restore' : 'archive';
+        const reason = String(prompt(`Reason to ${actionLabel} job ${jobId}:`) || '').trim();
+        if (reason.length < 8) { showToast(`${actionLabel.toUpperCase()} REASON REQUIRED (8+ CHARACTERS)`); return; }
+        if (!confirm(`${actionLabel === 'archive' ? 'Archive' : 'Restore'} job ${jobId}? This is a reversible operational change.`)) return;
+        const idempotencyKey = globalThis.crypto?.randomUUID?.() || `job-${actionLabel}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         try {
             const apiBase = resolveApiBase();
-            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/archive`, {
+            const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/${actionLabel}`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
-                body: JSON.stringify({ jobId })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.token}`,
+                    'Idempotency-Key': idempotencyKey
+                },
+                body: JSON.stringify({ jobId, operation, expectedArchiveState, requestedArchiveState, reason, confirmed: true, idempotencyKey })
             }, 30000);
             const payload = await res.json().catch(() => ({}));
-            if (!res.ok || !payload.success) throw new Error(payload.message || `Archive failed (${res.status})`);
-            showToast('JOB ARCHIVED');
+            if (!res.ok || !payload.success) throw new Error(payload.message || `${actionLabel} failed (${res.status})`);
+            showToast(actionLabel === 'archive' ? 'JOB ARCHIVED' : 'JOB RESTORED');
             await window.fetchOpsJobs();
         } catch (e) {
-            showToast(`ARCHIVE FAILED: ${String(e?.message ?? e)}`);
+            showToast(`${actionLabel.toUpperCase()} FAILED: ${String(e?.message ?? e)}`);
         }
+    };
+
+    window.archiveOpsJob = function(jobId) {
+        return window.mutateOpsJobArchiveState(jobId, 'archive', 'active', 'archived');
+    };
+
+    window.restoreOpsJob = function(jobId) {
+        return window.mutateOpsJobArchiveState(jobId, 'restore', 'archived', 'active');
     };
 
     window.deleteOpsJob = async function(jobId) {

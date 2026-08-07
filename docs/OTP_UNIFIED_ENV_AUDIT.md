@@ -129,6 +129,9 @@ Rules:
 - `OTP_OS_JOB_MUTATION_UPSTREAM_URL` - OTP OS base URL for the governed admin job-status handoff; defaults to the booking upstream.
 - `OTP_OS_JOB_MUTATION_TOKEN` - server-only token scoped to the job-status mutation capability.
 - `OTP_OS_JOB_MUTATION_TIMEOUT_MS` - bounds the Site-to-OS job mutation request; default 8000 ms.
+- `OTP_OS_JOB_ARCHIVE_UPSTREAM_URL` - OTP OS base URL for the governed job archive/restore handoff; defaults to the job mutation upstream.
+- `OTP_OS_JOB_ARCHIVE_TOKEN` - server-only token scoped to job archive and restore.
+- `OTP_OS_JOB_ARCHIVE_TIMEOUT_MS` - bounds the Site-to-OS archive request; default 8000 ms.
 - `OTP_CLIENT_PORTAL_UPSTREAM_URL` - optional portal upstream.
 - `OTP_OS_PUBLIC_BASE` - optional OTP OS public base.
 
