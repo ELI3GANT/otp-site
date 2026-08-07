@@ -25,6 +25,7 @@ const tests = [
     { name: 'OTP Booking Writer Policy', path: 'tests/booking_writer_policy.test.js' },
     { name: 'OTP Booking OS Handoff', path: 'tests/booking_os_handoff.test.js' },
     { name: 'OTP Booking OS Route Integration', path: 'tests/booking_os_route.integration.test.js' },
+    { name: 'OTP Contract Verification', path: 'tests/otp_contract_verification.test.js' },
     { name: 'Attribution Contract', path: 'tests/attribution_contract.test.js' },
     { name: 'Logo Asset Contract', path: 'tests/logo_asset_contract.test.js' },
     { name: 'Authentication Logic', path: 'tests/auth_flow_test.js' },

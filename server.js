@@ -27,6 +27,8 @@ const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const JSZip = require('jszip');
 const { resolveBookingWriterPolicy } = require('./server/booking-writer-policy.js');
 const {
+    BOOKING_CONTRACT_VERSION,
+    LINEAGE_CONTRACT_VERSION,
     bookingIdFromToken,
     createBookingIntakeEnvelope,
     legacySiteWriterEvidence,
@@ -3739,7 +3741,7 @@ function buildBookingInternalNotes({ bookingId, payload, recommendation, recomme
         oracle_recommendation: recommendation || null,
         oracle_status: recommendationPending ? 'pending' : 'ready',
         lineage: {
-            schema_version: 'otp-lineage-v1',
+            schema_version: LINEAGE_CONTRACT_VERSION,
             capture_id: bookingId,
             source_id: bookingId,
             ...(clientId ? { client_id: String(clientId) } : {}),
@@ -4116,7 +4118,7 @@ function buildBookingDepositMetadata(payload = {}, recommendation = null) {
 function publicBookingSubmitResponse({ recommendation = null, portalPath = '', nextStep = '', payload = {}, writerEvidence = null } = {}) {
     const depositCheckout = buildBookingDepositMetadata(payload, recommendation);
     return {
-        schema_version: 'otp-booking-intake-v1',
+        schema_version: BOOKING_CONTRACT_VERSION,
         ok: true,
         received: true,
         message: recommendation ? BOOKING_CLIENT_MESSAGE : BOOKING_PENDING_RECOMMENDATION_MESSAGE,

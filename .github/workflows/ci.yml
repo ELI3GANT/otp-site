@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify pinned OTP contracts
+        run: npm run contracts:verify
+
       - name: Verify scoped release guard shape
         run: npm run release:scope
 
@@ -65,6 +68,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify pinned OTP contracts
+        run: npm run contracts:verify
 
       - name: Verify scoped release guard shape
         run: npm run release:scope

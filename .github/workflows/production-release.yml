@@ -44,6 +44,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify pinned OTP contracts
+        run: npm run contracts:verify
+
       - name: Verify clean scoped release manifest
         run: npm run release:gate
 
@@ -125,6 +128,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify pinned OTP contracts
+        run: npm run contracts:verify
 
       - name: Verify clean scoped release before deploy
         run: npm run release:gate

@@ -1,7 +1,27 @@
 const crypto = require('crypto');
+const bookingArtifact = require('../contracts/otp-booking-intake-v1.json');
+const lineageArtifact = require('../contracts/otp-lineage-v1.json');
+const { validateJsonSchema } = require('./json-schema-contract');
 
-const BOOKING_CONTRACT_VERSION = 'otp-booking-intake-v1';
-const LINEAGE_CONTRACT_VERSION = 'otp-lineage-v1';
+const BOOKING_CONTRACT_VERSION = bookingArtifact.contract;
+const BOOKING_CONTRACT_DIGEST = bookingArtifact.digest;
+const LINEAGE_CONTRACT_VERSION = lineageArtifact.contract;
+const LINEAGE_CONTRACT_DIGEST = lineageArtifact.digest;
+const BOOKING_SCHEMA = bookingArtifact.definition.schema;
+
+function exactUtcTimestamp(value) {
+    const parsed = Date.parse(String(value || ''));
+    return Number.isFinite(parsed) && new Date(parsed).toISOString() === value;
+}
+
+function validateBookingSemantics(envelope) {
+    const errors = [];
+    if (!String(envelope.email || '').trim() && !String(envelope.phone || '').trim()) errors.push('email or phone is required');
+    if (envelope.contact_consent !== true) errors.push('contact_consent must be true');
+    if (!exactUtcTimestamp(envelope.lineage?.created_at)) errors.push('lineage created_at must be an ISO-8601 UTC timestamp');
+    if (envelope.lineage?.capture_id !== envelope.booking_id || envelope.lineage?.source_id !== envelope.booking_id) errors.push('lineage booking identifiers must match booking_id');
+    return errors;
+}
 
 function cleanText(value, max = 240) {
     return String(value || '').trim().slice(0, max);
@@ -18,7 +38,7 @@ function bookingIdFromToken(token) {
 
 function createBookingIntakeEnvelope(payload = {}, { createdAt = new Date().toISOString() } = {}) {
     const bookingId = bookingIdFromToken(payload.booking_token);
-    return {
+    const envelope = {
         schema_version: BOOKING_CONTRACT_VERSION,
         booking_id: bookingId,
         idempotency_key: bookingId,
@@ -37,6 +57,9 @@ function createBookingIntakeEnvelope(payload = {}, { createdAt = new Date().toIS
             }
         }
     };
+    const errors = [...validateJsonSchema(envelope, BOOKING_SCHEMA), ...validateBookingSemantics(envelope)];
+    if (errors.length) throw new Error(`Invalid canonical booking envelope: ${errors.join('; ')}`);
+    return envelope;
 }
 
 function validateOtpOsBookingResponse(payload = {}, expectedBookingId = '', { throwOnError = false } = {}) {
@@ -82,6 +105,9 @@ function legacySiteWriterEvidence(bookingId, timestamp = new Date().toISOString(
 
 module.exports = {
     BOOKING_CONTRACT_VERSION,
+    BOOKING_CONTRACT_DIGEST,
+    LINEAGE_CONTRACT_VERSION,
+    LINEAGE_CONTRACT_DIGEST,
     bookingIdFromToken,
     createBookingIntakeEnvelope,
     legacySiteWriterEvidence,

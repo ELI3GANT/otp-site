@@ -17,6 +17,7 @@ const js = read('bookings.js');
 const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
+const bookingHandoff = read('server/booking-handoff.js');
 const offerSystemKey = '20260713-mobile-input-v1';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
@@ -45,8 +46,10 @@ assert.match(server, /legacyDirectFallbackEnabled/, 'direct booking writes must 
 assert.match(server, /errorCode: 'legacy_booking_writer_disabled'/, 'legacy direct writes remain blocked unless the explicit gate is enabled');
 assert.match(server, /writerEvidence/, 'public booking responses identify the writer without exposing database records');
 assert.match(server, /Idempotency-Key/, 'Site forwards the canonical idempotency key to OTP OS');
-assert.match(server, /otp-booking-intake-v1/, 'booking responses identify the versioned intake contract');
-assert.match(server, /otp-lineage-v1/, 'direct-write fallback preserves the lineage envelope');
+assert.match(server, /BOOKING_CONTRACT_VERSION/, 'booking responses use the pinned intake contract version');
+assert.match(server, /LINEAGE_CONTRACT_VERSION/, 'direct-write fallback uses the pinned lineage version');
+assert.match(bookingHandoff, /otp-booking-intake-v1\.json/, 'booking handoff loads the pinned CORE artifact');
+assert.match(bookingHandoff, /otp-lineage-v1\.json/, 'booking handoff loads the pinned lineage artifact');
 
 assert.ok(pricing.includes('Starting at $500'), 'The Signal price is sourced from pricing-config');
 assert.ok(pricing.includes('$1,200 to $2,000'), 'The Engine range is sourced from pricing-config');

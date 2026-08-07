@@ -1,0 +1,19 @@
+{
+  "$comment": "Generated from OTP CORE by npm run contracts:sync; do not edit by hand.",
+  "consumer": "otp-site",
+  "contracts": [
+    {
+      "contract": "otp-booking-intake-v1",
+      "digest": "sha256:5d84e7470b4464089c7d9fb07611f615c417c84313f5fe14c394ed6862160a62",
+      "file": "otp-booking-intake-v1.json",
+      "version": "1"
+    },
+    {
+      "contract": "otp-lineage-v1",
+      "digest": "sha256:317498277c7e8d088005b18fc31ee826ca06a7f248ff98fb3fa20122fc210750",
+      "file": "otp-lineage-v1.json",
+      "version": "1"
+    }
+  ],
+  "pins_format": "otp-contract-pins-v1"
+}
