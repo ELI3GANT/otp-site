@@ -8,6 +8,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 console.log('RELEASE GUARDRAILS CONTRACT...');
 
 const script = read('scripts/verify_release_scope.js');
+const masterRunner = read('tests/master_runner.js');
 const ignoreBuildScript = read('scripts/vercel_ignore_build_step.js');
 const packageJson = JSON.parse(read('package.json'));
 const vercelConfig = JSON.parse(read('vercel.json'));
@@ -17,6 +18,7 @@ const docs = read('docs/OTP_CLEAN_RELEASE_GUARDRAILS.md');
 const manifestGuide = read('docs/OTP_RELEASE_MANIFEST_GUIDE.md');
 
 assert.ok(script.includes('OTP_PRIMARY_CHECKOUT'), 'release guard checks the primary checkout path');
+assert.ok(!script.includes("'/Users/eli/OTP/otp-site'"), 'release guard does not hardcode the Mac checkout path');
 assert.ok(script.includes('OTP_ALLOW_PRIMARY_DIRTY_DEPLOY'), 'dirty primary deploy override is explicit');
 assert.ok(script.includes('fs.realpathSync.native'), 'release guard resolves symlinked primary checkout paths');
 assert.ok(script.includes('cwdReal === primaryCheckoutReal'), 'release guard blocks dirty deploys through symlinked checkouts');
@@ -33,6 +35,8 @@ assert.ok(/\\.env|\.env/.test(script), 'release guard blocks env files');
 assert.strictEqual(packageJson.scripts['release:scope'], 'node scripts/verify_release_scope.js --manifest=release-manifest.json', 'release scope script is the default manifest check');
 assert.strictEqual(packageJson.scripts['release:gate'], 'node scripts/verify_release_scope.js --manifest=release-manifest.json --deploy', 'release gate script uses deploy mode');
 assert.strictEqual(packageJson.scripts['vercel:ignore-build'], 'node scripts/vercel_ignore_build_step.js', 'Vercel ignored-build script is addressable from npm');
+assert.ok(!Object.values(packageJson.scripts).some((command) => /^[A-Za-z_][A-Za-z0-9_]*=/.test(command)), 'npm scripts avoid Unix-only inline environment assignments');
+assert.ok(masterRunner.includes('execFileSync'), 'master runner launches tests without a shell command string');
 assert.strictEqual(vercelConfig.ignoreCommand, 'node scripts/vercel_ignore_build_step.js', 'Vercel production builds use ignored-build guard');
 assert.ok(ignoreBuildScript.includes('exit 0 => ignore/cancel this deployment'), 'Vercel ignore script documents inverted exit semantics');
 assert.ok(ignoreBuildScript.includes('VERCEL_GIT_PROVIDER') && ignoreBuildScript.includes('VERCEL_ENV'), 'Vercel ignore script detects Git-triggered production deploys');

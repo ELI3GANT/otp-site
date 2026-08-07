@@ -4,13 +4,15 @@
  * Supports: --scope, --mode, --report, --output
  */
 
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
 const args = process.argv.slice(2);
 const outputArg = args.find(a => a.startsWith('--output='));
 const outputPath = outputArg ? outputArg.split('=')[1] : './test-report.xml';
+const liveApiArg = args.find(a => a.startsWith('--live-api-url='));
+if (liveApiArg) process.env.LIVE_API_URL = liveApiArg.slice('--live-api-url='.length);
 
 const tests = [
     { name: 'Full System Integrity', path: 'tests/full_system_test.js' },
@@ -70,7 +72,7 @@ async function runAll() {
         let output = '';
 
         try {
-            output = execSync(`"${process.execPath}" ${test.path}`).toString();
+            output = execFileSync(process.execPath, [test.path], { encoding: 'utf8' });
             console.log(`   ✅ PASSED (${Date.now() - start}ms)`);
         } catch (e) {
             status = 'failed';

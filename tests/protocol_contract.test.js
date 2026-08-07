@@ -272,9 +272,9 @@ timelineOrder.forEach((era) => {
   assert.ok(html.includes(caption), `${caption} timeline caption is present`);
 });
 
-const forbiddenProtocolSitePath = path.join('/Users/eli/OTP', 'protocol-site');
+const forbiddenProtocolSitePath = /(?:\/Users\/[^/]+\/OTP\/protocol-site|[A-Za-z]:\\Users\\[^\\]+\\OTP\\protocol-site)/;
 walkSourceFiles(root).forEach((file) => {
-  assert.ok(!fs.readFileSync(file, 'utf8').includes(forbiddenProtocolSitePath), `${path.relative(root, file)} does not reference abandoned protocol-site path`);
+  assert.doesNotMatch(fs.readFileSync(file, 'utf8'), forbiddenProtocolSitePath, `${path.relative(root, file)} does not reference an abandoned protocol-site path`);
 });
 
 assert.strictEqual(releaseManifest.deploymentTarget.project, 'otp-site', 'release target remains otp-site');
