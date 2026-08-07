@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const EXPECTED_CONTRACTS = Object.freeze(['otp-booking-intake-v1', 'otp-lineage-v1']);
+export const EXPECTED_CONTRACTS = Object.freeze(['otp-booking-intake-v1', 'otp-job-admin-mutation-v1', 'otp-lineage-v1']);
 const ARTIFACT_FORMAT = 'otp-contract-artifact-v1';
 const PINS_FORMAT = 'otp-contract-pins-v1';
 const SORTABLE_ARRAY_KEYS = new Set(['enum', 'required']);

@@ -24,6 +24,13 @@ assert.match(server, /buildOpsJobPayloadFromLeadAndOracle/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/update-status/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/archive/);
 assert.match(server, /\/api\/admin\/ops\/jobs\/delete/);
+const statusRoute = server.slice(
+    server.indexOf("app.post('/api/admin/ops/jobs/update-status'"),
+    server.indexOf("app.post('/api/admin/ops/jobs/archive'")
+);
+assert.match(statusRoute, /createJobAdminMutationEnvelope/);
+assert.match(statusRoute, /forwardJobAdminMutation/);
+assert.doesNotMatch(statusRoute, /supabaseAdmin|\.from\(['"]ops_jobs['"]\)|\.update\(/, 'default status route cannot directly mutate ops_jobs');
 
 // Core business rule enforcement hints (static)
 assert.match(server, /Deposit Amount cannot exceed Total Price/);
@@ -47,6 +54,9 @@ assert.ok(adminCore.includes('/api/admin/ops/jobs/from-oracle'), 'Oracle → job
 assert.ok(adminCore.includes('renderOpsProfileSnapshot'), 'connected client/job profile snapshot exists');
 assert.ok(adminCore.includes('This document needs a price before it can be generated'), 'invoice generation blocks missing price');
 assert.ok(adminCore.includes("sourceType: currentJob.sourceType || 'manualIntake'"), 'saving an existing booking/oracle job preserves sourceType');
+assert.ok(adminCore.includes("'Idempotency-Key': idempotencyKey"), 'status transition includes an idempotency key');
+assert.ok(adminCore.includes('expectedCurrentStatus, reason, idempotencyKey'), 'status transition includes expected state and operator reason');
+assert.ok(adminCore.includes("['New Lead', 'In Progress', 'Ready for Review'].includes(r.jobStatus)"), 'status action remains reachable for the shared non-payment New Lead state');
 
 console.log('   ✅ Ops jobs contract OK');
 console.log('🎉 OPS JOBS CONTRACT COMPLETE');

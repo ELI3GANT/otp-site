@@ -32,6 +32,7 @@ const tests = [
     { name: 'Post Management Logic', path: 'tests/manage_post_test.js' },
     { name: 'Email Link Logic', path: 'tests/email_link_test.js' },
     { name: 'Ops Jobs Contract', path: 'tests/ops_jobs_contract.test.js' },
+    { name: 'OTP Job Admin OS Route Integration', path: 'tests/job_admin_os_route.integration.test.js' },
     { name: 'Ops Docs Generation', path: 'tests/ops_docs_generation.test.js' },
     { name: 'Quick Deal Mode Contract', path: 'tests/quick_deal_mode_contract.test.js' },
     { name: 'Ops Packets Contract', path: 'tests/ops_packets_contract.test.js' },

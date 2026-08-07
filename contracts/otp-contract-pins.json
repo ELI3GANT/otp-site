@@ -9,6 +9,12 @@
       "version": "1"
     },
     {
+      "contract": "otp-job-admin-mutation-v1",
+      "digest": "sha256:51ab927749a0e64611cd17a410b41deb93c1b0e49a04fb084f54ac1930bc0580",
+      "file": "otp-job-admin-mutation-v1.json",
+      "version": "1"
+    },
+    {
       "contract": "otp-lineage-v1",
       "digest": "sha256:317498277c7e8d088005b18fc31ee826ca06a7f248ff98fb3fa20122fc210750",
       "file": "otp-lineage-v1.json",

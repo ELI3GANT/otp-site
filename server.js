@@ -35,6 +35,11 @@ const {
     publicWriterEvidenceFromOtpOs,
     validateOtpOsBookingResponse
 } = require('./server/booking-handoff.js');
+const {
+    adminSafeJobMutationResult,
+    createJobAdminMutationEnvelope,
+    forwardJobAdminMutation
+} = require('./server/job-admin-handoff.js');
 
 /** Transparent OTP mark (`assets/otp-mark-doc.png`) as data URI for self-contained Oracle HTML. */
 let _otpDocLogoDataUri;
@@ -2099,7 +2104,7 @@ app.use(helmet({
             mediaSrc: ["'self'", "https:"],
             frameSrc: ["'self'", "https://calendly.com", "https://open.spotify.com", "https://embed.music.apple.com", "https://music.apple.com", "https://www.youtube.com", "https://w.soundcloud.com", "https://js.stripe.com", "https://hooks.stripe.com"],
             objectSrc: ["'none'"],
-            upgradeInsecureRequests: [],
+            upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
         },
     },
 }));
@@ -2784,7 +2789,7 @@ const corsOptions = {
         }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'X-Requested-With', 'Accept', 'Origin'],
     credentials: true,
     optionsSuccessStatus: 200
 };
@@ -2857,6 +2862,9 @@ const OTP_CLIENT_PORTAL_UPSTREAM = String(
 ).replace(/\/+$/, '');
 const OTP_BOOKING_WRITER_POLICY = resolveBookingWriterPolicy();
 const OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS = positiveNumber(process.env.OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS, 9000);
+const OTP_OS_JOB_MUTATION_UPSTREAM = String(process.env.OTP_OS_JOB_MUTATION_UPSTREAM_URL || OTP_BOOKINGS_UPSTREAM).replace(/\/+$/, '');
+const OTP_OS_JOB_MUTATION_TOKEN = String(process.env.OTP_OS_JOB_MUTATION_TOKEN || '').trim();
+const OTP_OS_JOB_MUTATION_TIMEOUT_MS = positiveNumber(process.env.OTP_OS_JOB_MUTATION_TIMEOUT_MS, 8000);
 const OTP_BOOKINGS_PROXY_HEADERS = new Set([
     'accept',
     'content-type',
@@ -6354,27 +6362,42 @@ app.post('/api/admin/ops/jobs/from-oracle', verifyToken, async (req, res) => {
 });
 
 app.post('/api/admin/ops/jobs/update-status', verifyToken, async (req, res) => {
-    if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
         const jobId = String(req.body?.jobId || '').trim();
         const jobStatus = String(req.body?.jobStatus || '').trim();
+        const expectedCurrentStatus = String(req.body?.expectedCurrentStatus || '').trim();
+        const reason = String(req.body?.reason || '').trim();
+        const bodyIdempotencyKey = String(req.body?.idempotencyKey || '').trim();
+        const headerIdempotencyKey = String(req.headers['idempotency-key'] || '').trim();
         if (!jobId) return res.status(400).json({ success: false, message: 'Missing jobId' });
         if (!jobStatus) return res.status(400).json({ success: false, message: 'Missing jobStatus' });
-        if (!OPS_JOB.jobStatuses.includes(jobStatus)) return res.status(400).json({ success: false, message: 'Invalid jobStatus' });
-        const nowIso = new Date().toISOString();
-        const actor = String(req.auth?.role || 'admin');
-        const { data, error } = await supabaseAdmin
-            .from('ops_jobs')
-            .update({ job_status: jobStatus, updated_at: nowIso, updated_by: actor })
-            .eq('job_id', jobId)
-            .select('*')
-            .maybeSingle();
-        if (error) throw error;
-        if (!data) return res.status(404).json({ success: false, message: 'Job not found' });
-        res.json({ success: true, row: mapOpsJobRowToApi(data) });
+        if (!expectedCurrentStatus) return res.status(400).json({ success: false, message: 'Missing expectedCurrentStatus', errorCode: 'missing_expected_state' });
+        if (!reason) return res.status(400).json({ success: false, message: 'Missing reason', errorCode: 'missing_reason' });
+        if (!headerIdempotencyKey || !bodyIdempotencyKey) return res.status(400).json({ success: false, message: 'Missing idempotency key', errorCode: 'missing_idempotency_key' });
+        if (headerIdempotencyKey !== bodyIdempotencyKey) return res.status(400).json({ success: false, message: 'Idempotency key mismatch', errorCode: 'idempotency_key_mismatch' });
+        if (!OTP_OS_JOB_MUTATION_TOKEN) return res.status(503).json({ success: false, message: 'OTP OS job mutation integration is not configured.', errorCode: 'integration_not_configured' });
+        const envelope = createJobAdminMutationEnvelope({
+            jobId,
+            expectedCurrentStatus,
+            requestedNextStatus: jobStatus,
+            actor: `otp-site:${String(req.auth?.role || 'admin')}`,
+            reason,
+            idempotencyKey: bodyIdempotencyKey
+        });
+        const payload = await forwardJobAdminMutation(envelope, {
+            baseUrl: OTP_OS_JOB_MUTATION_UPSTREAM,
+            token: OTP_OS_JOB_MUTATION_TOKEN,
+            timeoutMs: OTP_OS_JOB_MUTATION_TIMEOUT_MS,
+            fetchImpl: fetch
+        });
+        const response = adminSafeJobMutationResult(payload);
+        console.info('OTP job admin handoff', { event: response.writerEvidence.replay ? 'job_mutation_replayed' : 'job_mutation_response_sent', ...response.writerEvidence });
+        return res.json(response);
     } catch (error) {
-        console.error("ops-jobs-update-status:", error.message);
-        res.status(500).json({ success: false, message: error.message });
+        const statusCode = [400, 403, 404, 409, 502, 503, 504].includes(error?.statusCode) ? error.statusCode : 500;
+        const errorCode = String(error?.errorCode || 'job_mutation_failed');
+        console.warn('OTP job admin handoff', { event: 'job_mutation_failed', job_id: String(req.body?.jobId || ''), error_code: errorCode });
+        return res.status(statusCode).json({ success: false, message: error.message || 'Job status update failed.', errorCode });
     }
 });
 

@@ -1,10 +1,11 @@
 {
-  "releaseName": "otp-fixline-final-public-integration-20260721",
+  "releaseName": "otp-job-admin-os-single-writer-20260807",
   "includedFiles": [
     ".github/workflows/ci.yml",
     ".github/workflows/production-release.yml",
     "404.html",
     "DESIGN.md",
+    "admin-core.js",
     "apple-touch-icon.png",
     "archive.html",
     "archive.js",
@@ -28,9 +29,12 @@
     "bookings.js",
     "client.html",
     "consultant-audit.html",
+    "contracts/otp-contract-pins.json",
+    "contracts/otp-job-admin-mutation-v1.json",
     "docs/OTP_ASSET_SYSTEM.md",
     "docs/OTP_CLEAN_RELEASE_GUARDRAILS.md",
     "docs/OTP_RELEASE_MANIFEST_GUIDE.md",
+    "docs/OTP_SITE_WRITER_BOUNDARY.md",
     "docs/OTP_TERMINAL_ORACLE_BLUEPRINT.md",
     "docs/OTP_UNIFIED_DEPLOYMENT.md",
     "docs/OTP_UNIFIED_ENV_AUDIT.md",
@@ -65,9 +69,11 @@
     "scripts/prod_full_sweep.js",
     "scripts/prod_sweep_v2_runner.js",
     "scripts/prod_terminal_sweep.js",
+    "scripts/otp-contracts.mjs",
     "scripts/vercel_ignore_build_step.js",
     "scripts/verify_release_scope.js",
     "server.js",
+    "server/job-admin-handoff.js",
     "site-init.js",
     "sitemap.xml",
     "songwars-config.js",
@@ -86,10 +92,13 @@
     "tests/fixline_integration_contract.test.js",
     "tests/fixline_premium_experience.test.js",
     "tests/homepage_visual_contract.test.js",
+    "tests/job_admin_os_route.integration.test.js",
     "tests/loader_recovery_contract.test.js",
     "tests/logo_asset_contract.test.js",
     "tests/marketing_site_contract.test.js",
     "tests/master_runner.js",
+    "tests/ops_jobs_contract.test.js",
+    "tests/otp_contract_verification.test.js",
     "tests/protocol_contract.test.js",
     "tests/release_guardrails_contract.test.js",
     "tests/seo_indexing_contract.test.js",
@@ -112,7 +121,15 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed_39_of_39"
+      "status": "passed_43_of_43"
+    },
+    {
+      "command": "node tests/job_admin_os_route.integration.test.js",
+      "status": "passed_failure_matrix_and_response_loss_replay"
+    },
+    {
+      "command": "npm run contracts:verify",
+      "status": "passed_3_pinned_contracts"
     },
     {
       "command": "npm run master_test:ci",
@@ -147,8 +164,8 @@
       "status": "passed"
     },
     {
-      "command": "Playwright FIXLINE public, intake, validation, review, loading, and mocked-success QA in Chromium and WebKit",
-      "status": "passed_32_of_32"
+      "command": "Playwright Terminal job status mutation QA in WebKit",
+      "status": "passed_desktop_and_390px"
     },
     {
       "command": "fresh visual capture matrix at 320, 390, 768, 1024, 1440, and 1920 widths",
@@ -161,11 +178,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Fresh local acceptance passed 32 Chromium and WebKit tests plus 41 screenshots covering the OTP homepage, FIXLINE landing and intake at 320, 390, 768, 1024, 1440, and 1920 widths; light and dark themes; validation, review, loading, mocked success, legal routes, and the public root and intake through the otp-site Vercel rewrite environment. Current-build captures had zero console errors, failed responses, or horizontal overflow."
+    "summary": "The actual Terminal MARK COMPLETED control completed through the local Site-to-OS path in WebKit. Desktop and 390 x 844 views kept the job card and control usable with no horizontal overflow. Unrelated Terminal panels logged expected offline errors because their persistence was intentionally unavailable; the selected mutation returned 200 and showed STATUS UPDATED."
   },
   "authenticatedSweep": {
-    "status": "passed",
-    "summary": "The prior read-only authenticated production sweep remains applicable because this release changes only public FIXLINE routing and leaves authenticated OTP-site code untouched. The production-release workflow still requires and reruns authenticated checks before deployment; no credential values are stored in this manifest."
+    "status": "local_only_not_deployed",
+    "summary": "The authenticated route was validated locally with isolated persistence and a short-lived test JWT. No production sweep, deployment, or production database mutation was performed. The production-release workflow must rerun its normal authenticated checks after the additive OTP OS migration is reviewed and applied."
   },
   "deploymentTarget": {
     "project": "otp-site",

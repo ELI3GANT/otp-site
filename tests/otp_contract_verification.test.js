@@ -9,6 +9,10 @@ const {
     LINEAGE_CONTRACT_DIGEST,
     LINEAGE_CONTRACT_VERSION
 } = require('../server/booking-handoff.js');
+const {
+    JOB_ADMIN_MUTATION_CONTRACT_DIGEST,
+    JOB_ADMIN_MUTATION_CONTRACT_VERSION
+} = require('../server/job-admin-handoff.js');
 
 console.log('OTP CONTRACT VERIFICATION...');
 
@@ -28,11 +32,13 @@ function mutateJson(root, file, mutate) {
 (async () => {
     const { verifyPinnedContracts } = await import('../scripts/otp-contracts.mjs');
     const repositoryRoot = path.join(__dirname, '..');
-    assert.equal(verifyPinnedContracts(repositoryRoot).contracts, 2);
+    assert.equal(verifyPinnedContracts(repositoryRoot).contracts, 3);
     assert.match(BOOKING_CONTRACT_DIGEST, /^sha256:[a-f0-9]{64}$/);
     assert.match(LINEAGE_CONTRACT_DIGEST, /^sha256:[a-f0-9]{64}$/);
     assert.equal(BOOKING_CONTRACT_VERSION, 'otp-booking-intake-v1');
     assert.equal(LINEAGE_CONTRACT_VERSION, 'otp-lineage-v1');
+    assert.match(JOB_ADMIN_MUTATION_CONTRACT_DIGEST, /^sha256:[a-f0-9]{64}$/);
+    assert.equal(JOB_ADMIN_MUTATION_CONTRACT_VERSION, 'otp-job-admin-mutation-v1');
 
     const bookingFile = 'otp-booking-intake-v1.json';
     const driftCases = [

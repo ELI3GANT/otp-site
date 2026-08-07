@@ -126,6 +126,9 @@ Rules:
 - `OTP_BOOKINGS_WRITER_MODE` - selects `otp_os` (default) or the explicit `legacy_direct` rollback mode.
 - `OTP_BOOKINGS_LEGACY_DIRECT_WRITE_ENABLED` - defaults disabled; exact value `1` is also required before the explicit `legacy_direct` rollback mode may write.
 - `OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS` - bounds the Site-to-OS booking request; default 9000 ms.
+- `OTP_OS_JOB_MUTATION_UPSTREAM_URL` - OTP OS base URL for the governed admin job-status handoff; defaults to the booking upstream.
+- `OTP_OS_JOB_MUTATION_TOKEN` - server-only token scoped to the job-status mutation capability.
+- `OTP_OS_JOB_MUTATION_TIMEOUT_MS` - bounds the Site-to-OS job mutation request; default 8000 ms.
 - `OTP_CLIENT_PORTAL_UPSTREAM_URL` - optional portal upstream.
 - `OTP_OS_PUBLIC_BASE` - optional OTP OS public base.
 
@@ -137,6 +140,7 @@ Rules:
 - `CLIENT_PORTAL_BASE_URL`
 - `OTP_SITE_PORTAL_LINK_ENDPOINT`
 - `OTP_SITE_ADMIN_TOKEN` or `OTP_SITE_ADMIN_PASSCODE`
+- `OTP_SITE_JOB_MUTATION_TOKEN` - server-only token accepted only by the Site job-status integration route.
 - `BOOKING_PUBLIC_URL`
 - `BOOKING_UPLOAD_BUCKET`
 - `BOOKING_UPLOAD_MAX_BYTES`

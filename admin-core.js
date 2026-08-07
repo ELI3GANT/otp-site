@@ -2199,6 +2199,9 @@
                 const upd = r.updatedAt ? new Date(r.updatedAt).toLocaleString() : '';
                 const pay = r.paymentStatus || '—';
                 const st = bookingMeta?.requested_job_status ? readableStatus(bookingMeta.requested_job_status) : (r.jobStatus || '—');
+                const markCompletedButton = ['New Lead', 'In Progress', 'Ready for Review'].includes(r.jobStatus)
+                    ? `<button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.updateOpsJobStatus('${window.escapeHtml(String(r.jobId || ''))}','Completed','${window.escapeHtml(String(r.jobStatus || ''))}')">MARK COMPLETED</button>`
+                    : '';
                 return `
                     <div style="border:1px solid var(--admin-border);border-radius:12px;padding:12px;background:var(--admin-panel);margin-bottom:10px;">
                         <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">
@@ -2213,7 +2216,7 @@
                             </div>
                             <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.openOpsJobEditor('${window.escapeHtml(String(r.jobId || ''))}')">OPEN / EDIT</button>
-                                <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.updateOpsJobStatus('${window.escapeHtml(String(r.jobId || ''))}','Completed')">MARK COMPLETED</button>
+                                ${markCompletedButton}
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;" onclick="window.archiveOpsJob('${window.escapeHtml(String(r.jobId || ''))}')">ARCHIVE</button>
                                 <button type="button" class="btn-secondary" style="width:auto;font-size:0.68rem;background:rgba(255,68,68,0.12);border:1px solid rgba(255,68,68,0.28);color:var(--admin-text);" onclick="window.deleteOpsJob('${window.escapeHtml(String(r.jobId || ''))}')">TRASH</button>
                             </div>
@@ -2600,15 +2603,22 @@
         }
     };
 
-    window.updateOpsJobStatus = async function(jobId, nextStatus) {
+    window.updateOpsJobStatus = async function(jobId, nextStatus, expectedCurrentStatus) {
         if (!state.token) { showToast('LOGIN REQUIRED'); return; }
-        if (!jobId || !nextStatus) return;
+        if (!jobId || !nextStatus || !expectedCurrentStatus) return;
+        const reason = String(prompt(`Reason for changing ${jobId} from ${expectedCurrentStatus} to ${nextStatus}:`) || '').trim();
+        if (!reason) { showToast('STATUS REASON REQUIRED'); return; }
+        const idempotencyKey = globalThis.crypto?.randomUUID?.() || `job-status-${Date.now()}-${Math.random().toString(16).slice(2)}`;
         try {
             const apiBase = resolveApiBase();
             const res = await fetchWithTimeout(`${apiBase}/api/admin/ops/jobs/update-status`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${state.token}` },
-                body: JSON.stringify({ jobId, jobStatus: nextStatus })
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.token}`,
+                    'Idempotency-Key': idempotencyKey
+                },
+                body: JSON.stringify({ jobId, jobStatus: nextStatus, expectedCurrentStatus, reason, idempotencyKey })
             }, 30000);
             const payload = await res.json().catch(() => ({}));
             if (!res.ok || !payload.success) throw new Error(payload.message || `Status failed (${res.status})`);
