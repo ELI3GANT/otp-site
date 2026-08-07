@@ -25,11 +25,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
 
       - name: Install dependencies
@@ -50,6 +50,37 @@ jobs:
       - name: Build if defined
         run: npm run build --if-present
 
+  windows-test:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      LIVE_API_URL: ""
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify scoped release guard shape
+        run: npm run release:scope
+
+      - name: Master test suite
+        run: npm test
+
+      - name: Secret/security scan
+        run: npm run security:scan
+
+      - name: Speed Insights bundle check
+        run: npm run build:speed-insights
+
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=low
+
   # Production terminal sweep: public checks always run; admin checks are optional when OTP_ADMIN_TOKEN is set.
   terminal-sweep:
     needs: test
@@ -60,11 +91,11 @@ jobs:
       OTP_ADMIN_PASSCODE: ${{ secrets.OTP_ADMIN_PASSCODE || secrets.ADMIN_PASSCODE }}
       OTP_ADMIN_TOKEN: ${{ secrets.OTP_ADMIN_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
 
       - run: npm ci
