@@ -39,7 +39,7 @@
 
 ## Public Layer
 
-OTP Site handles:
+OTP Site owns:
 - branding
 - marketing
 - booking
@@ -47,6 +47,10 @@ OTP Site handles:
 - discovery
 - public presentation
 - client trust
+- public payload validation
+- bounded proxies to operational owners
+
+OTP Site does not own CRM, booking/job, project, or client-portal operational truth. Those records belong to OTP OS. Limited direct writers remain documented `LEGACY` fallbacks in [OTP_SITE_WRITER_BOUNDARY.md](OTP_SITE_WRITER_BOUNDARY.md).
 
 ---
 
@@ -61,6 +65,7 @@ OTP OS handles:
 - automation
 - project management
 - system monitoring
+- canonical operational persistence for leads/prospects, bookings, jobs, projects, and client portal records
 
 ---
 

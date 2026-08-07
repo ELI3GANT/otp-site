@@ -123,7 +123,9 @@ Rules:
 - `OTP_PUBLIC_SITE_ORIGIN` - canonical public origin, expected `https://www.onlytrueperspective.tech`.
 - `OTP_BOOKINGS_API_BASE` - optional booking API base.
 - `OTP_BOOKINGS_UPSTREAM_URL` - optional OTP OS upstream for booking fallback.
-- `OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK` - enables upstream fallback.
+- `OTP_BOOKINGS_WRITER_MODE` - selects `otp_os` (default) or the explicit `legacy_direct` rollback mode.
+- `OTP_BOOKINGS_LEGACY_DIRECT_WRITE_ENABLED` - set to `0` to prohibit the temporary Site direct-write fallback.
+- `OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS` - bounds the Site-to-OS booking request; default 9000 ms.
 - `OTP_CLIENT_PORTAL_UPSTREAM_URL` - optional portal upstream.
 - `OTP_OS_PUBLIC_BASE` - optional OTP OS public base.
 

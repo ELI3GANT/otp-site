@@ -1,12 +1,12 @@
 # AGENTS.md
 
-Codex and other agentic tools working in this repository must treat `otp-site` as the permanent production root for OnlyTruePerspective.
+Codex and other agentic tools working in this repository must treat `otp-site` as the permanent public production root for OnlyTruePerspective and `otp-os` as the canonical operational writer.
 
 ## OTP Ecosystem Structure
 
 - `otp-site` is the root app for `onlytrueperspective.tech`.
-- `otp-os` is the existing admin/business dashboard. Read it for migration reference, but do not delete, rewrite, or damage it.
-- Production-facing code should live in `otp-site` unless a change clearly belongs to the old dashboard during a controlled migration.
+- `otp-os` is the active admin/business dashboard and owns CRM, leads/prospects, bookings, jobs, projects, and client-portal operational records.
+- Public production-facing code should live in `otp-site`; operational code belongs in `otp-os`.
 - Shared backend routes live under `otp-site/server.js` and `/api/*`.
 - Public static pages live at the repository root as `.html`, `.css`, and `.js` files.
 - Current Vercel deployment is an Express app through `server.js`, not a Next.js app.
@@ -36,12 +36,12 @@ The current `vercel.json` uses legacy `routes`. Keep new routing changes inside 
 Use small slices:
 
 1. Keep the proxy working while users continue using OTP OS.
-2. Inventory OTP OS features and map each one to an `otp-site` owner.
-3. Move server logic before UI when secrets, service-role keys, Stripe, or portal tokens are involved.
+2. Inventory legacy Site operational writers and map each one to an `otp-os` owner.
+3. Move operational server logic to OTP OS before changing public UI when secrets, service-role keys, Stripe, or portal tokens are involved.
 4. Reuse existing public route aliases and API contracts.
 5. Verify booking, portal, documents, payments, and admin routes after every migration slice.
 
-Do not duplicate tables or create parallel business truth. Supabase remains the shared memory/database layer.
+Do not duplicate tables or create parallel business truth. Site direct operational writers are `LEGACY` fallbacks only and must remain documented in `docs/OTP_SITE_WRITER_BOUNDARY.md` until removed.
 
 ## Protected Route Rules
 

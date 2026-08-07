@@ -22,6 +22,7 @@ const tests = [
     { name: 'Client Portal Route Contract', path: 'tests/portal_route_contract.test.js' },
     { name: 'Client Portal Logic', path: 'tests/client_portal_logic.test.js' },
     { name: 'OTP Bookings Contract', path: 'tests/bookings_contract.test.js' },
+    { name: 'OTP Booking Writer Policy', path: 'tests/booking_writer_policy.test.js' },
     { name: 'Attribution Contract', path: 'tests/attribution_contract.test.js' },
     { name: 'Logo Asset Contract', path: 'tests/logo_asset_contract.test.js' },
     { name: 'Authentication Logic', path: 'tests/auth_flow_test.js' },

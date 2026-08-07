@@ -25,6 +25,7 @@ const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
 const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const JSZip = require('jszip');
+const { resolveBookingWriterPolicy } = require('./server/booking-writer-policy.js');
 
 /** Transparent OTP mark (`assets/otp-mark-doc.png`) as data URI for self-contained Oracle HTML. */
 let _otpDocLogoDataUri;
@@ -2845,8 +2846,8 @@ const OTP_CLIENT_PORTAL_UPSTREAM = String(
     || process.env.OTP_OS_PUBLIC_BASE
     || OTP_BOOKINGS_UPSTREAM
 ).replace(/\/+$/, '');
-const OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK = process.env.OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK === '1'
-    || (String(process.env.NODE_ENV || '').toLowerCase() === 'production' && process.env.OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK !== '0');
+const OTP_BOOKING_WRITER_POLICY = resolveBookingWriterPolicy();
+const OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS = positiveNumber(process.env.OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS, 9000);
 const OTP_BOOKINGS_PROXY_HEADERS = new Set([
     'accept',
     'content-type',
@@ -3702,6 +3703,7 @@ function normalizeBookingRecommendation(oracle, fallbackPackage = '') {
 }
 
 function buildBookingInternalNotes({ bookingId, payload, recommendation, recommendationPending, clientId }) {
+    const createdAt = new Date().toISOString();
     const meta = {
         schema: 'otp-booking-meta-v1',
         booking_id: bookingId,
@@ -3738,7 +3740,21 @@ function buildBookingInternalNotes({ bookingId, payload, recommendation, recomme
         source_metadata: payload.source_tracking || {},
         oracle_recommendation: recommendation || null,
         oracle_status: recommendationPending ? 'pending' : 'ready',
-        created_at: new Date().toISOString()
+        lineage: {
+            schema_version: 'otp-lineage-v1',
+            capture_id: bookingId,
+            source_id: bookingId,
+            ...(clientId ? { client_id: String(clientId) } : {}),
+            originating_system: 'otp-site',
+            originating_record_id: bookingId,
+            created_at: createdAt,
+            provenance: {
+                source_type: 'public_booking',
+                source_reference: bookingId,
+                trust_level: 'user_submitted'
+            }
+        },
+        created_at: createdAt
     };
     return [
         'OTP_BOOKING_META:',
@@ -3999,23 +4015,71 @@ async function saveBookingOpsJob({ bookingId, payload, recommendation, recommend
 
 async function forwardBookingSubmitToUpstream(body) {
     const upstreamUrl = new URL('/api/bookings/submit', OTP_BOOKINGS_UPSTREAM);
-    const upstream = await fetch(upstreamUrl.href, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(body || {}),
-        redirect: 'manual'
-    });
-    const text = await upstream.text();
-    let payload = {};
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS);
     try {
-        payload = JSON.parse(text || '{}');
-    } catch (_) {
-        payload = {};
+        const upstream = await fetch(upstreamUrl.href, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify(body || {}),
+            redirect: 'manual',
+            signal: controller.signal
+        });
+        const text = await upstream.text();
+        let payload = {};
+        try {
+            payload = JSON.parse(text || '{}');
+        } catch (_) {
+            payload = {};
+        }
+        if (!upstream.ok || payload.ok === false || payload.error) {
+            throw new Error(payload.message || `upstream_${upstream.status}`);
+        }
+        return payload;
+    } finally {
+        clearTimeout(timer);
     }
-    if (!upstream.ok || payload.ok === false || payload.error) {
-        throw new Error(payload.message || `upstream_${upstream.status}`);
-    }
-    return payload;
+}
+
+function publicBookingResponseFromUpstream(upstreamPayload, payload) {
+    const upstreamRecommendation = upstreamPayload.recommendation && typeof upstreamPayload.recommendation === 'object' && !Array.isArray(upstreamPayload.recommendation)
+        ? upstreamPayload.recommendation
+        : null;
+    const upstreamPortalPath = publicClientPortalPath(
+        upstreamPayload.clientPortalPath
+        || upstreamPayload.portalPath
+        || upstreamPayload.clientPortalUrl
+        || upstreamPayload.portalUrl
+        || upstreamPayload.inviteUrl
+    );
+    return publicBookingSubmitResponse({
+        recommendation: upstreamRecommendation,
+        portalPath: upstreamPortalPath,
+        nextStep: upstreamPayload.nextStep || upstreamPayload.next_action || 'OTP will review the request and prepare the next step.',
+        payload
+    });
+}
+
+function bookingIntakeUpstreamPayload(payload) {
+    const bookingId = bookingIdFromToken(payload.booking_token);
+    return {
+        schema_version: 'otp-booking-intake-v1',
+        booking_id: bookingId,
+        ...payload,
+        lineage: {
+            schema_version: 'otp-lineage-v1',
+            capture_id: bookingId,
+            source_id: bookingId,
+            originating_system: 'otp-site',
+            originating_record_id: bookingId,
+            created_at: new Date().toISOString(),
+            provenance: {
+                source_type: 'public_booking',
+                source_reference: bookingId,
+                trust_level: 'user_submitted'
+            }
+        }
+    };
 }
 
 function buildBookingDepositMetadata(payload = {}, recommendation = null) {
@@ -4063,6 +4127,7 @@ function buildBookingDepositMetadata(payload = {}, recommendation = null) {
 function publicBookingSubmitResponse({ recommendation = null, portalPath = '', nextStep = '', payload = {} } = {}) {
     const depositCheckout = buildBookingDepositMetadata(payload, recommendation);
     return {
+        schema_version: 'otp-booking-intake-v1',
         ok: true,
         received: true,
         message: recommendation ? BOOKING_CLIENT_MESSAGE : BOOKING_PENDING_RECOMMENDATION_MESSAGE,
@@ -4583,30 +4648,24 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
     }
 
     try {
-        if (!supabaseAdmin) {
-            if (OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK) {
-                try {
-                    const upstreamPayload = await forwardBookingSubmitToUpstream(req.body);
-                    const upstreamRecommendation = upstreamPayload.recommendation && typeof upstreamPayload.recommendation === 'object' && !Array.isArray(upstreamPayload.recommendation)
-                        ? upstreamPayload.recommendation
-                        : null;
-                    const upstreamPortalPath = publicClientPortalPath(
-                        upstreamPayload.clientPortalPath
-                        || upstreamPayload.portalPath
-                        || upstreamPayload.clientPortalUrl
-                        || upstreamPayload.portalUrl
-                        || upstreamPayload.inviteUrl
-                    );
-                    return res.json(publicBookingSubmitResponse({
-                        recommendation: upstreamRecommendation,
-                        portalPath: upstreamPortalPath,
-                        nextStep: upstreamPayload.nextStep || upstreamPayload.next_action || 'OTP will review the request and prepare the next step.',
-                        payload
-                    }));
-                } catch (upstreamError) {
-                    console.warn('booking upstream fallback failed:', upstreamError?.message || upstreamError);
+        if (OTP_BOOKING_WRITER_POLICY.primary === 'otp_os') {
+            try {
+                const upstreamPayload = await forwardBookingSubmitToUpstream(bookingIntakeUpstreamPayload(payload));
+                return res.json(publicBookingResponseFromUpstream(upstreamPayload, payload));
+            } catch (upstreamError) {
+                console.warn('booking OTP OS writer unavailable:', upstreamError?.message || upstreamError);
+                if (!OTP_BOOKING_WRITER_POLICY.legacyDirectFallbackEnabled) {
+                    return res.status(503).json({
+                        ok: false,
+                        message: BOOKING_GENERIC_ERROR_MESSAGE,
+                        errorCode: 'otp_os_unavailable',
+                        missingFields: []
+                    });
                 }
             }
+        }
+
+        if (!supabaseAdmin) {
             return res.status(503).json({
                 ok: false,
                 message: BOOKING_GENERIC_ERROR_MESSAGE,
@@ -4720,7 +4779,7 @@ app.use('/api/bookings', async (req, res) => {
                 errorCode: 'not_found'
             });
         }
-        if (!OTP_BOOKINGS_ENABLE_UPSTREAM_FALLBACK) {
+        if (OTP_BOOKING_WRITER_POLICY.primary !== 'otp_os') {
             return res.status(503).json({
                 ok: false,
                 success: false,
@@ -4742,12 +4801,20 @@ app.use('/api/bookings', async (req, res) => {
         headers['x-forwarded-proto'] = req.headers['x-forwarded-proto'] || req.protocol || 'https';
         headers['x-forwarded-for'] = req.headers['x-forwarded-for'] || req.ip || '';
 
-        const upstream = await fetch(upstreamUrl.href, {
-            method: req.method,
-            headers,
-            body: ['GET', 'HEAD'].includes(req.method) ? undefined : req,
-            redirect: 'manual'
-        });
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS);
+        let upstream;
+        try {
+            upstream = await fetch(upstreamUrl.href, {
+                method: req.method,
+                headers,
+                body: ['GET', 'HEAD'].includes(req.method) ? undefined : req,
+                redirect: 'manual',
+                signal: controller.signal
+            });
+        } finally {
+            clearTimeout(timer);
+        }
 
         res.status(upstream.status);
         upstream.headers.forEach((value, key) => {

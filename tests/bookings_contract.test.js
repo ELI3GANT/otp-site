@@ -39,6 +39,11 @@ assert.match(server, /createBookingContact[\s\S]*\.eq\('email', payload\.email\)
 assert.match(server, /errorCode: 'validation_failed'/);
 assert.match(server, /errorCode: 'spam_rejected'/);
 assert.match(server, /BOOKING_PUBLIC_PROXY_PATHS/);
+assert.match(server, /resolveBookingWriterPolicy/);
+assert.match(server, /primary === 'otp_os'/, 'OTP OS must be the default booking writer path');
+assert.match(server, /legacyDirectFallbackEnabled/, 'direct booking writes must be an explicit legacy fallback');
+assert.match(server, /otp-booking-intake-v1/, 'booking responses identify the versioned intake contract');
+assert.match(server, /otp-lineage-v1/, 'direct-write fallback preserves the lineage envelope');
 
 assert.ok(pricing.includes('Starting at $500'), 'The Signal price is sourced from pricing-config');
 assert.ok(pricing.includes('$1,200 to $2,000'), 'The Engine range is sourced from pricing-config');
