@@ -13,7 +13,7 @@ const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytruep
 const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_TOKEN || '').trim();
 
 const publicTargets = [
-  { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'Insights', '/bookings?source=', 'href="/portal"'] },
+  { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'OnlyTruePerspective | Rhode Island Creative Technology', '/bookings?source=', 'href="/portal"'] },
   { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css', '/bookings.js', 'canonical', 'Start a Project with OTP.', 'service-selector'] },
   { name: 'songwars', path: '/songwars', kind: 'html', markers: ['Song Wars Weekend', 'data-songwars-poster', 'discord.gg/Awk2b7RSW', 'rel="canonical" href="https://www.onlytrueperspective.tech/songwars"'] },
   { name: 'songwars-poster', path: '/assets/songwars/songwars-poster.jpg', kind: 'jpg' },
@@ -32,7 +32,7 @@ const publicTargets = [
   { name: 'client-portal', path: '/portal', kind: 'html', markers: ['OTP Client Portal', 'Access project status', '/portal.css', '/portal.js'] },
   { name: 'client-portal-css', path: '/portal.css', kind: 'css', markers: ['portal-page', 'portal-emblem'] },
   { name: 'client-portal-js', path: '/portal.js', kind: 'js', markers: ['extractToken', '/client/'] },
-  { name: 'private-client-css', path: '/client.css', kind: 'css', markers: ['client-shell', 'documents-list', 'overflow-x: hidden'] },
+  { name: 'private-client-css', path: '/client.css', kind: 'css', markers: ['portal-shell', 'portal-root', 'overflow-x: hidden'] },
   { name: 'private-client-js', path: '/client.js', kind: 'js', markers: ['/api/client-portal/', 'Locked until payment is saved'] },
   { name: 'portal-gate', path: '/portal-gate', kind: 'html', markers: ['portal', 'gate'] },
   { name: 'terminal-alias', path: '/terminal', kind: 'html', markers: ['postForm', 'admin-core.js'] },

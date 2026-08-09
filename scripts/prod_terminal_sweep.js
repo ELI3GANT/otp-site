@@ -16,7 +16,7 @@ const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytruep
 const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_TOKEN || '').trim();
 
 const publicTargets = [
-  { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'Insights', '/bookings?source=', 'href="/portal"'] },
+  { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'OnlyTruePerspective | Rhode Island Creative Technology', '/bookings?source=', 'href="/portal"'] },
   { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css', '/bookings.js', 'canonical', 'Start a Project with OTP.', 'project-intake-panel'] },
   { name: 'booking-alias', path: '/booking', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
   { name: 'book-alias', path: '/book', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
@@ -27,7 +27,7 @@ const publicTargets = [
   { name: 'client-portal', path: '/portal', kind: 'html', markers: ['OTP Client Portal', 'Access project status', '/portal.css', '/portal.js'] },
   { name: 'client-portal-css', path: '/portal.css', kind: 'css', markers: ['portal-page', 'portal-emblem'] },
   { name: 'client-portal-js', path: '/portal.js', kind: 'js', markers: ['extractToken', '/client/'] },
-  { name: 'private-client-css', path: '/client.css', kind: 'css', markers: ['client-shell', 'documents-list', 'overflow-x: hidden'] },
+  { name: 'private-client-css', path: '/client.css', kind: 'css', markers: ['portal-shell', 'portal-root', 'overflow-x: hidden'] },
   { name: 'private-client-js', path: '/client.js', kind: 'js', markers: ['/api/client-portal/', 'Locked until payment is saved'] },
   { name: 'portal-gate', path: '/portal-gate', kind: 'html', markers: ['portal', 'gate'] },
   { name: 'terminal-alias', path: '/terminal', kind: 'html', markers: ['postForm', 'admin-core.js'] },
@@ -45,7 +45,7 @@ const adminTargets = [
   { name: 'admin-knowledge-meta', path: '/api/admin/knowledge/meta', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },
   { name: 'admin-knowledge-files', path: '/api/admin/knowledge/files', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },
   { name: 'admin-docs-templates-status', path: '/api/admin/docs/templates/status', kind: 'json', shape: (payload) => Boolean(payload && typeof payload.success === 'boolean') },
-  { name: 'schema-migration', path: '/api/schema-migration', kind: 'text', markers: ['CREATE TABLE', 'ALTER TABLE', 'SECURE_HARDENING_PRO'] }
+  { name: 'schema-migration', path: '/api/schema-migration', kind: 'text', markers: ['CREATE TABLE', 'ALTER TABLE', 'OTP SYSTEM MIGRATION V1.3.0'] }
 ];
 
 async function main() {

@@ -14,6 +14,11 @@ const packageJson = JSON.parse(read('package.json'));
 const vercelConfig = JSON.parse(read('vercel.json'));
 const ciWorkflow = read('.github/workflows/ci.yml');
 const productionWorkflow = read('.github/workflows/production-release.yml');
+const terminalSweep = read('scripts/prod_terminal_sweep.js');
+const fullSweep = read('scripts/prod_full_sweep.js');
+const homepage = read('index.html');
+const clientCss = read('client.css');
+const schemaMigration = read('supabase/migrations/DEPLOY_V1.3.sql');
 const docs = read('docs/OTP_CLEAN_RELEASE_GUARDRAILS.md');
 const manifestGuide = read('docs/OTP_RELEASE_MANIFEST_GUIDE.md');
 
@@ -42,9 +47,21 @@ assert.ok(ignoreBuildScript.includes('exit 0 => ignore/cancel this deployment'),
 assert.ok(ignoreBuildScript.includes('VERCEL_GIT_PROVIDER') && ignoreBuildScript.includes('VERCEL_ENV'), 'Vercel ignore script detects Git-triggered production deploys');
 assert.ok(ignoreBuildScript.includes('OTP_ALLOW_VERCEL_GIT_PRODUCTION_DEPLOY'), 'Vercel ignore script keeps an explicit emergency override');
 
+for (const sweep of [terminalSweep, fullSweep]) {
+  assert.ok(sweep.includes('OnlyTruePerspective | Rhode Island Creative Technology'), 'production sweep pins the canonical homepage title');
+  assert.ok(sweep.includes('portal-shell') && sweep.includes('portal-root'), 'production sweep pins the current private portal CSS shell');
+  assert.ok(!sweep.includes("'Insights'") && !sweep.includes('client-shell') && !sweep.includes('documents-list'), 'production sweep contains no retired source markers');
+}
+assert.ok(homepage.includes('OnlyTruePerspective | Rhode Island Creative Technology'), 'canonical homepage title exists in source');
+assert.ok(clientCss.includes('.portal-shell') && clientCss.includes('.portal-root'), 'canonical private portal CSS markers exist in source');
+assert.ok(schemaMigration.includes('OTP SYSTEM MIGRATION V1.3.0'), 'schema endpoint migration marker exists in source');
+assert.ok(terminalSweep.includes('OTP SYSTEM MIGRATION V1.3.0') && !terminalSweep.includes('SECURE_HARDENING_PRO'), 'terminal sweep validates the migration actually served by the endpoint');
+
 assert.ok(ciWorkflow.includes('npm run release:scope'), 'CI runs release scope guard on PRs and main pushes');
 assert.ok(ciWorkflow.includes('npm run security:scan'), 'CI runs secret/security scan');
 assert.ok(ciWorkflow.includes('npm run build:speed-insights'), 'CI keeps speed insights bundle checked');
+assert.ok(!ciWorkflow.includes('npm run prod:terminal-sweep'), 'source-only CI does not compare an undeployed commit to live production');
+assert.ok(!ciWorkflow.includes('LIVE_API_URL: https://www.onlytrueperspective.tech'), 'source-only CI has no live production target');
 assert.ok(productionWorkflow.includes('confirm_clean_release') && productionWorkflow.includes('CLEAN_RELEASE'), 'production workflow requires explicit clean-release confirmation');
 assert.ok(productionWorkflow.includes('npm run release:gate'), 'production workflow blocks deploy behind release gate');
 assert.ok(productionWorkflow.includes('Require authenticated sweep credentials'), 'production workflow requires authenticated sweep credentials');
