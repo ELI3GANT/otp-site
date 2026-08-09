@@ -2,6 +2,9 @@
   "version": 2,
   "cleanUrls": false,
   "ignoreCommand": "node scripts/vercel_ignore_build_step.js",
+  "git": {
+    "deploymentEnabled": false
+  },
   "builds": [
     {
       "src": "server.js",
