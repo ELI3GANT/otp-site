@@ -52,7 +52,7 @@ async function submit(baseUrl, token, operation, body, key = body.idempotencyKey
         const key = String(req.headers['idempotency-key'] || '');
         observed = { body, key, authorization: req.headers.authorization };
         if (mode === 'unavailable') return req.socket.destroy();
-        if (mode === 'timeout') await new Promise((resolve) => setTimeout(resolve, 100));
+        if (mode === 'timeout') await new Promise((resolve) => setTimeout(resolve, 750));
         if (res.destroyed) return;
         if (mode === 'malformed') return res.end(JSON.stringify({ ok: true, writer: 'otp_os' }));
         if (mode === 'error') {
@@ -83,7 +83,7 @@ async function submit(baseUrl, token, operation, body, key = body.idempotencyKey
     process.env.JWT_SECRET = 'isolated-job-archive-route-secret';
     process.env.OTP_OS_JOB_ARCHIVE_TOKEN = 'isolated-archive-scope-token';
     process.env.OTP_OS_JOB_ARCHIVE_UPSTREAM_URL = `http://127.0.0.1:${upstream.address().port}`;
-    process.env.OTP_OS_JOB_ARCHIVE_TIMEOUT_MS = '40';
+    process.env.OTP_OS_JOB_ARCHIVE_TIMEOUT_MS = '250';
     delete process.env.SUPABASE_URL;
     delete process.env.SUPABASE_SERVICE_KEY;
     const app = require('../server.js');

@@ -33,7 +33,7 @@ async function postJson(url, body) {
             req.socket.destroy();
             return;
         }
-        if (mode === 'timeout') await new Promise((resolve) => setTimeout(resolve, 120));
+        if (mode === 'timeout') await new Promise((resolve) => setTimeout(resolve, 750));
         if (res.destroyed) return;
         res.setHeader('Content-Type', 'application/json');
         if (mode === 'failure') {
@@ -72,7 +72,7 @@ async function postJson(url, body) {
     process.env.OTP_BOOKINGS_WRITER_MODE = 'otp_os';
     process.env.OTP_BOOKINGS_LEGACY_DIRECT_WRITE_ENABLED = '0';
     process.env.OTP_BOOKINGS_UPSTREAM_URL = `http://127.0.0.1:${upstream.address().port}`;
-    process.env.OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS = '40';
+    process.env.OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS = '250';
     delete process.env.SUPABASE_URL;
     delete process.env.SUPABASE_SERVICE_KEY;
     const app = require('../server.js');
