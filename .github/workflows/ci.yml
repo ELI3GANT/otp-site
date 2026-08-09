@@ -41,7 +41,9 @@ jobs:
       - name: Verify scoped release guard shape
         run: npm run release:scope
 
-      - name: Master test suite (includes live security/health audit via LIVE_API_URL)
+      - name: Master test suite (isolated from live mutation APIs)
+        env:
+          LIVE_API_URL: ""
         run: npm test
 
       - name: Secret/security scan
