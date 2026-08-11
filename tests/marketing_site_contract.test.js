@@ -152,7 +152,8 @@ assert.ok(siteInit.includes('OTP_PROJECT_LIBRARY'), 'site-init reads reusable pu
 assert.ok(siteInit.includes('sanitizeSlugParam'), 'site-init exposes slug sanitizer for insight query param');
 assert.ok(siteInit.includes('sanitizeHttpUrl'), 'site-init exposes http(s) URL helper for embeds and insight');
 assert.ok(siteInit.includes('/api/contact/submit'), 'site-init wires contact form to public submit API');
-assert.ok(siteInit.includes('otp-uplink'), 'site-init listens on same Realtime channel as OTP Terminal');
+assert.ok(!siteInit.includes('otp-uplink'), 'public site does not accept commands from the legacy public Realtime channel');
+assert.ok(siteInit.includes(".eq('access_scope', 'public')"), 'public live content reads require explicit public classification');
 assert.ok(siteInit.includes('Invalid response from server'), 'contact handler tolerates non-JSON error bodies');
 assert.ok(server.includes("app.get('/packages'"), 'server exposes /packages as a homepage package-section alias');
 assert.ok(server.includes('#packages'), '/packages alias redirects to homepage package section instead of duplicate HTML');

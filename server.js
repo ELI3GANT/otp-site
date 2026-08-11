@@ -12,6 +12,7 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
+const { execFile } = require('child_process');
 const helmet = require('helmet');
 const compression = require('compression');
 const cors = require('cors');
@@ -45,6 +46,18 @@ const {
     createJobArchiveEnvelope,
     forwardJobArchiveMutation
 } = require('./server/job-archive-handoff.js');
+const { BoundedTtlCache } = require('./server/bounded-ttl-cache.js');
+const {
+    SITE_COMMAND_SCHEMA,
+    PUBLIC_SITE_CONTENT_KEYS,
+    siteContentAccessScope,
+    normalizeSiteCommand,
+    applySiteCommandToState
+} = require('./server/site-control.js');
+const {
+    PublicFetchError,
+    fetchPublicText
+} = require('./server/safe-public-fetch.js');
 
 /** Transparent OTP mark (`assets/otp-mark-doc.png`) as data URI for self-contained Oracle HTML. */
 let _otpDocLogoDataUri;
@@ -81,7 +94,10 @@ const app = express();
 app.disable('x-powered-by'); // Hide stack details
 app.set('trust proxy', 1); // Trust Vercel proxy before any rate limiter reads req.ip.
 const port = process.env.PORT || 3000;
-const IN_MEMORY_QUOTES = new Map();
+const IN_MEMORY_QUOTES = new BoundedTtlCache({
+    maxEntries: positiveInteger(process.env.OTP_QUOTE_CACHE_MAX_ENTRIES, 100),
+    ttlMs: positiveNumber(process.env.OTP_QUOTE_CACHE_TTL_MS, 60 * 60 * 1000)
+});
 let OTP_PRICING = null;
 try {
     OTP_PRICING = require('./pricing-config.js');
@@ -99,6 +115,10 @@ const SONG_WARS_CONFIG = require('./songwars-config.js');
 function positiveNumber(value, fallback) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function positiveInteger(value, fallback) {
+    return Math.max(1, Math.floor(positiveNumber(value, fallback)));
 }
 
 const YOUTUBE_SYNC_TIMEOUT_MS = positiveNumber(process.env.YOUTUBE_SYNC_TIMEOUT_MS, 6500);
@@ -2398,6 +2418,10 @@ function privatePortalHtml(res) {
 }
 
 const OTP_OS_UPSTREAM_ORIGIN = 'https://otp-os.vercel.app';
+const OTP_OS_PROXY_MAX_BODY_BYTES = positiveInteger(
+    process.env.OTP_OS_PROXY_MAX_BODY_BYTES,
+    1024 * 1024
+);
 const OTP_OS_PROXY_HEADER_BLOCKLIST = new Set([
     'connection',
     'content-encoding',
@@ -2405,6 +2429,18 @@ const OTP_OS_PROXY_HEADER_BLOCKLIST = new Set([
     'keep-alive',
     'transfer-encoding',
     'upgrade'
+]);
+const OTP_OS_PROXY_REQUEST_HEADER_BLOCKLIST = new Set([
+    'host',
+    'connection',
+    'content-length',
+    'accept-encoding',
+    'transfer-encoding',
+    'upgrade',
+    'proxy-authorization',
+    'proxy-connection',
+    'te',
+    'trailer'
 ]);
 
 function rewriteOtpOsHtml(html) {
@@ -2423,11 +2459,27 @@ function rewriteOtpOsHtml(html) {
     });
 }
 
-async function readProxyRequestBody(req) {
+async function readProxyRequestBody(req, maxBytes = OTP_OS_PROXY_MAX_BODY_BYTES) {
     if (['GET', 'HEAD'].includes(req.method)) return undefined;
+    const declaredBytes = Number(req.headers?.['content-length'] || 0);
+    if (Number.isFinite(declaredBytes) && declaredBytes > maxBytes) {
+        const error = new Error('OTP OS proxy request body exceeded size limit');
+        error.statusCode = 413;
+        error.errorCode = 'proxy_body_too_large';
+        throw error;
+    }
     const chunks = [];
+    let totalBytes = 0;
     for await (const chunk of req) {
-        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+        totalBytes += buffer.length;
+        if (totalBytes > maxBytes) {
+            const error = new Error('OTP OS proxy request body exceeded size limit');
+            error.statusCode = 413;
+            error.errorCode = 'proxy_body_too_large';
+            throw error;
+        }
+        chunks.push(buffer);
     }
     return chunks.length ? Buffer.concat(chunks) : undefined;
 }
@@ -2443,7 +2495,7 @@ async function proxyOtpOs(req, res) {
         const headers = {};
         for (const [key, value] of Object.entries(req.headers)) {
             const lower = key.toLowerCase();
-            if (['host', 'connection', 'content-length', 'accept-encoding'].includes(lower)) continue;
+            if (OTP_OS_PROXY_REQUEST_HEADER_BLOCKLIST.has(lower)) continue;
             if (value !== undefined) headers[lower] = Array.isArray(value) ? value.join(', ') : String(value);
         }
         headers.host = new URL(OTP_OS_UPSTREAM_ORIGIN).host;
@@ -2477,6 +2529,9 @@ async function proxyOtpOs(req, res) {
         return res.send(body);
     } catch (error) {
         console.error('otp-os proxy failed:', error?.message || error);
+        if (error?.statusCode === 413) {
+            return res.status(413).type('text/plain; charset=utf-8').send('OTP OS request body is too large.');
+        }
         return res.status(502).type('text/plain; charset=utf-8').send('OTP OS is temporarily unavailable.');
     }
 }
@@ -3211,6 +3266,29 @@ async function findClientPortalJobByStoredToken(token = '') {
     )) || null;
     if (matched) assertStoredClientPortalUsable(matched);
     return matched;
+}
+
+async function loadClientPortalRecord(token, {
+    client = supabaseAdmin,
+    storedLookup = findClientPortalJobByStoredToken
+} = {}) {
+    const parsed = readClientPortalToken(token);
+    let data = null;
+
+    if (parsed.ok) {
+        if (!client) return { parsed, data: null };
+        const result = await client
+            .from('ops_jobs')
+            .select('*')
+            .eq('job_id', parsed.jobId)
+            .maybeSingle();
+        if (result.error) throw result.error;
+        data = result.data || null;
+    } else if (parsed.reason !== 'expired') {
+        data = await storedLookup(token);
+    }
+
+    return { parsed, data };
 }
 
 function privatePortalApi(res) {
@@ -4174,19 +4252,7 @@ app.get('/api/client-portal/:token', async (req, res) => {
         return res.json(buildSafeE2EClientPortalData(rawToken));
     }
     try {
-        let data = null;
-
-        if (parsed.ok) {
-            const result = await supabaseAdmin
-                .from('ops_jobs')
-                .select('*')
-                .eq('job_id', parsed.jobId)
-                .maybeSingle();
-            if (result.error) throw result.error;
-            data = result.data || null;
-        } else if (parsed.reason !== 'expired') {
-            data = await findClientPortalJobByStoredToken(req.params.token);
-        }
+        const { parsed, data } = await loadClientPortalRecord(req.params.token);
 
         if (!data || isClientPortalJobArchived(data)) {
             const expired = parsed.reason === 'expired';
@@ -4202,11 +4268,11 @@ app.get('/api/client-portal/:token', async (req, res) => {
         }
         return res.json(buildClientPortalData(data));
     } catch (error) {
-        if (error.statusCode) {
+        if (error.statusCode === 410 && ['expired', 'revoked'].includes(error.errorCode)) {
             return res.status(error.statusCode).json({
                 ok: false,
-                errorCode: error.errorCode || 'portal_load_failed',
-                message: error.message || 'Client Portal could not load right now.'
+                errorCode: error.errorCode,
+                message: error.message
             });
         }
         console.error('client portal load failed:', error?.message || error);
@@ -4218,13 +4284,58 @@ app.get('/api/client-portal/:token', async (req, res) => {
     }
 });
 
-app.post('/api/quote/create', express.json({ limit: '64kb' }), (req, res) => {
+const quoteCreationLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many proposal creation attempts. Please wait and try again.' }
+});
+
+const PUBLIC_QUOTE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{5,119}$/;
+const PUBLIC_QUOTE_JOB_FIELDS = [
+    'job_id',
+    'created_at',
+    'client_name',
+    'business_name',
+    'service_type',
+    'package_type',
+    'project_title',
+    'project_description',
+    'deliverables',
+    'total_price_cents',
+    'deposit_amount_cents'
+].join(',');
+
+function normalizePublicQuoteId(value) {
+    const id = String(value || '').trim();
+    return PUBLIC_QUOTE_ID_PATTERN.test(id) ? id : '';
+}
+
+async function findOpsJobByQuoteId(client, quoteId) {
+    const safeId = normalizePublicQuoteId(quoteId);
+    if (!safeId) {
+        const error = new Error('Invalid proposal ID');
+        error.statusCode = 400;
+        error.errorCode = 'invalid_quote_id';
+        throw error;
+    }
+    const result = await client
+        .from('ops_jobs')
+        .select(PUBLIC_QUOTE_JOB_FIELDS)
+        .eq('job_id', safeId)
+        .maybeSingle();
+    if (result.error) throw result.error;
+    return result.data || null;
+}
+
+app.post('/api/quote/create', quoteCreationLimiter, verifyToken, express.json({ limit: '32kb' }), (req, res) => {
     noStoreHtml(res);
-    const body = req.body || {};
-    const quoteId = String(body.quote_id || body.id || `PROP-${Date.now().toString(36).toUpperCase()}`).trim();
-    const clientName = String(body.client_name || body.clientName || 'Valued Client').trim();
-    const projectName = String(body.project_name || body.projectName || body.projectTitle || 'Custom Digital & Creative Systems').trim();
-    const packageName = String(body.package_name || body.packageName || 'The Signal').trim();
+    const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+    const quoteId = `PROP-${crypto.randomBytes(10).toString('hex').toUpperCase()}`;
+    const clientName = cleanBookingText(body.client_name || body.clientName || 'Valued Client', 120) || 'Valued Client';
+    const projectName = cleanBookingText(body.project_name || body.projectName || body.projectTitle || 'Custom Digital & Creative Systems', 180) || 'Custom Digital & Creative Systems';
+    const packageName = cleanBookingText(body.package_name || body.packageName || 'The Signal', 80) || 'The Signal';
 
     function generateSmartDeliverables(client, project, pkg) {
         const text = `${client} ${project} ${pkg}`.toLowerCase();
@@ -4261,14 +4372,14 @@ app.post('/api/quote/create', express.json({ limit: '64kb' }), (req, res) => {
         client_name: clientName,
         project_name: projectName,
         package_name: packageName,
-        service_type: String(body.service_type || body.serviceType || 'Creative Technology').trim(),
-        total_amount_display: String(body.total_amount_display || body.totalDisplay || '$500').trim(),
-        deposit_amount_display: String(body.deposit_amount_display || body.depositDisplay || '$250').trim(),
-        deposit_cents: Number(body.deposit_cents || 25000),
-        booking_token: String(body.booking_token || quoteId).trim(),
-        date: String(body.date || new Date().toLocaleDateString()).trim(),
+        service_type: cleanBookingText(body.service_type || body.serviceType || 'Creative Technology', 120) || 'Creative Technology',
+        total_amount_display: cleanBookingText(body.total_amount_display || body.totalDisplay || '$500', 40) || '$500',
+        deposit_amount_display: cleanBookingText(body.deposit_amount_display || body.depositDisplay || '$250', 40) || '$250',
+        deposit_cents: Math.min(Math.max(Math.round(Number(body.deposit_cents || 25000)) || 25000, 0), 10000000),
+        booking_token: quoteId,
+        date: cleanBookingText(body.date || new Date().toLocaleDateString(), 40),
         deliverables: Array.isArray(body.deliverables) && body.deliverables.length
-            ? body.deliverables
+            ? body.deliverables.slice(0, 12).map((item) => cleanBookingText(item, 240)).filter(Boolean)
             : generateSmartDeliverables(clientName, projectName, packageName)
     };
 
@@ -4284,9 +4395,9 @@ app.post('/api/quote/create', express.json({ limit: '64kb' }), (req, res) => {
 
 app.get('/api/quote/:id', async (req, res) => {
     noStoreHtml(res);
-    const quoteId = String(req.params.id || '').trim();
+    const quoteId = normalizePublicQuoteId(req.params.id);
     if (!quoteId) {
-        return res.status(400).json({ success: false, message: 'Proposal ID is required' });
+        return res.status(400).json({ success: false, message: 'A valid proposal ID is required' });
     }
 
     if (IN_MEMORY_QUOTES.has(quoteId)) {
@@ -4336,30 +4447,29 @@ app.get('/api/quote/:id', async (req, res) => {
     try {
         let job = null;
         if (supabaseAdmin) {
-            const { data } = await supabaseAdmin
-                .from('ops_jobs')
-                .select('*')
-                .or(`job_id.eq.${quoteId},booking_token.eq.${quoteId},portal_token.eq.${quoteId}`)
-                .maybeSingle();
-            job = data;
+            job = await findOpsJobByQuoteId(supabaseAdmin, quoteId);
         }
 
         if (!job) {
             return res.status(404).json({ success: false, message: 'Proposal not found or has expired' });
         }
 
-        const pkgKey = String(job.package_interest || job.selected_package || 'Custom Build');
+        const pkgKey = cleanBookingText(job.package_type || 'Custom Build', 80) || 'Custom Build';
         const defaultDepositCents = pkgKey.toLowerCase().includes('engine') ? 50000 : pkgKey.toLowerCase().includes('system') ? 100000 : 25000;
-        const depositCents = Number(job.deposit_cents || job.required_deposit_cents || job.agreed_deposit_cents || defaultDepositCents);
-        const depositDisplay = job.deposit_display || job.deposit_amount_display || `$${(depositCents / 100).toLocaleString()}`;
-        const totalCents = Number(job.total_price_cents || job.agreed_price_cents || 0);
-        const totalDisplay = job.total_amount_display || job.total_display || (totalCents ? `$${(totalCents / 100).toLocaleString()}` : '$500');
+        const depositCents = Number(job.deposit_amount_cents || defaultDepositCents);
+        const depositDisplay = `$${(depositCents / 100).toLocaleString()}`;
+        const totalCents = Number(job.total_price_cents || 0);
+        const totalDisplay = totalCents ? `$${(totalCents / 100).toLocaleString()}` : '$500';
 
         let deliverablesList = [];
         if (Array.isArray(job.deliverables) && job.deliverables.length) {
             deliverablesList = job.deliverables;
-        } else if (Array.isArray(job.scope_items) && job.scope_items.length) {
-            deliverablesList = job.scope_items;
+        } else if (job.deliverables) {
+            deliverablesList = String(job.deliverables)
+                .split(/[\n,;]+/)
+                .map(s => cleanBookingText(s, 240))
+                .filter(Boolean)
+                .slice(0, 12);
         } else if (job.project_description) {
             deliverablesList = String(job.project_description)
                 .split(/[\n,;]+/)
@@ -4379,14 +4489,14 @@ app.get('/api/quote/:id', async (req, res) => {
             success: true,
             proposal: {
                 quote_id: job.job_id || quoteId,
-                client_name: job.name || job.client_name || 'Valued Client',
-                project_name: job.project_title || job.project_description ? job.project_description.slice(0, 60) : 'Custom Project & Systems Build',
+                client_name: cleanBookingText(job.client_name || job.business_name, 120) || 'Valued Client',
+                project_name: cleanBookingText(job.project_title || job.project_description, 180) || 'Custom Project & Systems Build',
                 package_name: pkgKey,
-                service_type: job.service_id || job.service_type || 'Custom Service',
+                service_type: cleanBookingText(job.service_type, 120) || 'Custom Service',
                 total_amount_display: totalDisplay,
                 deposit_amount_display: depositDisplay,
                 deposit_cents: depositCents,
-                booking_token: job.booking_token || job.job_id,
+                booking_token: job.job_id,
                 date: new Date(job.created_at || Date.now()).toLocaleDateString(),
                 deliverables: deliverablesList
             }
@@ -4397,7 +4507,15 @@ app.get('/api/quote/:id', async (req, res) => {
     }
 });
 
-app.post('/api/fixline/inspect', express.json(), async (req, res) => {
+const fixlineInspectLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many inspection requests. Please wait and try again.' }
+});
+
+app.post('/api/fixline/inspect', fixlineInspectLimiter, express.json({ limit: '16kb' }), async (req, res) => {
     try {
         const target = String(req.body?.target || req.body?.raw_input || '').trim();
         if (!target) {
@@ -4447,39 +4565,44 @@ app.post('/api/fixline/inspect', express.json(), async (req, res) => {
 
         const startTime = Date.now();
         let siteRes = null;
+        let html = '';
 
         async function fetchTarget(url) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 4500);
             try {
-                const response = await fetch(url, {
-                    method: 'GET',
+                return await fetchPublicText(url, {
+                    fetchImpl: fetch,
                     headers: browserHeaders,
-                    signal: controller.signal,
-                    redirect: 'follow'
+                    timeoutMs: 5000,
+                    maxBytes: 1024 * 1024,
+                    maxRedirects: 3
                 });
-                clearTimeout(timeoutId);
-                return response;
             } catch (e) {
-                clearTimeout(timeoutId);
+                if (e instanceof PublicFetchError) throw e;
                 return null;
             }
         }
 
-        siteRes = await fetchTarget(fullUrl);
-        if ((!siteRes || siteRes.status >= 400) && !fullUrl.includes('www.')) {
-            const fallbackUrl = fullUrl.replace('https://', 'https://www.').replace('http://', 'http://www.');
-            const fallbackRes = await fetchTarget(fallbackUrl);
-            if (fallbackRes && fallbackRes.ok) {
-                siteRes = fallbackRes;
+        let fetchResult = await fetchTarget(fullUrl);
+        if ((!fetchResult || fetchResult.response.status >= 400) && !new URL(fullUrl).hostname.startsWith('www.')) {
+            const fallbackUrl = new URL(fullUrl);
+            fallbackUrl.hostname = `www.${fallbackUrl.hostname}`;
+            const fallbackResult = await fetchTarget(fallbackUrl.href);
+            if (fallbackResult && fallbackResult.response.ok) {
+                fetchResult = fallbackResult;
             }
+        }
+
+        if (fetchResult) {
+            siteRes = fetchResult.response;
+            html = fetchResult.text;
+            fullUrl = fetchResult.finalUrl;
+            domainName = new URL(fullUrl).hostname.replace(/^www\./, '');
         }
 
         loadTimeMs = Date.now() - startTime;
 
         if (siteRes) {
             httpStatus = siteRes.status;
-            const html = await siteRes.text().catch(() => '');
 
             if (siteRes.ok || html.length > 200) {
                 const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
@@ -4631,6 +4754,13 @@ app.post('/api/fixline/inspect', express.json(), async (req, res) => {
             }
         });
     } catch (err) {
+        if (err instanceof PublicFetchError) {
+            return res.status(err.statusCode || 400).json({
+                success: false,
+                errorCode: err.code || 'destination_not_allowed',
+                message: 'That inspection target is not allowed.'
+            });
+        }
         console.error('Error running live fixline inspect:', err?.message);
         return res.status(500).json({ success: false, message: 'Could not complete inspection' });
     }
@@ -5025,23 +5155,13 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
 });
 
 // Middleware to verify JWT
-const verifyToken = (req, res, next) => {
+function verifyToken(req, res, next) {
     const bearerHeader = req.headers['authorization'];
     if (typeof bearerHeader !== 'undefined') {
         const bearer = bearerHeader.split(' ');
         const bearerToken = bearer[1];
         if (!bearerToken || bearerToken === 'null' || bearerToken === 'undefined') {
             return res.status(401).json({ success: false, message: "Authentication required" });
-        }
-
-        // STATIC BYPASS (Dev Only or Explicitly Enabled)
-        const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
-        const isDev = process.env.NODE_ENV === 'development';
-        const legacyBypass = process.env.LEGACY_BYPASS_ENABLED === 'true';
-        
-        if (bearerToken === 'static-bypass-token' && (legacyBypass || (isLocal && isDev))) {
-            req.auth = { role: 'admin', bypass: true };
-            return next();
         }
 
         const jwtSecret = (process.env.JWT_SECRET || '').trim();
@@ -5051,17 +5171,83 @@ const verifyToken = (req, res, next) => {
 
         jwt.verify(bearerToken, jwtSecret, (err, authData) => {
             if (err) return res.status(403).json({ success: false, message: "Invalid or expired token" });
+            if (!authData || authData.role !== 'admin') {
+                return res.status(403).json({ success: false, message: 'Admin authorization required' });
+            }
             req.auth = authData;
             next();
         });
     } else {
         res.status(401).json({ success: false, message: "Authentication required" });
     }
-};
+}
 
 // DDL export for Terminal SQL modal — authenticated only (never public; avoids schema disclosure).
 app.get('/api/schema-migration', verifyToken, (req, res) => sendSchemaMigrationSql(res));
 app.get('/api/deploy-sql', verifyToken, (req, res) => sendSchemaMigrationSql(res));
+
+async function persistAuthorizedSiteCommand(command, client = supabaseAdmin) {
+    if (!client) {
+        const error = new Error('Site control storage is unavailable');
+        error.statusCode = 503;
+        error.errorCode = 'site_control_unavailable';
+        throw error;
+    }
+
+    const currentResult = await client
+        .from('posts')
+        .select('id, content')
+        .eq('slug', 'system-global-state')
+        .maybeSingle();
+    if (currentResult.error) throw currentResult.error;
+
+    const currentState = safeJsonParse(currentResult.data?.content, {}) || {};
+    const nextState = applySiteCommandToState(currentState, command);
+    const row = {
+        slug: 'system-global-state',
+        title: 'SYSTEM CONFIG [DO NOT DELETE]',
+        excerpt: 'Authenticated persistent state for OTP Site controls.',
+        content: JSON.stringify(nextState),
+        published: true,
+        category: 'System'
+    };
+
+    const writeResult = currentResult.data?.id
+        ? await client.from('posts').update(row).eq('id', currentResult.data.id)
+        : await client.from('posts').insert([row]);
+    if (writeResult.error) throw writeResult.error;
+    return nextState;
+}
+
+app.post('/api/admin/site-command', verifyToken, async (req, res) => {
+    noStoreHtml(res);
+    const normalized = normalizeSiteCommand(req.body);
+    if (!normalized.ok) {
+        return res.status(400).json({
+            success: false,
+            errorCode: normalized.reason,
+            message: 'Unsupported or malformed site control command.'
+        });
+    }
+
+    try {
+        await persistAuthorizedSiteCommand(normalized.command);
+        return res.json({
+            success: true,
+            schema: SITE_COMMAND_SCHEMA,
+            command: normalized.command.type,
+            delivery: 'authenticated_persisted_state',
+            realtimeBroadcast: false
+        });
+    } catch (error) {
+        console.error('site command persistence failed:', error?.message || error);
+        return res.status(error.statusCode || 503).json({
+            success: false,
+            errorCode: error.errorCode || 'site_control_unavailable',
+            message: 'Site control could not be saved right now.'
+        });
+    }
+});
 
 app.get('/api/admin/qa/sweep', verifyToken, (req, res) => {
     const e2eMode = e2eTestModeEnabled();
@@ -5359,6 +5545,9 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
     const row = { ...payload };
 
     if (targetTable === 'site_content') {
+        // Classification is server-owned. Callers cannot mark arbitrary mixed-sensitivity
+        // records public through the generic admin writer.
+        delete row.access_scope;
         if (typeof row.content === 'string') {
             row.content = sanitizeHtml(row.content);
         }
@@ -5368,6 +5557,7 @@ app.post('/api/admin/write-data', verifyToken, async (req, res) => {
                 return res.status(400).json({ success: false, message: 'Invalid site_content key' });
             }
             row.key = k;
+            row.access_scope = siteContentAccessScope(k);
         } else if (!id) {
             return res.status(400).json({ success: false, message: 'site_content insert requires key' });
         }
@@ -6146,10 +6336,32 @@ function buildOpsJobPayloadFromLeadAndOracle(lead, sourceTable, oracle, { existi
     };
 }
 
+const OPS_SEARCH_TERM_PATTERN = /^[\p{L}\p{N}\s.'@_\-]+$/u;
+
+function normalizeOpsSearchTerm(value) {
+    const term = String(value || '').replace(/\s+/g, ' ').trim();
+    if (!term) return '';
+    if (term.length > 80 || !OPS_SEARCH_TERM_PATTERN.test(term)) {
+        const error = new Error('Search contains unsupported characters');
+        error.statusCode = 400;
+        error.errorCode = 'invalid_search';
+        throw error;
+    }
+    return term;
+}
+
+function buildOpsSearchFilter(value) {
+    const term = normalizeOpsSearchTerm(value);
+    if (!term) return '';
+    const escaped = term.replace(/[\\%_]/g, (character) => `\\${character}`);
+    const like = `%${escaped}%`;
+    return `job_id.ilike.${like},client_name.ilike.${like},project_title.ilike.${like}`;
+}
+
 app.post('/api/admin/ops/jobs/list', verifyToken, async (req, res) => {
     if (!supabaseAdmin) return res.status(503).json({ success: false, message: "Database Admin Interface Offline" });
     try {
-        const q = String(req.body?.q || '').trim();
+        const searchFilter = buildOpsSearchFilter(req.body?.q);
         const packageType = String(req.body?.packageType || '').trim();
         const paymentStatus = String(req.body?.paymentStatus || '').trim();
         const jobStatus = String(req.body?.jobStatus || '').trim();
@@ -6164,10 +6376,7 @@ app.post('/api/admin/ops/jobs/list', verifyToken, async (req, res) => {
             .order('updated_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
-        if (q) {
-            const like = `%${q.replace(/%/g, '')}%`;
-            query = query.or(`job_id.ilike.${like},client_name.ilike.${like},project_title.ilike.${like}`);
-        }
+        if (searchFilter) query = query.or(searchFilter);
         if (packageType) query = query.eq('package_type', packageType);
         if (paymentStatus) query = query.eq('payment_status', paymentStatus);
         if (jobStatus) query = query.eq('job_status', jobStatus);
@@ -6196,6 +6405,13 @@ app.post('/api/admin/ops/jobs/list', verifyToken, async (req, res) => {
             counts
         });
     } catch (error) {
+        if (error?.statusCode === 400) {
+            return res.status(400).json({
+                success: false,
+                errorCode: error.errorCode || 'invalid_search',
+                message: 'Search contains unsupported characters.'
+            });
+        }
         console.error("ops-jobs-list:", error.message);
         res.status(500).json({ success: false, message: error.message });
     }
@@ -8696,13 +8912,14 @@ app.post('/api/content/update', verifyToken, async (req, res) => {
         const keyPattern = /^[a-zA-Z][\w.-]{0,119}$/;
         const rows = updates.map((u) => {
             const key = typeof u.key === 'string' ? u.key.trim() : '';
-            if (!keyPattern.test(key)) {
+            if (!keyPattern.test(key) || !PUBLIC_SITE_CONTENT_KEYS.includes(key)) {
                 throw new Error(`Invalid content key: ${JSON.stringify(u.key)}`);
             }
             const raw = typeof u.content === 'string' ? u.content : '';
             return {
                 key,
                 content: sanitizeHtml(raw),
+                access_scope: 'public',
                 updated_by: 'admin-proxy',
                 updated_at: new Date().toISOString()
             };
@@ -8907,8 +9124,7 @@ app.get('/api/admin/versions', verifyToken, async (req, res) => {
         }
     }
 
-    const { exec } = require('child_process');
-    exec('git log -n 12 --pretty=format:"%H|%s|%ad"', { cwd: __dirname }, (error, stdout) => {
+    execFile('git', ['log', '-n', '12', '--pretty=format:%H|%s|%ad'], { cwd: __dirname }, (error, stdout) => {
         if (error) {
             console.error("[SYSTEM] Version Fetch Error:", error.message);
             return res.status(500).json({ success: false, message: "GIT_LOG_FAILURE: Verify repo is initialized." });
@@ -8921,9 +9137,26 @@ app.get('/api/admin/versions', verifyToken, async (req, res) => {
     });
 });
 
-app.post('/api/admin/rollback', verifyToken, (req, res) => {
-    const { version } = req.body;
-    if (!version) return res.status(400).json({ success: false, message: "Version hash required" });
+const GIT_OBJECT_ID_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/i;
+
+function runGitCommand(args) {
+    return new Promise((resolve, reject) => {
+        execFile('git', args, { cwd: __dirname }, (error, stdout, stderr) => {
+            if (error) {
+                error.stderr = stderr;
+                reject(error);
+                return;
+            }
+            resolve(stdout);
+        });
+    });
+}
+
+app.post('/api/admin/rollback', verifyToken, async (req, res) => {
+    const version = String(req.body?.version || '').trim();
+    if (!GIT_OBJECT_ID_PATTERN.test(version)) {
+        return res.status(400).json({ success: false, message: 'A full commit hash is required.' });
+    }
     
     if (process.env.VERCEL) {
         return res.status(403).json({
@@ -8934,29 +9167,33 @@ app.post('/api/admin/rollback', verifyToken, (req, res) => {
     }
 
     console.log(`[SYSTEM] Authorized Rollback Initiated for commit: ${version}`);
-    const { exec } = require('child_process');
-    
-    // Hard reset + clean: Ensures filesystem maps exactly to the requested hash
-    const cmd = `git stash --include-untracked && git reset --hard ${version} && git clean -fd`;
-    
-    exec(cmd, { cwd: __dirname }, (error, stdout, stderr) => {
-        if (error) {
-            console.error("[SYSTEM] Rollback Error:", error.message);
-            return res.status(500).json({ success: false, message: `Git Error: ${error.message}` });
-        }
-
+    try {
+        await runGitCommand(['cat-file', '-e', `${version}^{commit}`]);
+        await runGitCommand(['stash', 'push', '--include-untracked', '-m', 'otp-rollback-safety']);
+        await runGitCommand(['reset', '--hard', version]);
+        await runGitCommand(['clean', '-fd']);
         console.log(`[SYSTEM] Successful rollback to ${version.substring(0, 7)}. Rebooting...`);
         res.json({ success: true, message: `System state synchronized to ${version.substring(0, 7)}. Rebooting in 3s.` });
-        
+
         // Signal process manager to restart
         setTimeout(() => process.exit(0), 3000);
-    });
+    } catch (error) {
+        console.error('[SYSTEM] Rollback Error:', error?.message || error);
+        return res.status(500).json({ success: false, message: 'Git rollback failed.' });
+    }
 });
 
 
 // --- GLOBAL ERROR HANDLER ---
 // --- GLOBAL ERROR HANDLER ---
 app.use((err, req, res, next) => {
+    if (err?.type === 'entity.too.large' || err?.status === 413) {
+        return res.status(413).json({
+            success: false,
+            message: 'Request body is too large.',
+            errorCode: 'payload_too_large'
+        });
+    }
     const errorLog = `[${new Date().toISOString()}] ERROR: ${err.message}\nStack: ${err.stack}\n`;
     // Console only for Vercel
     console.error(errorLog);
@@ -8997,9 +9234,19 @@ module.exports = app;
 module.exports.__clientPortalTestHooks = {
     createClientPortalToken,
     readClientPortalToken,
+    loadClientPortalRecord,
     buildClientPortalData,
     portalTokenFromInternalNotes,
     storedClientPortalState
+};
+module.exports.__securityTestHooks = {
+    buildOpsSearchFilter,
+    normalizeOpsSearchTerm,
+    normalizePublicQuoteId,
+    findOpsJobByQuoteId,
+    readProxyRequestBody,
+    persistAuthorizedSiteCommand,
+    verifyToken
 };
 module.exports.__songWarsTestHooks = {
     renderSongWarsPage,

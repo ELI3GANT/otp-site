@@ -34,9 +34,15 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/audit/submit',
     'POST /api/fixline/inspect',
     'POST /api/analytics/view',
-    'POST /api/quote/create',
     'POST /api/create-checkout-session'
 ]);
+
+const siteContentBoundaryMigration = read('supabase/migrations/20260811020000_site_content_access_boundary.sql');
+assert.ok(siteContentBoundaryMigration.includes("alter column access_scope set default 'private'"));
+assert.ok(siteContentBoundaryMigration.includes('to anon, authenticated'));
+assert.ok(siteContentBoundaryMigration.includes("access_scope = 'public'"));
+assert.ok(siteContentBoundaryMigration.includes("'hero-subtitle'"));
+assert.ok(!/using\s*\(\s*true\s*\)[\s\S]*to\s+anon/i.test(siteContentBoundaryMigration), 'anon must not receive an unrestricted site_content policy');
 
 const routeLineRe = /app\.(get|post|put|delete|patch)\(\s*['"`](\/api[^'"`]+)['"`]/;
 

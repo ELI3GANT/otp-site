@@ -86,7 +86,7 @@ Rules:
 - `JWT_SECRET` - canonical admin API verifier secret. Server-side sweep scripts may mint a short-lived in-memory JWT from this value when Vercel masks passcode values during env pull.
 - `OTP_ADMIN_TOKEN` - optional fallback private-check token. It must be a real unexpired JWT signed by the same production `JWT_SECRET`; stale, locally signed, or placeholder values should be treated as invalid.
 - `E2E_TEST_MODE` - optional safe-QA mode flag. Keep unset for read-only production sweeps unless fixture-isolated writes are intentionally enabled.
-- `LEGACY_BYPASS_ENABLED` - development-only/static-bypass control.
+- Legacy static authentication bypass is retired; local development requires a signed JWT.
 
 Rules:
 

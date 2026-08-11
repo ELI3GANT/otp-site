@@ -13,6 +13,11 @@ async function createQuote() {
   const totalDisplay = args[3] || '$500';
   const depositDisplay = args[4] || '$250';
   const baseUrl = process.env.OTP_SITE_URL || 'http://localhost:3000';
+  const adminToken = String(process.env.OTP_ADMIN_TOKEN || '').trim();
+
+  if (!adminToken) {
+    throw new Error('OTP_ADMIN_TOKEN is required to create a proposal.');
+  }
 
   const depositCents = Number(depositDisplay.replace(/[^0-9]/g, '')) * 100 || 25000;
 
@@ -35,7 +40,11 @@ async function createQuote() {
     const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
     const res = await fetch(`${baseUrl}/api/quote/create`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: {
+        'Authorization': `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json'
+      },
       body: JSON.stringify(payload)
     });
     const data = await res.json();

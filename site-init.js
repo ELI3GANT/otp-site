@@ -852,107 +852,9 @@ window.OTP.initRealtimeState = async function() {
         }
     } catch(e) { console.error("Config Sync Error:", e); }
 
-    // Listen for Site Commands — MUST match OTP Terminal (`admin-core.js` channel `otp-uplink`).
-    const channel = client.channel('otp-uplink');
-
-    channel.on('broadcast', { event: 'command' }, (message) => {
-        console.log("📡 INCOMING COMMAND:", message);
-        const { type, value } = message.payload || {};
-        
-        if (type === 'maintenance') {
-            // SAFETY: Ignore on Admin/Portal
-            if (window.location.pathname.includes('otp-terminal') || 
-                window.location.pathname.includes('portal')) return;
-
-            if (value === 'on') {
-                document.body.innerHTML = `
-                    <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; color: #fff; font-family: 'Space Grotesk', sans-serif; text-align: center; padding: 20px;">
-                        <h1 style="font-size: 3rem; margin-bottom: 10px;">SYSTEM MAINTENANCE</h1>
-                        <p style="opacity: 0.5; letter-spacing: 2px;">WE ARE CURRENTLY CALIBRATING THE FEED. STANDBY.</p>
-                        <div style="margin-top: 30px; width: 40px; height: 1px; background: #333;"></div>
-                    </div>
-                `;
-            } else { location.reload(); }
-        }
-
-        if (type === 'theme') {
-            // Public pages use local chrono/manual theme, so global broadcasts are recorded only.
-            localStorage.setItem('last_global_theme', value);
-
-            // Visual transition
-            if (typeof gsap !== 'undefined') {
-                gsap.fromTo('body', { opacity: 0.5 }, { opacity: 1, duration: 0.6, ease: "power2.out" });
-            }
-        }
-        if (type === 'refresh') location.reload();
-        if (type === 'alert') window.OTP.showBroadcast(value);
-        
-        if (type === 'visuals') {
-            const requestedVisuals = String(value).toLowerCase();
-            const starsDisabled = ['off', 'none', 'disabled'].includes(requestedVisuals);
-            const intensity = requestedVisuals === 'high' ? 'high' : 'low';
-            document.documentElement.setAttribute('data-fx-intensity', intensity);
-            window.FX_INTENSITY = intensity;
-            const highFi = intensity === 'high';
-            document.documentElement.classList.toggle('perf-mode', !highFi);
-            window.dispatchEvent(new CustomEvent('otp-fx-change', { detail: { intensity } }));
-            const canvas = document.getElementById('cursor-canvas');
-            if (starsDisabled) {
-                document.documentElement.setAttribute('data-stars', 'disabled');
-            } else if (canvas && canvas.classList.contains('stars-mounted')) {
-                document.documentElement.setAttribute('data-stars', 'mounted');
-            } else {
-                document.documentElement.removeAttribute('data-stars');
-            }
-            if (canvas) {
-                canvas.classList.toggle('stars-disabled', starsDisabled);
-                canvas.style.removeProperty('display');
-            }
-        }
-
-        if (type === 'kursor') {
-            const kNodes = document.querySelectorAll('.kursor, .kursor-child');
-            kNodes.forEach(n => n.style.opacity = value === 'on' ? '1' : '0');
-        }
-
-        if (type === 'status') {
-            const line = String(value != null ? value : '').trim();
-            const upper = line.toUpperCase();
-            const statusEl = document.getElementById('siteStatus');
-            const textEl = statusEl?.querySelector('.status-text');
-            if (textEl && upper) textEl.textContent = `SYSTEM: ${upper}`;
-            document.querySelectorAll('#footer-status').forEach((el) => {
-                el.textContent = upper ? `SYSTEM: ${upper}` : el.textContent;
-            });
-            if (upper && statusEl && window.gsap) {
-                window.gsap.fromTo(statusEl, { opacity: 0.35 }, { opacity: 1, duration: 0.45, repeat: 2, yoyo: true });
-            }
-        }
-
-        if (type === 'warp') {
-            // SAFETY: Ignore on Admin/Portal
-            if (window.location.pathname.includes('otp-terminal') || 
-                window.location.pathname.includes('portal') ||
-                window.location.pathname.includes('404')) return;
-
-            let dest = String(value || '').trim();
-            if (!dest || /^(javascript|data|vbscript):/i.test(dest)) return;
-            if (!/^https?:\/\//i.test(dest)) dest = 'https://' + dest;
-            let href;
-            try {
-                const u = new URL(dest);
-                if (u.protocol !== 'http:' && u.protocol !== 'https:') return;
-                href = u.href;
-            } catch (_) {
-                return;
-            }
-
-            window.OTP.showBroadcast('NETWORK WARP INITIATED: REDIRECTING TO ' + href);
-            setTimeout(() => { window.location.href = href; }, 5000);
-        }
-    }).subscribe((status) => {
-        console.log("📡 SITE COMMAND CHANNEL (otp-uplink):", status);
-    });
+    // SECURITY: Raw public Realtime broadcasts are never a control plane. Supported
+    // site controls are written through the authenticated server API and applied from
+    // the canonical system-global-state record on a normal page load.
 
     // Init Presence
     const sessionId = 'visitor-' + Math.random().toString(36).substring(2, 9);
@@ -985,7 +887,10 @@ window.OTP.initLiveEditor = async function() {
 
     // 9.1 Fetch & Apply Content (Always run)
     try {
-        const { data: contentRows, error } = await client.from('site_content').select('*');
+        const { data: contentRows, error } = await client
+            .from('site_content')
+            .select('key, content')
+            .eq('access_scope', 'public');
         if (!error && contentRows) {
             contentRows.forEach(row => {
                 const el = document.getElementById(row.key);
@@ -1108,18 +1013,8 @@ window.OTP.initLiveEditor = async function() {
                 // 1. Local Feedback
                 window.OTP.showBroadcast("SITE CONTENT UPDATED");
 
-                // 2. Network Broadcast (Vice-Versa Sync)
-                // We still use the client channel for realtime NOTIFICATION, just not storage
-                const channel = client.channel('otp-uplink');
-                channel.subscribe((status) => {
-                    if (status === 'SUBSCRIBED') {
-                        channel.send({
-                            type: 'broadcast',
-                            event: 'command',
-                            payload: { type: 'alert', value: 'Global Site Content Updated' }
-                        });
-                    }
-                });
+                // Remote command broadcasts remain disabled. The saved public content
+                // is picked up from the classified table on a normal page load.
             } catch(e) {
                 console.error(e);
                 alert("Save Failed: " + String(e && e.message != null ? e.message : e));
@@ -2455,10 +2350,9 @@ function initSite() {
         });
     }
 
-    // 10. BOOTSTRAP REALTIME & DYNAMIC CONTENT
-    // Site Command Pro (terminal) broadcasts on Supabase Realtime channel `otp-uplink`.
-    // Subscribe for all public visitors so toggles reach the live site without opt-in.
-    // Heavy fetches (posts/inbox) stay gated below; initRealtimeState already try/catches its post read.
+    // 10. BOOTSTRAP SAFE DYNAMIC CONTENT
+    // Privileged Realtime commands are disabled. initRealtimeState reads only the
+    // server-written persistent public state and keeps visitor presence separate.
     const params = new URLSearchParams(window.location.search);
     const isEditMode = params.get('mode') === 'edit';
     const adminToken = localStorage.getItem('otp_admin_token');
@@ -2472,7 +2366,7 @@ function initSite() {
         window.OTP.initLiveEditor();
     }
     
-    // 11. SITE STATUS — initial + live updates come from OTP.initRealtimeState (posts + otp-uplink).
+    // 11. SITE STATUS — initial state comes from the authenticated persistent record.
 }
 
 if (document.readyState === 'loading') {
@@ -2617,7 +2511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 })();
 
-// --- SITE COMMAND PRO (broadcast UI only; live channel is OTP.initRealtimeState → otp-uplink) ---
+// --- SITE NOTICE UI (local presentation only; not a remote command receiver) ---
 (function() {
     function showEmergencyBroadcast(msg) {
         // Prevent dupes

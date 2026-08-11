@@ -244,7 +244,7 @@
         token: localStorage.getItem('otp_admin_token') || null, // Persist session
         categories: [],
         archetypes: [],
-        siteChannelSubscribed: false
+        siteControlReady: false
     };
     window.state = state; // Expose to window for inline scripts
     /** OTP Oracle (knowledge + recommendations) cache: `leads:<uuid>` / `contacts:<uuid>` for reply + AI flows. */
@@ -478,11 +478,9 @@
             return false;
         }
     };
-    const isStaticBypassAllowed = () => {
-        if (state.token !== 'static-bypass-token') return false;
-        const apiBase = resolveApiBase();
-        return isLocalRuntime() && isLocalApiBase(apiBase);
-    };
+    // Legacy static tokens are never authorization. Local development uses the
+    // same signed JWT flow as every other runtime and therefore fails closed.
+    const isStaticBypassAllowed = () => false;
     const decodeJwtPayload = (token) => {
         if (!token || token === 'static-bypass-token') return null;
         try {
@@ -541,6 +539,11 @@
 
         const localHosts = new Set(['localhost', '127.0.0.1', '::1']);
         const isLocalHost = localHosts.has(window.location.hostname);
+        if (state.token === 'static-bypass-token') {
+            localStorage.removeItem('otp_admin_token');
+            state.token = null;
+            updateDiagnostics('auth', 'LOGIN REQUIRED', 'var(--danger)');
+        }
         if (!state.token && !isLocalHost) {
             window.location.href = 'portal-gate.html?reason=missing_token';
             return;
@@ -749,39 +752,10 @@
                 });
             }
 
-            // 5. SITE COMMAND PRO UPLINK (Unified Channel)
-            state.siteChannelSubscribed = false;
-            state.siteChannel = state.client.channel('otp-uplink');
-            
-            // Listen for changes from other admin sessions
-            state.siteChannel.on('broadcast', { event: 'command' }, (message) => {
-                console.log("🛰️ COMMAND UPLINK: REMOTE SIGNAL RECEIVED.", message);
-                const { type, value } = message.payload || {};
-                
-                // 1. Sync Dashboard UI Buttons
-                if (['maintenance', 'visuals', 'kursor', 'theme', 'status'].includes(type)) {
-                    syncDashboardElement(type, value);
-                    
-                    // Dashboard Theme Sync (Apply theme to self)
-                    if (type === 'theme') {
-                        syncDashboardElement('theme', value);
-                        const btns = document.querySelectorAll('.theme-btn');
-                        btns.forEach(btn => btn.textContent = (value === 'light') ? '☀️' : '🌗');
-                    }
-                    
-                    showToast(`CONTROL SYNCED: ${type.toUpperCase()}`);
-                }
-            });
-
-            state.siteChannel.subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    state.siteChannelSubscribed = true;
-                    console.log("🛰️ COMMAND UPLINK: STABLE.");
-                } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-                    state.siteChannelSubscribed = false;
-                    console.warn("🛰️ COMMAND UPLINK:", status);
-                }
-            });
+            // 5. AUTHENTICATED SITE CONTROL
+            // Raw public Realtime broadcasts are intentionally disabled. Supported
+            // controls are persisted through /api/admin/site-command.
+            state.siteControlReady = Boolean(state.token);
 
             // 7. SYNC SYSTEM STATE (Persistence)
             fetchSystemState();
@@ -1466,6 +1440,9 @@
 
             inbox.innerHTML = data.map(c => {
                 const isDrafted = c.draft_reply && c.draft_reply.length > 0;
+                const draftPreview = isDrafted
+                    ? window.escapeHtml(String(c.draft_reply).substring(0, 200))
+                    : '';
                 let statusColor = '#ffaa00';
                 let statusText = 'NEW LEAD';
                 
@@ -1506,7 +1483,7 @@
                     ${isDrafted ? `
                     <div style="background: rgba(var(--accent2-rgb), 0.05); border-left: 3px solid var(--admin-cyan); padding: 15px; margin-top: 10px; border-radius: 0 6px 6px 0;">
                         <div style="font-size: 0.65rem; color: var(--admin-cyan); margin-bottom: 8px; text-transform: uppercase; font-weight: 900; letter-spacing: 2px;">// OTP ORACLE DRAFT</div>
-                        <div style="font-size: 0.85rem; color: var(--admin-text); white-space: pre-wrap; margin-bottom: 15px; line-height: 1.5; font-style: italic;">"${c.draft_reply.substring(0, 200)}${c.draft_reply.length > 200 ? '...' : ''}"</div>
+                        <div style="font-size: 0.85rem; color: var(--admin-text); white-space: pre-wrap; margin-bottom: 15px; line-height: 1.5; font-style: italic;">"${draftPreview}${c.draft_reply.length > 200 ? '...' : ''}"</div>
                         <div style="display:flex; gap:12px; flex-wrap:wrap;">
                             <button type="button" class="touch-ops-oracle" onclick="window.bootstrapOpsJobFromOracle({ leadId: ${JSON.stringify(String(c.id))}, sourceTable: 'contacts' })" style="min-height:40px;padding:8px 12px;font-size:0.68rem;border-radius:8px;border:1px solid var(--admin-cyan);background:rgba(var(--accent2-rgb),0.12);color:var(--admin-cyan);cursor:pointer;font-weight:800;">JOB ⊕ ORACLE</button>
                             <button type="button" onclick="copyDraft(${JSON.stringify(String(c.id))})" class="btn-action-mini">COPY SIGNAL</button>
@@ -7029,37 +7006,35 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         }
     };
 
-    async function waitForSiteChannelSubscribed(maxMs = 12000) {
-        if (!state.siteChannel) throw new Error('NO_CHANNEL');
-        if (state.siteChannelSubscribed) return;
-        const deadline = Date.now() + maxMs;
-        while (!state.siteChannelSubscribed && Date.now() < deadline) {
-            await new Promise((r) => setTimeout(r, 45));
-        }
-        if (!state.siteChannelSubscribed) throw new Error('REALTIME_NOT_SUBSCRIBED');
-    }
-
-    /** Broadcast on `otp-uplink` after Realtime join; surfaces failures to the operator. */
-    async function broadcastSiteCommand(payload) {
-        try {
-            await waitForSiteChannelSubscribed();
-        } catch (e) {
-            showToast(`NETWORK COMMAND BLOCKED: ${formatNetworkError(e)}`);
+    /** Persist a bounded site control through the authenticated server authority. */
+    async function submitSiteCommand(payload) {
+        const token = state.token || localStorage.getItem('otp_admin_token');
+        if (!token || token === 'static-bypass-token') {
+            showToast('SITE CONTROL BLOCKED: AUTHENTICATION REQUIRED');
             return false;
         }
         try {
-            const result = await state.siteChannel.send({
-                type: 'broadcast',
-                event: 'command',
-                payload
+            const response = await fetch(`${resolveApiBase()}/api/admin/site-command`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    schema: 'otp-site-command-v1',
+                    type: payload?.type,
+                    value: payload?.value
+                })
             });
-            if (result !== 'ok') {
-                showToast(`BROADCAST FAILED: ${String(result).toUpperCase()}`);
+            const result = await response.json().catch(() => null);
+            if (!response.ok || !result?.success) {
+                showToast(`SITE CONTROL BLOCKED: ${String(result?.errorCode || response.status).toUpperCase()}`);
                 return false;
             }
             return true;
         } catch (e) {
-            showToast(`BROADCAST ERROR: ${formatNetworkError(e)}`);
+            showToast(`SITE CONTROL ERROR: ${formatNetworkError(e)}`);
             return false;
         }
     }
@@ -7078,8 +7053,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
     };
 
     window.toggleSiteControl = async function(type) {
-        if (!state.siteChannel) {
-            showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
+        if (!state.siteControlReady) {
+            showToast('SITE CONTROL NOT READY — AUTHENTICATION REQUIRED');
             return;
         }
         const statusEl = document.getElementById(`status-${type}`);
@@ -7088,9 +7063,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         // 1. Maintenance
         if (type === 'maintenance') {
             const newState = statusEl.textContent === 'OFFLINE' ? 'on' : 'off';
-            const ok = await broadcastSiteCommand({ type: 'maintenance', value: newState });
+            const ok = await submitSiteCommand({ type: 'maintenance', value: newState });
             if (!ok) return;
-            void persistSystemState('maintenance', newState); // PERSIST
             
             statusEl.textContent = newState === 'on' ? 'ACTIVE' : 'OFFLINE';
             statusEl.style.color = newState === 'on' ? 'var(--admin-success)' : 'var(--admin-danger)';
@@ -7101,9 +7075,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         if (type === 'visuals') {
             const isHiFi = statusEl.textContent === 'HIGH-FI';
             const next = isHiFi ? 'low' : 'high';
-            const ok = await broadcastSiteCommand({ type: 'visuals', value: next });
+            const ok = await submitSiteCommand({ type: 'visuals', value: next });
             if (!ok) return;
-            void persistSystemState('visuals', next); // PERSIST
 
             statusEl.textContent = next === 'high' ? 'HIGH-FI' : 'PERF-MODE';
             statusEl.style.color = next === 'high' ? 'var(--admin-success)' : 'var(--accent2)';
@@ -7114,9 +7087,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         if (type === 'theme') {
             const isLight = statusEl.textContent === 'DAY-MODE';
             const nextTheme = isLight ? 'dark' : 'light';
-            const ok = await broadcastSiteCommand({ type: 'theme', value: nextTheme });
+            const ok = await submitSiteCommand({ type: 'theme', value: nextTheme });
             if (!ok) return;
-            void persistSystemState('theme', nextTheme); // PERSIST
 
             // Local Admin Persistence (Using manual lock)
             if (window.OTP && typeof window.OTP.setTheme === 'function') {
@@ -7139,9 +7111,8 @@ If citations are provided, treat them as the source of truth for pricing/rules a
         if (type === 'kursor') {
             const isActive = statusEl.textContent === 'ACTIVE';
             const next = isActive ? 'off' : 'on';
-            const ok = await broadcastSiteCommand({ type: 'kursor', value: next });
+            const ok = await submitSiteCommand({ type: 'kursor', value: next });
             if (!ok) return;
-            void persistSystemState('kursor', next); // PERSIST
 
             statusEl.textContent = next === 'on' ? 'ACTIVE' : 'DISABLED';
             statusEl.style.color = next === 'on' ? 'var(--admin-success)' : 'var(--admin-muted)';
@@ -7217,67 +7188,15 @@ If citations are provided, treat them as the source of truth for pricing/rules a
     };
 
     window.refreshLiveSite = function() {
-        confirmAction(
-            "PURGE NETWORK CACHE?", 
-            "This will force a reload for all active visitors to ensure they see the latest updates. Proceed?",
-            async () => {
-                if (!state.siteChannel) {
-                    showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
-                    return;
-                }
-                const ok = await broadcastSiteCommand({ type: 'refresh' });
-                if (!ok) return;
-                showToast("NETWORK CACHE PURGED");
-                window.logAdminAction("NETWORK CACHE PURGE EXECUTED", "danger");
-            }
-        );
+        showToast('REMOTE RELOAD DISABLED — SIGNED PRIVATE COMMANDS REQUIRED');
     };
 
     window.triggerGlobalWarp = function() {
-        promptAction(
-            "GLOBAL WARP OVERRIDE",
-            "Enter the target destination URL. All active users will be instantly redirected.",
-            "e.g. google.com",
-            async (target) => {
-                if (!state.siteChannel) {
-                    showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
-                    return;
-                }
-                
-                let url = target.trim();
-                if (!url.startsWith('http')) url = 'https://' + url;
-                
-                const ok = await broadcastSiteCommand({ type: 'warp', value: url });
-                if (!ok) return;
-                showToast("GLOBAL WARP INITIATED");
-            }
-        );
+        showToast('REMOTE REDIRECT DISABLED — SIGNED PRIVATE COMMANDS REQUIRED');
     };
 
     window.openBroadcastPrompt = function() {
-        promptAction(
-            "EMERGENCY BROADCAST",
-            "Send a high-priority overlay message to all active users.",
-            "e.g. SYSTEM MAINTENANCE IN 5 MIN",
-            async (msg) => {
-                if (!state.siteChannel) {
-                    showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
-                    return;
-                }
-
-                // 1. Send to Network
-                const ok = await broadcastSiteCommand({ type: 'alert', value: msg });
-                if (!ok) return;
-
-                // 2. Show Locally (Confirmation)
-                if (window.OTP && window.OTP.showBroadcast) {
-                    window.OTP.showBroadcast(msg);
-                }
-                
-                showToast("EMERGENCY BROADCAST SENT");
-                window.logAdminAction(`BROADCAST DISPATCHED: "${msg.substring(0, 20)}..."`, "warning");
-            }
-        );
+        showToast('REMOTE BROADCAST DISABLED — SIGNED PRIVATE COMMANDS REQUIRED');
     };
 
     window.openStatusPrompt = function() {
@@ -7286,21 +7205,10 @@ If citations are provided, treat them as the source of truth for pricing/rules a
             "Set the message displayed in the site footer.",
             "e.g. OPERATIONAL, NEW INSIGHT LIVE, etc.",
             async (msg) => {
-                if (!state.siteChannel || !msg) {
-                    if (!state.siteChannel) showToast('COMMAND UPLINK NOT READY — WAIT FOR DATABASE ONLINE');
-                    return;
-                }
-                
-                // 1. Broadcast to Network
-                const ok = await broadcastSiteCommand({ type: 'status', value: msg });
+                if (!state.siteControlReady || !msg) return;
+                const ok = await submitSiteCommand({ type: 'status', value: msg });
                 if (!ok) return;
-
-                // 2. Persist to DB
-                void persistSystemState('status', msg);
-                
-                // 3. Update Admin UI
                 syncDashboardElement('status', msg);
-                
                 showToast("SITE STATUS UPDATED");
             }
         );

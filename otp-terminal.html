@@ -1623,20 +1623,6 @@
     <script src="admin-core.js?v=16.8.3"></script>
     <!-- 4. Slug Auto-Gen (Inline for speed) -->
     <script>
-      // UI Updates based on Auth (Post-Load)
-      (function() {
-          const token = localStorage.getItem('otp_admin_token');
-          if(token === 'static-bypass-token') {
-              const dot = document.querySelector('.status-dot-mini');
-              if(dot) {
-                  dot.style.background = '#ffaa00'; // Orange/Yellow
-                  dot.style.boxShadow = '0 0 5px #ffaa00';
-                  // Change text node next to dot
-                  if(dot.nextSibling) dot.nextSibling.textContent = ' NODE: LOCAL (BYPASS)';
-              }
-          }
-      })();
-
       const titleInput = document.getElementById('titleInput');
       const slugInput = document.getElementById('slugInput');
       
@@ -1699,24 +1685,9 @@
               else btn.classList.remove('theme-active');
           });
 
-          // BROADCAST TO NETWORK (Global Sync only when authenticated)
-          const canSyncGlobally = !!(window.state && window.state.siteChannel && window.state.token);
-          if (canSyncGlobally) {
-              window.state.siteChannel.send({ 
-                  type: 'broadcast', 
-                  event: 'command', 
-                  payload: { type: 'theme', value: next } 
-              }).then(() => {
-                  showToast(`GLOBAL THEME: ${next.toUpperCase()}`);
-              }).catch(err => {
-                  console.error("Theme Broadcast Failed:", err);
-              });
-              
-              // Persist to DB for sticky loads
-              if (typeof persistSystemState === 'function') {
-                  persistSystemState('theme', next);
-              }
-          } else if (window.showToast) {
+          // Terminal chrome is local-only. Global controls must use the authenticated
+          // Site Command panel; the public Realtime channel is not a control plane.
+          if (window.showToast) {
               window.showToast(`LOCAL THEME: ${next.toUpperCase()}`);
           }
           // Refresh Chart Theme

@@ -55,6 +55,7 @@ const tests = [
     { name: 'Menu Logic', path: 'tests/menu_logic_test.js' },
     { name: 'Live API Analytics Slug', path: 'tests/live_analytics_slug.test.js' },
     { name: 'API Surface + RLS Contract', path: 'tests/api_surface_security_contract.test.js' },
+    { name: 'Security Remediation Regressions', path: 'tests/security_remediation.test.js' },
     { name: 'Admin Sweep Auth Contract', path: 'tests/admin_sweep_auth_contract.test.js' },
     { name: 'Vercel Route Precedence', path: 'tests/vercel_route_precedence.test.js' },
     { name: 'Release Guardrails Contract', path: 'tests/release_guardrails_contract.test.js' },

@@ -31,7 +31,7 @@ const AuthLogic = {
         if (!token) return false;
         
         try {
-            if (token === 'static-bypass-token') return true;
+            if (token === 'static-bypass-token') return false;
             const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
             const now = Math.floor(Date.now() / 1000);
             return !(payload.exp && payload.exp < now);
@@ -73,10 +73,10 @@ try {
     assert.strictEqual(AuthLogic.checkSession(), false, "Expired token should be invalid");
     console.log("   ✅ PASSED");
 
-    // TEST 4: Bypass Token
-    console.log("   Test 4: Bypass Token Check...");
+    // TEST 4: Legacy bypass must fail closed
+    console.log("   Test 4: Legacy Bypass Rejection...");
     localStorageMock.setItem('otp_admin_token', 'static-bypass-token');
-    assert.strictEqual(AuthLogic.checkSession(), true, "Bypass token should be valid");
+    assert.strictEqual(AuthLogic.checkSession(), false, "Legacy bypass token must be rejected");
     console.log("   ✅ PASSED");
 
     console.log("\n🎉 ALL AUTH TESTS PASSED.");

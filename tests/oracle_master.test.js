@@ -62,7 +62,9 @@ assert.ok(adminCore.includes('window.bootstrapOpsJobFromOracle'), 'Terminal can 
 assert.ok(adminCore.includes('/api/admin/knowledge/recommendations'));
 assert.ok(adminCore.includes('/api/admin/docs/packet'));
 assert.ok(adminCore.includes('window.downloadDocTemplate'), 'admin can download master templates');
-assert.ok(adminCore.includes('broadcastSiteCommand'), 'Site Command Pro uses guarded Realtime send');
+assert.ok(adminCore.includes('submitSiteCommand'), 'Site Command Pro uses the authenticated server authority');
+assert.ok(adminCore.includes('/api/admin/site-command'), 'Site Command Pro targets the authenticated server route');
+assert.ok(!adminCore.includes("channel('otp-uplink')"), 'Terminal does not use public Realtime as a control plane');
 assert.ok(
     adminCore.includes("'status-message'") && adminCore.includes("type === 'status'"),
     'Global status tile uses id status-message (not status-status)'
