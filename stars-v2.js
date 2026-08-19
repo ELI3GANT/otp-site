@@ -40,6 +40,10 @@
     let drawFramePending = false;
     let drawFrameTimer = 0;
     const STARFIELD_BOOT_DELAY_MS = window.innerWidth < 700 ? 1500 : 900;
+    const coarsePointer = window.matchMedia('(pointer: coarse)');
+    function prefersLiteAtmosphere() {
+        return window.innerWidth < 768 || coarsePointer.matches;
+    }
     const mouse = { x: -9999, y: -9999, active: false, attractor: false };
     const sky = { drift: 0, shooting: [] };
 
@@ -366,15 +370,17 @@
     window.clearAttractor = () => updateMouse(null, null);
     window.resetStars = rebuildStars;
 
-    window.addEventListener('mousemove', (event) => trackPointer(event.clientX, event.clientY), { passive: true });
-    window.addEventListener('mouseleave', () => updateMouse(null, null), { passive: true });
-    window.addEventListener('touchstart', (event) => {
-        if (event.touches.length) trackPointer(event.touches[0].clientX, event.touches[0].clientY);
-    }, { passive: true });
-    window.addEventListener('touchmove', (event) => {
-        if (event.touches.length) trackPointer(event.touches[0].clientX, event.touches[0].clientY);
-    }, { passive: true });
-    window.addEventListener('touchend', () => updateMouse(null, null), { passive: true });
+    if (!coarsePointer.matches) {
+        window.addEventListener('mousemove', (event) => trackPointer(event.clientX, event.clientY), { passive: true });
+        window.addEventListener('mouseleave', () => updateMouse(null, null), { passive: true });
+        window.addEventListener('touchstart', (event) => {
+            if (event.touches.length) trackPointer(event.touches[0].clientX, event.touches[0].clientY);
+        }, { passive: true });
+        window.addEventListener('touchmove', (event) => {
+            if (event.touches.length) trackPointer(event.touches[0].clientX, event.touches[0].clientY);
+        }, { passive: true });
+        window.addEventListener('touchend', () => updateMouse(null, null), { passive: true });
+    }
     window.addEventListener('resize', queueResize, { passive: true });
     prefersReducedMotion.addEventListener?.('change', rebuildStars);
     document.addEventListener('visibilitychange', () => {
@@ -404,6 +410,7 @@
     }
 
     function bootStarfield() {
+        if (prefersLiteAtmosphere()) enablePerformanceMode();
         resize();
         scheduleDrawFrame();
     }

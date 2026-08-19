@@ -21,6 +21,9 @@ assert.ok(!index.includes('preconnect" href="https://assets.calendly.com"'), 'ho
 assert.ok((index.match(/rel="preconnect"/g) || []).length <= 2, 'homepage keeps at most two preconnect hints');
 assert.ok(!index.includes('https://js.stripe.com/v3/'), 'homepage avoids loading Stripe before a payment action exists');
 assert.ok(!index.includes('pay_v2.js'), 'homepage avoids the unused legacy payment bridge');
+assert.ok(!index.includes('unpkg.com/kursor'), 'homepage does not download unused kursor assets');
+assert.ok(!index.includes('split-type'), 'homepage does not download unused SplitType');
+assert.ok(!read('archive.html').includes('src="assets/otp.gif"'), 'archive uses the lightweight nav mark instead of the 1MB legacy GIF');
 const heroMarkTag = (index.match(/<img[^>]*class="hero-symbol-mark"[^>]*>/) || [''])[0];
 assert.ok(heroMarkTag.includes('src="assets/otp-hero-centered.gif"'), 'homepage hero uses the animated optimized hero mark');
 assert.ok(heroMarkTag.includes('data-fallback-src="assets/otp-hero-poster-frame.png"'), 'homepage hero keeps a poster only as a load-error fallback');

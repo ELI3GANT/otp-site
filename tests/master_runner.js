@@ -41,6 +41,7 @@ const tests = [
     { name: 'Oracle + Terminal Contract', path: 'tests/oracle_terminal_contract.test.js' },
     { name: 'OTP Oracle Master (stack)', path: 'tests/oracle_master.test.js' },
     { name: 'Marketing Site + Theme Contract', path: 'tests/marketing_site_contract.test.js' },
+    { name: 'Media Showcase Browser-DOM Integration', path: 'tests/media_showcase_integration.test.js' },
     { name: 'SEO Indexing Contract', path: 'tests/seo_indexing_contract.test.js' },
     { name: 'PageSpeed Delivery Contract', path: 'tests/pagespeed_delivery_contract.test.js' },
     { name: 'Loader Recovery Contract', path: 'tests/loader_recovery_contract.test.js' },

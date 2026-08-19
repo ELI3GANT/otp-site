@@ -25,6 +25,7 @@
           "*.xml",
           "*.txt",
           "assets/**",
+          "components/**",
           "supabase/migrations/**"
         ]
       }

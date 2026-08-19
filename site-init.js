@@ -202,17 +202,25 @@ if (typeof window.gsap !== 'undefined' && window.gsap.ticker) {
     // 3. Scroll Progress + Nav Shrink (Optimized for 120fps)
     let isScrolling = false;
     const navEl = document.querySelector('.nav');
+    let scrollProgressEl = document.getElementById('otp-scroll-progress');
+    if (!scrollProgressEl && document.body) {
+        scrollProgressEl = document.createElement('div');
+        scrollProgressEl.id = 'otp-scroll-progress';
+        scrollProgressEl.setAttribute('aria-hidden', 'true');
+        document.body.prepend(scrollProgressEl);
+    }
     window.addEventListener('scroll', () => {
         if (!isScrolling) {
             isScrolling = true;
             window.requestAnimationFrame(() => {
                 const scrollTop = window.scrollY || document.documentElement.scrollTop;
-                // Calculate scroll depth for progress indicators
                 const docHeight = document.documentElement.scrollHeight;
                 const winHeight = window.innerHeight;
                 const max = docHeight - winHeight;
-                const scrollPercent = max > 0 ? (scrollTop / max) * 100 : 0;
-                document.body.style.setProperty('--scroll', `${scrollPercent}%`);
+                const progress = max > 0 ? Math.min(1, Math.max(0, scrollTop / max)) : 0;
+                if (scrollProgressEl) {
+                    scrollProgressEl.style.transform = `scaleX(${progress})`;
+                }
 
                 // Nav scroll-shrink logic
                 if (navEl) {
@@ -1635,18 +1643,36 @@ function initSite() {
             return;
         }
 
-        getVideos()
-            .catch(() => ({ videos: fallbackVideos, fallbackUsed: true }))
-            .then(({ videos, fallbackUsed }) => {
-                const normalized = lib && typeof lib.mergeVideoLists === 'function'
-                    ? lib.mergeVideoLists(videos, fallbackVideos)
-                    : videos;
-                renderFeatured(normalized, fallbackUsed);
-                renderArchive(normalized, fallbackUsed);
-                document.dispatchEvent(new CustomEvent('otp:videos-rendered', {
-                    detail: { fallbackUsed, count: normalized.length }
-                }));
-            });
+        renderFeatured(fallbackVideos, true);
+        renderArchive(fallbackVideos, true);
+
+        const hydrateFromLive = () => {
+            if (hydrateFromLive.started) return;
+            hydrateFromLive.started = true;
+            getVideos()
+                .catch(() => ({ videos: fallbackVideos, fallbackUsed: true }))
+                .then(({ videos, fallbackUsed }) => {
+                    const normalized = lib && typeof lib.mergeVideoLists === 'function'
+                        ? lib.mergeVideoLists(videos, fallbackVideos)
+                        : videos;
+                    renderFeatured(normalized, fallbackUsed);
+                    renderArchive(normalized, fallbackUsed);
+                    document.dispatchEvent(new CustomEvent('otp:videos-rendered', {
+                        detail: { fallbackUsed, count: normalized.length }
+                    }));
+                });
+        };
+
+        const hydrateTarget = featuredRoot || archiveRoot;
+        if ('IntersectionObserver' in window && hydrateTarget) {
+            const io = new IntersectionObserver((entries) => {
+                if (!entries.some((entry) => entry.isIntersecting)) return;
+                hydrateFromLive();
+                io.disconnect();
+            }, { rootMargin: '480px 0px', threshold: 0.01 });
+            io.observe(hydrateTarget);
+        }
+        scheduleAfterFirstPaint(hydrateFromLive, 4200);
     })();
 
     (function injectThemeToggle() {
@@ -1875,7 +1901,6 @@ function initSite() {
             applyPointerTargets(e.clientX - rect.left, e.clientY - rect.top, rect);
         };
 
-        card.addEventListener('mousemove', handlePointerMove);
         card.addEventListener('pointermove', handlePointerMove);
 
         card.addEventListener('mouseleave', () => {
@@ -2385,19 +2410,20 @@ document.addEventListener('DOMContentLoaded', () => {
         
         btn.addEventListener('mousemove', (e) => {
             const rect = btn.getBoundingClientRect();
-            // Calculate distance form center
             const h = rect.width / 2;
             const v = rect.height / 2;
-            
             const x = e.clientX - rect.left - h;
             const y = e.clientY - rect.top - v;
-            
-            // Move button 30% of the distance to the mouse
-            gsap.to(btn, {
-                x: x * 0.3,
-                y: y * 0.3,
-                duration: 0.4,
-                ease: "power3.out"
+            if (typeof gsap === 'undefined') return;
+            if (btn._otpMagRaf) return;
+            btn._otpMagRaf = requestAnimationFrame(() => {
+                btn._otpMagRaf = 0;
+                gsap.to(btn, {
+                    x: x * 0.3,
+                    y: y * 0.3,
+                    duration: 0.4,
+                    ease: "power3.out"
+                });
             });
         });
         
@@ -2443,36 +2469,38 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         card.appendChild(glare);
 
+        let tiltRaf = 0;
         card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            
-            // Subtle rotation (max 6 degrees to feel realistic)
-            const rotateX = ((y - centerY) / centerY) * -6; 
-            const rotateY = ((x - centerX) / centerX) * 6;
-            
-            // Glare center tracking
-            const glareX = (x / rect.width) * 100;
-            const glareY = (y / rect.height) * 100;
-            
-            if (typeof gsap !== 'undefined') {
-                gsap.to(card, {
-                    rotationX: rotateX,
-                    rotationY: rotateY,
-                    transformPerspective: 1200,
-                    ease: "power2.out",
-                    duration: 0.4
-                });
-            } else {
-                card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-            }
+            const pointerX = e.clientX;
+            const pointerY = e.clientY;
+            if (tiltRaf) return;
+            tiltRaf = requestAnimationFrame(() => {
+                tiltRaf = 0;
+                const rect = card.getBoundingClientRect();
+                const x = pointerX - rect.left;
+                const y = pointerY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -6;
+                const rotateY = ((x - centerX) / centerX) * 6;
+                const glareX = (x / rect.width) * 100;
+                const glareY = (y / rect.height) * 100;
 
-            glare.style.opacity = '1';
-            glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.15) 0%, transparent 60%)`;
+                if (typeof gsap !== 'undefined') {
+                    gsap.to(card, {
+                        rotationX: rotateX,
+                        rotationY: rotateY,
+                        transformPerspective: 1200,
+                        ease: "power2.out",
+                        duration: 0.4
+                    });
+                } else {
+                    card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                }
+
+                glare.style.opacity = '1';
+                glare.style.background = `radial-gradient(circle at ${glareX}% ${glareY}%, rgba(255,255,255,0.15) 0%, transparent 60%)`;
+            });
         });
         
         card.addEventListener('mouseleave', () => {

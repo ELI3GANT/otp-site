@@ -24,12 +24,19 @@ const siteInit = read('site-init.js');
 const otpProjects = read('otp-projects.js');
 const server = read('server.js');
 const bookings = read('bookings.html');
+const analyticsEngine = read('otp-analytics-engine.js');
 
 assert.ok(index.includes('theme-chrono.js'), 'index loads theme-chrono (first paint)');
 assert.ok(index.includes('styles.css?v='), 'index loads styles.css');
 assert.ok(index.includes('gsap.min.js'), 'index loads GSAP');
 assert.ok(index.includes('ScrollTrigger.min.js'), 'index loads ScrollTrigger');
 assert.ok(index.includes('site-init.js?v='), 'index loads site-init');
+const analyticsEndpoint = analyticsEngine.match(/ANALYTICS_ENDPOINT\s*=\s*['"]([^'"]+)['"]/)?.[1];
+assert.ok(analyticsEndpoint, 'analytics engine declares its server endpoint');
+assert.ok(
+    !index.includes('otp-analytics-engine.js') || server.includes(`app.post('${analyticsEndpoint}'`),
+    'homepage must not load an analytics client without its matching server route'
+);
 assert.ok(index.includes('otp-projects.js?v=20260629-conversion1'), 'index loads reusable public project library');
 assert.ok(archive.includes('otp-projects.js?v=20260629-conversion1'), 'archive loads reusable public project library');
 const indexSiteInitV = (index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];

@@ -27,6 +27,7 @@ const showcaseJsPath = path.join(rootDir, 'components', 'otp-media-showcase.js')
 const analyticsJsPath = path.join(rootDir, 'otp-analytics-engine.js');
 const videoLibPath = path.join(rootDir, 'otp-video-library.js');
 const indexPath = path.join(rootDir, 'index.html');
+const serverPath = path.join(rootDir, 'server.js');
 
 assert(fs.existsSync(showcaseCssPath), 'otp-media-showcase.css exists');
 assert(fs.existsSync(showcaseJsPath), 'otp-media-showcase.js exists');
@@ -58,9 +59,14 @@ assert(videoLibContent.includes('embedUrl'), 'Video library item contains embedU
 
 // 6. Validate index.html integrations
 const indexContent = fs.readFileSync(indexPath, 'utf8');
+const serverContent = fs.readFileSync(serverPath, 'utf8');
 assert(indexContent.includes('otp-media-showcase.css'), 'index.html links showcase CSS');
 assert(indexContent.includes('otpMediaShowcaseMount'), 'index.html includes showcase mount element');
-assert(indexContent.includes('otp-analytics-engine.js'), 'index.html includes analytics engine script');
+const analyticsEndpoint = analyticsContent.match(/ANALYTICS_ENDPOINT\s*=\s*['"]([^'"]+)['"]/)?.[1];
+assert(
+    !indexContent.includes('otp-analytics-engine.js') || serverContent.includes(`app.post('${analyticsEndpoint}'`),
+    'index.html loads analytics only when its server endpoint exists'
+);
 assert(indexContent.includes('otp-media-showcase.js'), 'index.html includes media showcase script');
 
 console.log('\n----------------------------------------');

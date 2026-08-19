@@ -5,10 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>OnlyTruePerspective | Rhode Island Creative Technology &amp; Media Studio</title>
   <meta name="version" content="16.0.0-PULSE-APRIL" />
-  <!-- CACHE CONTROL: Force browsers to always re-validate this document -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
   <meta name="description" content="OnlyTruePerspective helps artists, creators, and businesses build cinematic visuals, websites, brand systems, and media experiences from Rhode Island." />
   <meta name="keywords" content="OnlyTruePerspective, OTP, ELI3GANT, Elijah Huertas, creative technology, Rhode Island media company, cinematic storytelling, branding, digital experiences, AI creative systems, content production" />
 
@@ -40,13 +36,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" /></noscript>
   <script src="theme-chrono.js?v=9"></script>
-  <link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="https://unpkg.com/kursor/dist/kursor.css" /></noscript>
   
   <!-- Styles -->
-  <link rel="stylesheet" href="./styles.css?v=16.8.28" />
+  <link rel="stylesheet" href="./styles.css?v=16.8.29" />
   <link rel="stylesheet" href="./fixline-service.css?v=4" />
-  <link rel="stylesheet" href="./components/otp-media-showcase.css?v=1.0.0" />
+  <link rel="stylesheet" href="./components/otp-media-showcase.css?v=1.0.1" />
   <!-- Calendly Widget (Lazy Loaded via JS) -->
   <style>body { margin: 0 !important; }</style>
   
@@ -1155,18 +1149,30 @@
   <script src="site-config.js?v=16.4.2" defer></script>
   <script src="pricing-config.js?v=20260513" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" defer></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
+  <script>
+    (function loadSupabaseWhenIdle() {
+      var loaded = false;
+      function inject() {
+        if (loaded || window.supabase) return;
+        loaded = true;
+        var s = document.createElement('script');
+        s.src = 'https://unpkg.com/@supabase/supabase-js@2';
+        s.async = true;
+        document.head.appendChild(s);
+      }
+      if ('requestIdleCallback' in window) requestIdleCallback(inject, { timeout: 2200 });
+      else window.setTimeout(inject, 1600);
+    })();
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js" defer></script>
-  <script src="https://unpkg.com/split-type" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
-  <script src="https://unpkg.com/kursor" defer></script>
   <script src="otp-attribution.js?v=16.9.1" defer></script>
   <script src="fixline-analytics.js?v=20260716" defer></script>
-  <script src="stars-v2.js?v=20260601-daystars" defer></script>
+  <script src="stars-v2.js?v=20260819-perf1" defer></script>
   <script src="otp-projects.js?v=20260629-conversion1" defer></script>
   <script src="otp-video-library.js?v=1.0.0" defer></script>
-  <script src="site-init.js?v=20260629-archive3" defer></script>
+  <script src="site-init.js?v=20260819-perf1" defer></script>
   <script>
     // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
     // Protocol: Desktop (Ctrl/Cmd + Click Logo) or Mobile (2s Long Press Logo).
@@ -1351,9 +1357,7 @@
       budgetEl.addEventListener('change', updateScopeMatch);
     })();
   </script>
-  <!-- OTP Analytics Engine & Media Showcase -->
-  <script src="./otp-analytics-engine.js?v=1.0.0" defer></script>
-  <script src="./components/otp-media-showcase.js?v=1.0.0" defer></script>
+  <script src="./components/otp-media-showcase.js?v=1.0.1" defer></script>
   <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>
 </body>
 </html>

@@ -82,7 +82,7 @@
                 card.className = 'otp-media-card';
                 card.innerHTML = `
                     <div class="otp-media-thumb-wrapper">
-                        <img src="${video.thumbnail}" alt="${video.title}" loading="lazy" />
+                        <img src="${video.thumbnail}" alt="${video.title}" loading="lazy" decoding="async" width="640" height="360" />
                         <span class="otp-card-cat-tag">${video.category || 'Visuals'}</span>
                         <div class="otp-play-badge">
                             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -147,8 +147,9 @@
     // Auto mount if container exists
     document.addEventListener('DOMContentLoaded', () => {
         const autoTarget = document.getElementById('otpMediaShowcaseMount');
-        if (autoTarget && root.OTP_VIDEO_LIBRARY && Array.isArray(root.OTP_VIDEO_LIBRARY.items)) {
-            createShowcaseComponent(autoTarget, root.OTP_VIDEO_LIBRARY.items);
+        const videos = root.OTP_VIDEO_LIBRARY?.getFallbackVideos?.();
+        if (autoTarget && Array.isArray(videos)) {
+            createShowcaseComponent(autoTarget, videos);
         }
     });
 

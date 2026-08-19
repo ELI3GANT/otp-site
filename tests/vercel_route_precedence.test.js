@@ -6,6 +6,12 @@ const configPath = path.join(__dirname, '..', 'vercel.json');
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
 assert(Array.isArray(config.routes), 'vercel.json must define legacy routes');
+const serverBuild = config.builds.find((build) => build.src === 'server.js');
+assert(serverBuild, 'vercel.json must bundle the Express server');
+assert(
+  serverBuild.config?.includeFiles?.includes('components/**'),
+  'Vercel server bundle must include nested homepage component assets'
+);
 
 const routes = config.routes;
 const fixlineIndexes = routes

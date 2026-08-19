@@ -30,7 +30,6 @@ body {
     background: var(--bg, #030305); 
     color: var(--text, #fff);
     transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
-    will-change: background-color, color; /* GPU Hint */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -91,6 +90,9 @@ html.nav-open, body.nav-open {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .logo-pulse,
   .bg-grain {
     animation: none !important;
@@ -1392,18 +1394,22 @@ textarea:focus-visible {
 /* BACKGROUND FIXED CONTAINER */
 
 
-/* SCROLL PROGRESS BAR */
-body::before {
-  content: "";
+/* SCROLL PROGRESS BAR
+   Dedicated element + scaleX keeps the 3px accent line without
+   invalidating inherited body custom properties on every scroll frame. */
+#otp-scroll-progress {
   position: fixed;
   top: 0;
   left: 0;
   height: 3px;
-  width: var(--scroll, 0%);
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
   z-index: 9999;
-  transition: width 0.1s linear;
   box-shadow: 0 0 10px var(--accent);
+  pointer-events: none;
+  will-change: transform;
 }
 
 /* BACKGROUND FIXED CONTAINER */
