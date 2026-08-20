@@ -2652,6 +2652,8 @@ const staticAliases = {
     '/book-otp': 'bookings.html',
     '/quote': 'quote.html',
     '/privacy': 'privacy.html',
+    '/weatheros/privacy': 'weatheros-privacy.html',
+    '/weatheros/privacy.html': 'weatheros-privacy.html',
     '/terms': 'terms.html',
     '/archive': 'archive.html',
     '/vault': 'archive.html',

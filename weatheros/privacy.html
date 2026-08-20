@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>WeatherOS Privacy Policy | OnlyTruePerspective LLC</title>
+  <meta name="description" content="Official WeatherOS privacy policy and data protection guidelines by OnlyTruePerspective LLC for Apple App Store and Google Play compliance." />
+  <meta name="keywords" content="WeatherOS privacy policy, data protection, weather app privacy" />
+  <meta name="theme-color" content="#030305" />
+  <meta name="color-scheme" content="dark light" />
+  <link rel="canonical" href="https://www.onlytrueperspective.tech/weatheros/privacy" />
+  
+  <!-- Social Graph Meta -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="OnlyTruePerspective" />
+  <meta property="og:url" content="https://www.onlytrueperspective.tech/weatheros/privacy" />
+  <meta property="og:title" content="WeatherOS Privacy Policy | OnlyTruePerspective LLC" />
+  <meta property="og:description" content="Official WeatherOS privacy policy and data protection guidelines by OnlyTruePerspective LLC for Apple App Store and Google Play compliance." />
+  <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/seo/otp-og-image.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="WeatherOS Privacy Policy | OnlyTruePerspective LLC" />
+  <meta name="twitter:description" content="Official WeatherOS privacy policy and data protection guidelines by OnlyTruePerspective LLC for Apple App Store and Google Play compliance." />
+  <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/seo/otp-og-image.webp" />
+
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.onlytrueperspective.tech/#organization",
+        "name": "OnlyTruePerspective LLC",
+        "alternateName": ["OTP", "OnlyTruePerspective"],
+        "url": "https://www.onlytrueperspective.tech/",
+        "logo": "https://www.onlytrueperspective.tech/icon.png",
+        "image": "https://www.onlytrueperspective.tech/assets/seo/otp-og-image.webp",
+        "email": "contact@onlytrueperspective.tech"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://www.onlytrueperspective.tech/weatheros/privacy#application",
+        "name": "WeatherOS",
+        "operatingSystem": "iOS, Android",
+        "applicationCategory": "WeatherApplication",
+        "author": {
+          "@type": "Organization",
+          "name": "OnlyTruePerspective LLC"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Cinematic weather operating system developed and published by OnlyTruePerspective LLC."
+      },
+      {
+        "@type": "AboutPage",
+        "@id": "https://www.onlytrueperspective.tech/weatheros/privacy#webpage",
+        "url": "https://www.onlytrueperspective.tech/weatheros/privacy",
+        "name": "WeatherOS Privacy Policy | OnlyTruePerspective LLC",
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": "https://www.onlytrueperspective.tech/#website",
+          "name": "OnlyTruePerspective",
+          "url": "https://www.onlytrueperspective.tech/"
+        },
+        "inLanguage": "en-US",
+        "description": "Official WeatherOS privacy policy and data protection guidelines by OnlyTruePerspective LLC."
+      }
+    ]
+  }
+  </script>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <script src="/theme-chrono.js?v=9"></script>
+  <link rel="stylesheet" href="/styles.css?v=16.8.29" />
+
+  <style>
+    body { margin: 0 !important; }
+
+    /* WeatherOS Atmospheric Accents */
+    :root {
+      --w-cyan: #35e5ff;
+      --w-cyan-rgb: 53, 229, 255;
+      --w-purple: #a482ff;
+      --w-glass-bg: rgba(14, 18, 26, 0.78);
+      --w-glass-border: rgba(53, 229, 255, 0.22);
+      --w-glass-glow: rgba(53, 229, 255, 0.08);
+      --w-text-bright: #ffffff;
+      --w-text-muted: rgba(255, 255, 255, 0.75);
+    }
+
+    [data-theme="light"] {
+      --w-glass-bg: rgba(255, 255, 255, 0.88);
+      --w-glass-border: rgba(0, 140, 180, 0.28);
+      --w-glass-glow: rgba(0, 140, 180, 0.06);
+      --w-text-bright: #0c1017;
+      --w-text-muted: rgba(12, 16, 23, 0.82);
+    }
+
+    .weatheros-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: rgba(var(--w-cyan-rgb), 0.12);
+      border: 1px solid var(--w-glass-border);
+      color: var(--w-cyan);
+      box-shadow: 0 0 20px rgba(var(--w-cyan-rgb), 0.18);
+      margin-bottom: 20px;
+    }
+
+    .weatheros-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--w-cyan);
+      box-shadow: 0 0 10px var(--w-cyan);
+      animation: wPulse 2.5s infinite ease-in-out;
+    }
+
+    @keyframes wPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .weatheros-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 32px 0 44px;
+    }
+
+    .weatheros-stat-card {
+      background: var(--w-glass-bg);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .weatheros-stat-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(var(--w-cyan-rgb), 0.45);
+    }
+
+    .weatheros-stat-icon {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .weatheros-stat-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--w-text-bright);
+      margin-bottom: 4px;
+    }
+
+    .weatheros-stat-desc {
+      font-size: 0.86rem;
+      color: var(--w-text-muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .weatheros-card {
+      background: var(--w-glass-bg);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 18px;
+      padding: 28px;
+      margin: 24px 0 32px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+    }
+
+    .weatheros-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 20px 0;
+      font-size: 0.92rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .weatheros-table th,
+    .weatheros-table td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      vertical-align: top;
+    }
+
+    .weatheros-table th {
+      background: rgba(var(--w-cyan-rgb), 0.1);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: var(--w-cyan);
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    .weatheros-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .weatheros-table code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      background: rgba(53, 229, 255, 0.12);
+      color: var(--w-cyan);
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(53, 229, 255, 0.25);
+      white-space: nowrap;
+    }
+
+    .weatheros-meta-box {
+      border-left: 3px solid var(--w-cyan);
+      padding: 18px 24px;
+      background: linear-gradient(90deg, rgba(var(--w-cyan-rgb), 0.08), transparent);
+      border-radius: 0 14px 14px 0;
+      margin: 24px 0;
+      font-size: 0.96rem;
+      color: var(--w-text-bright);
+    }
+
+    .weatheros-meta-box p {
+      margin: 4px 0;
+    }
+
+    .post-content h2 {
+      border-left: 3px solid var(--w-cyan);
+      padding-left: 14px;
+      margin-top: 50px;
+    }
+
+    .post-content h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--w-text-bright);
+      margin: 24px 0 12px;
+    }
+
+    @media (max-width: 768px) {
+      .weatheros-summary-grid {
+        grid-template-columns: 1fr;
+      }
+      .weatheros-card {
+        padding: 20px;
+      }
+      .weatheros-table th,
+      .weatheros-table td {
+        padding: 10px 12px;
+        font-size: 0.86rem;
+      }
+    }
+  </style>
+</head>
+<body class="archive-page k-cursor-ready">
+  <div class="bg-fixed"></div>
+
+  <!-- Primary Site Header -->
+  <header class="nav nav-split">
+    <!-- Logo Left -->
+    <a href="/index.html" class="nav-logo" aria-label="OnlyTruePerspective home">
+      <img src="/assets/otp-logo-transparent.png" alt="OTP" class="otp-mark" id="nav-logo-neon" width="44" height="44" decoding="async" />
+    </a>
+
+    <!-- Links Right -->
+    <nav class="nav-links" aria-label="Primary">
+      <a href="/index.html#work" class="k-hover">Work</a>
+      <a href="/archive" class="k-hover">Archive</a>
+      <a href="/insights.html" class="k-hover">Insights</a>
+      <a href="/index.html#services" class="k-hover">Services</a>
+      <a href="/bookings" class="k-hover">Book OTP</a>
+      <a href="/portal" class="k-hover">Client Portal</a>
+      <a href="/index.html#contact" class="k-hover">Contact</a>
+    </nav>
+
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav-drawer" aria-label="Mobile">
+      <a href="/index.html#work">Work</a>
+      <a href="/bookings">Book OTP</a>
+      <a href="/portal">Client Portal</a>
+      <a href="/archive">Archive</a>
+      <a href="/insights.html">Insights</a>
+      <a href="/index.html#services">Services</a>
+      <a href="/index.html#about">About</a>
+      <a href="/index.html#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main class="archive-main" id="main-content">
+    <div class="wrap">
+      <article class="post-content">
+        <header class="post-header center-text">
+          <div class="weatheros-badge">
+            <span class="weatheros-badge-dot"></span>
+            WeatherOS · Official Subproduct
+          </div>
+          <h1 class="syne-bold">WeatherOS Privacy Policy</h1>
+          <p class="muted">Effective Date & Last Verified: August 20, 2026</p>
+        </header>
+
+        <!-- Document Highlights / Fast Facts -->
+        <div class="weatheros-card">
+          <h3 style="margin-top: 0; color: var(--w-cyan);">⚡ Privacy Fast Facts</h3>
+          <p style="margin-bottom: 0; font-size: 0.98rem; color: var(--w-text-muted);">
+            WeatherOS is engineered by <strong>OnlyTruePerspective LLC</strong> with a strict privacy-first architecture. We believe weather data should inform your day without compromising your personal privacy.
+          </p>
+
+          <div class="weatheros-summary-grid">
+            <div class="weatheros-stat-card">
+              <span class="weatheros-stat-icon">🛡️</span>
+              <div class="weatheros-stat-title">0 Ads & Tracking</div>
+              <p class="weatheros-stat-desc">No advertising SDKs, no behavioral tracking, and no third-party marketing pixels.</p>
+            </div>
+            <div class="weatheros-stat-card">
+              <span class="weatheros-stat-icon">🚫</span>
+              <div class="weatheros-stat-title">0 Data Sales</div>
+              <p class="weatheros-stat-desc">We never sell, rent, monetize, or broker your location or usage data.</p>
+            </div>
+            <div class="weatheros-stat-card">
+              <span class="weatheros-stat-icon">📍</span>
+              <div class="weatheros-stat-title">Ephemeral GPS</div>
+              <p class="weatheros-stat-desc">Location coordinates are used strictly in real-time to fetch local forecasts and are never tied to your identity.</p>
+            </div>
+            <div class="weatheros-stat-card">
+              <span class="weatheros-stat-icon">💾</span>
+              <div class="weatheros-stat-title">Local-Only Cache</div>
+              <p class="weatheros-stat-desc">Forecasts are cached strictly on your device for responsiveness; no remote user database exists.</p>
+            </div>
+          </div>
+        </div>
+
+        <section>
+          <h2>1. Company & Product Ownership</h2>
+          <p>
+            This Privacy Policy governs <strong>WeatherOS</strong> (the "Application"), an official cross-platform application developed, owned, and published by <strong>OnlyTruePerspective LLC</strong> ("Company", "we", "us", or "our").
+          </p>
+          <div class="weatheros-meta-box">
+            <p><strong>Company:</strong> OnlyTruePerspective LLC</p>
+            <p><strong>Product:</strong> WeatherOS</p>
+            <p><strong>Application ID / Bundle:</strong> <code>app.weatheros.app</code></p>
+            <p><strong>Ecosystem Domain:</strong> <a href="https://www.onlytrueperspective.tech/" class="k-hover" style="color: var(--w-cyan);">https://www.onlytrueperspective.tech</a></p>
+            <p><strong>Inquiries & Data Privacy Officer:</strong> <a href="mailto:contact@onlytrueperspective.tech" class="k-hover" style="color: var(--w-cyan);">contact@onlytrueperspective.tech</a></p>
+          </div>
+          <p>
+            WeatherOS provides a cinematic atmospheric observatory interface on iOS and Android. No user account, registration, login, or personal profile is required to use the Application.
+          </p>
+        </section>
+
+        <section>
+          <h2>2. Data Collection & Processing</h2>
+          <p>
+            We process only the minimum technical data necessary to deliver real-time meteorological forecasts and atmospheric visualizations:
+          </p>
+
+          <h3>A. Location Data</h3>
+          <p>
+            When you grant permission, WeatherOS accesses your device's geographical coordinates (latitude and longitude). This data is processed as follows:
+          </p>
+          <ul>
+            <li><strong>Purpose:</strong> Used solely to resolve your local weather conditions, radar status, hourly temperature trends, and precipitation metrics.</li>
+            <li><strong>Processing Mode:</strong> Location resolution happens directly on-device. The coordinates are transmitted via encrypted HTTPS requests to our meteorological data provider to fetch corresponding weather data.</li>
+            <li><strong>No Tracking & No User Association:</strong> Coordinates are not stored on Company servers, are not linked to any personal name or identifier, and are never retained after the forecast query is fulfilled.</li>
+            <li><strong>No Location History:</strong> WeatherOS does not build travel profiles, background location breadcrumbs, or historical movement tracking.</li>
+          </ul>
+
+          <h3>B. Network & Meteorological API Requests</h3>
+          <p>
+            To supply live atmospheric conditions, the Application transmits outbound HTTPS requests containing your coordinates to retrieve public meteorological data. These requests do not contain personal names, email addresses, phone numbers, contacts, device serial numbers, or advertising identifiers (such as IDFA or GAID).
+          </p>
+
+          <h3>C. What We Do NOT Collect</h3>
+          <ul>
+            <li><strong>No Identifiers:</strong> We do not collect names, emails, phone numbers, or social media accounts in the Application.</li>
+            <li><strong>No Financial Data:</strong> We do not process payments or collect payment card data in WeatherOS.</li>
+            <li><strong>No Behavioral Profiling:</strong> We do not monitor cross-app behavior or build advertising profiles.</li>
+            <li><strong>No Unnecessary Sensor Access:</strong> We do not access camera, microphone, contacts, health data, or local photos.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>3. Platform Permissions Breakdown</h2>
+          <p>
+            WeatherOS requests only the minimum operating system permissions necessary to fetch weather forecasts. Below is the complete declaration for Google Play and the Apple App Store:
+          </p>
+
+          <div class="weatheros-card">
+            <h3 style="margin-top: 0; color: var(--w-cyan);">Android OS Permissions (Google Play)</h3>
+            <table class="weatheros-table">
+              <thead>
+                <tr>
+                  <th>Permission</th>
+                  <th>Classification</th>
+                  <th>Operational Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>android.permission.INTERNET</code></td>
+                  <td>Normal</td>
+                  <td>Required to communicate with real-time meteorological servers and download live forecasts.</td>
+                </tr>
+                <tr>
+                  <td><code>android.permission.ACCESS_FINE_LOCATION</code></td>
+                  <td>Dangerous (Runtime)</td>
+                  <td>Used strictly while the app is active to obtain high-accuracy GPS coordinates for precise neighborhood weather conditions.</td>
+                </tr>
+                <tr>
+                  <td><code>android.permission.ACCESS_COARSE_LOCATION</code></td>
+                  <td>Dangerous (Runtime)</td>
+                  <td>Allows the application to approximate city-level or regional forecasts when approximate accuracy is preferred by the user.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3 style="color: var(--w-cyan); margin-top: 24px;">iOS Permissions (Apple App Store)</h3>
+            <table class="weatheros-table">
+              <thead>
+                <tr>
+                  <th>Permission Key</th>
+                  <th>Usage Description (Info.plist)</th>
+                  <th>Operational Purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>NSLocationWhenInUseUsageDescription</code></td>
+                  <td><em>"WeatherOS uses your location to display precise local atmospheric conditions and forecast lenses."</em></td>
+                  <td>Resolves active GPS coordinates to display current atmospheric metrics while you interact with the app.</td>
+                </tr>
+                <tr>
+                  <td><code>NSLocationAlwaysAndWhenInUseUsageDescription</code></td>
+                  <td><em>"WeatherOS uses your location to display precise local atmospheric conditions and forecast lenses."</em></td>
+                  <td>Ensures seamless forecast recovery and widget/lens consistency when returning to the application.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
+          <h2>4. Third-Party Meteorological Services</h2>
+          <p>
+            WeatherOS utilizes <strong>Open-Meteo</strong> (<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" style="color: var(--w-cyan);">open-meteo.com</a>) as its primary open meteorological data transport.
+          </p>
+          <ul>
+            <li><strong>Encrypted Transport:</strong> All calls to Open-Meteo are transmitted via standard secure HTTPS (TLS 1.3) protocols.</li>
+            <li><strong>Zero Personal Identification:</strong> Queries contain solely mathematical coordinate pairs (latitude and longitude) and weather parameter flags (temperature, precipitation, wind speed, pressure). No personal user data or advertising identifiers are shared.</li>
+            <li><strong>Privacy Standard:</strong> Open-Meteo does not require user registration or API keys and does not track individual mobile app users.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>5. Data Storage, Caching & Retention</h2>
+          <p>
+            WeatherOS does not maintain a remote user database or backend server storing your personal records.
+          </p>
+          <div class="weatheros-card">
+            <p><strong>On-Device Local Storage:</strong></p>
+            <ul>
+              <li><strong>Framework:</strong> <code>SharedPreferences</code> (Android) and <code>UserDefaults</code> (iOS).</li>
+              <li><strong>Stored Content:</strong> Local application configuration (e.g., preferred temperature units in Fahrenheit/Celsius, wind speed units in mph/kmh) and short-lived meteorological forecast snapshots.</li>
+              <li><strong>Purpose:</strong> Provides offline resilience, instant first-frame rendering, and reduced network bandwidth.</li>
+              <li><strong>Deletion:</strong> All locally cached data is destroyed when you clear app data in system settings or uninstall WeatherOS from your device.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section>
+          <h2>6. No Advertising, No Data Selling, No Profiling</h2>
+          <p>
+            OnlyTruePerspective LLC adheres to a strict anti-commercialization policy regarding user data:
+          </p>
+          <ul>
+            <li><strong>No Data Sales:</strong> We do not sell, rent, monetize, release, disclose, or trade your location coordinates or usage habits to data brokers, advertising exchanges, or commercial entities under any circumstances.</li>
+            <li><strong>No Targeted Ads:</strong> WeatherOS does not include third-party advertising SDKs (e.g., Google AdMob, Unity Ads, AppLovin).</li>
+            <li><strong>No User Profiling:</strong> We do not combine location queries with third-party datasets to build behavioral or demographic profiles.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>7. Security & Encryption Standards</h2>
+          <p>
+            We enforce robust technical measures to safeguard the integrity of data in transit:
+          </p>
+          <ul>
+            <li><strong>Transport Layer Security:</strong> All external network communications are enforced using modern TLS encryption (HTTPS). Plaintext HTTP requests are blocked by platform network security configurations.</li>
+            <li><strong>Sandboxed Storage:</strong> On-device configuration data is restricted to the Application's private sandboxed directory, preventing unauthorized access by other applications on your device.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>8. Children's Privacy (COPPA & Global Standards)</h2>
+          <p>
+            WeatherOS is a general-audience atmospheric utility application. We do not knowingly collect, solicit, or store personal information from children under the age of 13 (or under the applicable age of consent in your jurisdiction), in compliance with the Children's Online Privacy Protection Act (COPPA), the EU GDPR, and Apple / Google Play child safety regulations. If you believe a child has provided us with personal data, please contact us immediately so we may take appropriate steps.
+          </p>
+        </section>
+
+        <section>
+          <h2>9. User Rights & Permission Controls</h2>
+          <p>
+            You retain absolute control over your device permissions at all times. You may grant, restrict, or revoke location permissions at any time through your operating system settings:
+          </p>
+          <div class="weatheros-card">
+            <p><strong>How to Revoke Location Permissions:</strong></p>
+            <ul>
+              <li><strong>Android:</strong> Open <em>Settings → Apps → WeatherOS → Permissions → Location</em>, then select <em>"Don't allow"</em> or <em>"Ask every time"</em>.</li>
+              <li><strong>iOS:</strong> Open <em>Settings → WeatherOS → Location</em>, then select <em>"Never"</em> or <em>"Ask Next Time Or When I Share"</em>.</li>
+            </ul>
+            <p style="margin-top: 12px; margin-bottom: 0; font-size: 0.88rem; color: var(--w-text-muted);">
+              <em>Note: Revoking location permissions will disable automatic local weather detection; you can still inspect predefined observatory locations or showcase environments.</em>
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h2>10. Policy Updates & Modifications</h2>
+          <p>
+            We may update this Privacy Policy periodically to reflect enhancements in WeatherOS functionality, third-party weather data providers, or regulatory compliance standards. Any revisions will be published immediately on this official page with an updated "Effective Date". Continued use of WeatherOS following the posting of changes constitutes acceptance of the revised terms.
+          </p>
+        </section>
+
+        <section>
+          <h2>11. Contact & Legal Inquiries</h2>
+          <p>
+            For questions, legal inquiries, or data protection concerns regarding WeatherOS or OnlyTruePerspective LLC, please contact:
+          </p>
+          <div class="weatheros-meta-box">
+            <p><strong>OnlyTruePerspective LLC</strong></p>
+            <p>Attn: Legal & Data Protection Office</p>
+            <p><strong>Email:</strong> <a href="mailto:contact@onlytrueperspective.tech" class="k-hover" style="color: var(--w-cyan);">contact@onlytrueperspective.tech</a></p>
+            <p><strong>Official Website:</strong> <a href="https://www.onlytrueperspective.tech" class="k-hover" style="color: var(--w-cyan);">https://www.onlytrueperspective.tech</a></p>
+            <p><strong>Main Studio Privacy Policy:</strong> <a href="/privacy.html" class="k-hover" style="color: var(--w-cyan);">https://www.onlytrueperspective.tech/privacy.html</a></p>
+          </div>
+        </section>
+
+        <div class="post-nav">
+          <a href="/index.html" class="next-link k-hover">← Back to OTP Ecosystem</a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <!-- Primary Site Footer -->
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-left">
+        <div class="nav-logo" aria-label="OTP">
+          <img src="/assets/otp-logo-transparent.png" alt="OTP logo" class="nav-gif" id="footer-logo-neon" width="44" height="44" loading="lazy" decoding="async" />
+        </div>
+        <div class="fineprint">© <span id="year">2026</span> OnlyTruePerspective LLC. All rights reserved.</div>
+        <div class="footer-legal">
+          <a href="/bookings" class="k-hover">Book OTP</a>
+          <span class="dot">•</span>
+          <a href="/portal" class="k-hover">Client Portal</a>
+          <span class="dot">•</span>
+          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>
+          <span class="dot">•</span>
+          <a href="https://www.reddit.com/r/OnlyTruePerspective" target="_blank" rel="noopener noreferrer" aria-label="Open OnlyTruePerspective official Reddit" class="k-hover">Official Reddit</a>
+          <span class="dot">•</span>
+          <a href="/terms.html">Terms</a>
+          <span class="dot">•</span>
+          <a href="/privacy.html">Privacy</a>
+          <span class="dot">•</span>
+          <a href="/weatheros/privacy" class="k-hover" style="color: var(--w-cyan);">WeatherOS Privacy</a>
+        </div>
+      </div>
+
+      <div class="footer-right">
+        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <canvas id="cursor-canvas"></canvas>
+  <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
+  <script src="/site-config.js?v=16.4.2" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" defer></script>
+  <script src="/stars-v2.js?v=20260819-perf1" defer></script>
+  <script src="/otp-attribution.js?v=16.9.1" defer></script>
+  <script src="/site-init.js?v=20260819-perf1" defer></script>
+  <script type="module" src="/speed-insights-bundle.js?v=2.0.1"></script>
+</body>
+</html>

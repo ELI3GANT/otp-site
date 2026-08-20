@@ -57,6 +57,12 @@ const pages = {
     descriptionSnippet: 'Terms',
     indexable: true
   },
+  'weatheros-privacy.html': {
+    title: 'WeatherOS Privacy Policy | OnlyTruePerspective LLC',
+    canonical: 'https://www.onlytrueperspective.tech/weatheros/privacy',
+    descriptionSnippet: 'WeatherOS privacy policy',
+    indexable: true
+  },
   'privacy.html': {
     title: 'Privacy Policy | OnlyTruePerspective',
     canonical: 'https://www.onlytrueperspective.tech/privacy.html',
