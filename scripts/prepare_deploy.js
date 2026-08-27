@@ -10,7 +10,10 @@ const FILES_TO_UPDATE = [
     '404.html',
     'archive.html',
     'privacy.html',
-    'terms.html'
+    'terms.html',
+    'weatheros.html',
+    'weatheros-support.html',
+    'weatheros-privacy.html'
 ];
 
 const ROOT_DIR = path.join(__dirname, '..');

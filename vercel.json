@@ -86,7 +86,19 @@
       "dest": "/server.js"
     },
     {
+      "src": "^/weatheros/?$",
+      "dest": "/server.js"
+    },
+    {
+      "src": "^/weatheros/support/?$",
+      "dest": "/server.js"
+    },
+    {
       "src": "^/weatheros/privacy/?$",
+      "dest": "/server.js"
+    },
+    {
+      "src": "^/weatheros/(.*)$",
       "dest": "/server.js"
     },
     {

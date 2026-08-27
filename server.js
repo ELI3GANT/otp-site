@@ -2652,6 +2652,11 @@ const staticAliases = {
     '/book-otp': 'bookings.html',
     '/quote': 'quote.html',
     '/privacy': 'privacy.html',
+    '/weatheros': 'weatheros.html',
+    '/weatheros/': 'weatheros.html',
+    '/weatheros.html': 'weatheros.html',
+    '/weatheros/support': 'weatheros-support.html',
+    '/weatheros/support.html': 'weatheros-support.html',
     '/weatheros/privacy': 'weatheros-privacy.html',
     '/weatheros/privacy.html': 'weatheros-privacy.html',
     '/terms': 'terms.html',
@@ -4237,7 +4242,7 @@ app.get('/api/client-portal/:token', async (req, res) => {
     privatePortalApi(res);
     const safeToken = normalizeClientPortalToken(req.params.token);
     const rawToken = String(req.params.token || '');
-    if ((e2eTestModeEnabled() || !supabaseAdmin) && (safeToken === SAFE_E2E_PORTAL_FIXTURE.portalToken || rawToken.includes('PROP') || rawToken.includes('INSPECT') || rawToken.includes('PROPOSAL') || rawToken.includes('WEB-') || safeToken.startsWith('test-') || safeToken.startsWith('inspect-'))) {
+    if (e2eTestModeEnabled() && (safeToken === SAFE_E2E_PORTAL_FIXTURE.portalToken || rawToken.includes('PROP') || rawToken.includes('INSPECT') || rawToken.includes('PROPOSAL') || rawToken.includes('WEB-') || safeToken.startsWith('test-') || safeToken.startsWith('inspect-'))) {
         return res.json(buildSafeE2EClientPortalData(rawToken));
     }
     if (!supabaseAdmin) {
@@ -4248,10 +4253,24 @@ app.get('/api/client-portal/:token', async (req, res) => {
             if (response.ok && data) {
                 return res.json(data);
             }
+            const status = [404, 410].includes(response.status) ? response.status : 503;
+            return res.status(status).json({
+                ok: false,
+                errorCode: status === 404 ? 'not_found' : status === 410 ? 'expired' : 'upstream_unavailable',
+                message: status === 404
+                    ? 'This client portal is not available yet.'
+                    : status === 410
+                        ? 'This portal link has expired. Request a fresh private OTP portal link.'
+                        : 'The client portal is temporarily unavailable. Please try again shortly.'
+            });
         } catch (upstreamErr) {
             console.error('Upstream portal fetch failed:', upstreamErr?.message);
+            return res.status(503).json({
+                ok: false,
+                errorCode: 'upstream_unavailable',
+                message: 'The client portal is temporarily unavailable. Please try again shortly.'
+            });
         }
-        return res.json(buildSafeE2EClientPortalData(rawToken));
     }
     try {
         const { parsed, data } = await loadClientPortalRecord(req.params.token);

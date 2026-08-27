@@ -22,6 +22,7 @@ output/playwright/
 
 # Local scratch (PDFs, exports)
 tmp/
+supabase/.temp/
 
 # QA artifacts (never commit)
 *.har

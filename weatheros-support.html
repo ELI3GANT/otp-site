@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>WeatherOS Support & FAQ Center | OnlyTruePerspective LLC</title>
+  <meta name="description" content="Official WeatherOS Customer Support & FAQ Center. Get answers on location privacy, unit toggles, 7-day forecast, severe alerts, and App Store refunds." />
+  <meta name="keywords" content="WeatherOS support, weather app help, WeatherOS FAQ, WeatherOS refund, WeatherOS contact, OnlyTruePerspective" />
+  <meta name="theme-color" content="#030305" />
+  <meta name="color-scheme" content="dark light" />
+  <link rel="canonical" href="https://www.onlytrueperspective.tech/weatheros/support" />
+  
+  <!-- Social Graph Meta -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="OnlyTruePerspective" />
+  <meta property="og:url" content="https://www.onlytrueperspective.tech/weatheros/support" />
+  <meta property="og:title" content="WeatherOS Support & FAQ Center | OnlyTruePerspective LLC" />
+  <meta property="og:description" content="Official WeatherOS Customer Support & FAQ Center. Get instant answers on location privacy, unit toggles, 7-day forecast, and App Store refunds." />
+  <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/weatheros/weatheros-icon-1024.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="WeatherOS Support & FAQ Center | OnlyTruePerspective LLC" />
+  <meta name="twitter:description" content="Official WeatherOS Customer Support & FAQ Center. Get instant answers on location privacy, unit toggles, 7-day forecast, and App Store refunds." />
+  <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/weatheros/weatheros-icon-1024.png" />
+
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.onlytrueperspective.tech/#organization",
+        "name": "OnlyTruePerspective LLC",
+        "url": "https://www.onlytrueperspective.tech/",
+        "logo": "https://www.onlytrueperspective.tech/icon.png",
+        "email": "contact@onlytrueperspective.tech"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://www.onlytrueperspective.tech/weatheros#application",
+        "name": "WeatherOS",
+        "operatingSystem": "iOS, Android",
+        "applicationCategory": "WeatherApplication",
+        "author": {
+          "@type": "Organization",
+          "name": "OnlyTruePerspective LLC"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0.99",
+          "priceCurrency": "USD"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://www.onlytrueperspective.tech/weatheros/support#faq",
+        "url": "https://www.onlytrueperspective.tech/weatheros/support",
+        "name": "WeatherOS Support & FAQ Center",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does WeatherOS use my location data?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "WeatherOS requests location permissions strictly to query current atmospheric data for your immediate area. Your GPS coordinates are processed ephemerally on-device and are never stored on external servers, sold to data brokers, or tracked in the background."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I switch between Fahrenheit (°F) and Celsius (°C)?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You can tap directly on the current temperature badge on the main screen, or open the Settings drawer to toggle between Imperial (°F, mph, inHg) and Metric (°C, km/h, hPa) units instantly."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I request a refund for WeatherOS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Purchases are processed directly by Apple App Store and Google Play Store. On iOS, visit reportaproblem.apple.com. On Android, request a refund via Google Play Order History within 48 hours of purchase."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/weatheros/weatheros-icon-1024.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <script src="/theme-chrono.js?v=9"></script>
+  <link rel="stylesheet" href="/styles.css?v=16.8.29" />
+
+  <style>
+    body { margin: 0 !important; }
+
+    :root {
+      --w-cyan: #35e5ff;
+      --w-cyan-rgb: 53, 229, 255;
+      --w-purple: #a482ff;
+      --w-glass-bg: rgba(14, 18, 26, 0.82);
+      --w-glass-border: rgba(53, 229, 255, 0.22);
+      --w-glass-glow: rgba(53, 229, 255, 0.08);
+      --w-text-bright: #ffffff;
+      --w-text-muted: rgba(255, 255, 255, 0.78);
+      --w-card-bg: rgba(18, 24, 38, 0.65);
+    }
+
+    [data-theme="light"] {
+      --w-glass-bg: rgba(255, 255, 255, 0.92);
+      --w-glass-border: rgba(0, 140, 180, 0.28);
+      --w-glass-glow: rgba(0, 140, 180, 0.06);
+      --w-text-bright: #0c1017;
+      --w-text-muted: rgba(12, 16, 23, 0.82);
+      --w-card-bg: rgba(245, 248, 252, 0.92);
+    }
+
+    .weatheros-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: rgba(var(--w-cyan-rgb), 0.12);
+      border: 1px solid var(--w-glass-border);
+      color: var(--w-cyan);
+      box-shadow: 0 0 20px rgba(var(--w-cyan-rgb), 0.18);
+      margin-bottom: 20px;
+    }
+
+    .weatheros-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--w-cyan);
+      box-shadow: 0 0 10px var(--w-cyan);
+      animation: wPulse 2.5s infinite ease-in-out;
+    }
+
+    @keyframes wPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .weatheros-quick-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 32px 0 44px;
+    }
+
+    .weatheros-quick-card {
+      background: var(--w-glass-bg);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 16px;
+      padding: 22px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .weatheros-quick-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--w-cyan);
+      box-shadow: 0 12px 36px rgba(var(--w-cyan-rgb), 0.22);
+    }
+
+    .weatheros-quick-icon {
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+    }
+
+    .weatheros-quick-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: var(--w-text-bright);
+      margin-bottom: 6px;
+    }
+
+    .weatheros-quick-desc {
+      font-size: 0.88rem;
+      color: var(--w-text-muted);
+      line-height: 1.5;
+      margin: 0 0 12px;
+      flex: 1;
+    }
+
+    .weatheros-quick-action {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--w-cyan);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* FAQ Accordion Styles */
+    .faq-container {
+      margin: 28px 0 44px;
+    }
+
+    .faq-item {
+      background: var(--w-glass-bg);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 14px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .faq-item:hover {
+      border-color: rgba(var(--w-cyan-rgb), 0.45);
+    }
+
+    .faq-item.open {
+      border-color: var(--w-cyan);
+      box-shadow: 0 6px 24px rgba(var(--w-cyan-rgb), 0.12);
+    }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 18px 24px;
+      text-align: left;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--w-text-bright);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .faq-icon {
+      font-size: 1.2rem;
+      color: var(--w-cyan);
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .faq-item.open .faq-icon {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s cubic-bezier(0, 1, 0, 1), padding 0.3s ease;
+      padding: 0 24px;
+      font-size: 0.94rem;
+      line-height: 1.6;
+      color: var(--w-text-muted);
+    }
+
+    .faq-item.open .faq-answer {
+      max-height: 800px;
+      padding: 0 24px 20px;
+    }
+
+    .faq-answer ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .faq-answer li {
+      margin-bottom: 6px;
+    }
+
+    .faq-answer code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.85rem;
+      background: rgba(53, 229, 255, 0.12);
+      color: var(--w-cyan);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Contact Card */
+    .support-contact-card {
+      background: linear-gradient(135deg, rgba(var(--w-cyan-rgb), 0.12) 0%, rgba(164, 130, 255, 0.12) 100%);
+      border: 1px solid var(--w-cyan);
+      border-radius: 20px;
+      padding: 32px;
+      margin: 36px 0;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .support-contact-info h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.35rem;
+      margin: 0 0 8px;
+      color: var(--w-text-bright);
+    }
+
+    .support-contact-info p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--w-text-muted);
+    }
+
+    .support-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--w-cyan);
+      color: #030305 !important;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 14px 28px;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 0 24px rgba(var(--w-cyan-rgb), 0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .support-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 32px rgba(var(--w-cyan-rgb), 0.6);
+    }
+
+    /* Changelog Card */
+    .changelog-box {
+      background: var(--w-glass-bg);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+
+    .changelog-version {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 10px;
+    }
+
+    .changelog-tag {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(53, 229, 255, 0.15);
+      color: var(--w-cyan);
+    }
+
+    .changelog-date {
+      font-size: 0.82rem;
+      color: var(--w-text-muted);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .top-subnav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 20px 0 32px;
+      flex-wrap: wrap;
+    }
+
+    .top-subnav-link {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.88rem;
+      color: var(--w-text-muted);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .top-subnav-link:hover,
+    .top-subnav-link.active {
+      color: var(--w-cyan);
+      border-color: var(--w-cyan);
+      background: rgba(var(--w-cyan-rgb), 0.08);
+    }
+  </style>
+</head>
+<body class="page-protocol">
+  <div class="stars-v2-container" aria-hidden="true"></div>
+
+  <!-- Primary Navigation Bar -->
+  <nav class="nav wrap" aria-label="Main Navigation">
+    <a href="/index.html" class="nav-logo k-hover" aria-label="OnlyTruePerspective Homepage">
+      <img src="/assets/otp-logo-transparent.png" alt="OTP logo" class="nav-gif" id="nav-logo-neon" width="48" height="48" />
+    </a>
+
+    <div class="nav-links">
+      <a href="/index.html#work" class="nav-link k-hover">Work</a>
+      <a href="/weatheros" class="nav-link k-hover" style="color: var(--w-cyan); font-weight: 700;">WeatherOS</a>
+      <a href="/bookings" class="nav-link k-hover">Book</a>
+      <a href="/portal" class="nav-link k-hover">Portal</a>
+      
+      <!-- Theme Toggle -->
+      <button class="theme-toggle-btn k-hover" id="theme-toggle" aria-label="Toggle theme" onclick="window.toggleChronoTheme ? window.toggleChronoTheme() : null;">
+        <span class="theme-icon icon-night">☾</span>
+        <span class="theme-icon icon-day">☀</span>
+        <span class="theme-label" id="theme-status-label">Night</span>
+        <span class="theme-shortcut">⌘⇧L</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Support Content -->
+  <main class="wrap" style="padding-top: 40px; padding-bottom: 80px;">
+    <div class="post-layout" style="max-width: 920px; margin: 0 auto;">
+
+      <!-- Subproduct Navigation Pills -->
+      <div class="top-subnav">
+        <a href="/weatheros" class="top-subnav-link">← WeatherOS Showcase</a>
+        <a href="/weatheros/support" class="top-subnav-link active">Help & Support</a>
+        <a href="/weatheros/privacy" class="top-subnav-link">Privacy Policy</a>
+      </div>
+
+      <header class="post-header">
+        <div class="weatheros-badge">
+          <span class="weatheros-badge-dot"></span>
+          <span>Official Customer Support & FAQ Center</span>
+        </div>
+        <h1 class="post-title" style="font-family: 'Syne', sans-serif; font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 12px; color: var(--w-text-bright);">
+          WeatherOS Help & Resolution Desk
+        </h1>
+        <p class="post-subtitle" style="font-size: 1.15rem; color: var(--w-text-muted); line-height: 1.5; margin-bottom: 0;">
+          Fast solutions, unit configuration tutorials, radar telemetry diagnostics, and direct developer support for iOS & Android.
+        </p>
+      </header>
+
+      <!-- Quick Resolution Cards -->
+      <div class="weatheros-quick-grid">
+        <a href="#faq-location" class="weatheros-quick-card">
+          <span class="weatheros-quick-icon">📍</span>
+          <span class="weatheros-quick-title">Location & GPS</span>
+          <p class="weatheros-quick-desc">Learn how WeatherOS uses ephemeral GPS with zero background tracking.</p>
+          <span class="weatheros-quick-action">View FAQ →</span>
+        </a>
+
+        <a href="#faq-units" class="weatheros-quick-card">
+          <span class="weatheros-quick-icon">🌡️</span>
+          <span class="weatheros-quick-title">Units (°F / °C)</span>
+          <p class="weatheros-quick-desc">Switch seamlessly between Imperial (°F, mph) and Metric (°C, km/h).</p>
+          <span class="weatheros-quick-action">Configure Units →</span>
+        </a>
+
+        <a href="#faq-refunds" class="weatheros-quick-card">
+          <span class="weatheros-quick-icon">💳</span>
+          <span class="weatheros-quick-title">Store Refunds</span>
+          <p class="weatheros-quick-desc">Direct links to Apple Report a Problem and Google Play refund systems.</p>
+          <span class="weatheros-quick-action">Refund Guide →</span>
+        </a>
+
+        <a href="#faq-severe" class="weatheros-quick-card">
+          <span class="weatheros-quick-icon">🌪️</span>
+          <span class="weatheros-quick-title">Severe Risk Matrix</span>
+          <p class="weatheros-quick-desc">Understand real-time NOAA/NWS atmospheric alert telemetry.</p>
+          <span class="weatheros-quick-action">Matrix Guide →</span>
+        </a>
+      </div>
+
+      <!-- FAQ Accordion Matrix -->
+      <section class="faq-container">
+        <h2 style="font-family: 'Syne', sans-serif; font-size: 1.8rem; margin-bottom: 20px; color: var(--w-text-bright);">
+          Frequently Asked Questions
+        </h2>
+
+        <!-- FAQ 1: Location -->
+        <div class="faq-item" id="faq-location">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>1. How does WeatherOS use my location data?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              WeatherOS requests location permissions strictly to query current atmospheric data for your immediate coordinates. We adhere to a <strong>100% Privacy Guarantee</strong>:
+            </p>
+            <ul>
+              <li><strong>Ephemeral Query:</strong> Coordinates are used in-memory solely to fetch local weather models and are never written to external servers or user profile databases.</li>
+              <li><strong>Zero Background Tracking:</strong> WeatherOS does not track or log your movement while the app is closed.</li>
+              <li><strong>No Data Brokers or Advertising:</strong> We do not embed ad SDKs, analytics tracking beacons, or commercial data selling hooks.</li>
+            </ul>
+            <p>Read our full <a href="/weatheros/privacy" style="color: var(--w-cyan); font-weight: 600;">10/10 Gold Standard Privacy Policy</a> for comprehensive details.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 2: Units -->
+        <div class="faq-item" id="faq-units">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>2. How do I switch between Fahrenheit (°F) and Celsius (°C)?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              WeatherOS allows dynamic 1-tap unit conversion:
+            </p>
+            <ul>
+              <li><strong>Quick Tap:</strong> Tap directly on the primary temperature readout on the main dashboard.</li>
+              <li><strong>Preferences Menu:</strong> Open the top-right Settings drawer to switch between <strong>Imperial</strong> (°F, mph, inHg) and <strong>Metric</strong> (°C, km/h, hPa).</li>
+            </ul>
+            <p>Your preference is stored locally in device sandbox memory and applies instantly across the 7-day outlook, wind speed telemetry, and barometric pressure gauges.</p>
+          </div>
+        </div>
+
+        <!-- FAQ 3: 7-Day Forecast -->
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>3. How does the 7-Day Thermal Spectrum Weekly Forecast work?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              The 7-Day Thermal Spectrum card displays a visual high/low temperature bar with relative color gradients:
+            </p>
+            <ul>
+              <li><strong>Gradient Spectrum:</strong> Sub-freezing temperatures shift from deep glacial blue to cyan, while summer highs shift from amber to thermal crimson.</li>
+              <li><strong>Precipitation Indicators:</strong> Days with rainfall or snowfall probability show an integrated moisture glyph with percentage probability.</li>
+              <li><strong>Daily Expansion:</strong> Tap any day in the outlook to expand hourly intervals, dew point curves, and cloud cover metrics.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- FAQ 4: Severe Matrix -->
+        <div class="faq-item" id="faq-severe">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>4. How does the Multi-Threat Severe Weather Risk Matrix work?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              When severe atmospheric anomalies are detected by NOAA / National Weather Service feeds, WeatherOS highlights active threats in an integrated priority matrix:
+            </p>
+            <ul>
+              <li><strong>Threat Categories:</strong> Tornadic rotation, damaging wind gusts, severe hail, flash flooding, and extreme heat/cold.</li>
+              <li><strong>Severity Levels:</strong> Categorized dynamically as <code>ADVISORY</code> (Yellow), <code>WATCH</code> (Amber), or <code>WARNING</code> (Crimson).</li>
+              <li><strong>Detailed Briefing:</strong> Tap any severe threat banner to view emergency safety recommendations, expiration timestamps, and meteorological storm vectors.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- FAQ 5: Offline Mode -->
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>5. Can I use WeatherOS without an active internet connection?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Yes! WeatherOS includes an automated <strong>Offline Cache Engine</strong>. When connectivity is lost (airplane mode, subway, or backcountry hiking), WeatherOS retains the most recent atmospheric model with an explicit <em>"Cached Snapshot"</em> timestamp so you remain informed without app freezing or crashes.
+            </p>
+          </div>
+        </div>
+
+        <!-- FAQ 6: Refunds -->
+        <div class="faq-item" id="faq-refunds">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            <span>6. How do refunds work for App Store and Google Play purchases?</span>
+            <span class="faq-icon">▾</span>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Because your $0.99 transaction is processed directly through Apple or Google, refunds are managed according to platform store guidelines:
+            </p>
+            <ul>
+              <li><strong>Apple App Store (iOS):</strong> Visit <a href="https://reportaproblem.apple.com/" target="_blank" rel="noopener noreferrer" style="color: var(--w-cyan); font-weight: 600;">reportaproblem.apple.com</a>, sign in with your Apple ID, select <em>"Request a refund"</em>, and choose WeatherOS.</li>
+              <li><strong>Google Play Store (Android):</strong> Open Google Play, tap your profile icon → <em>Payments & subscriptions → Budget & order history</em>, locate WeatherOS, and select <em>"Request a refund"</em> (available within 48 hours of purchase).</li>
+            </ul>
+            <p>If you experience any technical bugs or issues, please reach out to our team below before requesting a refund — we often release patches within hours!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Direct Developer Support Card -->
+      <div class="support-contact-card">
+        <div class="support-contact-info">
+          <h3>Need Direct Assistance?</h3>
+          <p>
+            Contact the OnlyTruePerspective engineering team directly. We respond to all inquiries in under 24 hours.
+          </p>
+          <p style="margin-top: 6px; font-family: 'Space Grotesk', sans-serif; font-size: 0.88rem; color: var(--w-cyan);">
+            ✉️ contact@onlytrueperspective.tech
+          </p>
+        </div>
+        <a href="mailto:contact@onlytrueperspective.tech?subject=WeatherOS%20Support%20Inquiry%20(v1.0.3)&body=Device%20Model:%0AOperating%20System%20Version:%0AIssue%20Description:%0A" class="support-btn">
+          <span>Email Developer Support</span>
+          <span>→</span>
+        </a>
+      </div>
+
+      <!-- Version Changelog & Release Notes -->
+      <section style="margin: 40px 0;">
+        <h2 style="font-family: 'Syne', sans-serif; font-size: 1.6rem; margin-bottom: 16px; color: var(--w-text-bright);">
+          Version Changelog & Release History
+        </h2>
+
+        <div class="changelog-box">
+          <div class="changelog-version">
+            <span class="changelog-tag">v1.0.3 — Current Release</span>
+            <span class="changelog-date">August 2026</span>
+          </div>
+          <ul style="margin: 0; padding-left: 20px; font-size: 0.92rem; color: var(--w-text-muted); line-height: 1.6;">
+            <li><strong>7-Day Thermal Spectrum Engine:</strong> Visual color-temperature bar charting with high/low daily spreads.</li>
+            <li><strong>Celestial Solar Arc Compass:</strong> Added real-time solar elevation, twilight progression, and UV index monitoring.</li>
+            <li><strong>ProMotion 120Hz Animation Tuning:</strong> Smoother glassmorphic parallax scrolling and atmospheric particle shaders.</li>
+            <li><strong>Offline Cache Resilience:</strong> Instant state recovery when entering low-connectivity environments.</li>
+          </ul>
+        </div>
+
+        <div class="changelog-box">
+          <div class="changelog-version">
+            <span class="changelog-tag" style="background: rgba(255,255,255,0.08); color: var(--w-text-bright);">v1.0.2 — Launch Release</span>
+            <span class="changelog-date">August 2026</span>
+          </div>
+          <ul style="margin: 0; padding-left: 20px; font-size: 0.92rem; color: var(--w-text-muted); line-height: 1.6;">
+            <li>Initial release on Apple App Store & Google Play Store ($0.99).</li>
+            <li>Smoked-glass obsidian visual architecture with dynamic atmospheric background shaders.</li>
+            <li>Multi-threat severe weather alerts and live Doppler radar reflectivity feeds.</li>
+            <li>100% on-device ephemeral location privacy.</li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="post-nav" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 48px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px;">
+        <a href="/weatheros" class="next-link k-hover" style="color: var(--w-cyan);">← Back to WeatherOS Showcase</a>
+        <a href="/weatheros/privacy" class="next-link k-hover" style="color: var(--w-text-muted);">View Privacy Policy →</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Primary Site Footer -->
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-left">
+        <div class="nav-logo" aria-label="OTP">
+          <img src="/assets/otp-logo-transparent.png" alt="OTP logo" class="nav-gif" id="footer-logo-neon" width="44" height="44" loading="lazy" decoding="async" />
+        </div>
+        <div class="fineprint">© <span id="year">2026</span> OnlyTruePerspective LLC. All rights reserved.</div>
+        <div class="footer-legal">
+          <a href="/weatheros" class="k-hover" style="color: var(--w-cyan);">WeatherOS</a>
+          <span class="dot">•</span>
+          <a href="/weatheros/support" class="k-hover" style="color: var(--w-cyan);">Support</a>
+          <span class="dot">•</span>
+          <a href="/weatheros/privacy" class="k-hover">Privacy Policy</a>
+          <span class="dot">•</span>
+          <a href="/bookings" class="k-hover">Book OTP</a>
+          <span class="dot">•</span>
+          <a href="/portal" class="k-hover">Client Portal</a>
+          <span class="dot">•</span>
+          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>
+        </div>
+      </div>
+
+      <div class="footer-right">
+        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      item.classList.toggle('open');
+    }
+  </script>
+
+  <canvas id="cursor-canvas"></canvas>
+  <script src="/theme-chrono.js?v=9" defer></script>
+  <script src="/stars-v2.js?v=20260819-perf1" defer></script>
+  <script src="/otp-attribution.js?v=16.9.1" defer></script>
+  <script src="/site-init.js?v=20260819-perf1" defer></script>
+</body>
+</html>

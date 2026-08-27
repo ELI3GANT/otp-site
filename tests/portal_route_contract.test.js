@@ -39,6 +39,8 @@ assert.match(server, /clientPortalAssetTypes/, 'portal must serve local client s
 assert.match(server, /app\.get\(Object\.keys\(clientPortalAssetTypes\)/, 'portal asset proxy routes must exist before static fallback');
 assert.match(server, /ops_jobs/, 'portal API must use live ops_jobs data');
 assert.match(server, /Paid Receipt/, 'portal API must include receipt gating logic');
+assert.ok(!server.includes('(e2eTestModeEnabled() || !supabaseAdmin)'), 'portal fixtures must require explicit E2E mode');
+assert.ok(server.includes("errorCode: 'upstream_unavailable'"), 'portal must fail closed when its upstream is unavailable');
 assert.ok(!/replaceAll\('https:\/\/otp-os\.vercel\.app', OTP_PUBLIC_SITE_ORIGIN\)/.test(server), 'portal proxy must not rewrite the OTP OS API origin');
 assert.ok(!/otp-api-base[\s\S]{0,240}OTP_PUBLIC_SITE_ORIGIN/.test(server), 'portal proxy must preserve upstream API metadata for OTP OS API calls');
 assert.ok(!/res\.redirect\([^)]*req\.query/i.test(server), 'server must not redirect to user-controlled query values');

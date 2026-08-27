@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>WeatherOS — The Cinematic Atmospheric Operating System | OnlyTruePerspective</title>
+  <meta name="description" content="WeatherOS is a cinematic atmospheric operating system with live Doppler telemetry, 7-day thermal spectrum forecasting, and zero tracking for iOS and Android ($0.99)." />
+  <meta name="keywords" content="WeatherOS, weather app, cinematic weather, Doppler radar, 7-day forecast, severe weather alerts, privacy weather app, OnlyTruePerspective" />
+  <meta name="theme-color" content="#030305" />
+  <meta name="color-scheme" content="dark light" />
+  <link rel="canonical" href="https://www.onlytrueperspective.tech/weatheros" />
+  
+  <!-- Social Graph Meta -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="OnlyTruePerspective" />
+  <meta property="og:url" content="https://www.onlytrueperspective.tech/weatheros" />
+  <meta property="og:title" content="WeatherOS — The Cinematic Atmospheric Operating System" />
+  <meta property="og:description" content="Experience atmospheric telemetry with extreme visual clarity. Real-time Doppler sweeps, 7-day thermal spectrum forecasting, and zero ad tracking." />
+  <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/weatheros/weatheros-concept-a.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="WeatherOS — The Cinematic Atmospheric Operating System" />
+  <meta name="twitter:description" content="Experience atmospheric telemetry with extreme visual clarity. Real-time Doppler sweeps, 7-day thermal spectrum forecasting, and zero ad tracking." />
+  <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/weatheros/weatheros-concept-a.png" />
+
+  <!-- Schema.org Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.onlytrueperspective.tech/#organization",
+        "name": "OnlyTruePerspective LLC",
+        "url": "https://www.onlytrueperspective.tech/",
+        "logo": "https://www.onlytrueperspective.tech/icon.png",
+        "email": "contact@onlytrueperspective.tech"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://www.onlytrueperspective.tech/weatheros#application",
+        "name": "WeatherOS",
+        "operatingSystem": "iOS 15.0+, iPadOS 15.0+, Android 10.0+",
+        "applicationCategory": "WeatherApplication",
+        "author": {
+          "@type": "Organization",
+          "name": "OnlyTruePerspective LLC"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0.99",
+          "priceCurrency": "USD"
+        },
+        "description": "Cinematic weather operating system with live Doppler radar, 7-day thermal spectrum forecasting, and multi-threat severe alert intelligence."
+      }
+    ]
+  }
+  </script>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/weatheros/weatheros-icon-1024.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <script src="/theme-chrono.js?v=9"></script>
+  <link rel="stylesheet" href="/styles.css?v=16.8.29" />
+
+  <style>
+    body { margin: 0 !important; }
+
+    :root {
+      --w-cyan: #35e5ff;
+      --w-cyan-rgb: 53, 229, 255;
+      --w-purple: #a482ff;
+      --w-purple-rgb: 164, 130, 255;
+      --w-amber: #ffb84d;
+      --w-crimson: #ff4d6a;
+      --w-glass-bg: rgba(14, 18, 26, 0.78);
+      --w-glass-border: rgba(53, 229, 255, 0.22);
+      --w-glass-glow: rgba(53, 229, 255, 0.08);
+      --w-text-bright: #ffffff;
+      --w-text-muted: rgba(255, 255, 255, 0.75);
+    }
+
+    [data-theme="light"] {
+      --w-glass-bg: rgba(255, 255, 255, 0.90);
+      --w-glass-border: rgba(0, 140, 180, 0.28);
+      --w-glass-glow: rgba(0, 140, 180, 0.06);
+      --w-text-bright: #0c1017;
+      --w-text-muted: rgba(12, 16, 23, 0.82);
+    }
+
+    /* Subnav Links */
+    .top-subnav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 10px 0 28px;
+      flex-wrap: wrap;
+    }
+
+    .top-subnav-link {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.88rem;
+      color: var(--w-text-muted);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .top-subnav-link:hover,
+    .top-subnav-link.active {
+      color: var(--w-cyan);
+      border-color: var(--w-cyan);
+      background: rgba(var(--w-cyan-rgb), 0.08);
+    }
+
+    /* WeatherOS Hero */
+    .w-hero-section {
+      padding: 40px 0 60px;
+      text-align: center;
+      position: relative;
+    }
+
+    .w-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      background: rgba(var(--w-cyan-rgb), 0.12);
+      border: 1px solid var(--w-glass-border);
+      color: var(--w-cyan);
+      box-shadow: 0 0 24px rgba(var(--w-cyan-rgb), 0.22);
+      margin-bottom: 24px;
+    }
+
+    .w-badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--w-cyan);
+      box-shadow: 0 0 10px var(--w-cyan);
+      animation: wPulse 2.5s infinite ease-in-out;
+    }
+
+    @keyframes wPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.8); }
+    }
+
+    .w-hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.5rem, 6.5vw, 4.4rem);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      margin: 0 auto 20px;
+      max-width: 960px;
+      color: var(--w-text-bright);
+      background: linear-gradient(180deg, #ffffff 40%, rgba(var(--w-cyan-rgb), 0.85) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    [data-theme="light"] .w-hero-title {
+      background: linear-gradient(180deg, #0c1017 40%, #007799 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .w-hero-desc {
+      font-size: clamp(1.05rem, 2.2vw, 1.28rem);
+      color: var(--w-text-muted);
+      line-height: 1.55;
+      max-width: 780px;
+      margin: 0 auto 32px;
+    }
+
+    .w-price-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      color: var(--w-text-bright);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 8px 20px;
+      border-radius: 999px;
+      margin-bottom: 32px;
+    }
+
+    /* Store CTA Buttons */
+    .w-store-buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .w-store-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--w-glass-bg);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 14px;
+      padding: 12px 24px;
+      text-decoration: none;
+      color: var(--w-text-bright);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .w-store-btn:hover {
+      transform: translateY(-3px);
+      border-color: var(--w-cyan);
+      box-shadow: 0 12px 36px rgba(var(--w-cyan-rgb), 0.28);
+    }
+
+    .w-store-btn.primary {
+      background: var(--w-cyan);
+      border-color: var(--w-cyan);
+      color: #030305 !important;
+      box-shadow: 0 0 30px rgba(var(--w-cyan-rgb), 0.45);
+    }
+
+    .w-store-btn.primary:hover {
+      box-shadow: 0 0 45px rgba(var(--w-cyan-rgb), 0.65);
+    }
+
+    .w-store-icon {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .w-store-text {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .w-store-sub {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      opacity: 0.8;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .w-store-main {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .w-trust-strip {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      font-size: 0.82rem;
+      color: var(--w-text-muted);
+      font-family: 'Space Grotesk', sans-serif;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .w-trust-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Device Mockup Showcase Frame */
+    .w-device-container {
+      margin: 48px auto;
+      max-width: 860px;
+      position: relative;
+    }
+
+    .w-device-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70%;
+      height: 70%;
+      background: radial-gradient(circle, rgba(var(--w-cyan-rgb), 0.28) 0%, rgba(164, 130, 255, 0.12) 50%, transparent 70%);
+      filter: blur(60px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .w-device-card {
+      position: relative;
+      z-index: 1;
+      background: rgba(14, 18, 26, 0.85);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 28px;
+      padding: 16px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--w-cyan-rgb), 0.15);
+      overflow: hidden;
+    }
+
+    .w-device-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 18px;
+      display: block;
+    }
+
+    /* Feature Grid */
+    .w-features-section {
+      padding: 60px 0;
+    }
+
+    .w-section-header {
+      text-align: center;
+      margin-bottom: 44px;
+    }
+
+    .w-section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      color: var(--w-text-bright);
+      margin-bottom: 12px;
+    }
+
+    .w-section-desc {
+      font-size: 1.05rem;
+      color: var(--w-text-muted);
+      max-width: 680px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .w-feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .w-feature-card {
+      background: var(--w-glass-bg);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .w-feature-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--w-cyan);
+      box-shadow: 0 16px 44px rgba(var(--w-cyan-rgb), 0.22);
+    }
+
+    .w-feature-icon {
+      font-size: 2.2rem;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+
+    .w-feature-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--w-text-bright);
+      margin-bottom: 10px;
+    }
+
+    .w-feature-desc {
+      font-size: 0.92rem;
+      color: var(--w-text-muted);
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    /* Live Interactive Observatory Simulator */
+    .w-simulator-section {
+      background: linear-gradient(135deg, rgba(14, 18, 26, 0.95) 0%, rgba(20, 28, 45, 0.95) 100%);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 28px;
+      padding: 36px 32px;
+      margin: 60px 0;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .w-sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+
+    .w-sim-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      color: var(--w-text-bright);
+      margin: 0;
+    }
+
+    .w-sim-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .w-sim-select {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--w-glass-border);
+      color: var(--w-text-bright);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.88rem;
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .w-sim-select option {
+      background: #0e121a;
+      color: #ffffff;
+    }
+
+    .w-unit-toggle {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--w-glass-border);
+      color: var(--w-cyan);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 8px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .w-sim-display {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      align-items: center;
+    }
+
+    .w-sim-main {
+      text-align: left;
+    }
+
+    .w-sim-city {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--w-cyan);
+      margin-bottom: 4px;
+    }
+
+    .w-sim-temp {
+      font-family: 'Syne', sans-serif;
+      font-size: 4.2rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--w-text-bright);
+      margin: 8px 0;
+    }
+
+    .w-sim-condition {
+      font-size: 1.15rem;
+      color: var(--w-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .w-sim-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .w-sim-metric-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .w-sim-m-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--w-text-muted);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .w-sim-m-val {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--w-text-bright);
+      margin-top: 4px;
+    }
+
+    /* 7-Day Spectrum Preview */
+    .w-sim-weekly {
+      grid-column: 1 / -1;
+      margin-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 20px;
+    }
+
+    .w-sim-weekly-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--w-cyan);
+      margin-bottom: 12px;
+    }
+
+    .w-weekly-row {
+      display: grid;
+      grid-template-columns: 80px 40px 1fr 60px;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      font-size: 0.88rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .w-spectrum-bar-wrap {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .w-spectrum-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--w-cyan) 0%, var(--w-amber) 60%, var(--w-crimson) 100%);
+    }
+
+    /* Specs Table */
+    .w-specs-card {
+      background: var(--w-glass-bg);
+      border: 1px solid var(--w-glass-border);
+      border-radius: 20px;
+      padding: 32px;
+      margin: 44px 0;
+    }
+
+    .w-specs-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-top: 16px;
+    }
+
+    .w-specs-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.92rem;
+    }
+
+    .w-specs-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .w-specs-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: var(--w-cyan);
+      width: 35%;
+    }
+
+    .w-specs-val {
+      color: var(--w-text-bright);
+    }
+
+    /* Bottom Download Banner */
+    .w-bottom-cta {
+      background: radial-gradient(circle at center, rgba(var(--w-cyan-rgb), 0.18) 0%, rgba(14, 18, 26, 0.9) 70%);
+      border: 1px solid var(--w-cyan);
+      border-radius: 28px;
+      padding: 48px 32px;
+      text-align: center;
+      margin: 60px 0 30px;
+      box-shadow: 0 0 50px rgba(var(--w-cyan-rgb), 0.25);
+    }
+
+    .w-bottom-cta h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 4.5vw, 3rem);
+      margin: 0 0 14px;
+      color: var(--w-text-bright);
+    }
+
+    .w-bottom-cta p {
+      font-size: 1.1rem;
+      color: var(--w-text-muted);
+      max-width: 620px;
+      margin: 0 auto 28px;
+    }
+  </style>
+</head>
+<body class="page-protocol">
+  <div class="stars-v2-container" aria-hidden="true"></div>
+
+  <!-- Primary Navigation Bar -->
+  <nav class="nav wrap" aria-label="Main Navigation">
+    <a href="/index.html" class="nav-logo k-hover" aria-label="OnlyTruePerspective Homepage">
+      <img src="/assets/otp-logo-transparent.png" alt="OTP logo" class="nav-gif" id="nav-logo-neon" width="48" height="48" />
+    </a>
+
+    <div class="nav-links">
+      <a href="/index.html#work" class="nav-link k-hover">Work</a>
+      <a href="/weatheros" class="nav-link k-hover" style="color: var(--w-cyan); font-weight: 700;">WeatherOS</a>
+      <a href="/weatheros/support" class="nav-link k-hover">Support</a>
+      <a href="/bookings" class="nav-link k-hover">Book</a>
+      <a href="/portal" class="nav-link k-hover">Portal</a>
+      
+      <!-- Theme Toggle -->
+      <button class="theme-toggle-btn k-hover" id="theme-toggle" aria-label="Toggle theme" onclick="window.toggleChronoTheme ? window.toggleChronoTheme() : null;">
+        <span class="theme-icon icon-night">☾</span>
+        <span class="theme-icon icon-day">☀</span>
+        <span class="theme-label" id="theme-status-label">Night</span>
+        <span class="theme-shortcut">⌘⇧L</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="wrap" style="padding-top: 30px; padding-bottom: 80px;">
+    
+    <!-- Subproduct Navigation Pills -->
+    <div class="top-subnav">
+      <a href="/weatheros" class="top-subnav-link active">WeatherOS Showcase</a>
+      <a href="/weatheros/support" class="top-subnav-link">Help & Support</a>
+      <a href="/weatheros/privacy" class="top-subnav-link">Privacy Policy</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="w-hero-section">
+      <div class="w-badge-pill">
+        <span class="w-badge-dot"></span>
+        <span>WeatherOS v1.0.3 · Cinematic Atmospheric Operating System</span>
+      </div>
+
+      <h1 class="w-hero-title">
+        The Cinematic Atmospheric Operating System.
+      </h1>
+
+      <p class="w-hero-desc">
+        Engineered for extreme visual clarity. Real-time Doppler sweeps, 7-day thermal spectrum forecasting, and multi-threat severe weather intelligence in a 120Hz smoked-glass interface.
+      </p>
+
+      <div class="w-price-tag">
+        <span>$0.99</span>
+        <span>•</span>
+        <span>One-Time Purchase</span>
+        <span>•</span>
+        <span>Zero In-App Ads</span>
+        <span>•</span>
+        <span>100% Privacy</span>
+      </div>
+
+      <!-- App Store & Google Play Download Badges -->
+      <div class="w-store-buttons">
+        <!-- Apple App Store -->
+        <a href="#download" class="w-store-btn primary" title="Download WeatherOS on Apple App Store ($0.99)">
+          <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.86c.62-.77 1.04-1.84.93-2.91-.9.04-2 .6-2.65 1.36-.58.67-.99 1.76-.88 2.8 1 .08 2-.48 2.6-1.25z"/>
+          </svg>
+          <div class="w-store-text">
+            <span class="w-store-sub">Download on the</span>
+            <span class="w-store-main">App Store</span>
+          </div>
+        </a>
+
+        <!-- Google Play Store -->
+        <a href="https://play.google.com/store/apps/details?id=app.weatheros.app" target="_blank" rel="noopener noreferrer" class="w-store-btn" title="Get WeatherOS on Google Play ($0.99)">
+          <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3.609 1.814L13.792 12 3.61 22.186a1.99 1.99 0 0 1-.61-.318V2.132c.184-.11.393-.217.61-.318zm11.233 11.233l2.25 2.25-10.978 6.338 8.728-8.588zm0-2.094L6.114 2.365l10.978 6.338-2.25 2.25zm1.48 1.047l3.827 2.21a1.5 1.5 0 0 0 0-2.597l-3.827-2.21-.848.849.848.848.848.899z"/>
+          </svg>
+          <div class="w-store-text">
+            <span class="w-store-sub">Get it on</span>
+            <span class="w-store-main">Google Play</span>
+          </div>
+        </a>
+
+        <!-- Live Web Observatory CTA -->
+        <a href="#observatory" class="w-store-btn" style="border-color: rgba(var(--w-cyan-rgb), 0.4);">
+          <span style="font-size: 1.3rem;">🌐</span>
+          <div class="w-store-text">
+            <span class="w-store-sub">Try In Browser</span>
+            <span class="w-store-main">Web Observatory</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="w-trust-strip">
+        <span class="w-trust-item">🔒 Zero Commercial Tracking</span>
+        <span>•</span>
+        <span class="w-trust-item">⚡ 120 FPS ProMotion Animations</span>
+        <span>•</span>
+        <span class="w-trust-item">📡 Real-Time Doppler Sweeps</span>
+        <span>•</span>
+        <span class="w-trust-item">🛡️ 10/10 Gold Standard Privacy</span>
+      </div>
+
+      <!-- High-Fidelity Device Mockup -->
+      <div class="w-device-container">
+        <div class="w-device-glow"></div>
+        <div class="w-device-card">
+          <img src="/assets/weatheros/weatheros-concept-a.png" alt="WeatherOS App Interface Mockup" width="860" height="480" loading="eager" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Core Features Grid -->
+    <section class="w-features-section">
+      <div class="w-section-header">
+        <h2 class="w-section-title">Atmospheric Architecture & Intelligence</h2>
+        <p class="w-section-desc">Designed from the ground up for precision, immediacy, and visual immersion.</p>
+      </div>
+
+      <div class="w-feature-grid">
+        <!-- Feature 1: 7-Day Spectrum -->
+        <div class="w-feature-card">
+          <span class="w-feature-icon">📈</span>
+          <h3 class="w-feature-title">7-Day Thermal Spectrum</h3>
+          <p class="w-feature-desc">
+            Visual weekly forecasting engine with dynamic color-temperature gradient bars. Instantly spot cold fronts, heat waves, and moisture swings at a glance.
+          </p>
+        </div>
+
+        <!-- Feature 2: Severe Risk Matrix -->
+        <div class="w-feature-card">
+          <span class="w-feature-icon">🌪️</span>
+          <h3 class="w-feature-title">Multi-Threat Severe Matrix</h3>
+          <p class="w-feature-desc">
+            Direct NOAA & National Weather Service alert telemetry. Prioritizes tornadic activity, damaging wind gusts, severe hail, and flash floods with zero latency.
+          </p>
+        </div>
+
+        <!-- Feature 3: Doppler Radar -->
+        <div class="w-feature-card">
+          <span class="w-feature-icon">📡</span>
+          <h3 class="w-feature-title">Live Doppler Telemetry</h3>
+          <p class="w-feature-desc">
+            High-definition radar precipitation sweeps with reflectivity indicators, storm path projections, and 15-minute automated refresh cycles.
+          </p>
+        </div>
+
+        <!-- Feature 4: Celestial Compass -->
+        <div class="w-feature-card">
+          <span class="w-feature-icon">☀️</span>
+          <h3 class="w-feature-title">Celestial Solar Compass</h3>
+          <p class="w-feature-desc">
+            Real-time solar elevation tracking, golden hour calculations, twilight transition vectors, and UV burn index meters for outdoor operators.
+          </p>
+        </div>
+
+        <!-- Feature 5: Smoked-Glass Obsidian UI -->
+        <div class="w-feature-card">
+          <span class="w-feature-icon">⚡</span>
+          <h3 class="w-feature-title">120Hz Smoked-Glass UI</h3>
+          <p class="w-feature-desc">
+            Meticulously tuned for OLED and Apple ProMotion displays. Fluid glassmorphic layers with dynamic atmospheric background shaders.
+          </p>
+        </div>
+
+        <!-- Feature 6: Zero Tracker Guarantee -->
+        <div class="w-feature-card">
+          <span class="w-feature-icon">🔒</span>
+          <h3 class="w-feature-title">100% Privacy Guarantee</h3>
+          <p class="w-feature-desc">
+            No advertising SDKs. No analytics beacons. Ephemeral on-device GPS coordinates are never sent to third-party data brokers.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive In-Browser Observatory Simulator -->
+    <section class="w-simulator-section" id="observatory">
+      <div class="w-sim-header">
+        <div>
+          <h2 class="w-sim-title">Live WeatherOS Web Observatory</h2>
+          <p style="margin: 4px 0 0; font-size: 0.88rem; color: var(--w-text-muted);">Test the atmospheric engine live in your browser.</p>
+        </div>
+
+        <div class="w-sim-controls">
+          <select id="sim-city-select" class="w-sim-select" onchange="updateSimCity(this.value)">
+            <option value="providence">Providence, RI (HQ)</option>
+            <option value="nyc">New York, NY</option>
+            <option value="tokyo">Tokyo, Japan</option>
+            <option value="london">London, UK</option>
+            <option value="miami">Miami, FL</option>
+            <option value="reykjavik">Reykjavik, Iceland</option>
+          </select>
+
+          <button class="w-unit-toggle" onclick="toggleSimUnit()">
+            <span id="sim-unit-label">°F → °C</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="w-sim-display">
+        <div class="w-sim-main">
+          <div class="w-sim-city" id="sim-city-name">PROVIDENCE, RI</div>
+          <div class="w-sim-temp" id="sim-temp-val">74°</div>
+          <div class="w-sim-condition" id="sim-cond-val">
+            <span>⛅</span> <span>Partly Cloudy · Atmospheric Stability High</span>
+          </div>
+        </div>
+
+        <div class="w-sim-metrics">
+          <div class="w-sim-metric-box">
+            <div class="w-sim-m-label">Wind Telemetry</div>
+            <div class="w-sim-m-val" id="sim-wind-val">9 mph SSW</div>
+          </div>
+          <div class="w-sim-metric-box">
+            <div class="w-sim-m-label">Relative Humidity</div>
+            <div class="w-sim-m-val" id="sim-humidity-val">58%</div>
+          </div>
+          <div class="w-sim-metric-box">
+            <div class="w-sim-m-label">Barometric Pressure</div>
+            <div class="w-sim-m-val" id="sim-pressure-val">30.12 inHg</div>
+          </div>
+          <div class="w-sim-metric-box">
+            <div class="w-sim-m-label">UV Solar Index</div>
+            <div class="w-sim-m-val" id="sim-uv-val">6 (Moderate)</div>
+          </div>
+        </div>
+
+        <!-- 7-Day Spectrum Preview Row -->
+        <div class="w-sim-weekly">
+          <div class="w-sim-weekly-title">7-Day Thermal Spectrum Outlook</div>
+          
+          <div id="sim-weekly-rows">
+            <!-- Populated dynamically by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Technical Specs & Store Matrix -->
+    <section class="w-specs-card">
+      <h2 style="font-family: 'Syne', sans-serif; font-size: 1.5rem; color: var(--w-text-bright); margin-bottom: 8px;">
+        Technical Specifications & Compliance
+      </h2>
+      <p style="color: var(--w-text-muted); font-size: 0.92rem; margin: 0 0 16px;">
+        Transparent operational parameters for mobile app store deployments.
+      </p>
+
+      <table class="w-specs-table">
+        <tbody>
+          <tr>
+            <td class="w-specs-label">Supported Platforms</td>
+            <td class="w-specs-val">iOS 15.0+, iPadOS 15.0+, Android 10.0+ (API 29+), Web Observatory</td>
+          </tr>
+          <tr>
+            <td class="w-specs-label">Price & Monetization</td>
+            <td class="w-specs-val">$0.99 One-Time Purchase · Zero Ads · Zero Subscriptions · Zero In-App Purchases</td>
+          </tr>
+          <tr>
+            <td class="w-specs-label">Meteorological Data Feeds</td>
+            <td class="w-specs-val">Open-Meteo High-Resolution WMO API & NOAA / National Weather Service</td>
+          </tr>
+          <tr>
+            <td class="w-specs-label">Telemetry Frame Rate</td>
+            <td class="w-specs-val">120 FPS ProMotion & 60 FPS Standard with Hardware Acceleration</td>
+          </tr>
+          <tr>
+            <td class="w-specs-label">Data Privacy Rating</td>
+            <td class="w-specs-val">10/10 Gold Standard · Sandboxed Storage · Zero Third-Party Tracker SDKs</td>
+          </tr>
+          <tr>
+            <td class="w-specs-label">Publisher & Developer</td>
+            <td class="w-specs-val">OnlyTruePerspective LLC (Providence, RI)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Bottom Download CTA -->
+    <section class="w-bottom-cta" id="download">
+      <h2>Experience Atmospheric Clarity.</h2>
+      <p>
+        Get WeatherOS today on the Apple App Store or Google Play for just $0.99. No ads, no monthly fees, and complete location privacy.
+      </p>
+
+      <div class="w-store-buttons" style="margin-bottom: 0;">
+        <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer" class="w-store-btn primary">
+          <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.86c.62-.77 1.04-1.84.93-2.91-.9.04-2 .6-2.65 1.36-.58.67-.99 1.76-.88 2.8 1 .08 2-.48 2.6-1.25z"/>
+          </svg>
+          <div class="w-store-text">
+            <span class="w-store-sub">Download on the</span>
+            <span class="w-store-main">App Store ($0.99)</span>
+          </div>
+        </a>
+
+        <a href="https://play.google.com/store/apps/details?id=app.weatheros.app" target="_blank" rel="noopener noreferrer" class="w-store-btn">
+          <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3.609 1.814L13.792 12 3.61 22.186a1.99 1.99 0 0 1-.61-.318V2.132c.184-.11.393-.217.61-.318zm11.233 11.233l2.25 2.25-10.978 6.338 8.728-8.588zm0-2.094L6.114 2.365l10.978 6.338-2.25 2.25zm1.48 1.047l3.827 2.21a1.5 1.5 0 0 0 0-2.597l-3.827-2.21-.848.849.848.848.848.899z"/>
+          </svg>
+          <div class="w-store-text">
+            <span class="w-store-sub">Get it on</span>
+            <span class="w-store-main">Google Play ($0.99)</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Primary Site Footer -->
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-left">
+        <div class="nav-logo" aria-label="OTP">
+          <img src="/assets/otp-logo-transparent.png" alt="OTP logo" class="nav-gif" id="footer-logo-neon" width="44" height="44" loading="lazy" decoding="async" />
+        </div>
+        <div class="fineprint">© <span id="year">2026</span> OnlyTruePerspective LLC. All rights reserved.</div>
+        <div class="footer-legal">
+          <a href="/weatheros" class="k-hover" style="color: var(--w-cyan);">WeatherOS</a>
+          <span class="dot">•</span>
+          <a href="/weatheros/support" class="k-hover" style="color: var(--w-cyan);">Support & FAQ</a>
+          <span class="dot">•</span>
+          <a href="/weatheros/privacy" class="k-hover">Privacy Policy</a>
+          <span class="dot">•</span>
+          <a href="/bookings" class="k-hover">Book OTP</a>
+          <span class="dot">•</span>
+          <a href="/portal" class="k-hover">Client Portal</a>
+          <span class="dot">•</span>
+          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>
+        </div>
+      </div>
+
+      <div class="footer-right">
+        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Interactive Web Simulator Script -->
+  <script>
+    const simData = {
+      providence: { name: "PROVIDENCE, RI (HQ)", tempF: 74, cond: "⛅ Partly Cloudy", glyph: "⛅", wind: "9 mph SSW", hum: "58%", pres: "30.12 inHg", uv: "6 (Moderate)", weekly: [
+        { day: "Today", glyph: "⛅", low: 62, high: 76 },
+        { day: "Fri", glyph: "☀️", low: 64, high: 80 },
+        { day: "Sat", glyph: "🌦️", low: 66, high: 78 },
+        { day: "Sun", glyph: "☀️", low: 61, high: 75 },
+        { day: "Mon", glyph: "⛅", low: 63, high: 77 },
+        { day: "Tue", glyph: "🌧️", low: 59, high: 71 },
+        { day: "Wed", glyph: "☀️", low: 60, high: 76 }
+      ]},
+      nyc: { name: "NEW YORK, NY", tempF: 78, cond: "☀️ Clear Skies", glyph: "☀️", wind: "11 mph S", hum: "52%", pres: "30.08 inHg", uv: "7 (High)", weekly: [
+        { day: "Today", glyph: "☀️", low: 66, high: 81 },
+        { day: "Fri", glyph: "☀️", low: 68, high: 84 },
+        { day: "Sat", glyph: "⛅", low: 70, high: 82 },
+        { day: "Sun", glyph: "🌦️", low: 65, high: 79 },
+        { day: "Mon", glyph: "☀️", low: 64, high: 80 },
+        { day: "Tue", glyph: "⛅", low: 63, high: 77 },
+        { day: "Wed", glyph: "☀️", low: 65, high: 82 }
+      ]},
+      tokyo: { name: "TOKYO, JAPAN", tempF: 86, cond: "⛈️ Humid Thunderstorm", glyph: "⛈️", wind: "14 mph ENE", hum: "82%", pres: "29.85 inHg", uv: "8 (Very High)", weekly: [
+        { day: "Today", glyph: "⛈️", low: 77, high: 88 },
+        { day: "Fri", glyph: "🌧️", low: 76, high: 85 },
+        { day: "Sat", glyph: "⛅", low: 75, high: 89 },
+        { day: "Sun", glyph: "☀️", low: 78, high: 91 },
+        { day: "Mon", glyph: "☀️", low: 79, high: 92 },
+        { day: "Tue", glyph: "🌦️", low: 77, high: 88 },
+        { day: "Wed", glyph: "⛅", low: 76, high: 87 }
+      ]},
+      london: { name: "LONDON, UK", tempF: 68, cond: "🌦️ Passing Mist & Showers", glyph: "🌦️", wind: "12 mph WSW", hum: "74%", pres: "30.01 inHg", uv: "4 (Moderate)", weekly: [
+        { day: "Today", glyph: "🌦️", low: 55, high: 70 },
+        { day: "Fri", glyph: "⛅", low: 54, high: 69 },
+        { day: "Sat", glyph: "🌧️", low: 53, high: 66 },
+        { day: "Sun", glyph: "⛅", low: 52, high: 68 },
+        { day: "Mon", glyph: "☀️", low: 55, high: 72 },
+        { day: "Tue", glyph: "⛅", low: 56, high: 71 },
+        { day: "Wed", glyph: "🌦️", low: 54, high: 69 }
+      ]},
+      miami: { name: "MIAMI, FL", tempF: 89, cond: "🌴 Tropical Sunshine", glyph: "☀️", wind: "8 mph E", hum: "76%", pres: "30.02 inHg", uv: "10 (Extreme)", weekly: [
+        { day: "Today", glyph: "☀️", low: 80, high: 91 },
+        { day: "Fri", glyph: "🌦️", low: 79, high: 90 },
+        { day: "Sat", glyph: "⛈️", low: 80, high: 89 },
+        { day: "Sun", glyph: "☀️", low: 81, high: 92 },
+        { day: "Mon", glyph: "⛅", low: 80, high: 90 },
+        { day: "Tue", glyph: "☀️", low: 80, high: 91 },
+        { day: "Wed", glyph: "🌦️", low: 79, high: 89 }
+      ]},
+      reykjavik: { name: "REYKJAVIK, ICELAND", tempF: 48, cond: "🧊 Glacial Wind & Clarity", glyph: "💨", wind: "18 mph N", hum: "64%", pres: "29.90 inHg", uv: "2 (Low)", weekly: [
+        { day: "Today", glyph: "💨", low: 39, high: 50 },
+        { day: "Fri", glyph: "⛅", low: 40, high: 51 },
+        { day: "Sat", glyph: "🌧️", low: 38, high: 47 },
+        { day: "Sun", glyph: "⛅", low: 37, high: 49 },
+        { day: "Mon", glyph: "☀️", low: 39, high: 52 },
+        { day: "Tue", glyph: "💨", low: 41, high: 50 },
+        { day: "Wed", glyph: "⛅", low: 40, high: 51 }
+      ]}
+    };
+
+    let isCelsius = false;
+    let currentCityKey = "providence";
+
+    function fToC(f) {
+      return Math.round((f - 32) * 5 / 9);
+    }
+
+    function renderSimulator() {
+      const data = simData[currentCityKey];
+      if (!data) return;
+
+      document.getElementById('sim-city-name').textContent = data.name;
+      const displayTemp = isCelsius ? `${fToC(data.tempF)}°` : `${data.tempF}°`;
+      document.getElementById('sim-temp-val').textContent = displayTemp;
+      document.getElementById('sim-cond-val').innerHTML = `<span>${data.glyph}</span> <span>${data.cond}</span>`;
+      document.getElementById('sim-wind-val').textContent = data.wind;
+      document.getElementById('sim-humidity-val').textContent = data.hum;
+      document.getElementById('sim-pressure-val').textContent = data.pres;
+      document.getElementById('sim-uv-val').textContent = data.uv;
+
+      // Render 7-Day Spectrum
+      const weeklyContainer = document.getElementById('sim-weekly-rows');
+      weeklyContainer.innerHTML = data.weekly.map(w => {
+        const lowDisp = isCelsius ? `${fToC(w.low)}°` : `${w.low}°`;
+        const highDisp = isCelsius ? `${fToC(w.high)}°` : `${w.high}°`;
+        const widthPercent = Math.min(100, Math.max(30, (w.high - 30) * 1.3));
+
+        return `
+          <div class="w-weekly-row">
+            <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--w-text-bright);">${w.day}</span>
+            <span style="font-size: 1.1rem;">${w.glyph}</span>
+            <div class="w-spectrum-bar-wrap">
+              <div class="w-spectrum-bar-fill" style="width: ${widthPercent}%;"></div>
+            </div>
+            <span style="font-family: 'Space Grotesk', sans-serif; font-size: 0.82rem; text-align: right; color: var(--w-text-muted);">
+              ${lowDisp} / <strong style="color: var(--w-text-bright);">${highDisp}</strong>
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateSimCity(cityKey) {
+      currentCityKey = cityKey;
+      renderSimulator();
+    }
+
+    function toggleSimUnit() {
+      isCelsius = !isCelsius;
+      document.getElementById('sim-unit-label').textContent = isCelsius ? "°C → °F" : "°F → °C";
+      renderSimulator();
+    }
+
+    // Initialize simulator on load
+    document.addEventListener('DOMContentLoaded', renderSimulator);
+  </script>
+
+  <canvas id="cursor-canvas"></canvas>
+  <script src="/theme-chrono.js?v=1787873563" defer></script>
+  <script src="/stars-v2.js?v=1787873563-perf1" defer></script>
+  <script src="/otp-attribution.js?v=1787873563" defer></script>
+  <script src="/site-init.js?v=1787873563-perf1" defer></script>
+</body>
+</html>
