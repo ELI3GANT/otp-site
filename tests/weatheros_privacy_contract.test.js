@@ -111,8 +111,8 @@ assert.ok(html.includes('contact@onlytrueperspective.tech'), 'Contact email disc
 
 // 12. Routing & Architecture
 const serverJs = read('server.js');
-assert.ok(serverJs.includes("'/weatheros/privacy': 'weatheros-privacy.html'"), 'server.js staticAliases has /weatheros/privacy');
-assert.ok(serverJs.includes("'/weatheros/privacy.html': 'weatheros-privacy.html'"), 'server.js staticAliases has /weatheros/privacy.html');
+assert.ok(serverJs.includes("'/weatheros/privacy': 'weatheros/privacy.html'") || serverJs.includes("'/weatheros/privacy': 'weatheros-privacy.html'"), 'server.js staticAliases has /weatheros/privacy');
+assert.ok(serverJs.includes("'/weatheros/privacy.html': 'weatheros/privacy.html'") || serverJs.includes("'/weatheros/privacy.html': 'weatheros-privacy.html'"), 'server.js staticAliases has /weatheros/privacy.html');
 
 const vercelJson = JSON.parse(read('vercel.json'));
 const weatherOsRoute = vercelJson.routes.find(r => r.src && r.src.includes('weatheros'));
