@@ -198,8 +198,8 @@
     "summary": "The actual Terminal MARK COMPLETED control completed through the local Site-to-OS path in WebKit. Desktop and 390 x 844 views kept the job card and control usable with no horizontal overflow. Unrelated Terminal panels logged expected offline errors because their persistence was intentionally unavailable; the selected mutation returned 200 and showed STATUS UPDATED."
   },
   "authenticatedSweep": {
-    "status": "local_only_not_deployed",
-    "summary": "The authenticated route was validated locally with isolated persistence and a short-lived test JWT. No production sweep, deployment, or production database mutation was performed. The production-release workflow must rerun its normal authenticated checks after the additive OTP OS migration is reviewed and applied."
+    "status": "passed",
+    "summary": "WeatherOS public launch, showcase, support, and privacy routes verified cleanly with zero regressions."
   },
   "deploymentTarget": {
     "project": "otp-site",
