@@ -408,29 +408,38 @@
   <div class="stars-v2-container" aria-hidden="true"></div>
 
   <!-- Primary Navigation Bar -->
-  <nav class="nav wrap" aria-label="Main Navigation">
+  <header class="nav nav-split" id="top">
+    <!-- Logo Left -->
     <a href="/index.html" class="nav-logo k-hover" aria-label="OnlyTruePerspective Homepage">
-      <img src="/assets/otp-logo-transparent.png" alt="OTP logo" class="nav-gif" id="nav-logo-neon" width="48" height="48" />
+      <img src="/assets/otp-logo-transparent.png" alt="OTP logo" class="otp-mark" id="nav-logo-neon" width="44" height="44" decoding="async" />
     </a>
 
-    <div class="nav-links">
-      <a href="/index.html#work" class="nav-link k-hover">Work</a>
-      <a href="/weatheros" class="nav-link k-hover" style="color: var(--w-cyan); font-weight: 700;">WeatherOS</a>
-      <a href="/bookings" class="nav-link k-hover">Book</a>
-      <a href="/portal" class="nav-link k-hover">Portal</a>
-      
-      <!-- Theme Toggle -->
-      <button class="theme-toggle-btn k-hover" id="theme-toggle" aria-label="Toggle theme" onclick="window.toggleChronoTheme ? window.toggleChronoTheme() : null;">
-        <span class="theme-icon icon-night">☾</span>
-        <span class="theme-icon icon-day">☀</span>
-        <span class="theme-label" id="theme-status-label">Night</span>
-        <span class="theme-shortcut">⌘⇧L</span>
-      </button>
-    </div>
-  </nav>
+    <!-- Links Right -->
+    <nav class="nav-links" aria-label="Primary">
+      <a href="/index.html#work" class="k-hover">Work</a>
+      <a href="/weatheros" class="k-hover" style="color: var(--w-cyan); font-weight: 700;">WeatherOS</a>
+      <a href="/weatheros/support" class="k-hover active" style="color: var(--w-cyan);">Support</a>
+      <a href="/bookings" class="k-hover">Book</a>
+      <a href="/portal" class="k-hover">Portal</a>
+    </nav>
+
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav-drawer" aria-label="Mobile">
+      <a href="/weatheros">WeatherOS Showcase</a>
+      <a href="/weatheros/support" style="color: var(--w-cyan); font-weight: 700;">Support &amp; FAQ</a>
+      <a href="/weatheros/privacy">Privacy Policy</a>
+      <a href="/index.html#work">Work</a>
+      <a href="/bookings">⚡ Book OTP</a>
+      <a href="/portal">🏛️ Client Portal</a>
+    </nav>
+  </header>
 
   <!-- Main Support Content -->
-  <main class="wrap" style="padding-top: 40px; padding-bottom: 80px;">
+  <main class="wrap" style="padding-top: 100px; padding-bottom: 80px;">
     <div class="post-layout" style="max-width: 920px; margin: 0 auto;">
 
       <!-- Subproduct Navigation Pills -->
