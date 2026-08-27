@@ -24,6 +24,7 @@
     "security:scan": "node scripts/security_scan.js",
     "release:scope": "node scripts/verify_release_scope.js --manifest=release-manifest.json",
     "release:gate": "node scripts/verify_release_scope.js --manifest=release-manifest.json --deploy",
+    "deploy:fast": "npx --yes vercel deploy --prod --yes",
     "vercel:ignore-build": "node scripts/vercel_ignore_build_step.js"
   },
   "keywords": [
