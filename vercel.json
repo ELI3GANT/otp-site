@@ -86,20 +86,16 @@
       "dest": "/server.js"
     },
     {
-      "src": "^/weatheros/?$",
-      "dest": "/server.js"
+      "src": "/weatheros/?",
+      "dest": "/weatheros.html"
     },
     {
-      "src": "^/weatheros/support/?$",
-      "dest": "/server.js"
+      "src": "/weatheros/support/?",
+      "dest": "/weatheros-support.html"
     },
     {
-      "src": "^/weatheros/privacy/?$",
-      "dest": "/server.js"
-    },
-    {
-      "src": "^/weatheros/(.*)$",
-      "dest": "/server.js"
+      "src": "/weatheros/privacy/?",
+      "dest": "/weatheros-privacy.html"
     },
     {
       "src": "/(bookings|booking|book|book-otp)/?",
