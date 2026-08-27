@@ -87,15 +87,19 @@
     },
     {
       "src": "^/weatheros/?$",
-      "dest": "/weatheros.html"
+      "dest": "/server.js"
     },
     {
       "src": "^/weatheros/support/?$",
-      "dest": "/weatheros-support.html"
+      "dest": "/server.js"
     },
     {
       "src": "^/weatheros/privacy/?$",
-      "dest": "/weatheros-privacy.html"
+      "dest": "/server.js"
+    },
+    {
+      "src": "^/weatheros/(.*)$",
+      "dest": "/server.js"
     },
     {
       "src": "/(bookings|booking|book|book-otp)/?",
