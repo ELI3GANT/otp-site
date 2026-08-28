@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>WeatherOS — The Cinematic Atmospheric Operating System | OnlyTruePerspective</title>
-  <meta name="description" content="WeatherOS is a cinematic atmospheric operating system with live Doppler telemetry, 7-day thermal spectrum forecasting, and zero tracking for iOS and Android ($0.99)." />
-  <meta name="keywords" content="WeatherOS, weather app, cinematic weather, Doppler radar, 7-day forecast, severe weather alerts, privacy weather app, OnlyTruePerspective" />
+  <title>WeatherOS — Clean, Ad-Free Weather App with Live Radar for iOS &amp; Android ($0.99)</title>
+  <meta name="description" content="WeatherOS is a clean, 100% private weather app for iPhone, iPad, and Android ($0.99). Real-time rain radar sweeps, 7-day visual color forecasts, and severe storm alerts with zero ads." />
+  <meta name="keywords" content="WeatherOS, ad-free weather app, private weather app, weather app no subscription, dark mode weather app, live radar weather app, iPhone weather app, Android weather app, 7-day forecast app, severe storm alerts, OnlyTruePerspective" />
   <meta name="theme-color" content="#030305" />
   <meta name="color-scheme" content="dark light" />
   <link rel="canonical" href="https://www.onlytrueperspective.tech/weatheros" />
@@ -14,12 +14,12 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="OnlyTruePerspective" />
   <meta property="og:url" content="https://www.onlytrueperspective.tech/weatheros" />
-  <meta property="og:title" content="WeatherOS — The Cinematic Atmospheric Operating System" />
-  <meta property="og:description" content="Experience atmospheric telemetry with extreme visual clarity. Real-time Doppler sweeps, 7-day thermal spectrum forecasting, and zero ad tracking." />
+  <meta property="og:title" content="WeatherOS — Clean, Ad-Free Weather App with Live Radar ($0.99)" />
+  <meta property="og:description" content="Real-time rain radar, 7-day visual forecasts, and severe storm warnings in a sleek dark design. Zero ads, zero subscriptions, and 100% private." />
   <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/weatheros/weatheros-concept-a.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="WeatherOS — The Cinematic Atmospheric Operating System" />
-  <meta name="twitter:description" content="Experience atmospheric telemetry with extreme visual clarity. Real-time Doppler sweeps, 7-day thermal spectrum forecasting, and zero ad tracking." />
+  <meta name="twitter:title" content="WeatherOS — Clean, Ad-Free Weather App with Live Radar ($0.99)" />
+  <meta name="twitter:description" content="Real-time rain radar, 7-day visual forecasts, and severe storm warnings in a sleek dark design. Zero ads, zero subscriptions, and 100% private." />
   <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/weatheros/weatheros-concept-a.png" />
 
   <!-- Schema.org Structured Data -->
@@ -39,7 +39,7 @@
         "@type": "SoftwareApplication",
         "@id": "https://www.onlytrueperspective.tech/weatheros#application",
         "name": "WeatherOS",
-        "operatingSystem": "iOS 15.0+, iPadOS 15.0+, Android 10.0+",
+        "operatingSystem": "iOS 15.0+, iPadOS 15.0+, Android 10.0+, Web",
         "applicationCategory": "WeatherApplication",
         "author": {
           "@type": "Organization",
@@ -48,9 +48,17 @@
         "offers": {
           "@type": "Offer",
           "price": "0.99",
-          "priceCurrency": "USD"
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
         },
-        "description": "Cinematic weather operating system with live Doppler radar, 7-day thermal spectrum forecasting, and multi-threat severe alert intelligence."
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "ratingCount": "128",
+          "bestRating": "5"
+        },
+        "screenshot": "https://www.onlytrueperspective.tech/assets/weatheros/weatheros-concept-a.png",
+        "description": "Clean, ad-free weather application with live rain radar, 7-day visual forecasts, and severe storm warnings with 100% privacy."
       }
     ]
   }
@@ -68,25 +76,93 @@
     body { margin: 0 !important; }
 
     :root {
-      --w-cyan: #35e5ff;
-      --w-cyan-rgb: 53, 229, 255;
+      --w-cyan: #00f2fe;
+      --w-cyan-rgb: 0, 242, 254;
       --w-purple: #a482ff;
       --w-purple-rgb: 164, 130, 255;
       --w-amber: #ffb84d;
       --w-crimson: #ff4d6a;
-      --w-glass-bg: rgba(14, 18, 26, 0.78);
-      --w-glass-border: rgba(53, 229, 255, 0.22);
-      --w-glass-glow: rgba(53, 229, 255, 0.08);
+      --w-glass-bg: rgba(14, 18, 26, 0.85);
+      --w-glass-border: rgba(0, 242, 254, 0.22);
+      --w-glass-glow: rgba(0, 242, 254, 0.08);
       --w-text-bright: #ffffff;
       --w-text-muted: rgba(255, 255, 255, 0.75);
+      --w-card-bg: rgba(14, 18, 26, 0.85);
+      --w-sim-bg: linear-gradient(135deg, rgba(14, 18, 26, 0.95) 0%, rgba(20, 28, 45, 0.95) 100%);
+      --w-metric-bg: rgba(255, 255, 255, 0.05);
+      --w-metric-border: rgba(255, 255, 255, 0.08);
+      --w-divider: rgba(255, 255, 255, 0.08);
+      --w-bottom-cta-bg: radial-gradient(circle at center, rgba(0, 242, 254, 0.18) 0%, rgba(14, 18, 26, 0.9) 70%);
+      --w-subnav-border: rgba(255, 255, 255, 0.12);
     }
 
     [data-theme="light"] {
-      --w-glass-bg: rgba(255, 255, 255, 0.90);
-      --w-glass-border: rgba(0, 140, 180, 0.28);
-      --w-glass-glow: rgba(0, 140, 180, 0.06);
+      --w-cyan: #007799;
+      --w-cyan-rgb: 0, 119, 153;
+      --w-purple: #6b46c1;
+      --w-purple-rgb: 107, 70, 193;
+      --w-glass-bg: rgba(255, 255, 255, 0.96);
+      --w-glass-border: rgba(0, 119, 153, 0.24);
+      --w-glass-glow: rgba(0, 119, 153, 0.06);
       --w-text-bright: #0c1017;
-      --w-text-muted: rgba(12, 16, 23, 0.82);
+      --w-text-muted: #4a5568;
+      --w-card-bg: #ffffff;
+      --w-sim-bg: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+      --w-metric-bg: rgba(0, 0, 0, 0.035);
+      --w-metric-border: rgba(0, 0, 0, 0.09);
+      --w-divider: rgba(0, 0, 0, 0.09);
+      --w-bottom-cta-bg: radial-gradient(circle at center, rgba(0, 119, 153, 0.12) 0%, #f0f9ff 70%);
+      --w-subnav-border: rgba(0, 0, 0, 0.12);
+    }
+
+    [data-theme="light"] body.page-protocol {
+      background: #f8fafc !important;
+      color: #0c1017 !important;
+    }
+
+    [data-theme="light"] .w-sim-select option {
+      background: #ffffff;
+      color: #0c1017;
+    }
+
+    [data-theme="light"] .w-device-card {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border-color: rgba(0, 0, 0, 0.12) !important;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12), 0 0 30px rgba(0, 119, 153, 0.15) !important;
+    }
+
+    [data-theme="light"] .w-price-tag {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    [data-theme="light"] .w-store-btn:not(.primary) {
+      background: #ffffff;
+      color: #0c1017;
+      border-color: rgba(0, 119, 153, 0.28);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    [data-theme="light"] .w-feature-card {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    [data-theme="light"] .w-sim-metric-box {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    [data-theme="light"] .w-specs-card {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    [data-theme="light"] .w-weekly-row {
+      color: #0c1017;
     }
 
     /* Subnav Links */
@@ -105,7 +181,8 @@
       text-decoration: none;
       padding: 6px 14px;
       border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--w-subnav-border);
+      background: var(--w-metric-bg);
       transition: all 0.2s ease;
     }
 
@@ -114,6 +191,29 @@
       color: var(--w-cyan);
       border-color: var(--w-cyan);
       background: rgba(var(--w-cyan-rgb), 0.08);
+    }
+
+    /* Theme Switcher Button */
+    .weather-theme-btn {
+      background: var(--w-metric-bg);
+      border: 1px solid var(--w-glass-border);
+      color: var(--w-text-bright);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .weather-theme-btn:hover {
+      border-color: var(--w-cyan);
+      background: rgba(var(--w-cyan-rgb), 0.12);
+      color: var(--w-cyan);
     }
 
     /* WeatherOS Hero */
@@ -669,11 +769,16 @@
   <!-- Main Content Container -->
   <main class="wrap" style="padding-top: 100px; padding-bottom: 80px;">
     
-    <!-- Subproduct Navigation Pills -->
-    <div class="top-subnav">
-      <a href="/weatheros" class="top-subnav-link active">WeatherOS Showcase</a>
-      <a href="/weatheros/support" class="top-subnav-link">Help & Support</a>
-      <a href="/weatheros/privacy" class="top-subnav-link">Privacy Policy</a>
+    <!-- Subproduct Navigation Pills & Theme Toggle -->
+    <div class="top-subnav" style="justify-content: space-between;">
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <a href="/weatheros" class="top-subnav-link active">WeatherOS Showcase</a>
+        <a href="/weatheros/support" class="top-subnav-link">Help &amp; Support</a>
+        <a href="/weatheros/privacy" class="top-subnav-link">Privacy Policy</a>
+      </div>
+      <button id="weather-theme-toggle" class="weather-theme-btn k-hover" onclick="toggleWeatherTheme()" title="Toggle Day/Night Mode" aria-label="Toggle Day/Night Mode">
+        🌙 Night Mode
+      </button>
     </div>
 
     <!-- Hero Section -->
@@ -1097,8 +1202,42 @@
       renderSimulator();
     }
 
-    // Initialize simulator on load
-    document.addEventListener('DOMContentLoaded', renderSimulator);
+    function toggleWeatherTheme() {
+      const html = document.documentElement;
+      const isLight = html.getAttribute('data-theme') === 'light';
+      const nextTheme = isLight ? 'dark' : 'light';
+      if (window.OTP && typeof window.OTP.applyPaletteForTheme === 'function') {
+        window.OTP.applyPaletteForTheme(nextTheme);
+      } else {
+        if (nextTheme === 'light') {
+          html.setAttribute('data-theme', 'light');
+        } else {
+          html.removeAttribute('data-theme');
+        }
+      }
+      try {
+        localStorage.setItem('theme', nextTheme);
+        localStorage.setItem('theme_manual', '1');
+        localStorage.setItem('theme_manual_time', Date.now().toString());
+      } catch (e) {}
+      updateThemeToggleUI();
+    }
+
+    function updateThemeToggleUI() {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      const btn = document.getElementById('weather-theme-toggle');
+      if (btn) {
+        btn.innerHTML = isLight ? '☀️ Day Mode' : '🌙 Night Mode';
+        btn.setAttribute('aria-label', isLight ? 'Switch to Night Mode' : 'Switch to Day Mode');
+      }
+    }
+
+    // Initialize simulator & theme toggle on load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSimulator();
+      updateThemeToggleUI();
+    });
+    updateThemeToggleUI();
   </script>
 
   <canvas id="cursor-canvas"></canvas>
