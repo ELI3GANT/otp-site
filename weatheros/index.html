@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>WeatherOS — Clean, Ad-Free Weather App with Live Radar for iOS &amp; Android ($0.99)</title>
-  <meta name="description" content="WeatherOS is a clean, 100% private weather app for iPhone, iPad, and Android ($0.99). Real-time rain radar sweeps, 7-day visual color forecasts, and severe storm alerts with zero ads." />
+  <title>WeatherOS — Clean, Ad-Free Weather App for iOS &amp; Android ($0.99)</title>
+  <meta name="description" content="WeatherOS is a clean, ad-free weather app for Android and iPhone ($0.99). Real-time rain radar sync, 7-day visual forecasts, and severe storm alerts with zero ad tracking." />
   <meta name="keywords" content="WeatherOS, ad-free weather app, private weather app, weather app no subscription, dark mode weather app, live radar weather app, iPhone weather app, Android weather app, 7-day forecast app, severe storm alerts, OnlyTruePerspective" />
   <meta name="theme-color" content="#030305" />
   <meta name="color-scheme" content="dark light" />
@@ -14,13 +14,13 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="OnlyTruePerspective" />
   <meta property="og:url" content="https://www.onlytrueperspective.tech/weatheros" />
-  <meta property="og:title" content="WeatherOS — Clean, Ad-Free Weather App with Live Radar ($0.99)" />
-  <meta property="og:description" content="Real-time rain radar, 7-day visual forecasts, and severe storm warnings in a sleek dark design. Zero ads, zero subscriptions, and 100% private." />
-  <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/weatheros/weatheros-concept-a.png" />
+  <meta property="og:title" content="WeatherOS — Clean, Ad-Free Weather App ($0.99)" />
+  <meta property="og:description" content="Live rain radar sync, 7-day visual forecasts, and severe storm alerts in a sleek dark design. Zero ads, zero subscriptions, and no ad tracking." />
+  <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/weatheros/screenshots/today-public.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="WeatherOS — Clean, Ad-Free Weather App with Live Radar ($0.99)" />
-  <meta name="twitter:description" content="Real-time rain radar, 7-day visual forecasts, and severe storm warnings in a sleek dark design. Zero ads, zero subscriptions, and 100% private." />
-  <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/weatheros/weatheros-concept-a.png" />
+  <meta name="twitter:title" content="WeatherOS — Clean, Ad-Free Weather App ($0.99)" />
+  <meta name="twitter:description" content="Live rain radar sync, 7-day visual forecasts, and severe storm alerts in a sleek dark design. Zero ads, zero subscriptions, and no ad tracking." />
+  <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/weatheros/screenshots/today-public.png" />
 
   <!-- Schema.org Structured Data -->
   <script type="application/ld+json">
@@ -39,7 +39,7 @@
         "@type": "SoftwareApplication",
         "@id": "https://www.onlytrueperspective.tech/weatheros#application",
         "name": "WeatherOS",
-        "operatingSystem": "iOS 15.0+, iPadOS 15.0+, Android 10.0+, Web",
+        "operatingSystem": "Android, iOS",
         "applicationCategory": "WeatherApplication",
         "author": {
           "@type": "Organization",
@@ -49,16 +49,11 @@
           "@type": "Offer",
           "price": "0.99",
           "priceCurrency": "USD",
-          "availability": "https://schema.org/InStock"
+          "availability": "https://schema.org/InStock",
+          "url": "https://play.google.com/store/apps/details?id=app.weatheros.app"
         },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.9",
-          "ratingCount": "128",
-          "bestRating": "5"
-        },
-        "screenshot": "https://www.onlytrueperspective.tech/assets/weatheros/weatheros-concept-a.png",
-        "description": "Clean, ad-free weather application with live rain radar, 7-day visual forecasts, and severe storm warnings with 100% privacy."
+        "screenshot": "https://www.onlytrueperspective.tech/assets/weatheros/screenshots/today-public.png",
+        "description": "Clean, ad-free weather application with live rain radar sync, 7-day visual forecasts, and severe storm alerts with zero ad tracking."
       }
     ]
   }
@@ -88,12 +83,17 @@
       --w-text-bright: #ffffff;
       --w-text-muted: rgba(255, 255, 255, 0.75);
       --w-card-bg: rgba(14, 18, 26, 0.85);
-      --w-sim-bg: linear-gradient(135deg, rgba(14, 18, 26, 0.95) 0%, rgba(20, 28, 45, 0.95) 100%);
       --w-metric-bg: rgba(255, 255, 255, 0.05);
       --w-metric-border: rgba(255, 255, 255, 0.08);
       --w-divider: rgba(255, 255, 255, 0.08);
       --w-bottom-cta-bg: radial-gradient(circle at center, rgba(0, 242, 254, 0.18) 0%, rgba(14, 18, 26, 0.9) 70%);
       --w-subnav-border: rgba(255, 255, 255, 0.12);
+    }
+
+    html[data-theme="light"],
+    html[data-theme="light"] body {
+      background-color: #f8fafc !important;
+      color: #0c1017 !important;
     }
 
     [data-theme="light"] {
@@ -107,7 +107,6 @@
       --w-text-bright: #0c1017;
       --w-text-muted: #4a5568;
       --w-card-bg: #ffffff;
-      --w-sim-bg: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
       --w-metric-bg: rgba(0, 0, 0, 0.035);
       --w-metric-border: rgba(0, 0, 0, 0.09);
       --w-divider: rgba(0, 0, 0, 0.09);
@@ -115,68 +114,50 @@
       --w-subnav-border: rgba(0, 0, 0, 0.12);
     }
 
-    [data-theme="light"] body.page-protocol {
+    html[data-theme="light"] .page-protocol {
       background: #f8fafc !important;
       color: #0c1017 !important;
     }
 
-    [data-theme="light"] .w-sim-select option {
-      background: #ffffff;
-      color: #0c1017;
+    html[data-theme="light"] .stars-v2-container,
+    html[data-theme="light"] #cursor-canvas {
+      opacity: 0.15 !important;
     }
 
-    [data-theme="light"] .w-device-card {
-      background: rgba(255, 255, 255, 0.95) !important;
-      border-color: rgba(0, 0, 0, 0.12) !important;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12), 0 0 30px rgba(0, 119, 153, 0.15) !important;
+    /* Main Container & Safe Area Handling */
+    .weatheros-main {
+      padding-top: calc(120px + env(safe-area-inset-top, 0px));
+      padding-bottom: 80px;
+      box-sizing: border-box;
     }
 
-    [data-theme="light"] .w-price-tag {
-      background: rgba(0, 0, 0, 0.04);
-      border-color: rgba(0, 0, 0, 0.12);
-    }
-
-    [data-theme="light"] .w-store-btn:not(.primary) {
-      background: #ffffff;
-      color: #0c1017;
-      border-color: rgba(0, 119, 153, 0.28);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-    }
-
-    [data-theme="light"] .w-feature-card {
-      background: #ffffff;
-      border-color: rgba(0, 0, 0, 0.08);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-    }
-
-    [data-theme="light"] .w-sim-metric-box {
-      background: #ffffff;
-      border-color: rgba(0, 0, 0, 0.08);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    }
-
-    [data-theme="light"] .w-specs-card {
-      background: #ffffff;
-      border-color: rgba(0, 0, 0, 0.08);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-    }
-
-    [data-theme="light"] .w-weekly-row {
-      color: #0c1017;
+    @media (max-width: 768px) {
+      .weatheros-main {
+        padding-top: calc(96px + env(safe-area-inset-top, 0px));
+        padding-bottom: 60px;
+      }
     }
 
     /* Subnav Links */
     .top-subnav {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin: 10px 0 28px;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 24px;
+      flex-wrap: wrap;
+    }
+
+    .top-subnav-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
       flex-wrap: wrap;
     }
 
     .top-subnav-link {
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.88rem;
+      font-size: 0.84rem;
       color: var(--w-text-muted);
       text-decoration: none;
       padding: 6px 14px;
@@ -216,9 +197,9 @@
       color: var(--w-cyan);
     }
 
-    /* WeatherOS Hero */
+    /* WeatherOS Hero Section */
     .w-hero-section {
-      padding: 40px 0 60px;
+      padding: 8px 0 40px;
       text-align: center;
       position: relative;
     }
@@ -227,18 +208,18 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 18px;
+      padding: 6px 16px;
       border-radius: 999px;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.2px;
       text-transform: uppercase;
       background: rgba(var(--w-cyan-rgb), 0.12);
       border: 1px solid var(--w-glass-border);
       color: var(--w-cyan);
-      box-shadow: 0 0 24px rgba(var(--w-cyan-rgb), 0.22);
-      margin-bottom: 24px;
+      box-shadow: 0 0 20px rgba(var(--w-cyan-rgb), 0.18);
+      margin-bottom: 20px;
     }
 
     .w-badge-dot {
@@ -257,16 +238,18 @@
 
     .w-hero-title {
       font-family: 'Syne', sans-serif;
-      font-size: clamp(2.5rem, 6.5vw, 4.4rem);
+      font-size: clamp(2.2rem, 5.5vw, 4.2rem);
       font-weight: 800;
-      line-height: 1.08;
+      line-height: 1.1;
       letter-spacing: -0.02em;
-      margin: 0 auto 20px;
-      max-width: 960px;
+      margin: 0 auto 16px;
+      max-width: 920px;
       color: var(--w-text-bright);
       background: linear-gradient(180deg, #ffffff 40%, rgba(var(--w-cyan-rgb), 0.85) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
 
     [data-theme="light"] .w-hero-title {
@@ -276,11 +259,11 @@
     }
 
     .w-hero-desc {
-      font-size: clamp(1.05rem, 2.2vw, 1.28rem);
+      font-size: clamp(1rem, 2vw, 1.2rem);
       color: var(--w-text-muted);
       line-height: 1.55;
-      max-width: 780px;
-      margin: 0 auto 32px;
+      max-width: 740px;
+      margin: 0 auto 24px;
     }
 
     .w-price-tag {
@@ -288,13 +271,20 @@
       align-items: center;
       gap: 10px;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: var(--w-text-bright);
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 8px 20px;
+      padding: 8px 18px;
       border-radius: 999px;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    [data-theme="light"] .w-price-tag {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.12);
     }
 
     /* Store CTA Buttons */
@@ -323,7 +313,7 @@
       transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
 
-    .w-store-btn:hover {
+    .w-store-btn:hover:not(.disabled) {
       transform: translateY(-3px);
       border-color: var(--w-cyan);
       box-shadow: 0 12px 36px rgba(var(--w-cyan-rgb), 0.28);
@@ -334,10 +324,24 @@
       border-color: var(--w-cyan);
       color: #030305 !important;
       box-shadow: 0 0 30px rgba(var(--w-cyan-rgb), 0.45);
+      font-weight: 700;
     }
 
     .w-store-btn.primary:hover {
       box-shadow: 0 0 45px rgba(var(--w-cyan-rgb), 0.65);
+    }
+
+    .w-store-btn.disabled {
+      opacity: 0.8;
+      cursor: default;
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: none;
+    }
+
+    [data-theme="light"] .w-store-btn.disabled {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.12);
     }
 
     .w-store-icon {
@@ -356,7 +360,7 @@
       font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      opacity: 0.8;
+      opacity: 0.85;
       font-family: 'Space Grotesk', sans-serif;
     }
 
@@ -367,16 +371,32 @@
       line-height: 1.15;
     }
 
+    .w-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.7rem;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: var(--w-amber);
+      background: rgba(255, 184, 77, 0.12);
+      border: 1px solid rgba(255, 184, 77, 0.3);
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 2px;
+      width: fit-content;
+    }
+
     .w-trust-strip {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 24px;
+      gap: 20px;
       font-size: 0.82rem;
       color: var(--w-text-muted);
       font-family: 'Space Grotesk', sans-serif;
       flex-wrap: wrap;
-      margin-top: 12px;
+      margin: 16px 0 36px;
     }
 
     .w-trust-item {
@@ -385,309 +405,242 @@
       gap: 6px;
     }
 
-    /* Device Mockup Showcase Frame */
-    .w-device-container {
-      margin: 48px auto;
-      max-width: 860px;
+    /* Dominant Hero Screenshot Container */
+    .w-hero-screenshot-frame {
       position: relative;
+      max-width: 360px;
+      margin: 0 auto;
     }
 
-    .w-device-glow {
+    .w-hero-glow {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 70%;
-      height: 70%;
-      background: radial-gradient(circle, rgba(var(--w-cyan-rgb), 0.28) 0%, rgba(164, 130, 255, 0.12) 50%, transparent 70%);
-      filter: blur(60px);
+      width: 100%;
+      height: 90%;
+      background: radial-gradient(circle, rgba(var(--w-cyan-rgb), 0.22) 0%, rgba(164, 130, 255, 0.08) 50%, transparent 70%);
+      filter: blur(50px);
       z-index: 0;
       pointer-events: none;
     }
 
-    .w-device-card {
+    .w-phone-card {
       position: relative;
       z-index: 1;
       background: rgba(14, 18, 26, 0.85);
-      border: 1px solid var(--w-glass-border);
-      border-radius: 28px;
-      padding: 16px;
+      border: 1.5px solid var(--w-glass-border);
+      border-radius: 36px;
+      padding: 8px;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--w-cyan-rgb), 0.15);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 35px rgba(var(--w-cyan-rgb), 0.14);
       overflow: hidden;
-    }
-
-    .w-device-card img {
-      width: 100%;
-      height: auto;
-      border-radius: 18px;
       display: block;
     }
 
-    /* Feature Grid */
-    .w-features-section {
+    [data-theme="light"] .w-phone-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(0, 119, 153, 0.25);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), 0 0 30px rgba(0, 119, 153, 0.15);
+    }
+
+    .w-phone-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 28px;
+      display: block;
+    }
+
+    /* Product Section Showcase (Two-Column Staggered) */
+    .w-product-section {
       padding: 60px 0;
+      border-top: 1px solid var(--w-divider);
     }
 
-    .w-section-header {
-      text-align: center;
-      margin-bottom: 44px;
+    .w-product-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
     }
 
-    .w-section-title {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
-      font-weight: 800;
-      color: var(--w-text-bright);
+    @media (max-width: 860px) {
+      .w-product-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        text-align: center;
+      }
+      .w-product-grid.reverse .w-product-visual {
+        order: 2;
+      }
+      .w-product-grid.reverse .w-product-info {
+        order: 1;
+      }
+    }
+
+    .w-product-info {
+      text-align: left;
+    }
+
+    @media (max-width: 860px) {
+      .w-product-info {
+        text-align: left;
+      }
+    }
+
+    .w-product-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--w-cyan);
       margin-bottom: 12px;
     }
 
-    .w-section-desc {
+    .w-product-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      color: var(--w-text-bright);
+      line-height: 1.15;
+      margin: 0 0 16px;
+    }
+
+    .w-product-desc {
       font-size: 1.05rem;
       color: var(--w-text-muted);
-      max-width: 680px;
-      margin: 0 auto;
-      line-height: 1.5;
+      line-height: 1.6;
+      margin: 0 0 24px;
     }
 
-    .w-feature-grid {
+    .w-feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .w-feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.95rem;
+      color: var(--w-text-bright);
+      line-height: 1.45;
+    }
+
+    .w-feature-item-icon {
+      font-size: 1.1rem;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+
+    .w-feature-item-text strong {
+      color: var(--w-cyan);
+      display: block;
+      margin-bottom: 2px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.96rem;
+    }
+
+    .w-feature-item-text span {
+      color: var(--w-text-muted);
+      font-size: 0.9rem;
+    }
+
+    .w-product-visual {
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+
+    .w-product-visual .w-phone-card {
+      max-width: 340px;
+      width: 100%;
+    }
+
+    /* Capability Cards Grid (Radar / Alerts) */
+    .w-capability-section {
+      padding: 60px 0;
+      border-top: 1px solid var(--w-divider);
+    }
+
+    .w-capability-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
+      gap: 24px;
+      margin-top: 32px;
     }
 
-    .w-feature-card {
+    .w-capability-card {
       background: var(--w-glass-bg);
       border: 1px solid var(--w-glass-border);
-      border-radius: 20px;
+      border-radius: 24px;
       padding: 32px 28px;
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
       transition: all 0.25s ease;
-      position: relative;
-      overflow: hidden;
     }
 
-    .w-feature-card:hover {
-      transform: translateY(-4px);
+    .w-capability-card:hover {
       border-color: var(--w-cyan);
-      box-shadow: 0 16px 44px rgba(var(--w-cyan-rgb), 0.22);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 44px rgba(var(--w-cyan-rgb), 0.2);
     }
 
-    .w-feature-icon {
+    .w-capability-icon {
       font-size: 2.2rem;
       margin-bottom: 16px;
       display: inline-block;
     }
 
-    .w-feature-title {
+    .w-capability-title {
       font-family: 'Syne', sans-serif;
-      font-size: 1.25rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: var(--w-text-bright);
-      margin-bottom: 10px;
+      margin: 0 0 10px;
     }
 
-    .w-feature-desc {
-      font-size: 0.92rem;
+    .w-capability-desc {
+      font-size: 0.95rem;
       color: var(--w-text-muted);
       line-height: 1.55;
       margin: 0;
     }
 
-    /* Live Interactive Observatory Simulator */
-    .w-simulator-section {
-      background: linear-gradient(135deg, rgba(14, 18, 26, 0.95) 0%, rgba(20, 28, 45, 0.95) 100%);
-      border: 1px solid var(--w-glass-border);
-      border-radius: 28px;
-      padding: 36px 32px;
-      margin: 60px 0;
-      backdrop-filter: blur(20px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    /* Specifications Table */
+    .w-specs-section {
+      padding: 60px 0;
+      border-top: 1px solid var(--w-divider);
     }
 
-    .w-sim-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 20px;
-      margin-bottom: 24px;
-    }
-
-    .w-sim-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.4rem;
-      color: var(--w-text-bright);
-      margin: 0;
-    }
-
-    .w-sim-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .w-sim-select {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--w-glass-border);
-      color: var(--w-text-bright);
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.88rem;
-      padding: 8px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      outline: none;
-    }
-
-    .w-sim-select option {
-      background: #0e121a;
-      color: #ffffff;
-    }
-
-    .w-unit-toggle {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--w-glass-border);
-      color: var(--w-cyan);
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 0.85rem;
-      padding: 8px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    .w-sim-display {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 24px;
-      align-items: center;
-    }
-
-    .w-sim-main {
-      text-align: left;
-    }
-
-    .w-sim-city {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--w-cyan);
-      margin-bottom: 4px;
-    }
-
-    .w-sim-temp {
-      font-family: 'Syne', sans-serif;
-      font-size: 4.2rem;
-      font-weight: 800;
-      line-height: 1;
-      color: var(--w-text-bright);
-      margin: 8px 0;
-    }
-
-    .w-sim-condition {
-      font-size: 1.15rem;
-      color: var(--w-text-muted);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .w-sim-metrics {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .w-sim-metric-box {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
-      padding: 14px 16px;
-    }
-
-    .w-sim-m-label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--w-text-muted);
-      font-family: 'Space Grotesk', sans-serif;
-    }
-
-    .w-sim-m-val {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--w-text-bright);
-      margin-top: 4px;
-    }
-
-    /* 7-Day Spectrum Preview */
-    .w-sim-weekly {
-      grid-column: 1 / -1;
-      margin-top: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding-top: 20px;
-    }
-
-    .w-sim-weekly-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--w-cyan);
-      margin-bottom: 12px;
-    }
-
-    .w-weekly-row {
-      display: grid;
-      grid-template-columns: 80px 40px 1fr 60px;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 0;
-      font-size: 0.88rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    }
-
-    .w-spectrum-bar-wrap {
-      height: 8px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 999px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .w-spectrum-bar-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--w-cyan) 0%, var(--w-amber) 60%, var(--w-crimson) 100%);
-    }
-
-    /* Specs Table */
     .w-specs-card {
       background: var(--w-glass-bg);
       border: 1px solid var(--w-glass-border);
-      border-radius: 20px;
+      border-radius: 24px;
       padding: 32px;
-      margin: 44px 0;
+      backdrop-filter: blur(16px);
     }
 
     .w-specs-table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
-      margin-top: 16px;
+      margin-top: 20px;
     }
 
     .w-specs-table td {
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--w-divider);
       font-size: 0.92rem;
     }
 
@@ -700,21 +653,42 @@
       font-weight: 700;
       color: var(--w-cyan);
       width: 35%;
+      vertical-align: top;
     }
 
     .w-specs-val {
       color: var(--w-text-bright);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .w-specs-table td {
+        display: block;
+        padding: 8px 0;
+        width: 100%;
+      }
+      .w-specs-table tr {
+        display: block;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--w-divider);
+      }
+      .w-specs-table tr:last-child {
+        border-bottom: none;
+      }
+      .w-specs-label {
+        margin-bottom: 4px;
+      }
     }
 
     /* Bottom Download Banner */
     .w-bottom-cta {
-      background: radial-gradient(circle at center, rgba(var(--w-cyan-rgb), 0.18) 0%, rgba(14, 18, 26, 0.9) 70%);
+      background: var(--w-bottom-cta-bg);
       border: 1px solid var(--w-cyan);
       border-radius: 28px;
       padding: 48px 32px;
       text-align: center;
-      margin: 60px 0 30px;
-      box-shadow: 0 0 50px rgba(var(--w-cyan-rgb), 0.25);
+      margin: 40px 0 20px;
+      box-shadow: 0 0 50px rgba(var(--w-cyan-rgb), 0.22);
     }
 
     .w-bottom-cta h2 {
@@ -729,6 +703,11 @@
       color: var(--w-text-muted);
       max-width: 620px;
       margin: 0 auto 28px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .w-badge-dot { animation: none !important; }
+      .w-store-btn, .w-capability-card { transition: none !important; }
     }
   </style>
 </head>
@@ -767,13 +746,13 @@
   </header>
 
   <!-- Main Content Container -->
-  <main class="wrap" style="padding-top: 100px; padding-bottom: 80px;">
+  <main class="wrap weatheros-main">
     
     <!-- Subproduct Navigation Pills & Theme Toggle -->
-    <div class="top-subnav" style="justify-content: space-between;">
-      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <a href="/weatheros" class="top-subnav-link active">WeatherOS Showcase</a>
-        <a href="/weatheros/support" class="top-subnav-link">Help &amp; Support</a>
+    <div class="top-subnav">
+      <div class="top-subnav-links">
+        <a href="/weatheros" class="top-subnav-link active">Showcase</a>
+        <a href="/weatheros/support" class="top-subnav-link">Support &amp; FAQ</a>
         <a href="/weatheros/privacy" class="top-subnav-link">Privacy Policy</a>
       </div>
       <button id="weather-theme-toggle" class="weather-theme-btn k-hover" onclick="toggleWeatherTheme()" title="Toggle Day/Night Mode" aria-label="Toggle Day/Night Mode">
@@ -781,11 +760,11 @@
       </button>
     </div>
 
-    <!-- Hero Section -->
+    <!-- Section 1 — Hero -->
     <section class="w-hero-section">
       <!-- App Icon -->
-      <div class="w-hero-icon-wrap" style="margin-bottom: 22px;">
-        <img src="/assets/weatheros/weatheros-icon-1024.png" alt="WeatherOS App Icon" width="96" height="96" style="border-radius: 22px; box-shadow: 0 14px 40px rgba(0, 242, 254, 0.4), 0 0 25px rgba(0, 242, 254, 0.25); border: 1.5px solid rgba(255, 255, 255, 0.25); display: inline-block;" loading="eager" />
+      <div class="w-hero-icon-wrap" style="margin-bottom: 18px;">
+        <img src="/assets/weatheros/weatheros-icon-1024.png" alt="WeatherOS App Icon" width="88" height="88" style="border-radius: 20px; box-shadow: 0 12px 35px rgba(0, 242, 254, 0.35), 0 0 20px rgba(0, 242, 254, 0.2); border: 1.5px solid rgba(255, 255, 255, 0.2); display: inline-block;" loading="eager" />
       </div>
 
       <div class="w-badge-pill">
@@ -798,7 +777,7 @@
       </h1>
 
       <p class="w-hero-desc">
-        Real-time rain radar, 7-day visual forecasts, and instant storm warnings in a sleek dark design. Buy once for $0.99 — zero ads, zero monthly subscriptions, and 100% private.
+        Real-time rain radar sync, 7-day visual forecasts, and severe storm alerts in a sleek dark design. Buy once for $0.99 — zero ads, zero monthly subscriptions, and no ad tracking.
       </p>
 
       <div class="w-price-tag">
@@ -808,263 +787,335 @@
         <span>•</span>
         <span>Zero In-App Ads</span>
         <span>•</span>
-        <span>100% Private</span>
+        <span>No Account Required</span>
       </div>
 
       <!-- App Store & Google Play Download Badges -->
       <div class="w-store-buttons">
-        <!-- Apple App Store -->
-        <a href="#download" class="w-store-btn primary" title="Download WeatherOS on Apple App Store ($0.99)">
-          <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.86c.62-.77 1.04-1.84.93-2.91-.9.04-2 .6-2.65 1.36-.58.67-.99 1.76-.88 2.8 1 .08 2-.48 2.6-1.25z"/>
-          </svg>
-          <div class="w-store-text">
-            <span class="w-store-sub">Download on the</span>
-            <span class="w-store-main">App Store</span>
-          </div>
-        </a>
-
-        <!-- Google Play Store -->
-        <a href="https://play.google.com/store/apps/details?id=app.weatheros.app" target="_blank" rel="noopener noreferrer" class="w-store-btn" title="Get WeatherOS on Google Play ($0.99)">
+        <!-- Google Play Store (Live Primary CTA) -->
+        <a href="https://play.google.com/store/apps/details?id=app.weatheros.app" target="_blank" rel="noopener noreferrer" class="w-store-btn primary" title="Get WeatherOS on Google Play ($0.99)">
           <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
             <path d="M3.609 1.814L13.792 12 3.61 22.186a1.99 1.99 0 0 1-.61-.318V2.132c.184-.11.393-.217.61-.318zm11.233 11.233l2.25 2.25-10.978 6.338 8.728-8.588zm0-2.094L6.114 2.365l10.978 6.338-2.25 2.25zm1.48 1.047l3.827 2.21a1.5 1.5 0 0 0 0-2.597l-3.827-2.21-.848.849.848.848.848.899z"/>
           </svg>
           <div class="w-store-text">
-            <span class="w-store-sub">Get it on</span>
+            <span class="w-store-sub">Available Now On</span>
             <span class="w-store-main">Google Play</span>
           </div>
         </a>
 
-        <!-- Live Web Observatory CTA -->
-        <a href="#observatory" class="w-store-btn" style="border-color: rgba(var(--w-cyan-rgb), 0.4);">
-          <span style="font-size: 1.3rem;">🌐</span>
+        <!-- Apple App Store (In Review / Coming Soon) -->
+        <div class="w-store-btn disabled" aria-disabled="true" title="iOS version is currently in App Store review">
+          <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.86c.62-.77 1.04-1.84.93-2.91-.9.04-2 .6-2.65 1.36-.58.67-.99 1.76-.88 2.8 1 .08 2-.48 2.6-1.25z"/>
+          </svg>
           <div class="w-store-text">
-            <span class="w-store-sub">Try In Browser</span>
-            <span class="w-store-main">Web Observatory</span>
+            <span class="w-store-sub">App Store</span>
+            <span class="w-store-main">Coming Soon</span>
+            <span class="w-status-badge">In Review</span>
           </div>
-        </a>
+        </div>
       </div>
 
       <div class="w-trust-strip">
-        <span class="w-trust-item">🔒 100% Private (No Tracking)</span>
+        <span class="w-trust-item">🔒 Zero Ad Tracking</span>
         <span>•</span>
-        <span class="w-trust-item">⚡ Ultra-Smooth 120Hz Visuals</span>
+        <span class="w-trust-item">⚡ Smooth Kinetic Visuals</span>
         <span>•</span>
-        <span class="w-trust-item">📡 Real-Time Rain &amp; Storm Radar</span>
+        <span class="w-trust-item">📡 Live Radar Sync</span>
         <span>•</span>
         <span class="w-trust-item">💎 $0.99 · No Monthly Fees</span>
       </div>
 
-      <!-- High-Fidelity iPhone Device Mockup -->
-      <div class="w-device-container">
-        <div class="w-device-glow"></div>
-        <div class="w-device-card" style="border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 36px; padding: 12px; background: rgba(10, 14, 22, 0.95); position: relative; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7), 0 0 50px rgba(var(--w-cyan-rgb), 0.2);">
-          
-          <!-- Dynamic Island / Speaker Pill -->
-          <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 100px; height: 22px; background: #000000; border-radius: 20px; z-index: 10; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; box-shadow: 0 0 4px rgba(255,255,255,0.1);">
-            <span style="width: 7px; height: 7px; border-radius: 50%; background: #0a1120; border: 1px solid #14223d;"></span>
-          </div>
-
-          <img src="/assets/weatheros/weatheros-concept-a.png" alt="WeatherOS iPhone App Interface Preview" width="860" height="480" loading="eager" style="border-radius: 26px; border: 1px solid rgba(255,255,255,0.06);" />
+      <!-- Real Stage 2 Today Dominant Screenshot -->
+      <div class="w-hero-screenshot-frame">
+        <div class="w-hero-glow"></div>
+        <div class="w-phone-card">
+          <picture>
+            <source srcset="/assets/weatheros/screenshots/today-public.webp" type="image/webp" />
+            <img src="/assets/weatheros/screenshots/today-public.png" alt="WeatherOS Today screen showing real-time atmospheric rainfall in Current Location with hourly forecast and 7-day outlook" width="390" height="844" loading="eager" decoding="async" />
+          </picture>
         </div>
-        <p style="text-align: center; font-size: 0.84rem; color: var(--w-text-muted); margin-top: 14px; font-family: 'Space Grotesk', sans-serif;">
-          ✨ Native Smooth 120Hz Dark Mode Interface on iOS &amp; Android
+      </div>
+    </section>
+
+    <!-- Section 2 — TODAY: Real-Time Atmosphere & Conditions -->
+    <section class="w-product-section" id="today">
+      <div class="w-product-grid">
+        <div class="w-product-info">
+          <div class="w-product-tag">
+            <span>⚡</span>
+            <span>Today Dashboard</span>
+          </div>
+          <h2 class="w-product-title">Real-Time Atmospheric Telemetry</h2>
+          <p class="w-product-desc">
+            WeatherOS captures current weather conditions with rich atmospheric particles, precise feels-like temperatures, and clear natural language briefings.
+          </p>
+          <ul class="w-feature-list">
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">🌧️</span>
+              <div class="w-feature-item-text">
+                <strong>Weather-Reactive Atmosphere</strong>
+                <span>Dynamic background particles shift fluidly with cloud cover, rain density, and daylight phase.</span>
+              </div>
+            </li>
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">📝</span>
+              <div class="w-feature-item-text">
+                <strong>Intelligent Day Summary</strong>
+                <span>Instant plain-English breakdown of immediate weather character and visibility changes.</span>
+              </div>
+            </li>
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">🛡️</span>
+              <div class="w-feature-item-text">
+                <strong>Severe Risk Awareness</strong>
+                <span>Contextual risk badge alerts you immediately to lightning, storm intensity, or flooding potential.</span>
+              </div>
+            </li>
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">📊</span>
+              <div class="w-feature-item-text">
+                <strong>Hourly Preview &amp; Threat Rail</strong>
+                <span>Quick glance at the next hours with integrated threat severity indicator bars.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="w-product-visual">
+          <div class="w-phone-card">
+            <picture>
+              <source srcset="/assets/weatheros/screenshots/today-public.webp" type="image/webp" />
+              <img src="/assets/weatheros/screenshots/today-public.png" alt="WeatherOS Today interface displaying atmospheric rain conditions and day summary" width="390" height="844" loading="lazy" decoding="async" />
+            </picture>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3 — HOURLY: Hourly Trends, Temperature Curves & Rain Charts -->
+    <section class="w-product-section" id="hourly">
+      <div class="w-product-grid reverse">
+        <div class="w-product-visual">
+          <div class="w-phone-card">
+            <picture>
+              <source srcset="/assets/weatheros/screenshots/hourly-public.webp" type="image/webp" />
+              <img src="/assets/weatheros/screenshots/hourly-public.png" alt="WeatherOS Hourly screen with temperature progression curve and precipitation chance bar chart" width="390" height="844" loading="lazy" decoding="async" />
+            </picture>
+          </div>
+        </div>
+        <div class="w-product-info">
+          <div class="w-product-tag">
+            <span>📈</span>
+            <span>Hourly Intelligence</span>
+          </div>
+          <h2 class="w-product-title">Temperature Curves &amp; Rain Charts</h2>
+          <p class="w-product-desc">
+            Inspect hourly changes with continuous thermal curves and precipitation probability bars designed for instant clarity.
+          </p>
+          <ul class="w-feature-list">
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">🕒</span>
+              <div class="w-feature-item-text">
+                <strong>Interactive Hourly Rail</strong>
+                <span>Select any hour to view specialized condition telemetry and threat factors.</span>
+              </div>
+            </li>
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">📉</span>
+              <div class="w-feature-item-text">
+                <strong>Continuous Temperature Curve</strong>
+                <span>Smooth visual curve highlighting expected morning lows, midday peaks, and evening drops.</span>
+              </div>
+            </li>
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">💧</span>
+              <div class="w-feature-item-text">
+                <strong>Precipitation Probability Bars</strong>
+                <span>Precise rain chance percentages showing peak storm windows throughout the day.</span>
+              </div>
+            </li>
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">🧭</span>
+              <div class="w-feature-item-text">
+                <strong>Key Metric Lens</strong>
+                <span>Live humidity, wind speed, barometric pressure, and UV index cards.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 4 — DAILY: Weekly Atmospheric Synopsis & Extended Outlook -->
+    <section class="w-product-section" id="daily">
+      <div class="w-product-grid">
+        <div class="w-product-info">
+          <div class="w-product-tag">
+            <span>📅</span>
+            <span>7-Day Outlook</span>
+          </div>
+          <h2 class="w-product-title">Weekly Atmospheric Synopsis</h2>
+          <p class="w-product-desc">
+            Plan your entire week ahead with high-resolution multi-day forecasts and color-graded temperature spectrum bars.
+          </p>
+          <ul class="w-feature-list">
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">✨</span>
+              <div class="w-feature-item-text">
+                <strong>Weekly Atmospheric Synopsis</strong>
+                <span>Concise summary of upcoming cold fronts, sunny stretches, or storm systems.</span>
+              </div>
+            </li>
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">🌈</span>
+              <div class="w-feature-item-text">
+                <strong>Thermal Spectrum Bars</strong>
+                <span>Color range bars that make comparing daily temperature swings immediate and intuitive.</span>
+              </div>
+            </li>
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">☔</span>
+              <div class="w-feature-item-text">
+                <strong>Precipitation Forecast</strong>
+                <span>Accurate multi-day rain percentages to help you schedule outdoor activities with confidence.</span>
+              </div>
+            </li>
+            <li class="w-feature-item">
+              <span class="w-feature-item-icon">📱</span>
+              <div class="w-feature-item-text">
+                <strong>Fluid Bottom Navigation</strong>
+                <span>Effortlessly switch between Today, Hourly, Daily, Radar, and Alerts in one tap.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="w-product-visual">
+          <div class="w-phone-card">
+            <picture>
+              <source srcset="/assets/weatheros/screenshots/daily-public.webp" type="image/webp" />
+              <img src="/assets/weatheros/screenshots/daily-public.png" alt="WeatherOS Daily screen with Weekly Atmospheric Synopsis and seven-day forecast range bars" width="390" height="844" loading="lazy" decoding="async" />
+            </picture>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5 — Live Radar Sync & Severe Alerts -->
+    <section class="w-capability-section" id="capabilities">
+      <div style="text-align: center; max-width: 680px; margin: 0 auto 32px;">
+        <div class="w-product-tag">
+          <span>📡</span>
+          <span>Verified Capabilities</span>
+        </div>
+        <h2 style="font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 3.5vw, 2.4rem); font-weight: 800; color: var(--w-text-bright); margin: 0 0 12px;">
+          Live Radar Sync &amp; Storm Warnings
+        </h2>
+        <p style="font-size: 1.05rem; color: var(--w-text-muted); line-height: 1.5; margin: 0;">
+          Engineered for dependable clarity when severe weather impacts your schedule.
         </p>
       </div>
-    </section>
 
-    <!-- Core Features Grid -->
-    <section class="w-features-section">
-      <div class="w-section-header">
-        <h2 class="w-section-title">Built for Speed, Clarity &amp; Privacy</h2>
-        <p class="w-section-desc">Everything you need to know about the weather without clutter, annoying ads, or battery drain.</p>
-      </div>
-
-      <div class="w-feature-grid">
-        <!-- Feature 1: 7-Day Color Forecast -->
-        <div class="w-feature-card">
-          <span class="w-feature-icon">📈</span>
-          <h3 class="w-feature-title">7-Day Color Forecast</h3>
-          <p class="w-feature-desc">
-            See the whole week at a glance. Smart color bars make cold snaps, sunny afternoons, and rain trends effortless to read.
+      <div class="w-capability-grid">
+        <div class="w-capability-card">
+          <span class="w-capability-icon">📡</span>
+          <h3 class="w-capability-title">Live Radar Sync</h3>
+          <p class="w-capability-desc">
+            High-resolution radar map tracking shows precipitation and cloud movement with synchronized radar layers and interactive range controls.
           </p>
         </div>
 
-        <!-- Feature 2: Severe Storm Warnings -->
-        <div class="w-feature-card">
-          <span class="w-feature-icon">🌪️</span>
-          <h3 class="w-feature-title">Severe Storm Warnings</h3>
-          <p class="w-feature-desc">
-            Instant alerts for high winds, flash floods, thunderstorms, and tornadoes straight from the National Weather Service.
+        <div class="w-capability-card">
+          <span class="w-capability-icon">🌪️</span>
+          <h3 class="w-capability-title">Severe Weather Alerts</h3>
+          <p class="w-capability-desc">
+            Instant severe alert awareness for thunderstorms, flash flooding, high winds, and hazardous condition updates directly in your status bar.
           </p>
         </div>
 
-        <!-- Feature 3: Live Rain Radar -->
-        <div class="w-feature-card">
-          <span class="w-feature-icon">📡</span>
-          <h3 class="w-feature-title">Live Rain Radar</h3>
-          <p class="w-feature-desc">
-            High-definition radar maps show exactly where rain and storms are moving in real time with 15-minute automated updates.
-          </p>
-        </div>
-
-        <!-- Feature 4: Sun & UV Tracker -->
-        <div class="w-feature-card">
-          <span class="w-feature-icon">☀️</span>
-          <h3 class="w-feature-title">Sun &amp; UV Tracker</h3>
-          <p class="w-feature-desc">
-            Live sunrise, sunset, golden hour times, and UV index so you always know when to grab sunglasses or sunscreen.
-          </p>
-        </div>
-
-        <!-- Feature 5: Smooth Dark Mode Design -->
-        <div class="w-feature-card">
-          <span class="w-feature-icon">⚡</span>
-          <h3 class="w-feature-title">Smooth Dark Mode Design</h3>
-          <p class="w-feature-desc">
-            Tuned specifically for OLED screens to save battery and look gorgeous at night with glowing glass cards.
-          </p>
-        </div>
-
-        <!-- Feature 6: Zero Ads & Total Privacy -->
-        <div class="w-feature-card">
-          <span class="w-feature-icon">🔒</span>
-          <h3 class="w-feature-title">Zero Ads &amp; Total Privacy</h3>
-          <p class="w-feature-desc">
-            We never track you, sell your data, or show ads. Your location stays securely on your phone.
+        <div class="w-capability-card">
+          <span class="w-capability-icon">🔒</span>
+          <h3 class="w-capability-title">Zero Ad Tracking</h3>
+          <p class="w-capability-desc">
+            No accounts required. Location data is processed ephemerally on-device strictly to query local atmospheric data. Never sold, never tracked.
           </p>
         </div>
       </div>
     </section>
 
-    <!-- Interactive In-Browser Observatory Simulator -->
-    <section class="w-simulator-section" id="observatory">
-      <div class="w-sim-header">
-        <div>
-          <h2 class="w-sim-title">Live WeatherOS Web Observatory</h2>
-          <p style="margin: 4px 0 0; font-size: 0.88rem; color: var(--w-text-muted);">Test the weather engine live in your browser.</p>
-        </div>
+    <!-- Technical Specifications Table -->
+    <section class="w-specs-section">
+      <div class="w-specs-card">
+        <h2 style="font-family: 'Syne', sans-serif; font-size: 1.5rem; color: var(--w-text-bright); margin: 0 0 8px;">
+          Technical Specifications &amp; Availability
+        </h2>
+        <p style="color: var(--w-text-muted); font-size: 0.92rem; margin: 0 0 16px;">
+          Transparent platform, data, and privacy specifications.
+        </p>
 
-        <div class="w-sim-controls">
-          <select id="sim-city-select" class="w-sim-select" onchange="updateSimCity(this.value)">
-            <option value="nyc">New York, NY</option>
-            <option value="tokyo">Tokyo, Japan</option>
-            <option value="london">London, UK</option>
-            <option value="miami">Miami, FL</option>
-            <option value="reykjavik">Reykjavik, Iceland</option>
-          </select>
-
-          <button class="w-unit-toggle" onclick="toggleSimUnit()">
-            <span id="sim-unit-label">°F → °C</span>
-          </button>
-        </div>
+        <table class="w-specs-table">
+          <tbody>
+            <tr>
+              <td class="w-specs-label">Platforms &amp; Availability</td>
+              <td class="w-specs-val">
+                <strong>Android 10.0+:</strong> Available Now on Google Play<br />
+                <strong>iOS 15.0+:</strong> In App Store Review · Coming Soon
+              </td>
+            </tr>
+            <tr>
+              <td class="w-specs-label">Price &amp; Monetization</td>
+              <td class="w-specs-val">$0.99 One-Time Purchase · Zero In-App Ads · Zero Monthly Subscriptions · Own Forever</td>
+            </tr>
+            <tr>
+              <td class="w-specs-label">Weather Data Engine</td>
+              <td class="w-specs-val">High-Resolution Open-Meteo Atmospheric Models</td>
+            </tr>
+            <tr>
+              <td class="w-specs-label">Radar &amp; Storm Sync</td>
+              <td class="w-specs-val">Live Radar Sync &amp; Severe Storm Threat Matrix</td>
+            </tr>
+            <tr>
+              <td class="w-specs-label">Privacy Architecture</td>
+              <td class="w-specs-val">No Account Required · Zero Ad Tracking · Ephemeral Weather Queries · No Advertising Profile</td>
+            </tr>
+            <tr>
+              <td class="w-specs-label">Publisher &amp; Developer</td>
+              <td class="w-specs-val">OnlyTruePerspective LLC</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-
-      <div class="w-sim-display">
-        <div class="w-sim-main">
-          <div class="w-sim-city" id="sim-city-name">NEW YORK, NY</div>
-          <div class="w-sim-temp" id="sim-temp-val">78°</div>
-          <div class="w-sim-condition" id="sim-cond-val">
-            <span>☀️</span> <span>Clear Skies · Optimal Weather</span>
-          </div>
-        </div>
-
-        <div class="w-sim-metrics">
-          <div class="w-sim-metric-box">
-            <div class="w-sim-m-label">Wind Speed</div>
-            <div class="w-sim-m-val" id="sim-wind-val">11 mph S</div>
-          </div>
-          <div class="w-sim-metric-box">
-            <div class="w-sim-m-label">Humidity</div>
-            <div class="w-sim-m-val" id="sim-humidity-val">52%</div>
-          </div>
-          <div class="w-sim-metric-box">
-            <div class="w-sim-m-label">Barometer</div>
-            <div class="w-sim-m-val" id="sim-pressure-val">30.08 inHg</div>
-          </div>
-          <div class="w-sim-metric-box">
-            <div class="w-sim-m-label">UV Index</div>
-            <div class="w-sim-m-val" id="sim-uv-val">7 (High)</div>
-          </div>
-        </div>
-
-        <!-- 7-Day Spectrum Preview Row -->
-        <div class="w-sim-weekly">
-          <div class="w-sim-weekly-title">7-Day Visual Outlook</div>
-          
-          <div id="sim-weekly-rows">
-            <!-- Populated dynamically by JS -->
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Technical Specs & Store Matrix -->
-    <section class="w-specs-card">
-      <h2 style="font-family: 'Syne', sans-serif; font-size: 1.5rem; color: var(--w-text-bright); margin-bottom: 8px;">
-        App Details &amp; Specifications
-      </h2>
-      <p style="color: var(--w-text-muted); font-size: 0.92rem; margin: 0 0 16px;">
-        Clear, transparent details about WeatherOS for mobile app store downloads.
-      </p>
-
-      <table class="w-specs-table">
-        <tbody>
-          <tr>
-            <td class="w-specs-label">Supported Platforms</td>
-            <td class="w-specs-val">iOS 15.0+, iPadOS 15.0+, Android 10.0+, Web Observatory</td>
-          </tr>
-          <tr>
-            <td class="w-specs-label">Price &amp; Monetization</td>
-            <td class="w-specs-val">$0.99 One-Time Purchase · Zero Ads · Zero Subscriptions · Own Forever</td>
-          </tr>
-          <tr>
-            <td class="w-specs-label">Weather Data Feeds</td>
-            <td class="w-specs-val">Open-Meteo High-Resolution Satellite API &amp; National Weather Service</td>
-          </tr>
-          <tr>
-            <td class="w-specs-label">Animation Speed</td>
-            <td class="w-specs-val">Ultra-Smooth 120 FPS Animations &amp; Instant Loading</td>
-          </tr>
-          <tr>
-            <td class="w-specs-label">Data Privacy Rating</td>
-            <td class="w-specs-val">10/10 Gold Standard · Zero Ad Trackers · Location Stays on Device</td>
-          </tr>
-          <tr>
-            <td class="w-specs-label">Publisher &amp; Developer</td>
-            <td class="w-specs-val">OnlyTruePerspective LLC</td>
-          </tr>
-        </tbody>
-      </table>
     </section>
 
     <!-- Bottom Download CTA -->
     <section class="w-bottom-cta" id="download">
       <h2>Get WeatherOS Today.</h2>
       <p>
-        Available now for iPhone and Android for just $0.99. No ads, no monthly subscriptions, and 100% private.
+        Available now on Google Play for $0.99. No ads, no monthly subscriptions, and no ad tracking.
       </p>
 
       <div class="w-store-buttons" style="margin-bottom: 0;">
-        <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer" class="w-store-btn primary">
-          <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.86c.62-.77 1.04-1.84.93-2.91-.9.04-2 .6-2.65 1.36-.58.67-.99 1.76-.88 2.8 1 .08 2-.48 2.6-1.25z"/>
-          </svg>
-          <div class="w-store-text">
-            <span class="w-store-sub">Download on the</span>
-            <span class="w-store-main">App Store ($0.99)</span>
-          </div>
-        </a>
-
-        <a href="https://play.google.com/store/apps/details?id=app.weatheros.app" target="_blank" rel="noopener noreferrer" class="w-store-btn">
+        <!-- Google Play Store (Live Primary CTA) -->
+        <a href="https://play.google.com/store/apps/details?id=app.weatheros.app" target="_blank" rel="noopener noreferrer" class="w-store-btn primary" title="Get WeatherOS on Google Play ($0.99)">
           <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
             <path d="M3.609 1.814L13.792 12 3.61 22.186a1.99 1.99 0 0 1-.61-.318V2.132c.184-.11.393-.217.61-.318zm11.233 11.233l2.25 2.25-10.978 6.338 8.728-8.588zm0-2.094L6.114 2.365l10.978 6.338-2.25 2.25zm1.48 1.047l3.827 2.21a1.5 1.5 0 0 0 0-2.597l-3.827-2.21-.848.849.848.848.848.899z"/>
           </svg>
           <div class="w-store-text">
-            <span class="w-store-sub">Get it on</span>
+            <span class="w-store-sub">Available Now On</span>
             <span class="w-store-main">Google Play ($0.99)</span>
           </div>
         </a>
+
+        <!-- Apple App Store (In Review / Coming Soon) -->
+        <div class="w-store-btn disabled" aria-disabled="true" title="iOS version is currently in App Store review">
+          <svg class="w-store-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.86c.62-.77 1.04-1.84.93-2.91-.9.04-2 .6-2.65 1.36-.58.67-.99 1.76-.88 2.8 1 .08 2-.48 2.6-1.25z"/>
+          </svg>
+          <div class="w-store-text">
+            <span class="w-store-sub">App Store</span>
+            <span class="w-store-main">Coming Soon</span>
+            <span class="w-status-badge">In Review</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1081,7 +1132,7 @@
         <div class="footer-legal">
           <a href="/weatheros" class="k-hover" style="color: var(--w-cyan);">WeatherOS</a>
           <span class="dot">•</span>
-          <a href="/weatheros/support" class="k-hover" style="color: var(--w-cyan);">Support & FAQ</a>
+          <a href="/weatheros/support" class="k-hover" style="color: var(--w-cyan);">Support &amp; FAQ</a>
           <span class="dot">•</span>
           <a href="/weatheros/privacy" class="k-hover">Privacy Policy</a>
           <span class="dot">•</span>
@@ -1099,109 +1150,7 @@
     </div>
   </footer>
 
-  <!-- Interactive Web Simulator Script -->
   <script>
-    const simData = {
-      nyc: { name: "NEW YORK, NY", tempF: 78, cond: "☀️ Clear Skies", glyph: "☀️", wind: "11 mph S", hum: "52%", pres: "30.08 inHg", uv: "7 (High)", weekly: [
-        { day: "Today", glyph: "☀️", low: 66, high: 81 },
-        { day: "Fri", glyph: "☀️", low: 68, high: 84 },
-        { day: "Sat", glyph: "⛅", low: 70, high: 82 },
-        { day: "Sun", glyph: "🌦️", low: 65, high: 79 },
-        { day: "Mon", glyph: "☀️", low: 64, high: 80 },
-        { day: "Tue", glyph: "⛅", low: 63, high: 77 },
-        { day: "Wed", glyph: "☀️", low: 65, high: 82 }
-      ]},
-      tokyo: { name: "TOKYO, JAPAN", tempF: 86, cond: "⛈️ Humid Thunderstorm", glyph: "⛈️", wind: "14 mph ENE", hum: "82%", pres: "29.85 inHg", uv: "8 (Very High)", weekly: [
-        { day: "Today", glyph: "⛈️", low: 77, high: 88 },
-        { day: "Fri", glyph: "🌧️", low: 76, high: 85 },
-        { day: "Sat", glyph: "⛅", low: 75, high: 89 },
-        { day: "Sun", glyph: "☀️", low: 78, high: 91 },
-        { day: "Mon", glyph: "☀️", low: 79, high: 92 },
-        { day: "Tue", glyph: "🌦️", low: 77, high: 88 },
-        { day: "Wed", glyph: "⛅", low: 76, high: 87 }
-      ]},
-      london: { name: "LONDON, UK", tempF: 68, cond: "🌦️ Passing Mist & Showers", glyph: "🌦️", wind: "12 mph WSW", hum: "74%", pres: "30.01 inHg", uv: "4 (Moderate)", weekly: [
-        { day: "Today", glyph: "🌦️", low: 55, high: 70 },
-        { day: "Fri", glyph: "⛅", low: 54, high: 69 },
-        { day: "Sat", glyph: "🌧️", low: 53, high: 66 },
-        { day: "Sun", glyph: "⛅", low: 52, high: 68 },
-        { day: "Mon", glyph: "☀️", low: 55, high: 72 },
-        { day: "Tue", glyph: "⛅", low: 56, high: 71 },
-        { day: "Wed", glyph: "🌦️", low: 54, high: 69 }
-      ]},
-      miami: { name: "MIAMI, FL", tempF: 89, cond: "🌴 Tropical Sunshine", glyph: "☀️", wind: "8 mph E", hum: "76%", pres: "30.02 inHg", uv: "10 (Extreme)", weekly: [
-        { day: "Today", glyph: "☀️", low: 80, high: 91 },
-        { day: "Fri", glyph: "🌦️", low: 79, high: 90 },
-        { day: "Sat", glyph: "⛈️", low: 80, high: 89 },
-        { day: "Sun", glyph: "☀️", low: 81, high: 92 },
-        { day: "Mon", glyph: "⛅", low: 80, high: 90 },
-        { day: "Tue", glyph: "☀️", low: 80, high: 91 },
-        { day: "Wed", glyph: "🌦️", low: 79, high: 89 }
-      ]},
-      reykjavik: { name: "REYKJAVIK, ICELAND", tempF: 48, cond: "🧊 Glacial Wind & Clarity", glyph: "💨", wind: "18 mph N", hum: "64%", pres: "29.90 inHg", uv: "2 (Low)", weekly: [
-        { day: "Today", glyph: "💨", low: 39, high: 50 },
-        { day: "Fri", glyph: "⛅", low: 40, high: 51 },
-        { day: "Sat", glyph: "🌧️", low: 38, high: 47 },
-        { day: "Sun", glyph: "⛅", low: 37, high: 49 },
-        { day: "Mon", glyph: "☀️", low: 39, high: 52 },
-        { day: "Tue", glyph: "💨", low: 41, high: 50 },
-        { day: "Wed", glyph: "⛅", low: 40, high: 51 }
-      ]}
-    };
-
-    let isCelsius = false;
-    let currentCityKey = "nyc";
-
-    function fToC(f) {
-      return Math.round((f - 32) * 5 / 9);
-    }
-
-    function renderSimulator() {
-      const data = simData[currentCityKey];
-      if (!data) return;
-
-      document.getElementById('sim-city-name').textContent = data.name;
-      const displayTemp = isCelsius ? `${fToC(data.tempF)}°` : `${data.tempF}°`;
-      document.getElementById('sim-temp-val').textContent = displayTemp;
-      document.getElementById('sim-cond-val').innerHTML = `<span>${data.glyph}</span> <span>${data.cond}</span>`;
-      document.getElementById('sim-wind-val').textContent = data.wind;
-      document.getElementById('sim-humidity-val').textContent = data.hum;
-      document.getElementById('sim-pressure-val').textContent = data.pres;
-      document.getElementById('sim-uv-val').textContent = data.uv;
-
-      // Render 7-Day Spectrum
-      const weeklyContainer = document.getElementById('sim-weekly-rows');
-      weeklyContainer.innerHTML = data.weekly.map(w => {
-        const lowDisp = isCelsius ? `${fToC(w.low)}°` : `${w.low}°`;
-        const highDisp = isCelsius ? `${fToC(w.high)}°` : `${w.high}°`;
-        const widthPercent = Math.min(100, Math.max(30, (w.high - 30) * 1.3));
-
-        return `
-          <div class="w-weekly-row">
-            <span style="font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--w-text-bright);">${w.day}</span>
-            <span style="font-size: 1.1rem;">${w.glyph}</span>
-            <div class="w-spectrum-bar-wrap">
-              <div class="w-spectrum-bar-fill" style="width: ${widthPercent}%;"></div>
-            </div>
-            <span style="font-family: 'Space Grotesk', sans-serif; font-size: 0.82rem; text-align: right; color: var(--w-text-muted);">
-              ${lowDisp} / <strong style="color: var(--w-text-bright);">${highDisp}</strong>
-            </span>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function updateSimCity(cityKey) {
-      currentCityKey = cityKey;
-      renderSimulator();
-    }
-
-    function toggleSimUnit() {
-      isCelsius = !isCelsius;
-      document.getElementById('sim-unit-label').textContent = isCelsius ? "°C → °F" : "°F → °C";
-      renderSimulator();
-    }
-
     function toggleWeatherTheme() {
       const html = document.documentElement;
       const isLight = html.getAttribute('data-theme') === 'light';
@@ -1232,11 +1181,7 @@
       }
     }
 
-    // Initialize simulator & theme toggle on load
-    document.addEventListener('DOMContentLoaded', () => {
-      renderSimulator();
-      updateThemeToggleUI();
-    });
+    document.addEventListener('DOMContentLoaded', updateThemeToggleUI);
     updateThemeToggleUI();
   </script>
 

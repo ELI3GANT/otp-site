@@ -34,3 +34,7 @@ playwright-report/
 test-results/
 coverage/
 .nyc_output/
+
+# Private unredacted source screenshots
+**/source-private/
+marketing/
