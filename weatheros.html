@@ -9,7 +9,7 @@
   <meta name="theme-color" content="#030305" />
   <meta name="color-scheme" content="dark light" />
   <link rel="canonical" href="https://www.onlytrueperspective.tech/weatheros" />
-  
+
   <!-- Social Graph Meta -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="OnlyTruePerspective" />
@@ -64,7 +64,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
-  <script src="/theme-chrono.js?v=9"></script>
+
+  <!-- Single Source of Truth for First-Paint Theme & Chrono State -->
+  <script src="/theme-chrono.js?v=10"></script>
   <link rel="stylesheet" href="/styles.css?v=16.8.29" />
 
   <style>
@@ -90,38 +92,202 @@
       --w-subnav-border: rgba(255, 255, 255, 0.12);
     }
 
-    html[data-theme="light"],
-    html[data-theme="light"] body {
-      background-color: #f8fafc !important;
-      color: #0c1017 !important;
-    }
-
     [data-theme="light"] {
       --w-cyan: #007799;
       --w-cyan-rgb: 0, 119, 153;
       --w-purple: #6b46c1;
       --w-purple-rgb: 107, 70, 193;
-      --w-glass-bg: rgba(255, 255, 255, 0.96);
+      --w-glass-bg: rgba(255, 255, 255, 0.92);
       --w-glass-border: rgba(0, 119, 153, 0.24);
-      --w-glass-glow: rgba(0, 119, 153, 0.06);
-      --w-text-bright: #0c1017;
-      --w-text-muted: #4a5568;
-      --w-card-bg: #ffffff;
-      --w-metric-bg: rgba(0, 0, 0, 0.035);
-      --w-metric-border: rgba(0, 0, 0, 0.09);
-      --w-divider: rgba(0, 0, 0, 0.09);
-      --w-bottom-cta-bg: radial-gradient(circle at center, rgba(0, 119, 153, 0.12) 0%, #f0f9ff 70%);
-      --w-subnav-border: rgba(0, 0, 0, 0.12);
+      --w-glass-glow: rgba(0, 119, 153, 0.08);
+      --w-text-bright: #0c141f;
+      --w-text-muted: #334155;
+      --w-card-bg: rgba(255, 255, 255, 0.94);
+      --w-metric-bg: rgba(0, 50, 80, 0.04);
+      --w-metric-border: rgba(0, 50, 80, 0.1);
+      --w-divider: rgba(0, 50, 80, 0.12);
+      --w-bottom-cta-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(224, 242, 254, 0.96) 100%);
+      --w-subnav-border: rgba(0, 50, 80, 0.15);
     }
 
-    html[data-theme="light"] .page-protocol {
-      background: #f8fafc !important;
-      color: #0c1017 !important;
+    html[data-theme="light"] body.page-protocol {
+      color: #0c141f !important;
     }
 
+    /* WeatherOS Atmospheric System (Z-Index: 0, Fixed, Non-Blocking) */
+    .weather-atmosphere {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .weather-sky-backdrop {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Phase 1: NIGHT (Deep obsidian-navy with subtle cyan-indigo horizon) */
+    [data-weather-phase="night"] .weather-sky-backdrop {
+      background: radial-gradient(circle at 50% -10%, #0c1626 0%, #060b14 45%, #030407 100%);
+    }
+
+    /* Phase 2: SUNRISE (Dawn indigo into turquoise with warm amber horizon bloom) */
+    [data-weather-phase="sunrise"] .weather-sky-backdrop {
+      background: linear-gradient(180deg, #0f1c30 0%, #153e54 35%, #1e6b7b 65%, #c87d46 95%, #e8a86a 100%);
+    }
+
+    /* Phase 3: DAY (Deep atmospheric azure into luminous cyan daylight sky) */
+    [data-weather-phase="day"] .weather-sky-backdrop {
+      background: linear-gradient(180deg, #092036 0%, #12436d 25%, #1f6f9c 55%, #469ec4 85%, #85cbe4 100%);
+    }
+
+    /* Phase 4: SUNSET (Twilight navy into violet-purple and warm dusk amber) */
+    [data-weather-phase="sunset"] .weather-sky-backdrop {
+      background: linear-gradient(180deg, #0c1224 0%, #221a3e 30%, #4a214d 60%, #9e4347 88%, #d87648 100%);
+    }
+
+    /* Solar / Lunar Ambient Bloom */
+    .weather-solar-glow {
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 600px;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(80px);
+      opacity: 0.6;
+      transition: all 0.8s ease;
+    }
+
+    [data-weather-phase="night"] .weather-solar-glow {
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.12) 0%, rgba(164, 130, 255, 0.06) 50%, transparent 75%);
+      opacity: 0.5;
+    }
+
+    [data-weather-phase="sunrise"] .weather-solar-glow {
+      background: radial-gradient(circle, rgba(255, 184, 77, 0.35) 0%, rgba(255, 110, 80, 0.2) 40%, rgba(0, 242, 254, 0.1) 70%, transparent 80%);
+      top: 0;
+      opacity: 0.75;
+    }
+
+    [data-weather-phase="day"] .weather-solar-glow {
+      background: radial-gradient(circle, rgba(220, 248, 255, 0.5) 0%, rgba(70, 200, 255, 0.3) 40%, rgba(255, 230, 160, 0.15) 65%, transparent 80%);
+      top: -140px;
+      opacity: 0.85;
+    }
+
+    [data-weather-phase="sunset"] .weather-solar-glow {
+      background: radial-gradient(circle, rgba(255, 140, 60, 0.4) 0%, rgba(180, 70, 160, 0.25) 45%, rgba(40, 20, 80, 0.1) 70%, transparent 80%);
+      top: 20px;
+      opacity: 0.8;
+    }
+
+    /* Drifting Cloud Layers */
+    .weather-clouds-layer {
+      position: absolute;
+      width: 200%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .weather-clouds-far {
+      background-image:
+        radial-gradient(ellipse 400px 180px at 15% 18%, rgba(255, 255, 255, 0.06), transparent 70%),
+        radial-gradient(ellipse 550px 220px at 65% 25%, rgba(255, 255, 255, 0.05), transparent 70%),
+        radial-gradient(ellipse 450px 200px at 115% 18%, rgba(255, 255, 255, 0.06), transparent 70%),
+        radial-gradient(ellipse 550px 220px at 165% 25%, rgba(255, 255, 255, 0.05), transparent 70%);
+      animation: cloudDriftFar 90s linear infinite;
+      opacity: 0.7;
+    }
+
+    .weather-clouds-near {
+      background-image:
+        radial-gradient(ellipse 500px 220px at 30% 12%, rgba(255, 255, 255, 0.09), transparent 70%),
+        radial-gradient(ellipse 600px 260px at 80% 30%, rgba(255, 255, 255, 0.07), transparent 70%),
+        radial-gradient(ellipse 500px 220px at 130% 12%, rgba(255, 255, 255, 0.09), transparent 70%),
+        radial-gradient(ellipse 600px 260px at 180% 30%, rgba(255, 255, 255, 0.07), transparent 70%);
+      animation: cloudDriftNear 55s linear infinite;
+      opacity: 0.85;
+    }
+
+    [data-weather-phase="day"] .weather-clouds-far {
+      background-image:
+        radial-gradient(ellipse 400px 180px at 15% 18%, rgba(255, 255, 255, 0.22), transparent 70%),
+        radial-gradient(ellipse 550px 220px at 65% 25%, rgba(255, 255, 255, 0.18), transparent 70%),
+        radial-gradient(ellipse 400px 180px at 115% 18%, rgba(255, 255, 255, 0.22), transparent 70%),
+        radial-gradient(ellipse 550px 220px at 165% 25%, rgba(255, 255, 255, 0.18), transparent 70%);
+      opacity: 0.9;
+    }
+
+    [data-weather-phase="day"] .weather-clouds-near {
+      background-image:
+        radial-gradient(ellipse 500px 220px at 30% 12%, rgba(255, 255, 255, 0.28), transparent 70%),
+        radial-gradient(ellipse 600px 260px at 80% 30%, rgba(255, 255, 255, 0.22), transparent 70%),
+        radial-gradient(ellipse 500px 220px at 130% 12%, rgba(255, 255, 255, 0.28), transparent 70%),
+        radial-gradient(ellipse 600px 260px at 180% 30%, rgba(255, 255, 255, 0.22), transparent 70%);
+      opacity: 0.95;
+    }
+
+    [data-weather-phase="sunrise"] .weather-clouds-near,
+    [data-weather-phase="sunset"] .weather-clouds-near {
+      opacity: 0.75;
+    }
+
+    @keyframes cloudDriftFar {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes cloudDriftNear {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Horizon Atmospheric Depth */
+    .weather-haze-layer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 350px;
+      background: linear-gradient(180deg, transparent 0%, rgba(3, 4, 7, 0.4) 70%, rgba(3, 4, 7, 0.85) 100%);
+      pointer-events: none;
+      transition: background 0.8s ease;
+    }
+
+    [data-weather-phase="day"] .weather-haze-layer {
+      background: linear-gradient(180deg, transparent 0%, rgba(240, 248, 255, 0.2) 70%, rgba(230, 244, 250, 0.6) 100%);
+    }
+
+    /* Starfield visibility rule: Hide during Day & Sunrise */
+    [data-weather-phase="day"] .stars-v2-container,
+    [data-weather-phase="sunrise"] .stars-v2-container,
     html[data-theme="light"] .stars-v2-container,
+    [data-weather-phase="day"] #cursor-canvas,
+    [data-weather-phase="sunrise"] #cursor-canvas,
     html[data-theme="light"] #cursor-canvas {
-      opacity: 0.15 !important;
+      display: none !important;
+      opacity: 0 !important;
+    }
+
+    /* Content Stacking Context (Z-Index: 1, Above Atmosphere) */
+    .weatheros-main,
+    .footer,
+    .nav {
+      position: relative;
+      z-index: 1;
     }
 
     /* Main Container & Safe Area Handling */
@@ -174,6 +340,19 @@
       background: rgba(var(--w-cyan-rgb), 0.08);
     }
 
+    [data-theme="light"] .top-subnav-link {
+      background: rgba(255, 255, 255, 0.85) !important;
+      border-color: rgba(0, 119, 153, 0.22) !important;
+      color: #0c141f !important;
+    }
+
+    [data-theme="light"] .top-subnav-link.active {
+      background: #ffffff !important;
+      border-color: #007799 !important;
+      color: #007799 !important;
+      font-weight: 700 !important;
+    }
+
     /* Theme Switcher Button */
     .weather-theme-btn {
       background: var(--w-metric-bg);
@@ -195,6 +374,12 @@
       border-color: var(--w-cyan);
       background: rgba(var(--w-cyan-rgb), 0.12);
       color: var(--w-cyan);
+    }
+
+    [data-theme="light"] .weather-theme-btn {
+      background: rgba(255, 255, 255, 0.88) !important;
+      border-color: rgba(0, 119, 153, 0.3) !important;
+      color: #0c141f !important;
     }
 
     /* WeatherOS Hero Section */
@@ -220,6 +405,13 @@
       color: var(--w-cyan);
       box-shadow: 0 0 20px rgba(var(--w-cyan-rgb), 0.18);
       margin-bottom: 20px;
+    }
+
+    [data-theme="light"] .w-badge-pill {
+      background: rgba(255, 255, 255, 0.88) !important;
+      border-color: rgba(0, 119, 153, 0.35) !important;
+      color: #006688 !important;
+      box-shadow: 0 4px 16px rgba(0, 50, 80, 0.08) !important;
     }
 
     .w-badge-dot {
@@ -253,7 +445,7 @@
     }
 
     [data-theme="light"] .w-hero-title {
-      background: linear-gradient(180deg, #0c1017 40%, #007799 100%);
+      background: linear-gradient(180deg, #0c141f 35%, #0284c7 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -264,6 +456,11 @@
       line-height: 1.55;
       max-width: 740px;
       margin: 0 auto 24px;
+    }
+
+    [data-theme="light"] .w-hero-desc {
+      color: #1e293b !important;
+      font-weight: 500 !important;
     }
 
     .w-price-tag {
@@ -283,8 +480,9 @@
     }
 
     [data-theme="light"] .w-price-tag {
-      background: rgba(0, 0, 0, 0.04);
-      border-color: rgba(0, 0, 0, 0.12);
+      background: rgba(255, 255, 255, 0.88) !important;
+      border-color: rgba(0, 119, 153, 0.25) !important;
+      color: #0c141f !important;
     }
 
     /* Store CTA Buttons */
@@ -340,8 +538,9 @@
     }
 
     [data-theme="light"] .w-store-btn.disabled {
-      background: rgba(0, 0, 0, 0.04);
-      border-color: rgba(0, 0, 0, 0.12);
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(0, 119, 153, 0.2);
+      color: #334155;
     }
 
     .w-store-icon {
@@ -399,6 +598,10 @@
       margin: 16px 0 36px;
     }
 
+    [data-theme="light"] .w-trust-strip {
+      color: #334155 !important;
+    }
+
     .w-trust-item {
       display: inline-flex;
       align-items: center;
@@ -437,12 +640,13 @@
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 35px rgba(var(--w-cyan-rgb), 0.14);
       overflow: hidden;
       display: block;
+      transition: all 0.3s ease;
     }
 
     [data-theme="light"] .w-phone-card {
-      background: rgba(255, 255, 255, 0.95);
-      border-color: rgba(0, 119, 153, 0.25);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12), 0 0 30px rgba(0, 119, 153, 0.15);
+      background: rgba(255, 255, 255, 0.96) !important;
+      border-color: rgba(0, 119, 153, 0.28) !important;
+      box-shadow: 0 20px 50px rgba(10, 35, 60, 0.15), 0 0 30px rgba(0, 119, 153, 0.12) !important;
     }
 
     .w-phone-card img {
@@ -456,6 +660,11 @@
     .w-product-section {
       padding: 60px 0;
       border-top: 1px solid var(--w-divider);
+      position: relative;
+    }
+
+    [data-theme="light"] .w-product-section {
+      border-top-color: rgba(0, 50, 80, 0.12) !important;
     }
 
     .w-product-grid {
@@ -463,6 +672,8 @@
       grid-template-columns: 1fr 1fr;
       gap: 48px;
       align-items: center;
+      position: relative;
+      z-index: 1;
     }
 
     @media (max-width: 860px) {
@@ -511,11 +722,19 @@
       margin: 0 0 16px;
     }
 
+    [data-theme="light"] .w-product-title {
+      color: #0c141f !important;
+    }
+
     .w-product-desc {
       font-size: 1.05rem;
       color: var(--w-text-muted);
       line-height: 1.6;
       margin: 0 0 24px;
+    }
+
+    [data-theme="light"] .w-product-desc {
+      color: #334155 !important;
     }
 
     .w-feature-list {
@@ -534,6 +753,10 @@
       font-size: 0.95rem;
       color: var(--w-text-bright);
       line-height: 1.45;
+    }
+
+    [data-theme="light"] .w-feature-item {
+      color: #0c141f !important;
     }
 
     .w-feature-item-icon {
@@ -555,6 +778,10 @@
       font-size: 0.9rem;
     }
 
+    [data-theme="light"] .w-feature-item-text span {
+      color: #334155 !important;
+    }
+
     .w-product-visual {
       display: flex;
       justify-content: center;
@@ -566,10 +793,80 @@
       width: 100%;
     }
 
+    /* Section Contextual Backdrop Effects (Behind Phone Cards Only) */
+    .weather-rain-backdrop {
+      position: absolute;
+      inset: -25px;
+      border-radius: 40px;
+      background-image: repeating-linear-gradient(
+        165deg,
+        transparent,
+        transparent 14px,
+        rgba(0, 242, 254, 0.12) 15px,
+        transparent 16px
+      );
+      opacity: 0.45;
+      pointer-events: none;
+      z-index: 0;
+      animation: rainDrift 1.8s linear infinite;
+      mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 40%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,1) 40%, transparent 75%);
+    }
+
+    @keyframes rainDrift {
+      0% { transform: translateY(-20px) translateX(-5px); }
+      100% { transform: translateY(20px) translateX(5px); }
+    }
+
+    .weather-thermal-backdrop {
+      position: absolute;
+      inset: -20px;
+      border-radius: 40px;
+      background: radial-gradient(ellipse at center, rgba(255, 184, 77, 0.14) 0%, rgba(0, 242, 254, 0.08) 50%, transparent 75%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(25px);
+    }
+
+    .weather-cirrus-backdrop {
+      position: absolute;
+      inset: -20px;
+      border-radius: 40px;
+      background: radial-gradient(ellipse at center, rgba(164, 130, 255, 0.14) 0%, rgba(0, 242, 254, 0.06) 50%, transparent 75%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(30px);
+    }
+
     /* Capability Cards Grid (Radar / Alerts) */
     .w-capability-section {
       padding: 60px 0;
       border-top: 1px solid var(--w-divider);
+      position: relative;
+    }
+
+    [data-theme="light"] .w-capability-section {
+      border-top-color: rgba(0, 50, 80, 0.12) !important;
+    }
+
+    .weather-storm-aura {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      height: 80%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(164, 130, 255, 0.18) 0%, rgba(0, 242, 254, 0.1) 40%, transparent 70%);
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: 0;
+      animation: atmosphericIllumination 9s ease-in-out infinite;
+    }
+
+    @keyframes atmosphericIllumination {
+      0%, 100% { opacity: 0.35; transform: translate(-50%, -50%) scale(0.95); }
+      50% { opacity: 0.75; transform: translate(-50%, -50%) scale(1.05); }
     }
 
     .w-capability-grid {
@@ -577,6 +874,8 @@
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 24px;
       margin-top: 32px;
+      position: relative;
+      z-index: 1;
     }
 
     .w-capability-card {
@@ -588,6 +887,12 @@
       -webkit-backdrop-filter: blur(16px);
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
       transition: all 0.25s ease;
+    }
+
+    [data-theme="light"] .w-capability-card {
+      background: rgba(255, 255, 255, 0.92) !important;
+      border-color: rgba(0, 119, 153, 0.2) !important;
+      box-shadow: 0 10px 30px rgba(10, 35, 60, 0.08) !important;
     }
 
     .w-capability-card:hover {
@@ -610,6 +915,10 @@
       margin: 0 0 10px;
     }
 
+    [data-theme="light"] .w-capability-title {
+      color: #0c141f !important;
+    }
+
     .w-capability-desc {
       font-size: 0.95rem;
       color: var(--w-text-muted);
@@ -617,10 +926,19 @@
       margin: 0;
     }
 
+    [data-theme="light"] .w-capability-desc {
+      color: #334155 !important;
+    }
+
     /* Specifications Table */
     .w-specs-section {
       padding: 60px 0;
       border-top: 1px solid var(--w-divider);
+      position: relative;
+    }
+
+    [data-theme="light"] .w-specs-section {
+      border-top-color: rgba(0, 50, 80, 0.12) !important;
     }
 
     .w-specs-card {
@@ -629,6 +947,14 @@
       border-radius: 24px;
       padding: 32px;
       backdrop-filter: blur(16px);
+      position: relative;
+      z-index: 1;
+    }
+
+    [data-theme="light"] .w-specs-card {
+      background: rgba(255, 255, 255, 0.92) !important;
+      border-color: rgba(0, 119, 153, 0.2) !important;
+      box-shadow: 0 10px 30px rgba(10, 35, 60, 0.08) !important;
     }
 
     .w-specs-table {
@@ -661,6 +987,10 @@
       line-height: 1.5;
     }
 
+    [data-theme="light"] .w-specs-val {
+      color: #0c141f !important;
+    }
+
     @media (max-width: 600px) {
       .w-specs-table td {
         display: block;
@@ -689,6 +1019,14 @@
       text-align: center;
       margin: 40px 0 20px;
       box-shadow: 0 0 50px rgba(var(--w-cyan-rgb), 0.22);
+      position: relative;
+      z-index: 1;
+    }
+
+    [data-theme="light"] .w-bottom-cta {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(224, 242, 254, 0.96) 100%) !important;
+      border-color: rgba(0, 119, 153, 0.4) !important;
+      box-shadow: 0 15px 45px rgba(0, 119, 153, 0.18) !important;
     }
 
     .w-bottom-cta h2 {
@@ -698,6 +1036,10 @@
       color: var(--w-text-bright);
     }
 
+    [data-theme="light"] .w-bottom-cta h2 {
+      color: #0c141f !important;
+    }
+
     .w-bottom-cta p {
       font-size: 1.1rem;
       color: var(--w-text-muted);
@@ -705,13 +1047,39 @@
       margin: 0 auto 28px;
     }
 
+    [data-theme="light"] .w-bottom-cta p {
+      color: #334155 !important;
+    }
+
+    /* Reduced Motion Safety */
     @media (prefers-reduced-motion: reduce) {
-      .w-badge-dot { animation: none !important; }
-      .w-store-btn, .w-capability-card { transition: none !important; }
+      .w-badge-dot,
+      .weather-clouds-far,
+      .weather-clouds-near,
+      .weather-rain-backdrop,
+      .weather-storm-aura {
+        animation: none !important;
+        transition: none !important;
+      }
+      .w-store-btn,
+      .w-capability-card,
+      .weather-sky-backdrop,
+      .weather-solar-glow {
+        transition: none !important;
+      }
     }
   </style>
 </head>
 <body class="page-protocol">
+  <!-- Dedicated WeatherOS Decorative Atmosphere Layer (Z-Index: 0, Behind Content) -->
+  <div class="weather-atmosphere" aria-hidden="true">
+    <div class="weather-sky-backdrop"></div>
+    <div class="weather-solar-glow"></div>
+    <div class="weather-clouds-layer weather-clouds-far"></div>
+    <div class="weather-clouds-layer weather-clouds-near"></div>
+    <div class="weather-haze-layer"></div>
+  </div>
+
   <div class="stars-v2-container" aria-hidden="true"></div>
 
   <!-- Primary Navigation Bar -->
@@ -745,9 +1113,9 @@
     </nav>
   </header>
 
-  <!-- Main Content Container -->
+  <!-- Main Content Container (Z-Index: 1) -->
   <main class="wrap weatheros-main">
-    
+
     <!-- Subproduct Navigation Pills & Theme Toggle -->
     <div class="top-subnav">
       <div class="top-subnav-links">
@@ -755,8 +1123,8 @@
         <a href="/weatheros/support" class="top-subnav-link">Support &amp; FAQ</a>
         <a href="/weatheros/privacy" class="top-subnav-link">Privacy Policy</a>
       </div>
-      <button id="weather-theme-toggle" class="weather-theme-btn k-hover" onclick="toggleWeatherTheme()" title="Toggle Day/Night Mode" aria-label="Toggle Day/Night Mode">
-        🌙 Night Mode
+      <button id="weather-theme-toggle" class="weather-theme-btn k-hover" onclick="toggleWeatherTheme()" title="Switch to Day Mode" aria-label="Switch to Day Mode">
+        ☀️ Day Mode
       </button>
     </div>
 
@@ -882,6 +1250,7 @@
           </ul>
         </div>
         <div class="w-product-visual">
+          <div class="weather-rain-backdrop" aria-hidden="true"></div>
           <div class="w-phone-card">
             <picture>
               <source srcset="/assets/weatheros/screenshots/today-public.webp" type="image/webp" />
@@ -896,6 +1265,7 @@
     <section class="w-product-section" id="hourly">
       <div class="w-product-grid reverse">
         <div class="w-product-visual">
+          <div class="weather-thermal-backdrop" aria-hidden="true"></div>
           <div class="w-phone-card">
             <picture>
               <source srcset="/assets/weatheros/screenshots/hourly-public.webp" type="image/webp" />
@@ -990,6 +1360,7 @@
           </ul>
         </div>
         <div class="w-product-visual">
+          <div class="weather-cirrus-backdrop" aria-hidden="true"></div>
           <div class="w-phone-card">
             <picture>
               <source srcset="/assets/weatheros/screenshots/daily-public.webp" type="image/webp" />
@@ -1002,7 +1373,8 @@
 
     <!-- Section 5 — Live Radar Sync & Severe Alerts -->
     <section class="w-capability-section" id="capabilities">
-      <div style="text-align: center; max-width: 680px; margin: 0 auto 32px;">
+      <div class="weather-storm-aura" aria-hidden="true"></div>
+      <div style="text-align: center; max-width: 680px; margin: 0 auto 32px; position: relative; z-index: 1;">
         <div class="w-product-tag">
           <span>📡</span>
           <span>Verified Capabilities</span>
@@ -1086,7 +1458,7 @@
       </div>
     </section>
 
-    <!-- Bottom Download CTA -->
+    <!-- Bottom Download Banner -->
     <section class="w-bottom-cta" id="download">
       <h2>Get WeatherOS Today.</h2>
       <p>
@@ -1151,10 +1523,44 @@
   </footer>
 
   <script>
+    /**
+     * WeatherOS Presentation & Atmosphere Engine
+     * Resolves data-weather-phase without letting chrono contradict manual Day/Night choice.
+     */
+    function resolveWeatherPhase() {
+      try {
+        var isManual = localStorage.getItem('theme_manual') === 'true';
+        var manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
+        var isExpired = !manualTime || (Date.now() - manualTime > 365 * 24 * 60 * 60 * 1000);
+
+        if (isManual && !isExpired) {
+          var manualTheme = localStorage.getItem('theme');
+          if (manualTheme === 'light') return 'day';
+          if (manualTheme === 'dark') return 'night';
+        }
+      } catch (e) {}
+
+      // Automatic / Chrono fallback
+      if (window.OTP && typeof window.OTP.calculateChronoPhase === 'function') {
+        return window.OTP.calculateChronoPhase();
+      }
+      var hour = new Date().getHours();
+      if (hour >= 6 && hour < 8) return 'sunrise';
+      if (hour >= 8 && hour < 18) return 'day';
+      if (hour >= 18 && hour < 20) return 'sunset';
+      return 'night';
+    }
+
+    function applyWeatherPhase() {
+      var phase = resolveWeatherPhase();
+      document.documentElement.setAttribute('data-weather-phase', phase);
+    }
+
     function toggleWeatherTheme() {
-      const html = document.documentElement;
-      const isLight = html.getAttribute('data-theme') === 'light';
-      const nextTheme = isLight ? 'dark' : 'light';
+      var html = document.documentElement;
+      var isLight = html.getAttribute('data-theme') === 'light';
+      var nextTheme = isLight ? 'dark' : 'light';
+
       if (window.OTP && typeof window.OTP.applyPaletteForTheme === 'function') {
         window.OTP.applyPaletteForTheme(nextTheme);
       } else {
@@ -1164,29 +1570,43 @@
           html.removeAttribute('data-theme');
         }
       }
+
       try {
         localStorage.setItem('theme', nextTheme);
-        localStorage.setItem('theme_manual', '1');
+        localStorage.setItem('theme_manual', 'true');
         localStorage.setItem('theme_manual_time', Date.now().toString());
       } catch (e) {}
+
+      // Resolve atmosphere: Manual Light -> day, Manual Dark -> night
+      html.setAttribute('data-weather-phase', nextTheme === 'light' ? 'day' : 'night');
       updateThemeToggleUI();
     }
 
     function updateThemeToggleUI() {
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      const btn = document.getElementById('weather-theme-toggle');
+      var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      var btn = document.getElementById('weather-theme-toggle');
       if (btn) {
-        btn.innerHTML = isLight ? '☀️ Day Mode' : '🌙 Night Mode';
-        btn.setAttribute('aria-label', isLight ? 'Switch to Night Mode' : 'Switch to Day Mode');
+        if (isLight) {
+          btn.innerHTML = '🌙 Night Mode';
+          btn.setAttribute('aria-label', 'Switch to Night Mode');
+          btn.setAttribute('title', 'Switch to Night Mode');
+        } else {
+          btn.innerHTML = '☀️ Day Mode';
+          btn.setAttribute('aria-label', 'Switch to Day Mode');
+          btn.setAttribute('title', 'Switch to Day Mode');
+        }
       }
     }
 
-    document.addEventListener('DOMContentLoaded', updateThemeToggleUI);
+    applyWeatherPhase();
+    document.addEventListener('DOMContentLoaded', function() {
+      applyWeatherPhase();
+      updateThemeToggleUI();
+    });
     updateThemeToggleUI();
   </script>
 
   <canvas id="cursor-canvas"></canvas>
-  <script src="/theme-chrono.js?v=1787873563" defer></script>
   <script src="/stars-v2.js?v=1787873563-perf1" defer></script>
   <script src="/otp-attribution.js?v=1787873563" defer></script>
   <script src="/site-init.js?v=1787873563-perf1" defer></script>

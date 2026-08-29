@@ -44,6 +44,7 @@ const tests = [
     { name: 'Media Showcase Browser-DOM Integration', path: 'tests/media_showcase_integration.test.js' },
     { name: 'WeatherOS Privacy Contract', path: 'tests/weatheros_privacy_contract.test.js' },
     { name: 'WeatherOS Routes Contract', path: 'tests/weatheros_routes.test.js' },
+    { name: 'WeatherOS Theme & Atmosphere', path: 'tests/weatheros_theme_atmosphere.test.js' },
     { name: 'SEO Indexing Contract', path: 'tests/seo_indexing_contract.test.js' },
     { name: 'PageSpeed Delivery Contract', path: 'tests/pagespeed_delivery_contract.test.js' },
     { name: 'Loader Recovery Contract', path: 'tests/loader_recovery_contract.test.js' },
