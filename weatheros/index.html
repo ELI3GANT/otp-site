@@ -271,13 +271,11 @@
       background: linear-gradient(180deg, transparent 0%, rgba(240, 248, 255, 0.2) 70%, rgba(230, 244, 250, 0.6) 100%);
     }
 
-    /* Starfield visibility rule: Hide during Day & Sunrise */
+    /* Starfield visibility rule: Hide strictly during Day & Sunrise scenes */
     [data-weather-phase="day"] .stars-v2-container,
     [data-weather-phase="sunrise"] .stars-v2-container,
-    html[data-theme="light"] .stars-v2-container,
     [data-weather-phase="day"] #cursor-canvas,
-    [data-weather-phase="sunrise"] #cursor-canvas,
-    html[data-theme="light"] #cursor-canvas {
+    [data-weather-phase="sunrise"] #cursor-canvas {
       display: none !important;
       opacity: 0 !important;
     }
@@ -304,7 +302,7 @@
       }
     }
 
-    /* Subnav Links */
+    /* Subnav Layout */
     .top-subnav {
       display: flex;
       align-items: center;
@@ -321,15 +319,27 @@
       flex-wrap: wrap;
     }
 
+    .top-subnav-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     .top-subnav-link {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 0.84rem;
       color: var(--w-text-muted);
       text-decoration: none;
       padding: 6px 14px;
+      min-height: 44px;
+      box-sizing: border-box;
       border-radius: 8px;
       border: 1px solid var(--w-subnav-border);
       background: var(--w-metric-bg);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.2s ease;
     }
 
@@ -353,7 +363,7 @@
       font-weight: 700 !important;
     }
 
-    /* Theme Switcher Button */
+    /* Weather & Site Theme Switcher Buttons (Minimum 44px Touch Target) */
     .weather-theme-btn {
       background: var(--w-metric-bg);
       border: 1px solid var(--w-glass-border);
@@ -361,13 +371,19 @@
       font-family: 'Space Grotesk', sans-serif;
       font-size: 0.82rem;
       font-weight: 600;
-      padding: 6px 14px;
+      padding: 8px 16px;
+      min-height: 44px;
+      min-width: 44px;
+      box-sizing: border-box;
       border-radius: 999px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       transition: all 0.2s ease;
+      white-space: nowrap;
+      user-select: none;
     }
 
     .weather-theme-btn:hover {
@@ -380,6 +396,33 @@
       background: rgba(255, 255, 255, 0.88) !important;
       border-color: rgba(0, 119, 153, 0.3) !important;
       color: #0c141f !important;
+    }
+
+    .btn-text-compact {
+      display: none;
+    }
+
+    @media (max-width: 520px) {
+      .top-subnav {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .top-subnav-links {
+        justify-content: center;
+      }
+      .top-subnav-controls {
+        justify-content: center;
+      }
+      .btn-text-full {
+        display: none;
+      }
+      .btn-text-compact {
+        display: inline;
+      }
+      .weather-theme-btn {
+        padding: 8px 12px;
+      }
     }
 
     /* WeatherOS Hero Section */
@@ -503,6 +546,8 @@
       border: 1px solid var(--w-glass-border);
       border-radius: 14px;
       padding: 12px 24px;
+      min-height: 44px;
+      box-sizing: border-box;
       text-decoration: none;
       color: var(--w-text-bright);
       backdrop-filter: blur(16px);
@@ -1116,16 +1161,23 @@
   <!-- Main Content Container (Z-Index: 1) -->
   <main class="wrap weatheros-main">
 
-    <!-- Subproduct Navigation Pills & Theme Toggle -->
+    <!-- Subproduct Navigation Pills & Independent Theme Controls -->
     <div class="top-subnav">
       <div class="top-subnav-links">
         <a href="/weatheros" class="top-subnav-link active">Showcase</a>
         <a href="/weatheros/support" class="top-subnav-link">Support &amp; FAQ</a>
         <a href="/weatheros/privacy" class="top-subnav-link">Privacy Policy</a>
       </div>
-      <button id="weather-theme-toggle" class="weather-theme-btn k-hover" onclick="toggleWeatherTheme()" title="Switch to Day Mode" aria-label="Switch to Day Mode">
-        ☀️ Day Mode
-      </button>
+      <div class="top-subnav-controls">
+        <button id="weather-scene-toggle" class="weather-theme-btn weather-scene-btn k-hover" onclick="toggleWeatherScene()" title="Switch WeatherOS atmosphere to Night" aria-label="Switch WeatherOS atmosphere to Night">
+          <span class="btn-text-full">🌙 WeatherOS Night</span>
+          <span class="btn-text-compact">🌙 Weather Night</span>
+        </button>
+        <button id="site-theme-toggle" class="weather-theme-btn site-theme-btn k-hover" onclick="toggleSiteTheme()" title="Switch website to Light Mode" aria-label="Switch website to Light Mode">
+          <span class="btn-text-full">☀️ Site Light</span>
+          <span class="btn-text-compact">☀️ Site Light</span>
+        </button>
+      </div>
     </div>
 
     <!-- Section 1 — Hero -->
@@ -1524,19 +1576,30 @@
 
   <script>
     /**
-     * WeatherOS Presentation & Atmosphere Engine
-     * Resolves data-weather-phase without letting chrono contradict manual Day/Night choice.
+     * WeatherOS Scene & Presentation Engine
+     * Completely isolated from global OTP site theme.
+     * Uses dedicated storage keys: weatheros_scene, weatheros_scene_manual, weatheros_scene_manual_time.
      */
-    function resolveWeatherPhase() {
+
+    // Support query parameter resets
+    try {
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('reset_weather_scene')) {
+        localStorage.removeItem('weatheros_scene');
+        localStorage.removeItem('weatheros_scene_manual');
+        localStorage.removeItem('weatheros_scene_manual_time');
+      }
+    } catch (e) {}
+
+    function getWeatherScene() {
       try {
-        var isManual = localStorage.getItem('theme_manual') === 'true';
-        var manualTime = parseInt(localStorage.getItem('theme_manual_time') || '0', 10);
+        var isManual = localStorage.getItem('weatheros_scene_manual') === 'true';
+        var manualTime = parseInt(localStorage.getItem('weatheros_scene_manual_time') || '0', 10);
         var isExpired = !manualTime || (Date.now() - manualTime > 365 * 24 * 60 * 60 * 1000);
 
         if (isManual && !isExpired) {
-          var manualTheme = localStorage.getItem('theme');
-          if (manualTheme === 'light') return 'day';
-          if (manualTheme === 'dark') return 'night';
+          var scene = localStorage.getItem('weatheros_scene');
+          if (scene === 'day' || scene === 'night') return scene;
         }
       } catch (e) {}
 
@@ -1551,59 +1614,106 @@
       return 'night';
     }
 
-    function applyWeatherPhase() {
-      var phase = resolveWeatherPhase();
-      document.documentElement.setAttribute('data-weather-phase', phase);
+    function setWeatherScene(scene, isManual) {
+      var resolved = scene === 'day' ? 'day' : (scene === 'night' ? 'night' : scene);
+      document.documentElement.setAttribute('data-weather-phase', resolved);
+      if (isManual) {
+        try {
+          localStorage.setItem('weatheros_scene', resolved);
+          localStorage.setItem('weatheros_scene_manual', 'true');
+          localStorage.setItem('weatheros_scene_manual_time', Date.now().toString());
+        } catch (e) {}
+      }
+      updateWeatherSceneUI();
     }
 
-    function toggleWeatherTheme() {
+    function toggleWeatherScene() {
+      var current = document.documentElement.getAttribute('data-weather-phase') || getWeatherScene();
+      var next = (current === 'day' || current === 'sunrise') ? 'night' : 'day';
+      setWeatherScene(next, true);
+    }
+
+    function updateWeatherSceneUI() {
+      var phase = document.documentElement.getAttribute('data-weather-phase') || getWeatherScene();
+      var btn = document.getElementById('weather-scene-toggle');
+      if (btn) {
+        if (phase === 'day' || phase === 'sunrise') {
+          btn.innerHTML = '<span class="btn-text-full">🌙 WeatherOS Night</span><span class="btn-text-compact">🌙 Weather Night</span>';
+          btn.setAttribute('aria-label', 'Switch WeatherOS atmosphere to Night');
+          btn.setAttribute('title', 'Switch WeatherOS atmosphere to Night');
+        } else {
+          btn.innerHTML = '<span class="btn-text-full">☀️ WeatherOS Day</span><span class="btn-text-compact">☀️ Weather Day</span>';
+          btn.setAttribute('aria-label', 'Switch WeatherOS atmosphere to Day');
+          btn.setAttribute('title', 'Switch WeatherOS atmosphere to Day');
+        }
+      }
+    }
+
+    /**
+     * Site Theme Control (Global OTP Site Theme)
+     * Drives data-theme using canonical theme, theme_manual, theme_manual_time.
+     */
+    function toggleSiteTheme() {
       var html = document.documentElement;
       var isLight = html.getAttribute('data-theme') === 'light';
       var nextTheme = isLight ? 'dark' : 'light';
 
-      if (window.OTP && typeof window.OTP.applyPaletteForTheme === 'function') {
-        window.OTP.applyPaletteForTheme(nextTheme);
+      if (window.OTP && typeof window.OTP.setTheme === 'function') {
+        window.OTP.setTheme(nextTheme, true);
       } else {
         if (nextTheme === 'light') {
           html.setAttribute('data-theme', 'light');
         } else {
           html.removeAttribute('data-theme');
         }
+        try {
+          localStorage.setItem('theme', nextTheme);
+          localStorage.setItem('theme_manual', 'true');
+          localStorage.setItem('theme_manual_time', Date.now().toString());
+        } catch (e) {}
       }
-
-      try {
-        localStorage.setItem('theme', nextTheme);
-        localStorage.setItem('theme_manual', 'true');
-        localStorage.setItem('theme_manual_time', Date.now().toString());
-      } catch (e) {}
-
-      // Resolve atmosphere: Manual Light -> day, Manual Dark -> night
-      html.setAttribute('data-weather-phase', nextTheme === 'light' ? 'day' : 'night');
-      updateThemeToggleUI();
+      updateSiteThemeUI();
     }
 
-    function updateThemeToggleUI() {
+    function updateSiteThemeUI() {
       var isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      var btn = document.getElementById('weather-theme-toggle');
+      var btn = document.getElementById('site-theme-toggle');
       if (btn) {
         if (isLight) {
-          btn.innerHTML = '🌙 Night Mode';
-          btn.setAttribute('aria-label', 'Switch to Night Mode');
-          btn.setAttribute('title', 'Switch to Night Mode');
+          btn.innerHTML = '<span class="btn-text-full">🌙 Site Dark</span><span class="btn-text-compact">🌙 Site Dark</span>';
+          btn.setAttribute('aria-label', 'Switch website to Dark Mode');
+          btn.setAttribute('title', 'Switch website to Dark Mode');
         } else {
-          btn.innerHTML = '☀️ Day Mode';
-          btn.setAttribute('aria-label', 'Switch to Day Mode');
-          btn.setAttribute('title', 'Switch to Day Mode');
+          btn.innerHTML = '<span class="btn-text-full">☀️ Site Light</span><span class="btn-text-compact">☀️ Site Light</span>';
+          btn.setAttribute('aria-label', 'Switch website to Light Mode');
+          btn.setAttribute('title', 'Switch website to Light Mode');
         }
       }
     }
 
-    applyWeatherPhase();
+    // Expose helpers on window.WeatherOS
+    window.WeatherOS = {
+      getWeatherScene: getWeatherScene,
+      setWeatherScene: setWeatherScene,
+      toggleWeatherScene: toggleWeatherScene,
+      updateWeatherSceneUI: updateWeatherSceneUI,
+      toggleSiteTheme: toggleSiteTheme,
+      updateSiteThemeUI: updateSiteThemeUI
+    };
+
+    // Initialize WeatherOS Scene
+    setWeatherScene(getWeatherScene(), false);
+
     document.addEventListener('DOMContentLoaded', function() {
-      applyWeatherPhase();
-      updateThemeToggleUI();
+      updateWeatherSceneUI();
+      updateSiteThemeUI();
     });
-    updateThemeToggleUI();
+
+    // Observer for external/global site theme changes
+    var themeObserver = new MutationObserver(function() {
+      updateSiteThemeUI();
+    });
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   </script>
 
   <canvas id="cursor-canvas"></canvas>
