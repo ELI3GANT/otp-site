@@ -93,25 +93,32 @@
     }
 
     [data-theme="light"] {
-      --w-cyan: #007799;
-      --w-cyan-rgb: 0, 119, 153;
-      --w-purple: #6b46c1;
-      --w-purple-rgb: 107, 70, 193;
-      --w-glass-bg: rgba(255, 255, 255, 0.92);
-      --w-glass-border: rgba(0, 119, 153, 0.24);
-      --w-glass-glow: rgba(0, 119, 153, 0.08);
-      --w-text-bright: #0c141f;
+      --w-cyan: #0284c7;
+      --w-cyan-rgb: 2, 132, 199;
+      --w-purple: #7c3aed;
+      --w-purple-rgb: 124, 58, 237;
+      --w-amber: #d97706;
+      --w-crimson: #e11d48;
+      --w-glass-bg: rgba(255, 255, 255, 0.94);
+      --w-glass-border: rgba(2, 132, 199, 0.25);
+      --w-glass-glow: rgba(2, 132, 199, 0.1);
+      --w-text-bright: #090d16;
       --w-text-muted: #334155;
-      --w-card-bg: rgba(255, 255, 255, 0.94);
-      --w-metric-bg: rgba(0, 50, 80, 0.04);
-      --w-metric-border: rgba(0, 50, 80, 0.1);
-      --w-divider: rgba(0, 50, 80, 0.12);
-      --w-bottom-cta-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(224, 242, 254, 0.96) 100%);
-      --w-subnav-border: rgba(0, 50, 80, 0.15);
+      --w-card-bg: rgba(255, 255, 255, 0.96);
+      --w-metric-bg: rgba(2, 132, 199, 0.05);
+      --w-metric-border: rgba(2, 132, 199, 0.12);
+      --w-divider: rgba(2, 132, 199, 0.12);
+      --w-bottom-cta-bg: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+      --w-subnav-border: rgba(2, 132, 199, 0.2);
     }
 
     html[data-theme="light"] body.page-protocol {
-      color: #0c141f !important;
+      color: #090d16 !important;
+    }
+
+    /* Suppress duplicate floating site toggle FAB on WeatherOS dedicated page */
+    body.page-protocol .theme-toggle-btn:not(.weather-theme-btn) {
+      display: none !important;
     }
 
     /* WeatherOS Atmospheric System (Z-Index: 0, Fixed, Non-Blocking) */
@@ -152,6 +159,46 @@
     /* Phase 4: SUNSET (Twilight navy into violet-purple and warm dusk amber) */
     [data-weather-phase="sunset"] .weather-sky-backdrop {
       background: linear-gradient(180deg, #0c1224 0%, #221a3e 30%, #4a214d 60%, #9e4347 88%, #d87648 100%);
+    }
+
+    /* Site Light Mode Backdrop (Fresh, luminous daytime atmosphere with 14:1 contrast) */
+    [data-theme="light"] .weather-sky-backdrop {
+      background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 28%, #f8fafc 65%, #ffffff 100%) !important;
+    }
+
+    [data-theme="light"] .weather-solar-glow {
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(254, 215, 170, 0.3) 45%, transparent 75%) !important;
+      opacity: 0.8 !important;
+    }
+
+    [data-theme="light"] .weather-haze-layer {
+      background: linear-gradient(180deg, transparent 0%, rgba(241, 245, 249, 0.8) 60%, #ffffff 100%) !important;
+    }
+
+    [data-theme="light"] .weather-clouds-far,
+    [data-theme="light"] .weather-clouds-near {
+      opacity: 0.35 !important;
+      filter: invert(1) brightness(0.9) contrast(1.2);
+    }
+
+    /* Force Cinematic Dark Mode whenever WeatherOS Night scene is active */
+    [data-weather-phase="night"] .weather-sky-backdrop {
+      background: radial-gradient(circle at 50% -10%, #0c1626 0%, #060b14 45%, #030407 100%) !important;
+    }
+
+    [data-weather-phase="night"] .weather-solar-glow {
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.12) 0%, rgba(164, 130, 255, 0.06) 50%, transparent 75%) !important;
+      opacity: 0.5 !important;
+    }
+
+    [data-weather-phase="night"] .weather-clouds-far,
+    [data-weather-phase="night"] .weather-clouds-near {
+      filter: none !important;
+      opacity: 0.7 !important;
+    }
+
+    [data-weather-phase="night"] .weather-haze-layer {
+      background: linear-gradient(180deg, transparent 0%, rgba(3, 4, 7, 0.4) 70%, rgba(3, 4, 7, 0.85) 100%) !important;
     }
 
     /* Solar / Lunar Ambient Bloom */
@@ -488,9 +535,15 @@
     }
 
     [data-theme="light"] .w-hero-title {
-      background: linear-gradient(180deg, #0c141f 35%, #0284c7 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      background: linear-gradient(180deg, #090d16 20%, #0369a1 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+    }
+
+    [data-weather-phase="night"] .w-hero-title {
+      background: linear-gradient(180deg, #ffffff 40%, rgba(0, 242, 254, 0.9) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
     }
 
     .w-hero-desc {
@@ -499,11 +552,18 @@
       line-height: 1.55;
       max-width: 740px;
       margin: 0 auto 24px;
+      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
     }
 
     [data-theme="light"] .w-hero-desc {
       color: #1e293b !important;
       font-weight: 500 !important;
+      text-shadow: none !important;
+    }
+
+    [data-weather-phase="night"] .w-hero-desc {
+      color: rgba(255, 255, 255, 0.88) !important;
+      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6) !important;
     }
 
     .w-price-tag {
@@ -523,9 +583,16 @@
     }
 
     [data-theme="light"] .w-price-tag {
-      background: rgba(255, 255, 255, 0.88) !important;
-      border-color: rgba(0, 119, 153, 0.25) !important;
-      color: #0c141f !important;
+      background: rgba(255, 255, 255, 0.9) !important;
+      border-color: rgba(2, 132, 199, 0.25) !important;
+      color: #090d16 !important;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.08) !important;
+    }
+
+    [data-weather-phase="night"] .w-price-tag {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(255, 255, 255, 0.12) !important;
+      color: #ffffff !important;
     }
 
     /* Store CTA Buttons */
@@ -563,15 +630,50 @@
     }
 
     .w-store-btn.primary {
-      background: var(--w-cyan);
-      border-color: var(--w-cyan);
+      background: #00f2fe;
+      border-color: #00f2fe;
       color: #030305 !important;
-      box-shadow: 0 0 30px rgba(var(--w-cyan-rgb), 0.45);
+      box-shadow: 0 0 30px rgba(0, 242, 254, 0.45);
       font-weight: 700;
     }
 
+    .w-store-btn.primary .w-store-main,
+    .w-store-btn.primary .w-store-sub,
+    .w-store-btn.primary svg {
+      color: #030305 !important;
+      fill: #030305 !important;
+    }
+
     .w-store-btn.primary:hover {
-      box-shadow: 0 0 45px rgba(var(--w-cyan-rgb), 0.65);
+      box-shadow: 0 0 45px rgba(0, 242, 254, 0.65);
+    }
+
+    [data-theme="light"] .w-store-btn.primary {
+      background: #0284c7 !important;
+      border-color: #0284c7 !important;
+      color: #ffffff !important;
+      box-shadow: 0 8px 26px rgba(2, 132, 199, 0.35) !important;
+    }
+
+    [data-theme="light"] .w-store-btn.primary .w-store-main,
+    [data-theme="light"] .w-store-btn.primary .w-store-sub,
+    [data-theme="light"] .w-store-btn.primary svg {
+      color: #ffffff !important;
+      fill: #ffffff !important;
+    }
+
+    [data-weather-phase="night"] .w-store-btn.primary {
+      background: #00f2fe !important;
+      border-color: #00f2fe !important;
+      color: #030305 !important;
+      box-shadow: 0 0 30px rgba(0, 242, 254, 0.45) !important;
+    }
+
+    [data-weather-phase="night"] .w-store-btn.primary .w-store-main,
+    [data-weather-phase="night"] .w-store-btn.primary .w-store-sub,
+    [data-weather-phase="night"] .w-store-btn.primary svg {
+      color: #030305 !important;
+      fill: #030305 !important;
     }
 
     .w-store-btn.disabled {
@@ -583,8 +685,8 @@
     }
 
     [data-theme="light"] .w-store-btn.disabled {
-      background: rgba(255, 255, 255, 0.85);
-      border-color: rgba(0, 119, 153, 0.2);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(2, 132, 199, 0.2);
       color: #334155;
     }
 
@@ -622,13 +724,25 @@
       font-size: 0.7rem;
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 700;
-      color: var(--w-amber);
-      background: rgba(255, 184, 77, 0.12);
-      border: 1px solid rgba(255, 184, 77, 0.3);
+      color: #030305;
+      background: rgba(0, 0, 0, 0.18);
+      border: 1px solid rgba(0, 0, 0, 0.28);
       padding: 2px 8px;
       border-radius: 999px;
       margin-top: 2px;
       width: fit-content;
+    }
+
+    [data-theme="light"] .w-status-badge {
+      background: rgba(255, 255, 255, 0.25) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+      color: #ffffff !important;
+    }
+
+    [data-weather-phase="night"] .w-status-badge {
+      background: rgba(0, 0, 0, 0.2) !important;
+      border-color: rgba(0, 0, 0, 0.3) !important;
+      color: #030305 !important;
     }
 
     .w-trust-strip {
@@ -636,15 +750,23 @@
       justify-content: center;
       align-items: center;
       gap: 20px;
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       color: var(--w-text-muted);
       font-family: 'Space Grotesk', sans-serif;
       flex-wrap: wrap;
       margin: 16px 0 36px;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
     }
 
     [data-theme="light"] .w-trust-strip {
-      color: #334155 !important;
+      color: #1e293b !important;
+      font-weight: 600 !important;
+      text-shadow: none !important;
+    }
+
+    [data-weather-phase="night"] .w-trust-strip {
+      color: rgba(255, 255, 255, 0.85) !important;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6) !important;
     }
 
     .w-trust-item {
@@ -768,7 +890,11 @@
     }
 
     [data-theme="light"] .w-product-title {
-      color: #0c141f !important;
+      color: #090d16 !important;
+    }
+
+    [data-weather-phase="night"] .w-product-title {
+      color: #ffffff !important;
     }
 
     .w-product-desc {
@@ -780,6 +906,10 @@
 
     [data-theme="light"] .w-product-desc {
       color: #334155 !important;
+    }
+
+    [data-weather-phase="night"] .w-product-desc {
+      color: rgba(255, 255, 255, 0.85) !important;
     }
 
     .w-feature-list {
@@ -801,7 +931,11 @@
     }
 
     [data-theme="light"] .w-feature-item {
-      color: #0c141f !important;
+      color: #090d16 !important;
+    }
+
+    [data-weather-phase="night"] .w-feature-item {
+      color: #ffffff !important;
     }
 
     .w-feature-item-icon {
@@ -818,6 +952,14 @@
       font-size: 0.96rem;
     }
 
+    [data-theme="light"] .w-feature-item-text strong {
+      color: #0284c7 !important;
+    }
+
+    [data-weather-phase="night"] .w-feature-item-text strong {
+      color: #00f2fe !important;
+    }
+
     .w-feature-item-text span {
       color: var(--w-text-muted);
       font-size: 0.9rem;
@@ -825,6 +967,10 @@
 
     [data-theme="light"] .w-feature-item-text span {
       color: #334155 !important;
+    }
+
+    [data-weather-phase="night"] .w-feature-item-text span {
+      color: rgba(255, 255, 255, 0.75) !important;
     }
 
     .w-product-visual {
@@ -935,9 +1081,15 @@
     }
 
     [data-theme="light"] .w-capability-card {
-      background: rgba(255, 255, 255, 0.92) !important;
-      border-color: rgba(0, 119, 153, 0.2) !important;
-      box-shadow: 0 10px 30px rgba(10, 35, 60, 0.08) !important;
+      background: rgba(255, 255, 255, 0.94) !important;
+      border-color: rgba(2, 132, 199, 0.22) !important;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+    }
+
+    [data-weather-phase="night"] .w-capability-card {
+      background: rgba(14, 18, 26, 0.85) !important;
+      border-color: rgba(0, 242, 254, 0.22) !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3) !important;
     }
 
     .w-capability-card:hover {
@@ -961,7 +1113,11 @@
     }
 
     [data-theme="light"] .w-capability-title {
-      color: #0c141f !important;
+      color: #090d16 !important;
+    }
+
+    [data-weather-phase="night"] .w-capability-title {
+      color: #ffffff !important;
     }
 
     .w-capability-desc {
@@ -975,6 +1131,10 @@
       color: #334155 !important;
     }
 
+    [data-weather-phase="night"] .w-capability-desc {
+      color: rgba(255, 255, 255, 0.75) !important;
+    }
+
     /* Specifications Table */
     .w-specs-section {
       padding: 60px 0;
@@ -983,7 +1143,7 @@
     }
 
     [data-theme="light"] .w-specs-section {
-      border-top-color: rgba(0, 50, 80, 0.12) !important;
+      border-top-color: rgba(2, 132, 199, 0.15) !important;
     }
 
     .w-specs-card {
@@ -997,9 +1157,31 @@
     }
 
     [data-theme="light"] .w-specs-card {
-      background: rgba(255, 255, 255, 0.92) !important;
-      border-color: rgba(0, 119, 153, 0.2) !important;
-      box-shadow: 0 10px 30px rgba(10, 35, 60, 0.08) !important;
+      background: rgba(255, 255, 255, 0.96) !important;
+      border-color: rgba(2, 132, 199, 0.22) !important;
+      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08) !important;
+    }
+
+    [data-theme="light"] .w-specs-card h2 {
+      color: #090d16 !important;
+    }
+
+    [data-theme="light"] .w-specs-card p {
+      color: #334155 !important;
+    }
+
+    [data-weather-phase="night"] .w-specs-card {
+      background: rgba(14, 18, 26, 0.85) !important;
+      border-color: rgba(0, 242, 254, 0.22) !important;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    [data-weather-phase="night"] .w-specs-card h2 {
+      color: #ffffff !important;
+    }
+
+    [data-weather-phase="night"] .w-specs-card p {
+      color: rgba(255, 255, 255, 0.75) !important;
     }
 
     .w-specs-table {
@@ -1027,13 +1209,25 @@
       vertical-align: top;
     }
 
+    [data-theme="light"] .w-specs-label {
+      color: #0284c7 !important;
+    }
+
+    [data-weather-phase="night"] .w-specs-label {
+      color: #00f2fe !important;
+    }
+
     .w-specs-val {
       color: var(--w-text-bright);
       line-height: 1.5;
     }
 
     [data-theme="light"] .w-specs-val {
-      color: #0c141f !important;
+      color: #0f172a !important;
+    }
+
+    [data-weather-phase="night"] .w-specs-val {
+      color: #ffffff !important;
     }
 
     @media (max-width: 600px) {
@@ -1069,9 +1263,15 @@
     }
 
     [data-theme="light"] .w-bottom-cta {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(224, 242, 254, 0.96) 100%) !important;
-      border-color: rgba(0, 119, 153, 0.4) !important;
-      box-shadow: 0 15px 45px rgba(0, 119, 153, 0.18) !important;
+      background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%) !important;
+      border-color: rgba(2, 132, 199, 0.35) !important;
+      box-shadow: 0 20px 50px rgba(2, 132, 199, 0.15) !important;
+    }
+
+    [data-weather-phase="night"] .w-bottom-cta {
+      background: radial-gradient(circle at center, rgba(0, 242, 254, 0.18) 0%, rgba(14, 18, 26, 0.9) 70%) !important;
+      border-color: #00f2fe !important;
+      box-shadow: 0 0 50px rgba(0, 242, 254, 0.22) !important;
     }
 
     .w-bottom-cta h2 {
@@ -1082,7 +1282,11 @@
     }
 
     [data-theme="light"] .w-bottom-cta h2 {
-      color: #0c141f !important;
+      color: #090d16 !important;
+    }
+
+    [data-weather-phase="night"] .w-bottom-cta h2 {
+      color: #ffffff !important;
     }
 
     .w-bottom-cta p {
@@ -1094,6 +1298,10 @@
 
     [data-theme="light"] .w-bottom-cta p {
       color: #334155 !important;
+    }
+
+    [data-weather-phase="night"] .w-bottom-cta p {
+      color: rgba(255, 255, 255, 0.85) !important;
     }
 
     /* Reduced Motion Safety */
