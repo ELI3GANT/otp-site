@@ -5056,6 +5056,7 @@ app.get('/ping', (req, res) => res.json({ status: 'PONG', timestamp: new Date() 
 app.get('/api/health', async (req, res) => {
     const health = {
         status: 'UP',
+        commit: String(process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || 'local').slice(0, 7),
         timestamp: new Date(),
         integrations: {
             supabase: 'UNKNOWN',
