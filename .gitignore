@@ -38,3 +38,4 @@ coverage/
 # Private unredacted source screenshots
 **/source-private/
 marketing/
+.env*
