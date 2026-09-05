@@ -21,17 +21,277 @@ html {
   display: none !important;
 }
 
-body { 
-    margin: 0 !important; 
-    overflow-x: hidden;
-    width: 100%;
-    max-width: 100vw;
-    font-family: 'Space Grotesk', sans-serif; 
-    background: var(--bg, #030305); 
-    color: var(--text, #fff);
-    transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), color 0.4s ease;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+/* ==========================================================================
+   GLOBAL ANIMATION FOUNDATION
+   ========================================================================== */
+
+/* Reduced-motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
+
+/* CSS variables for animation timing */
+:root {
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-quint: cubic-bezier(0.23, 1, 0.32, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 300ms;
+  --duration-slow: 500ms;
+}
+
+/* ==========================================================================
+   VIDEO CARD HOVER EFFECTS
+   ========================================================================== */
+
+.otp-video-card {
+  transition: transform var(--duration-normal) var(--ease-out), box-shadow var(--duration-normal) var(--ease-out);
+  cursor: pointer;
+}
+
+.otp-video-card:hover {
+  transform: translateY(-8px) perspective(1000px) rotateX(5deg) rotateY(2deg);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 30px rgba(var(--accent2-rgb), 0.2);
+}
+
+.otp-video-card:active {
+  transform: translateY(0) perspective(1000px) rotateX(0) rotateY(0);
+}
+
+.otp-video-card .work-thumb-wrapper {
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+}
+
+.otp-video-card .work-thumb-visual {
+  transition: transform var(--duration-normal) var(--ease-out);
+  will-change: transform;
+}
+
+.otp-video-card:hover .work-thumb-visual {
+  transform: scale(1.05);
+}
+
+/* Pulse animation for play badge */
+.otp-play-badge {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.otp-video-card:hover .otp-play-badge {
+  opacity: 1;
+}
+
+.otp-play-badge svg {
+  width: 28px;
+  height: 28px;
+  stroke: var(--accent2, #00f2fe);
+  stroke-width: 3;
+  fill: none;
+  animation: pulse-glow 2s var(--ease-quint) infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(var(--accent2-rgb), 0.4); }
+  50% { box-shadow: 0 0 25px rgba(var(--accent2-rgb), 0.8); }
+}
+
+/* ==========================================================================
+   HERO ACCENT MOUSE-FOLLOWING SWAG
+   ========================================================================== */
+
+/* Subtle accent circle that follows mouse */
+.hero::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--accent2-rgb), 0.18) 0%, transparent 70%);
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+body.hero-active::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero::after {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   SHOWCASE MODAL ENTRANCE ANIMATIONS
+   ========================================================================== */
+
+.otp-media-modal-backdrop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  color: #fff;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--duration-slow) var(--ease-quint), visibility var(--duration-slow) var(--ease-quint);
+}
+
+.otp-media-modal-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.otp-media-modal-content {
+  background: var(--bg);
+  border: 1px solid var(--muted);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 900px;
+  margin: auto;
+  transform: scale(0.9) translateY(20px);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.otp-media-modal-backdrop.is-open .otp-media-modal-content {
+  transform: scale(1) translateY(0);
+}
+
+.otp-modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.otp-modal-close-btn:hover {
+  color: var(--fg);
+}
+
+.otp-modal-close-btn:focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 4px;
+}
+
+/* iframe entrance animation */
+.otp-media-modal-content iframe {
+  width: 100%;
+  min-height: 400px;
+  border: none;
+  border-radius: 12px;
+  background: #000;
+}
+
+/* ==========================================================================
+   SERVICE PILLAR CARD ANIMATIONS
+   ========================================================================== */
+
+.capability-pillar-card {
+  transition: transform var(--duration-normal) var(--ease-out), border-color var(--duration-normal) var(--ease-out), box-shadow var(--duration-normal) var(--ease-out);
+  border: 1px solid var(--muted);
+  position: relative;
+  overflow: hidden;
+}
+
+.capability-pillar-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-primary);
+  border-radius: 16px;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  z-index: 0;
+}
+
+.capability-pillar-card:hover {
+  border-color: var(--accent2);
+  transform: translateY(-4px) scale(1.02);
+}
+
+.capability-pillar-card:hover::before {
+  opacity: 0.1;
+}
+
+/* ==========================================================================
+   BUTTON ANIMATIONS (ENHANCED)
+   ========================================================================== */
+
+.book-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out), background var(--duration-fast) var(--ease-out);
+}
+
+.book-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(var(--accent2-rgb), 0.3), transparent);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+  z-index: 0;
+}
+
+.book-btn:hover::before {
+  opacity: 1;
+}
+
+.book-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4), 0 0 20px rgba(var(--accent2-rgb), 0.3);
+}
+
+.book-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.book-btn-ghost:hover {
+  border-color: var(--accent2);
+  color: var(--accent2);
+  transform: scale(1.02);
+}
+
+/* ==========================================================================
+   NAV DRAWER ENTRANCE
+   ========================================================================== */
+
+.nav-drawer {
+  transition: transform var(--duration-slow) var(--ease-quint), opacity var(--duration-slow) var(--ease-quint);
+}
+
+.nav-drawer.open {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* ==========================================================================
+   SCROLL PROGRESS ANIMATION ENHANCEMENT
+   ========================================================================== */
+
+#otp-scroll-progress {
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 
 :where(a, button, input, textarea, select, [tabindex]):focus-visible {

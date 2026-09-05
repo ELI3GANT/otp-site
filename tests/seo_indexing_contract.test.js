@@ -21,6 +21,12 @@ const hasNoindex = (html) => /<meta\s+name="robots"\s+content="[^"]*noindex/i.te
 console.log('SEO INDEXING CONTRACT...');
 
 const pages = {
+  'website-design.html': {
+    title: 'Rhode Island Website Design & Booking Systems | OnlyTruePerspective',
+    canonical: 'https://www.onlytrueperspective.tech/website-design.html',
+    descriptionSnippet: 'Rhode Island businesses and creators',
+    indexable: true
+  },
   'index.html': {
     title: 'OnlyTruePerspective | Rhode Island Creative Technology & Media Studio',
     canonical: 'https://www.onlytrueperspective.tech/',
@@ -115,6 +121,8 @@ assert.ok(robots.includes('Sitemap: https://www.onlytrueperspective.tech/sitemap
 
 const sitemap = read('sitemap.xml');
 const requiredUrls = [
+  'https://www.onlytrueperspective.tech/website-design.html',
+  'https://www.onlytrueperspective.tech/weatheros',
   'https://www.onlytrueperspective.tech/',
   'https://www.onlytrueperspective.tech/bookings',
   'https://www.onlytrueperspective.tech/songwars',

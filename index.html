@@ -238,11 +238,12 @@
       <div class="hero-subline-alt">Websites · Video Production · Brand Kits · Tech Repair</div>
       <p class="subtitle-lead" id="hero-subtitle" data-editable="true">We build high-converting websites, edit fire video promos &amp; reels, design custom logos &amp; brand kits, and fix broken tech. Built for local businesses, creators, underground artists, and brands who need real output fast.</p>
       
-      <div class="hero-cta">
+<div class="hero-cta">
         <a href="/bookings?source=homepage" class="book-btn magnetic-btn">⚡ Fast-Lane Booking ($250 Deposit)</a>
         <a href="/consultant-audit.html" class="book-btn-ghost magnetic-btn">🔍 Free Business Audit</a>
         <a href="/fixline" class="book-btn-ghost magnetic-btn">🛠️ 24h FIXLINE Tech Repair</a>
-      </div>
+        <a href="/website-design.html" class="book-btn magnetic-btn">🖥️ Website Design & Booking Systems</a>
+</div>
       <p class="hero-trust-line">Proof first: live business platforms, emergency tech repairs, event pages, artist rollouts, and custom video production. Turnarounds available: Same-Day Reels ($500), Website Cleanup ($500), Event Promos, and Full Digital Systems ($3,500+).</p>
 
 
@@ -314,7 +315,8 @@
               <li style="display: flex; align-items: center; gap: 10px;">📈 <strong>Growth Engine</strong> — High-converting landing pages &amp; booking systems</li>
             </ul>
 
-            <a href="/fixline" class="book-btn magnetic-btn" style="display: block; width: 100%; text-align: center; box-sizing: border-box;">Explore FIXLINE Tech Repair</a>
+            <a href="/website-design.html" class="book-btn magnetic-btn" style="display: block; width: 100%; text-align: center; box-sizing: border-box;">Website Design &amp; Booking Systems</a>
+            <p><a href="/fixline">Explore FIXLINE Tech Repair</a></p>
           </article>
 
           <!-- PILLAR 2: CREATIVE & MEDIA -->
@@ -1209,9 +1211,52 @@
   <script src="otp-video-library.js?v=1.0.0" defer></script>
   <script src="site-init.js?v=20260819-perf1" defer></script>
   <script>
-    // --- GHOST SIGNAL V5: MULTI-PLATFORM SYNC ---
-    // Protocol: Desktop (Ctrl/Cmd + Click Logo) or Mobile (2s Long Press Logo).
-    const otpLogos = document.querySelectorAll('.hero-symbol-mark, .otp-mark, #nav-logo-neon');
+    // --- NEON HERO ACCENT: Mouse-following glow ---
+    // Only activates on home page, non-intrusive
+    (function() {
+        if (!document.body.classList.contains('home-page')) return;
+
+        const accent = document.createElement('div');
+        accent.className = 'hero-accent-glow';
+        Object.assign(accent.style, {
+            position: 'fixed',
+            width: '400px',
+            height: '400px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(0, 242, 254, 0.18) 0%, transparent 70%)',
+            pointerEvents: 'none',
+            zIndex: '100',
+            transform: 'translate(-50%, -50%)',
+            opacity: 0,
+            transition: 'opacity 0.3s ease'
+        });
+        document.body.appendChild(accent);
+
+        let mouseX = 0, mouseY = 0;
+        let accentX = 0, accentY = 0;
+
+        function animate() {
+            // Smooth follow with slight lag
+            accentX += (mouseX - accentX) * 0.1;
+            accentY += (mouseY - accentY) * 0.1;
+            accent.style.left = `${accentX}px`;
+            accent.style.top = `${accentY}px`;
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        // Reduced motion support
+        if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            accent.style.opacity = '1';
+        }
+    })();
+
     let touchHoldTimer;
 
     otpLogos.forEach(logo => {
