@@ -15,6 +15,7 @@ const liveApiArg = args.find(a => a.startsWith('--live-api-url='));
 if (liveApiArg) process.env.LIVE_API_URL = liveApiArg.slice('--live-api-url='.length);
 
 const tests = [
+    { name: 'Signature Pricing Consistency', path: 'tests/signature_pricing.test.js' },
     { name: 'Full System Integrity', path: 'tests/full_system_test.js' },
     { name: 'Admin Health & Schema', path: 'tests/admin_health.js' },
     { name: 'User Flow Validation', path: 'tests/user_flow_validation.js' },
