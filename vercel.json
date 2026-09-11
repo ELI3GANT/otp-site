@@ -86,6 +86,31 @@
       "dest": "/server.js"
     },
     {
+      "src": "^/archive\\.html$",
+      "status": 308,
+      "headers": { "Location": "/archive" }
+    },
+    {
+      "src": "^/songwars\\.html$",
+      "status": 308,
+      "headers": { "Location": "/songwars" }
+    },
+    {
+      "src": "^/(?:consultant-audit\\.html|consultant-audit)/?$",
+      "status": 308,
+      "headers": { "Location": "/services/consultant-audit" }
+    },
+    {
+      "src": "^/protocol\\.html$",
+      "status": 308,
+      "headers": { "Location": "/protocol" }
+    },
+    {
+      "src": "^/weatheros\\.html$",
+      "status": 308,
+      "headers": { "Location": "/weatheros" }
+    },
+    {
       "src": "/weatheros/?",
       "dest": "/weatheros/index.html"
     },

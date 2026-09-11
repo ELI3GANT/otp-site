@@ -69,6 +69,12 @@
             "position": 3,
             "url": "https://www.onlytrueperspective.tech/protocol",
             "name": "PROTOCOL"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "url": "https://www.onlytrueperspective.tech/weatheros",
+            "name": "WeatherOS"
           }
         ]
       }
@@ -90,21 +96,22 @@
 
   <header class="nav nav-split">
     <!-- Logo Left -->
-    <a href="index.html" class="nav-logo" aria-label="OTP">
+    <a href="/" class="nav-logo" aria-label="OTP">
       <img src="assets/otp-logo-transparent.png" alt="OTP" class="otp-mark" id="nav-logo-neon" width="44" height="44" decoding="async" />
     </a>
 
     <!-- Links Right -->
     <nav class="nav-links" aria-label="Primary">
-      <a href="index.html#services" class="k-hover">Services</a>
-      <a href="index.html#packages" class="k-hover">Packages</a>
+      <a href="/#services" class="k-hover">Services</a>
+      <a href="/weatheros" class="k-hover" style="color: var(--accent2, #00f0ff); font-weight: 700;">WeatherOS ⚡</a>
+      <a href="/#packages" class="k-hover">Packages</a>
       <a href="/fixline" class="k-hover">FIXLINE</a>
       <a href="/bookings" class="k-hover">Book OTP</a>
       <a href="/portal" class="k-hover">Client Portal</a>
-      <a href="index.html#work" class="k-hover">Work</a>
-      <a href="index.html#contact" class="k-hover">Contact</a>
+      <a href="/#work" class="k-hover">Work</a>
+      <a href="/#contact" class="k-hover">Contact</a>
       <a href="/archive" class="active k-hover nav-secondary">Archive</a>
-      <a href="insights.html" class="k-hover nav-secondary">Insights</a>
+      <a href="/insights" class="k-hover nav-secondary">Insights</a>
     </nav>
     
     <!-- Mobile toggle -->
@@ -113,15 +120,16 @@
     </button>
 
     <nav class="nav-drawer" aria-label="Mobile">
-      <a href="index.html#services">Services</a>
-      <a href="index.html#packages">Packages</a>
+      <a href="/weatheros" style="color: var(--accent2, #00f0ff); font-weight: 700;">⚡ WeatherOS (New App)</a>
+      <a href="/#services">Services</a>
+      <a href="/#packages">Packages</a>
       <a href="/fixline">FIXLINE</a>
       <a href="/bookings">Book OTP</a>
       <a href="/portal">Client Portal</a>
-      <a href="index.html#work">Work</a>
-      <a href="index.html#contact">Contact</a>
+      <a href="/#work">Work</a>
+      <a href="/#contact">Contact</a>
       <a href="/archive" class="active">Archive</a>
-      <a href="insights.html">Insights</a>
+      <a href="/insights">Insights</a>
     </nav>
   </header>
 
@@ -201,16 +209,24 @@
           <li class="archive-timeline-item">
             <span class="archive-timeline-marker" aria-hidden="true"></span>
             <div class="archive-timeline-copy">
+              <time class="archive-timeline-date" datetime="2026-08-20">Aug 20, 2026</time>
+              <a href="/weatheros" class="archive-timeline-title">WeatherOS</a>
+              <p class="archive-timeline-type">Live · Mobile Weather App</p>
+            </div>
+          </li>
+          <li class="archive-timeline-item">
+            <span class="archive-timeline-marker" aria-hidden="true"></span>
+            <div class="archive-timeline-copy">
               <time class="archive-timeline-date" datetime="2026-07-26">Jul 26, 2026</time>
               <a href="/fixline" class="archive-timeline-title">OTP FIXLINE</a>
-              <p class="archive-timeline-type">Live · Product / Business Diagnostic</p>
+              <p class="archive-timeline-type">Private Beta · Product / Business Diagnostic</p>
             </div>
           </li>
           <li class="archive-timeline-item">
             <span class="archive-timeline-marker" aria-hidden="true"></span>
             <div class="archive-timeline-copy">
               <time class="archive-timeline-date" datetime="2026-06-15">Jun 15, 2026</time>
-              <a href="songwars.html" class="archive-timeline-title">The Smack Club: Song Wars</a>
+              <a href="/songwars" class="archive-timeline-title">The Smack Club: Song Wars</a>
               <p class="archive-timeline-type">Live · Music / Interactive Event</p>
             </div>
           </li>
@@ -218,7 +234,7 @@
             <span class="archive-timeline-marker" aria-hidden="true"></span>
             <div class="archive-timeline-copy">
               <time class="archive-timeline-date" datetime="2026-05-10">May 10, 2026</time>
-              <a href="protocol.html" class="archive-timeline-title">PROTOCOL</a>
+              <a href="/protocol" class="archive-timeline-title">PROTOCOL</a>
               <p class="archive-timeline-type">Released · Brand Film / System</p>
             </div>
           </li>
@@ -278,9 +294,9 @@
           <span class="dot">•</span>
           <a href="https://www.reddit.com/r/OnlyTruePerspective" target="_blank" rel="noopener noreferrer" aria-label="Open OnlyTruePerspective official Reddit" class="k-hover">Official Reddit</a>
           <span class="dot">•</span>
-          <a href="terms.html">Terms</a>
+          <a href="/terms">Terms</a>
           <span class="dot">•</span>
-          <a href="privacy.html">Privacy</a>
+          <a href="/privacy">Privacy</a>
         </div>
       </div>
 

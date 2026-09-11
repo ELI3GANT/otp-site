@@ -110,4 +110,9 @@ function injectSpeedInsights(props = {}, confString) {
 }
 
 // speed-insights-entry.mjs
-injectSpeedInsights({ framework: "html", debug: false });
+var isLocalHost = typeof window !== "undefined" && Boolean(
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname === "[::1]" || window.location.hostname.endsWith(".local")
+);
+if (!isLocalHost) {
+  injectSpeedInsights({ framework: "html", debug: false });
+}

@@ -496,6 +496,36 @@
   border-color: color-mix(in srgb, var(--archive-accent) 65%, transparent);
 }
 
+.archive-case-study-card[data-status="Live"] .archive-project-status {
+  border-color: rgba(var(--accent2-rgb, 0, 242, 254), 0.65);
+  color: var(--accent2, #00f2fe);
+  background: rgba(var(--accent2-rgb, 0, 242, 254), 0.12);
+}
+
+.archive-case-study-card[data-status="Released"] .archive-project-status {
+  border-color: rgba(213, 181, 108, 0.6);
+  color: var(--archive-accent, #d5b56c);
+  background: rgba(213, 181, 108, 0.1);
+}
+
+.archive-case-study-card[data-status="In Progress"] .archive-project-status {
+  border-color: rgba(255, 180, 0, 0.55);
+  color: var(--accent1, #ffb400);
+  background: rgba(255, 180, 0, 0.1);
+}
+
+.archive-case-study-card[data-status="Private Beta"] .archive-project-status {
+  border-color: rgba(164, 130, 255, 0.55);
+  color: #c4b5fd;
+  background: rgba(164, 130, 255, 0.1);
+}
+
+.archive-case-study-card[data-status="Internal"] .archive-project-status {
+  border-color: var(--archive-border-strong);
+  color: var(--archive-muted-strong);
+  background: var(--archive-surface-soft);
+}
+
 .archive-project-content {
   min-width: 0;
   display: flex;

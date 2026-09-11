@@ -14312,5 +14312,34 @@ body.home-page .conversion-lane-card:hover {
   }
 }
 
+/* RESPONSIVE MOBILE HARDENING: WeatherOS spotlight & Scope teaser */
+@media (max-width: 640px) {
+  .weatheros-feature-banner {
+    padding: 20px 18px !important;
+    gap: 16px !important;
+    border-radius: 16px !important;
+  }
+  .weatheros-feature-banner h3 {
+    font-size: 1.25rem !important;
+  }
+  .interactive-scope-teaser {
+    padding: 20px 16px !important;
+    margin-bottom: 32px !important;
+    border-radius: 16px !important;
+  }
+  .capability-pillar-card {
+    padding: 24px 20px !important;
+  }
+}
 
-
+@media (max-width: 390px) {
+  .weatheros-feature-banner {
+    padding: 16px 14px !important;
+  }
+  .interactive-scope-teaser {
+    padding: 16px 12px !important;
+  }
+  .capability-pillar-card {
+    padding: 20px 16px !important;
+  }
+}

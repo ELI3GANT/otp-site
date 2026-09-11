@@ -2628,6 +2628,9 @@ app.get(['/songwars', '/songwars/'], (req, res) => {
 
 app.get('/songwars.html', (req, res) => res.redirect(308, '/songwars'));
 app.get('/archive.html', (req, res) => res.redirect(308, '/archive'));
+app.get(['/consultant-audit.html', '/consultant-audit'], (req, res) => res.redirect(308, '/services/consultant-audit'));
+app.get('/protocol.html', (req, res) => res.redirect(308, '/protocol'));
+app.get('/weatheros.html', (req, res) => res.redirect(308, '/weatheros'));
 
 // `/packages` is an external-friendly alias for the homepage package section.
 // Redirect instead of serving duplicate HTML so the homepage canonical remains authoritative.
