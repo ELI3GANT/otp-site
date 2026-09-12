@@ -24,6 +24,7 @@
           "*.webmanifest",
           "*.xml",
           "*.txt",
+          "*.mp3",
           "assets/**",
           "components/**",
           "supabase/migrations/**",
@@ -104,6 +105,11 @@
       "src": "^/protocol\\.html$",
       "status": 308,
       "headers": { "Location": "/protocol" }
+    },
+    {
+      "src": "^/signal\\.html$",
+      "status": 308,
+      "headers": { "Location": "/signal" }
     },
     {
       "src": "^/weatheros\\.html$",

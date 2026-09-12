@@ -2630,6 +2630,8 @@ app.get('/songwars.html', (req, res) => res.redirect(308, '/songwars'));
 app.get('/archive.html', (req, res) => res.redirect(308, '/archive'));
 app.get(['/consultant-audit.html', '/consultant-audit'], (req, res) => res.redirect(308, '/services/consultant-audit'));
 app.get('/protocol.html', (req, res) => res.redirect(308, '/protocol'));
+app.get('/signal.html', (req, res) => res.redirect(308, '/signal'));
+app.get(['/blackbox', '/blackbox-signal'], (req, res) => res.redirect(302, '/signal'));
 app.get('/weatheros.html', (req, res) => res.redirect(308, '/weatheros'));
 
 // `/packages` is an external-friendly alias for the homepage package section.
@@ -2668,6 +2670,7 @@ const staticAliases = {
     '/insights': 'insights.html',
     '/insight': 'insight.html',
     '/protocol': 'protocol.html',
+    '/signal': 'signal.html',
     '/portal-gate': 'portal-gate.html',
     '/terminal': 'otp-terminal.html',
     '/otp-terminal': 'otp-terminal.html',

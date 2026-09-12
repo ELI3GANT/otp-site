@@ -56,6 +56,7 @@ const tests = [
     { name: 'YouTube Video Contract', path: 'tests/youtube_video_contract.test.js' },
     { name: 'PROTOCOL Countdown Contract', path: 'tests/protocol_contract.test.js' },
     { name: 'Song Wars Landing Page Contract', path: 'tests/songwars_contract.test.js' },
+    { name: 'BLACKBOX SIGNAL Contract', path: 'tests/signal_contract.test.js' },
     { name: 'Theme Logic', path: 'tests/theme.test.js' },
     { name: 'Menu Logic', path: 'tests/menu_logic_test.js' },
     { name: 'Live API Analytics Slug', path: 'tests/live_analytics_slug.test.js' },

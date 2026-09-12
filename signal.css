@@ -1,0 +1,849 @@
+/* ==========================================================================
+   BLACKBOX SIGNAL — CINEMATIC AUDIO TRANSMISSION STYLES
+   OnlyTruePerspective × Underground Vault Experience
+   ========================================================================== */
+
+:root {
+  --signal-bg: #030303;
+  --signal-surface: #0a0a0a;
+  --signal-surface-raised: #111111;
+  --signal-surface-border: #1e1e1e;
+  --signal-border-strong: #2e2e2e;
+  --signal-ink: #f7f7f2;
+  --signal-ink-secondary: #9e9e96;
+  --signal-ink-muted: #575752;
+  --signal-gold: #d5b56c;
+  --signal-gold-glow: rgba(213, 181, 108, 0.28);
+  --signal-cyan: #00f0ff;
+  --signal-cyan-glow: rgba(0, 240, 255, 0.22);
+  --signal-alert: #ff4757;
+
+  --signal-sans: "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --signal-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+  --signal-radius-sm: 6px;
+  --signal-radius-md: 12px;
+  --signal-radius-lg: 24px;
+  --signal-radius-pill: 9999px;
+
+  --signal-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--signal-bg);
+  color: var(--signal-ink);
+  font-family: var(--signal-sans);
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body.signal-page {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-width: 320px;
+  overflow-x: hidden;
+  background-color: var(--signal-bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   Atmospheric Layers
+   ========================================================================== */
+.signal-atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.signal-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.055;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E");
+  mix-blend-mode: screen;
+}
+
+.signal-scan {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015) 0px,
+    rgba(255, 255, 255, 0.015) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  opacity: 0.6;
+}
+
+.signal-beam {
+  position: absolute;
+  top: -30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100vw, 900px);
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(213, 181, 108, 0.12) 0%,
+    rgba(0, 240, 255, 0.04) 38%,
+    transparent 72%
+  );
+  filter: blur(40px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+body.signal-page[data-playback="playing"] .signal-beam {
+  opacity: 0.95;
+  transform: translateX(-50%) scale(1.12);
+  background: radial-gradient(
+    circle,
+    rgba(213, 181, 108, 0.22) 0%,
+    rgba(0, 240, 255, 0.08) 45%,
+    transparent 75%
+  );
+}
+
+body.signal-page[data-playback="peak"] .signal-beam {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.24);
+  background: radial-gradient(
+    circle,
+    rgba(213, 181, 108, 0.3) 0%,
+    rgba(0, 240, 255, 0.12) 50%,
+    transparent 78%
+  );
+}
+
+.signal-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    transparent 35%,
+    rgba(3, 3, 3, 0.8) 100%
+  );
+}
+
+/* ==========================================================================
+   Skip Link & Focus
+   ========================================================================== */
+.signal-skip {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 999;
+  background: var(--signal-gold);
+  color: #000;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--signal-radius-sm);
+  font-family: var(--signal-mono);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 0.2s ease;
+}
+
+.signal-skip:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid #fff;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--signal-gold);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   Header
+   ========================================================================== */
+.signal-header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.signal-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--signal-ink);
+  transition: opacity 0.2s ease;
+}
+
+.signal-brand:hover {
+  opacity: 0.8;
+}
+
+.signal-logo {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.signal-brand-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.signal-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--signal-surface-border);
+  border-radius: var(--signal-radius-pill);
+  font-family: var(--signal-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--signal-ink-secondary);
+}
+
+.signal-status-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--signal-gold);
+  box-shadow: 0 0 8px var(--signal-gold);
+  animation: beaconPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes beaconPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+}
+
+/* ==========================================================================
+   Main Shell & Hero
+   ========================================================================== */
+.signal-shell {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 4rem;
+  flex: 1 0 auto;
+}
+
+.signal-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2.5rem 1rem 3.5rem;
+}
+
+.signal-telemetry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+  font-family: var(--signal-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--signal-gold);
+}
+
+.signal-divider {
+  color: var(--signal-ink-muted);
+}
+
+.signal-cipher {
+  padding: 0.2rem 0.6rem;
+  background: rgba(213, 181, 108, 0.1);
+  border: 1px solid rgba(213, 181, 108, 0.25);
+  border-radius: var(--signal-radius-sm);
+  color: var(--signal-ink);
+}
+
+.signal-title {
+  margin: 0 0 0.85rem;
+  font-size: clamp(2.4rem, 8vw, 4.75rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--signal-ink);
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+}
+
+.signal-tagline {
+  margin: 0 0 2rem;
+  max-width: 520px;
+  font-size: clamp(0.95rem, 2.4vw, 1.12rem);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--signal-ink-secondary);
+}
+
+/* ==========================================================================
+   Visualizer Canvas
+   ========================================================================== */
+.signal-visualizer-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  height: 240px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signal-canvas {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.signal-visualizer-aura {
+  position: absolute;
+  inset: 15%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(213, 181, 108, 0.08) 0%,
+    rgba(0, 240, 255, 0.04) 40%,
+    transparent 70%
+  );
+  filter: blur(24px);
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+body.signal-page[data-playback="playing"] .signal-visualizer-aura {
+  opacity: 1;
+  transform: scale(1.18);
+  background: radial-gradient(
+    circle,
+    rgba(213, 181, 108, 0.18) 0%,
+    rgba(0, 240, 255, 0.09) 45%,
+    transparent 70%
+  );
+}
+
+/* ==========================================================================
+   Custom Tactile Audio Player
+   ========================================================================== */
+.signal-player {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.signal-play-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  width: 100%;
+  max-width: 320px;
+  min-height: 56px;
+  padding: 0.9rem 2rem;
+  background: #0f0f0f;
+  color: var(--signal-ink);
+  border: 1px solid var(--signal-gold);
+  border-radius: var(--signal-radius-pill);
+  font-family: var(--signal-mono);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(213, 181, 108, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: transform 0.18s var(--signal-ease), box-shadow 0.25s ease, background-color 0.25s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.signal-play-btn:hover {
+  background: #191919;
+  transform: scale(1.02);
+  box-shadow: 0 0 32px rgba(213, 181, 108, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.signal-play-btn:active {
+  transform: scale(0.98);
+}
+
+.signal-play-btn[data-state="playing"] {
+  background: #141108;
+  border-color: var(--signal-gold);
+  box-shadow: 0 0 40px rgba(213, 181, 108, 0.4);
+}
+
+.signal-btn-beacon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--signal-gold);
+  box-shadow: 0 0 8px var(--signal-gold);
+  transition: opacity 0.2s ease;
+}
+
+.signal-play-btn[data-state="playing"] .signal-btn-beacon {
+  animation: beaconPulse 1.2s ease-in-out infinite;
+  background: var(--signal-cyan);
+  box-shadow: 0 0 10px var(--signal-cyan);
+}
+
+.signal-btn-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+/* Progress Slider & Metrics */
+.signal-progress-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.signal-progress-bar {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  cursor: pointer;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.signal-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--signal-gold) 0%, var(--signal-cyan) 100%);
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+.signal-metrics {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--signal-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--signal-ink-secondary);
+}
+
+.signal-mode-pill {
+  color: var(--signal-gold);
+  font-size: 0.68rem;
+}
+
+/* Standby Banner */
+.signal-standby-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 71, 87, 0.08);
+  border: 1px solid rgba(255, 71, 87, 0.3);
+  border-radius: var(--signal-radius-sm);
+  font-family: var(--signal-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: #ff8b94;
+}
+
+.standby-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--signal-alert);
+}
+
+/* ==========================================================================
+   Current Transmissions Section
+   ========================================================================== */
+.signal-section {
+  padding: 4rem 0 2rem;
+  border-top: 1px solid var(--signal-surface-border);
+}
+
+.signal-section-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.signal-section-eyebrow {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-family: var(--signal-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--signal-gold);
+  text-transform: uppercase;
+}
+
+.signal-section-title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--signal-ink);
+}
+
+.signal-section-sub {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--signal-ink-secondary);
+}
+
+.signal-release-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.signal-release-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  background: var(--signal-surface);
+  border: 1px solid var(--signal-surface-border);
+  border-radius: var(--signal-radius-md);
+  transition: transform 0.25s var(--signal-ease), border-color 0.25s ease;
+}
+
+.signal-release-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--signal-border-strong);
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-family: var(--signal-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.release-badge {
+  padding: 0.25rem 0.55rem;
+  background: rgba(213, 181, 108, 0.12);
+  color: var(--signal-gold);
+  border: 1px solid rgba(213, 181, 108, 0.3);
+  border-radius: var(--signal-radius-sm);
+}
+
+.release-badge-sc {
+  background: rgba(255, 85, 0, 0.12);
+  color: #ff7733;
+  border-color: rgba(255, 85, 0, 0.3);
+}
+
+.release-format {
+  color: var(--signal-ink-muted);
+}
+
+.release-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--signal-ink);
+}
+
+.release-desc {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--signal-ink-secondary);
+  flex-grow: 1;
+}
+
+.release-action {
+  margin-top: auto;
+}
+
+.signal-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-family: var(--signal-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--signal-ink);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.signal-cta-link:hover {
+  color: var(--signal-gold);
+  transform: translateX(3px);
+}
+
+.cta-arrow {
+  transition: transform 0.2s ease;
+}
+
+.signal-cta-link:hover .cta-arrow {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
+   Music Timeline / Vault Evolution
+   ========================================================================== */
+.signal-timeline-section {
+  padding-bottom: 3rem;
+}
+
+.signal-timeline {
+  list-style: none;
+  margin: 2rem auto 0;
+  padding: 0;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.timeline-step {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.9rem 1.25rem;
+  background: var(--signal-surface);
+  border: 1px solid var(--signal-surface-border);
+  border-radius: var(--signal-radius-md);
+  font-family: var(--signal-mono);
+}
+
+.step-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  font-size: 0.75rem;
+  color: var(--signal-ink-muted);
+}
+
+.step-complete .step-marker {
+  color: var(--signal-gold);
+}
+
+.step-active {
+  border-color: rgba(213, 181, 108, 0.4);
+  background: rgba(213, 181, 108, 0.05);
+  box-shadow: 0 0 20px rgba(213, 181, 108, 0.1);
+}
+
+.step-active .step-marker {
+  color: var(--signal-gold);
+}
+
+.beacon-pulse {
+  animation: beaconPulse 1.8s ease-in-out infinite;
+}
+
+.step-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.step-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--signal-ink);
+}
+
+.step-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--signal-ink-muted);
+}
+
+.step-active .step-status {
+  color: var(--signal-gold);
+}
+
+.timeline-arrow {
+  color: var(--signal-ink-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.signal-footer {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  border-top: 1px solid var(--signal-surface-border);
+  padding: 2rem 1.5rem;
+  margin-top: auto;
+}
+
+.signal-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.82rem;
+  color: var(--signal-ink-secondary);
+}
+
+.signal-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--signal-gold);
+}
+
+.footer-director {
+  color: var(--signal-ink-muted);
+}
+
+.signal-footer-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.signal-footer-nav a {
+  text-decoration: none;
+  color: var(--signal-ink-secondary);
+  transition: color 0.2s ease;
+}
+
+.signal-footer-nav a:hover {
+  color: var(--signal-ink);
+}
+
+/* ==========================================================================
+   Responsive Breakpoints & Safe Areas
+   ========================================================================== */
+@media (max-width: 640px) {
+  .signal-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .signal-brand-text {
+    font-size: 0.8rem;
+  }
+
+  .signal-status-pill {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.66rem;
+  }
+
+  .signal-hero {
+    padding: 1.5rem 0 2.5rem;
+  }
+
+  .signal-visualizer-container {
+    height: 190px;
+  }
+
+  .signal-footer-inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+  }
+
+  .signal-footer {
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ==========================================================================
+   Prefers-Reduced-Motion Guard
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .signal-noise,
+  .signal-scan {
+    display: none !important;
+  }
+
+  .signal-beam {
+    transform: translateX(-50%) !important;
+    opacity: 0.4 !important;
+  }
+
+  .signal-status-beacon,
+  .beacon-pulse {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

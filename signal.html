@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE</title>
+  <meta name="description" content="An unreleased transmission from the OTP vault." />
+  <meta name="theme-color" content="#030303" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://www.onlytrueperspective.tech/signal" />
+
+  <!-- OpenGraph Metadata -->
+  <meta property="og:title" content="BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE" />
+  <meta property="og:description" content="An unreleased transmission from the OTP vault." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="OnlyTruePerspective" />
+  <meta property="og:url" content="https://www.onlytrueperspective.tech/signal" />
+  <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/otp-social-preview.png" />
+
+  <!-- Twitter Metadata -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE" />
+  <meta name="twitter:description" content="An unreleased transmission from the OTP vault." />
+  <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/otp-social-preview.png" />
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="stylesheet" href="/signal.css?v=20260912" />
+  <script src="/signal-config.js?v=20260912"></script>
+</head>
+<body class="signal-page">
+  <a class="signal-skip" href="#signal-main">Skip to BLACKBOX SIGNAL</a>
+
+  <!-- Ambient Cinematic Layers -->
+  <div class="signal-atmosphere" aria-hidden="true">
+    <div class="signal-noise"></div>
+    <div class="signal-scan"></div>
+    <div class="signal-beam"></div>
+    <div class="signal-vignette"></div>
+  </div>
+
+  <!-- Header / Minimal Command Bar -->
+  <header class="signal-header">
+    <a href="/" class="signal-brand" aria-label="OnlyTruePerspective Homepage">
+      <img src="/assets/otp-logo-transparent.png" alt="OnlyTruePerspective" class="signal-logo" width="36" height="36" />
+      <span class="signal-brand-text">OnlyTruePerspective</span>
+    </a>
+    <div class="signal-status-pill" id="signal-header-status" aria-live="polite">
+      <span class="signal-status-beacon" aria-hidden="true"></span>
+      <span class="signal-status-text" id="signal-badge-status">TRANSMISSION ACTIVE</span>
+    </div>
+  </header>
+
+  <!-- Main Viewport Experience -->
+  <main class="signal-shell" id="signal-main">
+    <section class="signal-hero" aria-labelledby="signal-title">
+      <div class="signal-telemetry">
+        <span class="signal-kicker">OTP // VAULT TRANSMISSION</span>
+        <span class="signal-divider" aria-hidden="true">·</span>
+        <span class="signal-cipher" id="signal-cipher-label">SIGNAL 001</span>
+      </div>
+
+      <h1 class="signal-title" id="signal-title">BLACKBOX SIGNAL</h1>
+
+      <p class="signal-tagline" id="signal-tagline">Signal intercepted from an unreleased session.</p>
+
+      <!-- Reactive Audio Visualizer Surface -->
+      <div class="signal-visualizer-container" id="visualizer-wrapper">
+        <canvas id="signal-canvas" class="signal-canvas" width="640" height="320" aria-hidden="true"></canvas>
+        <div class="signal-visualizer-aura" id="visualizer-aura" aria-hidden="true"></div>
+      </div>
+
+      <!-- Custom Tactile Player -->
+      <div class="signal-player" id="signal-player" role="region" aria-label="Unreleased Signal Player">
+        <button id="signal-play-btn" class="signal-play-btn" type="button" aria-label="Play unreleased signal transmission" data-state="idle">
+          <span class="signal-btn-beacon" aria-hidden="true"></span>
+          <span class="signal-btn-icon" id="signal-btn-icon" aria-hidden="true">▶</span>
+          <span class="signal-btn-label" id="signal-btn-label">PLAY SIGNAL</span>
+        </button>
+
+        <!-- Progress and Metrics -->
+        <div class="signal-progress-wrap">
+          <div
+            id="signal-progress-bar"
+            class="signal-progress-bar"
+            role="slider"
+            aria-label="Transmission progress"
+            aria-valuemin="0"
+            aria-valuemax="30"
+            aria-valuenow="0"
+            tabindex="0"
+          >
+            <div id="signal-progress-fill" class="signal-progress-fill"></div>
+          </div>
+          <div class="signal-metrics">
+            <span class="signal-time" id="signal-time-display">0:00 / 0:30</span>
+            <span class="signal-mode-pill" id="signal-mode-pill">[ 24-BIT ENCRYPTED ]</span>
+          </div>
+        </div>
+
+        <!-- Standby notice if teaser audio file is awaiting placement -->
+        <div id="signal-standby-banner" class="signal-standby-banner" hidden>
+          <span class="standby-dot"></span>
+          <span class="standby-text">VAULT STANDBY // TEASER ASSET PENDING AT /assets/audio/blackbox-signal.mp3</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Current Transmissions (Out Now) -->
+    <section class="signal-section signal-releases-section" aria-labelledby="releases-title">
+      <div class="signal-section-header">
+        <span class="signal-section-eyebrow">GRADUATED FROM VAULT</span>
+        <h2 id="releases-title" class="signal-section-title">CURRENT TRANSMISSIONS</h2>
+        <p class="signal-section-sub">Official releases active across the network.</p>
+      </div>
+
+      <div class="signal-release-grid" id="signal-releases-container">
+        <!-- Release cards rendered from signal-config.js for effortless management -->
+        <article class="signal-release-card">
+          <div class="card-meta">
+            <span class="release-badge">OUT NOW</span>
+            <span class="release-format">5-Track EP</span>
+          </div>
+          <h3 class="release-title">PROTOCOL</h3>
+          <p class="release-desc">Dark, focused EP built on control, pressure, and transformation. Available on all major platforms.</p>
+          <div class="release-action">
+            <a
+              href="https://distrokid.com/hyperfollow/eli711/protocol?ref=release"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="signal-cta-link"
+            >
+              <span>Stream PROTOCOL</span>
+              <span class="cta-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="signal-release-card">
+          <div class="card-meta">
+            <span class="release-badge release-badge-sc">SOUNDCLOUD</span>
+            <span class="release-format">Single</span>
+          </div>
+          <h3 class="release-title">LET'S GET LIT</h3>
+          <p class="release-desc">Raw underground session energy. Active stream on SoundCloud.</p>
+          <div class="release-action">
+            <a
+              id="lets-get-lit-link"
+              href="https://soundcloud.com/eli3gant"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="signal-cta-link"
+            >
+              <span>Listen on SoundCloud</span>
+              <span class="cta-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Music Timeline / Vault Evolution -->
+    <section class="signal-section signal-timeline-section" aria-labelledby="timeline-title">
+      <div class="signal-section-header">
+        <span class="signal-section-eyebrow">VAULT TIMELINE</span>
+        <h2 id="timeline-title" class="signal-section-title">EVOLUTION</h2>
+      </div>
+
+      <ol class="signal-timeline" aria-label="Music evolution timeline">
+        <li class="timeline-step step-complete">
+          <span class="step-marker">✓</span>
+          <div class="step-content">
+            <strong class="step-name">PROTOCOL</strong>
+            <span class="step-status">OUT NOW</span>
+          </div>
+        </li>
+        <li class="timeline-arrow" aria-hidden="true">↓</li>
+        <li class="timeline-step step-active" aria-current="step">
+          <span class="step-marker beacon-pulse">●</span>
+          <div class="step-content">
+            <strong class="step-name">SIGNAL 001</strong>
+            <span class="step-status">TRANSMITTING</span>
+          </div>
+        </li>
+        <li class="timeline-arrow" aria-hidden="true">↓</li>
+        <li class="timeline-step step-locked">
+          <span class="step-marker">🔒</span>
+          <div class="step-content">
+            <strong class="step-name">[ REDACTED ]</strong>
+            <span class="step-status">LOCKED ARCHIVE</span>
+          </div>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="signal-footer">
+    <div class="signal-footer-inner">
+      <div class="signal-footer-brand">
+        <span class="footer-dot"></span>
+        <span>OnlyTruePerspective</span>
+        <span class="footer-sep">·</span>
+        <span class="footer-director">Directed by ELI3GANT</span>
+      </div>
+      <nav class="signal-footer-nav" aria-label="Footer navigation">
+        <a href="/">Home</a>
+        <a href="/protocol">PROTOCOL</a>
+        <a href="/bookings">Book OTP</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="/signal.js?v=20260912" defer></script>
+</body>
+</html>
