@@ -16,7 +16,6 @@
   --signal-gold-glow: rgba(213, 181, 108, 0.28);
   --signal-cyan: #00f0ff;
   --signal-cyan-glow: rgba(0, 240, 255, 0.22);
-  --signal-alert: #ff4757;
 
   --signal-sans: "Helvetica Neue", Helvetica, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --signal-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
@@ -233,6 +232,12 @@ button:focus-visible {
   animation: beaconPulse 2.4s ease-in-out infinite;
 }
 
+.signal-status-beacon[data-state="offline"] {
+  background-color: var(--signal-ink-muted);
+  box-shadow: none;
+  animation: none;
+}
+
 @keyframes beaconPulse {
   0%, 100% {
     opacity: 1;
@@ -414,6 +419,12 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   box-shadow: 0 0 40px rgba(213, 181, 108, 0.4);
 }
 
+.signal-play-btn[data-state="offline"] {
+  border-color: var(--signal-surface-border);
+  color: var(--signal-ink-secondary);
+  box-shadow: none;
+}
+
 .signal-btn-beacon {
   width: 8px;
   height: 8px;
@@ -427,6 +438,12 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   animation: beaconPulse 1.2s ease-in-out infinite;
   background: var(--signal-cyan);
   box-shadow: 0 0 10px var(--signal-cyan);
+}
+
+.signal-play-btn[data-state="offline"] .signal-btn-beacon {
+  background: var(--signal-ink-muted);
+  box-shadow: none;
+  animation: none;
 }
 
 .signal-btn-icon {
@@ -479,31 +496,8 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   font-size: 0.68rem;
 }
 
-/* Standby Banner */
-.signal-standby-banner {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  margin-top: 0.5rem;
-  padding: 0.6rem 1rem;
-  background: rgba(255, 71, 87, 0.08);
-  border: 1px solid rgba(255, 71, 87, 0.3);
-  border-radius: var(--signal-radius-sm);
-  font-family: var(--signal-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  color: #ff8b94;
-}
-
-.standby-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--signal-alert);
-}
-
 /* ==========================================================================
-   Current Transmissions Section
+   Current Transmissions Section (Music First)
    ========================================================================== */
 .signal-section {
   padding: 4rem 0 2rem;
@@ -512,7 +506,7 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
 
 .signal-section-header {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2.25rem;
 }
 
 .signal-section-eyebrow {
@@ -544,7 +538,7 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
 .signal-release-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+  gap: 1.25rem;
   margin-top: 1rem;
 }
 
@@ -559,7 +553,7 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
 }
 
 .signal-release-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   border-color: var(--signal-border-strong);
 }
 
@@ -567,7 +561,7 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
   font-family: var(--signal-mono);
   font-size: 0.7rem;
   font-weight: 700;
@@ -593,19 +587,11 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
 }
 
 .release-title {
-  margin: 0 0 0.75rem;
+  margin: 0 0 1.25rem;
   font-size: 1.45rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--signal-ink);
-}
-
-.release-desc {
-  margin: 0 0 1.5rem;
-  font-size: 0.9rem;
-  line-height: 1.55;
-  color: var(--signal-ink-secondary);
-  flex-grow: 1;
 }
 
 .release-action {

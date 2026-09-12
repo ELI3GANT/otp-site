@@ -1,19 +1,28 @@
 /**
  * BLACKBOX SIGNAL — Audio Engine & Reactive Visualizer
  * OnlyTruePerspective × Vault Experience
+ *
+ * Supports MP3, M4A/AAC, and WAV inputs with capability detection,
+ * dynamic duration discovery, real Web Audio analysis, and graceful offline states.
  */
 
 (function () {
   'use strict';
 
-  // Config fallback if signal-config.js is not loaded
+  // Configuration Fallback
   const DEFAULT_CONFIG = {
     signalNumber: '001',
     signalName: 'SIGNAL 001',
     transmissionStatus: 'TRANSMISSION ACTIVE',
+    offlineStatus: 'SIGNAL OFFLINE',
     tagline: 'Signal intercepted from an unreleased session.',
+    audioSources: [
+      { src: '/assets/audio/blackbox-signal.mp3', type: 'audio/mpeg' },
+      { src: '/assets/audio/blackbox-signal.m4a', type: 'audio/mp4' },
+      { src: '/assets/audio/blackbox-signal.wav', type: 'audio/wav' }
+    ],
     audioSource: '/assets/audio/blackbox-signal.mp3',
-    teaserDurationSeconds: 30
+    teaserDurationSeconds: null
   };
 
   const config = (typeof window !== 'undefined' && window.BLACKBOX_SIGNAL_CONFIG) || DEFAULT_CONFIG;
@@ -25,7 +34,8 @@
   const progressBar = document.getElementById('signal-progress-bar');
   const progressFill = document.getElementById('signal-progress-fill');
   const timeDisplay = document.getElementById('signal-time-display');
-  const standbyBanner = document.getElementById('signal-standby-banner');
+  const badgeStatus = document.getElementById('signal-badge-status');
+  const statusBeacon = document.getElementById('signal-status-beacon');
   const canvas = document.getElementById('signal-canvas');
   const body = document.body;
 
@@ -39,14 +49,16 @@
   let isLoaded = false;
   let isAudioAvailable = true;
   let animFrameId = null;
-  let duration = config.teaserDurationSeconds || 30;
+  let duration = 0;
+  let activeSourceIndex = 0;
 
-  // Reduced motion preference
+  // Prefers-reduced-motion check
   const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Format seconds to M:SS
   function formatTime(seconds) {
-    const s = Math.max(0, Math.floor(seconds));
+    if (!seconds || !isFinite(seconds) || seconds <= 0) return '0:00';
+    const s = Math.floor(seconds);
     const mins = Math.floor(s / 60);
     const secs = s % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -54,9 +66,10 @@
 
   // Update time display
   function updateTimeDisplay(current, total) {
-    if (timeDisplay) {
-      timeDisplay.textContent = `${formatTime(current)} / ${formatTime(total)}`;
-    }
+    if (!timeDisplay) return;
+    const currentStr = formatTime(current);
+    const totalStr = total > 0 ? formatTime(total) : '--:--';
+    timeDisplay.textContent = `${currentStr} / ${totalStr}`;
   }
 
   // Canvas Setup
@@ -101,41 +114,86 @@
     }
   }
 
-  // Audio Engine Initialization
+  // Determine normalized list of candidate audio sources
+  function getCandidateSources() {
+    const list = [];
+    if (Array.isArray(config.audioSources) && config.audioSources.length > 0) {
+      config.audioSources.forEach(function (item) {
+        if (typeof item === 'string') {
+          list.push({ src: item, type: getMimeFromUrl(item) });
+        } else if (item && item.src) {
+          list.push({ src: item.src, type: item.type || getMimeFromUrl(item.src) });
+        }
+      });
+    } else if (config.audioSource) {
+      list.push({ src: config.audioSource, type: getMimeFromUrl(config.audioSource) });
+    }
+    return list;
+  }
+
+  function getMimeFromUrl(url) {
+    if (/\.m4a(\?.*)?$/i.test(url)) return 'audio/mp4';
+    if (/\.wav(\?.*)?$/i.test(url)) return 'audio/wav';
+    if (/\.aac(\?.*)?$/i.test(url)) return 'audio/aac';
+    if (/\.ogg(\?.*)?$/i.test(url)) return 'audio/ogg';
+    return 'audio/mpeg';
+  }
+
+  // Audio Engine Initialization with Multi-Source Fallback
+  const candidateSources = getCandidateSources();
+
   function initAudio() {
     if (audio) return;
+    if (candidateSources.length === 0) {
+      handleAudioUnavailable();
+      return;
+    }
 
     audio = new Audio();
     audio.preload = 'metadata';
     audio.crossOrigin = 'anonymous';
-    audio.src = config.audioSource;
+
+    // Order candidate sources with browser capability check
+    const sortedSources = sortSourcesByBrowserSupport(candidateSources);
+
+    // Attach source elements
+    sortedSources.forEach(function (sourceItem) {
+      const srcEl = document.createElement('source');
+      srcEl.src = sourceItem.src;
+      srcEl.type = sourceItem.type;
+      audio.appendChild(srcEl);
+    });
+
+    // Also set direct src to the highest priority candidate
+    audio.src = sortedSources[0].src;
 
     audio.addEventListener('loadedmetadata', function () {
-      if (audio.duration && isFinite(audio.duration)) {
+      if (audio.duration && isFinite(audio.duration) && audio.duration > 0) {
         if (config.teaserDurationSeconds && config.teaserDurationSeconds < audio.duration) {
           duration = config.teaserDurationSeconds;
         } else {
-          duration = Math.floor(audio.duration);
+          duration = audio.duration;
         }
       }
       isLoaded = true;
       isAudioAvailable = true;
-      if (standbyBanner) standbyBanner.hidden = true;
-      if (progressBar) progressBar.setAttribute('aria-valuemax', String(duration));
+      if (progressBar) progressBar.setAttribute('aria-valuemax', String(Math.floor(duration)));
       updateTimeDisplay(audio.currentTime, duration);
+      updatePlayButtonState('idle');
+      if (badgeStatus) badgeStatus.textContent = config.transmissionStatus || 'TRANSMISSION ACTIVE';
+      if (statusBeacon) statusBeacon.removeAttribute('data-state');
     });
 
     audio.addEventListener('timeupdate', function () {
       if (!audio) return;
-      const current = Math.min(audio.currentTime, duration);
+      const current = Math.min(audio.currentTime, duration || audio.duration || 0);
       const percent = duration > 0 ? (current / duration) * 100 : 0;
 
       if (progressFill) progressFill.style.width = `${percent}%`;
       if (progressBar) progressBar.setAttribute('aria-valuenow', String(Math.floor(current)));
       updateTimeDisplay(current, duration);
 
-      // Check teaser end cap
-      if (current >= duration) {
+      if (duration > 0 && current >= duration) {
         handlePlaybackEnded();
       }
     });
@@ -143,13 +201,44 @@
     audio.addEventListener('ended', handlePlaybackEnded);
 
     audio.addEventListener('error', function () {
-      // Graceful non-crashing standby state
-      isAudioAvailable = false;
-      isPlaying = false;
-      updatePlayButtonState('standby');
-      if (standbyBanner) standbyBanner.hidden = false;
-      body.setAttribute('data-playback', 'idle');
+      // Try next candidate source if available
+      activeSourceIndex++;
+      if (activeSourceIndex < sortedSources.length) {
+        audio.src = sortedSources[activeSourceIndex].src;
+        audio.load();
+      } else {
+        handleAudioUnavailable();
+      }
     });
+  }
+
+  function sortSourcesByBrowserSupport(sources) {
+    const temp = document.createElement('audio');
+    const supported = [];
+    const maybe = [];
+    const fallback = [];
+
+    sources.forEach(function (s) {
+      if (temp.canPlayType) {
+        const can = temp.canPlayType(s.type);
+        if (can === 'probably') supported.push(s);
+        else if (can === 'maybe') maybe.push(s);
+        else fallback.push(s);
+      } else {
+        supported.push(s);
+      }
+    });
+
+    return supported.concat(maybe, fallback);
+  }
+
+  function handleAudioUnavailable() {
+    isAudioAvailable = false;
+    isPlaying = false;
+    updatePlayButtonState('offline');
+    if (badgeStatus) badgeStatus.textContent = config.offlineStatus || 'SIGNAL OFFLINE';
+    if (statusBeacon) statusBeacon.setAttribute('data-state', 'offline');
+    body.setAttribute('data-playback', 'idle');
   }
 
   // Web Audio Context Setup (Unlocked on user gesture for iOS Safari)
@@ -183,6 +272,7 @@
   // Playback Controls
   function togglePlay() {
     if (!audio) initAudio();
+    if (!isAudioAvailable) return;
     ensureAudioContext();
 
     if (isPlaying) {
@@ -195,7 +285,7 @@
   function playAudio() {
     if (!audio) return;
 
-    if (audio.currentTime >= duration) {
+    if (duration > 0 && audio.currentTime >= duration) {
       audio.currentTime = 0;
     }
 
@@ -208,13 +298,10 @@
           body.setAttribute('data-playback', 'playing');
           startVisualizer();
         })
-        .catch(function (err) {
-          // Playback failed (e.g., file not found or browser blocked)
+        .catch(function () {
           if (!isAudioAvailable) {
-            updatePlayButtonState('standby');
-            if (standbyBanner) standbyBanner.hidden = false;
+            updatePlayButtonState('offline');
           } else {
-            console.warn('Playback gesture required or source unavailable:', err);
             updatePlayButtonState('idle');
           }
           isPlaying = false;
@@ -259,10 +346,10 @@
       if (btnIcon) btnIcon.textContent = '↺';
       if (btnLabel) btnLabel.textContent = 'REPLAY SIGNAL';
       playBtn.setAttribute('aria-label', 'Replay transmission');
-    } else if (state === 'standby') {
+    } else if (state === 'offline') {
       if (btnIcon) btnIcon.textContent = '○';
-      if (btnLabel) btnLabel.textContent = 'TRANSMISSION STANDBY';
-      playBtn.setAttribute('aria-label', 'Transmission awaiting audio file');
+      if (btnLabel) btnLabel.textContent = 'SIGNAL OFFLINE';
+      playBtn.setAttribute('aria-label', 'Transmission currently offline');
     } else {
       if (btnIcon) btnIcon.textContent = '▶';
       if (btnLabel) btnLabel.textContent = 'PLAY SIGNAL';
@@ -273,12 +360,14 @@
   // Scrubbing
   function seekTo(targetSeconds) {
     if (!audio) initAudio();
-    const clamped = Math.max(0, Math.min(targetSeconds, duration));
+    if (!isAudioAvailable) return;
+    const maxTime = duration > 0 ? duration : (audio ? audio.duration : 0);
+    const clamped = Math.max(0, Math.min(targetSeconds, maxTime));
     if (audio) audio.currentTime = clamped;
-    const percent = duration > 0 ? (clamped / duration) * 100 : 0;
+    const percent = maxTime > 0 ? (clamped / maxTime) * 100 : 0;
     if (progressFill) progressFill.style.width = `${percent}%`;
     if (progressBar) progressBar.setAttribute('aria-valuenow', String(Math.floor(clamped)));
-    updateTimeDisplay(clamped, duration);
+    updateTimeDisplay(clamped, maxTime);
   }
 
   function handleProgressClick(e) {
@@ -286,7 +375,8 @@
     const rect = progressBar.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const ratio = Math.max(0, Math.min(clickX / rect.width, 1));
-    seekTo(ratio * duration);
+    const maxTime = duration > 0 ? duration : (audio ? audio.duration : 0);
+    seekTo(ratio * maxTime);
   }
 
   // Keyboard accessibility for progress bar
@@ -295,6 +385,7 @@
     progressBar.addEventListener('keydown', function (e) {
       const step = 2; // seek 2 seconds per arrow
       const current = audio ? audio.currentTime : 0;
+      const maxTime = duration > 0 ? duration : (audio ? audio.duration : 0);
       if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
         e.preventDefault();
         seekTo(current + step);
@@ -306,7 +397,7 @@
         seekTo(0);
       } else if (e.key === 'End') {
         e.preventDefault();
-        seekTo(duration);
+        seekTo(maxTime);
       } else if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         togglePlay();
@@ -331,7 +422,7 @@
     const centerX = canvasWidth / 2;
     const centerY = canvasHeight / 2;
 
-    // Prefers-reduced-motion fallback: minimal clean static waveform
+    // Prefers-reduced-motion: clean, minimal static waveform
     if (prefersReducedMotion) {
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(213, 181, 108, 0.4)';
@@ -348,7 +439,7 @@
       return;
     }
 
-    // Read frequency data if playing
+    // Read real frequency data if playing
     let bassEnergy = 0;
     let avgEnergy = 0;
 
@@ -446,7 +537,6 @@
         amp = Math.sin(phase + i * 0.25) * 6;
       }
 
-      // Bell curve dampening at ends
       const distFromCenter = Math.abs(i - wavePoints / 2) / (wavePoints / 2);
       const envelope = 1 - Math.pow(distFromCenter, 2);
       const y = centerY + Math.sin(phase * 1.5 + i * 0.4) * amp * envelope;

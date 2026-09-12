@@ -28,8 +28,8 @@
 
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/signal.css?v=20260912" />
-  <script src="/signal-config.js?v=20260912"></script>
+  <link rel="stylesheet" href="/signal.css?v=20260912b" />
+  <script src="/signal-config.js?v=20260912b"></script>
 </head>
 <body class="signal-page">
   <a class="signal-skip" href="#signal-main">Skip to BLACKBOX SIGNAL</a>
@@ -49,7 +49,7 @@
       <span class="signal-brand-text">OnlyTruePerspective</span>
     </a>
     <div class="signal-status-pill" id="signal-header-status" aria-live="polite">
-      <span class="signal-status-beacon" aria-hidden="true"></span>
+      <span class="signal-status-beacon" id="signal-status-beacon" aria-hidden="true"></span>
       <span class="signal-status-text" id="signal-badge-status">TRANSMISSION ACTIVE</span>
     </div>
   </header>
@@ -89,22 +89,16 @@
             role="slider"
             aria-label="Transmission progress"
             aria-valuemin="0"
-            aria-valuemax="30"
+            aria-valuemax="0"
             aria-valuenow="0"
             tabindex="0"
           >
             <div id="signal-progress-fill" class="signal-progress-fill"></div>
           </div>
           <div class="signal-metrics">
-            <span class="signal-time" id="signal-time-display">0:00 / 0:30</span>
-            <span class="signal-mode-pill" id="signal-mode-pill">[ 24-BIT ENCRYPTED ]</span>
+            <span class="signal-time" id="signal-time-display">0:00 / --:--</span>
+            <span class="signal-mode-pill" id="signal-mode-pill">[ VAULT SOURCE ]</span>
           </div>
-        </div>
-
-        <!-- Standby notice if teaser audio file is awaiting placement -->
-        <div id="signal-standby-banner" class="signal-standby-banner" hidden>
-          <span class="standby-dot"></span>
-          <span class="standby-text">VAULT STANDBY // TEASER ASSET PENDING AT /assets/audio/blackbox-signal.mp3</span>
         </div>
       </div>
     </section>
@@ -118,14 +112,13 @@
       </div>
 
       <div class="signal-release-grid" id="signal-releases-container">
-        <!-- Release cards rendered from signal-config.js for effortless management -->
+        <!-- PROTOCOL Card -->
         <article class="signal-release-card">
           <div class="card-meta">
             <span class="release-badge">OUT NOW</span>
             <span class="release-format">5-Track EP</span>
           </div>
           <h3 class="release-title">PROTOCOL</h3>
-          <p class="release-desc">Dark, focused EP built on control, pressure, and transformation. Available on all major platforms.</p>
           <div class="release-action">
             <a
               href="https://distrokid.com/hyperfollow/eli711/protocol?ref=release"
@@ -139,13 +132,13 @@
           </div>
         </article>
 
+        <!-- LET'S GET LIT Card -->
         <article class="signal-release-card">
           <div class="card-meta">
             <span class="release-badge release-badge-sc">SOUNDCLOUD</span>
             <span class="release-format">Single</span>
           </div>
           <h3 class="release-title">LET'S GET LIT</h3>
-          <p class="release-desc">Raw underground session energy. Active stream on SoundCloud.</p>
           <div class="release-action">
             <a
               id="lets-get-lit-link"
@@ -182,7 +175,7 @@
           <span class="step-marker beacon-pulse">●</span>
           <div class="step-content">
             <strong class="step-name">SIGNAL 001</strong>
-            <span class="step-status">TRANSMITTING</span>
+            <span class="step-status">ACTIVE</span>
           </div>
         </li>
         <li class="timeline-arrow" aria-hidden="true">↓</li>
@@ -190,7 +183,7 @@
           <span class="step-marker">🔒</span>
           <div class="step-content">
             <strong class="step-name">[ REDACTED ]</strong>
-            <span class="step-status">LOCKED ARCHIVE</span>
+            <span class="step-status">ENCRYPTED</span>
           </div>
         </li>
       </ol>
@@ -214,6 +207,6 @@
     </div>
   </footer>
 
-  <script src="/signal.js?v=20260912" defer></script>
+  <script src="/signal.js?v=20260912b" defer></script>
 </body>
 </html>

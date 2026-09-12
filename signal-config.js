@@ -2,25 +2,49 @@
  * BLACKBOX SIGNAL — Release Pipeline & Signal Configuration
  *
  * This configuration controls the active unreleased vault transmission,
- * current releases, and the evolving music timeline.
+ * supported audio codecs, current releases, and the evolving music timeline.
+ *
+ * Supported Audio Input Formats:
+ * - .mp3 (audio/mpeg) — Recommended for cellular/web delivery
+ * - .m4a (audio/mp4)  — High-efficiency AAC
+ * - .wav (audio/wav)  — Uncompressed studio master export
  *
  * To deploy the next transmission:
- * 1. Drop your 20-30s teaser audio into /assets/audio/
- * 2. Update signalNumber, signalName, and audioSource below.
+ * 1. Place your teaser into /assets/audio/ (e.g., signal-002.mp3)
+ * 2. Update signalNumber, signalName, and audioSources below.
  */
 
 const BLACKBOX_SIGNAL_CONFIG = {
-  // Active Vault Transmission
+  // Active Vault Transmission Identity
   signalNumber: '001',
   signalName: 'SIGNAL 001',
   transmissionStatus: 'TRANSMISSION ACTIVE',
+  offlineStatus: 'SIGNAL OFFLINE',
   transmissionBadge: 'UNRELEASED // VAULT TRANSMISSION',
   tagline: 'Signal intercepted from an unreleased session.',
-  classifiedLabel: 'CONFIDENTIAL AUDIO ARCHIVE',
+  sourceModeLabel: 'VAULT SOURCE',
 
-  // Audio Teaser Source (Recommended: 20-30 second high-impact export)
+  // Audio Teaser Sources
+  // Supports multi-codec candidate list with automatic browser capability detection
+  audioSources: [
+    {
+      src: '/assets/audio/blackbox-signal.mp3',
+      type: 'audio/mpeg'
+    },
+    {
+      src: '/assets/audio/blackbox-signal.m4a',
+      type: 'audio/mp4'
+    },
+    {
+      src: '/assets/audio/blackbox-signal.wav',
+      type: 'audio/wav'
+    }
+  ],
+  // Default primary source fallback
   audioSource: '/assets/audio/blackbox-signal.mp3',
-  teaserDurationSeconds: 30, // Max duration cap in seconds
+
+  // Optional manual duration cap in seconds (set to null to read exact file duration)
+  teaserDurationSeconds: null,
 
   // Current Releases (Graduated from the Vault)
   currentReleases: [
@@ -29,7 +53,6 @@ const BLACKBOX_SIGNAL_CONFIG = {
       title: 'PROTOCOL',
       format: '5-Track EP',
       badge: 'OUT NOW',
-      description: 'Dark, focused EP built on control, pressure, and transformation. Available on all major platforms.',
       url: 'https://distrokid.com/hyperfollow/eli711/protocol?ref=release',
       platform: 'All Platforms',
       ctaLabel: 'Stream PROTOCOL'
@@ -39,15 +62,14 @@ const BLACKBOX_SIGNAL_CONFIG = {
       title: "LET'S GET LIT",
       format: 'Single',
       badge: 'SOUNDCLOUD',
-      description: 'Raw underground session energy. Active stream on SoundCloud.',
-      // Insert direct track URL here once published; defaults to artist SoundCloud profile
+      // Update with exact direct track URL once available
       url: 'https://soundcloud.com/eli3gant',
       platform: 'SoundCloud',
       ctaLabel: 'Listen on SoundCloud'
     }
   ],
 
-  // Music Timeline (Mysterious & Minimal)
+  // Music Timeline (Minimal & Mysterious)
   timeline: [
     {
       name: 'PROTOCOL',

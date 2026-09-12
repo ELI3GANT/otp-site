@@ -1,7 +1,7 @@
 /**
  * BLACKBOX SIGNAL CONTRACT TEST
  * Validates route wiring, SEO/OpenGraph metadata, UI architecture,
- * centralized configuration, anti-leak protection, and accessibility.
+ * multi-codec audio configuration, anti-leak protection, and accessibility.
  */
 
 const assert = require('assert');
@@ -17,7 +17,6 @@ console.log('🧪 BLACKBOX SIGNAL CONTRACT TEST...');
 const html = read('signal.html');
 const css = read('signal.css');
 const js = read('signal.js');
-const configSrc = read('signal-config.js');
 const server = read('server.js');
 const vercel = JSON.parse(read('vercel.json'));
 const sitemap = read('sitemap.xml');
@@ -47,11 +46,18 @@ assert.ok(html.includes('property="og:url" content="https://www.onlytrueperspect
 assert.ok(html.includes('name="twitter:card" content="summary_large_image"'), 'twitter:card is summary_large_image');
 assert.ok(html.includes('name="twitter:title" content="BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE"'), 'twitter:title is set');
 
-// 3. Centralized Configuration
+// 3. Centralized Multi-Codec Audio Configuration
 assert.ok(config.signalNumber, 'config defines signalNumber');
 assert.ok(config.signalName, 'config defines signalName');
-assert.ok(config.audioSource, 'config defines audioSource');
-assert.strictEqual(typeof config.teaserDurationSeconds, 'number', 'teaser duration cap is configured');
+assert.ok(config.audioSource || config.audioSources, 'config defines audio source(s)');
+assert.ok(Array.isArray(config.audioSources), 'config defines multi-codec audioSources array');
+
+const audioTypes = config.audioSources.map((s) => s.type);
+assert.ok(audioTypes.includes('audio/mpeg'), 'audioSources includes MP3 (audio/mpeg)');
+assert.ok(audioTypes.includes('audio/mp4'), 'audioSources includes M4A (audio/mp4)');
+assert.ok(audioTypes.includes('audio/wav'), 'audioSources includes WAV (audio/wav)');
+
+assert.ok(config.teaserDurationSeconds === null || typeof config.teaserDurationSeconds === 'number', 'teaser duration supports dynamic or capped length');
 assert.ok(Array.isArray(config.currentReleases) && config.currentReleases.length >= 2, 'config declares current releases');
 assert.ok(Array.isArray(config.timeline) && config.timeline.length >= 3, 'config declares timeline');
 
@@ -70,9 +76,13 @@ assert.ok(timelineNames.includes('PROTOCOL'), 'timeline has PROTOCOL');
 assert.ok(timelineNames.includes('SIGNAL 001'), 'timeline has SIGNAL 001');
 assert.ok(timelineNames.includes('[ REDACTED ]'), 'timeline has [ REDACTED ]');
 
-// 4. Anti-Leak & Audio Protection
+// 4. Anti-Leak & Audio Protection (No fake tech claims, no red dev boxes)
 assert.ok(!html.includes('<audio controls'), 'page does not expose browser default audio controls');
 assert.ok(!html.includes('download='), 'page does not present audio download links');
+assert.ok(!html.includes('24-BIT ENCRYPTED'), 'fake encryption language removed');
+assert.ok(!html.includes('signal-standby-banner'), 'red developer error box removed');
+assert.ok(!html.includes('TEASER ASSET PENDING'), 'developer debug text removed');
+assert.ok(html.includes('[ VAULT SOURCE ]'), 'authentic vault source telemetry present');
 
 // 5. DOM & Accessibility
 const dom = new JSDOM(html, {
@@ -96,7 +106,11 @@ assert.ok(playBtn.getAttribute('aria-label'), 'play button has aria-label');
 const progressBar = doc.querySelector('#signal-progress-bar');
 assert.ok(progressBar, 'progress bar exists');
 assert.strictEqual(progressBar.getAttribute('role'), 'slider', 'progress bar has role=slider');
-assert.ok(progressBar.hasAttribute('aria-valuenow'), 'progress bar has aria-valuenow');
+
+// Dynamic duration placeholder in time display
+const timeDisplayEl = doc.querySelector('#signal-time-display');
+assert.ok(timeDisplayEl, 'time display exists');
+assert.ok(timeDisplayEl.textContent.includes('--:--'), 'time display starts with dynamic placeholder awaiting metadata');
 
 // Canvas
 const canvasNode = doc.querySelector('#signal-canvas');
@@ -113,10 +127,13 @@ assert.ok(timelineSteps.includes('[ REDACTED ]'), 'DOM renders [ REDACTED ] in t
 assert.ok(css.includes('--signal-gold: #d5b56c;'), 'CSS uses OTP gold token');
 assert.ok(css.includes('prefers-reduced-motion: reduce'), 'CSS supports prefers-reduced-motion');
 assert.ok(css.includes('safe-area-inset-bottom'), 'CSS implements mobile safe area insets');
+assert.ok(!css.includes('#ff4757'), 'red developer error color removed from signal stylesheet');
 
-// 7. Homepage Subtle Integration
+// 7. Homepage Subtle Integration & Navigation Hierarchy
 assert.ok(index.includes('href="/signal"'), 'index.html links to /signal');
-assert.ok(index.includes('SIGNAL ACTIVE ●'), 'index.html features subtle SIGNAL ACTIVE ● badge');
+assert.ok(index.includes('SIGNAL ●'), 'index.html features clean SIGNAL ● link in desktop nav');
+assert.ok(index.includes('nav-dropdown'), 'index.html organizes projects/apps into Systems dropdown');
+assert.ok(index.includes('nav-drawer-group'), 'mobile drawer organizes links into clear groups');
 
 console.log('   ✅ Blackbox Signal Contract passed all validations.');
 console.log('🎉 BLACKBOX SIGNAL CONTRACT COMPLETE');
