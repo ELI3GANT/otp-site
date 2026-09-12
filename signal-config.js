@@ -22,18 +22,21 @@ const BLACKBOX_SIGNAL_CONFIG = {
   offlineStatus: 'SIGNAL OFFLINE',
   transmissionBadge: 'UNRELEASED // VAULT TRANSMISSION',
   tagline: 'Signal intercepted from an unreleased session.',
-  sourceModeLabel: 'VAULT SOURCE',
+  sourceModeLabel: '[ 24 SEC INTERCEPT ]',
 
   // Audio Teaser Sources
-  // Supports multi-codec candidate list with automatic browser capability detection
+  // Supports multi-codec candidate list with automatic browser capability detection:
+  // - M4A/AAC: optimized for WebKit / Safari mobile
+  // - MP3: universal broadcast fallback
+  // - WAV: studio master export (not loaded on startup)
   audioSources: [
-    {
-      src: '/assets/audio/blackbox-signal.mp3',
-      type: 'audio/mpeg'
-    },
     {
       src: '/assets/audio/blackbox-signal.m4a',
       type: 'audio/mp4'
+    },
+    {
+      src: '/assets/audio/blackbox-signal.mp3',
+      type: 'audio/mpeg'
     },
     {
       src: '/assets/audio/blackbox-signal.wav',
@@ -43,8 +46,8 @@ const BLACKBOX_SIGNAL_CONFIG = {
   // Default primary source fallback
   audioSource: '/assets/audio/blackbox-signal.mp3',
 
-  // Optional manual duration cap in seconds (set to null to read exact file duration)
-  teaserDurationSeconds: null,
+  // Configured teaser duration in seconds (24.0s master teaser; synced with live audio duration)
+  teaserDurationSeconds: 24,
 
   // Current Releases (Graduated from the Vault)
   currentReleases: [

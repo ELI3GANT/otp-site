@@ -258,7 +258,37 @@ button:focus-visible {
   border-radius: 50%;
   background-color: var(--signal-gold);
   box-shadow: 0 0 8px var(--signal-gold);
-  animation: beaconPulse 2.4s ease-in-out infinite;
+  animation: beaconPulse 2.8s ease-in-out infinite;
+}
+
+.signal-status-beacon[data-state="ready"] {
+  background-color: var(--signal-gold);
+  box-shadow: 0 0 8px var(--signal-gold);
+  animation: beaconPulse 3.2s ease-in-out infinite;
+}
+
+.signal-status-beacon[data-state="loading"] {
+  background-color: var(--signal-cyan);
+  box-shadow: 0 0 10px var(--signal-cyan);
+  animation: beaconPulse 0.8s ease-in-out infinite;
+}
+
+.signal-status-beacon[data-state="playing"] {
+  background-color: var(--signal-cyan);
+  box-shadow: 0 0 10px var(--signal-cyan);
+  animation: beaconPulse 1.4s ease-in-out infinite;
+}
+
+.signal-status-beacon[data-state="paused"] {
+  background-color: var(--signal-gold);
+  box-shadow: 0 0 6px var(--signal-gold);
+  animation: none;
+}
+
+.signal-status-beacon[data-state="ended"] {
+  background-color: var(--signal-ink-secondary);
+  box-shadow: none;
+  animation: none;
 }
 
 .signal-status-beacon[data-state="offline"] {
@@ -296,14 +326,14 @@ button:focus-visible {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 2.5rem 1rem 3.5rem;
+  padding: 1.5rem 1rem 2.25rem;
 }
 
 .signal-telemetry {
   display: inline-flex;
   align-items: center;
   gap: 0.65rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.85rem;
   font-family: var(--signal-mono);
   font-size: 0.76rem;
   font-weight: 600;
@@ -503,7 +533,7 @@ button:focus-visible {
 }
 
 .signal-tagline {
-  margin: 0 0 2rem;
+  margin: 0 0 1.25rem;
   max-width: 520px;
   font-size: clamp(0.95rem, 2.4vw, 1.12rem);
   font-weight: 400;
@@ -517,9 +547,9 @@ button:focus-visible {
 .signal-visualizer-container {
   position: relative;
   width: 100%;
-  max-width: 600px;
-  height: 240px;
-  margin: 0 auto 1.5rem;
+  max-width: 520px;
+  height: 140px;
+  margin: 0 auto 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -535,12 +565,12 @@ button:focus-visible {
 
 .signal-visualizer-aura {
   position: absolute;
-  inset: 15%;
+  inset: 10%;
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(213, 181, 108, 0.08) 0%,
-    rgba(0, 240, 255, 0.04) 40%,
+    rgba(213, 181, 108, 0.12) 0%,
+    rgba(0, 240, 255, 0.05) 40%,
     transparent 70%
   );
   filter: blur(24px);
@@ -554,8 +584,8 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   transform: scale(1.18);
   background: radial-gradient(
     circle,
-    rgba(213, 181, 108, 0.18) 0%,
-    rgba(0, 240, 255, 0.09) 45%,
+    rgba(213, 181, 108, 0.22) 0%,
+    rgba(0, 240, 255, 0.1) 45%,
     transparent 70%
   );
 }
@@ -565,12 +595,12 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
    ========================================================================== */
 .signal-player {
   width: 100%;
-  max-width: 460px;
+  max-width: 440px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .signal-play-btn {
@@ -581,8 +611,8 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   gap: 0.85rem;
   width: 100%;
   max-width: 320px;
-  min-height: 56px;
-  padding: 0.9rem 2rem;
+  min-height: 54px;
+  padding: 0.85rem 2rem;
   background: #0f0f0f;
   color: var(--signal-ink);
   border: 1px solid var(--signal-gold);
@@ -611,10 +641,23 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   box-shadow: 0 0 16px rgba(213, 181, 108, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+.signal-play-btn[data-state="loading"] {
+  background: #0d1215;
+  border-color: var(--signal-cyan);
+  box-shadow: 0 0 28px rgba(0, 240, 255, 0.25);
+  cursor: wait;
+}
+
 .signal-play-btn[data-state="playing"] {
   background: #141108;
   border-color: var(--signal-gold);
   box-shadow: 0 0 40px rgba(213, 181, 108, 0.4);
+}
+
+.signal-play-btn[data-state="replay"] {
+  background: #141108;
+  border-color: var(--signal-gold);
+  box-shadow: 0 0 28px rgba(213, 181, 108, 0.3);
 }
 
 .signal-play-btn[data-state="offline"] {
@@ -632,10 +675,22 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   transition: opacity 0.2s ease;
 }
 
+.signal-play-btn[data-state="loading"] .signal-btn-beacon {
+  animation: beaconPulse 0.7s ease-in-out infinite;
+  background: var(--signal-cyan);
+  box-shadow: 0 0 10px var(--signal-cyan);
+}
+
 .signal-play-btn[data-state="playing"] .signal-btn-beacon {
   animation: beaconPulse 1.2s ease-in-out infinite;
   background: var(--signal-cyan);
   box-shadow: 0 0 10px var(--signal-cyan);
+}
+
+.signal-play-btn[data-state="replay"] .signal-btn-beacon {
+  background: var(--signal-gold);
+  box-shadow: 0 0 8px var(--signal-gold);
+  animation: none;
 }
 
 .signal-play-btn[data-state="offline"] .signal-btn-beacon {
@@ -690,8 +745,16 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
 }
 
 .signal-mode-pill {
-  color: var(--signal-gold);
+  font-family: var(--signal-mono);
   font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--signal-gold);
+  padding: 0.15rem 0.5rem;
+  background: rgba(213, 181, 108, 0.08);
+  border: 1px solid rgba(213, 181, 108, 0.25);
+  border-radius: var(--signal-radius-sm);
+  text-transform: uppercase;
 }
 
 /* ==========================================================================
@@ -986,11 +1049,34 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   }
 
   .signal-hero {
-    padding: 1.5rem 0 2.5rem;
+    padding: 1rem 0.5rem 1.75rem;
+  }
+
+  .signal-title {
+    font-size: clamp(2rem, 9vw, 3rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .signal-tagline {
+    margin-bottom: 0.85rem;
+    font-size: 0.92rem;
   }
 
   .signal-visualizer-container {
-    height: 190px;
+    height: 110px;
+    margin: 0 auto 0.85rem;
+  }
+
+  .signal-player {
+    max-width: 340px;
+    gap: 0.85rem;
+  }
+
+  .signal-play-btn {
+    min-height: 50px;
+    max-width: 290px;
+    font-size: 0.88rem;
+    padding: 0.8rem 1.5rem;
   }
 
   .signal-footer-inner {

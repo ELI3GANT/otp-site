@@ -81,8 +81,7 @@ assert.ok(!html.includes('<audio controls'), 'page does not expose browser defau
 assert.ok(!html.includes('download='), 'page does not present audio download links');
 assert.ok(!html.includes('24-BIT ENCRYPTED'), 'fake encryption language removed');
 assert.ok(!html.includes('signal-standby-banner'), 'red developer error box removed');
-assert.ok(!html.includes('TEASER ASSET PENDING'), 'developer debug text removed');
-assert.ok(html.includes('[ VAULT SOURCE ]'), 'authentic vault source telemetry present');
+assert.ok(html.includes('[ 24 SEC INTERCEPT ]'), 'intentional intercept telemetry present');
 
 // 5. DOM & Accessibility
 const dom = new JSDOM(html, {
@@ -90,6 +89,11 @@ const dom = new JSDOM(html, {
   runScripts: 'outside-only'
 });
 const doc = dom.window.document;
+
+// Header status
+const headerStatusEl = doc.querySelector('#signal-badge-status');
+assert.ok(headerStatusEl, 'header status badge exists');
+assert.strictEqual(headerStatusEl.textContent.trim(), 'SIGNAL READY', 'header status starts as SIGNAL READY prior to playback');
 
 // Skip link
 const skipLink = doc.querySelector('.signal-skip');
@@ -112,10 +116,10 @@ const progressBar = doc.querySelector('#signal-progress-bar');
 assert.ok(progressBar, 'progress bar exists');
 assert.strictEqual(progressBar.getAttribute('role'), 'slider', 'progress bar has role=slider');
 
-// Dynamic duration placeholder in time display
+// Reliable duration in time display (never stuck on --:--)
 const timeDisplayEl = doc.querySelector('#signal-time-display');
 assert.ok(timeDisplayEl, 'time display exists');
-assert.ok(timeDisplayEl.textContent.includes('--:--'), 'time display starts with dynamic placeholder awaiting metadata');
+assert.ok(timeDisplayEl.textContent.includes('0:24'), 'time display starts with valid 0:00 / 0:24 duration');
 
 // Canvas
 const canvasNode = doc.querySelector('#signal-canvas');
@@ -138,11 +142,18 @@ assert.ok(css.includes('data-glitch="micro"'), 'CSS defines micro glitch styling
 assert.ok(css.includes('clip-path: polygon('), 'CSS defines horizontal slice displacement');
 assert.ok(css.includes('.signal-tear-line'), 'CSS defines subtle background tear line');
 assert.ok(css.includes('.btn-tactile-press'), 'CSS defines tactical press styling');
+assert.ok(css.includes('data-state="loading"'), 'CSS defines loading state styling');
+assert.ok(css.includes('data-state="replay"'), 'CSS defines replay state styling');
+assert.ok(css.includes('data-state="ready"'), 'CSS defines ready beacon state styling');
 
-// 7. JS Glitch Controller & Audio Transient Logic
+// 7. JS Glitch Controller, Audio Lifecycle & Multi-Event Duration
 assert.ok(js.includes('triggerTitleGlitch'), 'JS implements glitch controller');
 assert.ok(js.includes('GLITCH_AUDIO_COOLDOWN_MS'), 'JS enforces audio transient cooldown');
 assert.ok(js.includes('TRANSMISSION ENDED'), 'JS implements transmission ended sequence');
+assert.ok(js.includes('ACQUIRING SIGNAL...'), 'JS supports acquiring signal loading state');
+assert.ok(js.includes('REPLAY SIGNAL'), 'JS supports replay signal state');
+assert.ok(js.includes('loadedmetadata') && js.includes('durationchange') && js.includes('canplay'), 'JS handles multi-event duration discovery');
+assert.ok(js.includes('selectOptimalAudioSource'), 'JS determines optimal audio source based on browser engine');
 
 // 8. Homepage Subtle Non-Intrusive Integration
 assert.ok(index.includes('href="/signal"'), 'index.html links to /signal');

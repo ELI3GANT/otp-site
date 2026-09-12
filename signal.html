@@ -28,8 +28,8 @@
 
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/signal.css?v=20260912c" />
-  <script src="/signal-config.js?v=20260912c"></script>
+  <link rel="stylesheet" href="/signal.css?v=20260912d" />
+  <script src="/signal-config.js?v=20260912d"></script>
 </head>
 <body class="signal-page">
   <a class="signal-skip" href="#signal-main">Skip to BLACKBOX SIGNAL</a>
@@ -50,8 +50,8 @@
       <span class="signal-brand-text">OnlyTruePerspective</span>
     </a>
     <div class="signal-status-pill" id="signal-header-status" aria-live="polite">
-      <span class="signal-status-beacon" id="signal-status-beacon" aria-hidden="true"></span>
-      <span class="signal-status-text" id="signal-badge-status">TRANSMISSION ACTIVE</span>
+      <span class="signal-status-beacon" id="signal-status-beacon" data-state="ready" aria-hidden="true"></span>
+      <span class="signal-status-text" id="signal-badge-status">SIGNAL READY</span>
     </div>
   </header>
 
@@ -90,15 +90,15 @@
             role="slider"
             aria-label="Transmission progress"
             aria-valuemin="0"
-            aria-valuemax="0"
+            aria-valuemax="24"
             aria-valuenow="0"
             tabindex="0"
           >
             <div id="signal-progress-fill" class="signal-progress-fill"></div>
           </div>
           <div class="signal-metrics">
-            <span class="signal-time" id="signal-time-display">0:00 / --:--</span>
-            <span class="signal-mode-pill" id="signal-mode-pill">[ VAULT SOURCE ]</span>
+            <span class="signal-time" id="signal-time-display">0:00 / 0:24</span>
+            <span class="signal-mode-pill" id="signal-mode-pill">[ 24 SEC INTERCEPT ]</span>
           </div>
         </div>
       </div>
@@ -208,6 +208,6 @@
     </div>
   </footer>
 
-  <script src="/signal.js?v=20260912c" defer></script>
+  <script src="/signal.js?v=20260912d" defer></script>
 </body>
 </html>
