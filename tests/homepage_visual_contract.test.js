@@ -227,5 +227,42 @@ assert.ok(!notFound.includes('theme-chrono.js'), '404 does not load runtime them
 assert.ok(!notFound.includes('stars-v2.js'), '404 does not load the animated starfield runtime');
 assert.ok(!notFound.includes('site-init.js'), '404 does not load the global site runtime');
 
+// ============================================================================
+// HEADER & NAVIGATION PERMANENT REGRESSION GUARDS
+// Protects the established OTP header design from feature-integration regressions.
+// Prevents navigation wrapping, extraneous dropdowns, colliding links, and desktop clutter.
+// ============================================================================
+
+// 1. Desktop Nav Structure & Single-Row Enforcement
+assert.ok(index.includes('class="nav nav-split"'), 'header maintains established nav-split layout');
+assert.ok(index.includes('class="nav-links" aria-label="Primary"'), 'primary desktop navigation exists');
+assert.ok(styles.includes('flex-wrap: nowrap !important;'), 'nav-links strictly forbids wrapping at desktop widths');
+assert.ok(!index.includes('nav-dropdown'), 'desktop nav avoids cluttered multi-row dropdown containers');
+
+// 2. Desktop Nav Item Parity & Clean Bounds
+const desktopNavChunk = (index.match(/<nav class="nav-links"[\s\S]*?<\/nav>/) || [''])[0];
+assert.ok(desktopNavChunk.includes('href="#services"'), 'desktop nav retains Services anchor');
+assert.ok(desktopNavChunk.includes('href="/weatheros"'), 'desktop nav retains WeatherOS ⚡');
+assert.ok(desktopNavChunk.includes('href="/services/consultant-audit"'), 'desktop nav retains Free Business Audit');
+assert.ok(desktopNavChunk.includes('href="/fixline"'), 'desktop nav retains FIXLINE 24h Repair');
+assert.ok(desktopNavChunk.includes('href="#work"'), 'desktop nav retains Our Work anchor');
+assert.ok(desktopNavChunk.includes('href="/portal"'), 'desktop nav retains Client Portal');
+assert.ok(desktopNavChunk.includes('class="nav-cta-btn'), 'desktop nav retains primary CTA button');
+assert.ok(!desktopNavChunk.includes('nav-signal-link'), 'desktop nav does not squeeze SIGNAL into crowded desktop row');
+
+// 3. Logo & Brand Mark Protection
+assert.ok(index.includes('class="otp-mark" id="nav-logo-neon"'), 'nav logo mark retains neon ID and class');
+
+// 4. Mobile Drawer Separation & Clean Organization
+const mobileNavChunk = (index.match(/<nav class="nav-drawer"[\s\S]*?<\/nav>/) || [''])[0];
+assert.ok(mobileNavChunk.includes('href="/weatheros"'), 'mobile drawer includes WeatherOS');
+assert.ok(mobileNavChunk.includes('href="/signal"'), 'mobile drawer includes non-intrusive SIGNAL ACTIVE ● link');
+assert.ok(mobileNavChunk.includes('href="/archive"'), 'mobile drawer includes Archive');
+assert.ok(mobileNavChunk.includes('href="/bookings?source=homepage_mobile"'), 'mobile drawer includes mobile booking CTA');
+
+// 5. BLACKBOX SIGNAL Non-Intrusive Homepage Discovery
+assert.ok(index.includes('vibration-card-signal'), 'BLACKBOX SIGNAL is tastefully featured in Audio Lab section');
+assert.ok(index.includes('href="/signal"'), 'homepage provides clean route access to /signal');
+
 console.log('   OK: Homepage visual contract');
 console.log('HOMEPAGE VISUAL CONTRACT COMPLETE');

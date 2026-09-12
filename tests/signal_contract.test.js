@@ -144,11 +144,11 @@ assert.ok(js.includes('triggerTitleGlitch'), 'JS implements glitch controller');
 assert.ok(js.includes('GLITCH_AUDIO_COOLDOWN_MS'), 'JS enforces audio transient cooldown');
 assert.ok(js.includes('TRANSMISSION ENDED'), 'JS implements transmission ended sequence');
 
-// 7. Homepage Subtle Integration & Navigation Hierarchy
+// 8. Homepage Subtle Non-Intrusive Integration
 assert.ok(index.includes('href="/signal"'), 'index.html links to /signal');
-assert.ok(index.includes('SIGNAL ●'), 'index.html features clean SIGNAL ● link in desktop nav');
-assert.ok(index.includes('nav-dropdown'), 'index.html organizes projects/apps into Systems dropdown');
-assert.ok(index.includes('nav-drawer-group'), 'mobile drawer organizes links into clear groups');
+assert.ok(index.includes('vibration-card-signal'), 'index.html features dedicated BLACKBOX SIGNAL card in Audio Lab');
+assert.ok(index.includes('SIGNAL ACTIVE ●'), 'mobile drawer and Audio Lab feature SIGNAL ACTIVE ●');
+assert.ok(!index.includes('nav-dropdown'), 'desktop nav avoids extraneous dropdowns to preserve clean single-row layout');
 
 console.log('   ✅ Blackbox Signal Contract passed all validations.');
 console.log('🎉 BLACKBOX SIGNAL CONTRACT COMPLETE');
