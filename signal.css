@@ -135,6 +135,35 @@ body.signal-page[data-playback="peak"] .signal-beam {
   );
 }
 
+.signal-tear-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--tear-y, 38%);
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 240, 255, 0.4) 25%,
+    rgba(213, 181, 108, 0.75) 55%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.06s ease;
+}
+
+.signal-atmosphere[data-glitch="true"] .signal-tear-line {
+  opacity: 0.9;
+}
+
+.signal-atmosphere[data-glitch="true"] .signal-scan {
+  opacity: 0.85;
+  filter: brightness(1.2);
+}
+
 /* ==========================================================================
    Skip Link & Focus
    ========================================================================== */
@@ -296,6 +325,8 @@ button:focus-visible {
 }
 
 .signal-title {
+  position: relative;
+  display: inline-block;
   margin: 0 0 0.85rem;
   font-size: clamp(2.4rem, 8vw, 4.75rem);
   font-weight: 900;
@@ -304,6 +335,171 @@ button:focus-visible {
   text-transform: uppercase;
   color: var(--signal-ink);
   text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Glitch Ghost & Chromatic Separation Layers */
+.signal-title::before,
+.signal-title::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, clip-path, opacity;
+}
+
+/* Audio-reactive & drop burst glitch */
+.signal-title[data-glitch="burst"] {
+  animation: titleGlitchJitter 0.28s steps(2, end) both;
+}
+
+.signal-title[data-glitch="burst"]::before {
+  opacity: 0.9;
+  color: var(--signal-cyan);
+  text-shadow: -2px 0 10px rgba(0, 240, 255, 0.6);
+  animation: titleGlitchCyan 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.signal-title[data-glitch="burst"]::after {
+  opacity: 0.95;
+  color: var(--signal-gold);
+  text-shadow: 2px 0 10px rgba(213, 181, 108, 0.75);
+  animation: titleGlitchGold 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Ambient idle micro-glitch & transmission end */
+.signal-title[data-glitch="micro"]::before {
+  opacity: 0.75;
+  color: var(--signal-cyan);
+  animation: titleGlitchMicroCyan 0.14s ease-out both;
+}
+
+.signal-title[data-glitch="micro"]::after {
+  opacity: 0.8;
+  color: var(--signal-gold);
+  animation: titleGlitchMicroGold 0.14s ease-out both;
+}
+
+@keyframes titleGlitchCyan {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  15% {
+    opacity: 0.95;
+    transform: translate(-3px, -1px);
+    clip-path: polygon(0 14%, 100% 14%, 100% 28%, 0 28%);
+  }
+  35% {
+    opacity: 0.85;
+    transform: translate(2px, 1px);
+    clip-path: polygon(0 48%, 100% 48%, 100% 64%, 0 64%);
+  }
+  60% {
+    opacity: 0.9;
+    transform: translate(-2.5px, 0.5px);
+    clip-path: polygon(0 20%, 100% 20%, 100% 34%, 0 34%);
+  }
+  80% {
+    opacity: 0.6;
+    transform: translate(1.5px, -0.5px);
+    clip-path: polygon(0 76%, 100% 76%, 100% 90%, 0 90%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes titleGlitchGold {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  18% {
+    opacity: 0.9;
+    transform: translate(3px, 1px);
+    clip-path: polygon(0 30%, 100% 30%, 100% 46%, 0 46%);
+  }
+  40% {
+    opacity: 0.8;
+    transform: translate(-2px, -1px);
+    clip-path: polygon(0 66%, 100% 66%, 100% 80%, 0 80%);
+  }
+  65% {
+    opacity: 0.95;
+    transform: translate(2.5px, -0.5px);
+    clip-path: polygon(0 6%, 100% 6%, 100% 18%, 0 18%);
+  }
+  85% {
+    opacity: 0.65;
+    transform: translate(-1px, 0.5px);
+    clip-path: polygon(0 50%, 100% 50%, 100% 62%, 0 62%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes titleGlitchJitter {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-1.5px, 0.5px);
+  }
+  50% {
+    transform: translate(1px, -0.5px);
+  }
+  75% {
+    transform: translate(-0.5px, -0.5px);
+  }
+}
+
+@keyframes titleGlitchMicroCyan {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: polygon(0 28%, 100% 28%, 100% 48%, 0 48%);
+  }
+  40% {
+    opacity: 0.85;
+    transform: translate(-2px, -0.5px);
+    clip-path: polygon(0 28%, 100% 28%, 100% 48%, 0 48%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes titleGlitchMicroGold {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: polygon(0 54%, 100% 54%, 100% 72%, 0 72%);
+  }
+  45% {
+    opacity: 0.9;
+    transform: translate(2px, 0.5px);
+    clip-path: polygon(0 54%, 100% 54%, 100% 72%, 0 72%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
 }
 
 .signal-tagline {
@@ -409,8 +605,10 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   box-shadow: 0 0 32px rgba(213, 181, 108, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.signal-play-btn:active {
-  transform: scale(0.98);
+.signal-play-btn:active,
+.signal-play-btn.btn-tactile-press {
+  transform: scale(0.96);
+  box-shadow: 0 0 16px rgba(213, 181, 108, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .signal-play-btn[data-state="playing"] {
@@ -818,7 +1016,8 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   }
 
   .signal-noise,
-  .signal-scan {
+  .signal-scan,
+  .signal-tear-line {
     display: none !important;
   }
 
@@ -831,5 +1030,17 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   .beacon-pulse {
     animation: none !important;
     opacity: 1 !important;
+  }
+
+  .signal-title::before,
+  .signal-title::after {
+    display: none !important;
+  }
+
+  .signal-title,
+  .signal-title[data-glitch="burst"],
+  .signal-title[data-glitch="micro"] {
+    animation: none !important;
+    transform: none !important;
   }
 }

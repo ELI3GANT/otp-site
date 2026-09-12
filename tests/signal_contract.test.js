@@ -68,7 +68,7 @@ assert.ok(protocolRel.url.includes('distrokid.com'), 'PROTOCOL uses official Dis
 
 const letsGetLitRel = config.currentReleases.find((r) => r.id === 'lets-get-lit');
 assert.ok(letsGetLitRel, "LET'S GET LIT is in current releases config");
-assert.ok(letsGetLitRel.url.includes('soundcloud.com'), "LET'S GET LIT points to configured SoundCloud location");
+assert.strictEqual(letsGetLitRel.url, 'https://soundcloud.com/eli3gant/lgl-lets-get-lit', "LET'S GET LIT points to exact official SoundCloud track URL");
 
 // Timeline items
 const timelineNames = config.timeline.map((t) => t.name);
@@ -95,6 +95,11 @@ const doc = dom.window.document;
 const skipLink = doc.querySelector('.signal-skip');
 assert.ok(skipLink, 'skip link exists');
 assert.strictEqual(skipLink.getAttribute('href'), '#signal-main', 'skip link targets main container');
+
+// Hero title glitch markup
+const titleEl = doc.querySelector('.signal-title');
+assert.ok(titleEl, 'hero title exists');
+assert.strictEqual(titleEl.getAttribute('data-text'), 'BLACKBOX SIGNAL', 'hero title has data-text attribute for glitch system');
 
 // Play button
 const playBtn = doc.querySelector('#signal-play-btn');
@@ -123,11 +128,21 @@ assert.ok(timelineSteps.includes('PROTOCOL'), 'DOM renders PROTOCOL in timeline'
 assert.ok(timelineSteps.includes('SIGNAL 001'), 'DOM renders SIGNAL 001 in timeline');
 assert.ok(timelineSteps.includes('[ REDACTED ]'), 'DOM renders [ REDACTED ] in timeline');
 
-// 6. CSS System & Motion Guards
+// 6. CSS System & Motion Guards & Glitch System
 assert.ok(css.includes('--signal-gold: #d5b56c;'), 'CSS uses OTP gold token');
 assert.ok(css.includes('prefers-reduced-motion: reduce'), 'CSS supports prefers-reduced-motion');
 assert.ok(css.includes('safe-area-inset-bottom'), 'CSS implements mobile safe area insets');
 assert.ok(!css.includes('#ff4757'), 'red developer error color removed from signal stylesheet');
+assert.ok(css.includes('data-glitch="burst"'), 'CSS defines glitch burst styling');
+assert.ok(css.includes('data-glitch="micro"'), 'CSS defines micro glitch styling');
+assert.ok(css.includes('clip-path: polygon('), 'CSS defines horizontal slice displacement');
+assert.ok(css.includes('.signal-tear-line'), 'CSS defines subtle background tear line');
+assert.ok(css.includes('.btn-tactile-press'), 'CSS defines tactical press styling');
+
+// 7. JS Glitch Controller & Audio Transient Logic
+assert.ok(js.includes('triggerTitleGlitch'), 'JS implements glitch controller');
+assert.ok(js.includes('GLITCH_AUDIO_COOLDOWN_MS'), 'JS enforces audio transient cooldown');
+assert.ok(js.includes('TRANSMISSION ENDED'), 'JS implements transmission ended sequence');
 
 // 7. Homepage Subtle Integration & Navigation Hierarchy
 assert.ok(index.includes('href="/signal"'), 'index.html links to /signal');

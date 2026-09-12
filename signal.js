@@ -37,6 +37,8 @@
   const badgeStatus = document.getElementById('signal-badge-status');
   const statusBeacon = document.getElementById('signal-status-beacon');
   const canvas = document.getElementById('signal-canvas');
+  const signalTitle = document.getElementById('signal-title');
+  const atmosphere = document.getElementById('signal-atmosphere');
   const body = document.body;
 
   // State
@@ -51,6 +53,14 @@
   let animFrameId = null;
   let duration = 0;
   let activeSourceIndex = 0;
+
+  // Glitch System State
+  let glitchTimeoutId = null;
+  let lastGlitchTimestamp = 0;
+  let prevBassEnergy = 0;
+  const GLITCH_AUDIO_COOLDOWN_MS = 2400; // Minimum 2.4s between bass transients
+  let ambientGlitchTimer = null;
+  let endSequenceTimer = null;
 
   // Prefers-reduced-motion check
   const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -267,6 +277,50 @@
         analyser = null;
       }
     }
+  // ==========================================================================
+  // Glitch Transmission System (Controlled, Cinematic, Premium)
+  // ==========================================================================
+  function triggerTitleGlitch(type, durationMs) {
+    type = type || 'burst';
+    durationMs = durationMs || 240;
+    if (prefersReducedMotion || !signalTitle) return;
+    if (typeof document !== 'undefined' && document.hidden) return;
+
+    if (glitchTimeoutId) {
+      clearTimeout(glitchTimeoutId);
+      glitchTimeoutId = null;
+    }
+
+    signalTitle.setAttribute('data-glitch', type);
+
+    if (atmosphere) {
+      atmosphere.setAttribute('data-glitch', 'true');
+      const randomY = Math.floor(Math.random() * 65 + 18);
+      atmosphere.style.setProperty('--tear-y', `${randomY}%`);
+    }
+
+    glitchTimeoutId = setTimeout(function () {
+      if (signalTitle) signalTitle.removeAttribute('data-glitch');
+      if (atmosphere) atmosphere.removeAttribute('data-glitch');
+      glitchTimeoutId = null;
+    }, durationMs);
+  }
+
+  function scheduleAmbientGlitch() {
+    if (prefersReducedMotion) return;
+    if (ambientGlitchTimer) clearTimeout(ambientGlitchTimer);
+
+    // Random interval between 7.5s and 13.5s
+    const nextDelay = Math.floor(Math.random() * 6000 + 7500);
+
+    ambientGlitchTimer = setTimeout(function () {
+      const now = Date.now();
+      if (!isPlaying && now - lastGlitchTimestamp > 5000 && !document.hidden) {
+        triggerTitleGlitch('micro', 140);
+        lastGlitchTimestamp = now;
+      }
+      scheduleAmbientGlitch();
+    }, nextDelay);
   }
 
   // Playback Controls
@@ -285,9 +339,26 @@
   function playAudio() {
     if (!audio) return;
 
+    if (endSequenceTimer) {
+      clearTimeout(endSequenceTimer);
+      endSequenceTimer = null;
+    }
+
     if (duration > 0 && audio.currentTime >= duration) {
       audio.currentTime = 0;
     }
+
+    // Tactical button compression feedback
+    if (playBtn) {
+      playBtn.classList.add('btn-tactile-press');
+      setTimeout(function () {
+        if (playBtn) playBtn.classList.remove('btn-tactile-press');
+      }, 150);
+    }
+
+    // Initiate signal drop glitch burst
+    triggerTitleGlitch('burst', 280);
+    lastGlitchTimestamp = Date.now();
 
     const playPromise = audio.play();
     if (playPromise !== undefined) {
@@ -312,6 +383,10 @@
 
   function pauseAudio() {
     if (!audio) return;
+    if (endSequenceTimer) {
+      clearTimeout(endSequenceTimer);
+      endSequenceTimer = null;
+    }
     audio.pause();
     isPlaying = false;
     updatePlayButtonState('paused');
@@ -324,10 +399,30 @@
       audio.currentTime = 0;
     }
     isPlaying = false;
-    updatePlayButtonState('replay');
     body.setAttribute('data-playback', 'idle');
     if (progressFill) progressFill.style.width = '0%';
     updateTimeDisplay(0, duration);
+
+    // Final transmission collapse micro-glitch
+    triggerTitleGlitch('micro', 180);
+    lastGlitchTimestamp = Date.now();
+
+    // Brief transmission ended state before replay prompt
+    if (endSequenceTimer) clearTimeout(endSequenceTimer);
+
+    if (badgeStatus) badgeStatus.textContent = 'TRANSMISSION ENDED';
+    if (btnLabel) btnLabel.textContent = 'TRANSMISSION ENDED';
+    if (btnIcon) btnIcon.textContent = '○';
+    if (playBtn) {
+      playBtn.setAttribute('data-state', 'ended');
+      playBtn.setAttribute('aria-label', 'Transmission ended');
+    }
+
+    endSequenceTimer = setTimeout(function () {
+      updatePlayButtonState('replay');
+      if (badgeStatus) badgeStatus.textContent = config.transmissionStatus || 'TRANSMISSION ACTIVE';
+      endSequenceTimer = null;
+    }, 1200);
   }
 
   function updatePlayButtonState(state) {
@@ -458,6 +553,18 @@
       avgEnergy = sum / (binCount * 255);
       bassEnergy = bassSum / (bassBins * 255);
 
+      // Audio-reactive transient glitch trigger (rare, impactful, cooldown-governed)
+      const now = Date.now();
+      if (
+        bassEnergy > 0.62 &&
+        bassEnergy - prevBassEnergy > 0.12 &&
+        now - lastGlitchTimestamp > GLITCH_AUDIO_COOLDOWN_MS
+      ) {
+        triggerTitleGlitch('burst', 240);
+        lastGlitchTimestamp = now;
+      }
+      prevBassEnergy = bassEnergy;
+
       // Peak state escalation check
       if (avgEnergy > 0.45 || bassEnergy > 0.55) {
         body.setAttribute('data-playback', 'peak');
@@ -577,6 +684,7 @@
     initCanvas();
     initParticles();
     initAudio();
+    scheduleAmbientGlitch();
     startVisualizer();
   });
 })();

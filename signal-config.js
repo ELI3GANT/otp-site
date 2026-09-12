@@ -62,8 +62,7 @@ const BLACKBOX_SIGNAL_CONFIG = {
       title: "LET'S GET LIT",
       format: 'Single',
       badge: 'SOUNDCLOUD',
-      // Update with exact direct track URL once available
-      url: 'https://soundcloud.com/eli3gant',
+      url: 'https://soundcloud.com/eli3gant/lgl-lets-get-lit',
       platform: 'SoundCloud',
       ctaLabel: 'Listen on SoundCloud'
     }

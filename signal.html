@@ -28,17 +28,18 @@
 
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="stylesheet" href="/signal.css?v=20260912b" />
-  <script src="/signal-config.js?v=20260912b"></script>
+  <link rel="stylesheet" href="/signal.css?v=20260912c" />
+  <script src="/signal-config.js?v=20260912c"></script>
 </head>
 <body class="signal-page">
   <a class="signal-skip" href="#signal-main">Skip to BLACKBOX SIGNAL</a>
 
   <!-- Ambient Cinematic Layers -->
-  <div class="signal-atmosphere" aria-hidden="true">
+  <div class="signal-atmosphere" id="signal-atmosphere" aria-hidden="true">
     <div class="signal-noise"></div>
     <div class="signal-scan"></div>
     <div class="signal-beam"></div>
+    <div class="signal-tear-line" id="signal-tear-line"></div>
     <div class="signal-vignette"></div>
   </div>
 
@@ -63,7 +64,7 @@
         <span class="signal-cipher" id="signal-cipher-label">SIGNAL 001</span>
       </div>
 
-      <h1 class="signal-title" id="signal-title">BLACKBOX SIGNAL</h1>
+      <h1 class="signal-title" id="signal-title" data-text="BLACKBOX SIGNAL">BLACKBOX SIGNAL</h1>
 
       <p class="signal-tagline" id="signal-tagline">Signal intercepted from an unreleased session.</p>
 
@@ -142,7 +143,7 @@
           <div class="release-action">
             <a
               id="lets-get-lit-link"
-              href="https://soundcloud.com/eli3gant"
+              href="https://soundcloud.com/eli3gant/lgl-lets-get-lit"
               target="_blank"
               rel="noopener noreferrer"
               class="signal-cta-link"
@@ -207,6 +208,6 @@
     </div>
   </footer>
 
-  <script src="/signal.js?v=20260912b" defer></script>
+  <script src="/signal.js?v=20260912c" defer></script>
 </body>
 </html>
