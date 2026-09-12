@@ -31,12 +31,12 @@ const BLACKBOX_SIGNAL_CONFIG = {
   // - WAV: studio master export (not loaded on startup)
   audioSources: [
     {
-      src: '/assets/audio/blackbox-signal.m4a',
-      type: 'audio/mp4'
-    },
-    {
       src: '/assets/audio/blackbox-signal.mp3',
       type: 'audio/mpeg'
+    },
+    {
+      src: '/assets/audio/blackbox-signal.m4a',
+      type: 'audio/mp4'
     },
     {
       src: '/assets/audio/blackbox-signal.wav',

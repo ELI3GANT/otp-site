@@ -29,6 +29,18 @@
 
   const config = (typeof window !== 'undefined' && window.BLACKBOX_SIGNAL_CONFIG) || DEFAULT_CONFIG;
 
+  // Diagnostic mode flag (disabled in production; enabled via ?debug=1 or window.__DEBUG_BLACKBOX__)
+  const DEBUG = (typeof window !== 'undefined' && (
+    Boolean(window.location && window.location.search && window.location.search.indexOf('debug=1') !== -1) ||
+    window.__DEBUG_BLACKBOX__ === true
+  ));
+
+  function logDiagnostic(label, data) {
+    if (DEBUG && typeof console !== 'undefined' && console.log) {
+      console.log('[BLACKBOX AUDIO] ' + label + ':', data);
+    }
+  }
+
   // DOM Elements
   const playBtn = document.getElementById('signal-play-btn');
   const btnIcon = document.getElementById('signal-btn-icon');
@@ -108,7 +120,7 @@
       badgeStatus.textContent = 'SIGNAL READY';
       statusBeacon.setAttribute('data-state', 'ready');
     } else if (state === 'loading') {
-      badgeStatus.textContent = 'ACQUIRING SIGNAL';
+      badgeStatus.textContent = 'ACQUIRING SIGNAL...';
       statusBeacon.setAttribute('data-state', 'loading');
     } else if (state === 'playing') {
       badgeStatus.textContent = config.transmissionStatus || 'TRANSMISSION ACTIVE';
@@ -122,6 +134,9 @@
     } else if (state === 'offline') {
       badgeStatus.textContent = config.offlineStatus || 'SIGNAL OFFLINE';
       statusBeacon.setAttribute('data-state', 'offline');
+    } else if (state === 'error') {
+      badgeStatus.textContent = 'SIGNAL ERROR';
+      statusBeacon.setAttribute('data-state', 'error');
     }
   }
 
@@ -193,31 +208,48 @@
   }
 
   // Browser capability and codec priority determination:
-  // - Prefer M4A (AAC 256kbps, 780KB) for WebKit/Safari
-  // - Prefer MP3 (320kbps, 940KB) for universal broadcast
+  // - Prefer MP3 (320kbps, 940KB) as rock-solid universal broadcast baseline across all browsers
+  // - Prefer M4A (AAC 256kbps, 780KB) as secondary high-efficiency stream
   // - WAV (4MB) is only a last resort fallback, NOT downloaded on startup
   function selectOptimalAudioSource(sources) {
     const temp = document.createElement('audio');
-    const ua = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
-    const isSafariOrWebKit = /^((?!chrome|android).)*safari/i.test(ua) ||
-      (/AppleWebKit/i.test(ua) && !/chrome/i.test(ua));
 
-    const m4aCandidate = sources.find(function (s) { return s.type === 'audio/mp4' || s.src.endsWith('.m4a'); });
     const mp3Candidate = sources.find(function (s) { return s.type === 'audio/mpeg' || s.src.endsWith('.mp3'); });
+    const m4aCandidate = sources.find(function (s) { return s.type === 'audio/mp4' || s.src.endsWith('.m4a'); });
     const wavCandidate = sources.find(function (s) { return s.type === 'audio/wav' || s.src.endsWith('.wav'); });
 
     const prioritized = [];
 
-    if (isSafariOrWebKit && temp.canPlayType && temp.canPlayType('audio/mp4') !== '') {
-      if (m4aCandidate) prioritized.push(m4aCandidate);
-      if (mp3Candidate) prioritized.push(mp3Candidate);
-    } else {
-      if (mp3Candidate) prioritized.push(mp3Candidate);
-      if (m4aCandidate) prioritized.push(m4aCandidate);
+    // Clean capability detection via canPlayType (no fragile regex user-agent sniffing)
+    const canMp3 = Boolean(temp.canPlayType && temp.canPlayType('audio/mpeg') !== '');
+    const canM4a = Boolean(temp.canPlayType && (temp.canPlayType('audio/mp4; codecs="mp4a.40.2"') !== '' || temp.canPlayType('audio/mp4') !== ''));
+
+    logDiagnostic('Capability check', {
+      canPlayMp3: canMp3,
+      canPlayM4a: canM4a,
+      audioMpegType: temp.canPlayType ? temp.canPlayType('audio/mpeg') : 'unsupported',
+      audioMp4Type: temp.canPlayType ? temp.canPlayType('audio/mp4; codecs="mp4a.40.2"') : 'unsupported'
+    });
+
+    // MP3 is the rock-solid universal baseline across all modern browsers
+    if (canMp3 && mp3Candidate) {
+      prioritized.push(mp3Candidate);
+    }
+    if (canM4a && m4aCandidate && !prioritized.includes(m4aCandidate)) {
+      prioritized.push(m4aCandidate);
+    }
+    // Fallbacks if not already added
+    if (m4aCandidate && !prioritized.includes(m4aCandidate)) {
+      prioritized.push(m4aCandidate);
+    }
+    if (mp3Candidate && !prioritized.includes(mp3Candidate)) {
+      prioritized.push(mp3Candidate);
     }
 
     // WAV is strictly an emergency fallback
-    if (wavCandidate) prioritized.push(wavCandidate);
+    if (wavCandidate && !prioritized.includes(wavCandidate)) {
+      prioritized.push(wavCandidate);
+    }
 
     return prioritized.length > 0 ? prioritized : sources;
   }
@@ -234,17 +266,37 @@
     sortedSources = selectOptimalAudioSource(candidates);
     activeSourceIndex = 0;
 
-    audio = new Audio();
+    // Use DOM element if present to avoid WebKit detached media throttling/muting
+    const existingAudio = document.getElementById('signal-audio');
+    if (existingAudio) {
+      audio = existingAudio;
+    } else {
+      audio = new Audio();
+      audio.id = 'signal-audio';
+      audio.style.display = 'none';
+      if (document.body) {
+        document.body.appendChild(audio);
+      }
+    }
+
     audio.preload = 'metadata';
 
-    // Only set crossOrigin if URL is cross-origin to avoid WebKit CORS false positives on same-origin assets
     const primaryUrl = sortedSources[0].src;
+    // Only set crossOrigin if URL is strictly cross-origin to avoid WebKit CORS false positives on same-origin assets
     if (typeof window !== 'undefined' && primaryUrl.startsWith('http') && !primaryUrl.startsWith(window.location.origin)) {
       audio.crossOrigin = 'anonymous';
+    } else {
+      audio.removeAttribute('crossorigin');
     }
 
     // Set src directly without redundant <source> children to avoid parallel downloads of WAV
     audio.src = primaryUrl;
+
+    logDiagnostic('Audio Initialized', {
+      selectedSource: primaryUrl,
+      readyState: audio.readyState,
+      networkState: audio.networkState
+    });
 
     // Immediately display configured teaser duration (0:00 / 0:24)
     updateTimeDisplay(0, duration);
@@ -292,12 +344,21 @@
 
     audio.addEventListener('ended', handlePlaybackEnded);
 
-    audio.addEventListener('error', function () {
+    audio.addEventListener('error', function (err) {
+      logDiagnostic('Media error event', {
+        error: audio ? audio.error : err,
+        code: audio && audio.error ? audio.error.code : null,
+        message: audio && audio.error ? audio.error.message : null
+      });
       // Gracefully switch to alternative format if chosen source fails
       activeSourceIndex++;
       if (activeSourceIndex < sortedSources.length) {
         audio.src = sortedSources[activeSourceIndex].src;
-        audio.load();
+        try {
+          audio.load();
+        } catch (e) {
+          // Ignored
+        }
       } else {
         handleAudioUnavailable();
       }
@@ -324,11 +385,25 @@
     if (!audioCtx) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (!AudioContextClass) return;
-      audioCtx = new AudioContextClass();
+      try {
+        audioCtx = new AudioContextClass();
+      } catch (e) {
+        logDiagnostic('AudioContext creation failed', e);
+        return;
+      }
     }
 
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      try {
+        const resumePromise = audioCtx.resume();
+        if (resumePromise && typeof resumePromise.catch === 'function') {
+          resumePromise.catch(function (e) {
+            logDiagnostic('audioCtx.resume() warning', e);
+          });
+        }
+      } catch (e) {
+        logDiagnostic('audioCtx.resume() error', e);
+      }
     }
 
     // Guard against duplicate createMediaElementSource call (throws InvalidStateError)
@@ -338,12 +413,22 @@
         analyser = audioCtx.createAnalyser();
         analyser.fftSize = 128;
         analyser.smoothingTimeConstant = 0.8;
+        // Direct parallel fan-out routing:
+        // 1. sourceNode -> analyser (for real-time FFT visualizer)
         sourceNode.connect(analyser);
-        analyser.connect(audioCtx.destination);
+        // 2. sourceNode -> audioCtx.destination (direct, uncompromised audible signal)
+        sourceNode.connect(audioCtx.destination);
         dataArray = new Uint8Array(analyser.frequencyBinCount);
+        logDiagnostic('Web Audio graph connected successfully', {
+          destinationConnected: true,
+          analyserConnected: true,
+          audioCtxState: audioCtx.state
+        });
       } catch (e) {
+        logDiagnostic('createMediaElementSource failed, falling back to native audio', e);
         // Fallback to native audio playback without analyser
         analyser = null;
+        sourceNode = null;
       }
     }
   }
@@ -397,7 +482,10 @@
   // Playback Controls
   function togglePlay() {
     if (!audio) initAudio();
-    if (!isAudioAvailable) return;
+    if (!isAudioAvailable) {
+      isAudioAvailable = true;
+      initAudio();
+    }
     ensureAudioContext();
 
     if (isPlaying) {
@@ -435,26 +523,39 @@
     triggerTitleGlitch('burst', 260);
     lastGlitchTimestamp = Date.now();
 
+    // Ensure audio context is running on user gesture
+    if (audioCtx && audioCtx.state === 'suspended') {
+      try {
+        audioCtx.resume();
+      } catch (e) {
+        // Ignored
+      }
+    }
+
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise
         .then(function () {
-          isPlaying = true;
-          updatePlayButtonState('playing');
-          setSystemStatus('playing');
-          body.setAttribute('data-playback', 'playing');
-          startVisualizer();
-        })
-        .catch(function () {
-          if (!isAudioAvailable) {
-            updatePlayButtonState('offline');
-            setSystemStatus('offline');
-          } else {
-            updatePlayButtonState('idle');
-            setSystemStatus('ready');
+          // ONLY transition to TRANSMISSION ACTIVE when audio is genuinely playing
+          if (audio && !audio.paused) {
+            isPlaying = true;
+            updatePlayButtonState('playing');
+            setSystemStatus('playing');
+            body.setAttribute('data-playback', 'playing');
+            startVisualizer();
+            logDiagnostic('play() resolved', {
+              currentTime: audio.currentTime,
+              paused: audio.paused,
+              audioCtxState: audioCtx ? audioCtx.state : 'none'
+            });
           }
+        })
+        .catch(function (error) {
+          logDiagnostic('play() rejected', error);
           isPlaying = false;
           body.setAttribute('data-playback', 'idle');
+          updatePlayButtonState('retry');
+          setSystemStatus('error');
         });
     }
   }
@@ -523,6 +624,10 @@
       if (btnIcon) btnIcon.textContent = '↺';
       if (btnLabel) btnLabel.textContent = 'REPLAY SIGNAL';
       playBtn.setAttribute('aria-label', 'Replay transmission from start');
+    } else if (state === 'retry') {
+      if (btnIcon) btnIcon.textContent = '↺';
+      if (btnLabel) btnLabel.textContent = 'RETRY SIGNAL';
+      playBtn.setAttribute('aria-label', 'Retry transmission');
     } else if (state === 'offline') {
       if (btnIcon) btnIcon.textContent = '○';
       if (btnLabel) btnLabel.textContent = 'SIGNAL OFFLINE';

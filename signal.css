@@ -297,6 +297,12 @@ button:focus-visible {
   animation: none;
 }
 
+.signal-status-beacon[data-state="error"] {
+  background-color: #ff3344;
+  box-shadow: 0 0 10px rgba(255, 51, 68, 0.6);
+  animation: beaconPulse 1s ease-in-out infinite;
+}
+
 @keyframes beaconPulse {
   0%, 100% {
     opacity: 1;
@@ -660,6 +666,14 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   box-shadow: 0 0 28px rgba(213, 181, 108, 0.3);
 }
 
+.signal-play-btn[data-state="retry"],
+.signal-play-btn[data-state="error"] {
+  background: #180d0e;
+  border-color: #ff5566;
+  color: #ffb4bc;
+  box-shadow: 0 0 24px rgba(255, 51, 68, 0.3);
+}
+
 .signal-play-btn[data-state="offline"] {
   border-color: var(--signal-surface-border);
   color: var(--signal-ink-secondary);
@@ -691,6 +705,13 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
   background: var(--signal-gold);
   box-shadow: 0 0 8px var(--signal-gold);
   animation: none;
+}
+
+.signal-play-btn[data-state="retry"] .signal-btn-beacon,
+.signal-play-btn[data-state="error"] .signal-btn-beacon {
+  background: #ff3344;
+  box-shadow: 0 0 8px #ff3344;
+  animation: beaconPulse 1.2s ease-in-out infinite;
 }
 
 .signal-play-btn[data-state="offline"] .signal-btn-beacon {

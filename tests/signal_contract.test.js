@@ -152,8 +152,19 @@ assert.ok(js.includes('GLITCH_AUDIO_COOLDOWN_MS'), 'JS enforces audio transient 
 assert.ok(js.includes('TRANSMISSION ENDED'), 'JS implements transmission ended sequence');
 assert.ok(js.includes('ACQUIRING SIGNAL...'), 'JS supports acquiring signal loading state');
 assert.ok(js.includes('REPLAY SIGNAL'), 'JS supports replay signal state');
+assert.ok(js.includes('RETRY SIGNAL'), 'JS supports retry signal state');
+assert.ok(js.includes('SIGNAL ERROR'), 'JS supports signal error state');
 assert.ok(js.includes('loadedmetadata') && js.includes('durationchange') && js.includes('canplay'), 'JS handles multi-event duration discovery');
 assert.ok(js.includes('selectOptimalAudioSource'), 'JS determines optimal audio source based on browser engine');
+assert.ok(js.includes('sourceNode.connect(audioCtx.destination)'), 'Web Audio graph explicitly connects sourceNode to audioCtx.destination');
+assert.ok(js.includes('sourceNode.connect(analyser)'), 'Web Audio graph connects sourceNode to analyser for reactive visualizer');
+assert.ok(js.includes('!sourceNode'), 'MediaElementSource guarded from duplicate creation');
+assert.ok(js.includes('!audio.paused'), 'TRANSMISSION ACTIVE strictly guarded by real playback');
+
+// DOM Audio Element & CSS States
+assert.ok(html.includes('id="signal-audio"'), 'HTML mounts hidden audio element in DOM to protect WebKit routing');
+assert.ok(css.includes('data-state="retry"'), 'CSS defines retry button state styling');
+assert.ok(css.includes('data-state="error"'), 'CSS defines error beacon state styling');
 
 // 8. Homepage Subtle Non-Intrusive Integration
 assert.ok(index.includes('href="/signal"'), 'index.html links to /signal');
