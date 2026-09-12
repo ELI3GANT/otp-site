@@ -163,6 +163,17 @@ assert.ok(js.includes('!audio.paused'), 'TRANSMISSION ACTIVE strictly guarded by
 
 // DOM Audio Element & CSS States
 assert.ok(html.includes('id="signal-audio"'), 'HTML mounts hidden audio element in DOM to protect WebKit routing');
+assert.ok(html.includes('class="signal-band"'), 'HTML mounts signal-band background layer');
+assert.ok(css.includes('.signal-band'), 'CSS defines signal-band background layer');
+assert.ok(css.includes('scanDrift'), 'CSS defines continuous scanline drift');
+assert.ok(css.includes('noiseJitter'), 'CSS defines continuous noise jitter');
+assert.ok(css.includes('bandFloat'), 'CSS defines continuous interference band float');
+assert.ok(css.includes('beamBreathe'), 'CSS defines continuous atmospheric beam breathing');
+assert.ok(css.includes('titleAmbientCyan'), 'CSS defines continuous cyan title ambient glitch');
+assert.ok(css.includes('titleAmbientGold'), 'CSS defines continuous gold title ambient glitch');
+assert.ok(css.includes('titleAmbientJitter'), 'CSS defines continuous title ambient jitter');
+assert.ok(css.includes('data-playback="playing"'), 'CSS defines playing state intensity escalation');
+assert.ok(css.includes('data-playback="peak"'), 'CSS defines peak transient intensity escalation');
 assert.ok(css.includes('data-state="retry"'), 'CSS defines retry button state styling');
 assert.ok(css.includes('data-state="error"'), 'CSS defines error beacon state styling');
 

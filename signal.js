@@ -466,13 +466,18 @@
     if (prefersReducedMotion) return;
     if (ambientGlitchTimer) clearTimeout(ambientGlitchTimer);
 
-    // Random interval between 8.5s and 14.5s
-    const nextDelay = Math.floor(Math.random() * 6000 + 8500);
+    // Organic non-repetitive interval between 4.2s and 8.8s
+    const nextDelay = Math.floor(Math.random() * 4600 + 4200);
 
     ambientGlitchTimer = setTimeout(function () {
       const now = Date.now();
-      if (!isPlaying && now - lastGlitchTimestamp > 5000 && !document.hidden) {
-        triggerTitleGlitch('micro', 140);
+      if (!document.hidden && now - lastGlitchTimestamp > 3200) {
+        // Shift ambient tear line to an unpredictable coordinate
+        if (atmosphere) {
+          const randomY = Math.floor(Math.random() * 70 + 15);
+          atmosphere.style.setProperty('--tear-y', randomY + '%');
+        }
+        triggerTitleGlitch('micro', 160);
         lastGlitchTimestamp = now;
       }
       scheduleAmbientGlitch();
@@ -922,6 +927,10 @@
     // Synchronize mode badge text with configuration
     if (modePill && config.sourceModeLabel) {
       modePill.textContent = config.sourceModeLabel;
+    }
+
+    if (body && !body.hasAttribute('data-playback')) {
+      body.setAttribute('data-playback', 'idle');
     }
 
     initCanvas();

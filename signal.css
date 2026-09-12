@@ -63,14 +63,34 @@ body.signal-page {
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  will-change: opacity, filter;
 }
 
 .signal-noise {
   position: absolute;
-  inset: 0;
+  inset: -20px;
   opacity: 0.055;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E");
   mix-blend-mode: screen;
+  animation: noiseJitter 2.9s steps(4) infinite;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+}
+
+body.signal-page[data-playback="playing"] .signal-noise {
+  opacity: 0.085;
+}
+
+body.signal-page[data-playback="peak"] .signal-noise {
+  opacity: 0.12;
+}
+
+@keyframes noiseJitter {
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(-1%, 1.2%, 0); }
+  50% { transform: translate3d(1.2%, -0.8%, 0); }
+  75% { transform: translate3d(-0.8%, -1.2%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
 }
 
 .signal-scan {
@@ -78,12 +98,55 @@ body.signal-page {
   inset: 0;
   background: repeating-linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.015) 0px,
-    rgba(255, 255, 255, 0.015) 1px,
+    rgba(255, 255, 255, 0.016) 0px,
+    rgba(255, 255, 255, 0.016) 1px,
     transparent 1px,
     transparent 4px
   );
-  opacity: 0.6;
+  background-size: 100% 8px;
+  animation: scanDrift 9.8s linear infinite;
+  opacity: 0.55;
+  transition: opacity 0.8s ease;
+}
+
+.signal-scan::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 140px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 240, 255, 0.025) 40%,
+    rgba(213, 181, 108, 0.04) 50%,
+    rgba(0, 240, 255, 0.025) 60%,
+    transparent 100%
+  );
+  animation: scanSweep 11.7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+body.signal-page[data-playback="playing"] .signal-scan {
+  opacity: 0.75;
+}
+
+body.signal-page[data-playback="peak"] .signal-scan {
+  opacity: 0.92;
+  filter: brightness(1.2);
+}
+
+@keyframes scanDrift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+@keyframes scanSweep {
+  0% { transform: translateY(-140px); opacity: 0; }
+  12% { opacity: 0.85; }
+  88% { opacity: 0.85; }
+  100% { transform: translateY(100vh); opacity: 0; }
 }
 
 .signal-beam {
@@ -100,15 +163,17 @@ body.signal-page {
     transparent 72%
   );
   filter: blur(40px);
+  animation: beamBreathe 8.6s ease-in-out infinite alternate;
   transition: opacity 1.2s ease, transform 1.2s ease;
 }
 
 body.signal-page[data-playback="playing"] .signal-beam {
   opacity: 0.95;
+  animation-duration: 4.8s;
   transform: translateX(-50%) scale(1.12);
   background: radial-gradient(
     circle,
-    rgba(213, 181, 108, 0.22) 0%,
+    rgba(213, 181, 108, 0.24) 0%,
     rgba(0, 240, 255, 0.08) 45%,
     transparent 75%
   );
@@ -116,13 +181,81 @@ body.signal-page[data-playback="playing"] .signal-beam {
 
 body.signal-page[data-playback="peak"] .signal-beam {
   opacity: 1;
+  animation-duration: 2.2s;
   transform: translateX(-50%) scale(1.24);
   background: radial-gradient(
     circle,
-    rgba(213, 181, 108, 0.3) 0%,
-    rgba(0, 240, 255, 0.12) 50%,
+    rgba(213, 181, 108, 0.32) 0%,
+    rgba(0, 240, 255, 0.14) 50%,
     transparent 78%
   );
+}
+
+@keyframes beamBreathe {
+  0% {
+    opacity: 0.65;
+    transform: translateX(-50%) scale(0.98);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translateX(-50%) scale(1.04);
+  }
+  100% {
+    opacity: 0.6;
+    transform: translateX(-50%) scale(0.96);
+  }
+}
+
+.signal-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 240, 255, 0.035) 20%,
+    rgba(213, 181, 108, 0.055) 50%,
+    rgba(0, 240, 255, 0.03) 80%,
+    transparent 100%
+  );
+  backdrop-filter: contrast(1.06) brightness(1.03);
+  -webkit-backdrop-filter: contrast(1.06) brightness(1.03);
+  opacity: 0.35;
+  pointer-events: none;
+  animation: bandFloat 7.3s ease-in-out infinite alternate;
+  transition: opacity 0.8s ease, height 0.8s ease;
+  z-index: 1;
+}
+
+body.signal-page[data-playback="playing"] .signal-band {
+  opacity: 0.6;
+  height: 72px;
+}
+
+body.signal-page[data-playback="peak"] .signal-band {
+  opacity: 0.85;
+  height: 90px;
+}
+
+@keyframes bandFloat {
+  0% {
+    top: 12%;
+    transform: scaleY(0.9);
+    opacity: 0.25;
+  }
+  35% {
+    opacity: 0.45;
+  }
+  65% {
+    opacity: 0.3;
+    transform: scaleY(1.1);
+  }
+  100% {
+    top: 80%;
+    transform: scaleY(0.95);
+    opacity: 0.38;
+  }
 }
 
 .signal-vignette {
@@ -144,19 +277,36 @@ body.signal-page[data-playback="peak"] .signal-beam {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 240, 255, 0.4) 25%,
-    rgba(213, 181, 108, 0.75) 55%,
+    rgba(0, 240, 255, 0.45) 25%,
+    rgba(213, 181, 108, 0.8) 55%,
     transparent 100%
   );
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
   opacity: 0;
   pointer-events: none;
   z-index: 2;
+  animation: ambientTearPulse 6.1s ease-in-out infinite;
   transition: opacity 0.06s ease;
 }
 
-.signal-atmosphere[data-glitch="true"] .signal-tear-line {
-  opacity: 0.9;
+@keyframes ambientTearPulse {
+  0%, 86%, 94%, 100% {
+    opacity: 0;
+  }
+  89% {
+    opacity: 0.45;
+    transform: scaleX(1);
+  }
+  91% {
+    opacity: 0.2;
+    transform: scaleX(0.98);
+  }
+}
+
+.signal-atmosphere[data-glitch="true"] .signal-tear-line,
+body.signal-page[data-playback="peak"] .signal-tear-line {
+  opacity: 0.95;
+  animation: none;
 }
 
 .signal-atmosphere[data-glitch="true"] .signal-scan {
@@ -373,9 +523,10 @@ button:focus-visible {
   text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
   transform: translateZ(0);
   will-change: transform;
+  animation: titleAmbientJitter 8.3s ease-in-out infinite;
 }
 
-/* Glitch Ghost & Chromatic Separation Layers */
+/* Always-on low-level ghost & chromatic separation layers */
 .signal-title::before,
 .signal-title::after {
   content: attr(data-text);
@@ -385,40 +536,94 @@ button:focus-visible {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0;
   will-change: transform, clip-path, opacity;
+}
+
+/* Base IDLE State: Continuous low-level ambient glitch */
+.signal-title::before {
+  opacity: 0.24;
+  color: var(--signal-cyan);
+  text-shadow: -1px 0 4px rgba(0, 240, 255, 0.35);
+  clip-path: polygon(0 18%, 100% 18%, 100% 32%, 0 32%);
+  transform: translate(-1.2px, -0.4px);
+  animation: titleAmbientCyan 6.8s ease-in-out infinite;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.signal-title::after {
+  opacity: 0.28;
+  color: var(--signal-gold);
+  text-shadow: 1px 0 4px rgba(213, 181, 108, 0.45);
+  clip-path: polygon(0 58%, 100% 58%, 100% 72%, 0 72%);
+  transform: translate(1.4px, 0.5px);
+  animation: titleAmbientGold 5.4s ease-in-out infinite;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* PLAYING State: Heightened intensity driven by audio */
+body.signal-page[data-playback="playing"] .signal-title::before {
+  color: var(--signal-cyan);
+  text-shadow: -2px 0 8px rgba(0, 240, 255, 0.55);
+  animation: titlePlayingCyan 3.4s ease-in-out infinite;
+}
+
+body.signal-page[data-playback="playing"] .signal-title::after {
+  color: var(--signal-gold);
+  text-shadow: 2px 0 8px rgba(213, 181, 108, 0.65);
+  animation: titlePlayingGold 2.8s ease-in-out infinite;
+}
+
+body.signal-page[data-playback="playing"] .signal-title {
+  animation: titlePlayingJitter 4.4s ease-in-out infinite;
+}
+
+/* PEAK State: Aggressive bass transient intensity */
+body.signal-page[data-playback="peak"] .signal-title::before {
+  color: var(--signal-cyan);
+  text-shadow: -3px 0 12px rgba(0, 240, 255, 0.75);
+  animation: titlePeakCyan 1.6s ease-in-out infinite;
+}
+
+body.signal-page[data-playback="peak"] .signal-title::after {
+  color: var(--signal-gold);
+  text-shadow: 3px 0 12px rgba(213, 181, 108, 0.85);
+  animation: titlePeakGold 1.4s ease-in-out infinite;
+}
+
+body.signal-page[data-playback="peak"] .signal-title {
+  animation: titlePeakJitter 2.2s ease-in-out infinite;
 }
 
 /* Audio-reactive & drop burst glitch */
 .signal-title[data-glitch="burst"] {
-  animation: titleGlitchJitter 0.28s steps(2, end) both;
+  animation: titleGlitchJitter 0.28s steps(2, end) both !important;
 }
 
 .signal-title[data-glitch="burst"]::before {
-  opacity: 0.9;
-  color: var(--signal-cyan);
-  text-shadow: -2px 0 10px rgba(0, 240, 255, 0.6);
-  animation: titleGlitchCyan 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  opacity: 0.95 !important;
+  color: var(--signal-cyan) !important;
+  text-shadow: -2px 0 10px rgba(0, 240, 255, 0.6) !important;
+  animation: titleGlitchCyan 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both !important;
 }
 
 .signal-title[data-glitch="burst"]::after {
-  opacity: 0.95;
-  color: var(--signal-gold);
-  text-shadow: 2px 0 10px rgba(213, 181, 108, 0.75);
-  animation: titleGlitchGold 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  opacity: 0.98 !important;
+  color: var(--signal-gold) !important;
+  text-shadow: 2px 0 10px rgba(213, 181, 108, 0.75) !important;
+  animation: titleGlitchGold 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) both !important;
 }
 
 /* Ambient idle micro-glitch & transmission end */
 .signal-title[data-glitch="micro"]::before {
-  opacity: 0.75;
-  color: var(--signal-cyan);
-  animation: titleGlitchMicroCyan 0.14s ease-out both;
+  opacity: 0.82 !important;
+  color: var(--signal-cyan) !important;
+  animation: titleGlitchMicroCyan 0.16s ease-out both !important;
 }
 
 .signal-title[data-glitch="micro"]::after {
-  opacity: 0.8;
-  color: var(--signal-gold);
-  animation: titleGlitchMicroGold 0.14s ease-out both;
+  opacity: 0.86 !important;
+  color: var(--signal-gold) !important;
+  animation: titleGlitchMicroGold 0.16s ease-out both !important;
 }
 
 @keyframes titleGlitchCyan {
@@ -535,6 +740,180 @@ button:focus-visible {
     opacity: 0;
     transform: translate(0, 0);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+}
+
+@keyframes titleAmbientCyan {
+  0%, 100% {
+    opacity: 0.24;
+    transform: translate(-0.8px, -0.2px);
+    clip-path: polygon(0 15%, 100% 15%, 100% 30%, 0 30%);
+  }
+  25% {
+    opacity: 0.38;
+    transform: translate(-1.6px, -0.5px);
+    clip-path: polygon(0 42%, 100% 42%, 100% 56%, 0 56%);
+  }
+  50% {
+    opacity: 0.2;
+    transform: translate(-0.6px, 0.2px);
+    clip-path: polygon(0 70%, 100% 70%, 100% 82%, 0 82%);
+  }
+  75% {
+    opacity: 0.42;
+    transform: translate(-1.8px, -0.4px);
+    clip-path: polygon(0 24%, 100% 24%, 100% 38%, 0 38%);
+  }
+}
+
+@keyframes titleAmbientGold {
+  0%, 100% {
+    opacity: 0.28;
+    transform: translate(0.9px, 0.3px);
+    clip-path: polygon(0 55%, 100% 55%, 100% 68%, 0 68%);
+  }
+  30% {
+    opacity: 0.44;
+    transform: translate(1.8px, 0.6px);
+    clip-path: polygon(0 10%, 100% 10%, 100% 25%, 0 25%);
+  }
+  65% {
+    opacity: 0.22;
+    transform: translate(0.7px, -0.3px);
+    clip-path: polygon(0 75%, 100% 75%, 100% 88%, 0 88%);
+  }
+  85% {
+    opacity: 0.48;
+    transform: translate(1.6px, 0.5px);
+    clip-path: polygon(0 48%, 100% 48%, 100% 62%, 0 62%);
+  }
+}
+
+@keyframes titleAmbientJitter {
+  0%, 100% {
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.1), -1px 0 3px rgba(0, 240, 255, 0.18), 1px 0 3px rgba(213, 181, 108, 0.22);
+    transform: translate(0, 0);
+  }
+  33% {
+    text-shadow: 0 0 35px rgba(255, 255, 255, 0.15), -1.5px 0 4px rgba(0, 240, 255, 0.28), 1.5px 0 4px rgba(213, 181, 108, 0.32);
+    transform: translate(-0.4px, 0.2px);
+  }
+  66% {
+    text-shadow: 0 0 25px rgba(255, 255, 255, 0.08), -0.8px 0 2px rgba(0, 240, 255, 0.14), 0.8px 0 2px rgba(213, 181, 108, 0.18);
+    transform: translate(0.3px, -0.2px);
+  }
+}
+
+@keyframes titlePlayingCyan {
+  0%, 100% {
+    opacity: 0.52;
+    transform: translate(-1.8px, -0.5px);
+    clip-path: polygon(0 12%, 100% 12%, 100% 28%, 0 28%);
+  }
+  25% {
+    opacity: 0.72;
+    transform: translate(-2.8px, -0.9px);
+    clip-path: polygon(0 38%, 100% 38%, 100% 55%, 0 55%);
+  }
+  50% {
+    opacity: 0.46;
+    transform: translate(-1.4px, 0.4px);
+    clip-path: polygon(0 68%, 100% 68%, 100% 82%, 0 82%);
+  }
+  75% {
+    opacity: 0.74;
+    transform: translate(-3.0px, -0.7px);
+    clip-path: polygon(0 22%, 100% 22%, 100% 38%, 0 38%);
+  }
+}
+
+@keyframes titlePlayingGold {
+  0%, 100% {
+    opacity: 0.56;
+    transform: translate(2.0px, 0.6px);
+    clip-path: polygon(0 52%, 100% 52%, 100% 68%, 0 68%);
+  }
+  30% {
+    opacity: 0.76;
+    transform: translate(3.0px, 1.0px);
+    clip-path: polygon(0 8%, 100% 8%, 100% 24%, 0 24%);
+  }
+  65% {
+    opacity: 0.5;
+    transform: translate(1.6px, -0.5px);
+    clip-path: polygon(0 72%, 100% 72%, 100% 88%, 0 88%);
+  }
+  85% {
+    opacity: 0.78;
+    transform: translate(2.8px, 0.8px);
+    clip-path: polygon(0 44%, 100% 44%, 100% 60%, 0 60%);
+  }
+}
+
+@keyframes titlePlayingJitter {
+  0%, 100% {
+    text-shadow: 0 0 35px rgba(255, 255, 255, 0.15), -1.8px 0 4px rgba(0, 240, 255, 0.3), 1.8px 0 4px rgba(213, 181, 108, 0.35);
+    transform: translate(0, 0);
+  }
+  33% {
+    text-shadow: 0 0 45px rgba(255, 255, 255, 0.2), -2.4px 0 6px rgba(0, 240, 255, 0.4), 2.4px 0 6px rgba(213, 181, 108, 0.45);
+    transform: translate(-0.8px, 0.4px);
+  }
+  66% {
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.12), -1.5px 0 3px rgba(0, 240, 255, 0.25), 1.5px 0 3px rgba(213, 181, 108, 0.3);
+    transform: translate(0.6px, -0.3px);
+  }
+}
+
+@keyframes titlePeakCyan {
+  0%, 100% {
+    opacity: 0.82;
+    transform: translate(-3.2px, -1.0px);
+    clip-path: polygon(0 10%, 100% 10%, 100% 32%, 0 32%);
+  }
+  30% {
+    opacity: 0.95;
+    transform: translate(-4.5px, -1.4px);
+    clip-path: polygon(0 45%, 100% 45%, 100% 68%, 0 68%);
+  }
+  70% {
+    opacity: 0.86;
+    transform: translate(-3.8px, 0.8px);
+    clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
+  }
+}
+
+@keyframes titlePeakGold {
+  0%, 100% {
+    opacity: 0.88;
+    transform: translate(3.4px, 1.1px);
+    clip-path: polygon(0 48%, 100% 48%, 100% 70%, 0 70%);
+  }
+  35% {
+    opacity: 0.98;
+    transform: translate(4.8px, 1.5px);
+    clip-path: polygon(0 5%, 100% 5%, 100% 26%, 0 26%);
+  }
+  75% {
+    opacity: 0.9;
+    transform: translate(3.6px, -0.9px);
+    clip-path: polygon(0 68%, 100% 68%, 100% 90%, 0 90%);
+  }
+}
+
+@keyframes titlePeakJitter {
+  0%, 100% {
+    text-shadow: 0 0 50px rgba(255, 255, 255, 0.25), -3px 0 8px rgba(0, 240, 255, 0.5), 3px 0 8px rgba(213, 181, 108, 0.55);
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-1.2px, 0.6px);
+  }
+  50% {
+    transform: translate(1.0px, -0.6px);
+  }
+  75% {
+    transform: translate(-0.8px, -0.4px);
   }
 }
 
@@ -1124,6 +1503,7 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
 
   .signal-noise,
   .signal-scan,
+  .signal-band,
   .signal-tear-line {
     display: none !important;
   }
