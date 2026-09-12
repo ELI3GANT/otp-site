@@ -158,13 +158,16 @@
   const createAction = (project, kind) => {
     const isCaseStudy = kind === 'case-study';
     const href = safeHref(isCaseStudy ? project.caseStudyUrl : project.projectUrl);
-    const label = cleanText(
+    let label = cleanText(
       isCaseStudy ? project.caseStudyCtaLabel : project.projectCtaLabel,
       isCaseStudy ? 'Read Case Study' : 'Visit Project'
     );
+    if (!label.includes('↗')) {
+      label = `${label} ↗`;
+    }
 
     if (!href) {
-      const unavailable = element('span', 'archive-project-action archive-project-action-secondary is-unavailable', `${label} · Soon`);
+      const unavailable = element('span', 'archive-project-action archive-project-action-secondary is-unavailable', `${label.replace(/\s*↗\s*$/, '')} · Soon`);
       unavailable.setAttribute('aria-disabled', 'true');
       unavailable.title = 'Full case study coming soon';
       return unavailable;
@@ -184,7 +187,10 @@
 
   const createBookingAction = (project) => {
     const href = safeHref(project.bookingUrl || project.ctaHref || '/bookings?source=archive-card');
-    const label = cleanText(project.bookingCtaLabel || project.ctaLabel, 'Build something like this');
+    let label = cleanText(project.bookingCtaLabel || project.ctaLabel, 'Build something like this');
+    if (!label.includes('↗')) {
+      label = `${label} ↗`;
+    }
     const link = element('a', 'archive-project-action archive-project-action-conversion', label);
     link.href = href || '/bookings?source=archive-card';
     if (project.id === 'otp-fixline') {
@@ -236,23 +242,25 @@
     title.id = titleId;
     content.appendChild(title);
     content.appendChild(element('p', 'archive-project-summary', project.shortDescription));
-    content.appendChild(createPills(project.disciplines, 'archive-project-pills', 6));
+    content.appendChild(createPills(project.disciplines, 'archive-project-pills', 3));
 
     const details = element('div', 'archive-project-details');
     const serviceGroup = element('div', 'archive-project-detail-group');
     serviceGroup.appendChild(element('p', 'archive-project-detail-label', 'Services'));
-    serviceGroup.appendChild(element('p', 'archive-project-detail-copy', (project.services || []).slice(0, 4).join(' · ')));
+    serviceGroup.appendChild(element('p', 'archive-project-detail-copy', (project.services || []).slice(0, 3).join(' · ')));
     details.appendChild(serviceGroup);
     const technologyGroup = element('div', 'archive-project-detail-group');
     technologyGroup.appendChild(element('p', 'archive-project-detail-label', 'Technology'));
-    technologyGroup.appendChild(element('p', 'archive-project-detail-copy', (project.technology || []).join(' · ')));
+    technologyGroup.appendChild(element('p', 'archive-project-detail-copy', (project.technology || []).slice(0, 3).join(' · ')));
     details.appendChild(technologyGroup);
     content.appendChild(details);
 
     const actions = element('div', 'archive-project-actions');
     actions.appendChild(createAction(project, 'project'));
     actions.appendChild(createBookingAction(project));
-    actions.appendChild(createAction(project, 'case-study'));
+    if (project.caseStudyUrl) {
+      actions.appendChild(createAction(project, 'case-study'));
+    }
     content.appendChild(actions);
     card.appendChild(content);
     return card;

@@ -130,8 +130,12 @@ assert.ok(archiveStyles.includes('.archive-project-action-conversion'), 'archive
 assert.ok(archiveStyles.includes('object-fit: contain'), 'archive comparison screenshots preserve their full aspect ratio');
 assert.ok(/\[data-theme="light"\]\s+\.archive-page[\s\S]*?--archive-surface:\s*rgba\(9,\s*9,\s*12/.test(archiveStyles), 'archive keeps dark OTP case-study surfaces under global light theme');
 assert.ok(
-  /\.archive-case-study-card:not\(\.is-featured\)[\s\S]*?height:\s*clamp\(280px,\s*31vw,\s*430px\)/.test(archiveStyles),
-  'standard Archive cards keep project screenshots bounded on desktop'
+  archiveStyles.includes('aspect-ratio: 16 / 10'),
+  'archive cards enforce consistent 16:10 media aspect ratio'
+);
+assert.ok(
+  archiveStyles.includes('repeat(3, minmax(0, 1fr))'),
+  'archive desktop grid enforces 3-column layout at >=1280px'
 );
 assert.ok(!archiveStyles.includes('height: 100%;\n  border-right'), 'standard Archive card media must not stretch across the content column');
 assert.ok(archiveStyles.includes('prefers-reduced-motion'), 'archive respects reduced-motion preferences');
@@ -163,9 +167,8 @@ dom.window.eval(read('otp-projects.js'));
 dom.window.eval(archiveClient);
 const renderedDocument = dom.window.document;
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
+assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-primary').length, projects.length, 'runtime renders one primary action per project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-conversion').length, projects.length, 'runtime renders one booking conversion action per project');
-assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action.is-unavailable[aria-disabled="true"]').length, projects.length, 'future case-study actions remain non-interactive');
-assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action.is-unavailable[href]').length, 0, 'unavailable actions never receive a fallback URL');
 const hyhCard = renderedDocument.querySelector('[data-project-id="hyh-architecture-design"]');
 assert.ok(hyhCard && hyhCard.classList.contains('has-comparison'), 'HYH renders as a dedicated before-and-after card');
 assert.strictEqual(hyhCard.querySelectorAll('.archive-project-comparison-panel').length, 2, 'HYH renders both before and after panels');
