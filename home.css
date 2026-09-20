@@ -79,5 +79,5 @@
 
 .home-page .public-section { padding-block: var(--public-section-compact); }
 .home-page .home-work { padding-bottom: var(--public-section-compact); }
-.home-page .home-capability-list a { padding-block: 24px; }
+.home-page .home-capability-list a { padding-block: var(--space-6); }
 .home-page .public-cta { padding-block: var(--space-20); }
