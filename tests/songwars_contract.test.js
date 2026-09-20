@@ -97,7 +97,7 @@ assert.deepStrictEqual(
     { displayName: 'A1ZEK', role: 'Featured Artist', instagramUrl: 'https://www.instagram.com/a1z3k' },
     { displayName: 'YUNG HAVOC', role: 'Featured Artist', instagramUrl: 'https://www.instagram.com/yungxhavoc' },
     { displayName: 'JDRVENGE', role: 'Featured Artist', instagramUrl: 'https://www.instagram.com/jdrvenge' },
-    { displayName: 'ONLYTRUEPERSPECTIVE', role: 'Production / Creative Direction / Platform', instagramUrl: 'https://www.instagram.com/onlytrueperspective' }
+    { displayName: 'ONLYTRUE PERSPECTIVE', role: 'Production / Creative Direction / Platform', instagramUrl: 'https://www.instagram.com/onlytrueperspective' }
   ],
   'the approved roles and Instagram destinations stay editable in one config'
 );

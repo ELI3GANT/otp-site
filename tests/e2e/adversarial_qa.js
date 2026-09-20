@@ -214,31 +214,24 @@ async function runAdversarialQA() {
       }
     }
 
-    // 11. Mobile Menu Outside-Click Check
     {
       await page.setViewportSize({ width: 390, height: 844 });
-      await page.goto(`${baseUrl}/`, { waitUntil: 'domcontentloaded' });
+      await page.goto(`${baseUrl}/studio`, { waitUntil: 'load' });
+      const studioHeaderHeight = await page.locator('.public-header').evaluate((header) => Math.round(header.getBoundingClientRect().height));
+      await page.goto(`${baseUrl}/website-design.html`, { waitUntil: 'load' });
+      const serviceHeaderHeight = await page.locator('.public-header').evaluate((header) => Math.round(header.getBoundingClientRect().height));
+      report('Service page uses shared mobile header height', serviceHeaderHeight === studioHeaderHeight, `${serviceHeaderHeight}px vs ${studioHeaderHeight}px`);
 
-      const menuBtn = page.locator('.public-nav-toggle, [aria-controls="public-menu"], .menu-toggle').first();
-      if (await menuBtn.isVisible()) {
-        await menuBtn.click();
-        await page.waitForTimeout(100);
-        const isOpen = await page.evaluate(() => {
-          const menu = document.querySelector('.public-menu, .nav-links');
-          return menu && (menu.classList.contains('is-open') || menu.classList.contains('open') || menu.getAttribute('aria-hidden') === 'false');
-        });
-        report('Mobile menu opens on trigger click', Boolean(isOpen));
-
-        await page.mouse.click(10, 500);
-        await page.waitForTimeout(150);
-        const isClosed = await page.evaluate(() => {
-          const menu = document.querySelector('.public-menu, .nav-links');
-          return !menu || (!menu.classList.contains('is-open') && !menu.classList.contains('open'));
-        });
-        report('Mobile menu closes on click-outside', Boolean(isClosed));
-      } else {
-        report('Mobile menu trigger check', true, 'Menu trigger not present on desktop header');
-      }
+      const menu = page.locator('.public-menu');
+      const trigger = menu.locator('summary');
+      report('Mobile menu trigger is visible', await trigger.isVisible());
+      await trigger.click();
+      report('Mobile menu opens on trigger click', await menu.evaluate((element) => element.open));
+      await page.mouse.click(10, 500);
+      report('Mobile menu closes on click outside', !(await menu.evaluate((element) => element.open)));
+      await trigger.click();
+      await trigger.press('Escape');
+      report('Mobile menu closes on Escape', !(await menu.evaluate((element) => element.open)));
     }
 
   } catch (err) {

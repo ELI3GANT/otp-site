@@ -44,7 +44,7 @@ const people = [
     avatarImagePath: ''
   },
   {
-    displayName: 'ONLYTRUEPERSPECTIVE',
+    displayName: 'ONLYTRUE PERSPECTIVE',
     initials: 'OTP',
     role: 'Production / Creative Direction / Platform',
     instagramUrl: 'https://www.instagram.com/onlytrueperspective',

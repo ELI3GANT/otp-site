@@ -383,6 +383,18 @@ main {
   display: block;
 }
 
+.poster-frame figcaption {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  border-top: var(--border-default-width) solid var(--border-default);
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+}
+
 .poster-frame:hover img {
   filter: contrast(1.02);
   transform: scale(1.002);

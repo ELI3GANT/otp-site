@@ -1,75 +1,13 @@
 {
-  "releaseName": "otp-public-site-redesign-20260920",
+  "releaseName": "otp-public-site-polish-20260920",
   "includedFiles": [
-    ".github/workflows/ci.yml",
-    ".github/workflows/production-release.yml",
-    "DESIGN.md",
-    "archive-media.js",
-    "archive.css",
-    "archive.html",
-    "archive.js",
-    "audit-page.css",
-    "bookings.html",
-    "bookings.js",
-    "campaign-navigation.css",
-    "client.html",
-    "consultant-audit.html",
-    "docs/SITE_REDESIGN_PLAN.md",
-    "docs/redesign-evidence/authenticated-http-sweep.json",
-    "docs/redesign-evidence/local-links.json",
-    "docs/redesign-evidence/public-http-sweep.json",
-    "docs/redesign-evidence/release-checks.md",
-    "home.css",
-    "index.html",
-    "insight.html",
-    "insights.html",
-    "otp-projects.js",
-    "package.json",
-    "privacy.html",
-    "project-page.css",
-    "project-stories.js",
-    "protocol.html",
-    "public-shell.js",
-    "public-system.css",
-    "quote.html",
-    "quote.js",
     "release-manifest.json",
-    "scripts/prod_full_sweep.js",
-    "scripts/prod_terminal_sweep.js",
-    "scripts/sync-public-shell.js",
-    "server.js",
     "service-discovery.css",
-    "signal.css",
-    "signal.html",
-    "sitemap.xml",
     "songwars-config.js",
+    "songwars.css",
     "songwars.html",
-    "studio.css",
-    "studio.html",
-    "supporting-public.css",
-    "terms.html",
-    "tests/archive_case_study_contract.test.js",
-    "tests/archive_url_sync_and_fallback.test.js",
     "tests/e2e/adversarial_qa.js",
-    "tests/fixline_integration_contract.test.js",
-    "tests/homepage_visual_contract.test.js",
-    "tests/loader_recovery_contract.test.js",
-    "tests/logo_asset_contract.test.js",
-    "tests/marketing_site_contract.test.js",
-    "tests/master_runner.js",
-    "tests/pagespeed_delivery_contract.test.js",
-    "tests/release_guardrails_contract.test.js",
-    "tests/signal_contract.test.js",
-    "tests/signature_pricing.test.js",
     "tests/songwars_contract.test.js",
-    "tests/youtube_video_contract.test.js",
-    "vercel.json",
-    "weatheros-privacy.html",
-    "weatheros-support.html",
-    "weatheros.html",
-    "weatheros/index.html",
-    "weatheros/privacy.html",
-    "weatheros/support.html",
     "website-design.html"
   ],
   "excludedDirtyFiles": [
@@ -91,7 +29,7 @@
     },
     {
       "command": "npm run test:e2e",
-      "status": "passed_47_of_47"
+      "status": "passed_51_of_51"
     },
     {
       "command": "npm run contracts:verify",
@@ -103,7 +41,7 @@
     },
     {
       "command": "npm run security:scan",
-      "status": "passed_289_files"
+      "status": "passed_308_files"
     },
     {
       "command": "npm run build:speed-insights",
@@ -111,14 +49,10 @@
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
-      "status": "passed_public_34_checks"
+      "status": "passed_public_34_checks_predeploy"
     },
     {
-      "command": "authenticated npm run prod:full-sweep",
-      "status": "passed_34_public_plus_5_admin_get_checks_20260916"
-    },
-    {
-      "command": "node --check server.js public-shell.js archive.js project-stories.js songwars-config.js scripts/prod_full_sweep.js",
+      "command": "node --check songwars-config.js tests/e2e/adversarial_qa.js tests/songwars_contract.test.js",
       "status": "passed"
     },
     {
@@ -128,11 +62,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Chrome interaction verified Archive search narrowed to Song Wars and its Released label; Song Wars campaign page identified historical July 2026 figures; live Journal article loaded; 47 adversarial browser checks passed, including booking and quote flows without submissions. Responsive capture matrix covers 124 page/viewport cases with no horizontal overflow. Independent visual reviewers passed core and supporting page top views; lower-page visuals received automated layout and link checks."
+    "summary": "Local Chrome inspection of Website Design and Song Wars at 390, 768, and 1280 pixels captured top, middle, and footer of both pages. Independent visual review passed. 51 adversarial browser checks passed, including native mobile menu open, outside close, Escape close, 80px shared header parity, and no horizontal overflow. No form submission was made."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "On 2026-09-16, read-only production HTTP sweep passed 34 public and five authenticated GET checks with a short-lived JWT created in memory from existing local production signing configuration. No token was stored in browser storage or committed. CI will rerun authenticated checks with configured secret."
+    "summary": "Previous production release CI on 2026-09-20 passed authenticated read-only admin checks. This polish changes only public HTML/CSS, Song Wars display copy, and related tests; local predeploy sweep passed 34 public checks without admin credentials. This release CI will rerun the authenticated checks with configured secret."
   },
   "deploymentTarget": {
     "project": "otp-site",
