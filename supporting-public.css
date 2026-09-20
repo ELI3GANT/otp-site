@@ -1,0 +1,45 @@
+.supporting-page { --accent2: var(--accent-otp); --accent2-text: var(--ink); --accent2-rgb: 220,255,95; --muted: var(--text-secondary); --muted2: var(--text-secondary); }
+.supporting-page main { padding: clamp(48px,7vw,96px) var(--public-gutter) clamp(64px,8vw,120px); }
+.supporting-page main > .wrap { max-width: 1312px; margin-inline: auto; }
+.secondary-intro { padding-bottom: 48px; border-bottom: 1px solid var(--border-default); margin-bottom: 32px; }
+.secondary-intro h1 { font-size: clamp(4rem,11vw,9rem); line-height: 1; letter-spacing: -.065em; font-weight: 500; margin: 24px 0; }
+.secondary-intro h1 span { color: var(--accent-otp); }
+.intro-text { font-size: var(--public-lead); color: var(--text-secondary); max-width: 45ch; }
+#filter-wrap { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 40px; }
+.filter-btn { min-height: 44px; padding: 10px 20px; background: transparent; border: 1px solid var(--border-default); color: var(--paper); }
+.filter-btn.active, .filter-btn:hover { background: var(--accent-otp); border-color: var(--accent-otp); color: var(--ink); }
+.insights-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1px; background: var(--border-default); border: 1px solid var(--border-default); }
+.insight-card { min-width: 0; background: var(--ink); padding: clamp(24px,4vw,48px); }
+.insight-card:hover { background: var(--surface-secondary); }
+.insight-card-inner { display: flex; flex-direction: column; height: 100%; gap: 24px; }
+.insight-date, .post-meta { font: .75rem/1.5 var(--font-mono); color: var(--text-secondary); }
+.insight-card h2 { font-size: clamp(1.6rem,2.6vw,2.5rem); letter-spacing: -.04em; line-height: 1.15; overflow-wrap: break-word; }
+.insight-card p { color: var(--text-secondary); max-width: 52ch; }
+.post-tag { font: .7rem/1.5 var(--font-mono); color: var(--text-secondary); margin-right: 12px; overflow-wrap: anywhere; }
+.insight-footer { margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border-default); }
+.read-more { color: var(--accent-otp); font-size: .875rem; }
+.subscribe-section { margin-top: 64px; padding: clamp(24px,5vw,64px); background: var(--paper); color: var(--ink); }
+.subscribe-section h3 { font-size: clamp(2rem,4vw,3.5rem); line-height: 1.1; letter-spacing: -.04em; margin-bottom: 20px; }
+.subscribe-section p { color: var(--paper-muted); max-width: 52ch; }
+.subscribe-form { display: flex; gap: 12px; max-width: 640px; margin-top: 28px; }
+.subscribe-form input { min-width: 0; flex: 1; min-height: 52px; padding: 12px 16px; border: 1px solid var(--paper-muted); background: transparent; color: var(--ink); }
+.subscribe-form button { min-height: 52px; padding: 12px 28px; background: var(--ink); color: var(--paper); border: 0; }
+.insights-footer-nav { display: flex; flex-wrap: wrap; gap: 32px; margin-top: 32px; }
+.insights-footer-nav a, .post-nav a, .back-to-vault { display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline; text-underline-offset: 6px; }
+.legal-page main, .article-page main { background: var(--paper); color: var(--ink); }
+.legal-page main > .wrap, .article-page main { max-width: none; }
+.legal-page .post-content, .article-page .post-header, .article-page .post-content { width: min(100%,880px); margin-inline: auto; }
+.legal-page .post-header, .article-page .post-header { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--paper-rule); }
+.legal-page h1, .article-page h1 { font-size: clamp(2.5rem,5.5vw,5rem); line-height: 1.06; letter-spacing: -.05em; font-weight: 500; margin: 16px 0 24px; overflow-wrap: break-word; }
+.legal-page .muted, .article-page .post-meta { color: var(--paper-muted); }
+.legal-page section { margin-top: 40px; }
+.legal-page h2, .article-page .post-content h2, .article-page .post-content h3 { font-size: clamp(1.5rem,3vw,2rem); line-height: 1.2; letter-spacing: -.03em; margin: 32px 0 20px; }
+.legal-page .post-content p, .article-page .post-content p { margin-block: 18px; }
+.legal-page .post-content a, .article-page .post-content a { color: var(--ink) !important; text-decoration: underline; overflow-wrap: anywhere; }
+.legal-page .post-nav { margin-top: 48px; border-top: 1px solid var(--paper-rule); padding-top: 24px; }
+.article-page .post-meta { display: block; margin-top: 24px; }
+.article-page .post-img { width: 100%; height: auto; margin-bottom: 36px; }
+.article-page blockquote { margin: 32px 0; padding: 16px 24px; border-left: 3px solid var(--ink); }
+.article-page pre { overflow-x: auto; }
+.article-page #loader { min-height: 140px; }
+@media(max-width:640px) { .insights-grid { grid-template-columns: 1fr; } .subscribe-form { flex-direction: column; } .insight-card-inner { gap: 20px; } }

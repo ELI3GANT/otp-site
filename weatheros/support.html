@@ -403,40 +403,13 @@
       background: rgba(var(--w-cyan-rgb), 0.08);
     }
   </style>
+<link rel="stylesheet" href="/public-system.css?v=20260915" />
 </head>
 <body class="page-protocol">
   <div class="stars-v2-container" aria-hidden="true"></div>
 
   <!-- Primary Navigation Bar -->
-  <header class="nav nav-split" id="top">
-    <!-- Logo Left -->
-    <a href="/index.html" class="nav-logo k-hover" aria-label="OnlyTruePerspective Homepage">
-      <img src="/assets/otp-logo-transparent.png" alt="OTP logo" class="otp-mark" id="nav-logo-neon" width="44" height="44" decoding="async" />
-    </a>
-
-    <!-- Links Right -->
-    <nav class="nav-links" aria-label="Primary">
-      <a href="/index.html#work" class="k-hover">Work</a>
-      <a href="/weatheros" class="k-hover" style="color: var(--w-cyan); font-weight: 700;">WeatherOS</a>
-      <a href="/weatheros/support" class="k-hover active" style="color: var(--w-cyan);">Support</a>
-      <a href="/bookings" class="k-hover">Book</a>
-      <a href="/portal" class="k-hover">Portal</a>
-    </nav>
-
-    <!-- Mobile toggle -->
-    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-
-    <nav class="nav-drawer" aria-label="Mobile">
-      <a href="/weatheros">WeatherOS Showcase</a>
-      <a href="/weatheros/support" style="color: var(--w-cyan); font-weight: 700;">Support &amp; FAQ</a>
-      <a href="/weatheros/privacy">Privacy Policy</a>
-      <a href="/index.html#work">Work</a>
-      <a href="/bookings">⚡ Book OTP</a>
-      <a href="/portal">🏛️ Client Portal</a>
-    </nav>
-  </header>
+  <!-- PUBLIC HEADER START --><header class="public-header" id="top"><a class="public-brand" href="/" aria-label="OnlyTrue Perspective home"><img src="/assets/otp-logo-transparent.png" width="44" height="44" alt="" /><span>OnlyTrue<br>Perspective</span></a><nav class="public-desktop-nav" aria-label="Primary"><a href="/">Home</a><a href="/archive">Archive</a><a href="/signal">Signal</a><a href="/studio">Studio</a></nav><a class="public-header-cta" href="/fixline/intake?source=public-nav">Start a project <span aria-hidden="true">↗</span></a><details class="public-menu"><summary aria-label="Navigation menu">Menu <span aria-hidden="true">+</span></summary><nav aria-label="Mobile"><a href="/">Home</a><a href="/archive">Archive</a><a href="/signal">Signal</a><a href="/studio">Studio</a><a href="/fixline/intake?source=public-mobile">Start a project ↗</a></nav></details></header><!-- PUBLIC HEADER END -->
 
   <!-- Main Support Content -->
   <main class="wrap" style="padding-top: 100px; padding-bottom: 80px;">
@@ -675,33 +648,7 @@
   </main>
 
   <!-- Primary Site Footer -->
-  <footer class="footer">
-    <div class="wrap footer-inner">
-      <div class="footer-left">
-        <div class="nav-logo" aria-label="OTP">
-          <img src="/assets/otp-logo-transparent.png" alt="OTP logo" class="nav-gif" id="footer-logo-neon" width="44" height="44" loading="lazy" decoding="async" />
-        </div>
-        <div class="fineprint">© <span id="year">2026</span> OnlyTruePerspective LLC. All rights reserved.</div>
-        <div class="footer-legal">
-          <a href="/weatheros" class="k-hover" style="color: var(--w-cyan);">WeatherOS</a>
-          <span class="dot">•</span>
-          <a href="/weatheros/support" class="k-hover" style="color: var(--w-cyan);">Support</a>
-          <span class="dot">•</span>
-          <a href="/weatheros/privacy" class="k-hover">Privacy Policy</a>
-          <span class="dot">•</span>
-          <a href="/bookings" class="k-hover">Book OTP</a>
-          <span class="dot">•</span>
-          <a href="/portal" class="k-hover">Client Portal</a>
-          <span class="dot">•</span>
-          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>
-        </div>
-      </div>
-
-      <div class="footer-right">
-        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
-      </div>
-    </div>
-  </footer>
+  <!-- PUBLIC FOOTER START --><footer class="public-footer"><div class="public-wrap"><div class="public-footer-top"><a href="/" class="public-footer-brand">OnlyTruePerspective</a><p>Independent perspective.<br>Rhode Island · Working everywhere.</p></div><div class="public-footer-links"><nav aria-label="Explore"><a href="/archive">Archive</a><a href="/signal">Signal</a><a href="/studio">Studio</a><a href="/insights">Journal</a></nav><nav aria-label="Work with OTP"><a href="/fixline/intake?source=public-footer">Start a project ↗</a><a href="/website-design.html">Web & systems</a><a href="/services/consultant-audit">Consultant audit</a><a href="/fixline">FIXLINE</a><a href="/portal">Client Portal</a></nav><nav aria-label="Elsewhere"><a href="https://instagram.com/onlytrueperspective" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="https://youtube.com/@onlytrueperspective" target="_blank" rel="noopener noreferrer">YouTube ↗</a><a href="https://www.reddit.com/r/OnlyTruePerspective" target="_blank" rel="noopener noreferrer">Reddit ↗</a><a href="mailto:contact@onlytrueperspective.tech">Email ↗</a></nav></div><div class="public-footer-bottom"><span>© <span data-public-year>2026</span> OnlyTruePerspective LLC</span><span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="#top">Back to top ↑</a></span></div></div></footer><!-- PUBLIC FOOTER END -->
 
   <script>
     function toggleFaq(btn) {
@@ -715,5 +662,6 @@
   <script src="/stars-v2.js?v=20260819-perf1" defer></script>
   <script src="/otp-attribution.js?v=16.9.1" defer></script>
   <script src="/site-init.js?v=20260819-perf1" defer></script>
+<script src="/public-shell.js?v=20260915" defer></script>
 </body>
 </html>

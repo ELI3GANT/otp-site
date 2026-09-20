@@ -22,7 +22,7 @@ for (const html of [homepage, archive]) {
   assert.ok(html.includes('href="/fixline"'), 'public navigation links to FIXLINE');
 }
 
-assert.ok(homepage.includes('data-fixline-event="homepage_to_fixline"'), 'homepage FIXLINE CTA has bounded attribution');
+assert.ok(new JSDOM(homepage).window.document.querySelector('main a[href="/fixline/intake?source=homepage-hero"]'), 'homepage primary FIXLINE CTA preserves bounded source attribution');
 assert.ok(homepage.includes('href="/services/consultant-audit"'), 'homepage exposes consultant audit service');
 assert.ok(!homepage.includes('Analyze My Intent'), 'homepage does not ship a simulated audit flow');
 assert.ok(!homepage.includes('AI Content Injected Here'), 'homepage does not ship a fake strategy-result state');
@@ -31,7 +31,7 @@ assert.ok(projectLibrary.includes("projectUrl: '/fixline'"), 'Archive FIXLINE en
 assert.ok(projectLibrary.includes("bookingUrl: '/fixline/intake"), 'Archive FIXLINE conversion starts the real intake');
 
 assert.ok(consultantAuditPage.includes('rel="canonical" href="https://www.onlytrueperspective.tech/services/consultant-audit"'), 'consultant audit owns its canonical URL');
-assert.ok(consultantAuditPage.includes('href="/fixline/intake"'), 'consultant audit starts with FIXLINE');
+assert.ok(new JSDOM(consultantAuditPage).window.document.querySelector('a[href^="/fixline/intake?source=consultant-audit"]'), 'consultant audit starts with FIXLINE');
 assert.ok(server.includes("'/services/consultant-audit'"), 'Express serves the consultant audit route');
 assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/fixline</loc>'), 'sitemap contains FIXLINE');
 assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/services/consultant-audit</loc>'), 'sitemap contains consultant audit');

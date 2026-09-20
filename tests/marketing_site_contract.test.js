@@ -26,55 +26,20 @@ const server = read('server.js');
 const bookings = read('bookings.html');
 const analyticsEngine = read('otp-analytics-engine.js');
 
-assert.ok(index.includes('theme-chrono.js'), 'index loads theme-chrono (first paint)');
-assert.ok(index.includes('styles.css?v='), 'index loads styles.css');
-assert.ok(index.includes('gsap.min.js'), 'index loads GSAP');
-assert.ok(index.includes('ScrollTrigger.min.js'), 'index loads ScrollTrigger');
-assert.ok(index.includes('site-init.js?v='), 'index loads site-init');
+assert.ok(index.includes('public-system.css?v='), 'homepage loads shared public design tokens');
+assert.ok(index.includes('public-shell.js?v='), 'homepage loads lightweight public navigation');
 const analyticsEndpoint = analyticsEngine.match(/ANALYTICS_ENDPOINT\s*=\s*['"]([^'"]+)['"]/)?.[1];
 assert.ok(analyticsEndpoint, 'analytics engine declares its server endpoint');
 assert.ok(
     !index.includes('otp-analytics-engine.js') || server.includes(`app.post('${analyticsEndpoint}'`),
     'homepage must not load an analytics client without its matching server route'
 );
-assert.ok(index.includes('otp-projects.js?v=20260629-conversion1'), 'index loads reusable public project library');
-assert.ok(archive.includes('otp-projects.js?v=20260629-conversion1'), 'archive loads reusable public project library');
-const indexSiteInitV = (index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
-const insightSiteInitV = (insight.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
-assert.ok(indexSiteInitV && insightSiteInitV, 'index and insight declare site-init cache-bust');
-const assertSiteInitMatchesIndex = (html, label) => {
-    const v = (html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1];
-    assert.strictEqual(
-        v,
-        indexSiteInitV,
-        `${label} site-init.js?v must match index.html (avoid stale public helpers)`
-    );
-};
-assertSiteInitMatchesIndex(insight, 'insight.html');
-assertSiteInitMatchesIndex(insightsList, 'insights.html');
-assertSiteInitMatchesIndex(archive, 'archive.html');
-assertSiteInitMatchesIndex(terms, 'terms.html');
-assertSiteInitMatchesIndex(privacy, 'privacy.html');
+assert.ok(archive.includes('otp-projects.js?v='), 'archive loads the project catalog');
 assert.ok(!notFound.includes('site-init.js'), '404 stays standalone and does not load site-init on unknown nested routes');
 assert.ok(!notFound.includes('theme-chrono.js'), '404 stays standalone and does not run theme switching');
 assert.ok(!notFound.includes('stars-v2.js'), '404 stays standalone and does not run the animated starfield');
-const indexStylesV = (index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1];
-const assertStylesMatchesIndex = (html, label) => {
-    const v = (html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1];
-    assert.strictEqual(v, indexStylesV, `${label} styles.css?v must match index.html`);
-};
-assertStylesMatchesIndex(insight, 'insight.html');
-assertStylesMatchesIndex(insightsList, 'insights.html');
-assertStylesMatchesIndex(archive, 'archive.html');
-assertStylesMatchesIndex(terms, 'terms.html');
-assertStylesMatchesIndex(privacy, 'privacy.html');
-assertStylesMatchesIndex(notFound, '404.html');
 assert.ok(index.includes('data-editable='), 'CMS-editable regions present');
 assert.match(index, /href="\/archive"/, 'desktop nav includes the canonical Archive route (parity with mobile drawer)');
-assert.ok(index.includes('id="fast-lane-capture"'), 'homepage includes fast client capture path');
-assert.ok(index.includes('/bookings?source=homepage-fast-lane&service=same-day-signal'), 'homepage fast lane CTA routes into bookings with source tracking');
-assert.ok(index.includes('/bookings?source=homepage-site-fix&service=website-brand-fix'), 'homepage site fix CTA routes into bookings with source tracking');
-assert.ok(index.includes('/bookings?source=homepage-launch-package&service=launch-package'), 'homepage launch CTA routes into bookings with source tracking');
 assert.ok(
     index.includes('https://www.onlytrueperspective.tech/') && index.includes('rel="canonical"'),
     'index homepage canonical/og use final www canonical host'
@@ -163,7 +128,7 @@ assert.ok(!siteInit.includes('otp-uplink'), 'public site does not accept command
 assert.ok(siteInit.includes(".eq('access_scope', 'public')"), 'public live content reads require explicit public classification');
 assert.ok(siteInit.includes('Invalid response from server'), 'contact handler tolerates non-JSON error bodies');
 assert.ok(server.includes("app.get('/packages'"), 'server exposes /packages as a homepage package-section alias');
-assert.ok(server.includes('#packages'), '/packages alias redirects to homepage package section instead of duplicate HTML');
+assert.ok(server.includes("`/studio${query ? `?${query}` : ''}#engagements`"), 'package alias resolves to Studio engagement guidance');
 assert.ok(!index.includes('onmouseenter='), 'Enter Vault has no inline hover handler');
 assert.ok(!index.includes('onmouseleave='), 'Enter Vault has no inline leave handler');
 assert.ok(siteInit.includes("warpBtn.dataset.vaultBound === '1'"), 'Enter Vault binding is guarded against duplicates');
@@ -191,3 +156,19 @@ assert.ok(fs.readFileSync(path.join(root, 'otp-attribution.js'), 'utf8').include
 
 console.log('   ✅ Marketing + theme contract OK');
 console.log('🎉 MARKETING SITE CONTRACT COMPLETE');
+
+// Legacy entry points retain campaign attribution after the information architecture move.
+const vm = require('node:vm');
+let packageRedirect;
+const aliasSource = server.slice(server.indexOf("app.get('/packages'"), server.indexOf("app.get('/projects/:slug'"));
+vm.runInNewContext(aliasSource, { URLSearchParams, app: { get: (_, handler) => {
+  handler({ query: { utm_source: 'campaign', service: ['film', 'web'] } }, { redirect: (status, destination) => { packageRedirect = { status, destination }; } });
+} } });
+assert.equal(packageRedirect.status, 302);
+assert.equal(packageRedirect.destination, '/studio?utm_source=campaign&service=film&service=web#engagements');
+let destination;
+vm.runInNewContext(read('public-shell.js'), { URL, window: {
+  document: { querySelectorAll: () => [], querySelector: () => null },
+  location: { pathname: '/', hash: '#packages', search: '?utm_source=campaign', origin: 'https://www.onlytrueperspective.tech', replace: value => { destination = value; } }
+} });
+assert.equal(destination, '/studio?utm_source=campaign#engagements', 'legacy homepage fragment retains attribution');

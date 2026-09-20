@@ -117,6 +117,20 @@
       "headers": { "Location": "/weatheros" }
     },
     {
+      "src": "^/(?:weatheros-support\\.html|weatheros-support)/?$",
+      "status": 308,
+      "headers": { "Location": "/weatheros/support" }
+    },
+    {
+      "src": "^/(?:weatheros-privacy\\.html|weatheros-privacy)/?$",
+      "status": 308,
+      "headers": { "Location": "/weatheros/privacy" }
+    },
+    {
+      "src": "^/website-design/?$",
+      "dest": "/website-design.html"
+    },
+    {
       "src": "/weatheros/?",
       "dest": "/weatheros/index.html"
     },

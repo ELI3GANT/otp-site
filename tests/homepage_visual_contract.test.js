@@ -1,268 +1,52 @@
-const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
-
-const root = path.join(__dirname, '..');
-const read = (file) => fs.readFileSync(path.join(root, file), 'utf8').replace(/\r\n/g, '\n');
-
-console.log('HOMEPAGE VISUAL CONTRACT...');
-
-const styles = read('styles.css');
-const index = read('index.html');
-const archive = read('archive.html');
-const insights = read('insights.html');
-const stars = read('stars-v2.js');
-const siteInit = read('site-init.js');
-
-assert.ok(index.includes('ENGINEERED_SIGNALS'), 'Visual Success section uses operational signal language');
-assert.ok(index.includes('Visual Success <span class="visual-success-accent">Systems</span>'), 'Visual Success section uses the restored Systems heading');
-assert.ok(index.includes('Quote-First Project Intake'), 'Visual Success section includes quote-first intake card');
-assert.ok(index.includes('Fast-Lane Asset Path'), 'Visual Success section includes fast-lane card');
-assert.ok(index.includes('Private Delivery Workspace'), 'Visual Success section includes portal delivery card');
-assert.ok(index.includes('Proof first: live business platforms, emergency tech repairs, event pages, artist rollouts, and custom video production.'), 'homepage hero adds proof-first trust line');
-assert.ok(index.includes('id="fast-lane-capture"'), 'homepage exposes the fast client capture section');
-assert.ok(index.includes('Same-Day Signal'), 'homepage fast capture includes Same-Day Signal lane');
-assert.ok(index.includes('Website / Brand Fix'), 'homepage fast capture includes Website / Brand Fix lane');
-assert.ok(index.includes('Launch Package'), 'homepage fast capture includes Launch Package lane');
-assert.ok(index.includes('Need a page like Song Wars?'), 'homepage routes Song Wars proof to booking');
-assert.ok(index.includes('Need a transformation like HYH?'), 'homepage routes HYH proof to booking');
-assert.ok(index.includes('Need a rollout like PROTOCOL?'), 'homepage routes PROTOCOL proof to booking');
-assert.ok(!index.includes('id="audit-goal-input"'), 'homepage does not ship the retired simulated audit questionnaire');
-assert.ok(!index.includes('id="audit-email"'), 'homepage does not ship the retired simulated strategy capture');
-assert.ok(!index.includes('ENGINEERED_STATISTICS'), 'reverted statistics eyebrow must not return');
-assert.ok(!index.includes('Viewer Engagement Growth'), 'unverified engagement-growth claim must not return');
-assert.ok(!index.includes('Visions Delivered Globally'), 'unverified delivered-globally claim must not return');
-const studioSection = (index.match(/<section id="about"[\s\S]*?<\/section>/) || [''])[0];
-assert.ok(studioSection.includes('founded by ELI3GANT.'), 'identity card leads with ELI3GANT only');
-assert.ok(!studioSection.includes('Elijah Huertas'), 'visible identity card must not show legal first and last name');
-
-assert.ok(styles.includes('Clean homepage visual restore'), 'homepage visual restore guard is documented');
-assert.ok(styles.includes('html[data-stars="mounted"] .home-page .hero::before'), 'mounted star canvas disables fallback pseudo layer');
-assert.ok(styles.includes('html:not([data-stars="mounted"]):not([data-stars="disabled"]) .home-page .hero::before'), 'fallback star layer only renders when canvas is not mounted');
-assert.ok(styles.includes('Visual Success Systems restore'), 'restored Visual Success card styling is documented');
-assert.ok(!styles.includes('animation: holoFlow'), 'identity card light-mode treatment must not run perpetual shimmer animation');
-assert.ok(!styles.includes('mix-blend-mode: color-burn'), 'identity card light-mode treatment avoids expensive color-burn blending');
-assert.ok(!styles.includes('background-size: 150px 150px, 230px 230px, 310px 310px'), 'old tiled star fallback must not return');
-assert.ok(!styles.includes('otp-static-star-drift'), 'old animated tiled fallback must not return');
-assert.ok(styles.includes('opacity: 0.92 !important'), 'dark canvas stars remain visible');
-assert.ok(styles.includes('Day-mode rendering stabilizer'), 'final light-mode rendering stabilizer is documented');
-assert.ok(styles.includes('opacity: 0.72 !important'), 'day/light canvas stars remain visible on desktop');
-assert.ok(styles.includes('opacity: 0.76 !important'), 'day/light canvas stars remain visible on mobile');
-assert.ok(styles.includes('Final day-mode star clarity'), 'final light-mode star clarity guard is documented');
-assert.ok(styles.includes('opacity: 0.9 !important'), 'day/light canvas stars are clearly visible on desktop');
-assert.ok(styles.includes('html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas') && styles.includes('opacity: 0.88 !important'), 'performance mode preserves visible black stars in light mode');
-assert.ok(styles.includes('html[data-theme="light"] body.home-page .bg-grain') && styles.includes('opacity: 0.004 !important'), 'light mode suppresses dusty grain so stars read cleanly');
-assert.ok(styles.includes('html[data-theme="light"].otp-brand-synced body.home-page .hero h1.hero-title-adjust.luxe-title .title'), 'light mode owns the hero wordmark even after runtime brand sync');
-assert.ok(styles.includes('html[data-theme="light"].spectral-v-sync body.home-page .hero h1.hero-title-adjust.luxe-title .title'), 'light mode blocks spectral variants from recoloring the hero wordmark');
-assert.ok(styles.includes('html.otp-brand-synced .luxe-title .title'), 'first-paint brand title uses the active palette before deferred runtime');
-assert.ok(styles.includes('--spectral-gradient: var(--accent-gradient);'), 'spectral variants inherit the active palette gradient');
-assert.ok(!styles.includes('.spectral-revelation {\n  --accent2:'), 'spectral variants do not overwrite the active accent after first paint');
-assert.ok(!siteInit.includes('const spectralRoll = Math.random()'), 'runtime does not reroll a second spectral palette');
-assert.ok(index.includes('color: var(--accent2-text); text-align: center;'), 'homepage inline accent CTA uses palette contrast text');
-assert.ok(styles.includes('-webkit-text-fill-color: #050507 !important'), 'day-mode hero wordmark uses solid readable black text');
-assert.ok(styles.includes('html[data-theme="light"] body.home-page .nav-links a::after'), 'day-mode nav underline uses the active palette accent');
-assert.ok(styles.includes('html[data-theme="light"].spectral-revelation body.home-page .nav-logo') && styles.includes('filter: none !important;'), 'light mode blocks spectral nav-logo glow contamination');
-assert.ok(/\.home-page \.nav\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?z-index:\s*12000;[\s\S]*?\}/.test(styles), 'homepage nav remains fixed above hero and star layers');
-assert.ok(!/OTP DAY\/NIGHT VISUAL SYSTEM: final cascade overrides[\s\S]{0,180}\.home-page \.nav,/.test(styles), 'final homepage visual layering rule must not demote nav positioning');
-assert.ok(styles.includes('html.stars-performance-mode[data-theme="light"] body.home-page #cursor-canvas'), 'performance mode preserves light-mode star visibility');
-assert.ok(styles.includes('html[data-theme="light"] body.home-page .luxe-title .title'), 'light-mode hero title contrast gets final cascade ownership');
-assert.ok(/body\.home-page \.theme-toggle-btn:not\(\.mobile-theme-toggle\)\s*\{[\s\S]*?display:\s*none !important;/.test(styles), 'mobile homepage hides the fixed theme toggle so it cannot cover content');
-assert.ok(styles.includes('html[data-theme="light"] body.home-page .hero::after') && styles.includes('#ffffff 100%) !important;'), 'mobile light hero fade cannot fall back to dark section wash');
-assert.ok(styles.includes('body.home-page .section-results-enhanced .visual-success-heading::after') && styles.includes('display: none !important;'), 'Visual Success heading does not render the old off-center underline artifact');
-assert.ok(styles.includes('html.stars-performance-mode .bg-grain'), 'performance mode pauses grain overlays');
-assert.ok(styles.includes('html.stars-performance-mode .home-page #cursor-canvas'), 'performance mode removes expensive star canvas filter work');
-assert.ok(styles.includes('filter: none !important;'), 'performance mode keeps star canvas compositor lightweight');
-assert.ok(styles.includes('html.stars-performance-mode .home-page .glass-manifesto'), 'performance mode lightens identity card compositor work');
-assert.ok(styles.includes('backdrop-filter: blur(10px) saturate(1.05) !important'), 'performance mode keeps premium-lite identity card backdrop blur');
-assert.ok(styles.includes('glass-manifesto .sticker-base'), 'performance mode lightens identity card inner glass emblem');
-assert.ok(styles.includes('html.stars-performance-mode body.home-page .hero-symbol-mark'), 'performance mode preserves the unified hero mark');
-assert.ok(styles.includes('html.stars-performance-mode body.home-page .hero-symbol-shell::before'), 'performance mode keeps the unified hero aura bounded');
-assert.ok(styles.includes('otp-static-performance-logo'), 'performance mode static logo style is present');
-assert.ok(styles.includes('Mobile hero title fit: keep ONLY TRUE / PERSPECTIVE complete on narrow screens.'), 'mobile hero title fit guard is documented');
-assert.ok(styles.includes('Mobile hero title fit + spacing/scroll polish') && styles.includes('@media (max-width: 480px)') && styles.includes('@media (max-width: 390px)'), 'mobile hero has late <=480px and <=390px overflow guards');
-assert.ok(styles.includes('@media (max-width: 480px)') && styles.includes('@media (max-width: 390px)'), 'mobile hero uses narrow-width media guards');
-assert.ok(styles.includes('body.home-page .hero h1.hero-title-adjust.luxe-title .title:last-child') && styles.includes('font-size: 1.58rem !important;'), 'PERSPECTIVE line uses fixed mobile sizing');
-assert.ok(styles.includes('width: min(100%, calc(100vw - 32px)) !important;'), 'mobile hero title lines use 32px viewport side gutter');
-assert.ok(styles.includes('overflow-x: clip'), 'mobile hero blocks horizontal overflow');
-assert.ok(styles.includes('Mobile hero title fit + spacing/scroll polish'), 'mobile hero spacing and scroll polish guard is documented');
-assert.ok(styles.includes('Homepage hero identity rebuild') && styles.includes('one centered animated OTP mark'), 'homepage hero uses the animated unified identity rebuild styles');
-assert.ok(styles.includes('section-conversion-capture'), 'homepage conversion capture section is styled');
-assert.ok(styles.includes('conversion-lane-grid'), 'homepage conversion lane grid is styled');
-assert.ok(styles.includes('prospect-cta-grid'), 'homepage prospect CTA grid is styled');
-assert.ok(styles.includes('body.archive-page.nav-open .nav-drawer'), 'archive-style subpage mobile drawer gets a full-screen open-state override');
-assert.ok(styles.includes('height: 100dvh !important'), 'archive-style subpage drawer fills the mobile viewport');
-assert.ok(styles.includes('mix-blend-mode: normal !important'), 'archive-style drawer cannot blend with hero text behind it');
-assert.ok(/body\.archive-page \.theme-toggle-btn:not\(\.mobile-theme-toggle\)\s*\{[\s\S]*?display:\s*none !important;/.test(styles), 'mobile archive hides the fixed theme FAB so card media and CTAs stay unobstructed');
-assert.ok(styles.includes('body.home-page .hero-identity') && styles.includes('flex-direction: column;'), 'homepage hero identity uses a stable centered flex stack');
-assert.ok(styles.includes('body.home-page .hero-symbol-shell::after'), 'homepage hero symbol has a lightweight premium aura ring');
-assert.ok(styles.includes('width: clamp(166px, 12.6vw, 204px);'), 'desktop hero symbol is slightly larger without becoming oversized');
-assert.ok(styles.includes('width: clamp(124px, 33vw, 138px);') && styles.includes('width: 118px;'), 'mobile hero symbol uses bounded responsive sizes');
-assert.ok(styles.includes('height: 100svh !important'), 'mobile star canvas uses safe viewport height');
-assert.ok(styles.includes('min-height: auto !important'), 'mobile hero avoids rigid viewport min-height jumps');
-assert.ok(styles.includes('position: fixed !important') && styles.includes('max-height: 100dvh !important'), 'mobile star canvas stays fixed without layout height');
-assert.ok(styles.includes('body.home-page .hero-symbol-shell::before') && styles.includes('opacity: 0.34;'), 'mobile hero keeps a softer bounded aura');
-assert.ok(styles.includes('content: url("assets/otp-hero-poster-frame.png");'), 'reduced motion users get the static hero poster instead of the spinning mark');
-assert.ok(styles.includes('max-width: min(100%, calc(100vw - 36px)) !important;'), 'tablet hero title stays inside viewport side padding');
-assert.ok(!styles.includes('font-size: clamp(2.05rem, 9.6vw, 3.05rem) !important;'), 'removed oversized mobile PERSPECTIVE clamp that caused clipping');
-assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'day-mode services polish guard is documented');
-assert.ok(styles.includes('[data-theme="light"] .home-page #services.section-alt'), 'light-mode services section gets its own premium surface');
-assert.ok(styles.includes('[data-theme="light"] .home-page #services .service-item'), 'light-mode service cards get scoped contrast treatment');
-assert.ok(styles.includes('[data-theme="light"] .home-page #cursor-canvas.stars-mounted'), 'light-mode star canvas remains visible');
-assert.ok(styles.includes('.spectral-v-sync .network-pkg h4'), 'mobile spectral variants cannot force package headings past the viewport');
-assert.ok(styles.includes('overflow-wrap: anywhere !important'), 'mobile spectral headings wrap safely');
-
-assert.ok(stars.includes("setAttribute('data-stars', 'mounted')"), 'starfield marks canvas-mounted state');
-assert.ok(stars.includes("setAttribute('data-stars', 'fallback')"), 'starfield marks safe fallback when canvas init fails');
-const heroMarkTag = (index.match(/<img[^>]*class="hero-symbol-mark"[^>]*>/) || [''])[0];
-const heroMarkPrimarySrc = (heroMarkTag.match(/<img\s+src="([^"]+)"/) || [])[1];
-assert.ok(index.includes('class="hero-identity"'), 'homepage hero renders one unified OTP identity composition');
-assert.ok(index.includes('class="hero-symbol-shell"'), 'homepage hero renders one centered symbol shell');
-assert.ok(index.includes('class="hero-symbol-mark"'), 'homepage hero renders one primary symbol image');
-assert.ok(heroMarkTag.includes('width="280"') && heroMarkTag.includes('height="280"'), 'homepage hero mark intrinsic dimensions match the larger display target');
-assert.strictEqual((index.match(/class="hero-symbol-mark"/g) || []).length, 1, 'homepage renders exactly one primary hero mark image');
-assert.strictEqual(heroMarkPrimarySrc, 'assets/otp-hero-centered.gif', 'homepage renders the spinning hero GIF as the primary hero mark');
-assert.ok(heroMarkTag.includes('data-fallback-src="assets/otp-hero-poster-frame.png"'), 'homepage keeps the static poster only as an explicit load-error fallback');
-assert.ok(!/<picture[^>]*class="hero-symbol-picture"/.test(index), 'homepage hero does not use picture/source markup that can force PNG on mobile');
-assert.ok(!/<source[\s\S]{0,160}otp-hero-poster-frame\.png/.test(index), 'homepage hero has no source tag swapping the GIF to PNG');
-assert.notStrictEqual(heroMarkPrimarySrc, 'assets/otp-hero-poster-frame.png', 'homepage does not render the static PNG as the primary hero mark');
-assert.ok(!index.includes('hero-logo-wrap'), 'homepage no longer renders the old competing logo wrapper');
-assert.ok(!/class="[^"]*hero-eye-poster/.test(index), 'homepage no longer renders a separate poster image layer');
-assert.ok(!/class="[^"]*hero-eye-animated/.test(index), 'homepage no longer renders a separate animated image layer');
-assert.ok(!index.includes('data-hero-animated-src='), 'homepage no longer needs a JS animated-logo source');
-assert.ok(siteInit.includes('activateHeroAnimatedLogo') && siteInit.includes('single animated mark') && siteInit.includes('dataset.fallbackSrc'), 'site-init only adds unified hero GIF load-error fallback handling');
-assert.ok(!siteInit.includes('hero-eye-ready') && !siteInit.includes('hero-eye-revealed'), 'site-init no longer crossfades competing hero logo layers');
-assert.ok(index.includes('class="hero-title-adjust luxe-title"'), 'homepage hero wordmark remains the centerpiece');
-assert.ok(stars.includes('STARFIELD_BOOT_DELAY_MS'), 'starfield boot is delayed after first paint');
-assert.ok(stars.includes("img.classList.contains('hero-eye-3d')"), 'legacy animated logo performance guard remains protected');
-assert.ok(stars.includes('applyHeroLogoFallback'), 'hero centerpiece can fall back to static png only on load failure');
-assert.ok(stars.includes('otp-logo-transparent.png'), 'static png fallback asset remains available');
-assert.ok(stars.includes('beginPerformanceProbe'), 'fps probe waits until after initial page load');
-assert.ok(stars.includes('PROBE_DELAY_MS'), 'fps probe delay is configurable');
-assert.ok(stars.includes('LOW_FPS_SAMPLES_REQUIRED'), 'fps probe requires sustained low fps before activating');
-assert.ok(stars.includes('FPS_TRIGGER'), 'fps trigger threshold is configurable');
-assert.ok(!stars.includes('if (fps < 45) enablePerformanceMode()'), 'single early fps dip no longer triggers performance mode immediately');
-assert.ok(!/enablePerformanceMode\(\)[\s\S]{0,220}applyStaticLogoFallback/.test(stars), 'performance mode does not swap otp brand gifs by default');
-assert.ok(stars.includes('applyHeroLogoFallback'), 'hero png fallback remains available on true load failure');
-assert.ok(stars.includes("img.classList.contains('hero-eye-3d')"), 'legacy animated logo stays protected during performance mode');
-assert.ok(styles.includes('Premium-lite adaptive performance'), 'performance mode css stays premium-lite');
-assert.ok(styles.includes('html.stars-performance-mode body.home-page .hero-symbol-mark'), 'performance mode keeps unified hero mark polish');
-assert.ok(styles.includes('animation: heroIdentityFloat 7.5s ease-in-out infinite;'), 'hero symbol uses one subtle CSS motion source');
-assert.ok(styles.includes('@media (prefers-reduced-motion: reduce) {\n  body.home-page .hero-symbol-shell,'), 'reduced motion disables the hero shell animation');
-assert.match(styles, /@media \(prefers-reduced-motion: reduce\) \{\s*\*,\s*\*::before,\s*\*::after \{[^}]*animation-duration: 0\.001ms !important;[^}]*animation-iteration-count: 1 !important;[^}]*transition-duration: 0\.001ms !important;/, 'reduced motion globally stops decorative animation loops');
-assert.ok(styles.includes('width: clamp(166px, 12.6vw, 204px);'), 'desktop hero symbol is sized as a deliberate responsive animated emblem');
-assert.ok(!styles.includes('html.stars-performance-mode .home-page .hero .hero-eye-3d,\nhtml.stars-performance-mode[data-theme="light"] .home-page .hero .hero-eye-3d,\nhtml.stars-performance-mode[data-theme="dark"] .home-page .hero .hero-eye-3d {\n  animation: none !important;\n  transform: none !important;\n  will-change: auto !important;\n  filter: none !important;\n}'), 'performance mode no longer strips all hero logo rendering');
-assert.ok(stars.includes('enablePerformanceMode'), 'adaptive starfield performance mode is preserved');
-assert.ok(stars.includes('probeAbsoluteStart'), 'adaptive performance detector keeps checking beyond the first sample');
-assert.ok(stars.includes("setAttribute('data-otp-performance-mode', 'stars')"), 'starfield activates CSS performance mode selectors');
-assert.ok(stars.includes('performanceMode && !mouse.attractor ? 66 : 33'), 'starfield throttles non-interactive redraws in performance mode');
-assert.ok(stars.includes('ctx.shadowBlur = performanceMode'), 'starfield softens star glow in performance mode instead of removing it');
-assert.ok(stars.includes('area / (isLightMode() ? 10000 : 6500)'), 'light-mode star density is strong enough to remain visible');
-assert.ok(stars.includes('performanceMode ? 0.52 : 0.5'), 'light-mode star alpha is strong enough to stay visible');
-assert.ok(stars.includes('star.r * (light ? (performanceMode ? 1.18 : 1.24) : 1)'), 'light-mode stars get a subtle size lift instead of disappearing into dust');
-assert.ok(stars.includes('rgba(0, 0, 0,'), 'light-mode non-accent stars render as black stars');
-assert.ok(stars.includes('if (performanceMode) {\n            if (light) return;'), 'light performance mode skips the expensive full-canvas atmosphere glow pass');
-assert.ok(!siteInit.includes("data-stars', starsDisabled ? 'disabled' : 'enabled'"), 'remote visuals must not overwrite mounted canvas state with a generic enabled flag');
-assert.ok(siteInit.includes("setAttribute('data-stars', 'mounted')"), 'runtime visuals preserve mounted state after config updates');
-assert.ok(siteInit.includes('identityMotionProfile'), 'identity card physics use adaptive motion profiles');
-assert.ok(siteInit.includes('identityPerformanceLite'), 'identity card reduces motion in performance-lite mode');
-assert.ok(siteInit.includes('identityMotionDisabled'), 'identity card disables motion for reduced-motion users');
-assert.ok(siteInit.includes("classList.contains('stars-performance-mode')"), 'identity card performance guard follows starfield performance mode');
-assert.ok(siteInit.includes('pointermove'), 'identity card listens for pointer movement');
-assert.ok(!styles.includes('html.stars-performance-mode .home-page .glass-manifesto {\n  transform: none !important;'), 'performance mode keeps identity card 3D transform');
-assert.ok(styles.includes('html.stars-performance-mode .home-page .glass-manifesto {\n  transform: perspective(1200px) rotateX(var(--rotateX, 0deg))'), 'performance mode preserves identity card tilt variables');
-assert.ok(styles.includes('.glass-manifesto {\n    transform: perspective(1200px) translate3d(0, 0, 0) !important;'), 'reduced-motion keeps identity card static');
-
-assert.ok(styles.includes('Subpage shell polish: Archive and Insights layout'), 'subpage layout guard is documented');
-assert.ok(styles.includes('.insights-page .archive-main'), 'insights uses shared subpage main shell');
-assert.ok(styles.includes('padding-top: calc(92px + env(safe-area-inset-top, 0px))'), 'subpage content clears fixed nav');
-assert.ok(styles.includes('.archive-page #cursor-canvas.stars-mounted'), 'archive starfield canvas is fixed on subpages');
-assert.ok(styles.includes('.archive-page .footer-inner'), 'archive footer spacing is bounded on subpages');
-assert.ok(styles.includes('html[data-theme="light"] body.home-page .otp-project-chip'), 'homepage day-mode project chips keep readable contrast');
-assert.ok(styles.includes('html[data-theme="light"] body.archive-page .otp-video-action-secondary'), 'archive dark-surface secondary actions override global day-mode button color');
-assert.ok(styles.includes('body.archive-page .theme-toggle-btn:not(.mobile-theme-toggle)'), 'archive dark shell keeps the fixed theme toggle dark-surface readable');
-assert.ok(!/\.archive-main\s*\{[^}]*min-height:\s*100vh/.test(styles), 'subpage main does not force viewport dead space');
-assert.ok(archive.includes('THE ARCHIVE') && archive.includes('class="archive-main"'), 'archive page exposes visible heading shell');
-assert.ok(insights.includes('THE VAULT') && insights.includes('class="archive-main"'), 'insights page exposes visible heading shell');
-assert.ok(!insights.includes('padding-top: 140px'), 'insights removes duplicate inline top padding');
-assert.ok(styles.includes('font-size: 1.58rem !important;'), 'mobile PERSPECTIVE title sizing guard remains protected');
-assert.ok(styles.includes('Premium day-mode services polish: richer depth without changing dark mode.'), 'light-mode services polish remains protected');
-assert.ok(stars.includes("img.classList.contains('hero-eye-3d')"), 'legacy animated gif performance guard remains protected');
-assert.ok(stars.includes('scheduleDrawFrame'), 'starfield schedules frames explicitly');
-assert.ok(stars.includes('drawFramePending'), 'starfield avoids duplicate animation frames');
-assert.ok(stars.includes('drawFrameTimer'), 'performance-mode starfield avoids unnecessary per-frame scheduling');
-assert.ok(stars.includes('scheduleDrawFrame(frameInterval)'), 'performance-mode starfield schedules the next paint at the throttled interval');
-assert.ok(stars.includes("document.visibilityState !== 'visible'"), 'starfield pauses draw loop while tab is hidden');
-assert.ok(stars.includes('queueResize'), 'starfield coalesces resize work');
-assert.ok(stars.includes('PROBE_WINDOW_MS = 1600'), 'fps probe uses a short sustained sampling window before adaptive mode');
-assert.ok(stars.includes('PROBE_DELAY_MS = 600'), 'fps probe starts early enough to stabilize desktop hero rendering');
-assert.ok(stars.includes('FPS_TRIGGER = 45'), 'fps probe follows the desktop performance threshold');
-assert.ok(stars.includes('LOW_FPS_SAMPLES_REQUIRED = 1'), 'one sustained low-fps window activates performance mode');
-assert.ok(siteInit.includes("document.visibilityState !== 'visible'"), 'identity card pauses motion while tab is hidden');
-assert.ok(siteInit.includes("visibilitychange"), 'identity card resumes motion when tab becomes visible');
-assert.ok(styles.includes('contain: layout style paint'), 'hero uses paint containment without deferred visibility');
-assert.ok(!/\.hero\s*\{[^}]*content-visibility:\s*auto/.test(styles), 'hero avoids content-visibility auto jank');
-assert.ok(styles.includes('body.home-page .theme-toggle-btn:not(.mobile-theme-toggle)'), 'mobile homepage hides fixed theme FAB so drawer toggle owns theme switching');
-assert.strictEqual((index.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9', 'homepage theme guard cache-bust is current');
-assert.ok(index.indexOf('theme-chrono.js?v=9') < index.indexOf('styles.css?v=16.8.29'), 'homepage theme guard loads before stylesheet');
-assert.strictEqual((index.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.29', 'homepage styles cache-bust is current');
-assert.strictEqual((index.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260819-perf1', 'homepage stars cache-bust is current');
-assert.strictEqual((index.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260819-perf1', 'homepage runtime cache-bust is current');
-['archive.html', 'insights.html', 'terms.html', 'privacy.html', 'insight.html'].forEach((file) => {
-  const html = read(file);
-  assert.strictEqual((html.match(/theme-chrono\.js\?v=([^"'>\s]+)/) || [])[1], '9', `${file} theme guard cache-bust matches index`);
-  assert.ok(html.indexOf('theme-chrono.js?v=9') < html.indexOf('styles.css?v=16.8.29'), `${file} theme guard loads before stylesheet`);
-  assert.strictEqual((html.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.29', `${file} styles cache-bust matches index`);
-  if (file === 'archive.html') {
-    assert.ok(!html.includes('stars-v2.js'), 'archive omits the animated starfield from its performance-critical project index');
-  } else {
-    assert.strictEqual((html.match(/stars-v2\.js\?v=([^"'>\s]+)/) || [])[1], '20260819-perf1', `${file} stars cache-bust matches index`);
-  }
-  assert.strictEqual((html.match(/site-init\.js\?v=([^"'>\s]+)/) || [])[1], '20260819-perf1', `${file} runtime cache-bust matches index`);
-});
-
-const notFound = read('404.html');
-assert.strictEqual((notFound.match(/styles\.css\?v=([^"'>\s]+)/) || [])[1], '16.8.29', '404 uses the current shared stylesheet cache-bust');
-assert.ok(notFound.includes('class="error-particles"'), '404 uses a CSS-only particle layer');
-assert.ok(!notFound.includes('theme-chrono.js'), '404 does not load runtime theme switching');
-assert.ok(!notFound.includes('stars-v2.js'), '404 does not load the animated starfield runtime');
-assert.ok(!notFound.includes('site-init.js'), '404 does not load the global site runtime');
-
-// ============================================================================
-// HEADER & NAVIGATION PERMANENT REGRESSION GUARDS
-// Protects the established OTP header design from feature-integration regressions.
-// Prevents navigation wrapping, extraneous dropdowns, colliding links, and desktop clutter.
-// ============================================================================
-
-// 1. Desktop Nav Structure & Single-Row Enforcement
-assert.ok(index.includes('class="nav nav-split"'), 'header maintains established nav-split layout');
-assert.ok(index.includes('class="nav-links" aria-label="Primary"'), 'primary desktop navigation exists');
-assert.ok(styles.includes('flex-wrap: nowrap !important;'), 'nav-links strictly forbids wrapping at desktop widths');
-assert.ok(!index.includes('nav-dropdown'), 'desktop nav avoids cluttered multi-row dropdown containers');
-
-// 2. Desktop Nav Item Parity & Clean Bounds
-const desktopNavChunk = (index.match(/<nav class="nav-links"[\s\S]*?<\/nav>/) || [''])[0];
-assert.ok(desktopNavChunk.includes('href="#services"'), 'desktop nav retains Services anchor');
-assert.ok(desktopNavChunk.includes('href="/weatheros"'), 'desktop nav retains WeatherOS ⚡');
-assert.ok(desktopNavChunk.includes('href="/services/consultant-audit"'), 'desktop nav retains Free Business Audit');
-assert.ok(desktopNavChunk.includes('href="/fixline"'), 'desktop nav retains FIXLINE 24h Repair');
-assert.ok(desktopNavChunk.includes('href="#work"'), 'desktop nav retains Our Work anchor');
-assert.ok(desktopNavChunk.includes('href="/portal"'), 'desktop nav retains Client Portal');
-assert.ok(desktopNavChunk.includes('class="nav-cta-btn'), 'desktop nav retains primary CTA button');
-assert.ok(!desktopNavChunk.includes('nav-signal-link'), 'desktop nav does not squeeze SIGNAL into crowded desktop row');
-
-// 3. Logo & Brand Mark Protection
-assert.ok(index.includes('class="otp-mark" id="nav-logo-neon"'), 'nav logo mark retains neon ID and class');
-
-// 4. Mobile Drawer Separation & Clean Organization
-const mobileNavChunk = (index.match(/<nav class="nav-drawer"[\s\S]*?<\/nav>/) || [''])[0];
-assert.ok(mobileNavChunk.includes('href="/weatheros"'), 'mobile drawer includes WeatherOS');
-assert.ok(mobileNavChunk.includes('href="/signal"'), 'mobile drawer includes non-intrusive SIGNAL ACTIVE ● link');
-assert.ok(mobileNavChunk.includes('href="/archive"'), 'mobile drawer includes Archive');
-assert.ok(mobileNavChunk.includes('href="/bookings?source=homepage_mobile"'), 'mobile drawer includes mobile booking CTA');
-
-// 5. BLACKBOX SIGNAL Non-Intrusive Homepage Discovery
-assert.ok(index.includes('vibration-card-signal'), 'BLACKBOX SIGNAL is tastefully featured in Audio Lab section');
-assert.ok(index.includes('href="/signal"'), 'homepage provides clean route access to /signal');
-
-console.log('   OK: Homepage visual contract');
-console.log('HOMEPAGE VISUAL CONTRACT COMPLETE');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { JSDOM } = require('jsdom');
+const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+for (const [file, active] of [['index.html', 'Home'], ['archive.html', 'Archive'], ['studio.html', 'Studio']]) {
+  const dom = new JSDOM(read(file), { url: 'https://www.onlytrueperspective.tech' + (active === 'Home' ? '/' : '/' + active.toLowerCase()), runScripts: 'outside-only' });
+  const { document } = dom.window;
+  let resize;
+  dom.window.matchMedia = () => ({ addEventListener: (_, fn) => { resize = fn; } });
+  dom.window.eval(read('public-shell.js'));
+  const nav = [...document.querySelectorAll('.public-desktop-nav a')];
+  assert.deepEqual(nav.map(a => a.getAttribute('href')), ['/', '/archive', '/signal', '/studio'], file + ' primary destinations');
+  assert.deepEqual([...document.querySelectorAll('.public-menu nav a')].slice(0, 4).map(a => a.getAttribute('href')), nav.map(a => a.getAttribute('href')), file + ' mobile navigation parity');
+  assert.equal(nav.find(a => a.getAttribute('aria-current') === 'page').textContent, active);
+  const menu = document.querySelector('details.public-menu');
+  assert.ok(menu.querySelector('summary'), 'menu remains native and keyboard accessible without JS');
+  menu.open = true;
+  menu.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert.equal(menu.open, false);
+  assert.equal(document.activeElement, menu.querySelector('summary'), 'Escape restores menu focus');
+  menu.open = true;
+  menu.querySelector('a').dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+  assert.equal(menu.open, false, 'navigation closes menu');
+  menu.open = true; resize({ matches: true });
+  assert.equal(menu.open, false, 'desktop transition closes mobile menu');
+  assert.equal(document.querySelectorAll('h1').length, 1);
+  assert.ok(document.querySelector('#main-content'));
+  assert.equal(document.querySelector('#page-loader'), null);
+  dom.window.close();
+}
+const home = new JSDOM(read('index.html')).window.document;
+assert.equal(home.querySelectorAll('main form').length, 0, 'Home introduces the brand; intake lives on booking');
+const previews = home.querySelectorAll('main a[href^="/projects/"]');
+assert.ok(previews.length >= 3 && previews.length <= 4, 'Home shows three to four curated previews');
+assert.equal(home.querySelectorAll('[data-archive-projects], [data-video-feed]').length, 0, 'full portfolio is owned by Archive');
+assert.ok(home.querySelector('main a[href="/archive"]'));
+assert.ok(home.querySelector('main a[href="/studio"]'));
+assert.ok(home.querySelector('main a[href="/signal"]'));
+assert.ok(home.querySelector('main a[href^="/fixline/intake?source="]'));
+for (const image of home.querySelectorAll('img')) {
+  assert.ok(image.hasAttribute('alt'));
+  assert.ok(Number(image.width) > 0 && Number(image.height) > 0, 'images reserve intrinsic space');
+  assert.ok(fs.existsSync(path.join(__dirname, '..', image.getAttribute('src'))), 'image exists');
+}
+const css = read('public-system.css');
+assert.match(css, /prefers-reduced-motion:\s*reduce/, 'shared design respects motion preferences');
+assert.match(css, /animation-duration:\s*\.0*1ms|animation:\s*none|animation-duration:\s*0\.0*1ms/, 'reduced motion limits animation');
+const studio = new JSDOM(read('studio.html')).window.document;
+for (const id of ['digital', 'creative', 'launch', 'engagements', 'process', 'questions']) assert.ok(studio.getElementById(id), 'Studio owns ' + id);
+assert.ok(studio.querySelectorAll('#process li').length >= 3, 'Studio explains engagement steps');
+console.log('Homepage, Studio and shared navigation runtime contracts passed.');

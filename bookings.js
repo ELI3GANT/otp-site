@@ -892,13 +892,33 @@ function missingForStep(step) {
   return [];
 }
 
-function validateStep(step) {
+function focusFirstInvalid(missing) {
+  if (!missing || !missing.length) return;
+  const first = missing[0];
+  let elToFocus = null;
+  if (first === 'name') elToFocus = els.name;
+  else if (first === 'email or phone' || first === 'valid email') elToFocus = (els.email && !els.email.value) ? els.email : (els.phone || els.email);
+  else if (first === 'service type') elToFocus = els.service;
+  else if (first === 'package interest') elToFocus = els.package;
+  else if (first === 'project description') elToFocus = els.description;
+  else if (first === 'contact consent') elToFocus = els.consent;
+  if (elToFocus && typeof elToFocus.focus === 'function') {
+    try {
+      elToFocus.focus();
+    } catch (_) {}
+  }
+}
+
+function validateStep(step, { shouldFocus = true } = {}) {
   const missing = missingForStep(step);
   if (!missing.length) {
     showError('');
     return true;
   }
   showError(`Please add ${missing.join(', ')} before continuing.`);
+  if (shouldFocus) {
+    focusFirstInvalid(missing);
+  }
   return false;
 }
 
@@ -1195,6 +1215,16 @@ if (els.prev) els.prev.addEventListener('click', () => setStep(state.step - 1));
 if (els.package) els.package.addEventListener('change', () => selectPackage(els.package.value, { advance: false }));
 if (els.service) els.service.addEventListener('change', applyFastLaneServiceSelection);
 if (els.form) {
+  els.form.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && event.target && event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON') {
+      if (state.step < 4) {
+        event.preventDefault();
+        if (validateStep(state.step)) {
+          setStep(state.step + 1);
+        }
+      }
+    }
+  });
   els.form.addEventListener('input', updateSummaries);
   els.form.addEventListener('change', (event) => {
     if (event.target !== els.package && event.target !== els.service) updateSummaries();

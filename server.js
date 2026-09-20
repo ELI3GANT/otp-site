@@ -2633,9 +2633,10 @@ app.get('/protocol.html', (req, res) => res.redirect(308, '/protocol'));
 app.get('/signal.html', (req, res) => res.redirect(308, '/signal'));
 app.get(['/blackbox', '/blackbox-signal'], (req, res) => res.redirect(302, '/signal'));
 app.get('/weatheros.html', (req, res) => res.redirect(308, '/weatheros'));
+app.get(['/weatheros-support.html', '/weatheros-support'], (req, res) => res.redirect(308, '/weatheros/support'));
+app.get(['/weatheros-privacy.html', '/weatheros-privacy'], (req, res) => res.redirect(308, '/weatheros/privacy'));
 
-// `/packages` is an external-friendly alias for the homepage package section.
-// Redirect instead of serving duplicate HTML so the homepage canonical remains authoritative.
+// Preserve the public package alias and attribution at Studio engagement guidance.
 app.get('/packages', (req, res) => {
     const params = new URLSearchParams();
     Object.entries(req.query || {}).forEach(([key, value]) => {
@@ -2646,10 +2647,20 @@ app.get('/packages', (req, res) => {
         if (value !== undefined) params.append(key, String(value));
     });
     const query = params.toString();
-    return res.redirect(302, `/${query ? `?${query}` : ''}#packages`);
+    return res.redirect(302, `/studio${query ? `?${query}` : ''}#engagements`);
+});
+
+app.get('/projects/:slug', (req, res, next) => {
+    const library = require('./otp-projects');
+    const projects = library.getProjects();
+    const project = projects.find((entry) => entry.slug === req.params.slug);
+    if (!project) return next();
+    noStoreHtml(res);
+    return res.type('html').send(require('./project-stories').renderProjectPage(project, projects));
 });
 
 const staticAliases = {
+    '/studio': 'studio.html',
     '/portal': 'portal.html',
     '/bookings': 'bookings.html',
     '/booking': 'bookings.html',
@@ -2657,6 +2668,7 @@ const staticAliases = {
     '/book-otp': 'bookings.html',
     '/quote': 'quote.html',
     '/privacy': 'privacy.html',
+    '/website-design': 'website-design.html',
     '/weatheros': 'weatheros/index.html',
     '/weatheros/': 'weatheros/index.html',
     '/weatheros.html': 'weatheros/index.html',

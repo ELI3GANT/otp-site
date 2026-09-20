@@ -80,7 +80,7 @@ assert.strictEqual(songWars.projectUrl, '/songwars', 'Song Wars links to its liv
 assert.strictEqual(songWars.bookingUrl, '/bookings?source=archive-songwars&service=event-community-rollout', 'Song Wars routes conversion CTA to event rollout intake');
 assert.ok(songWars.disciplines.includes('Live Event'), 'Song Wars exposes event discipline');
 assert.ok(songWars.disciplines.includes('Community'), 'Song Wars exposes community discipline');
-assert.strictEqual(songWars.status, 'Live');
+assert.strictEqual(songWars.status, 'Released');
 
 assert.ok(hyh && hyh.beforeAfter, 'HYH keeps its existing before-and-after case-study media');
 assert.strictEqual(hyh.bookingUrl, '/bookings?source=archive-hyh&service=website-business-fix', 'HYH routes conversion CTA to website/business fix intake');
@@ -118,27 +118,7 @@ assert.ok(archiveClient.includes('replaceChildren'), 'renderer updates project r
 assert.ok(archiveClient.includes('textContent'), 'renderer treats project copy as text');
 assert.ok(archiveClient.includes("new URL("), 'renderer validates project links');
 assert.ok(archiveClient.includes("aria-disabled"), 'future case-study action has an accessible unavailable state');
-assert.ok(archiveClient.includes('archive-project-comparison'), 'archive renderer builds a real before-and-after comparison block');
-assert.ok(archiveClient.includes('createBookingAction'), 'archive renderer builds booking-focused conversion actions');
-assert.ok(archiveClient.includes('archive-project-action-conversion'), 'archive conversion actions receive dedicated styling hook');
-assert.ok(archiveClient.includes('hasComparison') && archiveClient.includes(' has-comparison'), 'HYH comparison receives a dedicated contained card layout');
-assert.ok(archiveStyles.includes('minmax(0, 1fr)'), 'archive grids prevent horizontal overflow');
-assert.ok(archiveStyles.includes('object-fit: cover'), 'project card art preserves its aspect ratio');
-assert.ok(archiveStyles.includes('.archive-page .bg-fixed::before'), 'archive renders a scoped CSS-only star/dot atmosphere');
-assert.ok(archiveStyles.includes('.archive-project-comparison-image'), 'archive comparison screenshots are contained by a dedicated media class');
-assert.ok(archiveStyles.includes('.archive-project-action-conversion'), 'archive conversion actions have scoped styles');
-assert.ok(archiveStyles.includes('object-fit: contain'), 'archive comparison screenshots preserve their full aspect ratio');
-assert.ok(/\[data-theme="light"\]\s+\.archive-page[\s\S]*?--archive-surface:\s*rgba\(9,\s*9,\s*12/.test(archiveStyles), 'archive keeps dark OTP case-study surfaces under global light theme');
-assert.ok(
-  archiveStyles.includes('aspect-ratio: 16 / 10'),
-  'archive cards enforce consistent 16:10 media aspect ratio'
-);
-assert.ok(
-  archiveStyles.includes('repeat(3, minmax(0, 1fr))'),
-  'archive desktop grid enforces 3-column layout at >=1280px'
-);
-assert.ok(!archiveStyles.includes('height: 100%;\n  border-right'), 'standard Archive card media must not stretch across the content column');
-assert.ok(archiveStyles.includes('prefers-reduced-motion'), 'archive respects reduced-motion preferences');
+assert.ok(read('public-system.css').includes('prefers-reduced-motion'), 'shared Archive design respects reduced motion');
 
 assert.match(server, /'\/archive': 'archive\.html'/, 'clean /archive route remains available');
 assert.match(server, /'\/vault': 'archive\.html'/, 'legacy /vault alias remains available');
@@ -169,11 +149,72 @@ const renderedDocument = dom.window.document;
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-primary').length, projects.length, 'runtime renders one primary action per project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-conversion').length, projects.length, 'runtime renders one booking conversion action per project');
-const hyhCard = renderedDocument.querySelector('[data-project-id="hyh-architecture-design"]');
-assert.ok(hyhCard && hyhCard.classList.contains('has-comparison'), 'HYH renders as a dedicated before-and-after card');
-assert.strictEqual(hyhCard.querySelectorAll('.archive-project-comparison-panel').length, 2, 'HYH renders both before and after panels');
-assert.ok(hyhCard.textContent.includes('Previous Website'), 'HYH before panel is explicitly labeled');
-assert.ok(hyhCard.textContent.includes('OTP Rebuild'), 'HYH after panel is explicitly labeled');
-
-console.log('   OK: OTP Archive case-study system');
-console.log('OTP ARCHIVE CASE-STUDY CONTRACT COMPLETE');
+const ids = () => [...renderedDocument.querySelectorAll('[data-project-id]')].map(card => card.dataset.projectId);
+const set = (key, value) => {
+  const control = renderedDocument.querySelector(`[data-archive-${key}]`);
+  control.value = value;
+  control.dispatchEvent(new dom.window.Event(key === 'search' ? 'input' : 'change', { bubbles: true }));
+};
+const reset = () => renderedDocument.querySelector('[data-archive-reset]').click();
+set('search', 'HYH');
+assert.deepStrictEqual(ids(), [hyh.id], 'search narrows results');
+set('status', hyh.status);
+set('category', hyh.categories[0]);
+set('technology', hyh.technology[0]);
+set('year', String(hyh.year));
+assert.deepStrictEqual(ids(), [hyh.id], 'all filters combine with search');
+set('search', 'unmatched-project-123');
+assert.deepStrictEqual(ids(), []);
+assert.strictEqual(renderedDocument.querySelector('[data-archive-empty]').hidden, false, 'empty search explains zero results');
+assert.match(renderedDocument.querySelector('[data-archive-result-count]').textContent, /^00/);
+reset();
+assert.strictEqual(ids().length, projects.length, 'reset restores whole catalog');
+assert.strictEqual(renderedDocument.querySelector('[data-archive-empty]').hidden, true);
+for (const key of ['search', 'category', 'technology', 'year', 'status']) assert.equal(renderedDocument.querySelector(`[data-archive-${key}]`).value, '', 'reset clears ' + key);
+for (const button of renderedDocument.querySelectorAll('[data-archive-collection]')) {
+  button.click();
+  assert.equal(button.getAttribute('aria-pressed'), 'true');
+  const collection = button.dataset.archiveCollection;
+  const expected = projects.filter(project => collection === 'Everything' || (collection === 'Creative' ? project.collections.some(c => ['Music', 'Events'].includes(c)) : project.collections.includes(collection)));
+  assert.deepStrictEqual(ids().sort(), expected.map(project => project.id).sort(), collection + ' shows correct projects');
+}
+reset();
+for (const project of projects) {
+  const card = renderedDocument.querySelector(`[data-project-id="${project.id}"]`);
+  assert.equal(card.querySelector('.archive-project-action-primary').getAttribute('href'), new URL(project.caseStudyUrl, dom.window.location.origin).href);
+  assert.equal(card.querySelector('.archive-project-action-conversion').getAttribute('href'), new URL(project.bookingUrl, dom.window.location.origin).href);
+}
+const image = renderedDocument.querySelector('.archive-project-media img');
+image.dispatchEvent(new dom.window.Event('error'));
+assert.equal(image.hidden, true);
+assert.ok(renderedDocument.querySelector('.archive-image-unavailable'), 'broken image has truthful unavailable state');
+dom.window.close();
+const { renderProjectPage } = require('../project-stories');
+assert.equal(projects.length, 6, 'all six project stories are covered');
+for (const project of projects) {
+  const page = new JSDOM(renderProjectPage(project, projects)).window.document;
+  assert.equal(page.querySelectorAll('h1').length, 1);
+  assert.ok([...page.querySelectorAll('a')].some(a => a.getAttribute('href') === '/fixline/intake?source=project-' + project.slug), project.id + ' preserves attributed conversion');
+  assert.ok(page.querySelector('.project-status-note').textContent.trim(), project.id + ' gives evidence context');
+  assert.doesNotMatch(page.body.textContent, /\b\d+(?:\.\d+)?\s*(?:%|x growth|million users|conversions)/i, 'no fabricated performance metrics');
+  for (const img of page.querySelectorAll('main img')) {
+    assert.ok(img.alt);
+    assert.ok(img.width && img.height);
+    assert.ok(fs.existsSync(path.join(root, img.getAttribute('src'))), project.id + ' local evidence asset exists');
+  }
+  if (project.id === hyh.id) {
+    assert.equal(page.querySelectorAll('.project-comparison figure').length, 2);
+    for (const state of ['before', 'after']) {
+      assert.ok(page.querySelector('.project-comparison').textContent.includes(hyh.beforeAfter[state].label));
+      assert.ok([...page.querySelectorAll('.project-comparison img')].some(img => img.getAttribute('src').endsWith(hyh.beforeAfter[state].src)), 'comparison uses original evidence');
+    }
+  }
+}
+const hostile = new JSDOM(archive, { url: 'https://www.onlytrueperspective.tech/archive', runScripts: 'outside-only' });
+const unsafeProjects = projects.map(p => ({ ...p, title: '<img src=x onerror=alert(1)>', caseStudyUrl: 'javascript:alert(1)', bookingUrl: 'data:text/html,bad', heroImage: { ...p.heroImage, src: 'javascript:alert(1)' } }));
+hostile.window.OTP_PROJECT_LIBRARY = { ...library, getProjects: () => unsafeProjects };
+hostile.window.eval(archiveClient);
+assert.equal(hostile.window.document.querySelectorAll('[href^="javascript:"], [href^="data:"], [src^="javascript:"], [onerror]').length, 0, 'unsafe project URLs and markup cannot execute');
+assert.equal(hostile.window.document.querySelectorAll('.archive-project-action-primary[aria-disabled="true"]').length, projects.length);
+hostile.window.close();
+console.log('Archive filtering, safe rendering and six project detail contracts passed.');

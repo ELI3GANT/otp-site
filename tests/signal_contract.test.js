@@ -133,7 +133,7 @@ assert.ok(timelineSteps.includes('SIGNAL 001'), 'DOM renders SIGNAL 001 in timel
 assert.ok(timelineSteps.includes('[ REDACTED ]'), 'DOM renders [ REDACTED ] in timeline');
 
 // 6. CSS System & Motion Guards & Glitch System
-assert.ok(css.includes('--signal-gold: #d5b56c;'), 'CSS uses OTP gold token');
+assert.ok(css.includes('--signal-gold: #dcff5f;'), 'Signal adopts the shared acid accent while preserving audio motion states');
 assert.ok(css.includes('prefers-reduced-motion: reduce'), 'CSS supports prefers-reduced-motion');
 assert.ok(css.includes('safe-area-inset-bottom'), 'CSS implements mobile safe area insets');
 assert.ok(!css.includes('#ff4757'), 'red developer error color removed from signal stylesheet');
@@ -179,8 +179,8 @@ assert.ok(css.includes('data-state="error"'), 'CSS defines error beacon state st
 
 // 8. Homepage Subtle Non-Intrusive Integration
 assert.ok(index.includes('href="/signal"'), 'index.html links to /signal');
-assert.ok(index.includes('vibration-card-signal'), 'index.html features dedicated BLACKBOX SIGNAL card in Audio Lab');
-assert.ok(index.includes('SIGNAL ACTIVE ●'), 'mobile drawer and Audio Lab feature SIGNAL ACTIVE ●');
+assert.ok(index.includes('home-signal'), 'homepage dedicates a teaser to Signal discovery');
+assert.ok(index.includes('Enter Signal'), 'homepage provides a clear Signal destination');
 assert.ok(!index.includes('nav-dropdown'), 'desktop nav avoids extraneous dropdowns to preserve clean single-row layout');
 
 console.log('   ✅ Blackbox Signal Contract passed all validations.');

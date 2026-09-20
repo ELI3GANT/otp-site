@@ -1,0 +1,34 @@
+.audit-hero > .public-label { margin-bottom: 40px; }
+.audit-hero h1 span { color: var(--accent-otp); }
+.audit-hero-bottom { display: flex; justify-content: space-between; align-items: end; gap: 48px; margin-top: 48px; }
+.audit-start { flex-shrink: 0; }
+.audit-start p { margin-top: 16px; font-size: .875rem; }
+.audit-split { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+.audit-split h2, .audit-section-head h2, .audit-boundaries h2 { margin-top: 24px; }
+.audit-review-list article { border-top: 1px solid var(--paper-rule); padding-block: 24px 32px; }
+.audit-review-list h3, .audit-process h3, .audit-deliverables h3 { font-size: 1.5rem; font-weight: 500; line-height: 1.2; letter-spacing: -.03em; }
+.audit-review-list h3 { margin-top: 16px; }
+.audit-review-list p, .audit-process p, .audit-deliverables p { margin-top: 16px; max-width: 44ch; }
+.audit-section-head { display: flex; justify-content: space-between; gap: 40px; }
+.audit-section-head h2 { margin: 0; width: 50%; }
+.audit-deliverables { list-style: none; padding: 0; margin: 64px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.audit-deliverables li { border-top: 1px solid var(--border-default); padding-top: 24px; }
+.audit-deliverables li > span { color: var(--accent-otp); }
+.audit-deliverables h3 { margin-top: 32px; }
+.audit-process { list-style: none; counter-reset: review; padding: 0; margin: 0; }
+.audit-process li { counter-increment: review; position: relative; padding: 24px 0 32px 48px; border-top: 1px solid var(--paper-rule); }
+.audit-process li::before { content: '0' counter(review); position: absolute; top: 28px; left: 0; font: .75rem/1.4 var(--font-mono); }
+.audit-boundaries { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 64px; }
+.audit-boundaries > .public-label { grid-column: 1 / -1; }
+.audit-boundaries h2 { margin: 0; }
+.audit-boundaries > div > p + p { margin-top: 24px; max-width: 48ch; }
+.audit-boundaries .public-text-link { margin-top: 32px; }
+@media (max-width: 800px) {
+  .audit-hero-bottom, .audit-section-head { flex-direction: column; align-items: flex-start; gap: 32px; }
+  .audit-split, .audit-boundaries, .audit-deliverables { grid-template-columns: 1fr; gap: 40px; }
+  .audit-section-head h2 { width: auto; }
+  .audit-deliverables { margin-top: 40px; }
+  .audit-deliverables h3 { margin-top: 24px; }
+  .audit-boundaries > .public-label { grid-column: auto; }
+  .audit-hero .public-title { font-size: clamp(3.5rem, 11vw, 7rem); }
+}

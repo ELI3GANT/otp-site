@@ -41,8 +41,9 @@
   <script>document.documentElement.classList.add('songwars-js');</script>
   <link rel="stylesheet" href="/songwars.css?v=20260628b" />
   <script src="/songwars.js?v=20260628b" defer></script>
-</head>
+<link rel="stylesheet" href="/public-system.css?v=20260915" /><link rel="stylesheet" href="/campaign-navigation.css?v=20260915" /></head>
 <body>
+<nav class="campaign-navigation" aria-label="OTP navigation"><a href="/">OnlyTruePerspective</a><div><a href="/archive">Archive</a><a href="/projects/songwars">Project story ↗</a><a href="/signal">Signal</a></div></nav>
   <a class="skip-link" href="#main-content">Skip to Song Wars</a>
 
   <div class="songwars-atmosphere" aria-hidden="true">
@@ -69,7 +70,7 @@
       <div class="hero-lead">
         <p class="eyebrow">{{EVENT_TITLE}}</p>
         <h1 id="songwars-title"><span>SONG</span><span class="title-outline">WARS</span></h1>
-        <p class="status-badge"><span aria-hidden="true"></span>{{CONFIRMED_COUNT}} confirmed <b aria-hidden="true">/</b> {{SPOTS_LEFT}} spots left</p>
+        <p class="status-badge">Campaign archive · July 2026</p><p class="hero-subheadline">Original campaign for July 5, 2026. Registration figures below are historical, not live availability. Visit the community for current updates.</p>
         <div class="host-credit" aria-label="Song Wars host and featured participants">
           <p><span>Hosted by</span><strong>{{PRIMARY_HOST}}</strong></p>
           <p><span>Featured participants</span><strong>{{FEATURED_PARTICIPANTS}}</strong></p>
@@ -93,14 +94,15 @@
             data-songwars-poster
           />
         </picture>
+        <figcaption>Original July 2026 campaign artwork</figcaption>
       </figure>
 
       <div class="hero-message">
         <p class="section-index">JULY 05 / 2026</p>
         <h2>{{HEADLINE}}</h2>
         <p class="hero-subheadline">{{SUBHEADLINE}}</p>
-        <div class="hero-actions" aria-label="Song Wars registration actions">
-          <a class="button button-primary" href="{{DISCORD_INVITE_URL}}" target="_blank" rel="noopener noreferrer" data-discord-cta>Register / Join Discord</a>
+        <div class="hero-actions" aria-label="Song Wars community links">
+          <a class="button button-primary" href="{{DISCORD_INVITE_URL}}" target="_blank" rel="noopener noreferrer" data-discord-cta>Visit the community</a>
           <a class="button button-secondary" href="#details">View Details</a>
         </div>
       </div>
@@ -108,8 +110,8 @@
 
     <section class="stats" aria-labelledby="stats-title" data-reveal>
       <div class="section-heading stats-heading">
-        <p class="section-index">LIVE REGISTRATION</p>
-        <h2 id="stats-title">The bracket is filling.</h2>
+        <p class="section-index">ORIGINAL CAMPAIGN SNAPSHOT</p>
+        <h2 id="stats-title">The original registration snapshot.</h2>
       </div>
 
       <dl class="stat-grid">
@@ -133,7 +135,7 @@
 
       <div class="progress-block">
         <div class="progress-copy">
-          <span>Artist registration</span>
+          <span>Historical artist registration</span>
           <strong>{{CONFIRMED_COUNT}} / {{GOAL_COUNT}}</strong>
         </div>
         <progress value="{{CONFIRMED_COUNT}}" max="{{GOAL_COUNT}}" aria-label="{{CONFIRMED_COUNT}} of {{GOAL_COUNT}} artist spots confirmed">{{PROGRESS_PERCENT}}%</progress>
@@ -173,24 +175,24 @@
 
     <section class="event-intel" aria-labelledby="event-intel-title" data-reveal>
       <div class="section-heading intel-heading">
-        <p class="section-index">03 / WHAT COMES NEXT</p>
-        <h2 id="event-intel-title">Built for the reveal.</h2>
+        <p class="section-index">03 / CAMPAIGN FORMAT</p>
+        <h2 id="event-intel-title">The planned format.</h2>
       </div>
       <div class="intel-grid">
         <article>
           <p>Bracket</p>
-          <h3>Official Bracket Coming Soon</h3>
-          <span>Bracket reveals after registration closes.</span>
+          <h3>Original bracket announcement</h3>
+          <span>Bracket details are not maintained on this archived page.</span>
         </article>
         <article>
           <p>Voting</p>
           <h3>Community Voting + Official Judges</h3>
-          <span>Final announcements coming soon.</span>
+          <span>Visit the community for published announcements.</span>
         </article>
         <article>
           <p>Prize</p>
-          <h3>Prize Announcement Coming Soon.</h3>
-          <span>Winner earns the crown. More information before tournament day.</span>
+          <h3>Original prize announcement</h3>
+          <span>Prize details are not maintained on this archived page.</span>
         </article>
       </div>
     </section>
@@ -205,8 +207,8 @@
     </section>
 
     <section class="final-cta" aria-labelledby="final-cta-title" data-reveal>
-      <p class="section-index">REGISTRATION OPEN</p>
-      <h2 id="final-cta-title">Only {{SPOTS_LEFT}} spots left. Lock in before the bracket fills.</h2>
+      <p class="section-index">STAY CONNECTED</p>
+      <h2 id="final-cta-title">Find the community. Follow the next chapter.</h2>
       <a class="button button-final" href="{{DISCORD_INVITE_URL}}" target="_blank" rel="noopener noreferrer" data-discord-cta>Join the Discord</a>
     </section>
   </main>

@@ -7,7 +7,7 @@
   <meta name="color-scheme" content="dark light" />
   <title>Insights | OnlyTruePerspective</title>
   <meta name="description" content="Ideas, strategy, and creative technology notes from OnlyTruePerspective." />
-  
+
   <!-- SEO / Social -->
   <meta property="og:title" content="Insights | OnlyTruePerspective" />
   <meta property="og:description" content="Ideas, strategy, and creative technology notes from OnlyTruePerspective." />
@@ -63,312 +63,24 @@
     ]
   }
   </script>
-  <script src="theme-chrono.js?v=9"></script>
-  <link rel="stylesheet" href="./styles.css?v=16.8.29" />
-  <link rel="stylesheet" href="./blog-enhancements.css?v=16.3.0" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700;800&family=Syne:wght@700;800&family=Space+Grotesk:wght@500;700;800&display=swap" rel="stylesheet" />
-  <style>
-    body { margin: 0 !important; }
-    
-    /* PREMIUM VAULT UI */
-    .filter-btn {
-        background: rgba(255,255,255,0.02);
-        border: 1px solid var(--stroke);
-        color: var(--muted);
-        padding: 10px 20px;
-        border-radius: 12px;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        font-weight: 700;
-    }
-    .filter-btn:hover {
-        border-color: var(--accent2);
-        color: var(--text);
-        background: rgba(var(--accent2-rgb), 0.05);
-        transform: translateY(-2px);
-    }
-    .filter-btn.active {
-        background: var(--accent2);
-        border-color: var(--accent2);
-        color: #000;
-        box-shadow: 0 0 30px rgba(var(--accent2-rgb), 0.25);
-    }
 
-    .insight-card {
-        background: rgba(10, 10, 18, 0.4);
-        border: 1px solid rgba(255,255,255,0.05);
-        border-radius: 24px;
-        /* overflow:hidden moved to .insight-card-inner so box-shadow isn't clipped */
-        overflow: visible;
-        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        position: relative;
-        z-index: 0; /* Base stacking — hover will elevate this */
-
-        /* Fix <a> tag defaults — prevents blue text, underline, and browser highlights */
-        color: inherit;
-        text-decoration: none;
-        display: block;
-        -webkit-tap-highlight-color: transparent;
-        outline: none;
-        user-select: none;
-        -webkit-user-select: none;
-    }
-    /* Keyboard focus — custom ring instead of browser default */
-    .insight-card:focus-visible {
-        outline: 2px solid var(--accent2);
-        outline-offset: 4px;
-        z-index: 2;
-    }
-    /* Tap/click press — subtle scale feedback on touch */
-    .insight-card:active {
-        transform: scale(0.985);
-        transition: transform 0.1s ease;
-    }
-    @media (hover: hover) {
-        .insight-card:active {
-            transform: translateY(-10px) scale(1.01);
-        }
-        .insight-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            border-color: rgba(var(--accent2-rgb), 0.6);
-            /* Layered glow: deep shadow + strong cyan halo */
-            box-shadow:
-                0 40px 80px -20px rgba(0, 0, 0, 0.7),
-                0 0 0 1px rgba(var(--accent2-rgb), 0.15),
-                0 0 30px rgba(var(--accent2-rgb), 0.25),
-                0 0 60px rgba(var(--accent2-rgb), 0.1);
-            z-index: 10; /* Lifts hovered card above siblings so glow isn't clipped by neighbors */
-        }
-    }
-    /* Override browser blue selection on link children */
-    .insight-card::selection,
-    .insight-card *::selection {
-        background: var(--accent2);
-        color: #000;
-        text-shadow: none;
-    }
-    .insight-card-inner {
-        padding: 40px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        border-radius: 24px; /* Match card for clipping bg */
-        overflow: hidden;    /* Clips internal content correctly without cutting box-shadow */
-    }
-    @media (max-width: 600px) {
-        .insight-card-inner { padding: 25px; }
-        .insight-card h2 { font-size: 1.5rem; }
-    }
-    .insight-date {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.8rem;
-        color: var(--accent2);
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        margin-bottom: 12px;
-        font-weight: 700;
-        opacity: 0.9;
-    }
-    .insight-card h2 {
-        font-family: 'Syne', sans-serif;
-        font-size: 1.8rem;
-        line-height: 1.2;
-        margin-bottom: 20px;
-        color: #fff;
-        text-transform: uppercase;
-    }
-    .insight-card p {
-        color: var(--muted);
-        font-size: 1rem;
-        line-height: 1.6;
-        margin-bottom: 30px;
-        flex-grow: 1;
-    }
-    .post-tag {
-        font-size: 0.6rem;
-        color: var(--muted2);
-        background: rgba(255,255,255,0.03);
-        padding: 5px 12px;
-        border-radius: 6px;
-        border: 1px solid rgba(255,255,255,0.05);
-        font-family: 'Space Grotesk', sans-serif;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        font-weight: 700;
-        transition: all 0.3s;
-    }
-    .insight-card:hover .post-tag {
-        color: var(--accent2);
-        border-color: rgba(var(--accent2-rgb), 0.2);
-        background: rgba(var(--accent2-rgb), 0.05);
-    }
-    .read-more {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        color: #fff;
-        text-decoration: none;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.8rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        transition: all 0.3s;
-    }
-    .read-more::after {
-        content: "→";
-        transition: transform 0.3s;
-    }
-    .read-more:hover {
-        color: var(--accent2);
-    }
-    .read-more:hover::after {
-        transform: translateX(5px);
-    }
-
-    /* PINPOINT EYE ICON */
-    .pinpoint-icon {
-        width: 120px;
-        height: 120px;
-        margin: 0 auto 20px;
-        filter: drop-shadow(0 0 20px var(--accent2));
-        display: block;
-    }
-    .eye-outer {
-        animation: eye-pulse 4s infinite ease-in-out;
-    }
-    .eye-iris {
-        animation: iris-rotate 10s linear infinite;
-        transform-origin: center;
-    }
-    .eye-pupil {
-        animation: pupil-blink 3s infinite alternate;
-    }
-    @keyframes eye-pulse {
-        0%, 100% { transform: scale(1); opacity: 0.8; }
-        50% { transform: scale(1.05); opacity: 1; }
-    }
-    @keyframes iris-rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-    @keyframes pupil-blink {
-        0%, 90% { opacity: 1; transform: scale(1); }
-        95% { opacity: 0; transform: scale(0.5); }
-        100% { opacity: 1; transform: scale(1); }
-    }
-
-    [data-theme="light"] .pinpoint-icon {
-        filter: drop-shadow(0 5px 15px rgba(var(--accent2-rgb), 0.3));
-    }
-
-    .insights-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 30px;
-        margin-top: 60px;
-        isolation: isolate; /* Create new stacking context so z-index on cards works correctly */
-    }
-
-    @media (max-width: 1100px) {
-        .insights-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 768px) {
-        .insights-grid { grid-template-columns: 1fr; }
-        .neon-brain { width: 100px; height: 100px; }
-    }
-
-    [data-theme="light"] .insight-card {
-        background: #fff;
-        border-color: #eee;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        color: #111;
-    }
-    [data-theme="light"] .insight-card h2 { color: #000; }
-    [data-theme="light"] .insight-card p { color: #555; }
-    [data-theme="light"] .filter-btn { background: #f8f8fa; border-color: #ddd; color: #666; }
-    [data-theme="light"] .filter-btn:hover { background: #eee; border-color: #ccc; color: #000; }
-    [data-theme="light"] .filter-btn.active { background: #000; color: #fff; border-color: #000; }
-    [data-theme="light"] .insight-card:focus-visible { outline-color: #000; }
-    [data-theme="light"] .post-tag { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); color: #555; }
-    [data-theme="light"] .read-more { color: #111; }
-  </style>
+<link rel="stylesheet" href="/public-system.css?v=20260915" />
+<link rel="stylesheet" href="/supporting-public.css?v=20260916" />
 </head>
-<body class="insights-page k-cursor-ready">
-  <div class="bg-fixed"></div>
+<body class="public-page supporting-page journal-page">
+<a class="public-skip" href="#main-content">Skip to content</a>
 
-  <header class="nav nav-split" id="top">
-    <!-- Logo Left -->
-    <a href="index.html" class="nav-logo" aria-label="OnlyTruePerspective Homepage">
-      <img src="assets/otp-logo-transparent.png" alt="OTP spinning 3D logo" class="otp-mark" id="nav-logo-neon" width="44" height="44" decoding="async" style="opacity: 1 !important; visibility: visible !important;" />
-    </a>
+  <!-- PUBLIC HEADER START --><header class="public-header" id="top"><a class="public-brand" href="/" aria-label="OnlyTrue Perspective home"><img src="/assets/otp-logo-transparent.png" width="44" height="44" alt="" /><span>OnlyTrue<br>Perspective</span></a><nav class="public-desktop-nav" aria-label="Primary"><a href="/">Home</a><a href="/archive">Archive</a><a href="/signal">Signal</a><a href="/studio">Studio</a></nav><a class="public-header-cta" href="/fixline/intake?source=public-nav">Start a project <span aria-hidden="true">↗</span></a><details class="public-menu"><summary aria-label="Navigation menu">Menu <span aria-hidden="true">+</span></summary><nav aria-label="Mobile"><a href="/">Home</a><a href="/archive">Archive</a><a href="/signal">Signal</a><a href="/studio">Studio</a><a href="/fixline/intake?source=public-mobile">Start a project ↗</a></nav></details></header><!-- PUBLIC HEADER END -->
 
-    <!-- Links Right -->
-    <nav class="nav-links" aria-label="Primary">
-      <a href="index.html#services" class="k-hover">Services</a>
-      <a href="index.html#packages" class="k-hover">Packages</a>
-      <a href="/fixline" class="k-hover">FIXLINE</a>
-      <a href="/bookings" class="k-hover">Book OTP</a>
-      <a href="/portal" class="k-hover">Client Portal</a>
-      <a href="index.html#work" class="k-hover">Work</a>
-      <a href="index.html#contact" class="k-hover">Contact</a>
-      <a href="/archive" class="k-hover nav-secondary">Archive</a>
-      <a href="insights.html" class="active k-hover nav-secondary">Insights</a>
-    </nav>
-
-    <!-- Mobile toggle -->
-    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-
-    <nav class="nav-drawer" aria-label="Mobile">
-      <a href="index.html#services">Services</a>
-      <a href="index.html#packages">Packages</a>
-      <a href="/fixline">FIXLINE</a>
-      <a href="/bookings">Book OTP</a>
-      <a href="/portal">Client Portal</a>
-      <a href="index.html#work">Work</a>
-      <a href="index.html#contact">Contact</a>
-      <a href="/archive">Archive</a>
-      <a href="insights.html" class="active">Insights</a>
-    </nav>
-  </header>
-
-  <main class="archive-main" style="position: relative; z-index: 1;">
+  <main id="main-content" class="archive-main">
     <div class="wrap">
-        <div class="secondary-intro">
-          <div class="header-visual" style="margin: 0 auto 30px; display: flex; justify-content: center; align-items: center;">
-            <svg class="otp-eye-svg pinpoint-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100px; height: 100px;">
-              <circle cx="50" cy="50" r="40" stroke="var(--accent2)" stroke-width="1.5" class="eye-outer" opacity="0.3"/>
-              <circle cx="50" cy="50" r="15" stroke="var(--accent2)" stroke-width="2" class="eye-iris"/>
-              <circle cx="50" cy="50" r="5" fill="var(--accent2)" class="eye-pupil"/>
-              <path d="M50 5V15M50 85V95M5 50H15M85 50H95" stroke="var(--accent2)" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div style="display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 25px;">
-              <span class="status-dot-mini" style="width: 8px; height: 8px; background: var(--accent2); border-radius: 50%; box-shadow: 0 0 10px var(--accent2); animation: pulse-cyan 1.5s infinite alternate;"></span>
-              <span class="status-label">Live Network Signal</span>
-          </div>
-          <div class="secondary-header">
-            <h1>THE VAULT</h1>
-          </div>
-          <p class="intro-text">
-            Deep-dive deconstructions of visual culture, high-velocity editing workflows, and tactical creative strategy from the OTP lab.
-          </p>
-        </div>
-
-      <!-- TAG FILTER -->
-      <div id="filter-wrap" style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 80px;">
+        <header class="secondary-intro"><p class="public-label">Notes from the studio</p><h1>Journal<span aria-hidden="true">.</span></h1><p class="intro-text">Ideas on creative technology, visual culture, and building independent digital systems.</p></header>
+<!-- TAG FILTER -->
+      <div id="filter-wrap">
           <button class="filter-btn active" onclick="window.filterByTag('ALL')">All</button>
           <button class="filter-btn" onclick="window.filterByTag('VISUALS')">Visuals</button>
           <button class="filter-btn" onclick="window.filterByTag('STRATEGY')">Strategy</button>
@@ -376,19 +88,19 @@
 
       <div class="insights-grid">
         <!-- BAKED_DATA_START -->
-        
+
             <a href="insight.html?slug=spooky-luh-ooky" class="insight-card k-hover">
                 <div class="insight-card-inner">
                     <div class="insight-date">Jan 8, 2026 • Visuals</div>
                     <h2>Deconstruction: Spooky (Luh Ooky)</h2>
                     <p>A tactical breakdown of Spooky&#039;s dark-modernist visual editing, color grading, and motion sync.</p>
-                    
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px;">
+
+                    <div>
                         <span class="post-tag">#SPOOKY</span><span class="post-tag">#EDITING</span><span class="post-tag">#VISUALS</span>
                     </div>
 
                     <div class="insight-footer">
-                        <span class="read-more">Access Uplink</span>
+                        <span class="read-more">Read article</span>
                     </div>
                 </div>
             </a>
@@ -398,13 +110,13 @@
                     <div class="insight-date">Jan 12, 2026 • Strategy</div>
                     <h2>The Architecture of ELI3GANT</h2>
                     <p>Decoding the structural foundations, creative independence, and aesthetic direction of ELI3GANT.</p>
-                    
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px;">
+
+                    <div>
                         <span class="post-tag">#ELI3GANT</span><span class="post-tag">#STRATEGY</span><span class="post-tag">#AESTHETICS</span>
                     </div>
 
                     <div class="insight-footer">
-                        <span class="read-more">Access Uplink</span>
+                        <span class="read-more">Read article</span>
                     </div>
                 </div>
             </a>
@@ -414,13 +126,13 @@
                     <div class="insight-date">Jan 20, 2026 • Strategy</div>
                     <h2>24h FIXLINE: Emergency Tech Diagnostics</h2>
                     <p>How rapid diagnostics, automated intake, and system refactoring resolve broken business tech in 24 hours.</p>
-                    
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px;">
+
+                    <div>
                         <span class="post-tag">#FIXLINE</span><span class="post-tag">#REPAIR</span><span class="post-tag">#SYSTEMS</span>
                     </div>
 
                     <div class="insight-footer">
-                        <span class="read-more">Access Uplink</span>
+                        <span class="read-more">Read article</span>
                     </div>
                 </div>
             </a>
@@ -430,74 +142,45 @@
                     <div class="insight-date">Jan 24, 2026 • Visuals</div>
                     <h2>High-Converting Client Portals</h2>
                     <p>Why static web pages fail creators and how interactive client portals turn traffic into recurring revenue.</p>
-                    
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 30px;">
+
+                    <div>
                         <span class="post-tag">#PORTALS</span><span class="post-tag">#WEB</span><span class="post-tag">#CONVERSION</span>
                     </div>
 
                     <div class="insight-footer">
-                        <span class="read-more">Access Uplink</span>
+                        <span class="read-more">Read article</span>
                     </div>
                 </div>
             </a>
-        
+
         <!-- BAKED_DATA_END -->
       </div>
 
       <!-- Subscribe / Connect Section -->
-      <section class="subscribe-section center-text" style="margin-top: 100px; padding: 60px; border-radius: 32px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
-        <h3 class="syne-bold" style="font-size: 2.5rem; text-transform: uppercase; margin-bottom: 15px;">Visual Intelligence.</h3>
-        <p class="muted" style="max-width: 500px; margin: 0 auto 40px; font-size: 1.1rem;">Get strategic deconstructions and visual systems delivered directly to your terminal.</p>
-        <form action="https://formspree.io/f/mwvprvll" method="POST" class="subscribe-form" style="display: flex; gap: 10px; max-width: 500px; margin: 0 auto;">
-          <input type="email" name="email" placeholder="neural@uplink.io" required style="flex-grow: 1; padding: 18px 24px; border-radius: 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: 'Space Grotesk', sans-serif;">
-          <button type="submit" class="k-hover" style="background: var(--accent2); color: var(--accent2-text); border: none; padding: 0 30px; border-radius: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;">Join</button>
+      <section class="subscribe-section center-text">
+        <h3 class="syne-bold">Stay in the loop.</h3>
+        <p class="muted">Occasional notes on design, technology, and new work.</p>
+        <form action="https://formspree.io/f/mwvprvll" method="POST" class="subscribe-form">
+          <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required>
+          <button type="submit" class="k-hover">Join</button>
         </form>
       </section>
 
-      <div class="insights-footer-nav center-text" style="margin-top: 80px; display: flex; gap: 30px; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 2px;">
-        <a href="index.html" class="k-hover" style="text-decoration: none; color: var(--muted2);">Back to Base</a>
-        <a href="/archive" class="k-hover" style="text-decoration: none; color: var(--muted2);">The Archive</a>
-        <a href="index.html#contact" class="k-hover" style="text-decoration: none; color: var(--muted2);">Open Connection</a>
+      <div class="insights-footer-nav center-text">
+        <a href="index.html" class="k-hover">Home</a>
+        <a href="/archive" class="k-hover">The Archive</a>
+        <a href="/fixline/intake?source=journal" class="k-hover">Start a project</a>
       </div>
 
     </div>
   </main>
 
-  <footer class="footer">
-    <div class="wrap footer-inner">
-      <div class="footer-left">
-        <div class="nav-logo" aria-label="OTP">
-          <img src="assets/otp-logo-transparent.png" alt="OTP Tactical Pulse Logo" class="nav-gif" id="footer-logo-neon" width="44" height="44" loading="lazy" decoding="async" />
-        </div>
-        <div class="fineprint">© <span id="year">2026</span> OnlyTruePerspective. All rights reserved.</div>
-        <div class="footer-legal">
-          <a href="/bookings" class="k-hover">Book OTP</a>
-          <span class="dot">•</span>
-          <a href="/portal" class="k-hover">Client Portal</a>
-          <span class="dot">•</span>
-          <a href="mailto:contact@onlytrueperspective.tech" class="k-hover">Contact</a>
-          <span class="dot">•</span>
-          <a href="https://www.reddit.com/r/OnlyTruePerspective" target="_blank" rel="noopener noreferrer" aria-label="Open OnlyTruePerspective official Reddit" class="k-hover">Official Reddit</a>
-          <span class="dot">•</span>
-          <a href="terms.html">Terms</a>
-          <span class="dot">•</span>
-          <a href="privacy.html">Privacy</a>
-        </div>
-      </div>
-
-      <div class="footer-right">
-        <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Back to top ↑</a>
-      </div>
-    </div>
-  </footer>
-
-  <canvas id="cursor-canvas"></canvas>
+  <!-- PUBLIC FOOTER START --><footer class="public-footer"><div class="public-wrap"><div class="public-footer-top"><a href="/" class="public-footer-brand">OnlyTruePerspective</a><p>Independent perspective.<br>Rhode Island · Working everywhere.</p></div><div class="public-footer-links"><nav aria-label="Explore"><a href="/archive">Archive</a><a href="/signal">Signal</a><a href="/studio">Studio</a><a href="/insights">Journal</a></nav><nav aria-label="Work with OTP"><a href="/fixline/intake?source=public-footer">Start a project ↗</a><a href="/website-design.html">Web & systems</a><a href="/services/consultant-audit">Consultant audit</a><a href="/fixline">FIXLINE</a><a href="/portal">Client Portal</a></nav><nav aria-label="Elsewhere"><a href="https://instagram.com/onlytrueperspective" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="https://youtube.com/@onlytrueperspective" target="_blank" rel="noopener noreferrer">YouTube ↗</a><a href="https://www.reddit.com/r/OnlyTruePerspective" target="_blank" rel="noopener noreferrer">Reddit ↗</a><a href="mailto:contact@onlytrueperspective.tech">Email ↗</a></nav></div><div class="public-footer-bottom"><span>© <span data-public-year>2026</span> OnlyTruePerspective LLC</span><span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="#top">Back to top ↑</a></span></div></div></footer><!-- PUBLIC FOOTER END -->
 
   <script src="site-config.js?v=16.4.2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js" defer></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
-  
+
   <script>
     // Insights page: fetch from Supabase with baked-content fallback
     document.addEventListener("DOMContentLoaded", async () => {
@@ -513,6 +196,17 @@
 
         let allPosts = [];
         let activeTag = 'ALL';
+        window.filterByTag = (tag) => {
+            activeTag = tag;
+            if (allPosts.length) renderFilters();
+            else document.querySelectorAll('#filter-wrap button').forEach(button => {
+                const selected = button.textContent.trim().toUpperCase() === tag;
+                button.classList.toggle('active', selected);
+                button.setAttribute('aria-pressed', String(selected));
+            });
+            renderPosts(allPosts);
+        };
+
 
         // Show status without wiping baked content
         const setStatus = (msg, isError = false) => {
@@ -524,7 +218,7 @@
                 statusParent.prepend(statusEl);
             }
             statusEl.style.color = isError ? '#ff4444' : 'var(--muted)';
-            
+
             if (isError) {
                 const safeMsg = escapeHtml(String(msg ?? ''));
                 statusEl.innerHTML = `
@@ -611,15 +305,11 @@
             const usefulTags = ['ALL', ...Object.keys(tagCounts).sort()];
 
             wrap.innerHTML = usefulTags.map(tag => `
-                <button type="button" class="filter-btn ${tag === activeTag ? 'active' : ''}" onclick="window.filterByTag(${JSON.stringify(tag)})">${tag === 'ALL' ? 'All' : escapeHtml(tag)}</button>
+                <button type="button" class="filter-btn ${tag === activeTag ? 'active' : ''}" onclick="window.filterByTag(${escapeHtml(JSON.stringify(tag))})" aria-pressed="${tag === activeTag}">${tag === 'ALL' ? 'All' : escapeHtml(tag)}</button>
             `).join('');
         }
 
-        window.filterByTag = (tag) => {
-            activeTag = tag;
-            renderFilters();
-            renderPosts(allPosts);
-        };
+
 
         function renderPosts(posts) {
             if (!grid) return;
@@ -648,7 +338,7 @@
                 grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:100px 40px; color:var(--muted); font-family:'Space Grotesk',sans-serif; letter-spacing:2px;">NO SIGNALS FOUND FOR: ${escapeHtml(activeTag)}</div>`;
                 return;
             }
-            
+
             // CLEAR GRID FOR NEW POSTS
             grid.innerHTML = '';
             const fragment = document.createDocumentFragment();
@@ -677,7 +367,7 @@
                                 ${(post.tags || []).slice(0, 3).map(t => `<span class="post-tag">#${escapeHtml(t.toUpperCase())}</span>`).join('')}
                             </div>
                             <div class="insight-footer" style="display:flex; justify-content:space-between; align-items:center;">
-                                <span class="read-more">Access Uplink</span>
+                                <span class="read-more">Read article</span>
                                 ${viewCount > 0 ? `<span style="font-size:0.8rem; color:var(--muted2); font-family:'Space Grotesk',sans-serif; letter-spacing:1px; opacity:0.8;">${viewCount.toLocaleString()} reads</span>` : ''}
                             </div>
                         </div>
@@ -699,11 +389,8 @@
         }
     });
   </script>
-
-
-  <script src="stars-v2.js?v=20260819-perf1" defer></script>
   <script src="otp-attribution.js?v=16.9.1" defer></script>
-  <script src="site-init.js?v=20260819-perf1" defer></script>
   <script type="module" src="speed-insights-bundle.js?v=2.0.1"></script>
+<script src="/public-shell.js?v=20260915" defer></script>
 </body>
 </html>

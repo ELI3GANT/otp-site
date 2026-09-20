@@ -69,10 +69,6 @@ for (const video of fallback) {
     assert.ok(!/otp-os|supabase|localhost|127\.0\.0\.1/i.test(JSON.stringify(video)), 'public videos expose no internal URLs');
 }
 
-assert.ok(index.includes('data-video-feed="featured"'), 'homepage mounts Featured Work from video feed');
-assert.ok(index.includes('otp-projects.js?v='), 'homepage loads reusable project library before rendering work');
-assert.ok(index.includes('otp-video-library.js?v='), 'homepage loads shared video library');
-assert.ok(index.includes('Book OTP'), 'homepage video area keeps Book OTP CTA visible');
 assert.ok(archive.includes('data-video-feed="archive"'), 'archive mounts Vault from video feed');
 assert.ok(archive.includes('Video / Recap'), 'archive exposes requested category filters');
 assert.ok(archive.includes('Music / Visuals'), 'archive exposes requested category filters');

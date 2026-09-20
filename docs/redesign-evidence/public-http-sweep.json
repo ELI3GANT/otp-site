@@ -1,0 +1,223 @@
+{
+  "schema": "otp-prod-full-sweep-v2",
+  "baseUrl": "https://www.onlytrueperspective.tech",
+  "ok": true,
+  "checkedAt": "2026-09-16T11:35:28.437Z",
+  "coverage": "Pre-deployment existing production; not redesigned release proof",
+  "publicChecks": [
+    {
+      "name": "home",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "bookings",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "songwars",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "songwars-poster",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "booking-alias",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "book-alias",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "bookings-html",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "bookings-css",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "bookings-js",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "booking-animated-logo",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "booking-static-logo",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "primary-logo",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "app-icon",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "favicon-32",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "apple-touch-icon",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "social-preview",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "client-portal",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "client-portal-css",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "client-portal-js",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "private-client-css",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "private-client-js",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "portal-gate",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "terminal-alias",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "terminal-shell",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "admin-core-js",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "insights",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "insight",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "privacy",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "terms",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "archive",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "payment-success",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "api-health",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "api-status",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    },
+    {
+      "name": "bookings-config",
+      "status": 200,
+      "ok": true,
+      "checks": []
+    }
+  ],
+  "adminChecks": [],
+  "errors": [],
+  "skipped": [
+    "admin-qa-sweep",
+    "admin-knowledge-meta",
+    "admin-knowledge-files",
+    "admin-docs-templates-status",
+    "schema-migration",
+    "terminal-browser-smoke"
+  ]
+}

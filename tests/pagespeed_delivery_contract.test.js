@@ -24,15 +24,8 @@ assert.ok(!index.includes('pay_v2.js'), 'homepage avoids the unused legacy payme
 assert.ok(!index.includes('unpkg.com/kursor'), 'homepage does not download unused kursor assets');
 assert.ok(!index.includes('split-type'), 'homepage does not download unused SplitType');
 assert.ok(!read('archive.html').includes('src="assets/otp.gif"'), 'archive uses the lightweight nav mark instead of the 1MB legacy GIF');
-const heroMarkTag = (index.match(/<img[^>]*class="hero-symbol-mark"[^>]*>/) || [''])[0];
-assert.ok(heroMarkTag.includes('src="assets/otp-hero-centered.gif"'), 'homepage hero uses the animated optimized hero mark');
-assert.ok(heroMarkTag.includes('data-fallback-src="assets/otp-hero-poster-frame.png"'), 'homepage hero keeps a poster only as a load-error fallback');
-assert.ok(!index.includes('class="hero-symbol-picture"'), 'homepage hero avoids picture-backed mobile source swapping');
-assert.ok(index.includes('class="hero-symbol-mark"'), 'homepage hero renders one primary symbol image');
-assert.ok(!index.includes('data-hero-animated-src='), 'homepage hero does not require JS-driven animated source swapping');
-assert.ok(!/class="[^"]*hero-eye-poster/.test(index), 'homepage hero avoids a separate poster layer');
-assert.ok(!/class="[^"]*hero-eye-animated/.test(index), 'homepage hero avoids a separate animated layer');
-assert.ok(!index.includes('preload" href="assets/otp-hero-centered.gif"'), 'homepage does not preload full hero gif as LCP');
+assert.ok(!/\.gif[\"?]/.test(index), 'homepage avoids animated GIF downloads');
+assert.ok(!/gsap|ScrollTrigger|stars-v2|supabase-js/.test(index), 'homepage has no heavy animation or application dependencies');
 assert.ok(bookings.includes('/assets/otp-hero-poster-frame.png'), 'bookings uses the stable optimized OTP mark');
 assert.ok(!bookings.includes('/assets/otp-hero-centered.gif'), 'bookings avoids the edge-on spinning GIF as the primary header mark');
 assert.ok(!bookings.includes('<img src="/assets/otp.gif"'), 'bookings does not render the heavy legacy GIF as its header logo');

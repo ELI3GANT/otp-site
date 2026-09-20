@@ -11,9 +11,9 @@
   --signal-border-strong: #2e2e2e;
   --signal-ink: #f7f7f2;
   --signal-ink-secondary: #9e9e96;
-  --signal-ink-muted: #575752;
-  --signal-gold: #d5b56c;
-  --signal-gold-glow: rgba(213, 181, 108, 0.28);
+  --signal-ink-muted: #92928a;
+  --signal-gold: #dcff5f;
+  --signal-gold-glow: rgba(220, 255, 95, 0.28);
   --signal-cyan: #00f0ff;
   --signal-cyan-glow: rgba(0, 240, 255, 0.22);
 
@@ -1531,3 +1531,10 @@ body.signal-page[data-playback="playing"] .signal-visualizer-aura {
     transform: none !important;
   }
 }
+
+.signal-header { column-gap: 24px; }
+.signal-return-nav { display:flex; gap:20px; margin-left:auto; }
+.signal-return-nav a { color:var(--signal-ink-secondary); font:12px var(--signal-mono); text-decoration:none; display:inline-flex; min-height:44px; align-items:center; }
+.signal-return-nav a:hover { color:var(--signal-gold); }
+.signal-return-nav a:focus-visible { outline:2px solid var(--signal-gold); outline-offset:4px; }
+@media(max-width:600px) { .signal-header { flex-wrap:wrap; gap:12px; } .signal-return-nav { order:3; width:100%; border-top:1px solid var(--signal-surface-border); margin:0; } .signal-header .signal-status-pill { margin-left:auto; } .signal-brand-text { font-size:11px; } }

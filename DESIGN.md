@@ -226,3 +226,34 @@ The default public campaign strategy is **borders-only**. Strong rules, contrast
 | Default | `1px solid var(--border-default)` | Section and tile structure |
 | Strong | `2px solid var(--border-strong)` | Featured poster and major fields |
 | Accent | `4px solid var(--accent-event)` | One campaign emphasis edge |
+
+## 8. Public editorial system · September 2026
+
+The user's redesign explicitly supersedes the previous gold-only public direction. Existing campaign-specific identities remain intentional. New company surfaces use the following shared tokens in `public-system.css`:
+
+- Ink / `--surface-primary`, `--ink`: #101110; panel / `--surface-secondary`: #1c1e1a.
+- Paper / `--text-primary`, `--paper`: #f1f0e8; secondary text: #b7bbb0.
+- Accent / `--accent-otp`: #dcff5f acid yellow; rule / `--border-default`: #3c4036.
+- Muted paper text: #54594c; paper rule: #c7cabf.
+- Typography: existing Helvetica Neue stack with heavy negative-tracked display and mono folios. Display clamp(3.5rem, 11vw, 10rem); hero wordmark clamp(3rem, 10.9vw, 11rem); h2 clamp(2.25rem, 5.5vw, 5rem); h3 clamp(1.5rem, 3vw, 2.75rem); body 1rem/1.6; lead clamp(1.125rem, 2vw, 1.5rem); labels .75rem/1.4.
+- Layout: 1440px max, gutters clamp(20px, 4vw, 64px), sections clamp(64px, 9vw, 144px). Existing 4px spacing scale retained. Editorial grid 7:5 / 5:7, mobile single column. Corners square; structural 1px rules; no floating cards or glass.
+- Hero: paper wordmark on ink, acid typographic inset and real OTP emblem. No perpetual decorative motion or blocking loader.
+- Paper surfaces alternate deliberately at major content roles: portfolio teaser and capabilities, framed by dark intro and Signal. Project art supplies additional color without new UI accents.
+
+### Shared public primitives and states
+
+`public-shell.js` exports the header/footer used by static shell sync and project rendering. Desktop navigation: Home / Archive / Signal / Studio / Start a project. Native details menu on mobile works without JS; Escape closes and restores focus; page links remain real anchors. Current page is `aria-current=page`. Utility links (portal, services, journal, legal) live in the footer. Menu is in normal flow with no focus-trap or scroll lock.
+
+`public-system.css` provides `.public-wrap`, `.public-section`, `.public-label`, `.public-title`, `.public-lead`, `.public-button`, `.public-text-link`, `.public-header`, `.public-footer`, `.public-paper`, `.public-cta`. Links have underlines or arrow affordances. 44px minimum interactive targets. Focus uses a 2px contrasting outline and 4px offset. Hover transitions use 180ms ease-out, image link zoom uses 320ms ease-out (1.025 scale); active buttons shift 1px; all movement disabled under reduced motion. All content visible without animation/JS.
+
+Archive: collection buttons and search first; optional native details houses status/category/year/technology and timeline. Broad collections are All, Products & systems, Client work, Music & events, Featured. Image-led card: image, index/type, title, short sentence, project-story link and quieter service enquiry. Hero card spans width; two-up supporting work; no repeated technology/service lists until project pages. Clear resets every field, collection and result count. Empty state has usable reset.
+
+Project story: readable static server-rendered HTML, real screenshot or comparison with caption, factual scope, contextual narrative, related work. Phone screenshots use contain and intrinsic dimensions. No invented release verification or outcomes.
+
+### Audience and accessibility
+
+Prospective clients must find relevant work then start an enquiry. Creative visitors must reach Signal and the media archive without wading through sales copy. Returning clients reach portal from every company footer. Keyboard/touch users receive native controls, visible focus, search labels, result announcements, reduced motion and no hover-only navigation. Mobile: single column, full-sized images, readable metadata, wrapped collection controls. CMS/admin, booking/payment, protected access and remote FIXLINE remain independent.
+
+### Accepted implementation boundary
+
+Legacy campaign/product styling can keep its own palette; shared navigation connects the ecosystem. Legacy `styles.css` stays available for operational and older pages; new Home, Archive, Studio and project stories do not load its accumulated overrides. Old visual snapshot assertions must be replaced by meaningful behavioral coverage where this explicitly authorized redesign changes their expected layout.

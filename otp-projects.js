@@ -56,7 +56,7 @@
       status: 'Live',
       launchDate: '2026-08-20',
       year: 2026,
-      shortDescription: 'A clean, ad-free mobile weather application built by OnlyTruePerspective, featuring real-time precipitation radar, atmospheric day/night themes, 7-day visual forecasts, and zero ad tracking. Live on Apple App Store ($0.99 · v1.0.6) and Google Play ($0.99 · v1.0.4).',
+      shortDescription: 'Atmospheric weather, precipitation radar, and visual forecasts in a focused mobile interface.',
       tags: Object.freeze(['WeatherOS', 'iOS App', 'Android App', 'Atmospheric UI', 'Radar', 'Zero Tracking', 'Ad-Free']),
       services: Object.freeze(['Mobile app design', 'Atmospheric interface design', 'Radar visualization', 'iOS & Android deployment', 'Product landing page']),
       technology: Object.freeze(['Flutter', 'Swift', 'Kotlin', 'Canvas', 'App Store', 'Google Play']),
@@ -67,7 +67,7 @@
         android: 'v1.0.4 (Live on Google Play)'
       }),
       heroImage: Object.freeze({
-        src: '/assets/weatheros/screenshots/today-public.png',
+        src: '/assets/weatheros/screenshots/today-public.webp',
         alt: 'WeatherOS mobile interface showing live weather metrics and radar',
         width: 1080,
         height: 1920
@@ -77,7 +77,7 @@
       projectCtaLabel: 'Explore WeatherOS',
       bookingUrl: '/bookings?source=archive-weatheros&service=product-design',
       bookingCtaLabel: 'Build a custom app',
-      caseStudyUrl: '',
+      caseStudyUrl: '/projects/weatheros',
       caseStudyCtaLabel: 'Read Case Study'
     }),
     Object.freeze({
@@ -109,7 +109,7 @@
       projectCtaLabel: 'Request Systems Overview',
       bookingUrl: '/bookings?source=archive-otpos&service=business-systems',
       bookingCtaLabel: 'Build a custom business OS',
-      caseStudyUrl: '',
+      caseStudyUrl: '/projects/otp-os',
       caseStudyCtaLabel: 'Read Case Study'
     }),
     Object.freeze({
@@ -141,7 +141,7 @@
       projectCtaLabel: 'Explore OTP FIXLINE',
       bookingUrl: '/fixline/intake?source=archive-fixline',
       bookingCtaLabel: 'Start My FIXLINE Review',
-      caseStudyUrl: '',
+      caseStudyUrl: '/projects/otp-fixline',
       caseStudyCtaLabel: 'View Future Case Studies'
     }),
     Object.freeze({
@@ -156,10 +156,10 @@
       featured: true,
       homepageFeatured: false,
       pinned: true,
-      status: 'Live',
+      status: 'Released',
       launchDate: '2026-07-05',
       year: 2026,
-      shortDescription: 'A cinematic event launch built to turn interest into participation through a focused Discord registration path, live status, and share-ready campaign storytelling.',
+      shortDescription: 'A cinematic July 2026 event campaign with a focused Discord entry path and share-ready storytelling. Registration details are historical.',
       tags: Object.freeze(['Song Wars', 'The Smack Club', 'Community Voting', 'Independent Artists', 'Event Launch']),
       services: Object.freeze(['Creative direction', 'Campaign landing page', 'Event positioning', 'Registration UX', 'Social sharing system', 'Responsive production']),
       technology: Object.freeze(['HTML', 'CSS', 'JavaScript', 'Express', 'Vercel']),
@@ -174,7 +174,7 @@
       projectCtaLabel: 'Visit Song Wars',
       bookingUrl: '/bookings?source=archive-songwars&service=event-community-rollout',
       bookingCtaLabel: 'Book OTP for a launch',
-      caseStudyUrl: '',
+      caseStudyUrl: '/projects/songwars',
       caseStudyCtaLabel: 'Read Case Study'
     }),
     Object.freeze({
@@ -206,7 +206,7 @@
       projectCtaLabel: 'Visit PROTOCOL',
       bookingUrl: '/bookings?source=archive-protocol&service=artist-campaign',
       bookingCtaLabel: 'Plan an artist rollout',
-      caseStudyUrl: '',
+      caseStudyUrl: '/projects/protocol',
       caseStudyCtaLabel: 'Read Case Study'
     }),
     Object.freeze({
@@ -257,7 +257,7 @@
       projectCtaLabel: 'Start a Similar Project',
       bookingUrl: '/bookings?source=archive-hyh&service=website-business-fix',
       bookingCtaLabel: 'Get a site fix quote',
-      caseStudyUrl: '',
+      caseStudyUrl: '/projects/hyh-architecture-design',
       caseStudyCtaLabel: 'Read Case Study',
       ctaHref: '/bookings?source=hyh-project',
       ctaLabel: 'Start a Similar Project'

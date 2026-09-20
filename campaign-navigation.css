@@ -1,0 +1,6 @@
+.campaign-navigation { position: relative; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 12px clamp(20px, 4vw, 64px); background: var(--ink); color: var(--paper); border-bottom: 1px solid var(--border-default); font: 12px/1.4 var(--font-mono); }
+.campaign-navigation div { display: flex; gap: 24px; }
+.campaign-navigation a { color: inherit; text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; }
+.campaign-navigation a:hover { color: var(--accent-otp); }
+.campaign-navigation a:focus-visible { outline: 2px solid var(--accent-otp); outline-offset: 4px; }
+@media(max-width:600px) { .campaign-navigation { flex-wrap: wrap; gap: 0; } .campaign-navigation div { gap: 24px; width: 100%; } }

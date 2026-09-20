@@ -13,7 +13,7 @@ const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytruep
 const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_TOKEN || '').trim();
 
 const publicTargets = [
-  { name: 'home', path: '/', kind: 'html', markers: ['Book OTP', 'OnlyTruePerspective | Rhode Island Creative Technology', '/bookings?source=', 'href="/portal"'] },
+  { name: 'home', path: '/', kind: 'html', markers: ['OnlyTruePerspective | Rhode Island Creative Technology &amp; Media Studio', 'rel="canonical" href="https://www.onlytrueperspective.tech/"', 'href="/archive"', 'href="/portal"'] },
   { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css', '/bookings.js', 'canonical', 'Start a Project with OTP.', 'service-selector'] },
   { name: 'songwars', path: '/songwars', kind: 'html', markers: ['Song Wars Weekend', 'data-songwars-poster', 'discord.gg/Awk2b7RSW', 'rel="canonical" href="https://www.onlytrueperspective.tech/songwars"'] },
   { name: 'songwars-poster', path: '/assets/songwars/songwars-poster.jpg', kind: 'jpg' },
@@ -80,9 +80,14 @@ async function main() {
     schema: 'otp-prod-full-sweep-v2',
     publicTargets: active,
     adminTargets,
-    browserSmoke: true,
+    browserSmoke: process.env.OTP_SWEEP_HTTP_ONLY !== '1',
     token: TOKEN
   });
+
+  if (process.env.OTP_SWEEP_HTTP_ONLY === '1') {
+    sweep.skipped.push('terminal-browser-smoke');
+    sweep.warnings.push('HTTP-only sweep: authenticated browser smoke intentionally omitted.');
+  }
 
   if (deferred.length) {
     sweep.skipped.push(...deferred.map((target) => target.name));

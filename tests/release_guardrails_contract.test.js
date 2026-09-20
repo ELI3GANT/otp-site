@@ -48,11 +48,11 @@ assert.ok(ignoreBuildScript.includes('VERCEL_GIT_PROVIDER') && ignoreBuildScript
 assert.ok(ignoreBuildScript.includes('OTP_ALLOW_VERCEL_GIT_PRODUCTION_DEPLOY'), 'Vercel ignore script keeps an explicit emergency override');
 
 for (const sweep of [terminalSweep, fullSweep]) {
-  assert.ok(sweep.includes('OnlyTruePerspective | Rhode Island Creative Technology'), 'production sweep pins the canonical homepage title');
+  assert.ok(sweep.includes(homepage.match(/<title>([^<]+)<\/title>/)[1]), 'production sweep pins the canonical homepage title');
   assert.ok(sweep.includes('portal-shell') && sweep.includes('portal-root'), 'production sweep pins the current private portal CSS shell');
   assert.ok(!sweep.includes("'Insights'") && !sweep.includes('client-shell') && !sweep.includes('documents-list'), 'production sweep contains no retired source markers');
 }
-assert.ok(homepage.includes('OnlyTruePerspective | Rhode Island Creative Technology'), 'canonical homepage title exists in source');
+assert.ok(/<title>OnlyTruePerspective[^<]+<\/title>/.test(homepage), 'canonical homepage title identifies the brand');
 assert.ok(clientCss.includes('.portal-shell') && clientCss.includes('.portal-root'), 'canonical private portal CSS markers exist in source');
 assert.ok(schemaMigration.includes('OTP SYSTEM MIGRATION V1.3.0'), 'schema endpoint migration marker exists in source');
 assert.ok(terminalSweep.includes('OTP SYSTEM MIGRATION V1.3.0') && !terminalSweep.includes('SECURE_HARDENING_PRO'), 'terminal sweep validates the migration actually served by the endpoint');
@@ -66,6 +66,8 @@ assert.ok(productionWorkflow.includes('confirm_clean_release') && productionWork
 assert.ok(productionWorkflow.includes('npm run release:gate'), 'production workflow blocks deploy behind release gate');
 assert.ok(productionWorkflow.includes('Require authenticated sweep credentials'), 'production workflow requires authenticated sweep credentials');
 assert.ok(productionWorkflow.includes('npm run prod:full-sweep'), 'production workflow runs public and authenticated production sweeps');
+assert.ok(fullSweep.includes("browserSmoke: process.env.OTP_SWEEP_HTTP_ONLY !== '1'"), 'authenticated browser smoke stays enabled unless HTTP-only coverage is explicit');
+assert.ok(fullSweep.includes("sweep.skipped.push('terminal-browser-smoke')") && fullSweep.includes('authenticated browser smoke intentionally omitted'), 'HTTP-only coverage reports its omitted browser check');
 assert.ok(productionWorkflow.includes('build --prod') && productionWorkflow.includes('deploy --prebuilt --prod'), 'production workflow deploys prebuilt output after gates pass');
 
 assert.ok(/Clean scoped release/i.test(docs), 'guardrail docs define clean scoped release');

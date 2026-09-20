@@ -35,7 +35,7 @@ const server = read('server.js');
 const config = require(path.join(root, 'songwars-config.js'));
 
 const discordUrl = 'https://discord.gg/Awk2b7RSW';
-const seoDescription = 'Join The Smack Club: Song Wars — 20 artists, direct battles, community voting, and Independence Day Weekend energy.';
+const seoDescription = 'The archived July 2026 Song Wars campaign: event identity, community format, and creative direction by OnlyTruePerspective.';
 
 assert.deepStrictEqual(
   {
@@ -154,11 +154,11 @@ assert.ok(html.includes('href="#details"'), 'View Details remains an in-page det
   'Register your artist name',
   'Submit your song',
   'Battle and get votes',
-  'Bracket reveals after registration closes.',
+  'Bracket details are not maintained on this archived page.',
   'Community Voting + Official Judges',
-  'Prize Announcement Coming Soon.',
+  'Original prize announcement',
   'One Bracket. Twenty Artists. One Champion.',
-  'Only {{SPOTS_LEFT}} spots left. Lock in before the bracket fills.'
+  'Find the community. Follow the next chapter.'
 ].forEach((copy) => assert.ok(html.includes(copy), `${copy} appears on the page`));
 
 assert.ok(css.includes('overflow-x: hidden'), 'mobile layout prevents horizontal overflow');
@@ -202,3 +202,7 @@ assert.match(workflow, /Deploy prebuilt production output[\s\S]*Post-deploy publ
 assert.ok(sweep.includes("name: 'songwars'") && sweep.includes("name: 'songwars-poster'"), 'the post-deploy sweep still checks the page and poster');
 
 console.log('Song Wars landing page contract passed.');
+
+assert.ok(html.includes('Campaign archive · July 2026'), 'past campaign is labeled as archived');
+assert.ok(html.includes('historical, not live availability'), 'counts cannot be mistaken for current capacity');
+assert.ok(!html.includes('REGISTRATION OPEN'), 'archived event does not advertise open registration');

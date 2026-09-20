@@ -121,7 +121,7 @@ for (const file of htmlFiles) {
 const index = readText('index.html');
 assert.ok(index.includes('href="/favicon-32x32.png"'), 'homepage references root favicon');
 assert.ok(index.includes('href="/apple-touch-icon.png"'), 'homepage references root Apple touch icon');
-assert.ok(index.includes('src="assets/otp-logo-transparent.png"'), 'homepage header uses primary transparent logo');
+assert.ok(index.includes('src="/assets/otp-logo-transparent.png"'), 'homepage header uses primary transparent logo');
 assert.ok(!index.includes('src="assets/seo/eli3gant-founder.webp"'), 'homepage keeps ELI3GANT founder image metadata-only for now');
 assert.ok(!index.includes('src="icon.png"'), 'homepage does not use square app icon as header logo');
 

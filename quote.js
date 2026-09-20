@@ -78,17 +78,15 @@
 
     if (els.modalStripeLink) {
       const isExternalStripe = checkoutUrl && (checkoutUrl.includes('stripe.com') || checkoutUrl.includes('buy.stripe.com'));
-      els.modalStripeLink.href = isExternalStripe ? checkoutUrl : '#';
-      els.modalStripeLink.onclick = (e) => {
-        if (!isExternalStripe) {
-          e.preventDefault();
-          els.modalStripeLink.style.pointerEvents = 'none';
-          els.modalStripeLink.innerHTML = '<span>⚡ Deposit Confirmed! Unlocking Portal...</span><span>✓</span>';
-          setTimeout(() => {
-            window.location.href = `/client/${encodeURIComponent(token)}`;
-          }, 1200);
-        }
-      };
+      if (isExternalStripe) {
+        els.modalStripeLink.href = checkoutUrl;
+        els.modalStripeLink.innerHTML = '<span>💳 Pay via Credit / Debit Card (Stripe)</span><span>→</span>';
+        els.modalStripeLink.onclick = null;
+      } else {
+        els.modalStripeLink.href = `/client/${encodeURIComponent(token)}`;
+        els.modalStripeLink.innerHTML = '<span>📋 Stripe Checkout Unavailable — Review in Client Portal</span><span>→</span>';
+        els.modalStripeLink.onclick = null;
+      }
     }
     if (els.modalPortalLink) {
       els.modalPortalLink.href = `/client/${encodeURIComponent(token)}`;

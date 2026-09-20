@@ -38,7 +38,8 @@
           </span>
         </a>
         <nav class="top-actions" aria-label="Booking navigation">
-          <a href="https://www.onlytrueperspective.tech" rel="noopener noreferrer">Live Site</a>
+          <a href="/">OTP Home</a>
+          <a href="/archive">Archive</a>
           <a href="/portal">Client Portal</a>
           <a href="#booking-form">Start Booking</a>
         </nav>
@@ -238,28 +239,28 @@
               <strong>No package selected</strong>
             </div>
             <div class="form-grid">
-              <label>
+              <label for="booking-name">
                 Name <span>Required</span>
                 <input id="booking-name" name="name" autocomplete="name" required />
               </label>
-              <label>
+              <label for="booking-email">
                 Email <span>Email or phone required</span>
                 <input id="booking-email" name="email" type="text" inputmode="email" autocomplete="email" />
               </label>
-              <label>
+              <label for="booking-phone">
                 Phone <span>Email or phone required</span>
                 <input id="booking-phone" name="phone" type="tel" autocomplete="tel" />
               </label>
-              <label>
+              <label for="booking-business">
                 Brand / Business
                 <input id="booking-business" name="business_name" autocomplete="organization" />
               </label>
-              <label>
+              <label for="booking-contact-method">
                 Preferred Contact
                 <select id="booking-contact-method" name="preferred_contact_method"></select>
               </label>
             </div>
-            <label>
+            <label for="booking-social">
               Social / Website Link
               <input id="booking-social" name="social_link" inputmode="url" placeholder="Instagram, website, portfolio, or music link" />
             </label>
@@ -267,28 +268,28 @@
 
           <section class="form-step" data-step="2" aria-label="What Do You Need">
             <div class="form-grid">
-              <label>
+              <label for="booking-service">
                 Service Type <span>Required</span>
                 <select id="booking-service" name="service_type" required></select>
               </label>
-              <label>
+              <label for="booking-package">
                 Package Interest <span>Required</span>
                 <select id="booking-package" name="package_interest" required></select>
               </label>
-              <label>
+              <label for="booking-project-type">
                 Project Type
                 <select id="booking-project-type" name="project_type"></select>
               </label>
             </div>
-            <label>
+            <label for="booking-description">
               Project Description <span>Required</span>
               <textarea id="booking-description" name="project_description" required placeholder="Tell OTP what needs to be built, edited, designed, automated, launched, or cleaned up. Include deliverables, must-have details, and the real goal."></textarea>
             </label>
-            <label>
+            <label for="booking-deliverables">
               Desired Deliverables
               <textarea id="booking-deliverables" name="desired_deliverables" class="compact-textarea" placeholder="Logo files, edited reel, landing page, launch graphics, workflow, content pack, or anything else you need in hand."></textarea>
             </label>
-            <label>
+            <label for="booking-reference">
               Reference Link
               <input id="booking-reference" name="reference_link" inputmode="url" placeholder="Moodboard, video, logo, website, Dropbox, Google Drive, or example link" />
             </label>
@@ -296,27 +297,27 @@
 
           <section class="form-step" data-step="3" aria-label="Budget and Timeline">
             <div class="form-grid">
-              <label>
+              <label for="booking-budget">
                 Budget Range
                 <select id="booking-budget" name="budget_range"></select>
               </label>
-              <label>
+              <label for="booking-deadline">
                 Ideal Deadline
                 <input id="booking-deadline" name="ideal_deadline" type="date" />
               </label>
-              <label>
+              <label for="booking-urgency">
                 Urgency Level
                 <select id="booking-urgency" name="urgency_level"></select>
               </label>
-              <label>
+              <label for="booking-deposit">
                 Deposit Readiness
                 <select id="booking-deposit" name="deposit_readiness"></select>
               </label>
-              <label>
+              <label for="booking-location">
                 Location
                 <input id="booking-location" name="location" autocomplete="address-level2" placeholder="City/state, venue, or online-only" />
               </label>
-              <label>
+              <label for="booking-referral-source">
                 How Did You Hear About OTP?
                 <select id="booking-referral-source" name="referral_source"></select>
               </label>
@@ -332,11 +333,11 @@
               <div id="review-summary" class="review-summary"></div>
               <p class="next-step-note">After submission, OTP reviews your request, confirms the scope, and prepares the right proposal, invoice, or agreement.</p>
             </div>
-            <label>
+            <label for="booking-next-step">
               Preferred Next Step
               <select id="booking-next-step" name="preferred_next_step"></select>
             </label>
-            <label class="checkbox-label">
+            <label class="checkbox-label" for="booking-consent">
               <input id="booking-consent" name="contact_consent" type="checkbox" required />
               <span>OTP may contact me about this request.</span>
             </label>

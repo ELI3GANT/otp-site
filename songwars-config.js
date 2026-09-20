@@ -78,7 +78,7 @@ const SONG_WARS_CONFIG = Object.freeze({
   ]),
   otpLogoPath: '/assets/songwars/otp-mark.png',
   seoTitle: 'Song Wars Weekend | OnlyTruePerspective',
-  seoDescription: 'Join The Smack Club: Song Wars — 20 artists, direct battles, community voting, and Independence Day Weekend energy.',
+  seoDescription: 'The archived July 2026 Song Wars campaign: event identity, community format, and creative direction by OnlyTruePerspective.',
   eventDateLabel: 'Sunday, July 5, 2026',
   eventDateIso: '2026-07-05',
   primaryHost: '4reign',

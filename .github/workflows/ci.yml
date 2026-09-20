@@ -45,6 +45,12 @@ jobs:
       - name: Speed Insights bundle check
         run: npm run build:speed-insights
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E Adversarial QA
+        run: npm run test:e2e
+
       - name: Build if defined
         run: npm run build --if-present
 

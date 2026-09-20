@@ -1,137 +1,79 @@
 {
-  "releaseName": "otp-weatheros-public-launch-20260827",
+  "releaseName": "otp-public-site-redesign-20260920",
   "includedFiles": [
-    ".gitignore",
     ".github/workflows/ci.yml",
     ".github/workflows/production-release.yml",
-    "404.html",
     "DESIGN.md",
-    "admin-core.js",
-    "apple-touch-icon.png",
+    "archive-media.js",
+    "archive.css",
     "archive.html",
     "archive.js",
-    "assets/audio/README.md",
-    "assets/fixline-product-preview.png",
-    "assets/otp-app-icon.png",
-    "assets/otp-social-preview.png",
-    "assets/songwars/otp-mark.png",
-    "assets/songwars/songwars-poster-1200.jpg",
-    "assets/songwars/songwars-poster-1200.webp",
-    "assets/songwars/songwars-poster-1600.webp",
-    "assets/songwars/songwars-poster-480.jpg",
-    "assets/songwars/songwars-poster-480.webp",
-    "assets/songwars/songwars-poster-672.jpg",
-    "assets/songwars/songwars-poster-672.webp",
-    "assets/songwars/songwars-poster-800.jpg",
-    "assets/songwars/songwars-poster-800.webp",
-    "assets/songwars/songwars-poster.jpg",
-    "assets/songwars/songwars-poster.png",
-    "assets/weatheros/weatheros-concept-a.png",
-    "assets/weatheros/weatheros-concept-b.png",
-    "assets/weatheros/weatheros-concept-c.png",
-    "assets/weatheros/weatheros-icon-1024.png",
-    "assets/weatheros/weatheros-screen-expanded.jpeg",
-    "assets/weatheros/weatheros-screen-loaded.jpeg",
-    "bookings.css",
+    "audit-page.css",
     "bookings.html",
     "bookings.js",
+    "campaign-navigation.css",
     "client.html",
     "consultant-audit.html",
-    "contracts/otp-contract-pins.json",
-    "contracts/otp-job-admin-mutation-v1.json",
-    "docs/OTP_ASSET_SYSTEM.md",
-    "docs/OTP_CLEAN_RELEASE_GUARDRAILS.md",
-    "docs/OTP_RELEASE_MANIFEST_GUIDE.md",
-    "docs/OTP_SITE_WRITER_BOUNDARY.md",
-    "docs/OTP_TERMINAL_ORACLE_BLUEPRINT.md",
-    "docs/OTP_UNIFIED_DEPLOYMENT.md",
-    "docs/OTP_UNIFIED_ENV_AUDIT.md",
-    "favicon-32x32.png",
-    "favicon.png",
-    "fixline-analytics.js",
-    "fixline-intake.css",
-    "fixline-intake.js",
-    "fixline-service.css",
-    "icon-192.png",
-    "icon-512.png",
-    "icon.png",
+    "docs/SITE_REDESIGN_PLAN.md",
+    "docs/redesign-evidence/authenticated-http-sweep.json",
+    "docs/redesign-evidence/local-links.json",
+    "docs/redesign-evidence/public-http-sweep.json",
+    "docs/redesign-evidence/release-checks.md",
+    "home.css",
     "index.html",
     "insight.html",
     "insights.html",
-    "og.jpg",
-    "otp-attribution.js",
     "otp-projects.js",
-    "otp-terminal.html",
-    "package-lock.json",
     "package.json",
-    "payment_success.html",
-    "portal-gate.html",
-    "portal.html",
-    "pricing-config.js",
     "privacy.html",
-    "protocol.css",
+    "project-page.css",
+    "project-stories.js",
     "protocol.html",
-    "protocol.js",
+    "public-shell.js",
+    "public-system.css",
+    "quote.html",
+    "quote.js",
     "release-manifest.json",
-    "scripts/otp-contracts.mjs",
-    "scripts/prepare_deploy.js",
-    "scripts/prod_bootstrap_qa.js",
     "scripts/prod_full_sweep.js",
-    "scripts/prod_sweep_v2_runner.js",
     "scripts/prod_terminal_sweep.js",
-    "scripts/vercel_ignore_build_step.js",
-    "scripts/verify_release_scope.js",
+    "scripts/sync-public-shell.js",
     "server.js",
-    "server/job-admin-handoff.js",
-    "site-init.js",
-    "sitemap.xml",
-    "signal-config.js",
+    "service-discovery.css",
     "signal.css",
     "signal.html",
-    "signal.js",
+    "sitemap.xml",
     "songwars-config.js",
-    "songwars.css",
     "songwars.html",
-    "songwars.js",
-    "site.webmanifest",
-    "stars-v2.js",
-    "styles.css",
+    "studio.css",
+    "studio.html",
+    "supporting-public.css",
     "terms.html",
-    "tests/admin_sweep_auth_contract.test.js",
-    "tests/api_surface_security_contract.test.js",
     "tests/archive_case_study_contract.test.js",
-    "tests/attribution_contract.test.js",
-    "tests/bookings_contract.test.js",
+    "tests/archive_url_sync_and_fallback.test.js",
+    "tests/e2e/adversarial_qa.js",
     "tests/fixline_integration_contract.test.js",
-    "tests/fixline_premium_experience.test.js",
     "tests/homepage_visual_contract.test.js",
-    "tests/job_admin_os_route.integration.test.js",
     "tests/loader_recovery_contract.test.js",
     "tests/logo_asset_contract.test.js",
     "tests/marketing_site_contract.test.js",
     "tests/master_runner.js",
-    "tests/ops_jobs_contract.test.js",
-    "tests/otp_contract_verification.test.js",
-    "tests/portal_route_contract.test.js",
-    "tests/protocol_contract.test.js",
+    "tests/pagespeed_delivery_contract.test.js",
     "tests/release_guardrails_contract.test.js",
-    "tests/seo_indexing_contract.test.js",
     "tests/signal_contract.test.js",
+    "tests/signature_pricing.test.js",
     "tests/songwars_contract.test.js",
-    "tests/vercel_route_precedence.test.js",
-    "tests/weatheros_privacy_contract.test.js",
-    "tests/weatheros_routes.test.js",
+    "tests/youtube_video_contract.test.js",
     "vercel.json",
     "weatheros-privacy.html",
     "weatheros-support.html",
     "weatheros.html",
     "weatheros/index.html",
     "weatheros/privacy.html",
-    "weatheros/support.html"
+    "weatheros/support.html",
+    "website-design.html"
   ],
   "excludedDirtyFiles": [
-    "otp-site:ignored .vercel/.env.production.local, output/playwright/, and test-report.xml are local or generated artifacts and are not release material",
-    "otp-os:modified .codex/config.toml and ignored .env, .vercel, and output/playwright artifacts belong to the separate otp-os workspace and are excluded"
+    "Local .vercel environment and generated test artifacts are ignored; no credentials or business records are release material."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -139,73 +81,58 @@
     "node_modules",
     "output/playwright",
     "test-report.xml",
-    "*.har"
+    "*.har",
+    "docs/redesign-evidence/*.log"
   ],
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed_43_of_43"
+      "status": "passed_52_of_52"
     },
     {
-      "command": "node tests/job_admin_os_route.integration.test.js",
-      "status": "passed_failure_matrix_and_response_loss_replay"
+      "command": "npm run test:e2e",
+      "status": "passed_47_of_47"
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed_3_pinned_contracts"
+      "status": "passed_4_pinned_contracts"
     },
     {
       "command": "npm run master_test:ci",
-      "status": "passed"
+      "status": "passed_52_of_52"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed"
+      "status": "passed_289_files"
     },
     {
       "command": "npm run build:speed-insights",
       "status": "passed"
     },
     {
-      "command": "npm run prod:full-sweep",
-      "status": "passed_public"
+      "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
+      "status": "passed_public_34_checks"
     },
     {
-      "command": "npm run prod:full-sweep with a short-lived production-signed admin JWT",
-      "status": "passed_authenticated_read_only"
+      "command": "authenticated npm run prod:full-sweep",
+      "status": "passed_34_public_plus_5_admin_get_checks_20260916"
     },
     {
-      "command": "node --check fixline-intake.js fixline-analytics.js server.js",
-      "status": "passed"
-    },
-    {
-      "command": "focused FIXLINE premium experience and integration contracts",
+      "command": "node --check server.js public-shell.js archive.js project-stories.js songwars-config.js scripts/prod_full_sweep.js",
       "status": "passed"
     },
     {
       "command": "git diff --check",
       "status": "passed"
-    },
-    {
-      "command": "Playwright Terminal job status mutation QA in WebKit",
-      "status": "passed_desktop_and_390px"
-    },
-    {
-      "command": "fresh visual capture matrix at 320, 390, 768, 1024, 1440, and 1920 widths",
-      "status": "passed_41_captures"
-    },
-    {
-      "command": "npm audit --audit-level=high",
-      "status": "reported_preexisting_1_high_1_low"
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "The actual Terminal MARK COMPLETED control completed through the local Site-to-OS path in WebKit. Desktop and 390 x 844 views kept the job card and control usable with no horizontal overflow. Unrelated Terminal panels logged expected offline errors because their persistence was intentionally unavailable; the selected mutation returned 200 and showed STATUS UPDATED."
+    "summary": "Local Chrome interaction verified Archive search narrowed to Song Wars and its Released label; Song Wars campaign page identified historical July 2026 figures; live Journal article loaded; 47 adversarial browser checks passed, including booking and quote flows without submissions. Responsive capture matrix covers 124 page/viewport cases with no horizontal overflow. Independent visual reviewers passed core and supporting page top views; lower-page visuals received automated layout and link checks."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "WeatherOS public launch, showcase, support, and privacy routes verified cleanly with zero regressions."
+    "summary": "On 2026-09-16, read-only production HTTP sweep passed 34 public and five authenticated GET checks with a short-lived JWT created in memory from existing local production signing configuration. No token was stored in browser storage or committed. CI will rerun authenticated checks with configured secret."
   },
   "deploymentTarget": {
     "project": "otp-site",
