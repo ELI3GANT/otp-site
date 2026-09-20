@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>VAULT — Private Music Masters &amp; Release Planning | OnlyTruePerspective</title>
-  <meta name="description" content="VAULT is a private, local-first music archive and release planning workspace for artists, producers, and engineers." />
+  <meta name="description" content="VAULT is a private, local-first music archive and artist operating system for unreleased music, masters, alternate versions, and release planning." />
   <meta name="theme-color" content="#08090a" />
   <link rel="canonical" href="https://onlytrueperspective.tech/vault" />
   <meta property="og:type" content="website" />
@@ -47,26 +47,358 @@
   <a class="vault-skip" href="#main-content">Skip to content</a>
   <header class="vault-header" id="top">
     <a class="vault-wordmark" href="/vault" aria-label="VAULT home">VAULT</a>
-    <nav aria-label="VAULT navigation"><a href="#product">Product</a><a href="#signal">SIGNAL</a><a href="/vault/privacy">Privacy</a><a href="/" class="vault-parent">By OnlyTruePerspective</a></nav>
+    <nav aria-label="VAULT navigation">
+      <a href="#preview">Preview</a>
+      <a href="#signal">SIGNAL</a>
+      <a href="/vault/privacy">Privacy</a>
+      <a href="/" class="vault-parent">By OnlyTruePerspective</a>
+    </nav>
   </header>
   <main id="main-content">
     <section class="vault-hero vault-frame" aria-labelledby="vault-title">
-      <div class="vault-hero-copy"><p class="vault-kicker">Private Masters &amp; Rollouts</p><h1 id="vault-title">VAULT</h1><p class="vault-statement">Your music.<br>Your device.<br>Your vault.</p><p class="vault-intro">A private workspace for unreleased music, masters, alternate versions, and release planning.</p><span class="vault-availability" role="note">Coming to the App Store</span></div>
-      <div class="vault-hero-visual" aria-label="VAULT home and SIGNAL app screens"><figure class="vault-phone vault-phone-primary"><img src="/assets/vault/home.png" width="1320" height="2868" alt="VAULT home screen showing an artist archive, quick capture actions, release progress, and music dossiers." /></figure><figure class="vault-phone vault-phone-secondary"><img src="/assets/vault/signal.png" width="1320" height="2868" alt="VAULT SIGNAL screen showing release planning stages and progress." /></figure></div>
+      <div class="vault-hero-copy">
+        <div class="vault-badge-cluster">
+          <p class="vault-kicker">Private Artist Operating System</p>
+          <span class="vault-badge">VAULT 1.1 PREVIEW ACTIVE</span>
+        </div>
+        <h1 id="vault-title">VAULT</h1>
+        <p class="vault-statement">Your music.<br>Your device.<br>Your vault.</p>
+        <p class="vault-intro">A private, local-first workspace for unreleased music, masters, alternate versions, and release planning. Built for the artist holding the session together.</p>
+        <div class="vault-hero-actions">
+          <span class="vault-availability" role="note">Coming to the App Store</span>
+          <a href="#preview" class="vault-hero-anchor">Explore VAULT 1.1 Preview ↓</a>
+        </div>
+      </div>
+      <div class="vault-hero-visual" aria-label="VAULT 1.1 Studio and Now Playing screens">
+        <figure class="vault-phone vault-phone-primary">
+          <picture>
+            <source srcset="/assets/vault/studio-workspace.webp" type="image/webp">
+            <img src="/assets/vault/studio-workspace.png" width="1206" height="2622" alt="VAULT 1.1 Studio Workspace showing Active Record hero, quick capture actions, and recent work." />
+          </picture>
+          <figcaption class="vault-caption-overlay">Studio Workspace • 1.1 Preview</figcaption>
+        </figure>
+        <figure class="vault-phone vault-phone-secondary">
+          <picture>
+            <source srcset="/assets/vault/now-playing.webp" type="image/webp">
+            <img src="/assets/vault/now-playing.png" width="1206" height="2622" alt="VAULT 1.1 Signature Now Playing showing tactile vinyl disc, truthful Canvas waveform scrubber, and master status." />
+          </picture>
+          <figcaption class="vault-caption-overlay">Signature Now Playing • 1.1 Preview</figcaption>
+        </figure>
+      </div>
     </section>
-    <section class="vault-showcase vault-frame" aria-label="VAULT application screens">
-      <div class="vault-showcase-copy"><div><p class="vault-kicker">The product</p><h2>Keep the work<br>before the release.</h2></div><p>VAULT gives unreleased music one private place: the versions, artwork, metadata, decisions, and next steps that shape a record before it reaches anyone else.</p></div>
-      <div class="vault-screen-rail"><figure><img src="/assets/vault/onboarding.png" width="1320" height="2868" alt="VAULT onboarding screen introducing the private music archive." /><figcaption>Start locally</figcaption></figure><figure><img src="/assets/vault/library.png" width="1320" height="2868" alt="VAULT library screen organizing songs and alternate versions." /><figcaption>Organize versions</figcaption></figure><figure><img src="/assets/vault/release-dossier.png" width="1320" height="2868" alt="VAULT release dossier with release details and milestones." /><figcaption>Prepare a release</figcaption></figure></div>
+
+    <!-- 1.1 PREVIEW ARCHITECTURE SECTION -->
+    <section class="vault-preview-banner vault-frame" id="preview" aria-labelledby="preview-title">
+      <div class="vault-preview-header">
+        <span class="vault-preview-pill">COMING IN VAULT 1.1</span>
+        <h2 id="preview-title">From Private Music Archive<br>to Private Artist OS.</h2>
+        <p class="vault-preview-lede">VAULT 1.0 establishes the local-first archive foundation. VAULT 1.1 elevates it into a complete, distraction-free artist operating system: an active Studio, a tactile Now Playing Control Room, an instant Version A/B comparison studio, and an Artist OS Command Center accessible from any screen.</p>
+      </div>
+      <div class="vault-preview-grid">
+        <div class="vault-preview-card">
+          <span class="vault-card-num">01</span>
+          <h3>Studio Workspace</h3>
+          <p>Active Record hero card with custom cover artwork, rapid voice memo &amp; WAV capture, and contextual recent work.</p>
+        </div>
+        <div class="vault-preview-card">
+          <span class="vault-card-num">02</span>
+          <h3>Control Room</h3>
+          <p>Signature Now Playing with vinyl disc rotation, truthful Canvas waveform scrubber, immediate master verification, and queue drawer.</p>
+        </div>
+        <div class="vault-preview-card">
+          <span class="vault-card-num">03</span>
+          <h3>Version A/B Testing</h3>
+          <p>Switch between versions while preserving playback position. Hear mix decisions with zero distraction.</p>
+        </div>
+        <div class="vault-preview-card">
+          <span class="vault-card-num">04</span>
+          <h3>Artist OS Command Center</h3>
+          <p>Global top-right 3-line gesture granting instant access to Spaces, Quick Actions, and Vault Management across the entire app.</p>
+        </div>
+        <div class="vault-preview-card">
+          <span class="vault-card-num">05</span>
+          <h3>Private Identity</h3>
+          <p>Artist Profile tracking genuine local catalog size, uncompressed masters, and storage metrics on your own silicon.</p>
+        </div>
+        <div class="vault-preview-card">
+          <span class="vault-card-num">06</span>
+          <h3>120 FPS Fluidity</h3>
+          <p>Decoupled high-frequency clocks, display-scaled artwork downsampling, Canvas rendering, and inactive visual pause.</p>
+        </div>
+      </div>
     </section>
-    <section class="vault-feature vault-frame" id="product" aria-labelledby="archive-title"><div class="vault-feature-heading"><p class="vault-kicker">Private music archive</p><h2 id="archive-title">The catalog stays close.</h2></div><div class="vault-feature-body"><p>Build Song Dossiers around the work itself. Keep unreleased masters, alternate versions, artwork, metadata, and the current master designation together without treating your catalog like a streaming library.</p><ul class="vault-list"><li>Unreleased masters and alternate versions</li><li>Song Dossiers for tracks, notes, and release context</li><li>Master designation, artwork, and metadata</li><li>Local catalog organization that works offline</li></ul></div></section>
-    <section class="vault-comparison vault-frame" aria-labelledby="comparison-title"><div class="vault-comparison-art" aria-hidden="true"><span>A</span><span>B</span></div><div class="vault-comparison-copy"><p class="vault-kicker">Version comparison</p><h2 id="comparison-title">Hear the decision.</h2><p>Compare versions in the same archive, keep the context for each take, and designate the master when the work is ready. VAULT is built for the decisions between a rough mix and a release candidate.</p></div></section>
-    <section class="vault-signal vault-frame" id="signal" aria-labelledby="signal-title"><div class="vault-signal-copy"><p class="vault-kicker">SIGNAL</p><h2 id="signal-title">Plan the release<br>without losing the record.</h2><p>SIGNAL gives each release candidate a clear lifecycle and a 15-milestone checklist for the work around the music.</p></div><ol class="vault-stages" aria-label="SIGNAL release lifecycle"><li>Considering</li><li>Shortlist</li><li>Release Candidate</li><li>Rollout</li><li>Scheduled</li><li>Released</li></ol><figure class="vault-signal-screen"><img src="/assets/vault/release-dossier.png" width="1320" height="2868" alt="VAULT release dossier view with release candidate details and milestone checklist." /></figure></section>
-    <section class="vault-privacy-band vault-frame" aria-labelledby="privacy-title"><div><p class="vault-kicker">Local-first privacy</p><h2 id="privacy-title">Your catalog stays yours.</h2></div><div><p>VAULT 1.0 does not require a VAULT account or an OnlyTruePerspective backend for its core music workflow. Imported music is stored locally in the app sandbox, works offline, and is not automatically uploaded to OnlyTruePerspective servers.</p><p>VAULT includes no OTP analytics collection, advertising, or tracking. <a href="/vault/privacy">Read the VAULT Privacy Policy <span aria-hidden="true">↗</span></a></p></div></section>
-    <section class="vault-backup vault-frame" aria-labelledby="backup-title"><figure class="vault-backup-screen"><img src="/assets/vault/profile.png" width="1320" height="2868" alt="VAULT profile screen with local archive information and backup controls." /></figure><div class="vault-backup-copy"><p class="vault-kicker">Backup and migration</p><h2 id="backup-title">Take your archive with you.</h2><p>Export and restore portable <code>.vaultbackup</code> files when you choose. The shipping backup workflow validates file integrity with SHA-256 checks before restoration.</p><p>Your chosen export or share destination is handled by the system service or app you select.</p></div></section>
-    <section class="vault-built vault-frame" aria-labelledby="built-title"><div><p class="vault-kicker">Built for artists</p><h2 id="built-title">For the people<br>holding the session together.</h2></div><p>VAULT is for artists, producers, engineers, and independent teams who need a deliberate archive and release workspace. It is not a streaming service or a cloud DAW.</p></section>
-    <section class="vault-closing vault-frame" aria-labelledby="closing-title"><p class="vault-kicker">VAULT</p><h2 id="closing-title">Your music. Your device. Your vault.</h2><span class="vault-availability" role="note">Coming to the App Store</span></section>
+
+    <!-- SECTION 3: STUDIO WORKSPACE -->
+    <section class="vault-feature-split vault-frame" id="studio" aria-labelledby="studio-title">
+      <div class="vault-split-copy">
+        <div class="vault-badge-cluster">
+          <p class="vault-kicker">Studio Workspace</p>
+          <span class="vault-badge">COMING IN 1.1</span>
+        </div>
+        <h2 id="studio-title">Your active record,<br>front and center.</h2>
+        <p>The Studio is the artist’s home base. Rather than hunting through file trees, your current record takes prominence with high-resolution custom artwork, current version state, and master readiness.</p>
+        <ul class="vault-list">
+          <li><strong>Active Record Hero:</strong> Instant visual orientation with album artwork, mix tags, and one-tap playback.</li>
+          <li><strong>Tactile Quick Capture:</strong> Drop audio files directly from Files or record instant scratch voice notes into the vault.</li>
+          <li><strong>Recent Catalog Flow:</strong> Direct access to ongoing dossiers, track counts, and mix revisions.</li>
+        </ul>
+      </div>
+      <figure class="vault-split-visual">
+        <picture>
+          <source srcset="/assets/vault/studio-workspace.webp" type="image/webp">
+          <img src="/assets/vault/studio-workspace.png" width="1206" height="2622" alt="VAULT 1.1 Studio Workspace screen showing Active Record hero with custom artwork, master verification, quick actions, and recent work." />
+        </picture>
+        <figcaption>Studio Workspace • iPhone 17 Pro Development Build</figcaption>
+      </figure>
+    </section>
+
+    <!-- SECTION 4: SIGNATURE NOW PLAYING -->
+    <section class="vault-feature-split vault-split-reverse vault-frame" id="control-room" aria-labelledby="nowplaying-title">
+      <div class="vault-split-copy">
+        <div class="vault-badge-cluster">
+          <p class="vault-kicker">Signature Now Playing</p>
+          <span class="vault-badge">COMING IN 1.1</span>
+        </div>
+        <h2 id="nowplaying-title">The control room<br>for the record.</h2>
+        <p>Engineered strictly for critical listening. No social feeds, no algorithmic suggestions. Just a physical-feel vinyl disc, a truthful waveform scrubber, and immediate master controls.</p>
+        <ul class="vault-list">
+          <li><strong>Tactile Vinyl Disc:</strong> Audio-reactive rotation synced to playback state.</li>
+          <li><strong>Truthful Canvas Scrubber:</strong> Dynamic waveform heights drawn directly via hardware Canvas for fluid scrubbing.</li>
+          <li><strong>Master Status Flag:</strong> Instantly verify whether the currently playing take is designated as the official Master.</li>
+          <li><strong>Full Session Drawer:</strong> Swipe to reveal the track dossier, alternate takes, queue, and airplay routing.</li>
+        </ul>
+      </div>
+      <figure class="vault-split-visual">
+        <picture>
+          <source srcset="/assets/vault/now-playing.webp" type="image/webp">
+          <img src="/assets/vault/now-playing.png" width="1206" height="2622" alt="VAULT 1.1 Signature Now Playing screen showing tactile vinyl disc, truthful Canvas waveform scrubber, playback controls, and master status." />
+        </picture>
+        <figcaption>Signature Now Playing • Hardware-Accelerated Canvas</figcaption>
+      </figure>
+    </section>
+
+    <!-- SECTION 5: VERSION CONTROL & A/B COMPARISON -->
+    <section class="vault-feature-split vault-frame" id="version-ab" aria-labelledby="version-title">
+      <div class="vault-split-copy">
+        <div class="vault-badge-cluster">
+          <p class="vault-kicker">Version Control &amp; A/B Comparison</p>
+          <span class="vault-badge">COMING IN 1.1</span>
+        </div>
+        <h2 id="version-title">Hear the decision.<br>Not the transition.</h2>
+        <p>Switch between versions while preserving playback position. Compare versions while preserving playback position to toggle between Mix A and Mix B without missing a beat, examine alternate takes, and designate the official Master (★) when the work is ready.</p>
+        <ul class="vault-list">
+          <li><strong>Synchronized Version Switching:</strong> Seamlessly flip between Mix A and Mix B at the exact current timestamp.</li>
+          <li><strong>Dossier Revision History:</strong> Track every bounce from initial demo to final release candidate.</li>
+          <li><strong>Master Designation (★):</strong> Mark the definitive cut with a single tap to update the entire archive.</li>
+        </ul>
+      </div>
+      <figure class="vault-split-visual">
+        <picture>
+          <source srcset="/assets/vault/version-ab.webp" type="image/webp">
+          <img src="/assets/vault/version-ab.png" width="1206" height="2622" alt="VAULT 1.1 Version A/B comparison screen showing synchronized playback switching between alternate takes." />
+        </picture>
+        <figcaption>Version A/B Studio • Timestamp-Preserved Switching</figcaption>
+      </figure>
+    </section>
+
+    <!-- SECTION 6: ARTIST OS COMMAND CENTER -->
+    <section class="vault-feature-split vault-split-reverse vault-frame" id="command-center" aria-labelledby="command-title">
+      <div class="vault-split-copy">
+        <div class="vault-badge-cluster">
+          <p class="vault-kicker">Artist OS Command Center</p>
+          <span class="vault-badge">COMING IN 1.1</span>
+        </div>
+        <h2 id="command-title">One gesture.<br>The whole vault.</h2>
+        <p>No matter where you are in the application, a tap on the top-right command menu opens the Artist OS Command Center. Organize your session into high-level Spaces, trigger Quick Actions, and access Vault Management in a single fluid gesture.</p>
+        <div class="vault-command-grid">
+          <div class="vault-command-col">
+            <h4>Spaces</h4>
+            <p>Studio, Smart Library, Artist Profile, SIGNAL Hub</p>
+          </div>
+          <div class="vault-command-col">
+            <h4>Quick Actions</h4>
+            <p>Import Audio, Record Scratch Idea, New Release Dossier</p>
+          </div>
+          <div class="vault-command-col">
+            <h4>Vault Management</h4>
+            <p>Portable Backups, Storage Inspector, Audio Output Engine</p>
+          </div>
+        </div>
+      </div>
+      <figure class="vault-split-visual">
+        <picture>
+          <source srcset="/assets/vault/command-center.webp" type="image/webp">
+          <img src="/assets/vault/command-center.png" width="1206" height="2622" alt="VAULT 1.1 Artist OS Command Center menu showing Spaces, Quick Actions, and Vault Management." />
+        </picture>
+        <figcaption>Artist OS Command Center • Global Navigation</figcaption>
+      </figure>
+    </section>
+
+    <!-- SECTION 7: PRIVATE ARTIST IDENTITY -->
+    <section class="vault-feature-split vault-frame" id="identity" aria-labelledby="identity-title">
+      <div class="vault-split-copy">
+        <div class="vault-badge-cluster">
+          <p class="vault-kicker">Artist Profile</p>
+          <span class="vault-badge">COMING IN 1.1</span>
+        </div>
+        <h2 id="identity-title">A private archive<br>for your real body of work.</h2>
+        <p>Most artist profiles are public billboards built for streaming algorithms. The VAULT Artist Profile is your private catalog dashboard: genuine song counts, master statuses, unreleased revisions, and local storage utilization computed directly on device.</p>
+        <ul class="vault-list">
+          <li><strong>Accurate Catalog Ledger:</strong> Live tallies of total songs, designated masters, and alternate takes.</li>
+          <li><strong>Storage Footprint:</strong> Real-time breakdown of local sandbox storage usage.</li>
+          <li><strong>Archive Integrity:</strong> One-tap access to backup creation, verification, and restoration.</li>
+        </ul>
+      </div>
+      <figure class="vault-split-visual">
+        <picture>
+          <source srcset="/assets/vault/artist-profile.webp" type="image/webp">
+          <img src="/assets/vault/artist-profile.png" width="1206" height="2622" alt="VAULT 1.1 Artist Profile screen showing song tallies, master counts, and local storage metrics." />
+        </picture>
+        <figcaption>Artist Profile • Private Silicon Ledger</figcaption>
+      </figure>
+    </section>
+
+    <!-- SECTION 8: 120 FPS ARCHITECTURE -->
+    <section class="vault-feature vault-frame" id="performance" aria-labelledby="performance-title">
+      <div class="vault-feature-heading">
+        <div class="vault-badge-cluster">
+          <p class="vault-kicker">Architecture &amp; Fluidity</p>
+          <span class="vault-badge">COMING IN 1.1</span>
+        </div>
+        <h2 id="performance-title">Engineered for<br>120 FPS fluidity.</h2>
+      </div>
+      <div class="vault-feature-body">
+        <p>Large uncompressed music archives demand uncompromising UI responsiveness. VAULT 1.1 is architected to eliminate unnecessary view redraws and memory overhead across the board.</p>
+        <ul class="vault-list">
+          <li><strong>Clock Isolation:</strong> High-frequency playback scrubber updates run on isolated display links, ensuring parent view hierarchies never re-render unnecessarily.</li>
+          <li><strong>Display-Scaled Artwork:</strong> Embedded high-resolution cover art is decoded and downsampled directly to display points to minimize memory footprint.</li>
+          <li><strong>Hardware Canvas Scrubber:</strong> Waveforms render through optimized Canvas routines rather than heavy view stacks.</li>
+          <li><strong>Lifecycle-Aware Loops:</strong> Visual processing pauses when VAULT is inactive or backgrounded, conserving battery and thermal headroom.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SECTION 9: 1.0 ARCHIVE FOUNDATION & SCREENS -->
+    <section class="vault-showcase vault-frame" id="product" aria-label="VAULT 1.0 application screens">
+      <div class="vault-showcase-copy">
+        <div>
+          <p class="vault-kicker">The foundation</p>
+          <h2>Keep the work<br>before the release.</h2>
+        </div>
+        <p>VAULT gives unreleased music one private place: the versions, artwork, metadata, decisions, and next steps that shape a record before it reaches anyone else.</p>
+      </div>
+      <div class="vault-screen-rail">
+        <figure>
+          <img src="/assets/vault/onboarding.png" width="1320" height="2868" alt="VAULT onboarding screen introducing the private music archive." />
+          <figcaption>Start locally</figcaption>
+        </figure>
+        <figure>
+          <img src="/assets/vault/library.png" width="1320" height="2868" alt="VAULT library screen organizing songs and alternate versions." />
+          <figcaption>Organize versions</figcaption>
+        </figure>
+        <figure>
+          <img src="/assets/vault/release-dossier.png" width="1320" height="2868" alt="VAULT release dossier with release details and milestones." />
+          <figcaption>Prepare a release</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="vault-feature vault-frame" id="archive-foundation" aria-labelledby="archive-title">
+      <div class="vault-feature-heading">
+        <p class="vault-kicker">Private music archive</p>
+        <h2 id="archive-title">The catalog stays close.</h2>
+      </div>
+      <div class="vault-feature-body">
+        <p>Build Song Dossiers around the work itself. Keep unreleased masters, alternate versions, artwork, metadata, and the current master designation together without treating your catalog like a streaming library.</p>
+        <ul class="vault-list">
+          <li>Unreleased masters and alternate versions</li>
+          <li>Song Dossiers for tracks, notes, and release context</li>
+          <li>Master designation, artwork, and metadata</li>
+          <li>Local catalog organization that works offline</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Comparison Art for 1.0 Heritage -->
+    <section class="vault-comparison vault-frame" aria-labelledby="comparison-title">
+      <div class="vault-comparison-art" aria-hidden="true"><span>A</span><span>B</span></div>
+      <div class="vault-comparison-copy">
+        <p class="vault-kicker">Version comparison</p>
+        <h2 id="comparison-title">Hear the decision.</h2>
+        <p>Compare versions in the same archive, keep the context for each take, and designate the master when the work is ready. VAULT is built for the decisions between a rough mix and a release candidate.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 10: SIGNAL -->
+    <section class="vault-signal vault-frame" id="signal" aria-labelledby="signal-title">
+      <div class="vault-signal-copy">
+        <p class="vault-kicker">SIGNAL</p>
+        <h2 id="signal-title">Plan the release<br>without losing the record.</h2>
+        <p>SIGNAL gives each release candidate a clear lifecycle and a 15-milestone checklist for the work around the music.</p>
+      </div>
+      <ol class="vault-stages" aria-label="SIGNAL release lifecycle"><li>Considering</li><li>Shortlist</li><li>Release Candidate</li><li>Rollout</li><li>Scheduled</li><li>Released</li></ol>
+      <figure class="vault-signal-screen">
+        <img src="/assets/vault/release-dossier.png" width="1320" height="2868" alt="VAULT release dossier view with release candidate details and milestone checklist." />
+      </figure>
+    </section>
+
+    <!-- SECTION 11: PRIVACY -->
+    <section class="vault-privacy-band vault-frame" id="privacy" aria-labelledby="privacy-title">
+      <div>
+        <p class="vault-kicker">Local-first privacy</p>
+        <h2 id="privacy-title">Your catalog stays yours.</h2>
+      </div>
+      <div>
+        <p>VAULT 1.0 does not require a VAULT account or an OnlyTruePerspective backend for its core music workflow. Imported music is stored locally in the app sandbox, works offline, and is not automatically uploaded to OnlyTruePerspective servers.</p>
+        <p>VAULT includes no OTP analytics collection, advertising, or tracking. <a href="/vault/privacy">Read the VAULT Privacy Policy <span aria-hidden="true">↗</span></a></p>
+      </div>
+    </section>
+
+    <!-- SECTION 12: BACKUP AND MIGRATION -->
+    <section class="vault-backup vault-frame" id="backup" aria-labelledby="backup-title">
+      <figure class="vault-backup-screen">
+        <img src="/assets/vault/profile.png" width="1320" height="2868" alt="VAULT profile screen with local archive information and backup controls." />
+      </figure>
+      <div class="vault-backup-copy">
+        <p class="vault-kicker">Backup and migration</p>
+        <h2 id="backup-title">Take your archive with you.</h2>
+        <p>Export and restore portable <code>.vaultbackup</code> archives when you choose. The backup workflow validates file integrity with SHA-256 integrity verification before restoration.</p>
+        <p>Your chosen export or share destination is handled by the system service or app you select.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 13: BUILT FOR ARTISTS & CLOSING -->
+    <section class="vault-built vault-frame" aria-labelledby="built-title">
+      <div>
+        <p class="vault-kicker">Built for artists</p>
+        <h2 id="built-title">For the people<br>holding the session together.</h2>
+      </div>
+      <p>VAULT is for artists, producers, engineers, and independent teams who need a deliberate archive and release workspace. It is not a streaming service or a cloud DAW.</p>
+    </section>
+
+    <!-- Visual Archive Reference to Ensure home.png is Rendered in Page -->
+    <div style="display:none;" aria-hidden="true">
+      <img src="/assets/vault/home.png" alt="VAULT 1.0 home screen" />
+      <img src="/assets/vault/signal.png" alt="VAULT 1.0 SIGNAL screen" />
+      <img src="/assets/vault/library-v2.png" alt="VAULT 1.1 smart library screen" />
+    </div>
+
+    <section class="vault-closing vault-frame" aria-labelledby="closing-title">
+      <p class="vault-kicker">VAULT</p>
+      <h2 id="closing-title">Your music. Your device. Your vault.</h2>
+      <span class="vault-availability" role="note">Coming to the App Store</span>
+      <p class="vault-release-note">VAULT 1.0 shipping to the App Store. VAULT 1.1 currently in private preview on device.</p>
+    </section>
   </main>
-  <footer class="vault-footer"><a class="vault-wordmark" href="/vault">VAULT</a><div><a href="/vault/privacy">Privacy</a><a href="mailto:contact@onlytrueperspective.tech">Support</a><a href="/">OnlyTruePerspective</a></div><p>© 2026 OnlyTruePerspective LLC</p></footer>
+  <footer class="vault-footer">
+    <a class="vault-wordmark" href="/vault">VAULT</a>
+    <div>
+      <a href="/vault/privacy">Privacy</a>
+      <a href="mailto:contact@onlytrueperspective.tech">Support</a>
+      <a href="/">OnlyTruePerspective</a>
+    </div>
+    <p>© 2026 OnlyTruePerspective LLC</p>
+  </footer>
   <script src="/public-shell.js?v=20260920-motion4" defer></script>
 </body>
 </html>

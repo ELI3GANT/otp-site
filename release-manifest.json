@@ -1,8 +1,26 @@
 {
-  "releaseName": "public-motion-20260920",
+  "releaseName": "vault-1.1-preview-20260920",
   "includedFiles": [
     "DESIGN.md",
     "archive.html",
+    "assets/vault/artist-profile.png",
+    "assets/vault/artist-profile.webp",
+    "assets/vault/command-center.png",
+    "assets/vault/command-center.webp",
+    "assets/vault/home.png",
+    "assets/vault/library-v2.png",
+    "assets/vault/library-v2.webp",
+    "assets/vault/library.png",
+    "assets/vault/now-playing.png",
+    "assets/vault/now-playing.webp",
+    "assets/vault/onboarding.png",
+    "assets/vault/profile.png",
+    "assets/vault/release-dossier.png",
+    "assets/vault/signal.png",
+    "assets/vault/studio-workspace.png",
+    "assets/vault/studio-workspace.webp",
+    "assets/vault/version-ab.png",
+    "assets/vault/version-ab.webp",
     "consultant-audit.html",
     "index.html",
     "insight.html",
@@ -17,6 +35,7 @@
     "songwars.html",
     "studio.html",
     "terms.html",
+    "tests/vault_web_presence_contract.test.js",
     "vault/index.html",
     "vault/privacy.html",
     "vault/vault.css",
@@ -41,67 +60,30 @@
     "docs/redesign-evidence/*.log"
   ],
   "testsRun": [
-    {
-      "command": "npm test",
-      "status": "passed_54_of_54"
-    },
-    {
-      "command": "npm run test:e2e",
-      "status": "passed_68_of_68"
-    },
-    {
-      "command": "npm run contracts:verify",
-      "status": "passed_4_pinned_contracts"
-    },
-    {
-      "command": "npm run master_test:ci",
-      "status": "passed_54_of_54"
-    },
-    {
-      "command": "npm run security:scan",
-      "status": "passed_324_files"
-    },
-    {
-      "command": "npm run build:speed-insights",
-      "status": "passed"
-    },
-    {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed_public_predeploy"
-    },
-    {
-      "command": "node --check public-shell.js",
-      "status": "passed"
-    },
-    {
-      "command": "git diff --check",
-      "status": "passed"
-    }
+    { "command": "npm test", "status": "passed_54_of_54" },
+    { "command": "npm run test:e2e", "status": "passed_68_of_68" },
+    { "command": "npm run contracts:verify", "status": "passed_4_pinned_contracts" },
+    { "command": "npm run master_test:ci", "status": "passed_54_of_54" },
+    { "command": "npm run security:scan", "status": "passed_313_files" },
+    { "command": "npm run build:speed-insights", "status": "passed" },
+    { "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep", "status": "passed_public_34_checks_predeploy" },
+    { "command": "node --check server.js tests/e2e/adversarial_qa.js tests/vault_web_presence_contract.test.js", "status": "passed" },
+    { "command": "git diff --check", "status": "passed" },
+    { "command": "node tests/vault_web_presence_contract.test.js", "status": "passed" }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Fresh local browser checks at 375, 768, and 1280px covered Home, Archive, Studio, project story, VAULT, and VAULT privacy; no overflow or console errors. Scrolling revealed sections; reduced motion kept content visible and disabled smooth scrolling. Existing 68-scenario browser suite passed."
+    "summary": "Fresh Playwright captures of /vault and /vault/privacy at 320, 390, 768, and 1440 pixels showed no console errors or horizontal overflow. The e2e suite also passed metadata, structured data, screenshot assets, and mobile privacy navigation."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Base release 649a4be passed the authenticated production workflow. This candidate is subject to a fresh authenticated sweep in the same production workflow before deployment."
+    "summary": "The production release workflow reruns authenticated read-only checks with configured credentials. VAULT routes are public and do not require an account."
   },
   "deploymentTarget": {
     "project": "otp-site",
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
-    ],
-    "liveVerificationRoutes": [
-      "/",
-      "/archive",
-      "/studio",
-      "/projects/weatheros",
-      "/vault",
-      "/vault/privacy",
-      "/fixline",
-      "/bookings",
-      "/portal"
     ]
   }
 }

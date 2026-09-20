@@ -25,6 +25,35 @@ for (const asset of ['onboarding.png', 'home.png', 'library.png', 'signal.png', 
   assert.ok(vault.includes(`/assets/vault/${asset}`), `VAULT page references screenshot asset: ${asset}`);
 }
 
+const v11Assets = ['studio-workspace', 'now-playing', 'command-center', 'artist-profile', 'version-ab', 'library-v2'];
+for (const asset of v11Assets) {
+  assert.ok(fs.existsSync(path.join(root, 'assets', 'vault', `${asset}.png`)), `VAULT 1.1 PNG asset exists: ${asset}.png`);
+  assert.ok(fs.existsSync(path.join(root, 'assets', 'vault', `${asset}.webp`)), `VAULT 1.1 WebP asset exists: ${asset}.webp`);
+  assert.ok(vault.includes(`/assets/vault/${asset}.png`), `VAULT page references 1.1 PNG asset: ${asset}.png`);
+}
+
+// VAULT 1.1 Preview & Truthfulness Guardrails
+assert.ok(vault.includes('COMING IN VAULT 1.1') || vault.includes('VAULT 1.1 PREVIEW'), 'VAULT clearly labels 1.1 features as preview');
+assert.ok(vault.includes('Studio Workspace'), 'VAULT features Studio Workspace');
+assert.ok(vault.includes('Signature Now Playing') || vault.includes('Now Playing'), 'VAULT features Signature Now Playing');
+assert.ok(vault.includes('Artist OS Command Center'), 'VAULT features Artist OS Command Center');
+assert.ok(vault.includes('preserving playback position'), 'VAULT truthfully describes version switching benefit');
+assert.ok(!/sub-millisecond|0\.25ms/i.test(vault), 'VAULT copy avoids benchmark hype');
+assert.ok(vault.toLowerCase().includes('visual processing pauses when vault is inactive'), 'VAULT truthfully describes reactive loop pause');
+assert.ok(!/zero (background )?battery drain/i.test(vault), 'VAULT avoids absolute zero battery drain claim');
+assert.ok(vault.includes('SHA-256 integrity verification'), 'VAULT truthfully describes SHA-256 as integrity verification');
+assert.ok(!/SHA-256 encryption/i.test(vault), 'VAULT does not mislabel SHA-256 as encryption');
+
+// Structured Data isolation: ensure 1.1 preview screenshots are not in SoftwareApplication schema
+const schemaMatch = vault.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+assert.ok(schemaMatch, 'Found JSON-LD schema');
+const schema = JSON.parse(schemaMatch[1]);
+assert.strictEqual(schema.softwareVersion, '1.0.0', 'Schema version matches shipping 1.0.0');
+for (const v11 of v11Assets) {
+  assert.ok(!schema.screenshot.some(s => s.includes(v11)), `1.1 preview screenshot ${v11} is isolated from 1.0.0 structured data`);
+}
+
+
 assert.ok(privacy.includes('<title>VAULT Privacy Policy | OnlyTruePerspective</title>'), 'privacy page has the required title');
 assert.ok(privacy.includes('<link rel="canonical" href="https://onlytrueperspective.tech/vault/privacy" />'), 'privacy page has the canonical URL');
 assert.ok(privacy.includes('Effective date: September 20, 2026'), 'privacy page uses the current production date');
