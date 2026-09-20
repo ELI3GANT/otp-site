@@ -22,6 +22,10 @@
     'first_touch',
     'booking_route',
     'platform',
+    'conversion_stage',
+    'selected_service',
+    'selected_package',
+    'completed_booking',
     'captured_at'
   ];
 

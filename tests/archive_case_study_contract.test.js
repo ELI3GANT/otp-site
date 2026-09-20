@@ -113,6 +113,9 @@ assert.ok(archive.includes('https://www.onlytrueperspective.tech/protocol'), 'sc
 assert.ok(archive.includes('https://www.onlytrueperspective.tech/songwars'), 'schema references Song Wars');
 assert.ok(archive.includes('https://www.onlytrueperspective.tech/archive'), 'archive metadata uses the clean public route');
 assert.ok(!archive.includes('https://www.onlytrueperspective.tech/archive.html'), 'archive metadata does not publish the duplicate .html route');
+assert.ok(archive.includes('/bookings?source=archive'), 'Archive closing CTA uses the general booking flow');
+assert.ok(archive.includes('/bookings?source=public-nav'), 'Archive generic navigation uses the general booking flow');
+assert.ok(archive.includes('/fixline/intake?source=archive-fixline'), 'Archive keeps FIXLINE-specific intake isolated');
 
 assert.ok(archiveClient.includes('replaceChildren'), 'renderer updates project results without HTML injection');
 assert.ok(archiveClient.includes('textContent'), 'renderer treats project copy as text');
@@ -194,7 +197,15 @@ assert.equal(projects.length, 6, 'all six project stories are covered');
 for (const project of projects) {
   const page = new JSDOM(renderProjectPage(project, projects)).window.document;
   assert.equal(page.querySelectorAll('h1').length, 1);
-  assert.ok([...page.querySelectorAll('a')].some(a => a.getAttribute('href') === '/fixline/intake?source=project-' + project.slug), project.id + ' preserves attributed conversion');
+  const conversionHref = page.querySelector('.project-contact .project-action').getAttribute('href');
+  if (project.id === 'otp-fixline') {
+    assert.equal(conversionHref, project.bookingUrl, project.id + ' preserves FIXLINE conversion isolation');
+  } else {
+    assert.equal(conversionHref, project.bookingUrl, project.id + ' routes conversion to its attributed general booking path');
+  }
+  assert.equal(page.querySelectorAll('.project-story-grid > div').length, 5, project.id + ' exposes problem, solution, deliverables, result, and capabilities');
+  assert.ok(page.querySelector('.project-contact h2').textContent.trim(), project.id + ' gives a contextual next step');
+  assert.ok(page.querySelector('script[type="application/ld+json"]'), project.id + ' exposes CreativeWork schema');
   assert.ok(page.querySelector('.project-status-note').textContent.trim(), project.id + ' gives evidence context');
   assert.doesNotMatch(page.body.textContent, /\b\d+(?:\.\d+)?\s*(?:%|x growth|million users|conversions)/i, 'no fabricated performance metrics');
   for (const img of page.querySelectorAll('main img')) {

@@ -1,13 +1,40 @@
 {
-  "releaseName": "otp-homepage-polish-20260920",
+  "releaseName": "otp-growth-engine-20260920",
   "includedFiles": [
+    "DAILY_CLIENT_SPRINT.md",
+    "DESIGN.md",
+    "OTP_ATTRIBUTION_MAP.md",
+    "OTP_CLIENT_ACQUISITION_PLAYBOOK.md",
+    "OTP_CONVERSION_AUDIT.md",
+    "archive.html",
+    "bookings.html",
+    "bookings.js",
     "home.css",
     "index.html",
-    "tests/homepage_visual_contract.test.js",
-    "tests/fixline_integration_contract.test.js",
+    "insight.html",
+    "insights.html",
+    "otp-attribution.js",
+    "privacy.html",
+    "project-page.css",
+    "project-stories.js",
+    "public-shell.js",
     "public-system.css",
-    "DESIGN.md",
-    "release-manifest.json"
+    "release-manifest.json",
+    "server.js",
+    "studio.html",
+    "terms.html",
+    "tests/archive_case_study_contract.test.js",
+    "tests/fixline_integration_contract.test.js",
+    "tests/growth_engine_contract.test.js",
+    "tests/homepage_visual_contract.test.js",
+    "tests/master_runner.js",
+    "weatheros-privacy.html",
+    "weatheros-support.html",
+    "weatheros.html",
+    "weatheros/index.html",
+    "weatheros/privacy.html",
+    "weatheros/support.html",
+    "website-design.html"
   ],
   "excludedDirtyFiles": [
     "Local .vercel environment and generated test artifacts are ignored; no credentials or business records are release material."
@@ -24,7 +51,7 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed_52_of_52"
+      "status": "passed_53_of_53"
     },
     {
       "command": "npm run test:e2e",
@@ -36,11 +63,11 @@
     },
     {
       "command": "npm run master_test:ci",
-      "status": "passed_52_of_52"
+      "status": "passed_53_of_53"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed_308_files"
+      "status": "passed_313_files"
     },
     {
       "command": "npm run build:speed-insights",
@@ -57,15 +84,19 @@
     {
       "command": "git diff --check",
       "status": "passed"
+    },
+    {
+      "command": "node tests/growth_engine_contract.test.js",
+      "status": "passed"
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Chrome inspection of the homepage at 390, 768, and 1280 pixels captured hero and lower-page states. Two independent visual reviews passed. The homepage now moves from identity to selected work to capabilities to contact, with Signal still discoverable and no horizontal overflow. 51 adversarial browser checks passed; no form submission was made."
+    "summary": "Local Playwright inspection of Archive, Studio, Bookings, and four project stories at 390, 768, and 1280 pixels. No horizontal overflow; project proof blocks, Quick Fix offer, booking paths, and CreativeWork schema rendered."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Previous production release CI on 2026-09-20 passed authenticated read-only admin checks. This homepage-only polish changes public HTML/CSS; local predeploy sweep passed 34 public checks without admin credentials. Release CI will rerun authenticated checks with configured secret."
+    "summary": "Growth sprint changes public Archive, booking, attribution, Studio, and static conversion surfaces. Local public sweep passed; CI reruns authenticated read-only checks with configured secrets."
   },
   "deploymentTarget": {
     "project": "otp-site",

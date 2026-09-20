@@ -326,6 +326,17 @@ function buildSourceTrackingFallback() {
   };
 }
 
+function getBookingTracking(stage = 'booking_completed') {
+  const base = getAttributionTracking();
+  return {
+    ...base,
+    conversion_stage: stage,
+    selected_service: cleanTrackingValue(els.service?.value || '', 160),
+    selected_package: cleanTrackingValue(els.package?.value || '', 120),
+    completed_booking: stage === 'booking_completed' ? 'true' : 'false'
+  };
+}
+
 function text(value, fallback = 'Not provided yet') {
   if (value == null || typeof value === 'object') return fallback;
   const v = String(value).trim();
@@ -983,7 +994,7 @@ function renderSuccess(data) {
   els.success.classList.toggle('partial', !recommendation);
   els.form.classList.add('submitted');
   els.successTitle.textContent = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
-  els.successCopy.textContent = 'After review, OTP may send scope questions, a package recommendation, a proposal, or a private Client Portal link for documents, payment steps, and approvals.';
+  els.successCopy.textContent = 'Your request is in the OTP review queue. When available, OTP replies within one business hour; otherwise, you will receive the next clear step as soon as possible. The reply may include scope questions, a package recommendation, a proposal, or a private Client Portal link for documents, payment steps, and approvals.';
   els.successMeta.replaceChildren();
   els.successActions.replaceChildren();
 
@@ -991,6 +1002,7 @@ function renderSuccess(data) {
     ['Status', recommendation ? 'Request received with OTP recommendation' : 'Request received. OTP recommendation is pending review.'],
     ['Recommended Package', recommendation ? text(recommendation.recommendedPackage) : 'Recommendation pending review'],
     ['Quote Range', recommendation ? text(recommendation.quoteRange, 'Scope based') : 'Pending review'],
+    ['Expected response', 'Within one business hour when OTP is available; otherwise as soon as possible.'],
     ['Next Step', text(data.nextStep || recommendation?.nextAction, 'OTP will confirm scope and prepare the next step.')],
     ['Client Portal', 'Private portal access is sent only after OTP reviews and approves the next step.']
   ];
@@ -1077,6 +1089,13 @@ function renderSuccess(data) {
   }
 
   const portalHref = safePortalHref(data);
+  const intakeLink = document.createElement('a');
+  const intakeBase = document.querySelector('.project-intake-cta')?.getAttribute('href') || '/bookings';
+  intakeLink.href = buildUrlWithAttribution(intakeBase);
+  intakeLink.textContent = 'Send additional files or details →';
+  intakeLink.rel = 'noopener noreferrer';
+  els.successActions.append(intakeLink);
+
   const portalLink = document.createElement('a');
   portalLink.href = portalHref || '/portal';
   portalLink.textContent = portalHref ? '🏛️ Open Private Portal Room →' : '🏛️ Access Client Portal →';
@@ -1095,11 +1114,13 @@ function renderSuccess(data) {
 async function submitBooking(event) {
   event.preventDefault();
   if (state.submitting || state.submitted) return;
-  state.sourceTracking = getAttributionTracking();
+  state.sourceTracking = getBookingTracking('booking_started');
   if (!validateStep(1) || !validateStep(2) || !validateStep(4)) {
     setStep(missingForStep(1).length ? 1 : missingForStep(2).length ? 2 : 4);
     return;
   }
+
+  state.sourceTracking = getBookingTracking('booking_completed');
 
   state.submitting = true;
   els.submit.disabled = true;
