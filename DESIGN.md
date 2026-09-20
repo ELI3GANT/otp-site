@@ -236,7 +236,7 @@ The user's redesign explicitly supersedes the previous gold-only public directio
 - Accent / `--accent-otp`: #dcff5f acid yellow; rule / `--border-default`: #3c4036.
 - Muted paper text: #54594c; paper rule: #c7cabf.
 - Typography: existing Helvetica Neue stack with heavy negative-tracked display and mono folios. Display clamp(3.5rem, 11vw, 10rem); hero wordmark clamp(3rem, 10.9vw, 11rem); h2 clamp(2.25rem, 5.5vw, 5rem); h3 clamp(1.5rem, 3vw, 2.75rem); body 1rem/1.6; lead clamp(1.125rem, 2vw, 1.5rem); labels .75rem/1.4.
-- Layout: 1440px max, gutters clamp(20px, 4vw, 64px), sections clamp(64px, 9vw, 144px). Existing 4px spacing scale retained. Editorial grid 7:5 / 5:7, mobile single column. Corners square; structural 1px rules; no floating cards or glass.
+- Layout: 1440px max, gutters clamp(20px, 4vw, 64px), sections clamp(64px, 9vw, 144px), compact sections clamp(56px, 7vw, 104px). Existing 4px spacing scale retained. Editorial grid 7:5 / 5:7, mobile single column. Corners square; structural 1px rules; no floating cards or glass.
 - Hero: paper wordmark on ink, acid typographic inset and real OTP emblem. No perpetual decorative motion or blocking loader.
 - Paper surfaces alternate deliberately at major content roles: portfolio teaser and capabilities, framed by dark intro and Signal. Project art supplies additional color without new UI accents.
 

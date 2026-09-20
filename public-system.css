@@ -3,7 +3,7 @@
   --text-primary: #f1f0e8; --text-secondary: #b7bbb0; --accent-otp: #dcff5f;
   --border-default: #3c4036; --paper: #f1f0e8; --ink: #101110; --paper-muted: #54594c; --paper-rule: #c7cabf;
   --font-public: 'Helvetica Neue', Helvetica, Arial, sans-serif; --font-mono: 'SFMono-Regular', Consolas, monospace;
-  --public-gutter: clamp(20px, 4vw, 64px); --public-section: clamp(64px, 9vw, 144px);
+  --public-gutter: clamp(20px, 4vw, 64px); --public-section: clamp(64px, 9vw, 144px); --public-section-compact: clamp(56px, 7vw, 104px);
   --public-display: clamp(3.5rem, 11vw, 10rem); --public-h2: clamp(2.25rem, 5.5vw, 5rem); --public-h3: clamp(1.5rem, 3vw, 2.75rem);
   --public-lead: clamp(1.125rem, 2vw, 1.5rem); --public-motion: 180ms ease-out;
 }

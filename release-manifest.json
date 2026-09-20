@@ -1,14 +1,11 @@
 {
-  "releaseName": "otp-public-site-polish-20260920",
+  "releaseName": "otp-homepage-polish-20260920",
   "includedFiles": [
-    "release-manifest.json",
-    "service-discovery.css",
-    "songwars-config.js",
-    "songwars.css",
-    "songwars.html",
-    "tests/e2e/adversarial_qa.js",
-    "tests/songwars_contract.test.js",
-    "website-design.html"
+    "home.css",
+    "index.html",
+    "public-system.css",
+    "DESIGN.md",
+    "release-manifest.json"
   ],
   "excludedDirtyFiles": [
     "Local .vercel environment and generated test artifacts are ignored; no credentials or business records are release material."
@@ -62,11 +59,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Chrome inspection of Website Design and Song Wars at 390, 768, and 1280 pixels captured top, middle, and footer of both pages. Independent visual review passed. 51 adversarial browser checks passed, including native mobile menu open, outside close, Escape close, 80px shared header parity, and no horizontal overflow. No form submission was made."
+    "summary": "Local Chrome inspection of the homepage at 390, 768, and 1280 pixels captured hero and lower-page states. Two independent visual reviews passed. The homepage now moves from identity to selected work to capabilities to contact, with Signal still discoverable and no horizontal overflow. 51 adversarial browser checks passed; no form submission was made."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Previous production release CI on 2026-09-20 passed authenticated read-only admin checks. This polish changes only public HTML/CSS, Song Wars display copy, and related tests; local predeploy sweep passed 34 public checks without admin credentials. This release CI will rerun the authenticated checks with configured secret."
+    "summary": "Previous production release CI on 2026-09-20 passed authenticated read-only admin checks. This homepage-only polish changes public HTML/CSS; local predeploy sweep passed 34 public checks without admin credentials. Release CI will rerun authenticated checks with configured secret."
   },
   "deploymentTarget": {
     "project": "otp-site",
