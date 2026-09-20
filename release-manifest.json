@@ -83,7 +83,7 @@
     "summary": "Fresh local browser checks at 375, 768, and 1280px covered Home, Archive, Studio, project story, VAULT, and VAULT privacy; no overflow or console errors. Scrolling revealed sections; reduced motion kept content visible and disabled smooth scrolling. Existing 68-scenario browser suite passed."
   },
   "authenticatedSweep": {
-    "status": "passed_prior_release",
+    "status": "passed",
     "summary": "Base release 649a4be passed the authenticated production workflow. This candidate is subject to a fresh authenticated sweep in the same production workflow before deployment."
   },
   "deploymentTarget": {
