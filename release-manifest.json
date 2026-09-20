@@ -3,6 +3,8 @@
   "includedFiles": [
     "home.css",
     "index.html",
+    "tests/homepage_visual_contract.test.js",
+    "tests/fixline_integration_contract.test.js",
     "public-system.css",
     "DESIGN.md",
     "release-manifest.json"

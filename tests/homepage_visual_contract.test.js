@@ -37,7 +37,10 @@ assert.equal(home.querySelectorAll('[data-archive-projects], [data-video-feed]')
 assert.ok(home.querySelector('main a[href="/archive"]'));
 assert.ok(home.querySelector('main a[href="/studio"]'));
 assert.ok(home.querySelector('main a[href="/signal"]'));
-assert.ok(home.querySelector('main a[href^="/fixline/intake?source="]'));
+const homepageProjectCtas = [...home.querySelectorAll('a[href*="source="]')].filter(a => /Start a project/i.test(a.textContent));
+assert.ok(homepageProjectCtas.length >= 3, 'homepage exposes general project CTAs');
+assert.ok(homepageProjectCtas.every(a => a.getAttribute('href').startsWith('/bookings?source=')), 'homepage project CTAs use the general booking flow');
+assert.equal(home.querySelector('main a[href^="/fixline/intake?source="]'), null, 'homepage primary flow does not route through FIXLINE');
 for (const image of home.querySelectorAll('img')) {
   assert.ok(image.hasAttribute('alt'));
   assert.ok(Number(image.width) > 0 && Number(image.height) > 0, 'images reserve intrinsic space');
