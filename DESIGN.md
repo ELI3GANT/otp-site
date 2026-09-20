@@ -257,3 +257,11 @@ Prospective clients must find relevant work then start an enquiry. Creative visi
 ### Accepted implementation boundary
 
 Legacy campaign/product styling can keep its own palette; shared navigation connects the ecosystem. Legacy `styles.css` stays available for operational and older pages; new Home, Archive, Studio and project stories do not load its accumulated overrides. Old visual snapshot assertions must be replaced by meaningful behavioral coverage where this explicitly authorized redesign changes their expected layout.
+
+### Public motion · September 2026
+
+- Shared editorial pages and VAULT use one optional entrance: 480ms emphasis easing, 16px upward travel, and opacity from 0 to 1. Sections taller than 1.2 viewports animate their heading only, keeping large media and filter surfaces stable. Only targets initially below the viewport are prepared, so the hero, anchor destinations, and back/forward restoration remain immediately readable. Each target enters once; no scroll hijacking or continuous loop.
+- Shared navigation and action links use the existing 140–240ms motion scale for arrow travel and underline/opacity feedback. The mobile navigation opens with a short opacity/transform transition while native `details` remains operable without JavaScript.
+- Motion is progressively enhanced by `public-shell.js` on the company and VAULT pages. Without JavaScript or IntersectionObserver, content stays visible. `prefers-reduced-motion: reduce` removes section movement and all shared transitions; changes to that preference while the page is open also reveal pending content.
+- Privacy and terms are static reading surfaces; policy sections do not receive entrance motion.
+- FIXLINE is a separate proxied application and keeps its own design and motion rules. WeatherOS, Protocol, Signal, and Song Wars retain their product-specific motion; shared polish must not override it.

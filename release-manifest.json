@@ -1,27 +1,35 @@
 {
-  "releaseName": "vault-web-presence-20260920",
+  "releaseName": "public-motion-20260920",
   "includedFiles": [
-    "assets/vault/home.png",
-    "assets/vault/library.png",
-    "assets/vault/onboarding.png",
-    "assets/vault/profile.png",
-    "assets/vault/release-dossier.png",
-    "assets/vault/signal.png",
+    "DESIGN.md",
+    "archive.html",
+    "consultant-audit.html",
+    "index.html",
+    "insight.html",
+    "insights.html",
+    "privacy.html",
+    "project-stories.js",
+    "protocol.html",
+    "public-shell.js",
+    "public-system.css",
     "release-manifest.json",
-    "server.js",
-    "tests/archive_case_study_contract.test.js",
-    "tests/e2e/adversarial_qa.js",
-    "tests/master_runner.js",
-    "tests/vault_web_presence_contract.test.js",
-    "tests/youtube_video_contract.test.js",
-    "vault-privacy.html",
+    "scripts/sync-public-shell.js",
+    "songwars.html",
+    "studio.html",
+    "terms.html",
     "vault/index.html",
     "vault/privacy.html",
     "vault/vault.css",
-    "vercel.json"
+    "weatheros-privacy.html",
+    "weatheros-support.html",
+    "weatheros.html",
+    "weatheros/index.html",
+    "weatheros/privacy.html",
+    "weatheros/support.html",
+    "website-design.html"
   ],
   "excludedDirtyFiles": [
-    "Local .vercel environment and generated test artifacts are ignored; no credentials, app source, or business records are release material."
+    "Ignored local node_modules and generated test reports were excluded; primary checkout .omo work remains untouched."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -33,30 +41,67 @@
     "docs/redesign-evidence/*.log"
   ],
   "testsRun": [
-    { "command": "npm test", "status": "passed_54_of_54" },
-    { "command": "npm run test:e2e", "status": "passed_68_of_68" },
-    { "command": "npm run contracts:verify", "status": "passed_4_pinned_contracts" },
-    { "command": "npm run master_test:ci", "status": "passed_54_of_54" },
-    { "command": "npm run security:scan", "status": "passed_313_files" },
-    { "command": "npm run build:speed-insights", "status": "passed" },
-    { "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep", "status": "passed_public_34_checks_predeploy" },
-    { "command": "node --check server.js tests/e2e/adversarial_qa.js tests/vault_web_presence_contract.test.js", "status": "passed" },
-    { "command": "git diff --check", "status": "passed" },
-    { "command": "node tests/vault_web_presence_contract.test.js", "status": "passed" }
+    {
+      "command": "npm test",
+      "status": "passed_54_of_54"
+    },
+    {
+      "command": "npm run test:e2e",
+      "status": "passed_68_of_68"
+    },
+    {
+      "command": "npm run contracts:verify",
+      "status": "passed_4_pinned_contracts"
+    },
+    {
+      "command": "npm run master_test:ci",
+      "status": "passed_54_of_54"
+    },
+    {
+      "command": "npm run security:scan",
+      "status": "passed_324_files"
+    },
+    {
+      "command": "npm run build:speed-insights",
+      "status": "passed"
+    },
+    {
+      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
+      "status": "passed_public_predeploy"
+    },
+    {
+      "command": "node --check public-shell.js",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Fresh Playwright captures of /vault and /vault/privacy at 390, 768, and 1280 pixels showed no console errors or horizontal overflow. The e2e suite also passed 320 through 1440 pixels, metadata, structured data, screenshot assets, and mobile privacy navigation."
+    "summary": "Fresh local browser checks at 375, 768, and 1280px covered Home, Archive, Studio, project story, VAULT, and VAULT privacy; no overflow or console errors. Scrolling revealed sections; reduced motion kept content visible and disabled smooth scrolling. Existing 68-scenario browser suite passed."
   },
   "authenticatedSweep": {
-    "status": "passed",
-    "summary": "The production release workflow reruns authenticated read-only checks with configured credentials. VAULT routes are public and do not require an account."
+    "status": "passed_prior_release",
+    "summary": "Base release 649a4be passed the authenticated production workflow. This candidate is subject to a fresh authenticated sweep in the same production workflow before deployment."
   },
   "deploymentTarget": {
     "project": "otp-site",
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
+    ],
+    "liveVerificationRoutes": [
+      "/",
+      "/archive",
+      "/studio",
+      "/projects/weatheros",
+      "/vault",
+      "/vault/privacy",
+      "/fixline",
+      "/bookings",
+      "/portal"
     ]
   }
 }

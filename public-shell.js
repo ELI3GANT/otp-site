@@ -33,4 +33,30 @@
     destination.search = root.location.search;
     root.location.replace(destination.pathname + destination.search + destination.hash);
   }
+  if (typeof root.matchMedia !== 'function') return;
+  const motionPreference = root.matchMedia('(prefers-reduced-motion: reduce)');
+  const sections = root.document.querySelectorAll(':is(.public-page:not(.legal-page), .vault-page:not(.vault-policy-page)) main > section:not(:first-child)');
+  if ('IntersectionObserver' in root && !motionPreference.matches && sections.length) {
+    const targets = Array.from(sections, (section) => section.id === 'motion' || section.getBoundingClientRect().height > root.innerHeight * 1.2 ? section.querySelector('h2') : section).filter(Boolean);
+    const observer = new root.IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.remove('public-motion-pending');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
+    targets.forEach((target) => {
+      if (target.getBoundingClientRect().top > root.innerHeight) {
+        target.classList.add('public-motion-target', 'public-motion-pending');
+        observer.observe(target);
+      }
+    });
+    motionPreference.addEventListener('change', (event) => {
+      if (event.matches) {
+        observer.disconnect();
+        targets.forEach((target) => target.classList.remove('public-motion-pending'));
+      }
+    });
+  }
 })(typeof window !== 'undefined' ? window : globalThis);
