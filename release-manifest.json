@@ -1,6 +1,7 @@
 {
   "releaseName": "vault-1.1-preview-20260920",
   "includedFiles": [
+    ".gitignore",
     "DESIGN.md",
     "archive.html",
     "assets/vault/artist-profile.png",
