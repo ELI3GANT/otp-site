@@ -2635,6 +2635,9 @@ app.get(['/blackbox', '/blackbox-signal'], (req, res) => res.redirect(302, '/sig
 app.get('/weatheros.html', (req, res) => res.redirect(308, '/weatheros'));
 app.get(['/weatheros-support.html', '/weatheros-support'], (req, res) => res.redirect(308, '/weatheros/support'));
 app.get(['/weatheros-privacy.html', '/weatheros-privacy'], (req, res) => res.redirect(308, '/weatheros/privacy'));
+app.get(['/vault-privacy.html', '/vault-privacy'], (req, res) => res.redirect(308, '/vault/privacy'));
+app.get('/vault/index.html', (req, res) => res.redirect(308, '/vault'));
+app.get('/vault/privacy.html', (req, res) => res.redirect(308, '/vault/privacy'));
 
 // Preserve the public package alias and attribution at Studio engagement guidance.
 app.get('/packages', (req, res) => {
@@ -2676,9 +2679,11 @@ const staticAliases = {
     '/weatheros/support.html': 'weatheros/support.html',
     '/weatheros/privacy': 'weatheros/privacy.html',
     '/weatheros/privacy.html': 'weatheros/privacy.html',
+    '/vault/privacy': 'vault/privacy.html',
+    '/vault/privacy.html': 'vault/privacy.html',
     '/terms': 'terms.html',
     '/archive': 'archive.html',
-    '/vault': 'archive.html',
+    '/vault': 'vault/index.html',
     '/insights': 'insights.html',
     '/insight': 'insight.html',
     '/protocol': 'protocol.html',

@@ -28,7 +28,8 @@
           "assets/**",
           "components/**",
           "supabase/migrations/**",
-          "weatheros/**"
+          "weatheros/**",
+          "vault/**"
         ]
       }
     }
@@ -127,6 +128,21 @@
       "headers": { "Location": "/weatheros/privacy" }
     },
     {
+      "src": "^/(?:vault-privacy\\.html|vault-privacy)/?$",
+      "status": 308,
+      "headers": { "Location": "/vault/privacy" }
+    },
+    {
+      "src": "^/vault/index\\.html$",
+      "status": 308,
+      "headers": { "Location": "/vault" }
+    },
+    {
+      "src": "^/vault/privacy\\.html$",
+      "status": 308,
+      "headers": { "Location": "/vault/privacy" }
+    },
+    {
       "src": "^/website-design/?$",
       "dest": "/website-design.html"
     },
@@ -141,6 +157,14 @@
     {
       "src": "/weatheros/privacy/?",
       "dest": "/weatheros/privacy.html"
+    },
+    {
+      "src": "/vault/privacy/?",
+      "dest": "/vault/privacy.html"
+    },
+    {
+      "src": "/vault/?",
+      "dest": "/vault/index.html"
     },
     {
       "src": "/(bookings|booking|book|book-otp)/?",

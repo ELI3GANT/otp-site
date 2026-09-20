@@ -1,43 +1,27 @@
 {
-  "releaseName": "otp-growth-engine-20260920",
+  "releaseName": "vault-web-presence-20260920",
   "includedFiles": [
-    "DAILY_CLIENT_SPRINT.md",
-    "DESIGN.md",
-    "OTP_ATTRIBUTION_MAP.md",
-    "OTP_CLIENT_ACQUISITION_PLAYBOOK.md",
-    "OTP_CONVERSION_AUDIT.md",
-    "archive.html",
-    "bookings.html",
-    "bookings.js",
-    "home.css",
-    "index.html",
-    "insight.html",
-    "insights.html",
-    "otp-attribution.js",
-    "privacy.html",
-    "project-page.css",
-    "project-stories.js",
-    "public-shell.js",
-    "public-system.css",
+    "assets/vault/home.png",
+    "assets/vault/library.png",
+    "assets/vault/onboarding.png",
+    "assets/vault/profile.png",
+    "assets/vault/release-dossier.png",
+    "assets/vault/signal.png",
     "release-manifest.json",
     "server.js",
-    "studio.html",
-    "terms.html",
     "tests/archive_case_study_contract.test.js",
-    "tests/fixline_integration_contract.test.js",
-    "tests/growth_engine_contract.test.js",
-    "tests/homepage_visual_contract.test.js",
+    "tests/e2e/adversarial_qa.js",
     "tests/master_runner.js",
-    "weatheros-privacy.html",
-    "weatheros-support.html",
-    "weatheros.html",
-    "weatheros/index.html",
-    "weatheros/privacy.html",
-    "weatheros/support.html",
-    "website-design.html"
+    "tests/vault_web_presence_contract.test.js",
+    "tests/youtube_video_contract.test.js",
+    "vault-privacy.html",
+    "vault/index.html",
+    "vault/privacy.html",
+    "vault/vault.css",
+    "vercel.json"
   ],
   "excludedDirtyFiles": [
-    "Local .vercel environment and generated test artifacts are ignored; no credentials or business records are release material."
+    "Local .vercel environment and generated test artifacts are ignored; no credentials, app source, or business records are release material."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -49,54 +33,24 @@
     "docs/redesign-evidence/*.log"
   ],
   "testsRun": [
-    {
-      "command": "npm test",
-      "status": "passed_53_of_53"
-    },
-    {
-      "command": "npm run test:e2e",
-      "status": "passed_51_of_51"
-    },
-    {
-      "command": "npm run contracts:verify",
-      "status": "passed_4_pinned_contracts"
-    },
-    {
-      "command": "npm run master_test:ci",
-      "status": "passed_53_of_53"
-    },
-    {
-      "command": "npm run security:scan",
-      "status": "passed_313_files"
-    },
-    {
-      "command": "npm run build:speed-insights",
-      "status": "passed"
-    },
-    {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
-      "status": "passed_public_34_checks_predeploy"
-    },
-    {
-      "command": "node --check songwars-config.js tests/e2e/adversarial_qa.js tests/songwars_contract.test.js",
-      "status": "passed"
-    },
-    {
-      "command": "git diff --check",
-      "status": "passed"
-    },
-    {
-      "command": "node tests/growth_engine_contract.test.js",
-      "status": "passed"
-    }
+    { "command": "npm test", "status": "passed_54_of_54" },
+    { "command": "npm run test:e2e", "status": "passed_68_of_68" },
+    { "command": "npm run contracts:verify", "status": "passed_4_pinned_contracts" },
+    { "command": "npm run master_test:ci", "status": "passed_54_of_54" },
+    { "command": "npm run security:scan", "status": "passed_313_files" },
+    { "command": "npm run build:speed-insights", "status": "passed" },
+    { "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep", "status": "passed_public_34_checks_predeploy" },
+    { "command": "node --check server.js tests/e2e/adversarial_qa.js tests/vault_web_presence_contract.test.js", "status": "passed" },
+    { "command": "git diff --check", "status": "passed" },
+    { "command": "node tests/vault_web_presence_contract.test.js", "status": "passed" }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Playwright inspection of Archive, Studio, Bookings, and four project stories at 390, 768, and 1280 pixels. No horizontal overflow; project proof blocks, Quick Fix offer, booking paths, and CreativeWork schema rendered."
+    "summary": "Fresh Playwright captures of /vault and /vault/privacy at 390, 768, and 1280 pixels showed no console errors or horizontal overflow. The e2e suite also passed 320 through 1440 pixels, metadata, structured data, screenshot assets, and mobile privacy navigation."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Growth sprint changes public Archive, booking, attribution, Studio, and static conversion surfaces. Local public sweep passed; CI reruns authenticated read-only checks with configured secrets."
+    "summary": "The production release workflow reruns authenticated read-only checks with configured credentials. VAULT routes are public and do not require an account."
   },
   "deploymentTarget": {
     "project": "otp-site",

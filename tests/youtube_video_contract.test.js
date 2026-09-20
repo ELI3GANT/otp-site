@@ -91,7 +91,7 @@ assert.ok(styles.includes('flex-direction: column;'), 'archive project card uses
 assert.ok(styles.includes('aspect-ratio: 16 / 5;'), 'desktop archive project media renders as a wide before/after strip');
 
 assert.match(server, /app\.get\('\/api\/youtube\/videos'/, 'server exposes YouTube videos API');
-assert.match(server, /'\/vault': 'archive\.html'/, 'server exposes Vault alias to archive');
+assert.match(server, /'\/vault': 'vault\/index\.html'/, 'server exposes the dedicated VAULT product page');
 assert.ok(server.includes('youtube.com/feeds/videos.xml'), 'server attempts YouTube RSS sync');
 assert.ok(server.includes('YOUTUBE_API_KEY'), 'server can use YouTube Data API only when env exists');
 assert.ok(server.includes('Showing saved videos while YouTube updates.'), 'server returns clean fallback message');

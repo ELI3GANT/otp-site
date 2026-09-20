@@ -124,7 +124,7 @@ assert.ok(archiveClient.includes("aria-disabled"), 'future case-study action has
 assert.ok(read('public-system.css').includes('prefers-reduced-motion'), 'shared Archive design respects reduced motion');
 
 assert.match(server, /'\/archive': 'archive\.html'/, 'clean /archive route remains available');
-assert.match(server, /'\/vault': 'archive\.html'/, 'legacy /vault alias remains available');
+assert.match(server, /'\/vault': 'vault\/index\.html'/, 'dedicated /vault product page remains available');
 assert.match(server, /app\.get\('\/archive\.html',[^\n]+res\.redirect\(308, '\/archive'\)/, 'legacy archive.html route consolidates on the clean public URL');
 
 assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/archive</loc>'), 'sitemap publishes the clean Archive route');

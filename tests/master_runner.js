@@ -51,6 +51,7 @@ const tests = [
     { name: 'Loader Recovery Contract', path: 'tests/loader_recovery_contract.test.js' },
     { name: 'Homepage Visual Contract', path: 'tests/homepage_visual_contract.test.js' },
     { name: 'Archive Case Study Contract', path: 'tests/archive_case_study_contract.test.js' },
+    { name: 'VAULT Web Presence Contract', path: 'tests/vault_web_presence_contract.test.js' },
     { name: 'Growth Engine Contract', path: 'tests/growth_engine_contract.test.js' },
     { name: 'Archive URL Sync & Hardening', path: 'tests/archive_url_sync_and_fallback.test.js' },
     { name: 'FIXLINE Integration Contract', path: 'tests/fixline_integration_contract.test.js' },
