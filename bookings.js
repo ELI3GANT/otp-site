@@ -766,11 +766,20 @@ function renderPackages() {
     moduleLabel.className = 'module-label';
     moduleLabel.textContent = 'System module';
 
-    const pkgIcon = name.includes('Signal') ? '⚡ ' : name.includes('Engine') ? '⚙️ ' : name.includes('System') ? '🏛️ ' : '🎨 ';
     const head = document.createElement('div');
     head.className = 'package-card-head';
     const headCopy = document.createElement('div');
-    appendText(headCopy, 'h3', pkgIcon + name, 'Package');
+    const heading = document.createElement('h3');
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('class', 'package-icon');
+    icon.setAttribute('viewBox', '0 0 32 32');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.setAttribute('focusable', 'false');
+    const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    iconPath.setAttribute('d', name.includes('Signal') ? 'm16 2 3 11 11 3-11 3-3 11-3-11-11-3 11-3 3-11Z' : name.includes('Engine') ? 'M5 7h22v18H5zM5 13h22M11 19h10' : 'M4 25V9l12-6 12 6v16H4Zm8 0V14h8v11');
+    icon.append(iconPath);
+    heading.append(icon, document.createTextNode(name));
+    headCopy.append(heading);
     appendText(headCopy, 'strong', packagePrice(pkg), 'Scope based');
     head.append(headCopy);
 

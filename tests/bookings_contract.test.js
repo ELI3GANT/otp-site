@@ -18,7 +18,7 @@ const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
 const bookingHandoff = read('server/booking-handoff.js');
-const offerSystemKey = '20260713-mobile-input-v1';
+const offerSystemKey = '20260922-visual-refresh';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -77,7 +77,7 @@ for (const source of [html, js, pricing, server]) {
 assert.ok(html.includes('Start a Project with OTP.'), 'booking hero is direct and conversion-focused');
 assert.ok(html.includes('class="skip-link"') && html.includes('href="#booking-form"'), 'booking page provides a keyboard skip link to the intake form');
 assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');
-assert.ok(html.includes('OTP will route the work into The Signal, The Engine, or The System'), 'booking hero sets current package ladder expectations');
+assert.ok(html.includes('For a website audit, share your site and the booking or contact issue you want improved.'), 'booking hero gives website audit prospects a concrete next step');
 assert.ok(html.includes('official-brand-mark'), 'header keeps the official OTP site mark');
 assert.ok(html.includes('/assets/otp-hero-poster-frame.png'), 'header uses the stable optimized OTP poster mark');
 assert.ok(!html.includes('/assets/otp-hero-centered.gif'), 'header does not render the edge-on spinning GIF as the primary mark');
@@ -123,7 +123,7 @@ assert.ok(html.includes('OTP received your request. We’ll review the scope and
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
 assert.ok(html.includes(`bookings.css?v=${offerSystemKey}`), 'booking stylesheet cache-bust matches offer system release');
-assert.ok(html.includes('bookings.js?v=20260922-audit-preselect-v1'), 'booking script cache-bust includes audit preselection');
+assert.ok(html.includes('bookings.js?v=20260922-visual-refresh'), 'booking script cache-bust includes current package icons and audit preselection');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');

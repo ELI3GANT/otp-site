@@ -1,11 +1,12 @@
 {
-  "release": "OTP public site client acquisition and premium visual pass",
+  "release": "OTP public site icon motion and booking visual refinement",
   "includedFiles": [
     ".github/workflows/production-release.yml",
     "archive.html",
     "archive.js",
     "bookings.html",
     "bookings.js",
+    "bookings.css",
     "home.css",
     "index.html",
     "otp-conversion-analytics.js",
@@ -21,6 +22,8 @@
     "scripts/record_release_ci_evidence.js",
     "server.js",
     "service-discovery.css",
+    "studio.css",
+    "studio.html",
     "sitemap.xml",
     "terms.html",
     "tests/bookings_contract.test.js",
@@ -48,8 +51,8 @@
   "browserQa": {
     "status": "passed",
     "viewports": [1440, 390],
-    "routes": ["/", "/website-design.html", "/archive"],
-    "screenshots": "output/playwright/premium-visual-pass"
+    "routes": ["/", "/studio", "/bookings", "/website-design.html", "/archive"],
+    "screenshots": "output/playwright/visual-refresh"
   },
   "authenticatedSweep": {
     "status": "pending protected production workflow"
