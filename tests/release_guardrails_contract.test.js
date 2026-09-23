@@ -63,7 +63,9 @@ assert.ok(ciWorkflow.includes('npm run build:speed-insights'), 'CI keeps speed i
 assert.ok(!ciWorkflow.includes('npm run prod:terminal-sweep'), 'source-only CI does not compare an undeployed commit to live production');
 assert.ok(!ciWorkflow.includes('LIVE_API_URL: https://www.onlytrueperspective.tech'), 'source-only CI has no live production target');
 assert.ok(productionWorkflow.includes('confirm_clean_release') && productionWorkflow.includes('CLEAN_RELEASE'), 'production workflow requires explicit clean-release confirmation');
-assert.ok(productionWorkflow.includes('npm run release:gate'), 'production workflow blocks deploy behind release gate');
+assert.ok(productionWorkflow.includes('verify_release_scope.js --manifest=') && productionWorkflow.includes('--deploy'), 'production workflow blocks deploy behind the site-only release gate');
+assert.ok(productionWorkflow.includes('release-manifest-site.json'), 'production workflow uses the OTP site-only manifest');
+assert.ok(productionWorkflow.includes('record_release_ci_evidence.js'), 'production workflow records authenticated evidence only after the protected sweep passes');
 assert.ok(productionWorkflow.includes('Require authenticated sweep credentials'), 'production workflow requires authenticated sweep credentials');
 assert.ok(productionWorkflow.includes('npm run prod:full-sweep'), 'production workflow runs public and authenticated production sweeps');
 assert.ok(fullSweep.includes("browserSmoke: process.env.OTP_SWEEP_HTTP_ONLY !== '1'"), 'authenticated browser smoke stays enabled unless HTTP-only coverage is explicit');

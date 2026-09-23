@@ -68,6 +68,7 @@ const tests = [
     { name: 'Admin Sweep Auth Contract', path: 'tests/admin_sweep_auth_contract.test.js' },
     { name: 'Vercel Route Precedence', path: 'tests/vercel_route_precedence.test.js' },
     { name: 'Release Guardrails Contract', path: 'tests/release_guardrails_contract.test.js' },
+    { name: 'Release Auth Evidence Contract', path: 'tests/release_auth_evidence_contract.test.js' },
     { name: 'Security & Performance', path: 'tests/security_perf_audit.js' },
     // Stress test is excluded from default run due to duration/load
     // { name: 'Stress Test', path: 'tests/stress_test.js' } 

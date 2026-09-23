@@ -1,0 +1,56 @@
+{
+  "release": "OTP public site client acquisition and premium visual pass",
+  "includedFiles": [
+    ".github/workflows/production-release.yml",
+    "archive.html",
+    "archive.js",
+    "bookings.html",
+    "bookings.js",
+    "home.css",
+    "index.html",
+    "otp-conversion-analytics.js",
+    "release-manifest-site.json",
+    "sales/7_DAY_CLIENT_SPRINT.md",
+    "sales/ANALYTICS_EVENTS.md",
+    "sales/AUDIT_TEMPLATE.md",
+    "sales/CLIENT_ACQUISITION_PLAYBOOK.md",
+    "sales/LEAD_TRACKER.csv",
+    "sales/OUTREACH_TEMPLATES.md",
+    "scripts/prod_full_sweep.js",
+    "scripts/record_release_ci_evidence.js",
+    "service-discovery.css",
+    "sitemap.xml",
+    "tests/homepage_visual_contract.test.js",
+    "tests/master_runner.js",
+    "tests/release_auth_evidence_contract.test.js",
+    "tests/release_guardrails_contract.test.js",
+    "website-design.html"
+  ],
+  "excludedDirtyFiles": ["vault/**", "release-manifest.json"],
+  "testsRun": [
+    { "command": "npm test", "status": "pending protected CI" },
+    { "command": "npm run security:scan", "status": "pending protected CI" },
+    { "command": "npm run build:speed-insights", "status": "pending protected CI" },
+    { "command": "npm run master_test:ci", "status": "pending protected CI" },
+    { "command": "npm run prod:full-sweep", "status": "pending protected CI" },
+    { "command": "git diff --check", "status": "pending protected CI" },
+    { "command": "node --check", "status": "pending protected CI" }
+  ],
+  "browserQa": {
+    "status": "passed",
+    "viewports": [1440, 390],
+    "routes": ["/", "/website-design.html", "/archive"],
+    "screenshots": "output/playwright/premium-visual-pass"
+  },
+  "authenticatedSweep": {
+    "status": "pending protected production workflow"
+  },
+  "deploymentTarget": {
+    "provider": "Vercel",
+    "project": "otp-site",
+    "aliases": [
+      "https://www.onlytrueperspective.tech",
+      "https://onlytrueperspective.tech"
+    ]
+  }
+}

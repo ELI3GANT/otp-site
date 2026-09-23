@@ -8,6 +8,8 @@
  */
 
 const { runSweep, short } = require('./prod_sweep_v2_runner');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytrueperspective.tech').replace(/\/+$/, '');
 const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_TOKEN || '').trim();
@@ -73,6 +75,13 @@ const adminTargets = [
   { name: 'schema-migration', path: '/api/schema-migration', kind: 'text', markers: ['CREATE TABLE', 'ALTER TABLE'] }
 ];
 
+function emitResult(result) {
+  const json = `${JSON.stringify(result, null, 2)}\n`;
+  console.log(json.trimEnd());
+  const reportPath = String(process.env.OTP_SWEEP_REPORT_PATH || '').trim();
+  if (reportPath) fs.writeFileSync(path.resolve(reportPath), json);
+}
+
 async function main() {
   const { active, deferred } = partitionPublicTargets(publicTargets);
   const sweep = await runSweep({
@@ -96,12 +105,12 @@ async function main() {
     );
   }
 
-  console.log(JSON.stringify(sweep, null, 2));
+  emitResult(sweep);
   if (!sweep.ok) process.exit(1);
 }
 
 main().catch((error) => {
-  console.error(JSON.stringify({
+  const failure = {
     schema: 'otp-prod-full-sweep-v2',
     ok: false,
     baseUrl: BASE_URL,
@@ -110,6 +119,9 @@ main().catch((error) => {
     warnings: [],
     errors: [short(error?.message || error)],
     skipped: []
-  }, null, 2));
+  };
+  const reportPath = String(process.env.OTP_SWEEP_REPORT_PATH || '').trim();
+  if (reportPath) fs.writeFileSync(path.resolve(reportPath), `${JSON.stringify(failure, null, 2)}\n`);
+  console.error(JSON.stringify(failure, null, 2));
   process.exit(1);
 });

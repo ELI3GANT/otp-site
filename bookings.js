@@ -1114,6 +1114,7 @@ function renderSuccess(data) {
 async function submitBooking(event) {
   event.preventDefault();
   if (state.submitting || state.submitted) return;
+  if (window.OTPConversionAnalytics) window.OTPConversionAnalytics.track('booking_started');
   state.sourceTracking = getBookingTracking('booking_started');
   if (!validateStep(1) || !validateStep(2) || !validateStep(4)) {
     setStep(missingForStep(1).length ? 1 : missingForStep(2).length ? 2 : 4);
@@ -1139,6 +1140,7 @@ async function submitBooking(event) {
     if (!response.ok || data.ok === false || data.error) {
       throw new Error(text(data.message, 'Something blocked the request. Please check your contact info and try again.'));
     }
+    if (window.OTPConversionAnalytics) window.OTPConversionAnalytics.track('booking_submitted');
     renderSuccess(data);
     showStatus('');
   } catch (error) {
@@ -1194,6 +1196,7 @@ async function init() {
   const packageParam = urlParams.get('package') || urlParams.get('pkg');
   const fastParam = urlParams.get('fast') || urlParams.get('fast_offer') || urlParams.get('service');
   const clientParam = urlParams.get('client') || urlParams.get('target') || urlParams.get('business');
+  const auditOffer = urlParams.get('offer') === 'site-audit';
 
   if (packageParam) {
     let matchedPkg = 'The Signal';
@@ -1212,6 +1215,13 @@ async function init() {
       els.service.value = matchedService.value;
       applyFastLaneServiceSelection();
     }
+  }
+
+  if (auditOffer) {
+    if (!packageParam) selectPackage('The Signal', { advance: false });
+    if (els.formTitle) els.formTitle.textContent = 'Tell us what your website needs.';
+    if (els.description && !els.description.value) els.description.placeholder = 'What should be clearer or easier for your customers? Include the page or booking step you want OTP to review.';
+    if (els.form) els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
   }
 
   if (clientParam && els.business) {

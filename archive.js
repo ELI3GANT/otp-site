@@ -3,7 +3,7 @@
   const library = root.OTP_PROJECT_LIBRARY;
   const projectRoot = document.querySelector('[data-archive-projects]');
   if (!library || !projectRoot) return;
-  const order = ['hyh-architecture-design', 'weatheros', 'otp-fixline', 'protocol', 'song-wars', 'otp-os'];
+  const order = ['hyh-architecture-design', 'weatheros', 'otp-os', 'otp-fixline', 'protocol', 'song-wars'];
   const projects = library.getProjects().sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
   const state = { collection: 'Everything', search: '', category: '', status: '', year: '', technology: '' };
   const controls = Object.fromEntries(Object.keys(state).filter((key) => key !== 'collection').map((key) => [key, document.querySelector(`[data-archive-${key}]`)]));

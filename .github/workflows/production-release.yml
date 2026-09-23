@@ -47,8 +47,8 @@ jobs:
       - name: Verify pinned OTP contracts
         run: npm run contracts:verify
 
-      - name: Verify clean scoped release manifest
-        run: npm run release:gate
+      - name: Verify clean site-only release scope
+        run: node scripts/verify_release_scope.js --manifest=release-manifest-site.json --require-clean
 
       - name: Run unit and contract suite
         run: npm test
@@ -64,6 +64,29 @@ jobs:
 
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
+
+      - name: Syntax checks
+        run: |
+          node --check server.js
+          node --check bookings.js
+          node --check client.js
+          node --check site-init.js
+          node --check stars-v2.js
+          node --check theme-chrono.js
+          node --check pricing-config.js
+          node --check otp-attribution.js
+          node --check scripts/prod_bootstrap_qa.js
+          node --check scripts/prod_full_sweep.js
+          node --check scripts/prod_sweep_v2_runner.js
+          node --check scripts/prod_terminal_sweep.js
+          node --check scripts/verify_release_scope.js
+          node --check scripts/record_release_ci_evidence.js
+          node --check scripts/vercel_ignore_build_step.js
+
+      - name: Check whitespace and scope before authenticated sweep
+        run: |
+          git diff --check
+          node scripts/verify_release_scope.js --manifest=release-manifest-site.json --require-clean
 
       - name: Run public production sweep
         env:
@@ -86,32 +109,34 @@ jobs:
         env:
           OTP_SWEEP_HTTP_ONLY: "1"
           OTP_SWEEP_DEFER: songwars,songwars-poster
+          OTP_SWEEP_ADMIN_PASSCODE: ${{ secrets.OTP_ADMIN_PASSCODE }}
           OTP_ADMIN_PASSCODE: ${{ secrets.OTP_ADMIN_PASSCODE }}
           ADMIN_PASSCODE: ${{ secrets.ADMIN_PASSCODE }}
+          OTP_SITE_ADMIN_PASSCODE: ${{ secrets.OTP_SITE_ADMIN_PASSCODE }}
+          OTP_SWEEP_ADMIN_TOKEN: ${{ secrets.OTP_ADMIN_TOKEN }}
           OTP_ADMIN_TOKEN: ${{ secrets.OTP_ADMIN_TOKEN }}
-        run: npm run prod:full-sweep
-
-      - name: Syntax checks
+          OTP_SWEEP_REPORT_PATH: ${{ runner.temp }}/otp-site-authenticated-sweep.json
         run: |
-          node --check server.js
-          node --check bookings.js
-          node --check client.js
-          node --check site-init.js
-          node --check stars-v2.js
-          node --check theme-chrono.js
-          node --check pricing-config.js
-          node --check otp-attribution.js
-          node --check scripts/prod_bootstrap_qa.js
-          node --check scripts/prod_full_sweep.js
-          node --check scripts/prod_sweep_v2_runner.js
-          node --check scripts/prod_terminal_sweep.js
-          node --check scripts/verify_release_scope.js
-          node --check scripts/vercel_ignore_build_step.js
+          cp release-manifest-site.json "$RUNNER_TEMP/otp-site-release-manifest.json"
+          npm run prod:full-sweep
+          node scripts/record_release_ci_evidence.js \
+            --manifest="$RUNNER_TEMP/otp-site-release-manifest.json" \
+            --report="$RUNNER_TEMP/otp-site-authenticated-sweep.json"
+
+      - name: Require passed site-only production release gate
+        run: node scripts/verify_release_scope.js --manifest="$RUNNER_TEMP/otp-site-release-manifest.json" --deploy
 
       - name: Whitespace and release-scope cleanliness
         run: |
           git diff --check
-          npm run release:gate
+          node scripts/verify_release_scope.js --manifest="$RUNNER_TEMP/otp-site-release-manifest.json" --deploy
+
+      - name: Preserve validated site-only manifest for deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-release-manifest
+          path: ${{ runner.temp }}/otp-site-release-manifest.json
+          if-no-files-found: error
 
   deploy:
     name: Deploy Prebuilt Production
@@ -126,6 +151,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Restore authenticated site release evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: site-release-manifest
+          path: ${{ runner.temp }}
+
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
@@ -138,7 +169,7 @@ jobs:
         run: npm run contracts:verify
 
       - name: Verify clean scoped release before deploy
-        run: npm run release:gate
+        run: node scripts/verify_release_scope.js --manifest="$RUNNER_TEMP/otp-site-release-manifest.json" --deploy
 
       - name: Require Vercel deployment secrets
         run: |
