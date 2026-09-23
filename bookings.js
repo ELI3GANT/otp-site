@@ -1218,6 +1218,10 @@ async function init() {
   }
 
   if (auditOffer) {
+    if (!fastParam && els.service) {
+      const websiteService = Array.from(els.service.options).find(option => option.value === 'Website / Digital System');
+      if (websiteService) els.service.value = websiteService.value;
+    }
     if (!packageParam) selectPackage('The Signal', { advance: false });
     if (els.formTitle) els.formTitle.textContent = 'Tell us what your website needs.';
     if (els.description && !els.description.value) els.description.placeholder = 'What should be clearer or easier for your customers? Include the page or booking step you want OTP to review.';

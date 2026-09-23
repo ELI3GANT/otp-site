@@ -2627,6 +2627,9 @@ app.get(['/songwars', '/songwars/'], (req, res) => {
 });
 
 app.get('/songwars.html', (req, res) => res.redirect(308, '/songwars'));
+app.get('/index.html', (req, res) => res.redirect(308, '/'));
+app.get('/privacy.html', (req, res) => res.redirect(308, '/privacy'));
+app.get('/terms.html', (req, res) => res.redirect(308, '/terms'));
 app.get('/archive.html', (req, res) => res.redirect(308, '/archive'));
 app.get(['/consultant-audit.html', '/consultant-audit'], (req, res) => res.redirect(308, '/services/consultant-audit'));
 app.get('/protocol.html', (req, res) => res.redirect(308, '/protocol'));

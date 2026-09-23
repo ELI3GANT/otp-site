@@ -87,8 +87,8 @@ assert.ok(
 assert.ok(!insightsList.includes('https://onlytrueperspective.tech/insights.html'), 'insights list avoids redirecting apex insight index URL');
 
 assert.ok(archive.includes('https://www.onlytrueperspective.tech/archive'), 'archive canonical/og use final www host and clean route');
-assert.ok(terms.includes('https://www.onlytrueperspective.tech/terms.html'), 'terms canonical/og use final www host');
-assert.ok(privacy.includes('https://www.onlytrueperspective.tech/privacy.html'), 'privacy canonical/og use final www host');
+assert.ok(terms.includes('https://www.onlytrueperspective.tech/terms'), 'terms canonical/og use final www host');
+assert.ok(privacy.includes('https://www.onlytrueperspective.tech/privacy'), 'privacy canonical/og use final www host');
 assert.ok(!archive.includes('https://onlytrueperspective.tech/archive'), 'archive avoids redirecting apex page URL');
 assert.ok(!archive.includes('https://www.onlytrueperspective.tech/archive.html'), 'archive avoids duplicate .html metadata URLs');
 

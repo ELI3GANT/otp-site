@@ -88,6 +88,21 @@
       "dest": "/server.js"
     },
     {
+      "src": "^/index\\.html$",
+      "status": 308,
+      "headers": { "Location": "/" }
+    },
+    {
+      "src": "^/privacy\\.html$",
+      "status": 308,
+      "headers": { "Location": "/privacy" }
+    },
+    {
+      "src": "^/terms\\.html$",
+      "status": 308,
+      "headers": { "Location": "/terms" }
+    },
+    {
       "src": "^/archive\\.html$",
       "status": 308,
       "headers": { "Location": "/archive" }

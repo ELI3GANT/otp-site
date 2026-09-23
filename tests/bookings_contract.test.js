@@ -123,7 +123,7 @@ assert.ok(html.includes('OTP received your request. We’ll review the scope and
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
 assert.ok(html.includes(`bookings.css?v=${offerSystemKey}`), 'booking stylesheet cache-bust matches offer system release');
-assert.ok(html.includes(`bookings.js?v=${offerSystemKey}`), 'booking script cache-bust matches offer system release');
+assert.ok(html.includes('bookings.js?v=20260922-audit-preselect-v1'), 'booking script cache-bust includes audit preselection');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');
@@ -147,6 +147,7 @@ assert.ok(!/otp-os\.vercel\.app/i.test(js), 'booking JS must not expose OTP OS h
 
 assert.ok(js.includes('/api/bookings/config'), 'frontend loads booking config');
 assert.ok(js.includes('/api/bookings/submit'), 'frontend submits to booking API');
+assert.ok(js.includes("option.value === 'Website / Digital System'"), 'site audit defaults to the website service');
 assert.ok(js.includes('getAttributionTracking'), 'bookings attaches stored attribution');
 assert.ok(js.includes('wireProjectIntakeAttribution'), 'bookings forwards attribution to secure intake');
 assert.ok(js.includes('data-intake-base') || js.includes("getAttribute('data-intake-base')"), 'bookings reads intake base from markup');
