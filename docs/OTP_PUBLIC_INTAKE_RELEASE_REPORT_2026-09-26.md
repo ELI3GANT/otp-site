@@ -145,4 +145,18 @@ Commit `858a59353c41721ff3b0a94532883e995f1a8361` now sets `SameSite=None; Secur
 
 The foundation remains blocked; there is no production intake record, replay/retry, duplicate-suppression, or FIXLINE linkage proof. The next action is a fresh OTP OS login on the iPhone after this cookie deployment, followed by live-data and intake QA.
 
+## OTP OS native live-data repair and simulator verification — 2026-09-26
+
+The first production cookie repair did not restore WebView authentication: iOS WKWebView did not retain the cross-site `HttpOnly` cookie for `capacitor://localhost`. The app therefore accepted the login response, showed an active session, then received `401 otp_os_session_required` on dashboard refresh. This was reproduced on the iPhone 16 Pro simulator; the physical phone was not used during this follow-up.
+
+OTP OS commit `91a1ea33de3a0cf50286254ead30d9070757f4f6` adds a session bearer to the login response only for the two native origins, and keeps it in JavaScript memory only. The native app sends that bearer on API requests. Browser-origin login responses do not include it, and the token is not written to browser storage. The scoped change is deployed as Vercel deployment `dpl_32VBhDMwKbehhq1gPPzKKB93RaKv`, production alias `https://otp-os.vercel.app`; deployment reached READY and `/api/health` returned 200.
+
+Simulator QA used a clean checkout at the hotfix commit, Xcode 26.6, iPhone 16 Pro simulator on iOS 26.5, app `com.eli3gant.otp` version 1.0 (1). Build and install passed. Login reached the live dashboard; dashboard operational metrics rendered without a session-expired error; the Leads tab loaded; and Refresh completed while the secure session remained active. Production native-origin login returned HTTP 200, bearer-authenticated `/api/auth/session` returned HTTP 200 with `authenticated: true`, and `/api/oracle-daily-brief` returned HTTP 200. Screenshots are available in the execution environment at `/tmp/otp-os-live-data-fixed.png`, `/tmp/otp-os-leads-live.png`, and `/tmp/otp-os-live-data-refresh.png`. No synthetic lead was created.
+
+OTP OS targeted auth integration tests passed 11/11; `npm run sync:ios` and the 55-file iOS bundle check passed; Xcode simulator build succeeded; pinned Gitleaks 8.30.1 reported no leaks. OTP OS has no `build` npm script, so `npm run build` is not an available check; the Vercel production build succeeded. Trusted CI secrets scan passed on exact commit `91a1ea33de3a0cf50286254ead30d9070757f4f6`. Ubuntu and Windows validation failed only on the six established STRIKE navigation expectations, and release-bundle was skipped. Simulator QA verifies this live-data repair but does not replace the repository's strict real-device release evidence requirement.
+
+This closes the OTP OS app's login-to-live-data failure. The broader intake foundation remains blocked: Site and FIXLINE foundation services are not deployed, no production intake/replay/retry/duplicate-suppression lead was exercised, and the strict OTP OS release gate lacks passing trusted validation and real-device QA for the exact release candidate.
+
+Smallest next action: complete the strict OTP OS release gate for the intended release SHA, then deploy Site and FIXLINE and run the production intake/retry replay verification. Calendar work remains out of scope.
+
 FOUNDATION BLOCKED

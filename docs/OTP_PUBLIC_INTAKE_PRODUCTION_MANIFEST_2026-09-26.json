@@ -1,8 +1,8 @@
 {
   "release": "OTP canonical lead and durable public intake foundation",
-  "status": "blocked_otp_os_session_refresh_after_cookie_fix",
+  "status": "blocked_foundation_intake_release_gates",
   "candidateCommit": "2f6987b",
-  "reason": "The OTP OS CORS and Capacitor cookie fixes are deployed. Device logs showed data requests returning 401 otp_os_session_required after login; the previous session cookie predates the SameSite=None fix and must be replaced by a fresh native login before live-data QA can pass.",
+  "reason": "OTP OS live-data authentication repair is deployed and passed simulator functional QA. The broader foundation still lacks passing strict OTP OS trusted validation and real-device evidence, Site/FIXLINE foundation deployments, and production intake/retry replay verification.",
   "productionDatabase": {
     "projectRef": "ckumhowhucbbmpdeqkrl",
     "name": "OTP SITE",
@@ -42,8 +42,15 @@
     "POST otp-fixline /api/review/submit",
     "POST otp-os /api/bookings/submit"
   ],
-  "expectedContractVersions": ["otp-booking-intake-v1", "otp-lineage-v1"],
-  "deploymentOrder": ["otp-os", "otp-fixline", "otp-site"],
+  "expectedContractVersions": [
+    "otp-booking-intake-v1",
+    "otp-lineage-v1"
+  ],
+  "deploymentOrder": [
+    "otp-os",
+    "otp-fixline",
+    "otp-site"
+  ],
   "productionVerificationLeadId": null,
   "deployedServices": [
     {
@@ -65,6 +72,18 @@
       "alias": "https://otp-os.vercel.app",
       "health": 200,
       "capacitorSessionCookie": "SameSite=None; Secure for capacitor://localhost and ionic://localhost; SameSite=Strict for normal web"
+    },
+    {
+      "service": "otp-os",
+      "scope": "native WebView in-memory bearer session for authenticated live data",
+      "commit": "91a1ea33de3a0cf50286254ead30d9070757f4f6",
+      "deploymentId": "dpl_32VBhDMwKbehhq1gPPzKKB93RaKv",
+      "url": "https://otp-kuk0gct7t-only-true-perspective.vercel.app",
+      "alias": "https://otp-os.vercel.app",
+      "deploymentState": "READY",
+      "health": 200,
+      "nativeLogin": "HTTP 200; session bearer returned only for capacitor://localhost and ionic://localhost",
+      "browserStorage": "session bearer held in memory only; no browser storage"
     }
   ],
   "deviceQaFinding": {
@@ -85,13 +104,46 @@
     "repairDeployment": "dpl_GRMYwxVYepyVw6fsyKtv91X4LaMG; cookie deployment dpl_Ghv1fCSd2dyuRQXuX7RKz6guXTne"
   },
   "releaseGate": {
-    "otpOsStrict": "blocked_mobile_qa_and_trusted_ci_security_evidence; fresh native login and live-data verification pending",
+    "otpOsStrict": "blocked_real_device_mobile_qa_and_trusted_validation; CI secrets passed; Ubuntu and Windows validation failed on six known STRIKE navigation expectations; release-bundle skipped",
     "otpOsRepairTargetedIntegration": "passed_10_of_10",
     "otpOsRepairCiSecrets": "passed_run_36246089068",
     "otpOsRepairCiValidation": "failed_preexisting_six_STRIKE_navigation_expectations",
     "otpOsPinnedLocalSecurityScan": "passed_no_leaks",
     "siteLocalTestsAndBuild": "passed",
     "fixlineLocalTestsAndBuild": "passed",
-    "liveIntakeReplay": "not_run"
+    "liveIntakeReplay": "not_run",
+    "otpOsNativeLiveDataHotfix": "91a1ea33de3a0cf50286254ead30d9070757f4f6 deployed READY and simulator verified",
+    "otpOsAuthTests": "passed_11_of_11",
+    "otpOsIosBundle": "passed_55_files",
+    "otpOsVercelBuild": "passed",
+    "otpOsNpmBuild": "not_available_no_build_script",
+    "otpOsTrustedCi": "secrets_pass; ubuntu_validation_fail; windows_validation_fail; release_bundle_skipped"
+  },
+  "simulatorQaFinding": {
+    "testedCommit": "91a1ea33de3a0cf50286254ead30d9070757f4f6",
+    "checkoutBase": "858a59353c41721ff3b0a94532883e995f1a8361",
+    "device": "iPhone 16 Pro Simulator",
+    "iosVersion": "26.5",
+    "appVersion": "1.0 (1)",
+    "result": "passed_live_data_and_leads_refresh",
+    "flows": [
+      "clean build and install",
+      "native login",
+      "dashboard live data",
+      "Leads tab",
+      "Refresh"
+    ],
+    "productionApiProof": {
+      "login": 200,
+      "session": 200,
+      "sessionAuthenticated": true,
+      "dailyBrief": 200
+    },
+    "evidence": [
+      "/tmp/otp-os-live-data-fixed.png",
+      "/tmp/otp-os-leads-live.png",
+      "/tmp/otp-os-live-data-refresh.png"
+    ],
+    "physicalPhoneUsed": false
   }
 }
