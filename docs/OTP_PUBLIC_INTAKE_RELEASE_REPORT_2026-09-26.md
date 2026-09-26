@@ -121,4 +121,14 @@ The Supabase connector read live migration history and schema before writes. Nei
 
 Scoped foundation commits were created in OTP OS (`fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3`) and FIXLINE (`d778b2f2232c43f8b96f1340b0abba13e7061f47`). Pre-existing unrelated untracked files remain outside those commits. Site's scoped commit and protected workflow deployment remain in progress. The Site release manifest was updated for this foundation. Local Site contract verification, security scan, syntax check, full suite, build, master CI suite, and public production sweep passed; the public sweep skipped authenticated checks without a local admin credential. No service has been deployed in this execution yet, and no production verification lead has been created.
 
-FOUNDATION BLOCKED
+### Production release gate result
+
+The Site foundation code was committed at `2f6987b`; clean detached release worktrees for Site, FIXLINE, and OTP OS contain only the scoped commits. Unrelated untracked files remain preserved in the original FIXLINE and OTP OS checkouts, and an unrelated Site E2E change remains outside its commit. OTP OS's scoped branch was pushed; no production deployment occurred. FIXLINE and Site commits were not pushed because the upstream dependency has not passed its release gate.
+
+The OTP OS strict `npm run release:gate` failed on `mobile_qa` and `security_scan` evidence marked pending. The repository release policy requires fresh real-device mobile QA and trusted CI-signed security evidence tied to the exact release SHA. A local scan using the exact pinned Gitleaks 8.30.1 container on the clean OTP OS commit passed with no leaks, but cannot mint that release evidence. This is an existing OS release policy, not a failure introduced by the intake change. Site local and public production sweep commands passed; the public sweep skipped authenticated checks because no local admin credential was provided. FIXLINE 138 tests and build passed. Six STRIKE navigation failures remain the previously classified unrelated baseline.
+
+No production test lead, retry simulation, duplicate replay, FIXLINE linkage write, or data cleanup was performed because the OTP OS release gate blocks deployment. The live database migration/API checks prove schema availability, not end-to-end production durability.
+
+Human action required: complete the OTP OS real-device mobile QA checklist for commit `fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3` and have its trusted CI release evidence recorded for that exact SHA. Then the agent can recheck the strict gate, deploy in dependency order, and run the live intake/retry proof.
+
+FOUNDATION BLOCKED — HUMAN ACTION REQUIRED: Complete OTP OS real-device mobile QA and trusted CI evidence for commit fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3.

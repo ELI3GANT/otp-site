@@ -1,8 +1,8 @@
 {
   "release": "OTP canonical lead and durable public intake foundation",
-  "status": "migrated_predeployment",
-  "candidateCommit": null,
-  "reason": "Production migrations are verified; scoped release commits and deployment gates are in progress.",
+  "status": "blocked_otp_os_release_gate",
+  "candidateCommit": "2f6987b",
+  "reason": "OTP OS strict release gate requires real-device mobile QA and trusted CI evidence for the exact release SHA before production deployment.",
   "productionDatabase": {
     "projectRef": "ckumhowhucbbmpdeqkrl",
     "name": "OTP SITE",
@@ -15,6 +15,7 @@
       "service": "otp-site",
       "branch": "polish/homepage-shorter-sharper",
       "baseCommit": "2dff744695549c2a8212bf6df8ed6ed9aa6f4e2e",
+      "foundationCommit": "2f6987b",
       "targetProject": "otp-site",
       "requiredMigration": "20260926000000_public_intake_outbox.sql"
     },
@@ -43,5 +44,13 @@
   ],
   "expectedContractVersions": ["otp-booking-intake-v1", "otp-lineage-v1"],
   "deploymentOrder": ["otp-os", "otp-fixline", "otp-site"],
-  "productionVerificationLeadId": null
+  "productionVerificationLeadId": null,
+  "deployedServices": [],
+  "releaseGate": {
+    "otpOsStrict": "blocked_mobile_qa_and_trusted_ci_security_evidence",
+    "otpOsPinnedLocalSecurityScan": "passed_no_leaks",
+    "siteLocalTestsAndBuild": "passed",
+    "fixlineLocalTestsAndBuild": "passed",
+    "liveIntakeReplay": "not_run"
+  }
 }
