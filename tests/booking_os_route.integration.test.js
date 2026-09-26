@@ -75,11 +75,23 @@ async function postJson(url, body) {
     process.env.OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS = '250';
     delete process.env.SUPABASE_URL;
     delete process.env.SUPABASE_SERVICE_KEY;
+    const intakeStore = require('../server/public-intake-store.js');
+    const savedIntakes = new Map();
+    let failPersistence = false;
+    intakeStore.persistPublicIntake = async (_, envelope) => {
+        if (failPersistence) throw new Error('durable_store_down');
+        const leadId = envelope.lineage.prospect_id;
+        const replay = savedIntakes.has(leadId);
+        savedIntakes.set(leadId, envelope);
+        return { replay };
+    };
+    intakeStore.markPublicIntakeSync = async () => {};
     const app = require('../server.js');
     const site = app.listen(0, '127.0.0.1');
     await new Promise((resolve) => site.once('listening', resolve));
 
     const publicPayload = {
+        lead_id: 'LEAD-550e8400-e29b-41d4-a716-446655440001',
         booking_token: 'WEB-site-route-test-0001',
         name: 'Avery Test',
         email: 'avery@example.test',
@@ -90,6 +102,7 @@ async function postJson(url, body) {
         contact_consent: true,
         source_tracking: { cta_source: 'integration_test' }
     };
+    const nextPayload = (number) => ({ ...publicPayload, booking_token: `WEB-site-route-test-000${number}`, lead_id: `LEAD-550e8400-e29b-41d4-a716-44665544000${number}` });
 
     try {
         const success = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, publicPayload);
@@ -103,29 +116,42 @@ async function postJson(url, body) {
         assert.equal(observedRequest.body.lineage.capture_id, observedRequest.body.booking_id);
 
         mode = 'malformed';
-        const malformed = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, { ...publicPayload, booking_token: 'WEB-site-route-test-0002' });
-        assert.equal(malformed.status, 503);
-        assert.equal(malformed.body.errorCode, 'otp_os_unavailable');
+        const malformed = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, nextPayload(2));
+        assert.equal(malformed.status, 202);
+        assert.equal(malformed.body.syncStatus, 'sync_pending');
 
         mode = 'failure';
-        const failure = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, { ...publicPayload, booking_token: 'WEB-site-route-test-0003' });
-        assert.equal(failure.status, 503);
-        assert.equal(failure.body.errorCode, 'otp_os_unavailable');
+        const failure = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, nextPayload(3));
+        assert.equal(failure.status, 202);
+        assert.equal(failure.body.syncStatus, 'sync_pending');
 
         mode = 'unavailable';
-        const unavailable = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, { ...publicPayload, booking_token: 'WEB-site-route-test-0006' });
-        assert.equal(unavailable.status, 503);
-        assert.equal(unavailable.body.errorCode, 'otp_os_unavailable');
+        const unavailable = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, nextPayload(6));
+        assert.equal(unavailable.status, 202);
+        assert.equal(unavailable.body.syncStatus, 'sync_pending');
 
         mode = 'conflict';
-        const conflict = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, { ...publicPayload, booking_token: 'WEB-site-route-test-0005' });
+        const conflict = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, nextPayload(5));
         assert.equal(conflict.status, 409);
         assert.equal(conflict.body.errorCode, 'booking_idempotency_conflict');
 
         mode = 'timeout';
-        const timeout = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, { ...publicPayload, booking_token: 'WEB-site-route-test-0004' });
-        assert.equal(timeout.status, 503);
-        assert.equal(timeout.body.errorCode, 'otp_os_unavailable');
+        const timeout = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, nextPayload(4));
+        assert.equal(timeout.status, 202);
+        assert.equal(timeout.body.syncStatus, 'sync_pending');
+        mode = 'success';
+        const retried = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, nextPayload(4));
+        assert.equal(retried.status, 200);
+        assert.equal(retried.body.syncStatus, 'synced');
+        assert.equal(retried.body.duplicateReplay, true);
+        assert.equal(savedIntakes.size, 6);
+
+        failPersistence = true;
+        const persistedBefore = savedIntakes.size;
+        const persistenceFailure = await postJson(`http://127.0.0.1:${site.address().port}/api/bookings/submit`, nextPayload(7));
+        assert.equal(persistenceFailure.status, 503);
+        assert.equal(persistenceFailure.body.errorCode, 'intake_persistence_failed');
+        assert.equal(savedIntakes.size, persistedBefore);
     } finally {
         await close(site);
         await close(upstream);

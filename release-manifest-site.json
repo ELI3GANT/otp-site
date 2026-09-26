@@ -1,55 +1,60 @@
 {
-  "release": "OTP Bookings visual refresh",
+  "release": "OTP Bookings refresh and canonical intake foundation",
   "includedFiles": [
+    ".github/workflows/production-release.yml",
     "bookings.html",
     "bookings.css",
-    "tests/bookings_contract.test.js",
-    "scripts/record_release_ci_evidence.js",
-    "release-manifest-site.json"
-  ],
-  "excludedDirtyFiles": [
-    "server.js",
-    "server/**",
-    "supabase/**",
     "bookings.js",
-    "vault/**"
+    "release-manifest-site.json",
+    "scripts/record_release_ci_evidence.js",
+    "scripts/prod_full_sweep.js",
+    "server.js",
+    "server/booking-handoff.js",
+    "server/public-intake-store.js",
+    "supabase/migrations/20260926000000_public_intake_outbox.sql",
+    "tests/api_surface_security_contract.test.js",
+    "tests/booking_os_handoff.test.js",
+    "tests/booking_os_route.integration.test.js",
+    "tests/bookings_contract.test.js",
+    "tests/public_intake_store.test.js",
+    "vercel.json",
+    "docs/OTP_PUBLIC_INTAKE_RELEASE_REPORT_2026-09-26.md",
+    "docs/OTP_PUBLIC_INTAKE_PRODUCTION_MANIFEST_2026-09-26.json"
   ],
+  "excludedDirtyFiles": ["vault/**", "release-manifest.json"],
   "testsRun": [
-    { "command": "npm test", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run security:scan", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run build:speed-insights", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run master_test:ci", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run prod:full-sweep", "status": "passed in protected production workflow 36370303877" },
-    { "command": "git diff --check", "status": "passed in protected production workflow 36370303877" },
-    { "command": "node --check", "status": "passed in protected production workflow 36370303877" }
+    { "command": "npm test", "status": "pending candidate run" },
+    { "command": "npm run security:scan", "status": "pending candidate run" },
+    { "command": "npm run build:speed-insights", "status": "pending candidate run" },
+    { "command": "npm run master_test:ci", "status": "pending protected workflow" },
+    { "command": "npm run prod:full-sweep", "status": "pending protected workflow" },
+    { "command": "git diff --check", "status": "pending candidate run" },
+    { "command": "node --check", "status": "pending candidate run" }
   ],
   "browserQa": {
-    "status": "passed",
+    "status": "pending candidate intake verification",
     "routes": ["/book", "/booking", "/bookings", "/book-otp"],
     "viewport": "1280x720",
     "flows": [
-      "refreshed black and lime Bookings design rendered",
-      "all public booking aliases resolved to the same page",
-      "selecting The Signal updated the package summary and form",
-      "no customer request was submitted"
+      "current Bookings design and package selection previously verified in production",
+      "candidate durable intake persistence and retry behavior not yet verified"
     ],
-    "evidence": "Local and live production browser screenshots captured during the release task"
+    "evidence": "OTP_PUBLIC_INTAKE_RELEASE_REPORT_2026-09-26.md"
   },
   "authenticatedSweep": {
-    "status": "passed",
-    "evidence": "https://github.com/ELI3GANT/otp-site/actions/runs/36370303877"
+    "status": "pending protected workflow for this candidate"
   },
   "deployment": {
-    "status": "READY",
-    "commit": "d3dc2b0792d8fd8aba247e29275cc77ab576bbed",
-    "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36370303877",
-    "deploymentUrl": "https://otp-site-3w8w0yshc-only-true-perspective.vercel.app",
-    "aliases": [
+    "status": "candidate not deployed",
+    "currentProductionCommit": "d3dc2b0792d8fd8aba247e29275cc77ab576bbed",
+    "currentProductionWorkflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36370303877",
+    "currentProductionUrl": "https://otp-site-3w8w0yshc-only-true-perspective.vercel.app",
+    "currentProductionAliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech",
       "https://otp-site.vercel.app"
     ],
-    "postDeployPublicSweep": "passed"
+    "reason": "OTP OS strict release gate remains blocked; production intake route and replay are not verified"
   },
   "deploymentTarget": {
     "provider": "Vercel",

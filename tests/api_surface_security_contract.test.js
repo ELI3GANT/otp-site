@@ -24,6 +24,7 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/webhook',
     'POST /api/auth/login',
     'GET /api/bookings/config',
+    'GET /api/internal/public-intakes/sync',
     'POST /api/bookings/submit',
     'ALL /api/bookings/deposit-checkout',
     'GET /api/client-portal/:token',
@@ -36,6 +37,8 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/analytics/view',
     'POST /api/create-checkout-session'
 ]);
+assert.ok(serverSrc.includes("const secret = process.env.CRON_SECRET || process.env.OTP_PUBLIC_INTAKE_SYNC_SECRET;"));
+assert.ok(serverSrc.includes('crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))'));
 
 const siteContentBoundaryMigration = read('supabase/migrations/20260811020000_site_content_access_boundary.sql');
 assert.ok(siteContentBoundaryMigration.includes("alter column access_scope set default 'private'"));

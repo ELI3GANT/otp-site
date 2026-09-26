@@ -5,6 +5,12 @@
   "git": {
     "deploymentEnabled": false
   },
+  "crons": [
+    {
+      "path": "/api/internal/public-intakes/sync",
+      "schedule": "0 12 * * *"
+    }
+  ],
   "builds": [
     {
       "src": "server.js",
