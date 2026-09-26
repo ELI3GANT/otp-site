@@ -165,6 +165,7 @@ assert.ok(!js.includes('card.innerHTML'), 'package cards render with text nodes,
 assert.ok(!/innerHTML\s*=/.test(js), 'booking frontend does not assign unsafe HTML');
 assert.ok(!/insertAdjacentHTML/.test(js), 'booking frontend does not inject adjacent HTML');
 assert.ok(js.includes('makeBookingToken'), 'frontend sends a booking token for duplicate-friendly handling');
+assert.ok(js.includes('window.OTPAttribution?.buildUrlWithAttribution(intakeBase) || intakeBase'), 'booking success uses the available attribution helper');
 assert.ok(js.includes('otp_company_website'), 'frontend submits honeypot field');
 assert.ok(js.includes('buildSourceTracking'), 'frontend captures sanitized source tracking');
 assert.ok(js.includes('source_tracking: state.sourceTracking'), 'booking payload includes source tracking');

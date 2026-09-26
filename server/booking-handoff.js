@@ -20,6 +20,7 @@ function validateBookingSemantics(envelope) {
     if (envelope.contact_consent !== true) errors.push('contact_consent must be true');
     if (!exactUtcTimestamp(envelope.lineage?.created_at)) errors.push('lineage created_at must be an ISO-8601 UTC timestamp');
     if (envelope.lineage?.capture_id !== envelope.booking_id || envelope.lineage?.source_id !== envelope.booking_id) errors.push('lineage booking identifiers must match booking_id');
+    if (!envelope.lineage?.prospect_id) errors.push('canonical lead ID is required');
     return errors;
 }
 
@@ -38,15 +39,17 @@ function bookingIdFromToken(token) {
 
 function createBookingIntakeEnvelope(payload = {}, { createdAt = new Date().toISOString() } = {}) {
     const bookingId = bookingIdFromToken(payload.booking_token);
+    const { lead_id: leadId, ...bookingPayload } = payload;
     const envelope = {
         schema_version: BOOKING_CONTRACT_VERSION,
         booking_id: bookingId,
         idempotency_key: bookingId,
-        ...payload,
+        ...bookingPayload,
         lineage: {
             schema_version: LINEAGE_CONTRACT_VERSION,
             capture_id: bookingId,
             source_id: bookingId,
+            prospect_id: leadId,
             originating_system: 'otp-site',
             originating_record_id: bookingId,
             created_at: createdAt,

@@ -1,11 +1,13 @@
 {
-  "release": "OTP public site icon motion and booking visual refinement",
+  "release": "OTP canonical lead and durable intake foundation",
   "includedFiles": [
     ".github/workflows/production-release.yml",
     "archive.html",
     "archive.js",
     "bookings.html",
     "bookings.js",
+    "docs/OTP_PUBLIC_INTAKE_RELEASE_REPORT_2026-09-26.md",
+    "docs/OTP_PUBLIC_INTAKE_PRODUCTION_MANIFEST_2026-09-26.json",
     "bookings.css",
     "home.css",
     "index.html",
@@ -21,12 +23,19 @@
     "scripts/prod_full_sweep.js",
     "scripts/record_release_ci_evidence.js",
     "server.js",
+    "server/booking-handoff.js",
+    "server/public-intake-store.js",
+    "supabase/migrations/20260926000000_public_intake_outbox.sql",
     "service-discovery.css",
     "studio.css",
     "studio.html",
     "sitemap.xml",
     "terms.html",
     "tests/bookings_contract.test.js",
+    "tests/booking_os_handoff.test.js",
+    "tests/booking_os_route.integration.test.js",
+    "tests/public_intake_store.test.js",
+    "tests/api_surface_security_contract.test.js",
     "tests/fixline_integration_contract.test.js",
     "tests/homepage_visual_contract.test.js",
     "tests/master_runner.js",
@@ -40,19 +49,19 @@
   ],
   "excludedDirtyFiles": ["vault/**", "release-manifest.json"],
   "testsRun": [
-    { "command": "npm test", "status": "pending protected CI" },
-    { "command": "npm run security:scan", "status": "pending protected CI" },
-    { "command": "npm run build:speed-insights", "status": "pending protected CI" },
-    { "command": "npm run master_test:ci", "status": "pending protected CI" },
-    { "command": "npm run prod:full-sweep", "status": "pending protected CI" },
-    { "command": "git diff --check", "status": "pending protected CI" },
-    { "command": "node --check", "status": "pending protected CI" }
+    { "command": "npm test", "status": "passed locally 2026-09-26" },
+    { "command": "npm run security:scan", "status": "passed locally 2026-09-26" },
+    { "command": "npm run build:speed-insights", "status": "passed locally 2026-09-26" },
+    { "command": "npm run master_test:ci", "status": "passed locally 2026-09-26" },
+    { "command": "npm run prod:full-sweep", "status": "passed public checks locally 2026-09-26" },
+    { "command": "git diff --check", "status": "passed locally 2026-09-26" },
+    { "command": "node --check", "status": "passed locally 2026-09-26" }
   ],
   "browserQa": {
     "status": "passed",
     "viewports": [1440, 390],
     "routes": ["/", "/studio", "/bookings", "/website-design.html", "/archive"],
-    "screenshots": "output/playwright/visual-refresh"
+    "screenshots": "local foundation browser QA with mocked network; see intake release report"
   },
   "authenticatedSweep": {
     "status": "pending protected production workflow"

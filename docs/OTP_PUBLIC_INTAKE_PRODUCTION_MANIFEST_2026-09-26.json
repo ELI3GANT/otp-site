@@ -1,0 +1,47 @@
+{
+  "release": "OTP canonical lead and durable public intake foundation",
+  "status": "migrated_predeployment",
+  "candidateCommit": null,
+  "reason": "Production migrations are verified; scoped release commits and deployment gates are in progress.",
+  "productionDatabase": {
+    "projectRef": "ckumhowhucbbmpdeqkrl",
+    "name": "OTP SITE",
+    "siteMigrationVersion": "20260926052053",
+    "fixlineMigrationVersion": "20260926052058",
+    "apiSchemaVerified": true
+  },
+  "repositories": [
+    {
+      "service": "otp-site",
+      "branch": "polish/homepage-shorter-sharper",
+      "baseCommit": "2dff744695549c2a8212bf6df8ed6ed9aa6f4e2e",
+      "targetProject": "otp-site",
+      "requiredMigration": "20260926000000_public_intake_outbox.sql"
+    },
+    {
+      "service": "otp-fixline",
+      "branch": "main",
+      "baseCommit": "9b89d1ce21a3e788ff9e15192fe341c7e6595157",
+      "foundationCommit": "d778b2f2232c43f8b96f1340b0abba13e7061f47",
+      "targetProject": "otp-fixline",
+      "requiredMigration": "20260926000000_fixline_canonical_lead_id.sql"
+    },
+    {
+      "service": "otp-os",
+      "branch": "codex/otp-v43-blocker-burndown",
+      "baseCommit": "2469712f512baf0da94ce03d13eb57aca37f7d36",
+      "foundationCommit": "fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3",
+      "targetProject": "otp-os",
+      "requiredMigration": null
+    }
+  ],
+  "expectedRoutes": [
+    "POST otp-site /api/bookings/submit",
+    "GET otp-site /api/internal/public-intakes/sync",
+    "POST otp-fixline /api/review/submit",
+    "POST otp-os /api/bookings/submit"
+  ],
+  "expectedContractVersions": ["otp-booking-intake-v1", "otp-lineage-v1"],
+  "deploymentOrder": ["otp-os", "otp-fixline", "otp-site"],
+  "productionVerificationLeadId": null
+}

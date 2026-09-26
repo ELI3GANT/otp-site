@@ -203,6 +203,8 @@ const FAST_LANE_DETAILS = {
   }
 };
 
+makeLeadId();
+
 const state = {
   config: fallbackConfig,
   step: 1,
@@ -282,6 +284,28 @@ function makeBookingToken() {
     return token;
   } catch (_) {
     return `WEB-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+}
+
+function makeLeadId() {
+  const key = 'otp_public_lead_id';
+  try {
+    const existing = sessionStorage.getItem(key);
+    const incoming = new URLSearchParams(window.location.search).get('lead_id');
+    if (/^LEAD-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(incoming || '')) {
+      if (existing !== incoming) {
+        sessionStorage.removeItem('otp_booking_token');
+        sessionStorage.removeItem('otp_booking_submission');
+      }
+      sessionStorage.setItem(key, incoming);
+      return incoming;
+    }
+    if (/^LEAD-[0-9a-f-]{36}$/i.test(existing || '')) return existing;
+    const leadId = `LEAD-${crypto.randomUUID()}`;
+    sessionStorage.setItem(key, leadId);
+    return leadId;
+  } catch (_) {
+    return `LEAD-${crypto.randomUUID()}`;
   }
 }
 
@@ -859,8 +883,15 @@ function fillSelects() {
 function payload() {
   const selectedOffer = fastLaneOfferForService(els.service.value);
   const fastLanePackage = selectedOffer ? fastLanePackageFitFor(els.service.value) : '';
+  let fixlineHandoff = {};
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('otp_fixline_handoff') || '{}');
+    if (saved.leadId === makeLeadId()) fixlineHandoff = saved;
+  } catch (_) {}
+  if (Object.keys(fixlineHandoff).length) state.sourceTracking.fixline_handoff = fixlineHandoff;
   return {
     booking_token: state.bookingToken,
+    lead_id: makeLeadId(),
     source_tracking: state.sourceTracking,
     otp_company_website: els.honeypot ? els.honeypot.value.trim() : '',
     name: els.name.value.trim(),
@@ -1004,11 +1035,15 @@ function renderSuccess(data) {
   els.form.classList.add('submitted');
   els.successTitle.textContent = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
   els.successCopy.textContent = 'Your request is in the OTP review queue. When available, OTP replies within one business hour; otherwise, you will receive the next clear step as soon as possible. The reply may include scope questions, a package recommendation, a proposal, or a private Client Portal link for documents, payment steps, and approvals.';
+  if (data.syncStatus === 'sync_pending') {
+    els.successTitle.textContent = 'Your project request was received.';
+    els.successCopy.textContent = 'Your project request was received, but the appointment was not confirmed. We’ll contact you to schedule.';
+  }
   els.successMeta.replaceChildren();
   els.successActions.replaceChildren();
 
   const rows = [
-    ['Status', recommendation ? 'Request received with OTP recommendation' : 'Request received. OTP recommendation is pending review.'],
+    ['Status', data.syncStatus === 'sync_pending' ? 'Received; OTP OS sync pending' : recommendation ? 'Request received with OTP recommendation' : 'Request received. OTP recommendation is pending review.'],
     ['Recommended Package', recommendation ? text(recommendation.recommendedPackage) : 'Recommendation pending review'],
     ['Quote Range', recommendation ? text(recommendation.quoteRange, 'Scope based') : 'Pending review'],
     ['Expected response', 'Within one business hour when OTP is available; otherwise as soon as possible.'],
@@ -1100,7 +1135,7 @@ function renderSuccess(data) {
   const portalHref = safePortalHref(data);
   const intakeLink = document.createElement('a');
   const intakeBase = document.querySelector('.project-intake-cta')?.getAttribute('href') || '/bookings';
-  intakeLink.href = buildUrlWithAttribution(intakeBase);
+  intakeLink.href = window.OTPAttribution?.buildUrlWithAttribution(intakeBase) || intakeBase;
   intakeLink.textContent = 'Send additional files or details →';
   intakeLink.rel = 'noopener noreferrer';
   els.successActions.append(intakeLink);
@@ -1113,7 +1148,12 @@ function renderSuccess(data) {
   const newBooking = document.createElement('button');
   newBooking.type = 'button';
   newBooking.textContent = 'Start Another Booking';
-  newBooking.addEventListener('click', () => window.location.reload());
+  newBooking.addEventListener('click', () => {
+    try { sessionStorage.removeItem('otp_booking_token'); } catch (_) { /* storage may be blocked */ }
+    try { sessionStorage.removeItem('otp_public_lead_id'); } catch (_) {}
+    try { sessionStorage.removeItem('otp_booking_submission'); } catch (_) {}
+    window.location.assign(window.location.pathname);
+  });
   els.successActions.append(newBooking);
   els.submit.disabled = true;
   els.submit.textContent = 'Request Submitted';
@@ -1140,10 +1180,21 @@ async function submitBooking(event) {
   showStatus('Sending booking request to OTP...');
 
   try {
+    let requestBody;
+    try {
+      requestBody = sessionStorage.getItem('otp_booking_submission');
+      if (!requestBody) {
+        requestBody = JSON.stringify(payload());
+        sessionStorage.setItem('otp_booking_submission', requestBody);
+      }
+    } catch (_) {
+      requestBody = JSON.stringify(payload());
+    }
     const response = await fetch('/api/bookings/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(payload())
+      body: requestBody,
+      signal: AbortSignal.timeout(15000)
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || data.ok === false || data.error) {
@@ -1154,7 +1205,9 @@ async function submitBooking(event) {
     showStatus('');
   } catch (error) {
     showStatus('');
-    showError(text(error?.message, 'Something blocked the request. Please check your contact info and try again.'));
+    showError(error?.name === 'TimeoutError'
+      ? 'We could not confirm whether your request was saved. Please retry; your request ID stays the same so OTP can avoid a duplicate.'
+      : text(error?.message, 'Something blocked the request. Please check your contact info and try again.'));
   } finally {
     state.submitting = false;
     els.submit.classList.remove('is-loading');
@@ -1187,7 +1240,10 @@ async function init() {
   applyActiveTheme('');
   let offlineMode = false;
   try {
-    const response = await fetch('/api/bookings/config', { headers: { Accept: 'application/json' } });
+    const response = await fetch('/api/bookings/config', {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(5000)
+    });
     const data = await response.json().catch(() => ({}));
     if (response.ok && data.ok !== false) state.config = { ...fallbackConfig, ...data };
   } catch (_) {
