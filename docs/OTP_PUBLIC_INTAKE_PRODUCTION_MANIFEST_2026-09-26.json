@@ -2,7 +2,7 @@
   "release": "OTP canonical lead and durable public intake foundation",
   "status": "blocked_foundation_intake_release_gates",
   "candidateCommit": "2f6987b",
-  "reason": "OTP OS live-data authentication repair is deployed and passed simulator functional QA. The broader foundation still lacks passing strict OTP OS trusted validation and real-device evidence, Site/FIXLINE foundation deployments, and production intake/retry replay verification.",
+  "reason": "OTP OS live-data authentication is deployed and simulator verified. STRIKE navigation expectations and vulnerable lockfile dependencies are corrected in the OTP OS candidate, with trusted PR CI green. Strict release evidence still requires physical-device QA and trusted main-branch OIDC evidence; Site/FIXLINE deployment and production intake/retry proof remain outstanding.",
   "productionDatabase": {
     "projectRef": "ckumhowhucbbmpdeqkrl",
     "name": "OTP SITE",
@@ -104,7 +104,7 @@
     "repairDeployment": "dpl_GRMYwxVYepyVw6fsyKtv91X4LaMG; cookie deployment dpl_Ghv1fCSd2dyuRQXuX7RKz6guXTne"
   },
   "releaseGate": {
-    "otpOsStrict": "blocked_real_device_mobile_qa_and_trusted_validation; CI secrets passed; Ubuntu and Windows validation failed on six known STRIKE navigation expectations; release-bundle skipped",
+    "otpOsStrict": "blocked_mobile_qa_and_signed_main_branch_security_evidence; strict release:gate returns pending for both checks",
     "otpOsRepairTargetedIntegration": "passed_10_of_10",
     "otpOsRepairCiSecrets": "passed_run_36246089068",
     "otpOsRepairCiValidation": "failed_preexisting_six_STRIKE_navigation_expectations",
@@ -117,7 +117,11 @@
     "otpOsIosBundle": "passed_55_files",
     "otpOsVercelBuild": "passed",
     "otpOsNpmBuild": "not_available_no_build_script",
-    "otpOsTrustedCi": "secrets_pass; ubuntu_validation_fail; windows_validation_fail; release_bundle_skipped"
+    "otpOsTrustedCi": "pass_run_36276850434_exact_sha_6f09291be72e2c685e5b0f803dcb47019c7b58bb_ubuntu_windows_release_bundle_and_pinned_gitleaks",
+    "otpOsFullTests": "passed_659_of_659_on_6f09291be72e2c685e5b0f803dcb47019c7b58bb",
+    "otpOsProductionDependencyAudit": "passed_zero_vulnerabilities",
+    "otpOsReleaseArchive": "passed_xcode_26.6_exact_sha_6f09291be72e2c685e5b0f803dcb47019c7b58bb",
+    "strikeFailures": "resolved_stale_test_expectations_only; current STRIKE navigation preserved; exact-SHA CI passed"
   },
   "simulatorQaFinding": {
     "testedCommit": "91a1ea33de3a0cf50286254ead30d9070757f4f6",
@@ -145,5 +149,38 @@
       "/tmp/otp-os-live-data-refresh.png"
     ],
     "physicalPhoneUsed": false
+  },
+  "otpOsReleaseCandidate": {
+    "branch": "codex/otp-os-capacitor-session-cookie",
+    "commit": "6f09291be72e2c685e5b0f803dcb47019c7b58bb",
+    "pullRequest": "https://github.com/ELI3GANT/otp-os/pull/9",
+    "worktree": "clean",
+    "trustedCiRun": "36276850434",
+    "trustedCi": {
+      "ubuntu": "pass",
+      "windows": "pass",
+      "pinnedGitleaks8301": "pass",
+      "releaseBundle": "pass"
+    },
+    "tests": "659/659 passed",
+    "productionDependencyAudit": "0 vulnerabilities",
+    "iosBundleCheck": "pass; 55 files",
+    "archive": {
+      "path": "/private/tmp/otp-os-release-6f09291.xcarchive",
+      "result": "ARCHIVE SUCCEEDED",
+      "xcode": "26.6",
+      "bundleIdentifier": "com.eli3gant.otp",
+      "appVersion": "1.0 (1)",
+      "signing": "automatic development signing configured"
+    },
+    "physicalDeviceQa": "pending; no physical device used in this continuation",
+    "strictEvidenceGate": "blocked_mobile_qa_and_signed_security_scan; candidate branch is not refs/heads/main and origin/main has diverged"
+  },
+  "productionProof": {
+    "siteToFixlineToOtpOs": "not_run; Site/FIXLINE candidates not deployed",
+    "durablePersistence": "schema verified; no live public submission proof",
+    "duplicateSuppression": "not_run in production",
+    "retryReplay": "not_run in production",
+    "cleanup": "not_applicable_no_synthetic_lead_created"
   }
 }

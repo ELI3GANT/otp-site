@@ -160,3 +160,17 @@ This closes the OTP OS app's login-to-live-data failure. The broader intake foun
 Smallest next action: complete the strict OTP OS release gate for the intended release SHA, then deploy Site and FIXLINE and run the production intake/retry replay verification. Calendar work remains out of scope.
 
 FOUNDATION BLOCKED
+
+## Release candidate preparation and CI follow-up — 2026-09-26
+
+The six STRIKE CI failures were stale navigation expectations: current primary/mobile navigation includes STRIKE by design. OTP OS test contracts were updated to require STRIKE and the actual seven-item mobile navigation. No STRIKE product behavior changed. A second CI run found production dependency advisories, so the lockfile was updated within the existing semver ranges (`@xmldom/xmldom`, Express/body-parser, and `qs`).
+
+OTP OS release candidate commit `6f09291be72e2c685e5b0f803dcb47019c7b58bb` is pushed on `codex/otp-os-capacitor-session-cookie` (PR 9). Trusted PR run `36276850434` passed Ubuntu validation, Windows validation, pinned Gitleaks 8.30.1, and the release-bundle job for that exact SHA. Local full OTP OS tests passed 659/659; `npm audit --omit=dev --audit-level=low` found zero vulnerabilities. `npm run sync:ios` and `npm run check:ios-bundle` passed (55 files). Xcode 26.6 archived the exact SHA successfully at `/private/tmp/otp-os-release-6f09291.xcarchive` for `com.eli3gant.otp`, version 1.0 (1), with the configured automatic development signing identity. The worktree was clean.
+
+`npm run release:gate` remains blocked on `mobile_qa` and `security_scan`. The generic PR Gitleaks pass does not mint the strict gate's signed OIDC release evidence. No physical device was used in this continuation, per the instruction not to operate the user's phone. The iPhone 16 Pro simulator evidence for commit `91a1ea33de3a0cf50286254ead30d9070757f4f6` remains simulator-only and is not substituted for physical-device QA on a release SHA. No Site/FIXLINE deployment or production intake was attempted because the strict OTP OS gate is not ready. Site/FIXLINE deployments, production public-flow proof, duplicate suppression, and retry/replay proof remain outstanding; no production test lead exists.
+
+The strict evidence validator also requires evidence for a clean commit on `refs/heads/main`; the current candidate is on a separate release branch and `origin/main` has diverged. This is an integration/provenance step to resolve after physical QA, not evidence that can be waived. Calendar work remains out of scope.
+
+Smallest human action: install the prepared candidate on a physical iPhone and verify cold launch, login, live Dashboard, Leads, Refresh, relaunch, logout/login, and recovery after network loss; report pass/fail. Candidate SHA: `6f09291be72e2c685e5b0f803dcb47019c7b58bb`.
+
+FOUNDATION BLOCKED
