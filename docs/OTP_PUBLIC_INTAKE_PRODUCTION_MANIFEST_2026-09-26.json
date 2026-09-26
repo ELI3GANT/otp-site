@@ -1,8 +1,8 @@
 {
   "release": "OTP canonical lead and durable public intake foundation",
-  "status": "blocked_otp_os_owner_reauthentication",
+  "status": "blocked_otp_os_session_refresh_after_cookie_fix",
   "candidateCommit": "2f6987b",
-  "reason": "The approved OTP OS CORS hotfix is deployed and its Capacitor preflight passes. The physical iPhone now shows an expired session; the linked Vercel APP_PASSWORD was rejected with HTTP 401, so owner reauthentication is required before authenticated device QA can continue.",
+  "reason": "The OTP OS CORS and Capacitor cookie fixes are deployed. Device logs showed data requests returning 401 otp_os_session_required after login; the previous session cookie predates the SameSite=None fix and must be replaced by a fresh native login before live-data QA can pass.",
   "productionDatabase": {
     "projectRef": "ckumhowhucbbmpdeqkrl",
     "name": "OTP SITE",
@@ -55,6 +55,16 @@
       "alias": "https://otp-os.vercel.app",
       "health": 200,
       "capacitorPreflight": "204; allow-credentials=true; X-OTP-CSRF allowed"
+    },
+    {
+      "service": "otp-os",
+      "scope": "Capacitor session-cookie hotfix",
+      "commit": "858a59353c41721ff3b0a94532883e995f1a8361",
+      "deploymentId": "dpl_Ghv1fCSd2dyuRQXuX7RKz6guXTne",
+      "url": "https://otp-ebexxd160-only-true-perspective.vercel.app",
+      "alias": "https://otp-os.vercel.app",
+      "health": 200,
+      "capacitorSessionCookie": "SameSite=None; Secure for capacitor://localhost and ionic://localhost; SameSite=Strict for normal web"
     }
   ],
   "deviceQaFinding": {
@@ -64,16 +74,18 @@
     "appVersion": "1.0 (1)",
     "result": "failed_live_data_load",
     "observedScreenBeforeHotfix": "Authenticated Dashboard rendered with Load failed",
-    "observedScreenAfterHotfix": "Session expired. Please log in again.",
+    "observedScreenAfterCorsHotfix": "Session expired. Please log in again.",
+    "observedScreenBeforeCookieHotfix": "Unlocked toast while Session expired and Some live data could not refresh are visible",
+    "apiFailure": "GET /api/oracle-daily-brief returned 401 otp_os_session_required after login",
     "productionCorsPreflightBeforeHotfix": "X-OTP-CSRF absent from Access-Control-Allow-Headers",
     "productionCorsPreflightAfterHotfix": "204; X-OTP-CSRF allowed",
-    "ownerReauthentication": "required; Vercel APP_PASSWORD login attempt returned HTTP 401; secret value not recorded",
+    "ownerReauthentication": "fresh native login required after cookie hotfix to replace the old SameSite=Strict cookie",
     "repairCommit": "ca5fa4d5754ce0383565db3d1df4d478f3271dc9",
     "repairPullRequest": "https://github.com/ELI3GANT/otp-os/pull/8",
-    "repairDeployment": "dpl_GRMYwxVYepyVw6fsyKtv91X4LaMG"
+    "repairDeployment": "dpl_GRMYwxVYepyVw6fsyKtv91X4LaMG; cookie deployment dpl_Ghv1fCSd2dyuRQXuX7RKz6guXTne"
   },
   "releaseGate": {
-    "otpOsStrict": "blocked_mobile_qa_and_trusted_ci_security_evidence; post-hotfix physical device requires owner reauthentication",
+    "otpOsStrict": "blocked_mobile_qa_and_trusted_ci_security_evidence; fresh native login and live-data verification pending",
     "otpOsRepairTargetedIntegration": "passed_10_of_10",
     "otpOsRepairCiSecrets": "passed_run_36246089068",
     "otpOsRepairCiValidation": "failed_preexisting_six_STRIKE_navigation_expectations",
