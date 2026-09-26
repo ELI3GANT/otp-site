@@ -1,8 +1,8 @@
 {
   "release": "OTP canonical lead and durable public intake foundation",
-  "status": "blocked_otp_os_device_data_load",
+  "status": "blocked_otp_os_owner_reauthentication",
   "candidateCommit": "2f6987b",
-  "reason": "Physical-device QA of the exact OTP OS SHA failed: production CORS preflight omits X-OTP-CSRF, blocking authenticated live data. A scoped fix is committed but not deployed or device-verified.",
+  "reason": "The approved OTP OS CORS hotfix is deployed and its Capacitor preflight passes. The physical iPhone now shows an expired session; the linked Vercel APP_PASSWORD was rejected with HTTP 401, so owner reauthentication is required before authenticated device QA can continue.",
   "productionDatabase": {
     "projectRef": "ckumhowhucbbmpdeqkrl",
     "name": "OTP SITE",
@@ -45,21 +45,35 @@
   "expectedContractVersions": ["otp-booking-intake-v1", "otp-lineage-v1"],
   "deploymentOrder": ["otp-os", "otp-fixline", "otp-site"],
   "productionVerificationLeadId": null,
-  "deployedServices": [],
+  "deployedServices": [
+    {
+      "service": "otp-os",
+      "scope": "CORS-only production hotfix",
+      "commit": "d949ce257478e69311c3666c96e40a7378b96c58",
+      "deploymentId": "dpl_GRMYwxVYepyVw6fsyKtv91X4LaMG",
+      "url": "https://otp-qv248yr3i-only-true-perspective.vercel.app",
+      "alias": "https://otp-os.vercel.app",
+      "health": 200,
+      "capacitorPreflight": "204; allow-credentials=true; X-OTP-CSRF allowed"
+    }
+  ],
   "deviceQaFinding": {
     "testedCommit": "fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3",
     "device": "physical iPhone 18 Pro",
     "iosVersion": "27.2",
     "appVersion": "1.0 (1)",
     "result": "failed_live_data_load",
-    "observedScreen": "Authenticated Dashboard rendered with Load failed",
-    "productionCorsPreflight": "X-OTP-CSRF absent from Access-Control-Allow-Headers",
+    "observedScreenBeforeHotfix": "Authenticated Dashboard rendered with Load failed",
+    "observedScreenAfterHotfix": "Session expired. Please log in again.",
+    "productionCorsPreflightBeforeHotfix": "X-OTP-CSRF absent from Access-Control-Allow-Headers",
+    "productionCorsPreflightAfterHotfix": "204; X-OTP-CSRF allowed",
+    "ownerReauthentication": "required; Vercel APP_PASSWORD login attempt returned HTTP 401; secret value not recorded",
     "repairCommit": "ca5fa4d5754ce0383565db3d1df4d478f3271dc9",
     "repairPullRequest": "https://github.com/ELI3GANT/otp-os/pull/8",
-    "repairDeployment": "not_deployed"
+    "repairDeployment": "dpl_GRMYwxVYepyVw6fsyKtv91X4LaMG"
   },
   "releaseGate": {
-    "otpOsStrict": "blocked_mobile_qa_and_trusted_ci_security_evidence; exact-SHA device QA failed live data load",
+    "otpOsStrict": "blocked_mobile_qa_and_trusted_ci_security_evidence; post-hotfix physical device requires owner reauthentication",
     "otpOsRepairTargetedIntegration": "passed_10_of_10",
     "otpOsRepairCiSecrets": "passed_run_36246089068",
     "otpOsRepairCiValidation": "failed_preexisting_six_STRIKE_navigation_expectations",
