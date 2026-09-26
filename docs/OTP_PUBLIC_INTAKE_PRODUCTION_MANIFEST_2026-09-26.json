@@ -171,7 +171,12 @@
       "xcode": "26.6",
       "bundleIdentifier": "com.eli3gant.otp",
       "appVersion": "1.0 (1)",
-      "signing": "automatic development signing configured"
+      "signing": "automatic development signing configured",
+      "exportedIpa": {
+        "path": "/private/tmp/otp-os-ipa-6f09291/App.ipa",
+        "sha256": "4bf650d4c85f3cd1a6ee61cd20068012e9ab05d07806a24b263e71d7cf97a90a",
+        "export": "development; EXPORT SUCCEEDED"
+      }
     },
     "physicalDeviceQa": "pending; no physical device used in this continuation",
     "strictEvidenceGate": "blocked_mobile_qa_and_signed_security_scan; candidate branch is not refs/heads/main and origin/main has diverged"
