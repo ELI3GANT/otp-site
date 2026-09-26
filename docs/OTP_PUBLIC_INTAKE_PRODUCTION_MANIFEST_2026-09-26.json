@@ -1,8 +1,8 @@
 {
   "release": "OTP canonical lead and durable public intake foundation",
-  "status": "blocked_otp_os_release_gate",
+  "status": "blocked_otp_os_device_data_load",
   "candidateCommit": "2f6987b",
-  "reason": "OTP OS strict release gate requires real-device mobile QA and trusted CI evidence for the exact release SHA before production deployment.",
+  "reason": "Physical-device QA of the exact OTP OS SHA failed: production CORS preflight omits X-OTP-CSRF, blocking authenticated live data. A scoped fix is committed but not deployed or device-verified.",
   "productionDatabase": {
     "projectRef": "ckumhowhucbbmpdeqkrl",
     "name": "OTP SITE",
@@ -46,8 +46,23 @@
   "deploymentOrder": ["otp-os", "otp-fixline", "otp-site"],
   "productionVerificationLeadId": null,
   "deployedServices": [],
+  "deviceQaFinding": {
+    "testedCommit": "fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3",
+    "device": "physical iPhone 18 Pro",
+    "iosVersion": "27.2",
+    "appVersion": "1.0 (1)",
+    "result": "failed_live_data_load",
+    "observedScreen": "Authenticated Dashboard rendered with Load failed",
+    "productionCorsPreflight": "X-OTP-CSRF absent from Access-Control-Allow-Headers",
+    "repairCommit": "ca5fa4d5754ce0383565db3d1df4d478f3271dc9",
+    "repairPullRequest": "https://github.com/ELI3GANT/otp-os/pull/8",
+    "repairDeployment": "not_deployed"
+  },
   "releaseGate": {
-    "otpOsStrict": "blocked_mobile_qa_and_trusted_ci_security_evidence",
+    "otpOsStrict": "blocked_mobile_qa_and_trusted_ci_security_evidence; exact-SHA device QA failed live data load",
+    "otpOsRepairTargetedIntegration": "passed_10_of_10",
+    "otpOsRepairCiSecrets": "passed_run_36246089068",
+    "otpOsRepairCiValidation": "failed_preexisting_six_STRIKE_navigation_expectations",
     "otpOsPinnedLocalSecurityScan": "passed_no_leaks",
     "siteLocalTestsAndBuild": "passed",
     "fixlineLocalTestsAndBuild": "passed",

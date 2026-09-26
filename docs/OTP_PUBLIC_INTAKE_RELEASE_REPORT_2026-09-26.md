@@ -131,4 +131,14 @@ No production test lead, retry simulation, duplicate replay, FIXLINE linkage wri
 
 Human action required: complete the OTP OS real-device mobile QA checklist for commit `fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3` and have its trusted CI release evidence recorded for that exact SHA. Then the agent can recheck the strict gate, deploy in dependency order, and run the live intake/retry proof.
 
-FOUNDATION BLOCKED — HUMAN ACTION REQUIRED: Complete OTP OS real-device mobile QA and trusted CI evidence for commit fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3.
+## Physical-device QA finding — 2026-09-26
+
+The exact OTP OS source commit `fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3` was built clean with Xcode 26.6 as app `com.eli3gant.otp`, version 1.0 build 1, installed and launched on a connected **physical iPhone 18 Pro**, iOS 27.2 (`00008160-001A7D491A80000A`). The app shell rendered and session recovery showed an active session, but the Dashboard displayed **Load failed**. Intake and navigation QA could not be marked passed while live data was unavailable. No production lead was created.
+
+The production OTP OS API health route returned 200. A preflight from `capacitor://localhost` returned 204 and allowed credentials, but its `Access-Control-Allow-Headers` omitted `X-OTP-CSRF`. The exact mobile source adds that header after session recovery for data requests. This is a concrete production CORS defect consistent with the device failure. The original exact-SHA device QA is **FAIL**, not a pass.
+
+An isolated OTP OS repair commit `ca5fa4d5754ce0383565db3d1df4d478f3271dc9` adds `X-OTP-CSRF` to the server allowlist and a Capacitor preflight regression test. The targeted integration file passed 10/10 locally. [OTP OS PR 8](https://github.com/ELI3GANT/otp-os/pull/8) ran trusted CI for that commit: the secrets scan passed; the Ubuntu and Windows validation jobs failed on the previously baselined six STRIKE navigation expectations, so the release bundle was skipped. The strict release gate on the repair SHA still reports `mobile_qa` and `security_scan` pending. The repair has **not** been deployed, and production preflight remains defective.
+
+The next required action is a narrowly scoped OTP OS API CORS hotfix deployment ahead of full mobile QA, followed by a new exact-SHA physical-device run and the trusted release gate. That reverses the current deployment order requirement, so it requires an explicit release exception. The foundation remains blocked; there is no production persistence, retry, duplicate-suppression, or FIXLINE linkage proof yet.
+
+FOUNDATION BLOCKED
