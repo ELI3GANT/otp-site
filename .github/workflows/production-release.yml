@@ -65,6 +65,11 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
 
+      - name: Check release pages and audit booking in a browser
+        env:
+          OTP_BROWSER_QA_REPORT_PATH: ${{ runner.temp }}/otp-site-browser-qa.json
+        run: npm run browser:release-qa
+
       - name: Syntax checks
         run: |
           node --check server.js
@@ -76,6 +81,7 @@ jobs:
           node --check pricing-config.js
           node --check otp-attribution.js
           node --check scripts/prod_bootstrap_qa.js
+          node --check scripts/release_browser_qa.js
           node --check scripts/prod_full_sweep.js
           node --check scripts/prod_sweep_v2_runner.js
           node --check scripts/prod_terminal_sweep.js
@@ -121,7 +127,8 @@ jobs:
           npm run prod:full-sweep
           node scripts/record_release_ci_evidence.js \
             --manifest="$RUNNER_TEMP/otp-site-release-manifest.json" \
-            --report="$RUNNER_TEMP/otp-site-authenticated-sweep.json"
+            --report="$RUNNER_TEMP/otp-site-authenticated-sweep.json" \
+            --browser-report="$RUNNER_TEMP/otp-site-browser-qa.json"
 
       - name: Require passed site-only production release gate
         run: node scripts/verify_release_scope.js --manifest="$RUNNER_TEMP/otp-site-release-manifest.json" --deploy

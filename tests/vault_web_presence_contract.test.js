@@ -11,7 +11,7 @@ const server = read('server.js');
 const vercel = read('vercel.json');
 
 assert.ok(vault.includes('<title>VAULT — Private Music Masters &amp; Release Planning | OnlyTruePerspective</title>'), 'VAULT product page has its App Store-facing title');
-assert.ok(vault.includes('https://onlytrueperspective.tech/vault'), 'VAULT product page has the canonical public URL');
+assert.ok(vault.includes('https://www.onlytrueperspective.tech/vault'), 'VAULT product page has the canonical public URL');
 assert.ok(vault.includes('"@type": "SoftwareApplication"'), 'VAULT product page publishes SoftwareApplication structured data');
 assert.ok(vault.includes('"softwareVersion": "1.0.0"'), 'VAULT structured data matches shipping version 1.0.0');
 assert.ok(vault.includes('Coming to the App Store'), 'VAULT does not fabricate an App Store link before release');
@@ -55,7 +55,7 @@ for (const v11 of v11Assets) {
 
 
 assert.ok(privacy.includes('<title>VAULT Privacy Policy | OnlyTruePerspective</title>'), 'privacy page has the required title');
-assert.ok(privacy.includes('<link rel="canonical" href="https://onlytrueperspective.tech/vault/privacy" />'), 'privacy page has the canonical URL');
+assert.ok(privacy.includes('<link rel="canonical" href="https://www.onlytrueperspective.tech/vault/privacy" />'), 'privacy page has the canonical URL');
 assert.ok(privacy.includes('Effective date: September 20, 2026'), 'privacy page uses the current production date');
 for (const heading of ['1. Overview', '2. Data collection', '3. Music and user content', '4. Network and server use', '5. Backups and exports', '6. Apple services', '7. Third-party services', '8. Children', '9. Security', '10. Data retention', '11. Deleting data', '12. Changes to this policy', '13. Contact']) assert.ok(privacy.includes(heading), `privacy section exists: ${heading}`);
 assert.ok(privacy.includes('contact@onlytrueperspective.tech'), 'privacy page uses the verified OTP contact email');

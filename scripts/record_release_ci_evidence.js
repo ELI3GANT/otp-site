@@ -11,17 +11,28 @@ function fail(message, details = {}) {
 if (process.env.GITHUB_ACTIONS !== 'true') fail('CI evidence can only be recorded by the protected GitHub workflow.');
 const manifestArg = process.argv.find((arg) => arg.startsWith('--manifest='));
 const reportArg = process.argv.find((arg) => arg.startsWith('--report='));
-if (!manifestArg || !reportArg) fail('Both --manifest and --report are required.');
+const browserArg = process.argv.find((arg) => arg.startsWith('--browser-report='));
+if (!manifestArg || !reportArg || !browserArg) fail('--manifest, --report, and --browser-report are required.');
 
 const manifestPath = path.resolve(manifestArg.slice('--manifest='.length));
 const reportPath = path.resolve(reportArg.slice('--report='.length));
+const browserPath = path.resolve(browserArg.slice('--browser-report='.length));
 let manifest;
 let report;
+let browserReport;
 try {
   manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  browserReport = JSON.parse(fs.readFileSync(browserPath, 'utf8'));
 } catch {
-  fail('Release manifest or production sweep report could not be read as JSON.');
+  fail('Release manifest, production sweep, or browser QA report could not be read as JSON.');
+}
+
+if (browserReport.ok !== true
+  || ![390, 1440].every((width) => browserReport.viewports?.includes(width))
+  || !['/', '/bookings?offer=site-audit', '/bookings'].every((route) => browserReport.routes?.includes(route))
+  || browserReport.checks?.length < 6) {
+  fail('Release browser QA did not pass.');
 }
 
 const adminChecks = Array.isArray(report.adminChecks) ? report.adminChecks : [];
@@ -57,6 +68,13 @@ manifest.authenticatedSweep = {
   source: report.adminAuth.source,
   method: report.adminAuth.method,
   adminCheckCount: adminChecks.length,
+  evidence: runUrl
+};
+manifest.browserQa = {
+  status: 'passed',
+  viewports: browserReport.viewports,
+  routes: browserReport.routes,
+  checks: browserReport.checks,
   evidence: runUrl
 };
 fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);

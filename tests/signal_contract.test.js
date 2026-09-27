@@ -180,7 +180,7 @@ assert.ok(css.includes('data-state="error"'), 'CSS defines error beacon state st
 // 8. Homepage Subtle Non-Intrusive Integration
 assert.ok(index.includes('href="/signal"'), 'index.html links to /signal');
 assert.ok(index.includes('home-signal'), 'homepage dedicates a teaser to Signal discovery');
-assert.ok(index.includes('Enter Signal'), 'homepage provides a clear Signal destination');
+assert.ok(index.includes('Explore BLACKBOX music'), 'homepage distinguishes the music destination from the paid Signal service');
 assert.ok(!index.includes('nav-dropdown'), 'desktop nav avoids extraneous dropdowns to preserve clean single-row layout');
 
 console.log('   ✅ Blackbox Signal Contract passed all validations.');

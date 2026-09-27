@@ -10,9 +10,7 @@ for (const [file, active] of [['index.html', 'Home'], ['archive.html', 'Archive'
   dom.window.matchMedia = () => ({ addEventListener: (_, fn) => { resize = fn; } });
   dom.window.eval(read('public-shell.js'));
   const nav = [...document.querySelectorAll('.public-desktop-nav a')];
-  const expectedDestinations = active === 'Home'
-    ? ['/', '/archive', '/vault', '/signal', '/studio']
-    : ['/', '/archive', '/signal', '/studio'];
+  const expectedDestinations = ['/', '/archive', '/vault', '/signal', '/studio'];
   assert.deepEqual(nav.map(a => a.getAttribute('href')), expectedDestinations, file + ' primary destinations');
   assert.deepEqual([...document.querySelectorAll('.public-menu nav a')].slice(0, expectedDestinations.length).map(a => a.getAttribute('href')), nav.map(a => a.getAttribute('href')), file + ' mobile navigation parity');
   assert.equal(nav.find(a => a.getAttribute('aria-current') === 'page').textContent, active);
