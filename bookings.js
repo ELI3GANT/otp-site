@@ -269,6 +269,8 @@ const els = {
   consent: $('booking-consent'),
   honeypot: $('otp-company-website')
 };
+const auditForm = $('audit-form');
+const auditField = (name) => auditForm.elements.namedItem(name);
 
 function makeBookingToken() {
   const key = 'otp_booking_token';
@@ -479,6 +481,8 @@ function fastLanePackageFitFor(serviceType) {
 }
 
 function serviceOptions() {
+  // Show a short decision set. Detailed offers remain available through Fast Lane cards and deep links.
+  const publicChoices = ['Website / Digital System', 'Brand Launch', 'Video / Content', 'AI / Automation', 'Custom Build'];
   const configured = state.config.serviceTypes || fallbackConfig.serviceTypes || [];
   const labels = configured.map((entry) => {
     if (typeof entry === 'string') return entry;
@@ -490,7 +494,8 @@ function serviceOptions() {
     if (entry && typeof entry === 'object') return entry.label || entry.name || entry.stored_label || '';
     return '';
   }) : [];
-  return [...new Set([...labels, ...serviceObjects, ...fastLaneOffers().map((offer) => offer.label)].map((value) => text(value, '').trim()).filter(Boolean))];
+  const available = new Set([...labels, ...serviceObjects, ...fastLaneOffers().map((offer) => offer.label)]);
+  return publicChoices.filter((choice) => available.has(choice));
 }
 
 function packageOptions() {
@@ -621,8 +626,16 @@ function selectFastLane(service) {
 
 function setSelectIfAvailable(select, value) {
   if (!select || !value) return false;
-  const exists = [...select.options].some((option) => option.value === value);
-  if (!exists) return false;
+  if (![...select.options].some((option) => option.value === value)) {
+    const configured = state.config.serviceTypes || fallbackConfig.serviceTypes || [];
+    const known = configured.some((entry) => (typeof entry === 'string' ? entry : entry?.label || entry?.name || entry?.stored_label) === value)
+      || fastLaneServices().includes(value);
+    if (!known) return false;
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    select.append(option);
+  }
   select.value = value;
   return true;
 }
@@ -846,6 +859,14 @@ function renderPackages() {
 
 function fillSelects() {
   optionList(els.service, serviceOptions(), 'Choose service type');
+  const names = {
+    'Website / Digital System': 'Websites & Systems',
+    'Brand Launch': 'Brand & Creative',
+    'Video / Content': 'Video & Content',
+    'AI / Automation': 'Automation',
+    'Custom Build': 'Something Custom'
+  };
+  [...els.service.options].forEach((option) => { if (names[option.value]) option.textContent = names[option.value]; });
   optionList(els.package, packageOptions(), 'Choose package');
   optionList(els.budget, state.config.budgetRanges || fallbackConfig.budgetRanges, 'Select budget range');
   optionList(els.urgency, state.config.urgencyLevels || fallbackConfig.urgencyLevels, 'Select urgency');
@@ -1100,7 +1121,7 @@ function renderSuccess(data) {
   const portalHref = safePortalHref(data);
   const intakeLink = document.createElement('a');
   const intakeBase = document.querySelector('.project-intake-cta')?.getAttribute('href') || '/bookings';
-  intakeLink.href = buildUrlWithAttribution(intakeBase);
+  intakeLink.href = window.OTPAttribution?.buildUrlWithAttribution?.(intakeBase) || intakeBase;
   intakeLink.textContent = 'Send additional files or details →';
   intakeLink.rel = 'noopener noreferrer';
   els.successActions.append(intakeLink);
@@ -1118,6 +1139,81 @@ function renderSuccess(data) {
   els.submit.disabled = true;
   els.submit.textContent = 'Request Submitted';
   els.success.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
+}
+
+async function submitAudit(event) {
+  event.preventDefault();
+  if (state.submitting || state.submitted) return;
+  const error = $('audit-error');
+  const button = $('audit-submit');
+  const name = auditField('name').value.trim();
+  const email = auditField('email').value.trim();
+  const phone = auditField('phone').value.trim();
+  const issue = auditField('issue').value.trim();
+  const rawUrl = auditField('social_link').value.trim();
+  let website = '';
+  try {
+    const url = new URL(rawUrl);
+    if (['http:', 'https:'].includes(url.protocol) && url.hostname.includes('.')) website = url.href;
+  } catch (_) { /* Show a helpful URL error below. */ }
+  const invalid = !website ? auditField('social_link') : !name ? auditField('name') :
+    (!email && !phone) ? auditField('email') :
+    (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) ? auditField('email') :
+    !issue ? auditField('issue') :
+    !auditField('contact_consent').checked ? auditField('contact_consent') : null;
+  if (invalid) {
+    error.textContent = !website ? 'Enter your full website link, starting with https://.' :
+      (!email && !phone) ? 'Add an email address or phone number so we can reply.' :
+      'Complete the required fields and check your contact details.';
+    error.classList.remove('hidden');
+    invalid.focus();
+    return;
+  }
+  error.classList.add('hidden');
+  if (window.OTPConversionAnalytics) window.OTPConversionAnalytics.track('booking_started');
+  state.sourceTracking = { ...getBookingTracking('booking_completed'), offer: 'site-audit' };
+  state.submitting = true;
+  button.disabled = true;
+  button.textContent = 'Sending your request…';
+  try {
+    const response = await fetch('/api/bookings/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        booking_token: state.bookingToken,
+        source_tracking: state.sourceTracking,
+        otp_company_website: auditField('otp_company_website').value.trim(),
+        name, email, phone,
+        business_name: auditField('business_name').value.trim(),
+        social_link: website,
+        service_type: 'Website / Digital System',
+        package_interest: 'Not Sure Yet',
+        project_description: `Free site audit request. Website: ${website}. Main issue: ${issue}`,
+        preferred_next_step: 'Send me the best next step',
+        contact_consent: true
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false || data.error) {
+      throw new Error(text(data.message, 'We could not send your request yet. Please try again.'));
+    }
+    if (window.OTPConversionAnalytics) window.OTPConversionAnalytics.track('booking_submitted');
+    auditForm.classList.add('hidden');
+    renderSuccess(data);
+    els.successTitle.textContent = 'Your website review request is in.';
+    els.successCopy.textContent = 'We’ll review your site and the issue you shared, then reply with a clear next step. No payment or package was selected.';
+    els.successMeta.replaceChildren();
+    els.successActions.querySelector('.fast-lane-deposit-card')?.remove();
+  } catch (failure) {
+    error.textContent = text(failure?.message, 'We could not send your request yet. Please try again.');
+    error.classList.remove('hidden');
+  } finally {
+    state.submitting = false;
+    if (!state.submitted) {
+      button.disabled = false;
+      button.textContent = 'Request my free review ↗';
+    }
+  }
 }
 
 async function submitBooking(event) {
@@ -1219,22 +1315,25 @@ async function init() {
 
   if (fastParam && els.service) {
     const cleanFast = fastParam.replace(/_/g, ' ').replace(/-/g, ' ');
-    const matchedService = Array.from(els.service.options).find(opt => opt.value.toLowerCase() === cleanFast.toLowerCase() || opt.value.toLowerCase().includes(cleanFast.toLowerCase()));
+    const configured = state.config.serviceTypes || fallbackConfig.serviceTypes || [];
+    const serviceValues = [...configured.map((entry) => typeof entry === 'string' ? entry : entry?.label || entry?.name || ''), ...fastLaneServices()];
+    const matchedService = serviceValues.find(value => value.toLowerCase() === cleanFast.toLowerCase() || value.toLowerCase().includes(cleanFast.toLowerCase()));
     if (matchedService) {
-      els.service.value = matchedService.value;
+      setSelectIfAvailable(els.service, matchedService);
       applyFastLaneServiceSelection();
     }
   }
 
   if (auditOffer) {
-    if (!fastParam && els.service) {
-      const websiteService = Array.from(els.service.options).find(option => option.value === 'Website / Digital System');
-      if (websiteService) els.service.value = websiteService.value;
-    }
-    if (!packageParam) selectPackage('The Signal', { advance: false });
-    if (els.formTitle) els.formTitle.textContent = 'Tell us what your website needs.';
-    if (els.description && !els.description.value) els.description.placeholder = 'What should be clearer or easier for your customers? Include the page or booking step you want OTP to review.';
-    if (els.form) els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
+    const websiteService = Array.from(els.service.options).find(option => option.value === 'Website / Digital System');
+    if (websiteService) els.service.value = websiteService.value;
+    document.querySelector('.skip-link')?.setAttribute('href', '#audit-form');
+    $('booking-title').textContent = 'Get a free site review.';
+    document.querySelector('.hero-copy').textContent = 'Share your website and the one issue you want us to look at. We’ll send you a clear next step.';
+    const primaryAction = document.querySelector('.hero-actions .primary-action');
+    if (primaryAction) { primaryAction.href = '#audit-form'; primaryAction.textContent = 'Request my free review ↗'; }
+    const secondaryAction = document.querySelector('.hero-actions .secondary-action');
+    if (secondaryAction) { secondaryAction.href = '/bookings?source=audit-project-switch'; secondaryAction.textContent = 'Start a project instead'; }
   }
 
   if (clientParam && els.business) {
@@ -1275,5 +1374,6 @@ if (els.form) {
   });
   els.form.addEventListener('submit', submitBooking);
 }
+if (auditForm) auditForm.addEventListener('submit', submitAudit);
 
 init();

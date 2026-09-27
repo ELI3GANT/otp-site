@@ -2346,6 +2346,41 @@ button:focus-visible,
   }
 }
 
+/* A website review starts with a single short request; project scoping stays on the full booking path. */
+.audit-entry { display: none; }
+html.audit-mode .audit-entry {
+  display: grid;
+  grid-template-columns: minmax(0, .78fr) minmax(0, 1.22fr);
+  gap: clamp(20px, 5vw, 64px);
+  align-items: start;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 24px clamp(48px, 7vw, 96px);
+}
+html.audit-mode .oracle-card,
+html.audit-mode .flow-chips,
+html.audit-mode #service-selector,
+html.audit-mode .booking-shell,
+html.audit-mode .project-intake-panel { display: none; }
+html.audit-mode body.booking-site .hero { padding-block: clamp(32px, 5vw, 60px); }
+.audit-intro { display: grid; gap: 14px; padding-top: 24px; }
+.audit-intro h2 { font: 500 clamp(2.5rem, 5vw, 5rem)/1 var(--font-public, inherit); letter-spacing: -.06em; }
+.audit-intro p:last-child { color: var(--muted-2); font-size: 1.05rem; line-height: 1.6; max-width: 34ch; }
+.audit-form { display: grid; gap: 18px; padding: clamp(22px, 4vw, 40px); border: 1px solid var(--line); background: var(--surface); }
+.audit-form input, .audit-form textarea { font-size: 1rem; }
+.audit-form textarea { min-height: 110px; }
+.audit-form .checkbox-label { display: flex; align-items: start; }
+.audit-form .checkbox-label input { width: auto; margin-top: 4px; }
+.audit-form button.primary-action { cursor: pointer; min-height: 52px; font-size: 1rem; }
+.audit-form button.primary-action:disabled { cursor: wait; opacity: .65; }
+.audit-footnote { color: var(--muted-2); font-size: .9rem; }
+.audit-footnote a { color: var(--text); text-underline-offset: 3px; }
+@media (max-width: 760px) {
+  html.audit-mode .audit-entry { grid-template-columns: 1fr; gap: 20px; padding-inline: 16px; }
+  .audit-intro { padding-top: 0; }
+  .audit-form .form-grid { grid-template-columns: 1fr; }
+}
+
 /* LIGHT MODE THEME FOR OTP BOOKINGS */
 [data-theme="light"] body,
 [data-theme="light"] .booking-page {

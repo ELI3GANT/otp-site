@@ -18,7 +18,7 @@ const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
 const bookingHandoff = read('server/booking-handoff.js');
-const offerSystemKey = '20260922-visual-refresh';
+const offerSystemKey = '20260926-audit';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -123,7 +123,7 @@ assert.ok(html.includes('OTP received your request. We’ll review the scope and
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
 assert.ok(html.includes(`bookings.css?v=${offerSystemKey}`), 'booking stylesheet cache-bust matches offer system release');
-assert.ok(html.includes('bookings.js?v=20260922-visual-refresh'), 'booking script cache-bust includes current package icons and audit preselection');
+assert.ok(html.includes('bookings.js?v=20260926-audit'), 'booking script cache-bust includes the short audit flow');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');

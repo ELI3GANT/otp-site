@@ -1,16 +1,18 @@
 {
-  "release": "OTP public site icon motion and booking visual refinement",
+  "release": "OTP short site audit and clear client navigation 2026-09-26",
   "includedFiles": [
     ".github/workflows/production-release.yml",
     "archive.html",
     "archive.js",
+    "bookings.css",
     "bookings.html",
     "bookings.js",
-    "bookings.css",
     "home.css",
     "index.html",
     "otp-conversion-analytics.js",
+    "package.json",
     "privacy.html",
+    "public-shell.js",
     "release-manifest-site.json",
     "sales/7_DAY_CLIENT_SPRINT.md",
     "sales/ANALYTICS_EVENTS.md",
@@ -20,39 +22,72 @@
     "sales/OUTREACH_TEMPLATES.md",
     "scripts/prod_full_sweep.js",
     "scripts/record_release_ci_evidence.js",
+    "scripts/release_browser_qa.js",
     "server.js",
     "service-discovery.css",
+    "sitemap.xml",
     "studio.css",
     "studio.html",
-    "sitemap.xml",
     "terms.html",
     "tests/bookings_contract.test.js",
     "tests/fixline_integration_contract.test.js",
     "tests/homepage_visual_contract.test.js",
-    "tests/master_runner.js",
     "tests/marketing_site_contract.test.js",
+    "tests/master_runner.js",
     "tests/release_auth_evidence_contract.test.js",
     "tests/release_guardrails_contract.test.js",
     "tests/seo_indexing_contract.test.js",
+    "tests/signal_contract.test.js",
+    "tests/site_audit_flow.test.js",
+    "tests/vault_web_presence_contract.test.js",
     "tests/vercel_route_precedence.test.js",
+    "vault/index.html",
+    "vault/privacy.html",
     "vercel.json",
     "website-design.html"
   ],
-  "excludedDirtyFiles": ["vault/**", "release-manifest.json"],
+  "excludedDirtyFiles": [],
   "testsRun": [
-    { "command": "npm test", "status": "pending protected CI" },
-    { "command": "npm run security:scan", "status": "pending protected CI" },
-    { "command": "npm run build:speed-insights", "status": "pending protected CI" },
-    { "command": "npm run master_test:ci", "status": "pending protected CI" },
-    { "command": "npm run prod:full-sweep", "status": "pending protected CI" },
-    { "command": "git diff --check", "status": "pending protected CI" },
-    { "command": "node --check", "status": "pending protected CI" }
+    {
+      "command": "npm test",
+      "status": "pending protected CI"
+    },
+    {
+      "command": "npm run security:scan",
+      "status": "pending protected CI"
+    },
+    {
+      "command": "npm run build:speed-insights",
+      "status": "pending protected CI"
+    },
+    {
+      "command": "npm run master_test:ci",
+      "status": "pending protected CI"
+    },
+    {
+      "command": "npm run prod:full-sweep",
+      "status": "pending protected CI"
+    },
+    {
+      "command": "git diff --check",
+      "status": "pending protected CI"
+    },
+    {
+      "command": "node --check",
+      "status": "pending protected CI"
+    }
   ],
   "browserQa": {
-    "status": "passed",
-    "viewports": [1440, 390],
-    "routes": ["/", "/studio", "/bookings", "/website-design.html", "/archive"],
-    "screenshots": "output/playwright/visual-refresh"
+    "status": "pending protected CI browser QA",
+    "viewports": [
+      390,
+      1440
+    ],
+    "routes": [
+      "/",
+      "/bookings?offer=site-audit",
+      "/bookings"
+    ]
   },
   "authenticatedSweep": {
     "status": "pending protected production workflow"

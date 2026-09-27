@@ -24,7 +24,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="stylesheet" href="/public-system.css?v=20260920-motion4" />
-    <link rel="stylesheet" href="/bookings.css?v=20260922-visual-refresh" />
+    <link rel="stylesheet" href="/bookings.css?v=20260926-audit" />
+    <script>if (new URLSearchParams(location.search).get('offer') === 'site-audit') document.documentElement.classList.add('audit-mode');</script>
   </head>
   <body class="public-page booking-site">
     <a class="skip-link" href="#booking-form">Skip to booking form</a>
@@ -113,6 +114,29 @@
             <span>Next Step Plan</span>
           </div>
         </aside>
+      </section>
+
+      <section id="audit-entry" class="audit-entry" aria-labelledby="audit-title">
+        <div class="audit-intro">
+          <p class="hero-label">Free website review</p>
+          <h2 id="audit-title">Show us your site.</h2>
+          <p>Send the link and one thing you want to improve. We’ll review it and get back to you with a clear next step. No payment or package choice here.</p>
+        </div>
+        <form id="audit-form" class="audit-form" novalidate tabindex="-1">
+          <label class="honeypot" aria-hidden="true" tabindex="-1">Leave this blank<input id="audit-company-website" name="otp_company_website" tabindex="-1" autocomplete="off" /></label>
+          <label for="audit-url">Your website <span>Required</span><input id="audit-url" name="social_link" type="url" inputmode="url" autocomplete="url" placeholder="https://yourbusiness.com" required /></label>
+          <div class="form-grid">
+            <label for="audit-name">Your name <span>Required</span><input id="audit-name" name="name" autocomplete="name" required /></label>
+            <label for="audit-email">Email <span>Email or phone required</span><input id="audit-email" name="email" type="email" autocomplete="email" /></label>
+            <label for="audit-phone">Phone <span>Email or phone required</span><input id="audit-phone" name="phone" type="tel" autocomplete="tel" /></label>
+            <label for="audit-business">Business name <span>Optional</span><input id="audit-business" name="business_name" autocomplete="organization" /></label>
+          </div>
+          <label for="audit-issue">What is not working? <span>Required</span><textarea id="audit-issue" name="issue" placeholder="For example: customers cannot find the booking button on mobile." required></textarea></label>
+          <label class="checkbox-label" for="audit-consent"><input id="audit-consent" name="contact_consent" type="checkbox" required /><span>OTP may contact me about this website review.</span></label>
+          <p id="audit-error" class="form-message error hidden" role="alert"></p>
+          <button id="audit-submit" type="submit" class="primary-action">Request my free review ↗</button>
+          <p class="audit-footnote">Have a larger project? <a href="/bookings?source=audit-project-switch">Start a project instead ↗</a></p>
+        </form>
       </section>
 
       <section id="service-selector" class="section-block service-selector-section" aria-labelledby="service-selector-title">
@@ -397,8 +421,7 @@
     </main>
 
     <script src="/otp-conversion-analytics.js?v=1.0.0" defer></script>
-    <script src="/otp-conversion-analytics.js?v=1.0.0" defer></script>
     <script src="/otp-attribution.js?v=16.9.1" defer></script>
-    <script src="/bookings.js?v=20260922-visual-refresh" defer></script>
+    <script src="/bookings.js?v=20260926-audit" defer></script>
   </body>
 </html>
