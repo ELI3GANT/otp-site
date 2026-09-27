@@ -181,6 +181,53 @@
     "physicalDeviceQa": "pending; no physical device used in this continuation",
     "strictEvidenceGate": "blocked_mobile_qa_and_signed_security_scan; candidate branch is not refs/heads/main and origin/main has diverged"
   },
+  "physicalDeviceQaContinuation": {
+    "date": "2026-09-27",
+    "repository": "ELI3GANT/otp-os",
+    "branch": "codex/otp-os-capacitor-session-cookie",
+    "commit": "77652189d9a8e56a67f8d3c22ad198896eb58660",
+    "worktree": "clean",
+    "device": "physical iPhone 18 Pro",
+    "udid": "00008160-001A7D491A80000A",
+    "iosVersion": "27.2",
+    "developerMode": "enabled",
+    "build": {
+      "xcode": "26.6",
+      "result": "BUILD SUCCEEDED",
+      "bundleIdentifier": "com.eli3gant.otp",
+      "appVersion": "1.0 (1)",
+      "signingTeam": "GZ5KD76N7A"
+    },
+    "installLaunch": "pass; app updated in place; no uninstall or app-data clear",
+    "screenshots": {
+      "before": "/private/tmp/otp-os-device-before.png",
+      "after": "/private/tmp/otp-os-device-after.png"
+    },
+    "deviceUiQa": "blocked_after_launch; pre-update app showed authenticated live dashboard; updated app requires login after process replacement; post-update login and tab flows could not be exercised",
+    "interactionBlocker": "iPhone Mirroring reports the phone not found and requires the Mac and iPhone to use the same iCloud account",
+    "productionApi": {
+      "nativeLogin": 200,
+      "sessionTokenReturned": true,
+      "health": 200,
+      "leads": 200,
+      "projects": 200,
+      "projectsReturned": 2,
+      "jobs": 200,
+      "jobsReturned": 3,
+      "dailyBrief": 200
+    },
+    "strictReleaseGate": {
+      "result": "blocked",
+      "passedChecks": 8,
+      "pendingChecks": [
+        "mobile_qa",
+        "security_scan"
+      ]
+    },
+    "trustedCiRun": "36357681351",
+    "trustedCiResult": "pass for this exact SHA",
+    "productionLeadCreated": false
+  },
   "productionProof": {
     "siteToFixlineToOtpOs": "not_run; Site/FIXLINE candidates not deployed",
     "durablePersistence": "schema verified; no live public submission proof",
