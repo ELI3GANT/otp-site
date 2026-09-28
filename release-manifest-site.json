@@ -1,0 +1,49 @@
+{
+  "release": "OTP Bookings visual refresh",
+  "includedFiles": [
+    "bookings.html",
+    "bookings.css",
+    "tests/bookings_contract.test.js",
+    "scripts/record_release_ci_evidence.js",
+    "release-manifest-site.json"
+  ],
+  "excludedDirtyFiles": [
+    "server.js",
+    "server/**",
+    "supabase/**",
+    "bookings.js",
+    "vault/**"
+  ],
+  "testsRun": [
+    { "command": "npm test", "status": "passed locally 2026-09-27" },
+    { "command": "npm run security:scan", "status": "passed locally 2026-09-27" },
+    { "command": "npm run build:speed-insights", "status": "passed locally 2026-09-27" },
+    { "command": "npm run master_test:ci", "status": "passed locally 2026-09-27" },
+    { "command": "npm run prod:full-sweep", "status": "passed public checks locally 2026-09-27" },
+    { "command": "git diff --check", "status": "passed locally 2026-09-27" },
+    { "command": "node --check", "status": "passed locally 2026-09-27" }
+  ],
+  "browserQa": {
+    "status": "passed",
+    "routes": ["/book", "/booking", "/bookings", "/book-otp"],
+    "viewport": "1280x720",
+    "flows": [
+      "refreshed black and lime Bookings design rendered",
+      "all public booking aliases resolved to the same page",
+      "selecting The Signal updated the package summary and form",
+      "no customer request was submitted"
+    ],
+    "evidence": "Codex browser screenshot captured during the release task"
+  },
+  "authenticatedSweep": {
+    "status": "pending protected production workflow"
+  },
+  "deploymentTarget": {
+    "provider": "Vercel",
+    "project": "otp-site",
+    "aliases": [
+      "https://www.onlytrueperspective.tech",
+      "https://onlytrueperspective.tech"
+    ]
+  }
+}

@@ -18,7 +18,7 @@ const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
 const bookingHandoff = read('server/booking-handoff.js');
-const offerSystemKey = '20260713-mobile-input-v1';
+const offerSystemKey = '20260927-booking-refresh';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -77,7 +77,7 @@ for (const source of [html, js, pricing, server]) {
 assert.ok(html.includes('Start a Project with OTP.'), 'booking hero is direct and conversion-focused');
 assert.ok(html.includes('class="skip-link"') && html.includes('href="#booking-form"'), 'booking page provides a keyboard skip link to the intake form');
 assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');
-assert.ok(html.includes('OTP will route the work into The Signal, The Engine, or The System'), 'booking hero sets current package ladder expectations');
+assert.ok(html.includes('OTP reviews your goals and recommends a focused next step.'), 'booking hero describes review without promising automatic package assignment');
 assert.ok(html.includes('official-brand-mark'), 'header keeps the official OTP site mark');
 assert.ok(html.includes('/assets/otp-hero-poster-frame.png'), 'header uses the stable optimized OTP poster mark');
 assert.ok(!html.includes('/assets/otp-hero-centered.gif'), 'header does not render the edge-on spinning GIF as the primary mark');
@@ -128,6 +128,7 @@ assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge i
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');
 assert.ok(html.includes('Open Secure Project Intake'), 'project intake button copy is explicit');
+assert.strictEqual((html.match(/<script src="\/otp-conversion-analytics\.js/g) || []).length, 1, 'booking conversion analytics loads once');
 assert.ok(html.includes('This page starts the conversation'), 'bookings explains public intake role');
 assert.ok(html.includes('No payment is collected here.'), 'booking intake states that payment is not collected with the request');
 assert.ok(html.includes('quote request, not a final commitment'), 'booking intake distinguishes a quote request from a final commitment');
