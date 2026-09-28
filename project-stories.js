@@ -18,7 +18,7 @@ const stories = {
     title: 'The infrastructure behind the work.',
     introduction: 'An internal business operating system connecting client intake, documents, payments, and delivery.',
     built: 'OTP OS brings CRM leads, booking handoffs, document generation, Stripe payment webhooks, and client workspaces into one operational system. The scope covers full-stack architecture, database security, and intake workflows.',
-    note: 'In progress. Client records and internal operational screens are private; the image shown is OTP brand artwork.',
+    note: 'Private system. The protected dashboard requires staff sign-in; public health checks confirm the service responds but do not verify signed-in operational data. Client records remain private.',
     caption: 'OnlyTruePerspective · Brand artwork',
     role: 'Systems design & full-stack development'
   },
@@ -34,9 +34,17 @@ const stories = {
     title: 'A stage before the first song.',
     introduction: 'A campaign and digital entry point for The Smack Club’s Song Wars music event.',
     built: 'The campaign combines event positioning, creative direction, a responsive landing page, and a focused Discord registration path. A share-ready visual identity connects the event poster to the online experience.',
-    note: 'This is an archive of the July 2026 campaign. Registration figures and dates are historical; visit the community for current updates.',
+    note: 'This short-run event has concluded and registration is closed. This page preserves the July 2026 campaign; its event route is no longer promoted as an active destination.',
     caption: 'The Smack Club · Original July 2026 campaign poster',
     role: 'Creative direction & event website'
+  },
+  vault: {
+    title: 'A quieter home for the work before release.',
+    introduction: 'VAULT is a private, local-first music archive and release-planning workspace for artists.',
+    built: 'The product is designed around songs as living, multi-version projects: masters, rough mixes, demos, and stems stay organized in one private listening environment. Artist tools include quick capture for audio and ideas, plus a release-planning signal queue.',
+    note: 'In development and coming soon. No public launch date has been announced. The screen shown is product interface artwork; unreleased audio is not uploaded to OTP servers.',
+    caption: 'VAULT · Artist home screen',
+    role: 'Product design & music workflow'
   },
   protocol: {
     title: 'One world around a release.',

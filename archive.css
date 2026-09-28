@@ -29,6 +29,7 @@
 .archive-case-study-card[data-project-id="weatheros"] .archive-project-media { background: var(--paper-rule); }
 .archive-case-study-card[data-project-id="weatheros"] .archive-project-media img { padding: 32px; }
 .archive-case-study-card[data-project-id="song-wars"] .archive-project-media { background: var(--paper); }
+.archive-case-study-card[data-project-id="vault"] .archive-project-media img { object-position: top center; }
 .archive-project-index { position: absolute; top: 16px; left: 16px; font: .75rem var(--font-mono); background: var(--ink); color: var(--paper); padding: 8px; }
 .archive-project-content { padding-top: 24px; }
 .is-featured .archive-project-content { padding: 32px 32px 32px 0; align-self: center; }

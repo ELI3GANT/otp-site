@@ -1,6 +1,17 @@
 {
-  "releaseName": "otp-project-inquiry-studio-icons-20260928",
+  "releaseName": "otp-archive-songwars-vault-otpos-20260928",
   "includedFiles": [
+    "archive.html",
+    "archive.css",
+    "archive.js",
+    "otp-projects.js",
+    "project-stories.js",
+    "assets/vault/vault-artist-home.png",
+    "tests/archive_case_study_contract.test.js",
+    "tests/archive_url_sync_and_fallback.test.js",
+    "tests/e2e/adversarial_qa.js",
+    "release-manifest.json",
+    "release-manifest-site.json",
     "release-manifest.json",
     "release-manifest-site.json",
     "service-discovery.css",
@@ -44,11 +55,11 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed_all_site_contracts_on_project_inquiry_candidate"
+      "status": "passed all site contracts after Archive updates on 2026-09-28"
     },
     {
       "command": "npm run test:e2e",
-      "status": "passed_62_of_62_on_project_inquiry_candidate"
+      "status": "passed 63/63 after Archive updates on 2026-09-28"
     },
     {
       "command": "npm run contracts:verify",
@@ -129,7 +140,7 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Playwright candidate QA passed 62/62 checks. Live production at 390px and 1440px verified all 15 Studio icons are visible, all Studio project CTAs open /bookings, the FAQ opens, there is no horizontal overflow, the versioned stylesheet loads, and the browser console is clean. Live booking flow at 390px verified the homepage CTA opens /bookings?source=homepage-hero, exactly five need choices fit, packages are hidden before review, scope precedes contact, the review step and Send Project Inquiry CTA appear, and no scope-call claim appears. No production form submission was made."
+    "summary": "Local Playwright passed 63/63 checks after the Archive update. Seven Archive cards rendered; Song Wars is archived, VAULT shows Coming Soon without a launch date, its product screenshot and preview story load, and the OTP OS story opens the protected /os/ route. Responsive widths 320px, 390px, 768px, and 1440px had zero horizontal overflow and no browser console errors. Existing live booking-flow checks remain from the previous release; no production inquiry was submitted for this Archive change."
   },
   "productionIntakeVerification": {
     "status": "not_run_no_safe_canonical_intake_test_mode",

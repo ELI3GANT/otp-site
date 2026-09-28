@@ -1,6 +1,17 @@
 {
-  "release": "OTP Project Inquiry and Studio visual polish",
+  "release": "OTP Archive completion: Song Wars retrospective, VAULT preview, and OTP OS access link",
   "includedFiles": [
+    "archive.html",
+    "archive.css",
+    "archive.js",
+    "otp-projects.js",
+    "project-stories.js",
+    "assets/vault/vault-artist-home.png",
+    "tests/archive_case_study_contract.test.js",
+    "tests/archive_url_sync_and_fallback.test.js",
+    "tests/e2e/adversarial_qa.js",
+    "release-manifest.json",
+    "release-manifest-site.json",
     "bookings.html",
     "bookings.css",
     "studio.html",
@@ -19,8 +30,8 @@
     "vault/**"
   ],
   "testsRun": [
-    { "command": "npm test", "status": "passed locally and in protected production workflow 36450006700 on 2026-09-28" },
-    { "command": "npm run test:e2e", "status": "passed 62/62 locally on the combined candidate 2026-09-28" },
+    { "command": "npm test", "status": "passed 2026-09-28 after Archive updates; protected production workflow pending" },
+    { "command": "npm run test:e2e", "status": "passed 63/63 locally on the Archive candidate 2026-09-28" },
     { "command": "node tests/homepage_visual_contract.test.js", "status": "passed Studio icon counts, accessibility, and Project Inquiry destinations locally 2026-09-28" },
     { "command": "npm run security:scan", "status": "passed locally across 311 files and in protected production workflow 36450006700 on 2026-09-28" },
     { "command": "npm run build:speed-insights", "status": "passed locally and in protected production workflow 36450006700 on 2026-09-28" },
@@ -31,17 +42,17 @@
   ],
   "browserQa": {
     "status": "passed",
-    "routes": ["/", "/studio", "/book", "/booking", "/bookings", "/book-otp"],
-    "viewport": "390x844 and 1440x1000",
+    "routes": ["/archive", "/projects/vault", "/projects/songwars", "/os/"],
+    "viewport": "320px, 390px, 768px, and 1440px",
     "flows": [
-      "Studio practice, engagement, process, and FAQ icons render without changing Project Inquiry styling",
-      "Studio project CTAs route to Project Inquiry",
-      "refreshed black and lime Project Inquiry design rendered",
-      "all public booking aliases resolved to the same page",
-      "selecting The Signal updated the package summary and form",
-      "no customer request was submitted"
+      "Seven Archive projects render and filters/history remain synchronized",
+      "Song Wars is visibly archived with no active event link",
+      "VAULT is Coming Soon with no claimed launch date and its real product capture loads",
+      "VAULT preview story renders with private/local-first wording",
+      "OTP OS story points to the protected /os/ surface",
+      "no horizontal overflow or browser console errors; no customer request was submitted"
     ],
-    "evidence": "Live production Playwright after deployment at 390px and 1440px: all 15 decorative icons visible, no horizontal overflow, FAQ opens, all Studio project CTAs route to /bookings, versioned CSS loads, /bookings returns HTTP 200, and no browser console errors; screenshots /tmp/otp-studio-live-390.png and /tmp/otp-studio-live-1440.png. The protected production workflow also passed booking/intake sweeps without submitting a customer request."
+    "evidence": "Local Playwright on 2026-09-28: 63/63 adversarial checks passed; Archive showed seven cards at 320px, 390px, 768px, and 1440px with zero horizontal overflow; no console errors; VAULT asset/story and Song Wars archived state verified. OTP OS production route health is recorded separately and no signed-in operational data was read."
   },
   "authenticatedSweep": {
     "status": "passed",

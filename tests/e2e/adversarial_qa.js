@@ -53,10 +53,11 @@ async function runAdversarialQA() {
     {
       await page.goto(`${baseUrl}/archive`, { waitUntil: 'domcontentloaded' });
       const initialCount = await page.textContent('[data-archive-result-count]');
-      report('Archive initial count matches 06 / 06', initialCount.includes('06 / 06'), `count: ${initialCount.trim()}`);
+      report('Archive initial count matches 07 / 07', initialCount.includes('07 / 07'), `count: ${initialCount.trim()}`);
 
       const cardCount = await page.locator('.archive-case-study-card').count();
-      report('Archive exactly 6 cards rendered', cardCount === 6, `cards: ${cardCount}`);
+      report('Archive exactly 7 cards rendered', cardCount === 7, `cards: ${cardCount}`);
+      report('Song Wars is archived and Vault is coming soon', await page.locator('[data-project-id="song-wars"]').textContent().then((text) => text.includes('Archived')) && await page.locator('[data-project-id="vault"]').textContent().then((text) => text.includes('Coming Soon')));
     }
 
     // 3. Archive Collection Filter & pushState
@@ -72,7 +73,7 @@ async function runAdversarialQA() {
 
       report('Collection button updates URL', newUrl.includes('collection=Internal+Products') || newUrl.includes('collection=Internal%20Products'), `url: ${newUrl}`);
       report('Collection button pushes history state', newHistoryLen > initialHistoryLen, `length: ${initialHistoryLen} -> ${newHistoryLen}`);
-      report('Filter reduces card count correctly', productsCardCount > 0 && productsCardCount < 6, `visible: ${productsCardCount}`);
+      report('Filter reduces card count correctly', productsCardCount > 0 && productsCardCount < 7, `visible: ${productsCardCount}`);
     }
 
     // 4. Browser Back & Forward Navigation (popstate)
@@ -82,7 +83,7 @@ async function runAdversarialQA() {
       const backCount = await page.textContent('[data-archive-result-count]');
       const backActiveCollection = await page.getAttribute('button[data-archive-collection="Everything"]', 'aria-pressed');
 
-      report('Back button restores Everything collection', backActiveCollection === 'true' && backCount.includes('06 / 06'), `count: ${backCount.trim()}`);
+      report('Back button restores Everything collection', backActiveCollection === 'true' && backCount.includes('07 / 07'), `count: ${backCount.trim()}`);
 
       await page.goForward();
       await page.waitForTimeout(150);
@@ -105,7 +106,7 @@ async function runAdversarialQA() {
 
       report('Search uses replaceState (history length unchanged)', historyAfterSearch === historyBeforeSearch, `len: ${historyAfterSearch}`);
       report('Search updates canonical URL', searchUrl.includes('search=weather'), `url: ${searchUrl}`);
-      report('Search filters correctly to WeatherOS', searchCards === 1 && searchCount.includes('01 / 06'), `cards: ${searchCards}`);
+      report('Search filters correctly to WeatherOS', searchCards === 1 && searchCount.includes('01 / 07'), `cards: ${searchCards}`);
     }
 
     // 6. Direct Deep-linking & Deterministic Sync
@@ -130,7 +131,7 @@ async function runAdversarialQA() {
       const advCount = await page.textContent('[data-archive-result-count]');
       const advCards = await page.locator('.archive-case-study-card').count();
 
-      report('Adversarial query fails safely to all projects', advCards === 6 && advCount.includes('06 / 06'), `cards: ${advCards}, count: ${advCount.trim()}`);
+      report('Adversarial query fails safely to all projects', advCards === 7 && advCount.includes('07 / 07'), `cards: ${advCards}, count: ${advCount.trim()}`);
     }
 
     // 8. Booking Flow Validation, A11y, and Enter Key Progression
