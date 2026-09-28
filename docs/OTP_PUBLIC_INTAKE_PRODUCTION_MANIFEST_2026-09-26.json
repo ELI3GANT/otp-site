@@ -204,7 +204,7 @@
       "after": "/private/tmp/otp-os-device-after.png"
     },
     "deviceUiQa": "blocked_after_launch; pre-update app showed authenticated live dashboard; updated app requires login after process replacement; post-update login and tab flows could not be exercised",
-    "interactionBlocker": "iPhone Mirroring reports the phone not found and requires the Mac and iPhone to use the same iCloud account",
+    "interactionBlocker": "iPhone Mirroring reports the phone not found and requires the Mac and iPhone to use the same iCloud account; per user direction, mirroring was skipped and production-browser QA was used instead",
     "productionApi": {
       "nativeLogin": 200,
       "sessionTokenReturned": true,
@@ -215,6 +215,20 @@
       "jobs": 200,
       "jobsReturned": 3,
       "dailyBrief": 200
+    },
+    "productionBrowserQa": {
+      "url": "https://otp-os.vercel.app",
+      "viewport": "390x844",
+      "existingAuthenticatedSession": true,
+      "leadRows": 3,
+      "projectRows": 2,
+      "jobCards": 3,
+      "bottomNavigationButtons": 7,
+      "bottomNavigationContentWidth": 466,
+      "bottomNavigationContainerWidth": 388,
+      "documentHorizontalOverflow": false,
+      "candidateFiveButtonMoreNavigationDeployed": false,
+      "physicalDeviceQaSubstitute": false
     },
     "strictReleaseGate": {
       "result": "blocked",
