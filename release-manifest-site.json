@@ -57,6 +57,7 @@
     { "command": "npm run build:speed-insights", "status": "passed locally 2026-09-28" },
     { "command": "npm run master_test:ci", "status": "passed locally 2026-09-26" },
     { "command": "npm run prod:full-sweep", "status": "passed public checks locally 2026-09-26" },
+    { "command": "Production Release workflow 36442315748", "status": "blocked before authentication/deployment: live sweep found candidate still carries retired booking UI markers; no production deployment made" },
     { "command": "git diff --check", "status": "passed locally 2026-09-26" },
     { "command": "node --check", "status": "passed locally 2026-09-26" }
   ],
@@ -67,7 +68,7 @@
     "screenshots": "Studio page captured locally at /tmp/otp-studio-after-390.png and /tmp/otp-studio-after-1440.png; sections and FAQ interaction checked at 390px, 16 icons visible, booking destinations preserved, no horizontal overflow, and no browser console errors"
   },
   "authenticatedSweep": {
-    "status": "pending protected production workflow"
+    "status": "not_run_release_gate_blocked_before_authenticated_sweep_or_deployment"
   },
   "deploymentTarget": {
     "provider": "Vercel",
