@@ -84,6 +84,14 @@
       "status": "passed_read_only_after_deploy_on_2026-09-28; booking markers now match Project Inquiry UI; authenticated checks skipped"
     },
     {
+      "command": "gh run watch 36439540374 --exit-status",
+      "status": "passed_clean_release_gate_build_deploy_and_post_deploy_sweep_on_2026-09-28_for_f284daa8851bb0c2ac03eab58d61d2b958fe1409"
+    },
+    {
+      "command": "Live production Playwright smoke at 390px",
+      "status": "passed_homepage_cta_single_need_set_scope_before_contact_review_wording_final_cta_truthful_no_scope_call_and_zero_console_errors_on_2026-09-28"
+    },
+    {
       "command": "node --check",
       "status": "passed_all_modified_javascript"
     },
@@ -118,7 +126,7 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Playwright candidate QA passed 62/62 checks. At 390px the homepage Start a project CTA opens /bookings?source=homepage-hero, the five need options fit, contact follows scope, package options appear only at Review, the final CTA is Send Project Inquiry, the confirmation is truthful, and the console is clean. After deployment, all public booking aliases returned HTTP 200 and the live Project Inquiry page markers were verified. No production form submission was made."
+    "summary": "Local Playwright candidate QA passed 62/62 checks. Live production browser QA at 390px verified the homepage Start a project CTA opens /bookings?source=homepage-hero, exactly five need choices fit, packages are hidden before review, scope precedes contact, the review step and Send Project Inquiry CTA appear, no scope-call claim appears, and there are zero console errors. No production form submission was made."
   },
   "productionIntakeVerification": {
     "status": "not_run_no_safe_canonical_intake_test_mode",
@@ -135,9 +143,9 @@
       "https://onlytrueperspective.tech"
     ],
     "deployment": {
-      "commit": "7a7df62838aa73850eca1a376e24e38887a289f9",
-      "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36438274818",
-      "status": "deployed; workflow post-deploy check exposed obsolete booking-page markers; updated read-only public sweep passed",
+      "commit": "f284daa8851bb0c2ac03eab58d61d2b958fe1409",
+      "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36439540374",
+      "status": "production release gate, build, deploy, and post-deploy public sweep passed",
       "productionChecks": "GET 200 for /bookings, /booking, /book, /book-otp, /bookings.html, /bookings.css, /bookings.js; read-only public full sweep passed on 2026-09-28",
       "productionWriteVerification": "not run; no safe canonical intake test mode"
     }
