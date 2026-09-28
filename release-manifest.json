@@ -166,14 +166,16 @@
     }
   },
   "otpOsProductionSmoke": {
-    "status": "public_health_and_auth_boundary_passed; signed_in_data_not_verified",
+    "status": "authenticated_live_lead_read_passed",
     "checks": [
       "otp-os.vercel.app/health returned 200 status ok",
       "otp-os.vercel.app/api/status returned 200 service otp-os",
       "otp-os.vercel.app/api/debug/env-safe returned 401 while signed out",
       "onlytrueperspective.tech/os/ returned 200",
-      "onlytrueperspective.tech/os/health and /os/api/status returned 200"
+      "onlytrueperspective.tech/os/health and /os/api/status returned 200",
+      "production login returned 200 and /api/auth/session verified authenticated",
+      "/api/leads/list returned HTTP 200 with 10 records; no record details were logged"
     ],
-    "limitation": "No staff sign-in session was used, so this confirms service health and protected-route behavior only, not live dashboard record loading."
+    "scope": "Read-only verification; no leads or bookings were created or changed."
   }
 }
