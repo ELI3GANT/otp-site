@@ -122,3 +122,19 @@ The Supabase connector read live migration history and schema before writes. Nei
 Scoped foundation commits were created in OTP OS (`fcc57cdf1d7a2b62bef3d3d1fa8e753150bc3dd3`) and FIXLINE (`d778b2f2232c43f8b96f1340b0abba13e7061f47`). Pre-existing unrelated untracked files remain outside those commits. Site's scoped commit and protected workflow deployment remain in progress. The Site release manifest was updated for this foundation. Local Site contract verification, security scan, syntax check, full suite, build, master CI suite, and public production sweep passed; the public sweep skipped authenticated checks without a local admin credential. No service has been deployed in this execution yet, and no production verification lead has been created.
 
 FOUNDATION BLOCKED
+
+## Continuation verification — 2026-09-28
+
+The existing durable-intake implementation has been combined with the deployed Bookings refresh on branch `codex/public-intake-release-candidate`. This is a local release candidate only; no production deployment or production write was performed. The candidate commit before the dependency remediation is `03f5474` (`feat(intake): durably queue canonical public leads`).
+
+**LOCAL PASS:** on the combined candidate, `npm test` passed all 52 suites with zero failures; `npm run build:speed-insights`, `npm run security:scan` (315 files), the production dependency audit, JavaScript syntax checks, and `git diff --check` passed. The full suite reported credential-dependent database mutation checks as skipped because local service credentials are unavailable. The first production dependency audit found seven fixable vulnerabilities; compatible lockfile updates were applied and the clean install now reports zero vulnerabilities. These results are local source checks, not production persistence evidence.
+
+The homepage's hero, header, mobile-menu, and footer `Start a project` links previously opened FIXLINE's intake. The local candidate now routes them to `/bookings` while retaining source attribution; the shared public-shell header/footer were corrected as well. Contract updates validate the destination. The production homepage still serves the old FIXLINE target until a separately scoped release is deployed.
+
+**PRODUCTION CHECK:** `https://www.onlytrueperspective.tech/book` returned HTTP 200 and `https://otp-os.vercel.app/api/health` returned HTTP 200. The live Site route `GET /api/internal/public-intakes/sync` still returns HTTP 404, confirming the current Site deployment does not include the durable retry endpoint. No synthetic lead was created, and no persistence, OTP OS forwarding, FIXLINE linkage, or replay test was performed.
+
+**KNOWN RELEASE BLOCKERS:** the Site candidate has not completed protected CI, preview browser QA, the authenticated production sweep, or the strict scoped release gate. OTP OS still has pending signed mobile QA and security-scan release evidence. Production deployment remains blocked by those gates; the live intake/retry path is therefore not proven end to end. The report's prior migration/configuration statements describe the earlier 2026-09-26 Supabase execution and do not certify the current deploy or a new production replay.
+
+Smallest next action: satisfy OTP OS's signed strict release evidence, then run the Site protected candidate gate and production browser/replay checks before considering deployment.
+
+FOUNDATION BLOCKED

@@ -11,11 +11,14 @@
     "server.js",
     "server/booking-handoff.js",
     "server/public-intake-store.js",
+    "package-lock.json",
     "supabase/migrations/20260926000000_public_intake_outbox.sql",
     "tests/api_surface_security_contract.test.js",
     "tests/booking_os_handoff.test.js",
     "tests/booking_os_route.integration.test.js",
     "tests/bookings_contract.test.js",
+    "tests/fixline_integration_contract.test.js",
+    "tests/homepage_visual_contract.test.js",
     "tests/public_intake_store.test.js",
     "vercel.json",
     "docs/OTP_PUBLIC_INTAKE_RELEASE_REPORT_2026-09-26.md",
@@ -23,19 +26,21 @@
   ],
   "excludedDirtyFiles": ["vault/**", "release-manifest.json"],
   "testsRun": [
-    { "command": "npm test", "status": "pending candidate run" },
-    { "command": "npm run security:scan", "status": "pending candidate run" },
-    { "command": "npm run build:speed-insights", "status": "pending candidate run" },
+    { "command": "npm test", "status": "passed: 52 suites, 0 failures; external credentials unavailable for DB-backed mutation checks" },
+    { "command": "npm run security:scan", "status": "passed: 315 files" },
+    { "command": "npm run build:speed-insights", "status": "passed" },
+    { "command": "npm audit --omit=dev --audit-level=low", "status": "passed: 0 vulnerabilities after compatible lockfile updates" },
     { "command": "npm run master_test:ci", "status": "pending protected workflow" },
     { "command": "npm run prod:full-sweep", "status": "pending protected workflow" },
-    { "command": "git diff --check", "status": "pending candidate run" },
-    { "command": "node --check", "status": "pending candidate run" }
+    { "command": "git diff --check", "status": "passed" },
+    { "command": "node --check server.js bookings.js server/booking-handoff.js server/public-intake-store.js", "status": "passed" }
   ],
   "browserQa": {
-    "status": "pending candidate intake verification",
+    "status": "pending candidate preview; production page responds HTTP 200 but candidate durability route is absent from current deployment",
     "routes": ["/book", "/booking", "/bookings", "/book-otp"],
     "viewport": "1280x720",
     "flows": [
+      "homepage Start a project CTA, desktop/mobile navigation, and footer target /bookings with source attribution",
       "current Bookings design and package selection previously verified in production",
       "candidate durable intake persistence and retry behavior not yet verified"
     ],
