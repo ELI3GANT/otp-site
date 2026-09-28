@@ -15,13 +15,13 @@
     "vault/**"
   ],
   "testsRun": [
-    { "command": "npm test", "status": "passed locally 2026-09-27" },
-    { "command": "npm run security:scan", "status": "passed locally 2026-09-27" },
-    { "command": "npm run build:speed-insights", "status": "passed locally 2026-09-27" },
-    { "command": "npm run master_test:ci", "status": "passed locally 2026-09-27" },
-    { "command": "npm run prod:full-sweep", "status": "passed public checks locally 2026-09-27" },
-    { "command": "git diff --check", "status": "passed locally 2026-09-27" },
-    { "command": "node --check", "status": "passed locally 2026-09-27" }
+    { "command": "npm test", "status": "passed in protected production workflow 36370303877" },
+    { "command": "npm run security:scan", "status": "passed in protected production workflow 36370303877" },
+    { "command": "npm run build:speed-insights", "status": "passed in protected production workflow 36370303877" },
+    { "command": "npm run master_test:ci", "status": "passed in protected production workflow 36370303877" },
+    { "command": "npm run prod:full-sweep", "status": "passed in protected production workflow 36370303877" },
+    { "command": "git diff --check", "status": "passed in protected production workflow 36370303877" },
+    { "command": "node --check", "status": "passed in protected production workflow 36370303877" }
   ],
   "browserQa": {
     "status": "passed",
@@ -33,10 +33,23 @@
       "selecting The Signal updated the package summary and form",
       "no customer request was submitted"
     ],
-    "evidence": "Codex browser screenshot captured during the release task"
+    "evidence": "Local and live production browser screenshots captured during the release task"
   },
   "authenticatedSweep": {
-    "status": "pending protected production workflow"
+    "status": "passed",
+    "evidence": "https://github.com/ELI3GANT/otp-site/actions/runs/36370303877"
+  },
+  "deployment": {
+    "status": "READY",
+    "commit": "d3dc2b0792d8fd8aba247e29275cc77ab576bbed",
+    "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36370303877",
+    "deploymentUrl": "https://otp-site-3w8w0yshc-only-true-perspective.vercel.app",
+    "aliases": [
+      "https://www.onlytrueperspective.tech",
+      "https://onlytrueperspective.tech",
+      "https://otp-site.vercel.app"
+    ],
+    "postDeployPublicSweep": "passed"
   },
   "deploymentTarget": {
     "provider": "Vercel",
