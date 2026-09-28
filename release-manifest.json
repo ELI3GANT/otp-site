@@ -1,5 +1,5 @@
 {
-  "releaseName": "otp-project-inquiry-20260928",
+  "releaseName": "otp-project-inquiry-studio-icons-20260928",
   "includedFiles": [
     "release-manifest.json",
     "release-manifest-site.json",
@@ -129,7 +129,7 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Playwright candidate QA passed 62/62 checks. Live production browser QA at 390px verified the homepage Start a project CTA opens /bookings?source=homepage-hero, exactly five need choices fit, packages are hidden before review, scope precedes contact, the review step and Send Project Inquiry CTA appear, no scope-call claim appears, and there are zero console errors. No production form submission was made."
+    "summary": "Local Playwright candidate QA passed 62/62 checks. Live production at 390px and 1440px verified all 15 Studio icons are visible, all Studio project CTAs open /bookings, the FAQ opens, there is no horizontal overflow, the versioned stylesheet loads, and the browser console is clean. Live booking flow at 390px verified the homepage CTA opens /bookings?source=homepage-hero, exactly five need choices fit, packages are hidden before review, scope precedes contact, the review step and Send Project Inquiry CTA appear, and no scope-call claim appears. No production form submission was made."
   },
   "productionIntakeVerification": {
     "status": "not_run_no_safe_canonical_intake_test_mode",
@@ -137,7 +137,7 @@
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "The 2026-09-20 production release recorded authenticated read-only admin checks as passed. This CTA and static analytics repair do not touch authentication; the production workflow reruns authenticated checks before deploying."
+    "summary": "Authenticated production sweep passed in protected release workflow 36450006700."
   },
   "deploymentTarget": {
     "project": "otp-site",
@@ -146,10 +146,11 @@
       "https://onlytrueperspective.tech"
     ],
     "deployment": {
-      "commit": "f284daa8851bb0c2ac03eab58d61d2b958fe1409",
-      "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36439540374",
-      "status": "production release gate, build, deploy, and post-deploy public sweep passed",
-      "productionChecks": "GET 200 for /bookings, /booking, /book, /book-otp, /bookings.html, /bookings.css, /bookings.js; read-only public full sweep passed on 2026-09-28",
+      "commit": "d2a6326ea94d6d6dd1d8a9cb245232d89323d67b",
+      "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36450006700",
+      "deploymentUrl": "https://otp-site-or8sbp5an-only-true-perspective.vercel.app",
+      "status": "Vercel READY; protected release gate, production build, deploy, authenticated pre-deploy sweep, and post-deploy public sweep passed",
+      "productionChecks": "GET 200 for /studio, /studio.css?v=20260928-studio-icons, /bookings, /booking, /book, /book-otp, /bookings.html, /bookings.css, /bookings.js; 390px and 1440px live Studio browser QA passed on 2026-09-28",
       "productionWriteVerification": "not run; no safe canonical intake test mode"
     }
   }
