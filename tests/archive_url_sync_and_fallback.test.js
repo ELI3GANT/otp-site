@@ -22,14 +22,14 @@ const bookingsJs = read('bookings.js');
 
 // 1. Static Fallback Cards & Pre-rendered markup
 assert.ok(
-  archiveHtml.includes('06 / 06 projects'),
-  'archive.html pre-renders initial project count "06 / 06 projects"'
+  archiveHtml.includes('07 / 07 projects'),
+  'archive.html pre-renders initial project count "07 / 07 projects"'
 );
 const cardMatches = archiveHtml.match(/class="archive-case-study-card/g) || [];
 assert.strictEqual(
   cardMatches.length,
-  6,
-  'archive.html contains exactly 6 pre-rendered static fallback project cards'
+  7,
+  'archive.html contains exactly 7 pre-rendered static fallback project cards'
 );
 assert.ok(
   archiveHtml.includes('data-project-id="weatheros"'),
@@ -43,6 +43,8 @@ assert.ok(
   archiveHtml.includes('data-project-id="song-wars"'),
   'archive.html static cards include Song Wars'
 );
+assert.ok(archiveHtml.includes('data-project-id="vault"'), 'archive.html static cards include VAULT');
+assert.ok(archiveHtml.includes('Coming Soon'), 'archive.html labels VAULT as coming soon');
 
 // 2. Archive URL Sync & History Semantics
 assert.ok(

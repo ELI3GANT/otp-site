@@ -213,7 +213,14 @@ const state = {
   sourceTracking: {}
 };
 
-const stepNames = ['Pick Package', 'Project Details', 'Budget + Timeline', 'Review + Submit'];
+const SERVICE_CATEGORIES = [
+  { label: 'Website / redesign', serviceType: 'Website / Digital System' },
+  { label: 'Booking or client system', serviceType: 'Business System' },
+  { label: 'Automation / AI tool', serviceType: 'AI / Automation' },
+  { label: 'Creative / media', serviceType: 'Video / Content' },
+  { label: 'Something custom', serviceType: 'Custom Build' }
+];
+const stepNames = ['Need', 'Scope', 'Contact', 'Review'];
 const $ = (id) => document.getElementById(id);
 
 const els = {
@@ -248,6 +255,7 @@ const els = {
   successActions: $('success-actions'),
   quickSelectors: [...document.querySelectorAll('[data-quick-service]')],
   service: $('booking-service'),
+  serviceChoices: [...document.querySelectorAll('input[name="service_category"]')],
   package: $('booking-package'),
   name: $('booking-name'),
   email: $('booking-email'),
@@ -256,6 +264,7 @@ const els = {
   contactMethod: $('booking-contact-method'),
   social: $('booking-social'),
   description: $('booking-description'),
+  successCriteria: $('booking-success-criteria'),
   deliverables: $('booking-deliverables'),
   projectType: $('booking-project-type'),
   reference: $('booking-reference'),
@@ -267,6 +276,9 @@ const els = {
   referralSource: $('booking-referral-source'),
   nextStep: $('booking-next-step'),
   consent: $('booking-consent'),
+  priorityChoices: [...document.querySelectorAll('input[name="priority_preference"]')],
+  recommendedPackageName: $('recommended-package-name'),
+  recommendedPackageReason: $('recommended-package-reason'),
   honeypot: $('otp-company-website')
 };
 
@@ -383,6 +395,7 @@ function showStatus(message = '') {
 }
 
 function optionList(select, values, placeholder) {
+  if (!select) return;
   select.replaceChildren();
   if (placeholder) {
     const opt = document.createElement('option');
@@ -468,18 +481,7 @@ function fastLanePackageFitFor(serviceType) {
 }
 
 function serviceOptions() {
-  const configured = state.config.serviceTypes || fallbackConfig.serviceTypes || [];
-  const labels = configured.map((entry) => {
-    if (typeof entry === 'string') return entry;
-    if (entry && typeof entry === 'object') return entry.label || entry.name || entry.stored_label || '';
-    return '';
-  });
-  const serviceObjects = Array.isArray(state.config.services) ? state.config.services.map((entry) => {
-    if (typeof entry === 'string') return entry;
-    if (entry && typeof entry === 'object') return entry.label || entry.name || entry.stored_label || '';
-    return '';
-  }) : [];
-  return [...new Set([...labels, ...serviceObjects, ...fastLaneOffers().map((offer) => offer.label)].map((value) => text(value, '').trim()).filter(Boolean))];
+  return SERVICE_CATEGORIES.map((category) => category.serviceType);
 }
 
 function packageOptions() {
@@ -538,38 +540,18 @@ function selectedDisplay() {
 }
 
 function updateSummaries() {
-  const selected = selectedDisplay();
-  els.selectedPackageName.textContent = selected.name;
-  els.selectedPackageMessage.textContent = selected.message;
-  els.selectedPackagePrice.textContent = selected.price;
-  els.oraclePackageName.textContent = selected.name === 'No package selected' ? 'Package system standing by' : selected.name;
-  els.oraclePackageMessage.textContent = selected.name === 'No package selected'
-    ? 'OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'
-    : `${selected.message} OTP Oracle will use that scope to route documents and next actions.`;
-  els.miniPackage.textContent = selected.name;
-  els.miniService.textContent = text(els.service.value, 'Not selected');
-  els.miniBudget.textContent = text(els.budget.value, 'Not selected');
-  els.miniTimeline.textContent = formatDeadline(els.deadline.value || els.urgency.value);
-  els.formTitle.textContent = selected.formTitle;
-  els.formPackageNote.textContent = selected.message;
-  const pillName = els.activePackagePill.querySelector('strong');
-  if (pillName) pillName.textContent = selected.pill;
-  updateQuickSelectorState();
+  if (els.package && !els.package.value) els.package.value = 'Not Sure Yet';
+  if (els.nextStep && !els.nextStep.value) els.nextStep.value = 'Send me the best next step';
+  if (els.urgency && !els.urgency.value) els.urgency.value = 'Flexible';
+  if (els.review && state.step === 4) renderReview();
 }
 
 function selectPackage(packageName, options = {}) {
   const pkg = packageByName(packageName);
   state.selectedPackage = pkg ? packageLabel(pkg) : text(packageName, '');
   if (els.package) els.package.value = state.selectedPackage;
-  if (!options.preserveService) {
-    const currentFastLanePackage = fastLanePackageFor(els.service.value);
-    if (currentFastLanePackage && currentFastLanePackage !== state.selectedPackage) {
-      els.service.value = '';
-    }
-  }
+  if (els.package) els.package.value = state.selectedPackage;
   applyActiveTheme(state.selectedPackage);
-  renderPackages();
-  renderFastLanes();
   updateSummaries();
   showError('');
   if (options.advance) {
@@ -581,14 +563,7 @@ function selectPackage(packageName, options = {}) {
 }
 
 function applyFastLaneServiceSelection() {
-  const mappedPackage = fastLanePackageFor(els.service.value);
-  if (!mappedPackage) {
-    renderFastLanes();
-    updateSummaries();
-    return;
-  }
-  selectPackage(mappedPackage, { advance: false, preserveService: true });
-  renderFastLanes();
+  updateSummaries();
 }
 
 function fastLaneServices() {
@@ -833,12 +808,48 @@ function fillSelects() {
   optionList(els.contactMethod, state.config.preferredContactMethods || fallbackConfig.preferredContactMethods, 'Choose contact method');
   optionList(els.projectType, state.config.projectTypes || fallbackConfig.projectTypes, 'Choose project type');
   optionList(els.referralSource, state.config.referralSources || fallbackConfig.referralSources, 'Select source');
-  optionList(els.nextStep, state.config.preferredNextSteps || fallbackConfig.preferredNextSteps, 'Choose next step');
+  optionList(els.nextStep, ['Send me the best next step'], 'Choose next step');
+  if (els.package) els.package.value = 'Not Sure Yet';
+  if (els.nextStep) els.nextStep.value = 'Send me the best next step';
+  if (els.urgency) els.urgency.value = 'Flexible';
+}
+
+function serviceCategoryLabel(serviceType) {
+  return SERVICE_CATEGORIES.find((category) => category.serviceType === serviceType)?.label || text(serviceType, 'Project');
+}
+
+function selectServiceCategory(serviceType) {
+  if (!setSelectIfAvailable(els.service, serviceType)) return false;
+  els.serviceChoices.forEach((choice) => {
+    choice.checked = choice.value === serviceType;
+  });
+  showError('');
+  updateSummaries();
+  return true;
+}
+
+function suggestedPackage() {
+  const serviceType = els.service?.value || '';
+  const scopeText = `${els.description?.value || ''} ${els.successCriteria?.value || ''}`.toLowerCase();
+  const connectedSystem = /booking|portal|payment|integrat|automation|workflow|crm|client system|multiple locations/.test(scopeText);
+  const broadCreative = /campaign|launch|rollout|multiple assets|brand system|series|full brand/.test(scopeText);
+  let packageName = 'The Signal';
+  if (serviceType === 'Business System' || serviceType === 'AI / Automation' || serviceType === 'Custom Build' || (serviceType === 'Website / Digital System' && connectedSystem)) {
+    packageName = 'The System';
+  } else if (serviceType === 'Website / Digital System' || (serviceType === 'Video / Content' && broadCreative)) {
+    packageName = 'The Engine';
+  }
+  const pkg = packageByName(packageName);
+  return {
+    name: packageName,
+    price: pkg ? packagePrice(pkg) : 'Scope based',
+    reason: `Suggested from your ${serviceCategoryLabel(serviceType).toLowerCase()} request. OTP confirms scope and pricing after review.`
+  };
 }
 
 function payload() {
-  const selectedOffer = fastLaneOfferForService(els.service.value);
-  const fastLanePackage = selectedOffer ? fastLanePackageFitFor(els.service.value) : '';
+  const description = els.description?.value.trim() || '';
+  const successCriteria = els.successCriteria?.value.trim() || '';
   return {
     booking_token: state.bookingToken,
     source_tracking: state.sourceTracking,
@@ -847,43 +858,44 @@ function payload() {
     email: els.email.value.trim(),
     phone: els.phone.value.trim(),
     business_name: els.business.value.trim(),
-    preferred_contact_method: els.contactMethod.value.trim(),
-    social_link: els.social.value.trim(),
-    service_type: els.service.value.trim(),
-    project_type: els.projectType.value.trim(),
-    package_interest: els.package.value.trim(),
-    selected_fast_offer: selectedOffer ? selectedOffer.label : '',
-    fast_lane_package: fastLanePackage,
-    project_description: els.description.value.trim(),
-    desired_deliverables: els.deliverables.value.trim(),
-    reference_link: els.reference.value.trim(),
-    budget_range: els.budget.value.trim(),
-    ideal_deadline: els.deadline.value.trim(),
-    urgency_level: els.urgency.value.trim(),
-    deposit_readiness: els.deposit.value.trim(),
-    location: els.location.value.trim(),
-    referral_source: els.referralSource.value.trim(),
-    preferred_next_step: els.nextStep.value.trim(),
-    contact_consent: Boolean(els.consent.checked)
+    preferred_contact_method: els.contactMethod?.value.trim() || '',
+    social_link: els.social?.value.trim() || '',
+    service_type: els.service?.value.trim() || '',
+    project_type: els.projectType?.value.trim() || '',
+    package_interest: els.package?.value.trim() || 'Not Sure Yet',
+    selected_fast_offer: '',
+    fast_lane_package: '',
+    project_description: successCriteria ? `${description}\n\nSuccess looks like:\n${successCriteria}` : description,
+    success_criteria: successCriteria,
+    desired_deliverables: els.deliverables?.value.trim() || '',
+    reference_link: els.reference?.value.trim() || '',
+    budget_range: els.budget?.value.trim() || '',
+    ideal_deadline: els.deadline?.value.trim() || '',
+    urgency_level: els.urgency?.value.trim() || 'Flexible',
+    deposit_readiness: els.deposit?.value.trim() || '',
+    location: els.location?.value.trim() || '',
+    referral_source: els.referralSource?.value.trim() || '',
+    preferred_next_step: els.nextStep?.value.trim() || 'Send me the best next step',
+    contact_consent: Boolean(els.consent?.checked)
   };
 }
 
 function missingForStep(step) {
   const p = payload();
   if (step === 1) {
-    const missing = [];
-    const hasEmail = Boolean(p.email);
-    const hasPhone = Boolean(p.phone);
-    if (!p.name) missing.push('name');
-    if (!hasEmail && !hasPhone) missing.push('email or phone');
-    if (hasEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) missing.push('valid email');
-    return missing;
+    return p.service_type ? [] : ['project category'];
   }
   if (step === 2) {
     const missing = [];
-    if (!p.service_type) missing.push('service type');
-    if (!p.package_interest) missing.push('package interest');
     if (!p.project_description) missing.push('project description');
+    if (!p.success_criteria) missing.push('what success looks like');
+    return missing;
+  }
+  if (step === 3) {
+    const missing = [];
+    if (!p.name) missing.push('name');
+    if (!p.email) missing.push('email');
+    if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) missing.push('valid email');
     return missing;
   }
   if (step === 4) {
@@ -898,9 +910,10 @@ function focusFirstInvalid(missing) {
   let elToFocus = null;
   if (first === 'name') elToFocus = els.name;
   else if (first === 'email or phone' || first === 'valid email') elToFocus = (els.email && !els.email.value) ? els.email : (els.phone || els.email);
-  else if (first === 'service type') elToFocus = els.service;
-  else if (first === 'package interest') elToFocus = els.package;
+  else if (first === 'project category') elToFocus = els.serviceChoices.find((choice) => choice.value === els.service.value) || els.serviceChoices[0];
   else if (first === 'project description') elToFocus = els.description;
+  else if (first === 'what success looks like') elToFocus = els.successCriteria;
+  else if (first === 'email' || first === 'valid email') elToFocus = els.email;
   else if (first === 'contact consent') elToFocus = els.consent;
   if (elToFocus && typeof elToFocus.focus === 'function') {
     try {
@@ -924,25 +937,30 @@ function validateStep(step, { shouldFocus = true } = {}) {
 
 function renderReview() {
   const p = payload();
-  const selected = packageByName(p.package_interest);
-  const selectedSummary = selectedDisplay();
+  const suggestion = suggestedPackage();
+  const selectedName = p.package_interest === 'Not Sure Yet' ? suggestion.name : p.package_interest;
+  const selected = packageByName(selectedName);
+  const selectedPrice = selected ? packagePrice(selected) : 'Scope based';
   const rows = [
-    ['Client', `${text(p.name)}${p.business_name ? ` / ${p.business_name}` : ''}`],
-    ['Contact', `${text(p.email)}${p.phone ? ` / ${p.phone}` : ''}${p.preferred_contact_method ? ` / ${p.preferred_contact_method}` : ''}`],
-    ['Service', text(p.service_type)],
-    ['Project Type', text(p.project_type)],
-    ['Selected Package', text(p.package_interest)],
-    ['Package Range', selected ? packagePrice(selected) : (p.package_interest === 'Not Sure Yet' ? 'Oracle recommendation requested' : 'Not provided yet')],
-    ['Package Fit', selectedSummary.message],
-    ['Project Description', text(p.project_description)],
-    ['Deliverables', text(p.desired_deliverables)],
-    ['Budget / Timeline', `${text(p.budget_range)} / ${formatDeadline(p.ideal_deadline)}`],
-    ['Urgency', text(p.urgency_level)],
-    ['Location / Source', `${text(p.location)} / ${text(p.referral_source)}`],
-    ['Preferred Next Step', text(p.preferred_next_step)],
-    ['Reference', text(p.reference_link)],
-    ['Contact Consent', p.contact_consent ? 'Confirmed' : 'Not confirmed yet']
+    ['Need', serviceCategoryLabel(p.service_type)],
+    ['Project', text(els.description?.value)],
+    ['Success looks like', text(els.successCriteria?.value)],
+    ['Budget', text(p.budget_range, 'Not provided')],
+    ['Ideal timeline', p.ideal_deadline ? formatDeadline(p.ideal_deadline) : 'Not provided'],
+    ['Links or references', text(p.reference_link, 'Not provided')],
+    ['Name', text(p.name)],
+    ['Email', text(p.email)],
+    ['Phone', text(p.phone, 'Not provided')],
+    ['Business / company', text(p.business_name, 'Not provided')]
   ];
+  if (els.recommendedPackageName) els.recommendedPackageName.textContent = `${selectedName} — ${selectedPrice}`;
+  if (els.recommendedPackageReason) {
+    els.recommendedPackageReason.textContent = p.package_interest === 'Not Sure Yet'
+      ? `${suggestion.reason} This is a starting suggestion, not a quote.`
+      : `You chose this starting point. OTP confirms scope and pricing after review.`;
+  }
+  const priorityChoice = els.priorityChoices.find((choice) => choice.value === p.urgency_level);
+  if (priorityChoice) priorityChoice.checked = true;
   els.review.replaceChildren();
   rows.forEach(([label, value]) => {
     const row = document.createElement('div');
@@ -968,9 +986,19 @@ function setStep(step) {
     dot.classList.toggle('done', n < state.step);
   });
   els.stepLabel.textContent = `${stepNames[state.step - 1]} / Step ${state.step} of 4`;
+  const stepHeadings = [
+    ['What do you need?', 'Choose the closest fit. We’ll confirm the scope with you.'],
+    ['Tell us about the project.', 'Describe the work and what a good result looks like.'],
+    ['Where should we send next steps?', 'Your contact details come after the project questions.'],
+    ['Review Project Inquiry.', 'Check your details and send the inquiry.']
+  ];
+  els.formTitle.textContent = stepHeadings[state.step - 1][0];
+  els.formPackageNote.textContent = stepHeadings[state.step - 1][1];
   els.prev.classList.toggle('hidden', state.step === 1);
   els.next.classList.toggle('hidden', state.step === 4);
   els.submit.classList.toggle('hidden', state.step !== 4);
+  els.next.textContent = state.step === 3 ? 'Review Project Inquiry' : state.step === 1 ? 'Continue to project details' : 'Continue to contact';
+  els.submit.textContent = 'Send Project Inquiry';
   if (state.step === 4) renderReview();
   showStatus('');
   updateSummaries();
@@ -982,16 +1010,16 @@ function renderSuccess(data) {
   els.success.classList.remove('hidden');
   els.success.classList.toggle('partial', !recommendation);
   els.form.classList.add('submitted');
-  els.successTitle.textContent = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
-  els.successCopy.textContent = 'After review, OTP may send scope questions, a package recommendation, a proposal, or a private Client Portal link for documents, payment steps, and approvals.';
+  els.successTitle.textContent = 'Your project inquiry is in OTP’s review queue.';
+  els.successCopy.textContent = 'OTP will review your project details and contact you by email with any scope questions, a quote, or the right next step. This confirms receipt only; no call, appointment, or delivery slot has been scheduled.';
   els.successMeta.replaceChildren();
   els.successActions.replaceChildren();
 
   const rows = [
-    ['Status', recommendation ? 'Request received with OTP recommendation' : 'Request received. OTP recommendation is pending review.'],
-    ['Recommended Package', recommendation ? text(recommendation.recommendedPackage) : 'Recommendation pending review'],
+    ['Status', 'Project inquiry received for review'],
+    ['Recommended starting point', recommendation ? text(recommendation.recommendedPackage) : 'OTP will recommend a starting point after review'],
     ['Quote Range', recommendation ? text(recommendation.quoteRange, 'Scope based') : 'Pending review'],
-    ['Next Step', text(data.nextStep || recommendation?.nextAction, 'OTP will confirm scope and prepare the next step.')],
+    ['What happens next', 'OTP reviews your scope and emails you with questions, a quote, or the next step. No appointment is booked by this submission.'],
     ['Client Portal', 'Private portal access is sent only after OTP reviews and approves the next step.']
   ];
 
@@ -1084,7 +1112,7 @@ function renderSuccess(data) {
 
   const newBooking = document.createElement('button');
   newBooking.type = 'button';
-  newBooking.textContent = 'Start Another Booking';
+  newBooking.textContent = 'Start Another Project Inquiry';
   newBooking.addEventListener('click', () => window.location.reload());
   els.successActions.append(newBooking);
   els.submit.disabled = true;
@@ -1096,8 +1124,8 @@ async function submitBooking(event) {
   event.preventDefault();
   if (state.submitting || state.submitted) return;
   state.sourceTracking = getAttributionTracking();
-  if (!validateStep(1) || !validateStep(2) || !validateStep(4)) {
-    setStep(missingForStep(1).length ? 1 : missingForStep(2).length ? 2 : 4);
+  if (!validateStep(1) || !validateStep(2) || !validateStep(3) || !validateStep(4)) {
+    setStep(missingForStep(1).length ? 1 : missingForStep(2).length ? 2 : missingForStep(3).length ? 3 : 4);
     return;
   }
 
@@ -1106,7 +1134,7 @@ async function submitBooking(event) {
   els.submit.classList.add('is-loading');
   els.submit.textContent = 'Submitting';
   showError('');
-  showStatus('Sending booking request to OTP...');
+  showStatus('Sending project inquiry to OTP...');
 
   try {
     const response = await fetch('/api/bookings/submit', {
@@ -1128,7 +1156,7 @@ async function submitBooking(event) {
     els.submit.classList.remove('is-loading');
     if (!state.submitted) {
       els.submit.disabled = false;
-      els.submit.textContent = 'Submit Booking Request';
+      els.submit.textContent = 'Send Project Inquiry';
     }
   }
 }
@@ -1162,16 +1190,17 @@ async function init() {
     offlineMode = true;
   }
   fillSelects();
-  wireQuickSelectors();
-  renderPackages();
-  renderFastLanes();
+  if (els.package) els.package.value = 'Not Sure Yet';
+  if (els.nextStep) els.nextStep.value = 'Send me the best next step';
+  if (els.urgency) els.urgency.value = 'Flexible';
   setStep(1);
-  if (offlineMode) showStatus('Booking options loaded in offline mode.');
+  if (offlineMode) showStatus('Project inquiry options loaded in offline mode.');
 
   const urlParams = new URLSearchParams(window.location.search || '');
   const statusParam = urlParams.get('status');
   const packageParam = urlParams.get('package') || urlParams.get('pkg');
-  const fastParam = urlParams.get('fast') || urlParams.get('fast_offer') || urlParams.get('service');
+  const fastParam = urlParams.get('fast') || urlParams.get('fast_offer') || '';
+  const serviceParam = urlParams.get('service') || '';
   const clientParam = urlParams.get('client') || urlParams.get('target') || urlParams.get('business');
 
   if (packageParam) {
@@ -1184,13 +1213,20 @@ async function init() {
     selectPackage(matchedPkg, { advance: false });
   }
 
+  if (serviceParam && els.service) {
+    const cleanService = serviceParam.replace(/_/g, ' ').replace(/-/g, ' ');
+    const matchedService = SERVICE_CATEGORIES.find((category) => category.serviceType.toLowerCase() === cleanService.toLowerCase());
+    if (matchedService) selectServiceCategory(matchedService.serviceType);
+  }
+
   if (fastParam && els.service) {
     const cleanFast = fastParam.replace(/_/g, ' ').replace(/-/g, ' ');
-    const matchedService = Array.from(els.service.options).find(opt => opt.value.toLowerCase() === cleanFast.toLowerCase() || opt.value.toLowerCase().includes(cleanFast.toLowerCase()));
-    if (matchedService) {
-      els.service.value = matchedService.value;
-      applyFastLaneServiceSelection();
-    }
+    const offer = fastLaneOfferForService(cleanFast);
+    const serviceType = offer?.label === 'Website Cleanup' || offer?.label === 'Emergency Booking/Client Flow Fix'
+      ? 'Website / Digital System'
+      : offer ? 'Video / Content' : '';
+    if (serviceType) selectServiceCategory(serviceType);
+    if (offer && els.urgency) els.urgency.value = 'Rush';
   }
 
   if (clientParam && els.business) {
@@ -1212,8 +1248,16 @@ if (els.next) els.next.addEventListener('click', () => {
   setStep(state.step + 1);
 });
 if (els.prev) els.prev.addEventListener('click', () => setStep(state.step - 1));
-if (els.package) els.package.addEventListener('change', () => selectPackage(els.package.value, { advance: false }));
-if (els.service) els.service.addEventListener('change', applyFastLaneServiceSelection);
+if (els.package) els.package.addEventListener('change', () => {
+  state.selectedPackage = els.package.value === 'Not Sure Yet' ? '' : els.package.value;
+  applyActiveTheme(state.selectedPackage);
+  updateSummaries();
+});
+els.serviceChoices.forEach((choice) => choice.addEventListener('change', () => selectServiceCategory(choice.value)));
+els.priorityChoices.forEach((choice) => choice.addEventListener('change', () => {
+  if (choice.checked && els.urgency) els.urgency.value = choice.value;
+  updateSummaries();
+}));
 if (els.form) {
   els.form.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && event.target && event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON') {

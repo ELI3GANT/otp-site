@@ -3,7 +3,7 @@
   const library = root.OTP_PROJECT_LIBRARY;
   const projectRoot = document.querySelector('[data-archive-projects]');
   if (!library || !projectRoot) return;
-  const order = ['hyh-architecture-design', 'weatheros', 'otp-fixline', 'protocol', 'song-wars', 'otp-os'];
+  const order = ['hyh-architecture-design', 'weatheros', 'otp-fixline', 'protocol', 'song-wars', 'otp-os', 'vault'];
   const projects = library.getProjects().sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
   const state = { collection: 'Everything', search: '', category: '', status: '', year: '', technology: '' };
   const controls = Object.fromEntries(Object.keys(state).filter((key) => key !== 'collection').map((key) => [key, document.querySelector(`[data-archive-${key}]`)]));
@@ -15,8 +15,9 @@
     weatheros: 'Atmospheric weather, visual forecasts, and an interface with room to breathe.',
     'otp-fixline': 'A structured starting point for understanding a business’s digital presence.',
     protocol: 'Music, identity, and a digital release world for ELI3GANT.',
-    'song-wars': 'An event identity and online entry point for The Smack Club’s music community.',
-    'otp-os': 'The private operational system behind OTP’s client work, documents, and delivery.'
+    'song-wars': 'A short-run event campaign, now preserved as a record after registration closed.',
+    'otp-os': 'The private, protected operational system behind OTP’s client work, documents, and delivery.',
+    vault: 'A private music archive and release-planning workspace in development. No launch date announced.'
   };
   const node = (tag, className, text) => {
     const element = document.createElement(tag);
@@ -66,7 +67,8 @@
     title.append(createAction(project.title, project.caseStudyUrl, ''));
     content.append(title, node('p', 'archive-project-summary', blurbs[project.id] || project.shortDescription));
     const actions = node('div', 'archive-project-actions');
-    actions.append(createAction('Explore project ↗', project.caseStudyUrl, 'archive-project-action-primary'));
+    const primaryLabel = project.id === 'vault' ? 'Preview VAULT ↗' : 'Explore project ↗';
+    actions.append(createAction(primaryLabel, project.caseStudyUrl, 'archive-project-action-primary'));
     const booking = createAction(project.bookingCtaLabel, project.bookingUrl, 'archive-project-action-conversion');
     if (project.id === 'otp-fixline') booking.dataset.fixlineEvent = 'audit_cta_selected';
     actions.append(booking);
@@ -266,10 +268,14 @@
 
   const timeline = document.querySelector('[data-archive-timeline]');
   if (timeline) {
-    [...projects].sort((a, b) => a.launchDate.localeCompare(b.launchDate)).forEach((project) => {
+    [...projects].sort((a, b) => String(a.launchDate || '9999-12-31').localeCompare(String(b.launchDate || '9999-12-31'))).forEach((project) => {
       const row = node('li', 'archive-timeline-item');
-      const date = node('time', '', new Date(`${project.launchDate}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }));
-      date.dateTime = project.launchDate;
+      const hasLaunchDate = /^\d{4}-\d{2}-\d{2}$/.test(String(project.launchDate || ''));
+      const dateLabel = hasLaunchDate
+        ? new Date(`${project.launchDate}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+        : project.status === 'Coming Soon' ? 'Coming soon' : String(project.year || 'Date not set');
+      const date = node('time', '', dateLabel);
+      if (hasLaunchDate) date.dateTime = project.launchDate;
       row.append(date, createAction(project.title, project.caseStudyUrl, ''), node('span', '', project.category));
       timeline.append(row);
     });

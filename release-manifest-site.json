@@ -1,8 +1,23 @@
 {
-  "release": "OTP Bookings visual refresh",
+  "release": "OTP Archive completion: Song Wars retrospective, VAULT preview, and OTP OS access link",
   "includedFiles": [
+    "archive.html",
+    "archive.css",
+    "archive.js",
+    "otp-projects.js",
+    "project-stories.js",
+    "assets/vault/vault-artist-home.png",
+    "tests/archive_case_study_contract.test.js",
+    "tests/archive_url_sync_and_fallback.test.js",
+    "tests/e2e/adversarial_qa.js",
+    "release-manifest.json",
+    "release-manifest-site.json",
     "bookings.html",
     "bookings.css",
+    "studio.html",
+    "studio.css",
+    "tests/homepage_visual_contract.test.js",
+    "release-manifest.json",
     "tests/bookings_contract.test.js",
     "scripts/record_release_ci_evidence.js",
     "release-manifest-site.json"
@@ -15,41 +30,45 @@
     "vault/**"
   ],
   "testsRun": [
-    { "command": "npm test", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run security:scan", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run build:speed-insights", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run master_test:ci", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run prod:full-sweep", "status": "passed in protected production workflow 36370303877" },
-    { "command": "git diff --check", "status": "passed in protected production workflow 36370303877" },
-    { "command": "node --check", "status": "passed in protected production workflow 36370303877" }
+    { "command": "npm test", "status": "passed 2026-09-28 after Archive updates; protected production workflow pending" },
+    { "command": "npm run test:e2e", "status": "passed 63/63 locally on the Archive candidate 2026-09-28" },
+    { "command": "node tests/homepage_visual_contract.test.js", "status": "passed Studio icon counts, accessibility, and Project Inquiry destinations locally 2026-09-28" },
+    { "command": "npm run security:scan", "status": "passed locally across 311 files and in protected production workflow 36455626704 on 2026-09-28" },
+    { "command": "npm run build:speed-insights", "status": "passed locally and in protected production workflow 36455626704 on 2026-09-28" },
+    { "command": "npm run master_test:ci", "status": "passed in protected production workflow 36455626704 against live production API on 2026-09-28" },
+    { "command": "npm run prod:full-sweep", "status": "passed authenticated pre-deploy and public post-deploy sweeps in protected production workflow 36455626704 on 2026-09-28" },
+    { "command": "git diff --check", "status": "passed locally and in protected production workflow 36455626704 on 2026-09-28" },
+    { "command": "node --check", "status": "passed all production and contract JavaScript entry points locally and in protected production workflow 36455626704 on 2026-09-28" }
   ],
   "browserQa": {
     "status": "passed",
-    "routes": ["/book", "/booking", "/bookings", "/book-otp"],
-    "viewport": "1280x720",
+    "routes": ["/archive", "/projects/vault", "/projects/songwars", "/os/"],
+    "viewport": "320px, 390px, 768px, and 1440px",
     "flows": [
-      "refreshed black and lime Bookings design rendered",
-      "all public booking aliases resolved to the same page",
-      "selecting The Signal updated the package summary and form",
-      "no customer request was submitted"
+      "Seven Archive projects render and filters/history remain synchronized",
+      "Song Wars is visibly archived with no active event link",
+      "VAULT is Coming Soon with no claimed launch date and its real product capture loads",
+      "VAULT preview story renders with private/local-first wording",
+      "OTP OS story points to the protected /os/ surface",
+      "no horizontal overflow or browser console errors; no customer request was submitted"
     ],
-    "evidence": "Local and live production browser screenshots captured during the release task"
+    "evidence": "Local Playwright passed 63/63. Post-deploy Playwright on 2026-09-28 verified production /archive, /projects/vault, /projects/songwars, and /projects/otp-os at 390px and 1440px: seven cards, correct archived/coming-soon states, VAULT image loaded (1320px wide), no horizontal overflow, no console errors, and OTP OS story links to /os/. No production inquiry was submitted."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "evidence": "https://github.com/ELI3GANT/otp-site/actions/runs/36370303877"
+    "evidence": "Authenticated production sweep passed in https://github.com/ELI3GANT/otp-site/actions/runs/36455626704"
   },
   "deployment": {
     "status": "READY",
-    "commit": "d3dc2b0792d8fd8aba247e29275cc77ab576bbed",
-    "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36370303877",
-    "deploymentUrl": "https://otp-site-3w8w0yshc-only-true-perspective.vercel.app",
+    "commit": "715a70fd7e8d139e6d7fd22316052a53e94bc37c",
+    "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36455626704",
+    "deploymentUrl": "https://otp-site-2mxhafcoq-only-true-perspective.vercel.app",
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech",
       "https://otp-site.vercel.app"
     ],
-    "postDeployPublicSweep": "passed"
+    "postDeployPublicSweep": "passed; Vercel state READY; Archive and project stories returned HTTP 200; seven cards, 390px/1440px rendering, Vault asset, and clean console verified"
   },
   "deploymentTarget": {
     "provider": "Vercel",
@@ -58,5 +77,18 @@
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
     ]
+  },
+  "otpOsProductionSmoke": {
+    "status": "authenticated_live_lead_read_passed",
+    "checks": [
+      "otp-os.vercel.app/health returned 200 status ok",
+      "otp-os.vercel.app/api/status returned 200 service otp-os",
+      "otp-os.vercel.app/api/debug/env-safe returned 401 while signed out",
+      "onlytrueperspective.tech/os/ returned 200",
+      "onlytrueperspective.tech/os/health and /os/api/status returned 200",
+      "production login returned 200 and /api/auth/session verified authenticated",
+      "/api/leads/list returned HTTP 200 with 10 records; no record details were logged"
+    ],
+    "scope": "Read-only verification; no leads or bookings were created or changed."
   }
 }

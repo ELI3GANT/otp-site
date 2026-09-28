@@ -56,7 +56,9 @@ projects.forEach((project) => {
     'bookingUrl',
     'bookingCtaLabel',
     'heroImage'
-  ].forEach((field) => assert.ok(project[field], `${project.id} supplies ${field}`));
+  ].forEach((field) => assert.ok(Object.prototype.hasOwnProperty.call(project, field), `${project.id} supplies ${field}`));
+  assert.ok(project.launchDate === null || /^\d{4}-\d{2}-\d{2}$/.test(project.launchDate), `${project.id} has a real launch date or none`);
+  assert.ok(typeof project.projectUrl === 'string', `${project.id} project destination is explicit`);
   ['categories', 'disciplines', 'services', 'technology', 'tags', 'collections'].forEach((field) => {
     assert.ok(Array.isArray(project[field]) && project[field].length > 0, `${project.id} supplies ${field}`);
   });
@@ -75,12 +77,22 @@ assert.ok(protocol.disciplines.includes('Music Rollout'), 'PROTOCOL exposes roll
 assert.ok(protocol.disciplines.includes('Brand Identity'), 'PROTOCOL exposes identity discipline');
 assert.strictEqual(protocol.status, 'Released');
 
-assert.ok(songWars && songWars.featured, 'Song Wars is a featured Archive case study');
-assert.strictEqual(songWars.projectUrl, '/songwars', 'Song Wars links to its live project');
+assert.ok(songWars && !songWars.featured, 'Song Wars remains archived without active featured placement');
+assert.strictEqual(songWars.projectUrl, '', 'Song Wars no longer promotes its concluded event route');
 assert.strictEqual(songWars.bookingUrl, '/bookings?source=archive-songwars&service=event-community-rollout', 'Song Wars routes conversion CTA to event rollout intake');
 assert.ok(songWars.disciplines.includes('Live Event'), 'Song Wars exposes event discipline');
 assert.ok(songWars.disciplines.includes('Community'), 'Song Wars exposes community discipline');
-assert.strictEqual(songWars.status, 'Released');
+assert.strictEqual(songWars.status, 'Archived');
+assert.strictEqual(songWars.bookingCtaLabel, 'Discuss an event project');
+
+const vault = projects.find((project) => project.id === 'vault');
+assert.ok(vault, 'VAULT appears in the Archive catalog');
+assert.strictEqual(vault.status, 'Coming Soon');
+assert.strictEqual(vault.launchDate, null, 'VAULT does not imply an unannounced launch date');
+assert.strictEqual(vault.projectUrl, '', 'VAULT does not link to an unavailable product');
+assert.strictEqual(vault.caseStudyUrl, '/projects/vault');
+assert.ok(archive.includes('VAULT (Coming Soon)'), 'no-script Archive mentions VAULT as coming soon');
+assert.ok(projects.find((project) => project.id === 'otp-os').projectUrl === '/os/', 'OTP OS links to its protected live surface');
 
 assert.ok(hyh && hyh.beforeAfter, 'HYH keeps its existing before-and-after case-study media');
 assert.strictEqual(hyh.bookingUrl, '/bookings?source=archive-hyh&service=website-business-fix', 'HYH routes conversion CTA to website/business fix intake');
@@ -110,7 +122,8 @@ assert.ok(!/gsap|ScrollTrigger|supabase-js|kursor|dompurify|stars-v2/i.test(arch
 assert.ok(archive.includes('"@type": "CollectionPage"'), 'archive includes CollectionPage schema');
 assert.ok(archive.includes('"@type": "ItemList"'), 'archive includes project ItemList schema');
 assert.ok(archive.includes('https://www.onlytrueperspective.tech/protocol'), 'schema references PROTOCOL');
-assert.ok(archive.includes('https://www.onlytrueperspective.tech/songwars'), 'schema references Song Wars');
+assert.ok(archive.includes('https://www.onlytrueperspective.tech/projects/songwars'), 'schema references the Song Wars retrospective');
+assert.ok(archive.includes('https://www.onlytrueperspective.tech/projects/vault'), 'schema references the VAULT preview');
 assert.ok(archive.includes('https://www.onlytrueperspective.tech/archive'), 'archive metadata uses the clean public route');
 assert.ok(!archive.includes('https://www.onlytrueperspective.tech/archive.html'), 'archive metadata does not publish the duplicate .html route');
 
@@ -149,6 +162,8 @@ const renderedDocument = dom.window.document;
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-primary').length, projects.length, 'runtime renders one primary action per project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-conversion').length, projects.length, 'runtime renders one booking conversion action per project');
+assert.ok(!renderedDocument.querySelector('[data-archive-timeline]').textContent.includes('Invalid Date'), 'undated VAULT timeline entry stays readable');
+assert.ok(renderedDocument.querySelector('[data-archive-timeline]').textContent.includes('Coming soon'), 'VAULT timeline entry has an honest date state');
 const ids = () => [...renderedDocument.querySelectorAll('[data-project-id]')].map(card => card.dataset.projectId);
 const set = (key, value) => {
   const control = renderedDocument.querySelector(`[data-archive-${key}]`);
@@ -190,7 +205,9 @@ assert.equal(image.hidden, true);
 assert.ok(renderedDocument.querySelector('.archive-image-unavailable'), 'broken image has truthful unavailable state');
 dom.window.close();
 const { renderProjectPage } = require('../project-stories');
-assert.equal(projects.length, 6, 'all six project stories are covered');
+assert.equal(projects.length, 7, 'all seven project stories are covered');
+const otpOsStory = new JSDOM(renderProjectPage(projects.find((project) => project.id === 'otp-os'), projects)).window.document;
+assert.ok([...otpOsStory.querySelectorAll('main a')].some((link) => link.getAttribute('href') === '/os/'), 'OTP OS story offers its protected live surface');
 for (const project of projects) {
   const page = new JSDOM(renderProjectPage(project, projects)).window.document;
   assert.equal(page.querySelectorAll('h1').length, 1);
@@ -217,4 +234,4 @@ hostile.window.eval(archiveClient);
 assert.equal(hostile.window.document.querySelectorAll('[href^="javascript:"], [href^="data:"], [src^="javascript:"], [onerror]').length, 0, 'unsafe project URLs and markup cannot execute');
 assert.equal(hostile.window.document.querySelectorAll('.archive-project-action-primary[aria-disabled="true"]').length, projects.length);
 hostile.window.close();
-console.log('Archive filtering, safe rendering and six project detail contracts passed.');
+console.log('Archive filtering, safe rendering and seven project detail contracts passed.');
