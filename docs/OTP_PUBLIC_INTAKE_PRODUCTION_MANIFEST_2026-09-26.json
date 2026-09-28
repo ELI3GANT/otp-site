@@ -228,7 +228,19 @@
       "bottomNavigationContainerWidth": 388,
       "documentHorizontalOverflow": false,
       "candidateFiveButtonMoreNavigationDeployed": false,
-      "physicalDeviceQaSubstitute": false
+      "physicalDeviceQaSubstitute": false,
+      "directVercelSessionCheckedAt": "2026-09-27T20:37:00-04:00",
+      "directVercelSession": {
+        "login": "pass",
+        "dashboardRefresh": "pass; daily brief updated; health score healthy",
+        "leads": "pass; stored lead cards rendered",
+        "projects": "pass; 3 records rendered",
+        "jobs": "pass; 3 records rendered",
+        "documents": "pass; 21 documents rendered",
+        "advancedWorkspaceMenu": "pass; categorized destinations rendered",
+        "productionRecordsChanged": false,
+        "nativeAppQa": "not_substituted"
+      }
     },
     "strictReleaseGate": {
       "result": "blocked",

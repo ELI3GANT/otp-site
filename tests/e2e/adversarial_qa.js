@@ -190,6 +190,21 @@ async function runAdversarialQA() {
       report('Step 4 review summary reflects email', reviewText.includes('jane@example.com'), 'Review summary contains email');
     }
 
+    // Booking options must render when the configuration API is unavailable.
+    {
+      const offlinePage = await context.newPage();
+      await offlinePage.route('**/api/bookings/config', (route) => route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false })
+      }));
+      await offlinePage.goto(`${baseUrl}/bookings`, { waitUntil: 'domcontentloaded' });
+      await offlinePage.locator('#booking-service option').nth(1).waitFor({ state: 'attached' });
+      report('Booking form renders when config API is unavailable',
+        await offlinePage.locator('#booking-service option').count() > 1);
+      await offlinePage.close();
+    }
+
     // 9. Honest Quote State
     {
       await page.goto(`${baseUrl}/quote`, { waitUntil: 'domcontentloaded' });
