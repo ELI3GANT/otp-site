@@ -21,6 +21,8 @@
     "tests/marketing_site_contract.test.js",
     "tests/portal_route_contract.test.js",
     "tests/seo_indexing_contract.test.js",
+    "scripts/prod_full_sweep.js",
+    "scripts/prod_terminal_sweep.js",
     "package-lock.json",
     "otp-conversion-analytics.js"
   ],
@@ -78,6 +80,10 @@
       "status": "passed_public_checks_on_current_production_2026-09-28; authenticated checks skipped"
     },
     {
+      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
+      "status": "passed_read_only_after_deploy_on_2026-09-28; booking markers now match Project Inquiry UI; authenticated checks skipped"
+    },
+    {
       "command": "node --check",
       "status": "passed_all_modified_javascript"
     },
@@ -112,11 +118,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Playwright candidate QA passed 62/62 checks. At 390px the homepage Start a project CTA opens /bookings?source=homepage-hero, the five need options fit, contact follows scope, package options appear only at Review, the final CTA is Send Project Inquiry, the confirmation is truthful, and the console is clean. Submission was mocked locally and did not verify production persistence. Current production still serves the previous booking page pending the gated release."
+    "summary": "Local Playwright candidate QA passed 62/62 checks. At 390px the homepage Start a project CTA opens /bookings?source=homepage-hero, the five need options fit, contact follows scope, package options appear only at Review, the final CTA is Send Project Inquiry, the confirmation is truthful, and the console is clean. After deployment, all public booking aliases returned HTTP 200 and the live Project Inquiry page markers were verified. No production form submission was made."
   },
   "productionIntakeVerification": {
     "status": "not_run_no_safe_canonical_intake_test_mode",
-    "summary": "The only production safe fixture is an admin-created OTP Test Client job and does not exercise the canonical Site-to-OTP-OS submission path. The new inquiry form has not been deployed yet. No production lead was created."
+    "summary": "The only production safe fixture is an admin-created OTP Test Client job and does not exercise the canonical Site-to-OTP-OS submission path. The Project Inquiry form is deployed, but production persistence and OTP OS receipt remain unverified because no isolated canonical intake test mode exists. No production lead was created."
   },
   "authenticatedSweep": {
     "status": "passed",
@@ -127,6 +133,13 @@
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
-    ]
+    ],
+    "deployment": {
+      "commit": "7a7df62838aa73850eca1a376e24e38887a289f9",
+      "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36438274818",
+      "status": "deployed; workflow post-deploy check exposed obsolete booking-page markers; updated read-only public sweep passed",
+      "productionChecks": "GET 200 for /bookings, /booking, /book, /book-otp, /bookings.html, /bookings.css, /bookings.js; read-only public full sweep passed on 2026-09-28",
+      "productionWriteVerification": "not run; no safe canonical intake test mode"
+    }
   }
 }

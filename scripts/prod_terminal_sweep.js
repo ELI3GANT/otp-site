@@ -17,10 +17,10 @@ const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_
 
 const publicTargets = [
   { name: 'home', path: '/', kind: 'html', markers: ['OnlyTruePerspective | Rhode Island Creative Technology &amp; Media Studio', 'rel="canonical" href="https://www.onlytrueperspective.tech/"', 'href="/archive"', 'href="/portal"'] },
-  { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css', '/bookings.js', 'canonical', 'Start a Project with OTP.', 'project-intake-panel'] },
+  { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css', '/bookings.js', 'canonical', 'Project Inquiry', 'Start Project Inquiry', 'id="booking-form"'] },
   { name: 'booking-alias', path: '/booking', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
   { name: 'book-alias', path: '/book', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
-  { name: 'bookings-html', path: '/bookings.html', kind: 'html', markers: ['Start Booking', '/bookings.css'] },
+  { name: 'bookings-html', path: '/bookings.html', kind: 'html', markers: ['Project Inquiry', 'Start Project Inquiry', '/bookings.css'] },
   { name: 'bookings-css', path: '/bookings.css', kind: 'css', markers: ['booking-page', 'package-grid'] },
   { name: 'bookings-js', path: '/bookings.js', kind: 'js', markers: ['fetch(\'/api/bookings/config\'', 'fetch(\'/api/bookings/submit\''] },
   { name: 'booking-logo', path: '/assets/otp.gif', kind: 'gif' },
