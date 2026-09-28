@@ -52,7 +52,7 @@
       "OTP OS story points to the protected /os/ surface",
       "no horizontal overflow or browser console errors; no customer request was submitted"
     ],
-    "evidence": "Local Playwright passed 63/63. Post-deploy Playwright on 2026-09-28 verified production /archive, /projects/vault, /projects/songwars, and /projects/otp-os at 390px and 1440px: seven cards, correct archived/coming-soon states, VAULT image loaded (1320px wide), no horizontal overflow, no console errors, and OTP OS story links to /os/. Screenshots: /tmp/otp-archive-live-390.png and /tmp/otp-archive-live-1440.png. No production inquiry was submitted."
+    "evidence": "Local Playwright passed 63/63. Post-deploy Playwright on 2026-09-28 verified production /archive, /projects/vault, /projects/songwars, and /projects/otp-os at 390px and 1440px: seven cards, correct archived/coming-soon states, VAULT image loaded (1320px wide), no horizontal overflow, no console errors, and OTP OS story links to /os/. No production inquiry was submitted."
   },
   "authenticatedSweep": {
     "status": "passed",

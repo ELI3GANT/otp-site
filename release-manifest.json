@@ -140,7 +140,7 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Playwright passed 63/63. Post-deploy production Playwright verified /archive, /projects/vault, /projects/songwars, and /projects/otp-os at 390px and 1440px: seven cards, correct archived/coming-soon states, VAULT image loaded at 1320px natural width, no horizontal overflow, no console errors, and OTP OS story links to protected /os/. Screenshots: /tmp/otp-archive-live-390.png and /tmp/otp-archive-live-1440.png. No production inquiry was submitted."
+    "summary": "Local Playwright passed 63/63. Post-deploy production Playwright verified /archive, /projects/vault, /projects/songwars, and /projects/otp-os at 390px and 1440px: seven cards, correct archived/coming-soon states, VAULT image loaded at 1320px natural width, no horizontal overflow, no console errors, and OTP OS story links to protected /os/. No production inquiry was submitted."
   },
   "productionIntakeVerification": {
     "status": "not_run_no_safe_canonical_intake_test_mode",
