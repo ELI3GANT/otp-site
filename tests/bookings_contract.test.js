@@ -134,6 +134,7 @@ assert.ok(html.includes('Need to send files or references?'), 'project intake se
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');
 assert.ok(html.includes('Open Secure Project Intake'), 'project intake button copy is explicit');
 assert.strictEqual((html.match(/<script src="\/otp-conversion-analytics\.js/g) || []).length, 1, 'booking conversion analytics loads once');
+assert.ok(fs.existsSync(path.join(root, 'otp-conversion-analytics.js')), 'booking conversion analytics asset exists');
 assert.ok(html.includes('This page starts the conversation'), 'bookings explains public intake role');
 assert.ok(html.includes('No payment is collected here.'), 'booking intake states that payment is not collected with the request');
 assert.ok(html.includes('quote request, not a final commitment'), 'booking intake distinguishes a quote request from a final commitment');
