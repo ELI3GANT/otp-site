@@ -61,4 +61,13 @@ assert.match(css, /animation-duration:\s*\.0*1ms|animation:\s*none|animation-dur
 const studio = new JSDOM(read('studio.html')).window.document;
 for (const id of ['digital', 'creative', 'launch', 'engagements', 'process', 'questions']) assert.ok(studio.getElementById(id), 'Studio owns ' + id);
 assert.ok(studio.querySelectorAll('#process li').length >= 3, 'Studio explains engagement steps');
+assert.equal(studio.querySelectorAll('.studio-service-icon').length, 4, 'each practice category has one service icon');
+assert.equal(studio.querySelectorAll('.studio-engagements > a > .studio-section-icon').length, 4, 'each engagement option has one icon');
+assert.equal(studio.querySelectorAll('.studio-process-top > .studio-section-icon').length, 4, 'each process step has one icon');
+assert.equal(studio.querySelectorAll('.studio-question-icon svg').length, 4, 'each FAQ row has one icon');
+for (const icon of studio.querySelectorAll('.studio-service-icon, .studio-section-icon, .studio-question-icon svg')) {
+  const hiddenFromAssistiveTech = icon.getAttribute('aria-hidden') === 'true'
+    || icon.closest('.studio-question-icon')?.getAttribute('aria-hidden') === 'true';
+  assert.ok(hiddenFromAssistiveTech, 'decorative icons stay hidden from assistive technology');
+}
 console.log('Homepage, Studio and shared navigation runtime contracts passed.');
