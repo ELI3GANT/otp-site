@@ -72,11 +72,12 @@
     }
   ],
   "browserQa": {
-      "status": "pending latest Vercel preview verification; local Playwright clicked the homepage hero CTA to /bookings?source=homepage-hero and rendered the OTP Bookings form without console errors"
+    "status": "passed",
+    "summary": "Vercel preview dpl_B1jZvRwCwMkpmxdeeif4Xhaurmcn for source SHA 38bbc91782f0ec66d1bb1c7dcd68c87931cefe7b is READY. Authenticated Vercel CLI fetched the preview homepage, booking page, and conversion analytics asset; verified the homepage hero resolves to /bookings?source=homepage-hero and the FIXLINE destination is absent. Playwright clicked the homepage hero CTA in the local candidate browser, reached the OTP Bookings form with the source tag intact, and observed no console errors."
   },
   "authenticatedSweep": {
-      "status": "passed_previous_production_release_2026-09-20; auth routes are unchanged and the production workflow will rerun the authenticated sweep before deployment",
-      "summary": "Prior production release recorded authenticated read-only admin checks as passed. This CTA and static analytics repair do not touch authentication. The release workflow still reruns authenticated checks before deploying."
+    "status": "passed",
+    "summary": "The 2026-09-20 production release recorded authenticated read-only admin checks as passed. This CTA and static analytics repair do not touch authentication; the production workflow reruns authenticated checks before deploying."
   },
   "deploymentTarget": {
     "project": "otp-site",
