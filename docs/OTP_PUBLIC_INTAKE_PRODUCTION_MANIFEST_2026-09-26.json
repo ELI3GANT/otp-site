@@ -266,47 +266,67 @@
       {
         "service": "otp-fixline",
         "branch": "codex/canonical-lead-intake-attributed",
-        "commit": "f43a545b3d56db929f1fa87e7696fa555e2660f1",
+        "commit": "38f27ebbaf366f2f63657e9b1ab149cdb1bc4b3e",
         "foundationCommit": "067c38b9",
-        "localGates": "passed: 143/143 tests, production build, lint"
+        "localGates": "passed after identity correction: 143/143 tests, production build, lint"
       }
     ],
     "fixlinePreview": {
-      "deploymentId": "dpl_GAWpiMCN8sthzj2WFr2NW94eZ2bi",
-      "url": "https://otp-fixline-3vzz7j78q-only-true-perspective.vercel.app",
-      "commit": "f43a545b3d56db929f1fa87e7696fa555e2660f1",
+      "deploymentId": "dpl_HhudsTToKpRjZPcK5n3tqh2gFCY2",
+      "url": "https://otp-fixline-fuz0gah3w-only-true-perspective.vercel.app",
+      "commit": "24906163932f2555df761be3432ce1a4150025d2",
       "state": "READY",
       "health": 200,
       "readiness": 503,
-      "reason": "Preview Supabase project identity is unresolved: repository policy/docs identify ohryrprqukjjbfcuqyvs as FIXLINE production, while current app constants point both QA and production to ckumhowhucbbmpdeqkrl, the live OTP Site database.",
-      "qaProject": "ohryrprqukjjbfcuqyvs",
-      "projectIdentity": "conflicted; no hosted QA target currently authorized by repository policy",
-      "projectStatus": "ACTIVE_HEALTHY",
-      "schemaMigrationApplied": {
+      "reason": "Hosted QA is disabled; Preview has no Supabase bindings, and the active production database must not be used for Preview writes.",
+      "projectIdentity": "production confirmed as ckumhowhucbbmpdeqkrl; dedicated hosted QA unavailable",
+      "remainingPreviewEnvironment": ["FIXLINE_AUTH_SECRET"],
+      "productionDatabaseBindingsCopied": false,
+      "priorTemporaryPreview": {
+        "status": "deleted",
+        "deploymentId": "dpl_GkoTanQL1bwVts8qk8dhbL3AbnK5",
+        "temporaryBindings": "removed",
+        "databaseRequestsSucceeded": false,
+        "credential": "legacy project service key was briefly bound server-side; value not printed"
+      }
+    },
+    "fixlineProductionDatabase": {
+      "projectRef": "ckumhowhucbbmpdeqkrl",
+      "projectName": "OTP SITE",
+      "region": "us-west-2",
+      "identityEvidence": [
+        "active FIXLINE Vercel Production NEXT_PUBLIC_SUPABASE_URL host",
+        "FIXLINE production app project pin",
+        "live OTP Site and FIXLINE table inventory"
+      ],
+      "vercelMode": "production",
+      "serviceCredentialPresent": true,
+      "migrationVersions": [
+        "20260926052053 public_intake_outbox",
+        "20260926052058 fixline_canonical_lead_id"
+      ],
+      "schemaProof": {
+        "otp_public_intakesRows": 0,
+        "fixline_ticketsRows": 0,
+        "lead_id": true,
+        "intake_digest": true,
+        "leadIdUniquePartialIndex": true
+      },
+      "applicationWriteTest": "not run; production write deferred until release gates pass"
+    },
+    "hostedQa": "disabled in FIXLINE code until a separate non-production project is independently approved",
+    "legacyProjectSchemaWrite": {
+      "projectRef": "ohryrprqukjjbfcuqyvs",
+      "providerName": "otp-fixline-qa",
+      "status": "not bound to active FIXLINE Vercel Production; legacy identity, do not use for Preview or production writes",
+      "migration": {
         "repositoryFile": "20260926000000_fixline_canonical_lead_id.sql",
         "databaseVersion": "20260928014022",
         "databaseName": "fixline_canonical_lead_id",
         "columnsVerified": ["lead_id", "intake_digest"],
         "uniqueIndexVerified": "fixline_tickets_lead_id_unique (lead_id) WHERE lead_id IS NOT NULL",
-        "tableRowsAfterMigration": 0,
-        "applicationWriteTest": "not run"
-      },
-      "previewBindings": {
-        "scope": "branch-specific Preview for codex/canonical-lead-intake-attributed",
-        "variables": [
-          "FIXLINE_SUPABASE_MODE",
-          "NEXT_PUBLIC_SUPABASE_URL",
-          "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-          "SUPABASE_SERVICE_ROLE_KEY",
-          "STATUS_TOKEN_HASH_SECRET",
-          "RATE_LIMIT_HASH_SECRET"
-        ],
-        "status": "removed after detecting project identity conflict",
-        "credentialSource": "ohryrprqukjjbfcuqyvs; repository documentation labels this project production",
-        "deployment": "temporary redeployment dpl_GkoTanQL1bwVts8qk8dhbL3AbnK5 deleted after readiness failed; no successful DB request observed"
-      },
-      "previewReadiness": "503; environment/project identity mismatch",
-      "remainingPreviewEnvironment": ["FIXLINE_AUTH_SECRET"]
+        "tableRowsAfterMigration": 0
+      }
     },
     "productionHttp": {
       "siteHealth": 200,
@@ -324,7 +344,7 @@
       "trustedGitleaks": "passed",
       "broadSuite": "651/657 passed; six known pre-existing STRIKE navigation expectation failures"
     },
-    "productionDeployment": "not attempted; strict OTP OS gate is blocked and FIXLINE database identity remains unresolved",
+    "productionDeployment": "not attempted; strict OTP OS gate is blocked and the Site retry route is unavailable",
     "productionIntakeProof": "not run; no synthetic production lead created"
   },
   "productionProof": {
