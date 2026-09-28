@@ -37,7 +37,7 @@ assert.equal(home.querySelectorAll('[data-archive-projects], [data-video-feed]')
 assert.ok(home.querySelector('main a[href="/archive"]'));
 assert.ok(home.querySelector('main a[href="/studio"]'));
 assert.ok(home.querySelector('main a[href="/signal"]'));
-assert.ok(home.querySelector('main a[href^="/fixline/intake?source="]'));
+assert.ok(home.querySelector('main a[href="/bookings?source=homepage-hero"]'), 'homepage primary project CTA opens OTP Bookings');
 for (const image of home.querySelectorAll('img')) {
   assert.ok(image.hasAttribute('alt'));
   assert.ok(Number(image.width) > 0 && Number(image.height) > 0, 'images reserve intrinsic space');

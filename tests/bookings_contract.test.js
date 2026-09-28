@@ -13,6 +13,8 @@ console.log('OTP BOOKINGS CONTRACT...');
 
 const server = read('server.js');
 const html = read('bookings.html');
+const home = read('index.html');
+const publicShell = read('public-shell.js');
 const js = read('bookings.js');
 const css = read('bookings.css');
 const pricing = read('pricing-config.js');
@@ -24,6 +26,9 @@ assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
 assert.match(server, /'\/book': 'bookings\.html'/);
 assert.match(server, /'\/book-otp': 'bookings\.html'/);
+assert.ok(home.includes('href="/bookings?source=homepage-hero">Start a project'), 'homepage Start a project CTA opens OTP Bookings');
+assert.ok(!home.includes('href="/fixline/intake?source=homepage-hero"'), 'homepage project CTA does not route into FIXLINE');
+assert.ok(publicShell.includes('href="/bookings?source=public-nav">Start a project'), 'shared public navigation sends project enquiries to OTP Bookings');
 
 assert.match(server, /app\.get\('\/api\/bookings\/config'/);
 assert.match(server, /app\.post\('\/api\/bookings\/submit'/);

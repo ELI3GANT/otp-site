@@ -22,7 +22,7 @@ for (const html of [homepage, archive]) {
   assert.ok(html.includes('href="/fixline"'), 'public navigation links to FIXLINE');
 }
 
-assert.ok(new JSDOM(homepage).window.document.querySelector('main a[href="/fixline/intake?source=homepage-hero"]'), 'homepage primary FIXLINE CTA preserves bounded source attribution');
+assert.ok(new JSDOM(homepage).window.document.querySelector('main a[href="/bookings?source=homepage-hero"]'), 'homepage primary project CTA opens Bookings with source attribution');
 assert.ok(homepage.includes('href="/services/consultant-audit"'), 'homepage exposes consultant audit service');
 assert.ok(!homepage.includes('Analyze My Intent'), 'homepage does not ship a simulated audit flow');
 assert.ok(!homepage.includes('AI Content Injected Here'), 'homepage does not ship a fake strategy-result state');
