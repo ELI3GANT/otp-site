@@ -2,6 +2,7 @@
   "releaseName": "otp-project-inquiry-20260928",
   "includedFiles": [
     "release-manifest.json",
+    "release-manifest-site.json",
     "service-discovery.css",
     "songwars-config.js",
     "songwars.css",
@@ -11,6 +12,8 @@
     "website-design.html",
     "index.html",
     "public-shell.js",
+    "studio.html",
+    "studio.css",
     "tests/bookings_contract.test.js",
     "tests/fixline_integration_contract.test.js",
     "tests/homepage_visual_contract.test.js",

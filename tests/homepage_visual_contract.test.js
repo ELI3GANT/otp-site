@@ -49,4 +49,15 @@ assert.match(css, /animation-duration:\s*\.0*1ms|animation:\s*none|animation-dur
 const studio = new JSDOM(read('studio.html')).window.document;
 for (const id of ['digital', 'creative', 'launch', 'engagements', 'process', 'questions']) assert.ok(studio.getElementById(id), 'Studio owns ' + id);
 assert.ok(studio.querySelectorAll('#process li').length >= 3, 'Studio explains engagement steps');
+assert.equal(studio.querySelectorAll('.studio-service-icon').length, 4, 'each practice category has one service icon');
+assert.equal(studio.querySelectorAll('.studio-engagements > a > .studio-section-icon').length, 3, 'each engagement option has one icon');
+assert.equal(studio.querySelectorAll('.studio-process-top > .studio-section-icon').length, 4, 'each process step has one icon');
+assert.equal(studio.querySelectorAll('.studio-question-icon svg').length, 4, 'each FAQ has one icon');
+for (const icon of studio.querySelectorAll('.studio-service-icon, .studio-section-icon, .studio-question-icon')) {
+  assert.equal(icon.getAttribute('aria-hidden'), 'true', 'decorative icons are hidden from assistive technology');
+}
+for (const icon of studio.querySelectorAll('svg.studio-service-icon, svg.studio-section-icon, .studio-question-icon svg')) assert.equal(icon.getAttribute('focusable'), 'false');
+for (const cta of studio.querySelectorAll('a[href*="source=public-nav"], a[href*="source=public-mobile"], a[href*="source=public-footer"], a[href*="source=studio"]')) {
+  assert.match(cta.getAttribute('href'), /^\/bookings(?:\?|$)/, 'Studio project CTAs open the Project Inquiry flow');
+}
 console.log('Homepage, Studio and shared navigation runtime contracts passed.');

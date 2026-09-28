@@ -1,8 +1,11 @@
 {
-  "release": "OTP Bookings visual refresh",
+  "release": "OTP Project Inquiry and Studio visual polish",
   "includedFiles": [
     "bookings.html",
     "bookings.css",
+    "studio.html",
+    "studio.css",
+    "tests/homepage_visual_contract.test.js",
     "tests/bookings_contract.test.js",
     "scripts/record_release_ci_evidence.js",
     "release-manifest-site.json"
@@ -15,25 +18,29 @@
     "vault/**"
   ],
   "testsRun": [
-    { "command": "npm test", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run security:scan", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run build:speed-insights", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run master_test:ci", "status": "passed in protected production workflow 36370303877" },
-    { "command": "npm run prod:full-sweep", "status": "passed in protected production workflow 36370303877" },
-    { "command": "git diff --check", "status": "passed in protected production workflow 36370303877" },
-    { "command": "node --check", "status": "passed in protected production workflow 36370303877" }
+    { "command": "npm test", "status": "passed locally on the combined Project Inquiry and Studio icon candidate 2026-09-28; protected workflow rerun required" },
+    { "command": "npm run test:e2e", "status": "passed 62/62 locally on the combined candidate 2026-09-28" },
+    { "command": "node tests/homepage_visual_contract.test.js", "status": "passed Studio icon counts, accessibility, and Project Inquiry destinations locally 2026-09-28" },
+    { "command": "npm run security:scan", "status": "passed locally across 311 files on the combined candidate 2026-09-28" },
+    { "command": "npm run build:speed-insights", "status": "passed locally on the combined candidate 2026-09-28" },
+    { "command": "npm run master_test:ci", "status": "passed locally against current live API on the combined candidate 2026-09-28" },
+    { "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep", "status": "passed live public production sweep on 2026-09-28; authenticated admin checks unavailable in local environment and will run in protected workflow" },
+    { "command": "git diff --check", "status": "passed locally on the combined candidate 2026-09-28" },
+    { "command": "node --check", "status": "passed all production and contract JavaScript entry points locally on 2026-09-28" }
   ],
   "browserQa": {
     "status": "passed",
-    "routes": ["/book", "/booking", "/bookings", "/book-otp"],
+    "routes": ["/", "/studio", "/book", "/booking", "/bookings", "/book-otp"],
     "viewport": "1280x720",
     "flows": [
-      "refreshed black and lime Bookings design rendered",
+      "Studio practice, engagement, process, and FAQ icons render without changing Project Inquiry styling",
+      "Studio project CTAs route to Project Inquiry",
+      "refreshed black and lime Project Inquiry design rendered",
       "all public booking aliases resolved to the same page",
       "selecting The Signal updated the package summary and form",
       "no customer request was submitted"
     ],
-    "evidence": "Local and live production browser screenshots captured during the release task"
+    "evidence": "Combined Studio candidate checked in local Playwright at 390px and 1440px: all 15 decorative icons visible, no horizontal overflow, FAQ opens, all Studio project CTAs route to /bookings, versioned CSS loads, and no console errors; screenshots /tmp/otp-studio-candidate-390.png and /tmp/otp-studio-candidate-1440.png. Live booking flow browser evidence belongs to deployed Project Inquiry commit f284daa and is rerun by protected release workflow."
   },
   "authenticatedSweep": {
     "status": "passed",
