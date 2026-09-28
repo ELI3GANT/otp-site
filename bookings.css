@@ -538,6 +538,15 @@ button:disabled {
   border-bottom: 1px solid var(--line);
 }
 
+body.booking-site .hero {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: auto;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-top: clamp(34px, 7vw, 72px);
+  padding-bottom: clamp(30px, 6vw, 56px);
+}
+
 .hero-copy-wrap {
   display: grid;
   min-width: 0;
@@ -1306,7 +1315,9 @@ h3 {
 
 .booking-shell {
   display: grid;
-  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.28fr);
+  grid-template-columns: minmax(0, 1fr);
+  width: min(920px, 100%);
+  margin: 0 auto;
   gap: 18px;
   align-items: start;
   padding-bottom: clamp(42px, 7vw, 86px);
@@ -1480,6 +1491,130 @@ h3 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.inquiry-choice-group,
+.priority-choice-group {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.inquiry-choice-group legend,
+.priority-choice-group legend {
+  margin-bottom: 5px;
+  color: var(--text);
+  font-size: 1.12rem;
+  font-weight: 900;
+}
+
+.inquiry-choice-group > p {
+  margin: -8px 0 2px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.inquiry-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.inquiry-choice {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+  font-size: 0.94rem;
+  font-weight: 780;
+  text-transform: none;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.inquiry-choice:last-child {
+  grid-column: 1 / -1;
+}
+
+.inquiry-choice:has(input:checked),
+.inquiry-choice:focus-within {
+  border-color: var(--active-accent);
+  background: var(--active-surface);
+}
+
+.inquiry-choice input[type="radio"],
+.priority-choice-group input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--active-accent);
+}
+
+.package-recommendation {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--active-accent) 42%, var(--line));
+  border-radius: 8px;
+  background: var(--active-surface);
+}
+
+.package-recommendation > p {
+  margin: 0;
+  color: var(--active-accent-2);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.package-recommendation > strong {
+  color: var(--text);
+  font-size: 1.16rem;
+}
+
+.package-recommendation > span,
+.priority-choice-group small,
+.upload-note {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.package-recommendation label {
+  margin-top: 7px;
+}
+
+.priority-choice-group {
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.priority-choice-group label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 0.9rem;
+  text-transform: none;
+}
+
+.upload-note {
+  margin: -5px 0 0;
 }
 
 label {
@@ -2193,10 +2328,15 @@ button:focus-visible,
   .service-selector-grid,
   .package-grid,
   .fast-lane-grid,
+  .inquiry-choice-grid,
   .form-grid,
   .stepper,
   .mini-summary {
     grid-template-columns: 1fr;
+  }
+
+  .inquiry-choice:last-child {
+    grid-column: auto;
   }
 
   h1 {

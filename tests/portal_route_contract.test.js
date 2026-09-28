@@ -98,10 +98,8 @@ assert.ok(clientCss.includes('prefers-reduced-motion'), 'client portal respects 
 
 assert.ok(indexHtml.includes('href="/portal"'), 'homepage exposes clean same-origin Client Portal CTA');
 assert.ok(bookingsHtml.includes('/portal'), 'bookings header exposes clean Client Portal CTA');
-assert.ok(bookingsJs.includes('private Client Portal link for documents, payment steps, and approvals'), 'booking success copy references clean portal wording');
 assert.ok(bookingsJs.includes('safePortalHref'), 'booking success validates returned portal links');
-assert.ok(bookingsHtml.includes('https://otp-os.vercel.app/bookings'), 'bookings exposes secure project intake CTA');
-assert.ok(bookingsHtml.includes('Open Secure Project Intake'), 'bookings labels secure intake next step');
+assert.ok(bookingsJs.includes('no call, appointment, or delivery slot has been scheduled'), 'project inquiry confirmation does not claim a scheduled appointment');
 assert.ok(!/otp-os\.vercel\.app/i.test(bookingsJs), 'booking JS must not expose OTP OS hostname');
 
 console.log('   OK: Client Portal route contract');

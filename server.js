@@ -2973,9 +2973,9 @@ const OTP_BOOKINGS_RESPONSE_HEADER_BLOCKLIST = new Set([
     'upgrade'
 ]);
 
-const BOOKING_CLIENT_MESSAGE = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
-const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Booking received. OTP Oracle recommendation is pending review.';
-const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not submit the booking yet. Please check the required fields and try again.';
+const BOOKING_CLIENT_MESSAGE = 'Project inquiry received. OTP will review the scope and follow up with the next step.';
+const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Project inquiry received. OTP will review the scope and follow up with the next step.';
+const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not send the project inquiry yet. Please check the required fields and try again.';
 const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit']);
 const CLIENT_PORTAL_TOKEN_RE = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/;
 const SAFE_E2E_PORTAL_FIXTURE = Object.freeze({
@@ -3749,8 +3749,8 @@ function buildPublicBookingConfig() {
         public_url: 'https://www.onlytrueperspective.tech/bookings',
         production_url: 'https://www.onlytrueperspective.tech/bookings',
         cta_text: 'Start a Project',
-        cta_copy: 'Choose a service lane, pick the package depth, and OTP will confirm the cleanest next step.',
-        dm_text: 'Book your creative project with OTP: https://www.onlytrueperspective.tech/bookings',
+        cta_copy: 'Tell us what you are building. OTP will review the scope and follow up with a quote or next step.',
+        dm_text: 'Start a project inquiry with OTP: https://www.onlytrueperspective.tech/bookings',
         routes: ['/bookings', '/booking', '/book', '/book-otp'],
         packages: bookingPackageCards(),
         fast_lane_offers: fastLaneOffers,
@@ -3765,7 +3765,7 @@ function buildPublicBookingConfig() {
         preferredContactMethods: ['Email', 'Text message', 'Phone call', 'Instagram DM', 'No preference'],
         projectTypes: ['Brand identity', 'Website / landing page', 'Video / content', 'AI / automation', 'Event / launch', 'Business system', 'Custom / mixed', 'Not sure yet'],
         referralSources: ['Instagram', 'Referral', 'Google / search', 'YouTube', 'Live event', 'Returning client', 'Other'],
-        preferredNextSteps: ['Send me the best next step', 'Send a quote first', 'Book a scope call', 'Open secure project intake', 'Not sure yet'],
+        preferredNextSteps: ['Send me the best next step'],
         upload: {
             supported: false,
             max_bytes: 25 * 1024 * 1024,
@@ -4235,14 +4235,12 @@ function buildBookingDepositMetadata(payload = {}, recommendation = null) {
 }
 
 function publicBookingSubmitResponse({ recommendation = null, portalPath = '', nextStep = '', payload = {}, writerEvidence = null } = {}) {
-    const depositCheckout = buildBookingDepositMetadata(payload, recommendation);
     return {
         schema_version: BOOKING_CONTRACT_VERSION,
         ok: true,
         received: true,
         message: recommendation ? BOOKING_CLIENT_MESSAGE : BOOKING_PENDING_RECOMMENDATION_MESSAGE,
         recommendation,
-        depositCheckout,
         ...(writerEvidence ? { writerEvidence } : {}),
         ...(portalPath ? { clientPortalPath: portalPath } : {}),
         nextStep: publicBookingMessage(

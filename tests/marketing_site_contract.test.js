@@ -24,6 +24,7 @@ const siteInit = read('site-init.js');
 const otpProjects = read('otp-projects.js');
 const server = read('server.js');
 const bookings = read('bookings.html');
+const bookingsJs = read('bookings.js');
 const analyticsEngine = read('otp-analytics-engine.js');
 
 assert.ok(index.includes('public-system.css?v='), 'homepage loads shared public design tokens');
@@ -149,9 +150,9 @@ assert.ok(terminal.includes('toggleAdminTheme()'), 'OTP Terminal theme control')
 assert.ok(terminal.includes('data-theme'), 'OTP Terminal uses data-theme');
 assert.ok(terminal.includes('admin-core.js?v='), 'OTP Terminal cache-busts admin-core');
 
-assert.ok(bookings.includes('project-intake-panel'), 'bookings page bridges to secure project intake');
-assert.ok(bookings.includes('Open Secure Project Intake'), 'bookings exposes secure intake CTA label');
-assert.ok(bookings.includes('https://otp-os.vercel.app/bookings'), 'bookings links secure intake to OTP OS');
+assert.ok(bookings.includes('Start Project Inquiry'), 'bookings page presents a single project inquiry path');
+assert.ok(bookings.includes('id="booking-form"'), 'project inquiry path opens the public form');
+assert.ok(bookingsJs.includes('/api/bookings/submit'), 'project inquiry keeps the existing durable intake API');
 assert.ok(fs.readFileSync(path.join(root, 'otp-attribution.js'), 'utf8').includes('buildUrlWithAttribution'), 'attribution helper can append UTMs to intake URL');
 
 console.log('   ✅ Marketing + theme contract OK');
