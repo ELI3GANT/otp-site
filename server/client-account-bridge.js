@@ -50,13 +50,52 @@ function tokenShape(value, maxLength) {
     return typeof value === 'string' && value.length > 20 && value.length <= maxLength && !/\s/.test(value);
 }
 
+function publicText(value, maxLength = 240) {
+    return typeof value === 'string' ? value.trim().slice(0, maxLength) : '';
+}
+
+function publicProject(project) {
+    if (!project || typeof project !== 'object' || !PROJECT_ID_PATTERN.test(project.id)) return null;
+    return {
+        id: project.id,
+        title: publicText(project.title, 180),
+        service: publicText(project.service, 140),
+        status: publicText(project.status, 80),
+        summary: publicText(project.summary, 2200),
+        nextAction: publicText(project.nextAction, 600),
+        updatedAt: publicText(project.updatedAt, 60),
+        deliverables: (Array.isArray(project.deliverables) ? project.deliverables : []).slice(0, 100).map((item) => ({
+            name: publicText(item?.name, 180),
+            status: publicText(item?.status, 80),
+            clientNotes: publicText(item?.clientNotes, 600),
+            assetUrl: publicText(item?.assetUrl, 2048)
+        })),
+        documents: (Array.isArray(project.documents) ? project.documents : []).slice(0, 100).map((item) => ({
+            label: publicText(item?.label, 180),
+            url: publicText(item?.url, 2048)
+        }))
+    };
+}
+
 function safeUpstreamData(data, kind) {
     if (!data || data.ok !== true) return null;
     if (kind === 'me' && data.profile && Array.isArray(data.organizations)) {
-        return { ok: true, profile: data.profile, organizations: data.organizations };
+        return {
+            ok: true,
+            profile: { email: publicText(data.profile.email, 254) },
+            organizations: data.organizations.slice(0, 100).map((item) => ({
+                name: publicText(item?.name, 160),
+                role: item?.role === 'client_owner' ? 'client_owner' : 'client_member'
+            }))
+        };
     }
-    if (kind === 'projects' && Array.isArray(data.projects)) return { ok: true, projects: data.projects };
-    if (kind === 'project' && data.project) return { ok: true, project: data.project };
+    if (kind === 'projects' && Array.isArray(data.projects)) {
+        return { ok: true, projects: data.projects.map(publicProject).filter(Boolean) };
+    }
+    if (kind === 'project') {
+        const project = publicProject(data.project);
+        if (project) return { ok: true, project };
+    }
     return null;
 }
 

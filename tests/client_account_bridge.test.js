@@ -25,13 +25,13 @@ function fixture({ enabled = true, member = true } = {}) {
             if (!member) return { ok: false, status: 403 };
             if (url.endsWith('/me')) {
                 return { ok: true, status: 200, async json() {
-                    return { ok: true, profile: { id: 'user-a' }, organizations: [{ id: 'org-a' }] };
+                    return { ok: true, profile: { id: 'user-a', email: 'client@example.test', admin: true }, organizations: [{ id: 'org-a', name: 'Client Studio', role: 'client_owner', secret: 'private-value' }] };
                 } };
             }
             if (url.endsWith('/projects/JOB-B')) return { ok: false, status: 404 };
             if (url.endsWith('/projects/JOB-A')) {
                 return { ok: true, status: 200, async json() {
-                    return { ok: true, project: { id: 'JOB-A', title: 'Own project' } };
+                    return { ok: true, project: { id: 'JOB-A', title: 'Own project', internal_notes: 'Private staff note.' } };
                 } };
             }
             return { ok: true, status: 200, async json() {
@@ -88,10 +88,16 @@ test('verified member gets secure cookies and only their assigned project', asyn
         });
         assert.equal(exchanged.status, 200);
         assert.match(exchanged.headers.get('set-cookie'), /HttpOnly; Secure; SameSite=Lax/);
+        assert.deepEqual(await exchanged.json(), { ok: true,
+            profile: { email: 'client@example.test' },
+            organizations: [{ name: 'Client Studio', role: 'client_owner' }]
+        });
         const cookie = `__Host-otp_client_access=${'a'.repeat(32)}; __Host-otp_client_refresh=${'r'.repeat(32)}`;
         const own = await fetch(`${base}/api/client/projects/JOB-A`, { headers: { Cookie: cookie } });
         assert.equal(own.status, 200);
-        assert.equal((await own.json()).project.title, 'Own project');
+        const ownBody = await own.json();
+        assert.equal(ownBody.project.title, 'Own project');
+        assert.doesNotMatch(JSON.stringify(ownBody), /Private staff note/);
         const other = await fetch(`${base}/api/client/projects/JOB-B`, { headers: { Cookie: cookie } });
         assert.equal(other.status, 404);
         assert.doesNotMatch(JSON.stringify(await other.json()), /JOB-B/);
