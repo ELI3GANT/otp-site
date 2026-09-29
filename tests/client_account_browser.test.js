@@ -55,11 +55,18 @@ test('client workspace stays usable at 390px without leaking staff content', asy
         assert.equal(await page.getByText('Review the next milestone.').isVisible(), true);
         assert.equal(await page.getByText('First draft in progress.', { exact: false }).isVisible(), true);
         assert.equal(await page.getByRole('link', { name: 'Open file' }).isVisible(), true);
+        assert.match(await page.getByRole('link', { name: 'Contact OTP' }).getAttribute('href'), /^mailto:/);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+        if (process.env.OTP_CLIENT_SCREENSHOT_PATH) {
+            await page.screenshot({ path: process.env.OTP_CLIENT_SCREENSHOT_PATH.replace(/\.png$/, '-project.png'), fullPage: true });
+        }
         await page.getByRole('link', { name: 'Profile' }).click();
         await page.getByRole('heading', { name: 'Your profile' }).waitFor();
         assert.equal(await page.getByText('client@example.test').isVisible(), true);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+        if (process.env.OTP_CLIENT_SCREENSHOT_PATH) {
+            await page.screenshot({ path: process.env.OTP_CLIENT_SCREENSHOT_PATH, fullPage: true });
+        }
         assert.deepEqual(errors, []);
     } finally {
         await browser.close();

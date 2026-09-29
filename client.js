@@ -654,7 +654,9 @@ async function initAccountProjects(id = '') {
         ...(project.deliverables || []).filter((item) => item.assetUrl)
           .map((item) => projectLinkRow(item.name || 'Delivery file', item.assetUrl, 'Open file'))
       ]));
-      grid.append(entryActionCard('Messages and appointments', 'OTP will post these when they are available for your project.'));
+      grid.append(entryActionCard('Questions or scheduling', 'Contact OTP about this project or request a scope call.', [
+        buttonLink('Contact OTP', `mailto:${supportEmail}`, true, { allowMailto: true })
+      ]));
       grid.append(entryActionCard('Your projects', 'View your other approved projects.', [accountLink('All projects', '/client/projects', true)]));
     } else if (data.projects.length) {
       data.projects.forEach((project) => grid.append(accountProjectCard(project)));
