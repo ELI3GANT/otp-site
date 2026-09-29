@@ -28,6 +28,7 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/bookings/submit',
     'ALL /api/bookings/deposit-checkout',
     'GET /api/client-portal/:token',
+    'GET /api/client/account/config', // Public feature flag and copy only; no identity or project data.
     'GET /api/quote/:id',
     'GET /api/youtube/videos',
     'POST /api/contact',
