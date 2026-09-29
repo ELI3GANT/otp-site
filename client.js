@@ -236,6 +236,12 @@ function buttonLink(label, url, secondary = false, options = {}) {
   return link;
 }
 
+function accountLink(label, path, secondary = false) {
+  const link = el('a', `button-link ${secondary ? 'secondary' : ''}`.trim(), label);
+  link.href = path;
+  return link;
+}
+
 function referenceLabel(url = '') {
   return portalReferenceLabel(url);
 }
@@ -528,6 +534,173 @@ function renderPortal(data) {
   renderDashboard(data, tokenFromLocation());
 }
 
+async function accountData(path) {
+  const response = await fetch(apiUrl(path), {
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+    cache: 'no-store'
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.ok !== true) {
+    const error = new Error(data.message || 'Your client workspace is temporarily unavailable.');
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+function renderAccountLogin(message = '') {
+  const hero = el('section', 'hero portal-entry-hero');
+  hero.append(
+    el('p', 'eyebrow', 'OnlyTruePerspective'),
+    el('h2', '', 'Client workspace'),
+    el('p', '', 'Sign in with the email OTP invited to your project.')
+  );
+  const form = el('form', 'portal-form');
+  const email = input('email', 'email', 'you@example.com');
+  email.required = true;
+  email.autocomplete = 'email';
+  const submit = el('button', '', 'Email me a sign-in link');
+  const notice = el('p', 'entry-copy', message);
+  form.append(field('Email', email), submit);
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    submit.disabled = true;
+    try {
+      const result = await postJson('/api/client/session/request', { email: email.value });
+      notice.textContent = result.message || 'Check your email for a sign-in link.';
+      setStatus('Check Email', 'warning');
+    } catch (error) {
+      notice.textContent = error.message || 'Sign-in email is temporarily unavailable.';
+      setStatus('Unavailable', 'error');
+    } finally {
+      submit.disabled = false;
+    }
+  });
+  portalRoot.replaceChildren(hero, entryActionCard('Sign in', 'Use your approved client email. A project inquiry alone does not grant access.', [form, notice]));
+  setStatus('Sign In', 'warning');
+}
+
+async function initAccountLogin() {
+  const query = new URLSearchParams(window.location.search);
+  const fragment = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const accessToken = fragment.get('access_token');
+  const refreshToken = fragment.get('refresh_token');
+  if (window.location.hash || window.location.search) {
+    window.history.replaceState(null, '', window.location.pathname);
+  }
+  if (accessToken && refreshToken) {
+    try {
+      await postJson('/api/client/session/exchange', {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_in: Number(fragment.get('expires_in')) || 3600
+      });
+      window.location.replace('/client/projects');
+      return;
+    } catch (error) {
+      renderAccountLogin(error.message || 'This sign-in link could not be opened. Request another link.');
+      return;
+    }
+  }
+  if (query.has('error') || fragment.has('error') || query.has('code')) {
+    renderAccountLogin('This sign-in link expired or could not be opened. Request another link.');
+    return;
+  }
+  try {
+    await accountData('/api/client/session');
+    window.location.replace('/client/projects');
+  } catch {
+    renderAccountLogin('');
+  }
+}
+
+function accountProjectCard(project) {
+  const section = el('section', 'card');
+  section.append(el('p', 'eyebrow', clean(project.service) || 'OTP Project'));
+  section.append(el('h3', '', clean(project.title) || 'Project'));
+  section.append(badge(project.status || 'In progress', 'ready'));
+  if (project.summary) section.append(el('p', 'entry-copy', clean(project.summary)));
+  section.append(accountLink('Open project', `/client/projects/${encodeURIComponent(project.id)}`));
+  return section;
+}
+
+async function initAccountProjects(id = '') {
+  try {
+    const data = await accountData(id
+      ? `/api/client/projects/${encodeURIComponent(id)}`
+      : '/api/client/projects');
+    const hero = el('section', 'hero portal-entry-hero');
+    hero.append(
+      el('p', 'eyebrow', 'Private client workspace'),
+      el('h2', '', id ? clean(data.project.title) : 'Your projects'),
+      el('p', '', id ? 'Project details shared by OTP.' : 'Projects OTP has approved for your account.')
+    );
+    const grid = el('div', 'grid');
+    if (id) {
+      const project = data.project;
+      grid.append(card('Project', [
+        infoRow('Service', project.service),
+        infoRow('Status', project.status),
+        infoRow('Updated', project.updatedAt ? humanDate(project.updatedAt) : '')
+      ]));
+      grid.append(card('Latest update', [infoRow('Summary', project.summary)]));
+      grid.append(card('Next step', [infoRow('From OTP', project.nextAction)]));
+      grid.append(card('Deliverables', (project.deliverables || []).map((item) =>
+        infoRow(clean(item.name) || 'Deliverable', [clean(item.status), clean(item.clientNotes)].filter(Boolean).join(' · '))
+      )));
+      grid.append(card('Shared files', [
+        ...(project.documents || []).map((item) => projectLinkRow(item.label || 'Document', item.url, 'Open file')),
+        ...(project.deliverables || []).filter((item) => item.assetUrl)
+          .map((item) => projectLinkRow(item.name || 'Delivery file', item.assetUrl, 'Open file'))
+      ]));
+      grid.append(entryActionCard('Messages and appointments', 'OTP will post these when they are available for your project.'));
+      grid.append(entryActionCard('Your projects', 'View your other approved projects.', [accountLink('All projects', '/client/projects', true)]));
+    } else if (data.projects.length) {
+      data.projects.forEach((project) => grid.append(accountProjectCard(project)));
+    } else {
+      grid.append(entryActionCard('No projects shared yet', 'OTP will add your project here after it is approved.'));
+    }
+    const signOut = el('button', 'secondary', 'Sign out');
+    signOut.addEventListener('click', async () => {
+      try { await postJson('/api/client/session/logout'); } finally { window.location.replace('/client/login'); }
+    });
+    portalRoot.replaceChildren(hero, grid, accountLink('Profile', '/client/profile', true), signOut);
+    setStatus('Client Workspace', 'ready');
+  } catch (error) {
+    if (error.status === 401) {
+      window.location.replace('/client/login');
+      return;
+    }
+    renderError(error.message);
+  }
+}
+
+async function initAccountProfile() {
+  try {
+    const data = await accountData('/api/client/session');
+    const hero = el('section', 'hero portal-entry-hero');
+    hero.append(
+      el('p', 'eyebrow', 'Private client workspace'),
+      el('h2', '', 'Your profile'),
+      el('p', '', 'The account and organizations OTP has approved for your projects.')
+    );
+    const organizations = (data.organizations || []).map((organization) =>
+      infoRow(clean(organization.name) || 'Organization', organization.role === 'client_owner' ? 'Owner' : 'Member')
+    );
+    portalRoot.replaceChildren(
+      hero,
+      card('Account', [infoRow('Email', data.profile?.email)]),
+      card('Project access', organizations),
+      accountLink('Your projects', '/client/projects', true)
+    );
+    setStatus('Client Workspace', 'ready');
+  } catch (error) {
+    if (error.status === 401) return window.location.replace('/client/login');
+    renderError(error.message);
+  }
+}
+
 function renderEntry(config = {}) {
   const hero = el('section', 'hero portal-entry-hero');
   const grid = el('div', 'grid');
@@ -539,13 +712,17 @@ function renderEntry(config = {}) {
   const messageInput = input('message', 'textarea', 'Project or booking details');
   const inviteButton = el('button', '', 'Open Invite');
   const requestButton = el('button', 'secondary', 'Request Access');
-  const stagedLogin = el('button', 'secondary', 'Account Login Staged');
+  const stagedLogin = config.accountAuth?.enabled
+    ? accountLink('Client Sign In', '/client/login', true)
+    : el('button', 'secondary', 'Account Login Staged');
   const stagedSignup = el('button', 'secondary', 'Create Account Staged');
   const authMessage = config.accountAuth?.message || 'Use a private portal invite or request access.';
 
-  stagedLogin.type = 'button';
-  stagedLogin.disabled = true;
-  stagedLogin.setAttribute('aria-disabled', 'true');
+  if (!config.accountAuth?.enabled) {
+    stagedLogin.type = 'button';
+    stagedLogin.disabled = true;
+    stagedLogin.setAttribute('aria-disabled', 'true');
+  }
   stagedSignup.type = 'button';
   stagedSignup.disabled = true;
   stagedSignup.setAttribute('aria-disabled', 'true');
@@ -625,6 +802,14 @@ function handleFatalPortalError(error) {
 }
 
 async function init() {
+  const path = window.location.pathname;
+  if (path === '/client/login') return initAccountLogin();
+  if (path === '/client/profile') return initAccountProfile();
+  if (path === '/client/projects') return initAccountProjects();
+  if (path.startsWith('/client/projects/')) {
+    const id = decodeURIComponent(path.slice('/client/projects/'.length));
+    return initAccountProjects(id);
+  }
   const token = tokenFromLocation();
   if (!token) {
     renderEntry(await fetchAccountConfig().catch(() => ({})));

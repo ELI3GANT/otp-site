@@ -47,6 +47,7 @@ const {
     forwardJobArchiveMutation
 } = require('./server/job-archive-handoff.js');
 const { BoundedTtlCache } = require('./server/bounded-ttl-cache.js');
+const { createClientAccountBridge } = require('./server/client-account-bridge.js');
 const {
     SITE_COMMAND_SCHEMA,
     PUBLIC_SITE_CONTENT_KEYS,
@@ -2721,6 +2722,12 @@ app.get(['/client', '/client/'], (req, res) => {
     return res.redirect(302, '/portal?status=missing');
 });
 
+app.get(['/client/login', '/client/profile', '/client/projects', '/client/projects/:id'], (req, res) => {
+    privatePortalHtml(res);
+    if (process.env.OTP_CLIENT_PORTAL_ACCOUNTS_ENABLED !== '1') return res.redirect(302, '/client');
+    return res.sendFile(path.join(staticPath, 'client.html'));
+});
+
 app.get('/client/:token', (req, res) => {
     privatePortalHtml(res);
     const token = normalizeClientPortalToken(req.params.token);
@@ -5045,6 +5052,33 @@ const limiter = rateLimit({
     message: { success: false, message: "Too many requests, please try again later." }
 });
 app.use('/api/', limiter);
+
+const clientSessionLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30 });
+app.use('/api/client/session', (req, res, next) => req.method === 'POST'
+    ? clientSessionLimiter(req, res, next)
+    : next());
+app.use('/api/client', createClientAccountBridge({
+    enabled: process.env.OTP_CLIENT_PORTAL_ACCOUNTS_ENABLED === '1',
+    authClient: supabaseAdmin ? () => createClient(
+        process.env.SUPABASE_URL.trim(),
+        process.env.SUPABASE_SERVICE_KEY.trim(),
+        { auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } }
+    ) : null,
+    upstreamBase: OTP_CLIENT_PORTAL_UPSTREAM
+}));
+app.get('/api/client/account/config', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const enabled = process.env.OTP_CLIENT_PORTAL_ACCOUNTS_ENABLED === '1';
+    return res.json({
+        ok: true,
+        accountAuth: {
+            enabled,
+            message: enabled
+                ? 'Already invited to your OTP workspace? Sign in with your email.'
+                : 'Use a private portal invite or request access.'
+        }
+    });
+});
 
 if (process.env.OTP_VERBOSE_HTTP === '1') {
     app.use((req, res, next) => {
