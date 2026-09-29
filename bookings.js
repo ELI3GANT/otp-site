@@ -203,6 +203,8 @@ const FAST_LANE_DETAILS = {
   }
 };
 
+makeLeadId();
+
 const state = {
   config: fallbackConfig,
   step: 1,
@@ -285,6 +287,28 @@ function makeBookingToken() {
   }
 }
 
+function makeLeadId() {
+  const key = 'otp_public_lead_id';
+  try {
+    const existing = sessionStorage.getItem(key);
+    const incoming = new URLSearchParams(window.location.search).get('lead_id');
+    if (/^LEAD-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(incoming || '')) {
+      if (existing !== incoming) {
+        sessionStorage.removeItem('otp_booking_token');
+        sessionStorage.removeItem('otp_booking_submission');
+      }
+      sessionStorage.setItem(key, incoming);
+      return incoming;
+    }
+    if (/^LEAD-[0-9a-f-]{36}$/i.test(existing || '')) return existing;
+    const leadId = `LEAD-${crypto.randomUUID()}`;
+    sessionStorage.setItem(key, leadId);
+    return leadId;
+  } catch (_) {
+    return `LEAD-${crypto.randomUUID()}`;
+  }
+}
+
 function cleanTrackingValue(value = '', max = 180) {
   return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
 }
@@ -323,6 +347,17 @@ function buildSourceTrackingFallback() {
     campaign: cleanTrackingValue(params.get('campaign') || '', 160),
     landing_page: cleanTrackingValue(`${window.location.pathname || ''}${window.location.search || ''}`, 240),
     captured_at: new Date().toISOString()
+  };
+}
+
+function getBookingTracking(stage = 'booking_completed') {
+  const base = getAttributionTracking();
+  return {
+    ...base,
+    conversion_stage: stage,
+    selected_service: cleanTrackingValue(els.service?.value || '', 160),
+    selected_package: cleanTrackingValue(els.package?.value || '', 120),
+    completed_booking: stage === 'booking_completed' ? 'true' : 'false'
   };
 }
 
@@ -755,11 +790,20 @@ function renderPackages() {
     moduleLabel.className = 'module-label';
     moduleLabel.textContent = 'System module';
 
-    const pkgIcon = name.includes('Signal') ? '⚡ ' : name.includes('Engine') ? '⚙️ ' : name.includes('System') ? '🏛️ ' : '🎨 ';
     const head = document.createElement('div');
     head.className = 'package-card-head';
     const headCopy = document.createElement('div');
-    appendText(headCopy, 'h3', pkgIcon + name, 'Package');
+    const heading = document.createElement('h3');
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('class', 'package-icon');
+    icon.setAttribute('viewBox', '0 0 32 32');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.setAttribute('focusable', 'false');
+    const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    iconPath.setAttribute('d', name.includes('Signal') ? 'm16 2 3 11 11 3-11 3-3 11-3-11-11-3 11-3 3-11Z' : name.includes('Engine') ? 'M5 7h22v18H5zM5 13h22M11 19h10' : 'M4 25V9l12-6 12 6v16H4Zm8 0V14h8v11');
+    icon.append(iconPath);
+    heading.append(icon, document.createTextNode(name));
+    headCopy.append(heading);
     appendText(headCopy, 'strong', packagePrice(pkg), 'Scope based');
     head.append(headCopy);
 
@@ -839,8 +883,15 @@ function fillSelects() {
 function payload() {
   const selectedOffer = fastLaneOfferForService(els.service.value);
   const fastLanePackage = selectedOffer ? fastLanePackageFitFor(els.service.value) : '';
+  let fixlineHandoff = {};
+  try {
+    const saved = JSON.parse(sessionStorage.getItem('otp_fixline_handoff') || '{}');
+    if (saved.leadId === makeLeadId()) fixlineHandoff = saved;
+  } catch (_) {}
+  if (Object.keys(fixlineHandoff).length) state.sourceTracking.fixline_handoff = fixlineHandoff;
   return {
     booking_token: state.bookingToken,
+    lead_id: makeLeadId(),
     source_tracking: state.sourceTracking,
     otp_company_website: els.honeypot ? els.honeypot.value.trim() : '',
     name: els.name.value.trim(),
@@ -983,14 +1034,19 @@ function renderSuccess(data) {
   els.success.classList.toggle('partial', !recommendation);
   els.form.classList.add('submitted');
   els.successTitle.textContent = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
-  els.successCopy.textContent = 'After review, OTP may send scope questions, a package recommendation, a proposal, or a private Client Portal link for documents, payment steps, and approvals.';
+  els.successCopy.textContent = 'Your request is in the OTP review queue. When available, OTP replies within one business hour; otherwise, you will receive the next clear step as soon as possible. The reply may include scope questions, a package recommendation, a proposal, or a private Client Portal link for documents, payment steps, and approvals.';
+  if (data.syncStatus === 'sync_pending') {
+    els.successTitle.textContent = 'Your project request was received.';
+    els.successCopy.textContent = 'Your project request was received, but the appointment was not confirmed. We’ll contact you to schedule.';
+  }
   els.successMeta.replaceChildren();
   els.successActions.replaceChildren();
 
   const rows = [
-    ['Status', recommendation ? 'Request received with OTP recommendation' : 'Request received. OTP recommendation is pending review.'],
+    ['Status', data.syncStatus === 'sync_pending' ? 'Received; OTP OS sync pending' : recommendation ? 'Request received with OTP recommendation' : 'Request received. OTP recommendation is pending review.'],
     ['Recommended Package', recommendation ? text(recommendation.recommendedPackage) : 'Recommendation pending review'],
     ['Quote Range', recommendation ? text(recommendation.quoteRange, 'Scope based') : 'Pending review'],
+    ['Expected response', 'Within one business hour when OTP is available; otherwise as soon as possible.'],
     ['Next Step', text(data.nextStep || recommendation?.nextAction, 'OTP will confirm scope and prepare the next step.')],
     ['Client Portal', 'Private portal access is sent only after OTP reviews and approves the next step.']
   ];
@@ -1077,6 +1133,13 @@ function renderSuccess(data) {
   }
 
   const portalHref = safePortalHref(data);
+  const intakeLink = document.createElement('a');
+  const intakeBase = document.querySelector('.project-intake-cta')?.getAttribute('href') || '/bookings';
+  intakeLink.href = window.OTPAttribution?.buildUrlWithAttribution(intakeBase) || intakeBase;
+  intakeLink.textContent = 'Send additional files or details →';
+  intakeLink.rel = 'noopener noreferrer';
+  els.successActions.append(intakeLink);
+
   const portalLink = document.createElement('a');
   portalLink.href = portalHref || '/portal';
   portalLink.textContent = portalHref ? '🏛️ Open Private Portal Room →' : '🏛️ Access Client Portal →';
@@ -1085,7 +1148,12 @@ function renderSuccess(data) {
   const newBooking = document.createElement('button');
   newBooking.type = 'button';
   newBooking.textContent = 'Start Another Booking';
-  newBooking.addEventListener('click', () => window.location.reload());
+  newBooking.addEventListener('click', () => {
+    try { sessionStorage.removeItem('otp_booking_token'); } catch (_) { /* storage may be blocked */ }
+    try { sessionStorage.removeItem('otp_public_lead_id'); } catch (_) {}
+    try { sessionStorage.removeItem('otp_booking_submission'); } catch (_) {}
+    window.location.assign(window.location.pathname);
+  });
   els.successActions.append(newBooking);
   els.submit.disabled = true;
   els.submit.textContent = 'Request Submitted';
@@ -1095,11 +1163,14 @@ function renderSuccess(data) {
 async function submitBooking(event) {
   event.preventDefault();
   if (state.submitting || state.submitted) return;
-  state.sourceTracking = getAttributionTracking();
+  if (window.OTPConversionAnalytics) window.OTPConversionAnalytics.track('booking_started');
+  state.sourceTracking = getBookingTracking('booking_started');
   if (!validateStep(1) || !validateStep(2) || !validateStep(4)) {
     setStep(missingForStep(1).length ? 1 : missingForStep(2).length ? 2 : 4);
     return;
   }
+
+  state.sourceTracking = getBookingTracking('booking_completed');
 
   state.submitting = true;
   els.submit.disabled = true;
@@ -1109,20 +1180,34 @@ async function submitBooking(event) {
   showStatus('Sending booking request to OTP...');
 
   try {
+    let requestBody;
+    try {
+      requestBody = sessionStorage.getItem('otp_booking_submission');
+      if (!requestBody) {
+        requestBody = JSON.stringify(payload());
+        sessionStorage.setItem('otp_booking_submission', requestBody);
+      }
+    } catch (_) {
+      requestBody = JSON.stringify(payload());
+    }
     const response = await fetch('/api/bookings/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(payload())
+      body: requestBody,
+      signal: AbortSignal.timeout(15000)
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || data.ok === false || data.error) {
       throw new Error(text(data.message, 'Something blocked the request. Please check your contact info and try again.'));
     }
+    if (window.OTPConversionAnalytics) window.OTPConversionAnalytics.track('booking_submitted');
     renderSuccess(data);
     showStatus('');
   } catch (error) {
     showStatus('');
-    showError(text(error?.message, 'Something blocked the request. Please check your contact info and try again.'));
+    showError(error?.name === 'TimeoutError'
+      ? 'We could not confirm whether your request was saved. Please retry; your request ID stays the same so OTP can avoid a duplicate.'
+      : text(error?.message, 'Something blocked the request. Please check your contact info and try again.'));
   } finally {
     state.submitting = false;
     els.submit.classList.remove('is-loading');
@@ -1155,7 +1240,10 @@ async function init() {
   applyActiveTheme('');
   let offlineMode = false;
   try {
-    const response = await fetch('/api/bookings/config', { headers: { Accept: 'application/json' } });
+    const response = await fetch('/api/bookings/config', {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(5000)
+    });
     const data = await response.json().catch(() => ({}));
     if (response.ok && data.ok !== false) state.config = { ...fallbackConfig, ...data };
   } catch (_) {
@@ -1173,6 +1261,7 @@ async function init() {
   const packageParam = urlParams.get('package') || urlParams.get('pkg');
   const fastParam = urlParams.get('fast') || urlParams.get('fast_offer') || urlParams.get('service');
   const clientParam = urlParams.get('client') || urlParams.get('target') || urlParams.get('business');
+  const auditOffer = urlParams.get('offer') === 'site-audit';
 
   if (packageParam) {
     let matchedPkg = 'The Signal';
@@ -1191,6 +1280,17 @@ async function init() {
       els.service.value = matchedService.value;
       applyFastLaneServiceSelection();
     }
+  }
+
+  if (auditOffer) {
+    if (!fastParam && els.service) {
+      const websiteService = Array.from(els.service.options).find(option => option.value === 'Website / Digital System');
+      if (websiteService) els.service.value = websiteService.value;
+    }
+    if (!packageParam) selectPackage('The Signal', { advance: false });
+    if (els.formTitle) els.formTitle.textContent = 'Tell us what your website needs.';
+    if (els.description && !els.description.value) els.description.placeholder = 'What should be clearer or easier for your customers? Include the page or booking step you want OTP to review.';
+    if (els.form) els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
   }
 
   if (clientParam && els.business) {

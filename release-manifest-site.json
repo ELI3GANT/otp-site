@@ -1,0 +1,81 @@
+{
+  "release": "OTP canonical lead and durable intake foundation",
+  "includedFiles": [
+    ".github/workflows/production-release.yml",
+    "archive.html",
+    "archive.js",
+    "bookings.html",
+    "bookings.js",
+    "docs/OTP_PUBLIC_INTAKE_RELEASE_REPORT_2026-09-26.md",
+    "docs/OTP_PUBLIC_INTAKE_PRODUCTION_MANIFEST_2026-09-26.json",
+    "bookings.css",
+    "home.css",
+    "index.html",
+    "otp-conversion-analytics.js",
+    "privacy.html",
+    "release-manifest-site.json",
+    "sales/7_DAY_CLIENT_SPRINT.md",
+    "sales/ANALYTICS_EVENTS.md",
+    "sales/AUDIT_TEMPLATE.md",
+    "sales/CLIENT_ACQUISITION_PLAYBOOK.md",
+    "sales/LEAD_TRACKER.csv",
+    "sales/OUTREACH_TEMPLATES.md",
+    "scripts/prod_full_sweep.js",
+    "scripts/record_release_ci_evidence.js",
+    "server.js",
+    "server/booking-handoff.js",
+    "server/public-intake-store.js",
+    "supabase/migrations/20260926000000_public_intake_outbox.sql",
+    "service-discovery.css",
+    "studio.css",
+    "studio.html",
+    "sitemap.xml",
+    "terms.html",
+    "tests/bookings_contract.test.js",
+    "tests/booking_os_handoff.test.js",
+    "tests/booking_os_route.integration.test.js",
+    "tests/public_intake_store.test.js",
+    "tests/api_surface_security_contract.test.js",
+    "tests/fixline_integration_contract.test.js",
+    "tests/homepage_visual_contract.test.js",
+    "tests/master_runner.js",
+    "tests/marketing_site_contract.test.js",
+    "tests/release_auth_evidence_contract.test.js",
+    "tests/release_guardrails_contract.test.js",
+    "tests/seo_indexing_contract.test.js",
+    "tests/vercel_route_precedence.test.js",
+    "vercel.json",
+    "website-design.html"
+  ],
+  "excludedDirtyFiles": ["vault/**", "release-manifest.json"],
+  "testsRun": [
+    { "command": "npm test", "status": "passed locally 2026-09-28 after Studio icon update" },
+    { "command": "npm run test:e2e", "status": "passed 69/69 locally 2026-09-28" },
+    { "command": "node tests/homepage_visual_contract.test.js", "status": "passed Studio service, engagement, process, and FAQ icon contracts 2026-09-28" },
+    { "command": "npm run security:scan", "status": "passed 351 files 2026-09-28" },
+    { "command": "npm run contracts:verify", "status": "passed 4 pinned OTP contracts 2026-09-28" },
+    { "command": "npm run build:speed-insights", "status": "passed locally 2026-09-28" },
+    { "command": "npm run master_test:ci", "status": "passed locally 2026-09-26" },
+    { "command": "npm run prod:full-sweep", "status": "passed public checks locally 2026-09-26" },
+    { "command": "Production Release workflow 36442315748", "status": "blocked before authentication/deployment: live sweep found candidate still carries retired booking UI markers; no production deployment made" },
+    { "command": "git diff --check", "status": "passed locally 2026-09-26" },
+    { "command": "node --check", "status": "passed locally 2026-09-26" }
+  ],
+  "browserQa": {
+    "status": "passed",
+    "viewports": [1440, 390],
+    "routes": ["/", "/studio", "/bookings", "/website-design.html", "/archive"],
+    "screenshots": "Studio page captured locally at /tmp/otp-studio-after-390.png and /tmp/otp-studio-after-1440.png; sections and FAQ interaction checked at 390px, 16 icons visible, booking destinations preserved, no horizontal overflow, and no browser console errors"
+  },
+  "authenticatedSweep": {
+    "status": "not_run_release_gate_blocked_before_authenticated_sweep_or_deployment"
+  },
+  "deploymentTarget": {
+    "provider": "Vercel",
+    "project": "otp-site",
+    "aliases": [
+      "https://www.onlytrueperspective.tech",
+      "https://onlytrueperspective.tech"
+    ]
+  }
+}

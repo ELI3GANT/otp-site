@@ -39,3 +39,4 @@ coverage/
 **/source-private/
 marketing/
 .env*
+.omo/

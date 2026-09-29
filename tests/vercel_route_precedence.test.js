@@ -36,4 +36,15 @@ const apiIndex = routes.findIndex((route) => route.src === '/api/(.*)');
 assert(bookingIndex > osPathIndex, 'booking aliases must stay after /os proxy routes');
 assert(apiIndex > osPathIndex, 'API routes must stay after /os proxy routes');
 
+for (const [source, destination] of [
+  ['^/index\\.html$', '/'],
+  ['^/privacy\\.html$', '/privacy'],
+  ['^/terms\\.html$', '/terms']
+]) {
+  const index = routes.findIndex((route) => route.src === source);
+  assert(index > osPathIndex && index < filesystemIndex, `${source} redirects before filesystem handling`);
+  assert.equal(routes[index].status, 308, `${source} redirects permanently`);
+  assert.equal(routes[index].headers?.Location, destination, `${source} targets its canonical page`);
+}
+
 console.log('Vercel route precedence contract passed.');

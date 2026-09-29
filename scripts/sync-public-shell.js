@@ -20,8 +20,8 @@ for (const [file, active] of Object.entries(pages)) {
   html = html.includes('<!-- PUBLIC FOOTER START -->')
     ? html.replace(/<!-- PUBLIC FOOTER START -->[\s\S]*?<!-- PUBLIC FOOTER END -->/, footer)
     : html.replace(/<footer class="(?:footer|wrap footer)"[^>]*>[\s\S]*?<\/footer>/, footer);
-  if (!html.includes('/public-system.css?')) html = html.replace('</head>', '<link rel="stylesheet" href="/public-system.css?v=20260915" />\n</head>');
-  if (!html.includes('/public-shell.js?')) html = html.replace('</body>', '<script src="/public-shell.js?v=20260915" defer></script>\n</body>');
+  if (!html.includes('/public-system.css?')) html = html.replace('</head>', '<link rel="stylesheet" href="/public-system.css?v=20260920-motion4" />\n</head>');
+  if (!html.includes('/public-shell.js?')) html = html.replace('</body>', '<script src="/public-shell.js?v=20260920-motion4" defer></script>\n</body>');
   fs.writeFileSync(filename, html);
 }
 fs.copyFileSync(path.join(__dirname, '..', 'weatheros/index.html'), path.join(__dirname, '..', 'weatheros.html'));

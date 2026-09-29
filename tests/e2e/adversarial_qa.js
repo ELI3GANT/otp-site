@@ -47,6 +47,12 @@ async function runAdversarialQA() {
 
       const resPriv = await page.request.get(`${baseUrl}/weatheros-privacy.html`, { maxRedirects: 0 });
       report('Route /weatheros-privacy.html redirects 308', resPriv.status() === 308, `location: ${resPriv.headers()['location']}`);
+
+      const vaultProduct = await page.request.get(`${baseUrl}/vault`);
+      report('Route /vault returns 200', vaultProduct.status() === 200, `status: ${vaultProduct.status()}`);
+
+      const vaultPrivacy = await page.request.get(`${baseUrl}/vault/privacy`);
+      report('Route /vault/privacy returns 200', vaultPrivacy.status() === 200, `status: ${vaultPrivacy.status()}`);
     }
 
     // 2. Archive Initial Hydration & Static Pre-rendered cards
@@ -184,6 +190,21 @@ async function runAdversarialQA() {
       report('Step 4 review summary reflects email', reviewText.includes('jane@example.com'), 'Review summary contains email');
     }
 
+    // Booking options must render when the configuration API is unavailable.
+    {
+      const offlinePage = await context.newPage();
+      await offlinePage.route('**/api/bookings/config', (route) => route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false })
+      }));
+      await offlinePage.goto(`${baseUrl}/bookings`, { waitUntil: 'domcontentloaded' });
+      await offlinePage.locator('#booking-service option').nth(1).waitFor({ state: 'attached' });
+      report('Booking form renders when config API is unavailable',
+        await offlinePage.locator('#booking-service option').count() > 1);
+      await offlinePage.close();
+    }
+
     // 9. Honest Quote State
     {
       await page.goto(`${baseUrl}/quote`, { waitUntil: 'domcontentloaded' });
@@ -193,7 +214,7 @@ async function runAdversarialQA() {
 
     // 10. Viewport & Safe Area Overflows
     {
-      const testRoutes = ['/', '/archive', '/bookings', '/weatheros', '/songwars'];
+      const testRoutes = ['/', '/archive', '/bookings', '/weatheros', '/songwars', '/vault', '/vault/privacy'];
       const viewports = [
         { width: 320, height: 568, name: 'iPhone SE' },
         { width: 390, height: 844, name: 'iPhone 14' },
@@ -212,6 +233,27 @@ async function runAdversarialQA() {
           report(`Zero horizontal overflow on ${route} at ${vp.name} (${vp.width}px)`, !hasOverflow, hasOverflow ? 'OVERFLOW DETECTED' : 'OK');
         }
       }
+    }
+
+    {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(`${baseUrl}/vault`, { waitUntil: 'load' });
+      const vaultTitle = await page.title();
+      const vaultCanonical = await page.getAttribute('link[rel="canonical"]', 'href');
+      const vaultSchema = await page.locator('script[type="application/ld+json"]').textContent();
+      const screenshotCount = await page.locator('img[src^="/assets/vault/"]').count();
+      const privacyLinkVisible = await page.locator('a[href="/vault/privacy"]').first().isVisible();
+      report('VAULT metadata uses the public product title', vaultTitle === 'VAULT — Private Music Masters & Release Planning | OnlyTruePerspective', vaultTitle);
+      report('VAULT canonical uses the requested public URL', vaultCanonical === 'https://onlytrueperspective.tech/vault', vaultCanonical || 'missing');
+      report('VAULT publishes SoftwareApplication structured data', /SoftwareApplication/.test(vaultSchema || ''), 'SoftwareApplication schema');
+      report('VAULT renders real screenshot assets', screenshotCount >= 6, `screenshots: ${screenshotCount}`);
+      report('VAULT keeps privacy navigation visible on mobile', privacyLinkVisible, 'privacy link visible');
+
+      await page.goto(`${baseUrl}/vault/privacy`, { waitUntil: 'load' });
+      const privacyTitle = await page.title();
+      const privacyCanonical = await page.getAttribute('link[rel="canonical"]', 'href');
+      report('VAULT privacy page uses App Review-readable title', privacyTitle === 'VAULT Privacy Policy | OnlyTruePerspective', privacyTitle);
+      report('VAULT privacy canonical uses the requested public URL', privacyCanonical === 'https://onlytrueperspective.tech/vault/privacy', privacyCanonical || 'missing');
     }
 
     {

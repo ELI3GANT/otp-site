@@ -236,7 +236,7 @@ The user's redesign explicitly supersedes the previous gold-only public directio
 - Accent / `--accent-otp`: #dcff5f acid yellow; rule / `--border-default`: #3c4036.
 - Muted paper text: #54594c; paper rule: #c7cabf.
 - Typography: existing Helvetica Neue stack with heavy negative-tracked display and mono folios. Display clamp(3.5rem, 11vw, 10rem); hero wordmark clamp(3rem, 10.9vw, 11rem); h2 clamp(2.25rem, 5.5vw, 5rem); h3 clamp(1.5rem, 3vw, 2.75rem); body 1rem/1.6; lead clamp(1.125rem, 2vw, 1.5rem); labels .75rem/1.4.
-- Layout: 1440px max, gutters clamp(20px, 4vw, 64px), sections clamp(64px, 9vw, 144px). Existing 4px spacing scale retained. Editorial grid 7:5 / 5:7, mobile single column. Corners square; structural 1px rules; no floating cards or glass.
+- Layout: 1440px max, gutters clamp(20px, 4vw, 64px), sections clamp(64px, 9vw, 144px), compact sections clamp(56px, 7vw, 104px). Existing 4px spacing scale retained. Editorial grid 7:5 / 5:7, mobile single column. Corners square; structural 1px rules; no floating cards or glass.
 - Hero: paper wordmark on ink, acid typographic inset and real OTP emblem. No perpetual decorative motion or blocking loader.
 - Paper surfaces alternate deliberately at major content roles: portfolio teaser and capabilities, framed by dark intro and Signal. Project art supplies additional color without new UI accents.
 
@@ -257,3 +257,11 @@ Prospective clients must find relevant work then start an enquiry. Creative visi
 ### Accepted implementation boundary
 
 Legacy campaign/product styling can keep its own palette; shared navigation connects the ecosystem. Legacy `styles.css` stays available for operational and older pages; new Home, Archive, Studio and project stories do not load its accumulated overrides. Old visual snapshot assertions must be replaced by meaningful behavioral coverage where this explicitly authorized redesign changes their expected layout.
+
+### Public motion · September 2026
+
+- Shared editorial pages and VAULT use one optional entrance: 480ms emphasis easing, 16px upward travel, and opacity from 0 to 1. Sections taller than 1.2 viewports animate their heading only, keeping large media and filter surfaces stable. Only targets initially below the viewport are prepared, so the hero, anchor destinations, and back/forward restoration remain immediately readable. Each target enters once; no scroll hijacking or continuous loop.
+- Shared navigation and action links use the existing 140–240ms motion scale for arrow travel and underline/opacity feedback. The mobile navigation opens with a short opacity/transform transition while native `details` remains operable without JavaScript.
+- Motion is progressively enhanced by `public-shell.js` on the company and VAULT pages. Without JavaScript or IntersectionObserver, content stays visible. `prefers-reduced-motion: reduce` removes section movement and all shared transitions; changes to that preference while the page is open also reveal pending content.
+- Privacy and terms are static reading surfaces; policy sections do not receive entrance motion.
+- FIXLINE is a separate proxied application and keeps its own design and motion rules. WeatherOS, Protocol, Signal, and Song Wars retain their product-specific motion; shared polish must not override it.

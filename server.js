@@ -36,6 +36,7 @@ const {
     publicWriterEvidenceFromOtpOs,
     validateOtpOsBookingResponse
 } = require('./server/booking-handoff.js');
+const { validLeadId, persistPublicIntake, markPublicIntakeSync, retryPublicIntakes } = require('./server/public-intake-store.js');
 const {
     adminSafeJobMutationResult,
     createJobAdminMutationEnvelope,
@@ -47,6 +48,7 @@ const {
     forwardJobArchiveMutation
 } = require('./server/job-archive-handoff.js');
 const { BoundedTtlCache } = require('./server/bounded-ttl-cache.js');
+const { createClientAccountBridge } = require('./server/client-account-bridge.js');
 const {
     SITE_COMMAND_SCHEMA,
     PUBLIC_SITE_CONTENT_KEYS,
@@ -2627,6 +2629,9 @@ app.get(['/songwars', '/songwars/'], (req, res) => {
 });
 
 app.get('/songwars.html', (req, res) => res.redirect(308, '/songwars'));
+app.get('/index.html', (req, res) => res.redirect(308, '/'));
+app.get('/privacy.html', (req, res) => res.redirect(308, '/privacy'));
+app.get('/terms.html', (req, res) => res.redirect(308, '/terms'));
 app.get('/archive.html', (req, res) => res.redirect(308, '/archive'));
 app.get(['/consultant-audit.html', '/consultant-audit'], (req, res) => res.redirect(308, '/services/consultant-audit'));
 app.get('/protocol.html', (req, res) => res.redirect(308, '/protocol'));
@@ -2635,6 +2640,9 @@ app.get(['/blackbox', '/blackbox-signal'], (req, res) => res.redirect(302, '/sig
 app.get('/weatheros.html', (req, res) => res.redirect(308, '/weatheros'));
 app.get(['/weatheros-support.html', '/weatheros-support'], (req, res) => res.redirect(308, '/weatheros/support'));
 app.get(['/weatheros-privacy.html', '/weatheros-privacy'], (req, res) => res.redirect(308, '/weatheros/privacy'));
+app.get(['/vault-privacy.html', '/vault-privacy'], (req, res) => res.redirect(308, '/vault/privacy'));
+app.get('/vault/index.html', (req, res) => res.redirect(308, '/vault'));
+app.get('/vault/privacy.html', (req, res) => res.redirect(308, '/vault/privacy'));
 
 // Preserve the public package alias and attribution at Studio engagement guidance.
 app.get('/packages', (req, res) => {
@@ -2676,9 +2684,11 @@ const staticAliases = {
     '/weatheros/support.html': 'weatheros/support.html',
     '/weatheros/privacy': 'weatheros/privacy.html',
     '/weatheros/privacy.html': 'weatheros/privacy.html',
+    '/vault/privacy': 'vault/privacy.html',
+    '/vault/privacy.html': 'vault/privacy.html',
     '/terms': 'terms.html',
     '/archive': 'archive.html',
-    '/vault': 'archive.html',
+    '/vault': 'vault/index.html',
     '/insights': 'insights.html',
     '/insight': 'insight.html',
     '/protocol': 'protocol.html',
@@ -2719,6 +2729,12 @@ app.get(Object.keys(clientPortalAssetTypes), (req, res, next) => {
 app.get(['/client', '/client/'], (req, res) => {
     privatePortalHtml(res);
     return res.redirect(302, '/portal?status=missing');
+});
+
+app.get(['/client/login', '/client/profile', '/client/projects', '/client/projects/:id'], (req, res) => {
+    privatePortalHtml(res);
+    if (process.env.OTP_CLIENT_PORTAL_ACCOUNTS_ENABLED !== '1') return res.redirect(302, '/client');
+    return res.sendFile(path.join(staticPath, 'client.html'));
 });
 
 app.get('/client/:token', (req, res) => {
@@ -3898,6 +3914,10 @@ function cleanBookingSourceTracking(input = {}) {
         cta_source: clean(body.cta_source || body.ctaSource || body.source, 120),
         first_touch: clean(body.first_touch || body.firstTouch, 120),
         booking_route: clean(body.booking_route || body.bookingRoute, 160),
+        conversion_stage: clean(body.conversion_stage || body.conversionStage, 80),
+        selected_service: clean(body.selected_service || body.selectedService, 160),
+        selected_package: clean(body.selected_package || body.selectedPackage, 120),
+        completed_booking: clean(body.completed_booking || body.completedBooking, 12),
         referrer: clean(body.referrer, 240),
         platform: clean(body.platform || body.device, 40),
         utm_source: clean(body.utm_source || body.utmSource, 120),
@@ -3909,6 +3929,17 @@ function cleanBookingSourceTracking(input = {}) {
         source: clean(body.source, 120),
         campaign: clean(body.campaign, 160),
         landing_page: clean(body.landing_page || body.landingPage, 240),
+        fixline_handoff: body.fixline_handoff && typeof body.fixline_handoff === 'object'
+            && validLeadId(body.fixline_handoff.leadId)
+            && body.fixline_handoff.ticketId === body.fixline_handoff.leadId.slice(5)
+            ? {
+                leadId: clean(body.fixline_handoff.leadId, 42),
+                ticketId: clean(body.fixline_handoff.ticketId, 36),
+                primaryGoal: clean(body.fixline_handoff.primaryGoal, 160),
+                categories: Array.isArray(body.fixline_handoff.categories) ? body.fixline_handoff.categories.map((value) => clean(value, 80)).slice(0, 8) : [],
+                description: clean(body.fixline_handoff.description, 2000)
+            }
+            : undefined,
         first_seen_at: clean(body.first_seen_at || body.firstSeenAt, 40),
         captured_at: clean(body.captured_at || body.capturedAt, 40),
         last_seen_at: clean(body.last_seen_at || body.lastSeenAt || body.captured_at || body.capturedAt, 40)
@@ -3954,6 +3985,7 @@ function parseBookingPayload(input) {
     );
     const payload = {
         booking_token: cleanBookingText(body.booking_token || body.bookingToken, 120),
+        lead_id: cleanBookingText(body.lead_id || body.leadId, 42),
         name: cleanBookingText(body.name, 140),
         email: cleanBookingText(body.email, 254),
         phone: normalizeBookingPhone(body.phone),
@@ -3987,7 +4019,10 @@ function parseBookingPayload(input) {
         upload_ids: Array.isArray(body.upload_ids) ? body.upload_ids.map((v) => cleanBookingText(v, 140)).filter(Boolean).slice(0, 20) : []
     };
     const missingFields = [];
+    if (!payload.booking_token) missingFields.push('booking_token');
     if (!payload.name) missingFields.push('name');
+    if (!validLeadId(payload.lead_id)) missingFields.push('lead_id');
+    if (payload.source_tracking.fixline_handoff && payload.source_tracking.fixline_handoff.leadId !== payload.lead_id) missingFields.push('fixline_lead_id');
     if (!payload.email && !payload.phone) missingFields.push('email_or_phone');
     if (payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) missingFields.push('valid_email');
     if (!payload.service_type) missingFields.push('service_type');
@@ -4805,6 +4840,22 @@ app.post('/api/fixline/inspect', fixlineInspectLimiter, express.json({ limit: '1
     }
 });
 
+app.get('/api/internal/public-intakes/sync', async (req, res) => {
+    const secret = process.env.CRON_SECRET || process.env.OTP_PUBLIC_INTAKE_SYNC_SECRET;
+    const supplied = String(req.header('authorization') || '');
+    const expected = `Bearer ${secret || ''}`;
+    if (!secret || supplied.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))) {
+        return res.status(401).json({ ok: false, errorCode: 'unauthorized' });
+    }
+    if (!supabaseAdmin) return res.status(503).json({ ok: false, errorCode: 'intake_persistence_unavailable' });
+    try {
+        const result = await retryPublicIntakes(supabaseAdmin, forwardBookingSubmitToUpstream);
+        return res.json({ ok: true, ...result });
+    } catch (_) {
+        return res.status(503).json({ ok: false, errorCode: 'intake_sync_unavailable' });
+    }
+});
+
 app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '256kb' }), async (req, res) => {
     const { payload, missingFields, spamTrap } = parseBookingPayload(req.body);
     if (spamTrap) {
@@ -4826,20 +4877,45 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
 
     try {
         if (OTP_BOOKING_WRITER_POLICY.primary === 'otp_os') {
+            let envelope;
+            let saved;
             try {
-                const upstreamPayload = await forwardBookingSubmitToUpstream(bookingIntakeUpstreamPayload(payload));
+                envelope = bookingIntakeUpstreamPayload(payload);
+                saved = await persistPublicIntake(supabaseAdmin, envelope);
+            } catch (persistenceError) {
+                const conflict = persistenceError?.code === 'intake_idempotency_conflict';
+                console.warn('booking intake persistence failed:', persistenceError?.code || persistenceError?.message || persistenceError);
+                return res.status(conflict ? 409 : 503).json({
+                    ok: false,
+                    message: conflict ? 'This request ID belongs to another intake. Start a new request.' : 'We could not save your request. Please retry with the same request ID.',
+                    errorCode: conflict ? 'intake_idempotency_conflict' : 'intake_persistence_failed',
+                    missingFields: []
+                });
+            }
+            try {
+                const upstreamPayload = await forwardBookingSubmitToUpstream(envelope);
+                await markPublicIntakeSync(supabaseAdmin, payload.lead_id, 'synced');
                 const response = publicBookingResponseFromUpstream(upstreamPayload, payload);
+                response.leadId = payload.lead_id;
+                response.bookingId = envelope.booking_id;
+                response.syncStatus = 'synced';
+                response.duplicateReplay = saved.replay;
                 console.info('OTP booking handoff', { event: 'booking_response_sent', ...response.writerEvidence });
                 return res.json(response);
             } catch (upstreamError) {
                 console.warn('booking OTP OS writer unavailable:', upstreamError?.message || upstreamError);
                 const idempotencyConflict = upstreamError?.statusCode === 409
                     && upstreamError?.errorCode === 'idempotency_conflict';
-                return res.status(idempotencyConflict ? 409 : 503).json({
-                    ok: false,
-                    message: BOOKING_GENERIC_ERROR_MESSAGE,
-                    errorCode: idempotencyConflict ? 'booking_idempotency_conflict' : 'otp_os_unavailable',
-                    missingFields: []
+                try { await markPublicIntakeSync(supabaseAdmin, payload.lead_id, 'sync_failed'); } catch (_) {}
+                if (idempotencyConflict) return res.status(409).json({ ok: false, message: 'This booking ID belongs to another request.', errorCode: 'booking_idempotency_conflict', missingFields: [] });
+                return res.status(202).json({
+                    ok: true,
+                    received: true,
+                    leadId: payload.lead_id,
+                    bookingId: envelope.booking_id,
+                    syncStatus: 'sync_pending',
+                    message: 'Your project request was received, but the appointment was not confirmed. We’ll contact you to schedule.',
+                    duplicateReplay: saved.replay
                 });
             }
         }
@@ -5047,6 +5123,33 @@ const limiter = rateLimit({
     message: { success: false, message: "Too many requests, please try again later." }
 });
 app.use('/api/', limiter);
+
+const clientSessionLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30 });
+app.use('/api/client/session', (req, res, next) => req.method === 'POST'
+    ? clientSessionLimiter(req, res, next)
+    : next());
+app.use('/api/client', createClientAccountBridge({
+    enabled: process.env.OTP_CLIENT_PORTAL_ACCOUNTS_ENABLED === '1',
+    authClient: supabaseAdmin ? () => createClient(
+        process.env.SUPABASE_URL.trim(),
+        process.env.SUPABASE_SERVICE_KEY.trim(),
+        { auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } }
+    ) : null,
+    upstreamBase: OTP_CLIENT_PORTAL_UPSTREAM
+}));
+app.get('/api/client/account/config', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    const enabled = process.env.OTP_CLIENT_PORTAL_ACCOUNTS_ENABLED === '1';
+    return res.json({
+        ok: true,
+        accountAuth: {
+            enabled,
+            message: enabled
+                ? 'Already invited to your OTP workspace? Sign in with your email.'
+                : 'Use a private portal invite or request access.'
+        }
+    });
+});
 
 if (process.env.OTP_VERBOSE_HTTP === '1') {
     app.use((req, res, next) => {

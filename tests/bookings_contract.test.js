@@ -18,7 +18,7 @@ const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
 const bookingHandoff = read('server/booking-handoff.js');
-const offerSystemKey = '20260713-mobile-input-v1';
+const offerSystemKey = '20260922-visual-refresh';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -77,7 +77,7 @@ for (const source of [html, js, pricing, server]) {
 assert.ok(html.includes('Start a Project with OTP.'), 'booking hero is direct and conversion-focused');
 assert.ok(html.includes('class="skip-link"') && html.includes('href="#booking-form"'), 'booking page provides a keyboard skip link to the intake form');
 assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');
-assert.ok(html.includes('OTP will route the work into The Signal, The Engine, or The System'), 'booking hero sets current package ladder expectations');
+assert.ok(html.includes('For a website audit, share your site and the booking or contact issue you want improved.'), 'booking hero gives website audit prospects a concrete next step');
 assert.ok(html.includes('official-brand-mark'), 'header keeps the official OTP site mark');
 assert.ok(html.includes('/assets/otp-hero-poster-frame.png'), 'header uses the stable optimized OTP poster mark');
 assert.ok(!html.includes('/assets/otp-hero-centered.gif'), 'header does not render the edge-on spinning GIF as the primary mark');
@@ -123,7 +123,7 @@ assert.ok(html.includes('OTP received your request. We’ll review the scope and
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
 assert.ok(html.includes(`bookings.css?v=${offerSystemKey}`), 'booking stylesheet cache-bust matches offer system release');
-assert.ok(html.includes(`bookings.js?v=${offerSystemKey}`), 'booking script cache-bust matches offer system release');
+assert.ok(html.includes('bookings.js?v=20260922-visual-refresh'), 'booking script cache-bust includes current package icons and audit preselection');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
 assert.ok(html.includes('https://otp-os.vercel.app/bookings'), 'project intake CTA links to secure OTP OS intake');
@@ -147,6 +147,7 @@ assert.ok(!/otp-os\.vercel\.app/i.test(js), 'booking JS must not expose OTP OS h
 
 assert.ok(js.includes('/api/bookings/config'), 'frontend loads booking config');
 assert.ok(js.includes('/api/bookings/submit'), 'frontend submits to booking API');
+assert.ok(js.includes("option.value === 'Website / Digital System'"), 'site audit defaults to the website service');
 assert.ok(js.includes('getAttributionTracking'), 'bookings attaches stored attribution');
 assert.ok(js.includes('wireProjectIntakeAttribution'), 'bookings forwards attribution to secure intake');
 assert.ok(js.includes('data-intake-base') || js.includes("getAttribute('data-intake-base')"), 'bookings reads intake base from markup');
@@ -164,6 +165,7 @@ assert.ok(!js.includes('card.innerHTML'), 'package cards render with text nodes,
 assert.ok(!/innerHTML\s*=/.test(js), 'booking frontend does not assign unsafe HTML');
 assert.ok(!/insertAdjacentHTML/.test(js), 'booking frontend does not inject adjacent HTML');
 assert.ok(js.includes('makeBookingToken'), 'frontend sends a booking token for duplicate-friendly handling');
+assert.ok(js.includes('window.OTPAttribution?.buildUrlWithAttribution(intakeBase) || intakeBase'), 'booking success uses the available attribution helper');
 assert.ok(js.includes('otp_company_website'), 'frontend submits honeypot field');
 assert.ok(js.includes('buildSourceTracking'), 'frontend captures sanitized source tracking');
 assert.ok(js.includes('source_tracking: state.sourceTracking'), 'booking payload includes source tracking');

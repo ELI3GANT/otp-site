@@ -1,17 +1,55 @@
 {
-  "releaseName": "otp-public-site-polish-20260920",
+  "releaseName": "vault-1.1-preview-20260920",
   "includedFiles": [
+    ".gitignore",
+    "DESIGN.md",
+    "archive.html",
+    "assets/vault/artist-profile.png",
+    "assets/vault/artist-profile.webp",
+    "assets/vault/command-center.png",
+    "assets/vault/command-center.webp",
+    "assets/vault/home.png",
+    "assets/vault/library-v2.png",
+    "assets/vault/library-v2.webp",
+    "assets/vault/library.png",
+    "assets/vault/now-playing.png",
+    "assets/vault/now-playing.webp",
+    "assets/vault/onboarding.png",
+    "assets/vault/profile.png",
+    "assets/vault/release-dossier.png",
+    "assets/vault/signal.png",
+    "assets/vault/studio-workspace.png",
+    "assets/vault/studio-workspace.webp",
+    "assets/vault/version-ab.png",
+    "assets/vault/version-ab.webp",
+    "consultant-audit.html",
+    "index.html",
+    "insight.html",
+    "insights.html",
+    "privacy.html",
+    "project-stories.js",
+    "protocol.html",
+    "public-shell.js",
+    "public-system.css",
     "release-manifest.json",
-    "service-discovery.css",
-    "songwars-config.js",
-    "songwars.css",
+    "scripts/sync-public-shell.js",
     "songwars.html",
-    "tests/e2e/adversarial_qa.js",
-    "tests/songwars_contract.test.js",
+    "studio.html",
+    "terms.html",
+    "tests/vault_web_presence_contract.test.js",
+    "vault/index.html",
+    "vault/privacy.html",
+    "vault/vault.css",
+    "weatheros-privacy.html",
+    "weatheros-support.html",
+    "weatheros.html",
+    "weatheros/index.html",
+    "weatheros/privacy.html",
+    "weatheros/support.html",
     "website-design.html"
   ],
   "excludedDirtyFiles": [
-    "Local .vercel environment and generated test artifacts are ignored; no credentials or business records are release material."
+    "Ignored local node_modules and generated test reports were excluded; primary checkout .omo work remains untouched."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -23,50 +61,24 @@
     "docs/redesign-evidence/*.log"
   ],
   "testsRun": [
-    {
-      "command": "npm test",
-      "status": "passed_52_of_52"
-    },
-    {
-      "command": "npm run test:e2e",
-      "status": "passed_51_of_51"
-    },
-    {
-      "command": "npm run contracts:verify",
-      "status": "passed_4_pinned_contracts"
-    },
-    {
-      "command": "npm run master_test:ci",
-      "status": "passed_52_of_52"
-    },
-    {
-      "command": "npm run security:scan",
-      "status": "passed_308_files"
-    },
-    {
-      "command": "npm run build:speed-insights",
-      "status": "passed"
-    },
-    {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
-      "status": "passed_public_34_checks_predeploy"
-    },
-    {
-      "command": "node --check songwars-config.js tests/e2e/adversarial_qa.js tests/songwars_contract.test.js",
-      "status": "passed"
-    },
-    {
-      "command": "git diff --check",
-      "status": "passed"
-    }
+    { "command": "npm test", "status": "passed_54_of_54" },
+    { "command": "npm run test:e2e", "status": "passed_68_of_68" },
+    { "command": "npm run contracts:verify", "status": "passed_4_pinned_contracts" },
+    { "command": "npm run master_test:ci", "status": "passed_54_of_54" },
+    { "command": "npm run security:scan", "status": "passed_313_files" },
+    { "command": "npm run build:speed-insights", "status": "passed" },
+    { "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep", "status": "passed_public_34_checks_predeploy" },
+    { "command": "node --check server.js tests/e2e/adversarial_qa.js tests/vault_web_presence_contract.test.js", "status": "passed" },
+    { "command": "git diff --check", "status": "passed" },
+    { "command": "node tests/vault_web_presence_contract.test.js", "status": "passed" }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Chrome inspection of Website Design and Song Wars at 390, 768, and 1280 pixels captured top, middle, and footer of both pages. Independent visual review passed. 51 adversarial browser checks passed, including native mobile menu open, outside close, Escape close, 80px shared header parity, and no horizontal overflow. No form submission was made."
+    "summary": "Fresh Playwright captures of /vault and /vault/privacy at 320, 390, 768, and 1440 pixels showed no console errors or horizontal overflow. The e2e suite also passed metadata, structured data, screenshot assets, and mobile privacy navigation."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Previous production release CI on 2026-09-20 passed authenticated read-only admin checks. This polish changes only public HTML/CSS, Song Wars display copy, and related tests; local predeploy sweep passed 34 public checks without admin credentials. This release CI will rerun the authenticated checks with configured secret."
+    "summary": "The production release workflow reruns authenticated read-only checks with configured credentials. VAULT routes are public and do not require an account."
   },
   "deploymentTarget": {
     "project": "otp-site",

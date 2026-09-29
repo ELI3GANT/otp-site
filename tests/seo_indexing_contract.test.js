@@ -59,7 +59,7 @@ const pages = {
   },
   'terms.html': {
     title: 'Terms | OnlyTruePerspective',
-    canonical: 'https://www.onlytrueperspective.tech/terms.html',
+    canonical: 'https://www.onlytrueperspective.tech/terms',
     descriptionSnippet: 'Terms',
     indexable: true
   },
@@ -71,7 +71,7 @@ const pages = {
   },
   'privacy.html': {
     title: 'Privacy Policy | OnlyTruePerspective',
-    canonical: 'https://www.onlytrueperspective.tech/privacy.html',
+    canonical: 'https://www.onlytrueperspective.tech/privacy',
     descriptionSnippet: 'Privacy',
     indexable: true
   },
@@ -131,8 +131,8 @@ const requiredUrls = [
   'https://www.onlytrueperspective.tech/fixline',
   'https://www.onlytrueperspective.tech/services/consultant-audit',
   'https://www.onlytrueperspective.tech/insights.html',
-  'https://www.onlytrueperspective.tech/terms.html',
-  'https://www.onlytrueperspective.tech/privacy.html'
+  'https://www.onlytrueperspective.tech/terms',
+  'https://www.onlytrueperspective.tech/privacy'
 ];
 requiredUrls.forEach((url) => {
   assert.ok(sitemap.includes(`<loc>${url}</loc>`), `sitemap includes ${url}`);

@@ -11,6 +11,7 @@ console.log('OTP BOOKING OS HANDOFF...');
 
 const createdAt = '2026-08-07T14:30:00.000Z';
 const payload = {
+    lead_id: 'LEAD-550e8400-e29b-41d4-a716-446655440000',
     booking_token: 'WEB-contract-test-0001',
     name: 'Avery Test',
     email: 'avery@example.test',
@@ -29,6 +30,7 @@ assert.equal(envelope.schema_version, 'otp-booking-intake-v1');
 assert.equal(envelope.booking_id, bookingId);
 assert.equal(envelope.idempotency_key, bookingId);
 assert.equal(envelope.lineage.capture_id, bookingId);
+assert.equal(envelope.lineage.prospect_id, payload.lead_id);
 assert.equal(envelope.lineage.created_at, createdAt);
 
 const upstreamResponse = {
