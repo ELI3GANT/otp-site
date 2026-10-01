@@ -29,7 +29,7 @@
           </span>
         </a>
         <nav class="portal-nav" aria-label="Portal navigation">
-          <a href="/bookings">Book OTP</a>
+          <a href="/bookings">Start a project</a>
           <a href="/">Live Site</a>
         </nav>
       </header>
@@ -50,10 +50,11 @@
             <p>OTP Client Portal</p>
           </div>
           <h1 id="portal-title">Access project status, documents, payment steps, and approvals.</h1>
-          <p class="portal-subcopy">Client access is private and invite-based. After OTP reviews your booking or active project, you may receive a secure portal link for next actions.</p>
+          <p class="portal-subcopy">Already working with OTP? Open your private project invite below, or sign in with your invited email when your account is active. New inquiries are reviewed before client access is granted.</p>
           <div class="portal-actions">
-            <a class="primary-action" href="/bookings">Book OTP</a>
-            <a class="secondary-action" href="mailto:contact@onlytrueperspective.tech">Request Access</a>
+            <a id="portal-account-sign-in" class="primary-action portal-account-sign-in" href="/client/login" hidden>Client Sign In</a>
+            <a class="primary-action" href="/bookings">Start Project Inquiry</a>
+            <a class="secondary-action" href="mailto:contact@onlytrueperspective.tech">Missing your invite? Contact OTP</a>
           </div>
         </div>
 
@@ -92,6 +93,6 @@
       </section>
       <footer class="portal-footer">Powered by OnlyTruePerspective</footer>
     </main>
-    <script src="/portal.js?v=20260513-portal1" defer></script>
+    <script src="/portal.js?v=20261001-client-entry" defer></script>
   </body>
 </html>
