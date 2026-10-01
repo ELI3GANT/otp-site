@@ -63,15 +63,15 @@
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed_4_pinned_contracts_on_project_inquiry_candidate"
+      "status": "passed_4_pinned_contracts_in_protected_workflow_36455626704"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed_311_files_on_project_inquiry_candidate"
+      "status": "passed_311_files_locally_and_in_protected_workflow_36455626704"
     },
     {
       "command": "npm run build:speed-insights",
-      "status": "passed_on_project_inquiry_candidate"
+      "status": "passed_locally_and_in_protected_workflow_36455626704"
     },
     {
       "command": "FIXLINE npm test",
@@ -87,7 +87,7 @@
     },
     {
       "command": "npm run master_test:ci",
-      "status": "passed_all_site_contracts_against_current_live_api_on_2026-09-28"
+      "status": "passed_against_current_live_api_in_protected_workflow_36455626704_on_2026-09-28"
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
@@ -95,7 +95,7 @@
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed_read_only_after_deploy_on_2026-09-28; booking markers now match Project Inquiry UI; authenticated checks skipped"
+      "status": "passed_authenticated_predeploy_and_public_postdeploy_in_protected_workflow_36455626704_on_2026-09-28"
     },
     {
       "command": "gh run watch 36439540374 --exit-status",
@@ -107,7 +107,7 @@
     },
     {
       "command": "node --check",
-      "status": "passed_all_modified_javascript"
+      "status": "passed_all_modified_javascript_locally_and_in_protected_workflow_36455626704"
     },
     {
       "command": "git diff --check",
@@ -123,7 +123,7 @@
     },
     {
       "command": "npm run build:speed-insights",
-      "status": "passed"
+      "status": "passed_locally_and_in_protected_workflow_36455626704"
     },
     {
       "command": "npm audit --omit=dev --audit-level=low",
@@ -140,7 +140,7 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Playwright passed 63/63 checks after the Archive update. Seven Archive cards rendered; Song Wars is archived, VAULT shows Coming Soon without a launch date, its product screenshot and preview story load, and the OTP OS story opens the protected /os/ route. Responsive widths 320px, 390px, 768px, and 1440px had zero horizontal overflow and no browser console errors. Existing live booking-flow checks remain from the previous release; no production inquiry was submitted for this Archive change."
+    "summary": "Local Playwright passed 63/63. Post-deploy production Playwright verified /archive, /projects/vault, /projects/songwars, and /projects/otp-os at 390px and 1440px: seven cards, correct archived/coming-soon states, VAULT image loaded at 1320px natural width, no horizontal overflow, no console errors, and OTP OS story links to protected /os/. No production inquiry was submitted."
   },
   "productionIntakeVerification": {
     "status": "not_run_no_safe_canonical_intake_test_mode",
@@ -148,7 +148,7 @@
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Authenticated production sweep passed in protected release workflow 36450006700."
+    "summary": "Authenticated production sweep passed in protected release workflow 36455626704."
   },
   "deploymentTarget": {
     "project": "otp-site",
@@ -157,12 +157,25 @@
       "https://onlytrueperspective.tech"
     ],
     "deployment": {
-      "commit": "d2a6326ea94d6d6dd1d8a9cb245232d89323d67b",
-      "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36450006700",
-      "deploymentUrl": "https://otp-site-or8sbp5an-only-true-perspective.vercel.app",
+      "commit": "715a70fd7e8d139e6d7fd22316052a53e94bc37c",
+      "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36455626704",
+      "deploymentUrl": "https://otp-site-2mxhafcoq-only-true-perspective.vercel.app",
       "status": "Vercel READY; protected release gate, production build, deploy, authenticated pre-deploy sweep, and post-deploy public sweep passed",
-      "productionChecks": "GET 200 for /studio, /studio.css?v=20260928-studio-icons, /bookings, /booking, /book, /book-otp, /bookings.html, /bookings.css, /bookings.js; 390px and 1440px live Studio browser QA passed on 2026-09-28",
+      "productionChecks": "GET 200 for /archive, /projects/vault, /projects/songwars, /projects/otp-os; Archive seven-card state and Vault asset checked at 390px and 1440px with no console errors; OTP OS /os/ proxy and health/status routes returned 200; private debug route returned 401 while signed out",
       "productionWriteVerification": "not run; no safe canonical intake test mode"
     }
+  },
+  "otpOsProductionSmoke": {
+    "status": "authenticated_live_lead_read_passed",
+    "checks": [
+      "otp-os.vercel.app/health returned 200 status ok",
+      "otp-os.vercel.app/api/status returned 200 service otp-os",
+      "otp-os.vercel.app/api/debug/env-safe returned 401 while signed out",
+      "onlytrueperspective.tech/os/ returned 200",
+      "onlytrueperspective.tech/os/health and /os/api/status returned 200",
+      "production login returned 200 and /api/auth/session verified authenticated",
+      "/api/leads/list returned HTTP 200 with 10 records; no record details were logged"
+    ],
+    "scope": "Read-only verification; no leads or bookings were created or changed."
   }
 }
