@@ -707,27 +707,12 @@ function renderEntry(config = {}) {
   const hero = el('section', 'hero portal-entry-hero');
   const grid = el('div', 'grid');
   const inviteForm = el('form', 'portal-form');
-  const requestForm = el('form', 'portal-form');
   const tokenInput = input('token', 'text', 'Paste portal invite token');
-  const emailInput = input('email', 'email', 'client@example.com');
-  const nameInput = input('name', 'text', 'Your name');
-  const messageInput = input('message', 'textarea', 'Project or booking details');
   const inviteButton = el('button', '', 'Open Invite');
-  const requestButton = el('button', 'secondary', 'Request Access');
   const stagedLogin = config.accountAuth?.enabled
     ? accountLink('Client Sign In', '/client/login', true)
-    : el('button', 'secondary', 'Account Login Staged');
-  const stagedSignup = el('button', 'secondary', 'Create Account Staged');
-  const authMessage = config.accountAuth?.message || 'Use a private portal invite or request access.';
-
-  if (!config.accountAuth?.enabled) {
-    stagedLogin.type = 'button';
-    stagedLogin.disabled = true;
-    stagedLogin.setAttribute('aria-disabled', 'true');
-  }
-  stagedSignup.type = 'button';
-  stagedSignup.disabled = true;
-  stagedSignup.setAttribute('aria-disabled', 'true');
+    : el('p', 'entry-copy', 'Use your private portal invite below. Email sign-in will be available when OTP activates your client account.');
+  const authMessage = 'Client access is connected to your approved project. A project inquiry does not automatically create an account.';
 
   hero.append(
     el('p', 'eyebrow', 'OnlyTruePerspective'),
@@ -746,36 +731,11 @@ function renderEntry(config = {}) {
     window.location.href = `/client/${encodeURIComponent(token)}`;
   });
 
-  requestForm.append(
-    field('Email', emailInput),
-    field('Name', nameInput),
-    field('Message', messageInput),
-    requestButton
-  );
-  requestForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    requestButton.disabled = true;
-    try {
-      await postJson('/api/client/account/request-access', {
-        email: emailInput.value,
-        name: nameInput.value,
-        message: messageInput.value,
-        portal_token: cleanPortalToken(tokenInput.value)
-      });
-      setStatus('Request Sent', 'ready');
-      requestButton.textContent = 'Request Sent';
-    } catch (error) {
-      setStatus(error.message || 'Request failed', 'error');
-      requestButton.disabled = false;
-    }
-  });
-
   grid.append(
-    entryActionCard('Log In', authMessage, [stagedLogin]),
-    entryActionCard('Create Account', 'Client account creation is enabled after OTP connects your booking invite.', [stagedSignup]),
+    entryActionCard('Already working with OTP?', authMessage, [stagedLogin]),
     entryActionCard('Have a portal invite?', 'Open an existing private OTP portal invite.', [inviteForm]),
-    entryActionCard('Request Access', 'Use this if you booked with OTP but do not have your invite link yet.', [requestForm]),
-    entryActionCard('Book OTP', 'Start a new booking request on OnlyTruePerspective.', [buttonLink('Book OTP', config.bookingUrl || `${businessWebsite}/bookings`)])
+    entryActionCard('Missing your invite?', 'Contact OTP using the email associated with your project. We will confirm your access before sharing a private link.', [buttonLink('Contact OTP', `mailto:${supportEmail}`, true, { allowMailto: true })]),
+    entryActionCard('Start a project', 'Tell us what you need. OTP reviews your inquiry, confirms the scope, and connects your client workspace after your project is accepted.', [buttonLink('Start Project Inquiry', `${businessWebsite}/book`)])
   );
 
   portalRoot.replaceChildren(hero, grid);
