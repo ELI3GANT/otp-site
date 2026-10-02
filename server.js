@@ -2699,6 +2699,7 @@ Object.entries(staticAliases).forEach(([route, file]) => {
 
 const clientPortalAssetTypes = {
     '/client.css': 'text/css; charset=utf-8',
+    '/client-editorial.css': 'text/css; charset=utf-8',
     '/client.js': 'application/javascript; charset=utf-8',
     '/client-portal-utils.js': 'application/javascript; charset=utf-8',
     '/client-portal-v2.js': 'application/javascript; charset=utf-8',

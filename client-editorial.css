@@ -1,0 +1,9 @@
+:root { --app-bg: #101110; --surface: #1c1e1a; --surface-solid: #1c1e1a; --surface-muted: #23261f; --border: #3c4036; --border-strong: #69705e; --text: #f1f0e8; --muted: #b7bbb0; --primary: #dcff5f; --primary-contrast: #101110; --accent: #dcff5f; --gold: var(--accent); font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+body { background: var(--app-bg); }
+.portal-header { border-bottom: 1px solid var(--border); padding-bottom: 24px; }
+.brand-lockup h1 { letter-spacing: -.04em; }
+.logo-mark, button, a.button-link, .card, .hero, .loading-card, .error-card, .empty, .portal-v2-card, .portal-v2-masthead { border-radius: 0; box-shadow: none; }
+.card, .hero, .portal-v2-masthead, .portal-v2-card { background: var(--surface-solid); }
+.hero h2 { letter-spacing: -.04em; }
+.portal-field input, .portal-field textarea { border-radius: 0; font-size: 16px; }
+button:focus-visible, a.button-link:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }

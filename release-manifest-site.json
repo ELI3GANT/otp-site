@@ -1,74 +1,73 @@
 {
-  "release": "OTP Archive completion: Song Wars retrospective, VAULT preview, and OTP OS access link",
+  "release": "OTP client portal editorial visual refresh",
   "includedFiles": [
-    "archive.html",
-    "archive.css",
-    "archive.js",
-    "otp-projects.js",
-    "project-stories.js",
-    "assets/vault/vault-artist-home.png",
-    "tests/archive_case_study_contract.test.js",
-    "tests/archive_url_sync_and_fallback.test.js",
-    "tests/e2e/adversarial_qa.js",
-    "release-manifest.json",
-    "release-manifest-site.json",
-    "bookings.html",
-    "bookings.css",
-    "studio.html",
-    "studio.css",
-    "tests/homepage_visual_contract.test.js",
-    "release-manifest.json",
-    "tests/bookings_contract.test.js",
-    "scripts/record_release_ci_evidence.js",
+    "portal.html",
+    "portal-editorial.css",
+    "client.html",
+    "client-editorial.css",
+    "server.js",
     "release-manifest-site.json"
   ],
   "excludedDirtyFiles": [
-    "server.js",
+    "client.js",
+    "bookings.js",
     "server/**",
     "supabase/**",
-    "bookings.js",
     "vault/**"
   ],
   "testsRun": [
-    { "command": "npm test", "status": "passed 2026-09-28 after Archive updates; protected production workflow pending" },
-    { "command": "npm run test:e2e", "status": "passed 63/63 locally on the Archive candidate 2026-09-28" },
-    { "command": "node tests/homepage_visual_contract.test.js", "status": "passed Studio icon counts, accessibility, and Project Inquiry destinations locally 2026-09-28" },
-    { "command": "npm run security:scan", "status": "passed locally across 311 files and in protected production workflow 36450006700 on 2026-09-28" },
-    { "command": "npm run build:speed-insights", "status": "passed locally and in protected production workflow 36450006700 on 2026-09-28" },
-    { "command": "npm run master_test:ci", "status": "passed locally and in protected production workflow 36450006700 against live production API on 2026-09-28" },
-    { "command": "npm run prod:full-sweep", "status": "passed authenticated pre-deploy and public post-deploy sweeps in protected production workflow 36450006700 on 2026-09-28" },
-    { "command": "git diff --check", "status": "passed locally and in protected production workflow 36450006700 on 2026-09-28" },
-    { "command": "node --check", "status": "passed all production and contract JavaScript entry points locally and in protected production workflow 36450006700 on 2026-09-28" }
+    {
+      "command": "npm test",
+      "status": "passed locally on scoped candidate 2026-10-02"
+    },
+    {
+      "command": "npm run test:e2e",
+      "status": "passed 63/63 locally 2026-10-02"
+    },
+    {
+      "command": "npm run security:scan",
+      "status": "passed 312 files locally 2026-10-02"
+    },
+    {
+      "command": "npm run contracts:verify",
+      "status": "passed 4 pinned contracts locally 2026-10-02"
+    },
+    {
+      "command": "npm run build:speed-insights",
+      "status": "passed locally 2026-10-02"
+    },
+    {
+      "command": "npm run master_test:ci",
+      "status": "passed against canonical production API 2026-10-02"
+    },
+    {
+      "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
+      "status": "passed public production checks 2026-10-02; authenticated checks run by protected workflow"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed locally 2026-10-02"
+    },
+    {
+      "command": "node --check server.js",
+      "status": "passed locally 2026-10-02"
+    }
   ],
   "browserQa": {
     "status": "passed",
-    "routes": ["/archive", "/projects/vault", "/projects/songwars", "/os/"],
-    "viewport": "320px, 390px, 768px, and 1440px",
-    "flows": [
-      "Seven Archive projects render and filters/history remain synchronized",
-      "Song Wars is visibly archived with no active event link",
-      "VAULT is Coming Soon with no claimed launch date and its real product capture loads",
-      "VAULT preview story renders with private/local-first wording",
-      "OTP OS story points to the protected /os/ surface",
-      "no horizontal overflow or browser console errors; no customer request was submitted"
+    "routes": [
+      "/portal"
     ],
-    "evidence": "Local Playwright on 2026-09-28: 63/63 adversarial checks passed; Archive showed seven cards at 320px, 390px, 768px, and 1440px with zero horizontal overflow; no console errors; VAULT asset/story and Song Wars archived state verified. OTP OS production route health is recorded separately and no signed-in operational data was read."
+    "viewports": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "details": "Scoped local candidate checked in IAB: no overflow, no console errors, safe missing-invite validation. Style matches supplied current public reference."
   },
   "authenticatedSweep": {
-    "status": "passed",
-    "evidence": "Authenticated production sweep passed in https://github.com/ELI3GANT/otp-site/actions/runs/36450006700"
-  },
-  "deployment": {
-    "status": "READY",
-    "commit": "d2a6326ea94d6d6dd1d8a9cb245232d89323d67b",
-    "workflowRun": "https://github.com/ELI3GANT/otp-site/actions/runs/36450006700",
-    "deploymentUrl": "https://otp-site-or8sbp5an-only-true-perspective.vercel.app",
-    "aliases": [
-      "https://www.onlytrueperspective.tech",
-      "https://onlytrueperspective.tech",
-      "https://otp-site.vercel.app"
-    ],
-    "postDeployPublicSweep": "passed; Vercel state READY; live Studio and Project Inquiry smoke passed"
+    "status": "pending protected Production Release workflow for exact release commit"
   },
   "deploymentTarget": {
     "provider": "Vercel",
