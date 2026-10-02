@@ -1,11 +1,8 @@
 {
-  "release": "OTP client portal editorial visual refresh",
+  "release": "Homepage Signal mobile visual repair",
   "includedFiles": [
-    "portal.html",
-    "portal-editorial.css",
-    "client.html",
-    "client-editorial.css",
-    "server.js",
+    "index.html",
+    "home.css",
     "release-manifest-site.json"
   ],
   "excludedDirtyFiles": [
@@ -18,7 +15,7 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed locally on scoped candidate 2026-10-02"
+      "status": "passed locally 2026-10-02"
     },
     {
       "command": "npm run test:e2e",
@@ -26,11 +23,11 @@
     },
     {
       "command": "npm run security:scan",
-      "status": "passed 312 files locally 2026-10-02"
+      "status": "passed locally 2026-10-02"
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed 4 pinned contracts locally 2026-10-02"
+      "status": "passed locally 2026-10-02"
     },
     {
       "command": "npm run build:speed-insights",
@@ -38,7 +35,7 @@
     },
     {
       "command": "npm run master_test:ci",
-      "status": "passed against canonical production API 2026-10-02"
+      "status": "passed locally 2026-10-02"
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
@@ -56,7 +53,8 @@
   "browserQa": {
     "status": "passed",
     "routes": [
-      "/portal"
+      "/",
+      "/signal"
     ],
     "viewports": [
       320,
@@ -64,7 +62,7 @@
       768,
       1440
     ],
-    "details": "Scoped local candidate checked in IAB: no overflow, no console errors, safe missing-invite validation. Style matches supplied current public reference."
+    "details": "No horizontal overflow or console errors. Replaced overlapping stacked type with readable wordmark, verified CTA navigation."
   },
   "authenticatedSweep": {
     "status": "pending protected Production Release workflow for exact release commit"
