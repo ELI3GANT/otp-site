@@ -98,7 +98,7 @@ test('verified member gets secure cookies and only their assigned project', asyn
     await withServer(app, async (base) => {
         const exchanged = await fetch(`${base}/api/client/session/exchange`, {
             method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ access_token: 'a'.repeat(32), refresh_token: 'r'.repeat(32) })
+            body: JSON.stringify({ access_token: 'a'.repeat(32), refresh_token: 'r'.repeat(12) })
         });
         assert.equal(exchanged.status, 200);
         assert.match(exchanged.headers.get('set-cookie'), /HttpOnly; Secure; SameSite=Lax/);

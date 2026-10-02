@@ -46,8 +46,8 @@ function verifiedUser(user) {
     return Boolean(user?.id && user.email_confirmed_at && !user.is_anonymous);
 }
 
-function tokenShape(value, maxLength) {
-    return typeof value === 'string' && value.length > 20 && value.length <= maxLength && !/\s/.test(value);
+function tokenShape(value, maxLength, minLength = 21) {
+    return typeof value === 'string' && value.length >= minLength && value.length <= maxLength && !/\s/.test(value);
 }
 
 function publicText(value, maxLength = 240) {
@@ -132,11 +132,11 @@ function createClientAccountBridge({ enabled = false, authClient, upstreamBase, 
         if (!tokenShape(accessToken, 4096)) return null;
         let { data, error: authError } = await client.auth.getUser(accessToken);
         if (authError || !verifiedUser(data?.user)) {
-            if (!tokenShape(refreshToken, 1024)) return null;
+            if (!tokenShape(refreshToken, 1024, 1)) return null;
             const refreshed = await client.auth.refreshSession({ refresh_token: refreshToken });
             if (refreshed.error || !refreshed.data?.session) return null;
             const session = refreshed.data.session;
-            if (!tokenShape(session.access_token, 4096) || !tokenShape(session.refresh_token, 1024)) return null;
+            if (!tokenShape(session.access_token, 4096) || !tokenShape(session.refresh_token, 1024, 1)) return null;
             accessToken = session.access_token;
             ({ data, error: authError } = await client.auth.getUser(accessToken));
             if (authError || !verifiedUser(data?.user)) return null;
@@ -149,7 +149,7 @@ function createClientAccountBridge({ enabled = false, authClient, upstreamBase, 
         if (!sameOrigin(req)) return error(res, 403, 'origin_required', 'Request origin could not be verified.');
         const accessToken = req.body?.access_token;
         const refreshToken = req.body?.refresh_token;
-        if (!tokenShape(accessToken, 4096) || !tokenShape(refreshToken, 1024)) {
+        if (!tokenShape(accessToken, 4096) || !tokenShape(refreshToken, 1024, 1)) {
             return error(res, 400, 'invalid_client_session', 'The sign-in link is invalid or expired.');
         }
         try {
