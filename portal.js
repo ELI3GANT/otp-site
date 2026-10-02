@@ -67,4 +67,11 @@
   }
 
   applyStatusMessage();
+  const signIn = document.getElementById('portal-account-sign-in');
+  if (signIn) {
+    fetch('/api/client/account/config', { cache: 'no-store', credentials: 'same-origin' })
+      .then((response) => response.ok ? response.json() : null)
+      .then((config) => { signIn.hidden = config?.accountAuth?.enabled !== true; })
+      .catch(() => { signIn.hidden = true; });
+  }
 })();

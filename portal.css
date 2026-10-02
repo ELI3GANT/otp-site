@@ -707,3 +707,6 @@ input:focus {
     transition-duration: 0.01ms !important;
   }
 }
+.portal-account-sign-in[hidden] {
+  display: none;
+}
