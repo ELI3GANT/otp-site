@@ -99,7 +99,7 @@ function safeUpstreamData(data, kind) {
     return null;
 }
 
-function createClientAccountBridge({ enabled = false, authClient, upstreamBase, fetchUpstream = fetch } = {}) {
+function createClientAccountBridge({ enabled = false, authClient, upstreamBase, previewProtectionBypass = '', fetchUpstream = fetch } = {}) {
     const router = express.Router();
     router.use((req, res, next) => {
         if (!/^\/(?:session(?:\/(?:exchange|logout|request))?|projects(?:\/[^/]+)?)\/?$/.test(req.path)) return next();
@@ -112,8 +112,12 @@ function createClientAccountBridge({ enabled = false, authClient, upstreamBase, 
     });
 
     async function upstream(path, accessToken, kind) {
+        const upstreamUrl = new URL(upstreamBase);
+        const protectionHeaders = previewProtectionBypass && upstreamUrl.protocol === 'https:' && upstreamUrl.hostname.endsWith('.vercel.app')
+            ? { 'x-vercel-protection-bypass': previewProtectionBypass } : {};
         const response = await fetchUpstream(`${upstreamBase.replace(/\/+$/, '')}/api/v1/client${path}`, {
-            headers: { Accept: 'application/json', Authorization: `Bearer ${accessToken}` },
+            headers: { Accept: 'application/json', Authorization: `Bearer ${accessToken}`, ...protectionHeaders },
+            redirect: 'error',
             signal: AbortSignal.timeout(8000)
         });
         if (!response.ok) return { status: [401, 403, 404].includes(response.status) ? response.status : 503 };

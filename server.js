@@ -5064,7 +5064,8 @@ app.use('/api/client', createClientAccountBridge({
         process.env.SUPABASE_SERVICE_KEY.trim(),
         { auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } }
     ) : null,
-    upstreamBase: OTP_CLIENT_PORTAL_UPSTREAM
+    upstreamBase: OTP_CLIENT_PORTAL_UPSTREAM,
+    previewProtectionBypass: process.env.VERCEL_ENV === 'preview' ? process.env.OTP_CLIENT_PORTAL_PREVIEW_BYPASS || '' : ''
 }));
 app.get('/api/client/account/config', (req, res) => {
     res.set('Cache-Control', 'no-store');

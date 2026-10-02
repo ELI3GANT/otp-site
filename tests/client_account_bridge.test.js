@@ -3,14 +3,15 @@ const assert = require('node:assert/strict');
 const express = require('express');
 const { createClientAccountBridge } = require('../server/client-account-bridge.js');
 
-function fixture({ enabled = true, member = true } = {}) {
+function fixture({ enabled = true, member = true, upstreamBase = 'https://otp-os.example.test', previewProtectionBypass = '' } = {}) {
     const calls = [];
     const authRequests = [];
     const app = express();
     app.use(express.json());
     app.use('/api/client', createClientAccountBridge({
         enabled,
-        upstreamBase: 'https://otp-os.example.test',
+        upstreamBase,
+        previewProtectionBypass,
         authClient: () => ({ auth: {
             async getUser(token) {
                 return token === 'a'.repeat(32)
@@ -21,7 +22,7 @@ function fixture({ enabled = true, member = true } = {}) {
             async signInWithOtp(options) { authRequests.push(options); return { error: null }; }
         } }),
         async fetchUpstream(url, options) {
-            calls.push({ url, authorization: options.headers.Authorization });
+            calls.push({ url, authorization: options.headers.Authorization, protection: options.headers['x-vercel-protection-bypass'], redirect: options.redirect });
             if (!member) return { ok: false, status: 403 };
             if (url.endsWith('/me')) {
                 return { ok: true, status: 200, async json() {
@@ -50,6 +51,19 @@ async function withServer(app, fn) {
     try { return await fn(`http://127.0.0.1:${server.address().port}`); }
     finally { await new Promise((resolve) => server.close(resolve)); }
 }
+
+test('preview protection credentials stay on the configured Vercel upstream and cannot follow redirects', async () => {
+    for (const upstreamBase of ['https://otp-test.vercel.app', 'https://otp-os.example.test']) {
+        const { app, calls } = fixture({ upstreamBase, previewProtectionBypass: 'synthetic-preview-key' });
+        await withServer(app, async (base) => {
+            const response = await fetch(`${base}/api/client/projects`, { headers: { Cookie: `__Host-otp_client_access=${'a'.repeat(32)}` } });
+            assert.equal(response.status, 200);
+            assert.equal(calls[0].protection, upstreamBase.endsWith('.vercel.app') ? 'synthetic-preview-key' : undefined);
+            assert.equal(calls[0].redirect, 'error');
+            assert.ok(!(await response.text()).includes('synthetic-preview-key'));
+        });
+    }
+});
 
 test('client account bridge requires explicit enablement and keeps old account path reachable', async () => {
     const { app } = fixture({ enabled: false });
