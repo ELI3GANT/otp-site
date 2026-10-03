@@ -1,60 +1,97 @@
 {
-  "release": "Homepage Signal mobile visual repair",
+  "release": "Video-first portfolio, public accents, and social preview",
   "includedFiles": [
-    "index.html",
+    ".github/workflows/production-release.yml",
+    "archive.css",
+    "archive.html",
+    "assets/films/fame-and-fortune.jpg",
+    "assets/films/froze-tour.jpg",
+    "assets/films/tjs-night.jpg",
+    "assets/seo/otp-video-studio-20261003.jpg",
+    "consultant-audit.html",
+    "docs/releases/PUBLIC-VIDEO-20261003.md",
+    "home-reel.js",
     "home.css",
-    "release-manifest-site.json"
+    "index.html",
+    "insight.html",
+    "insights.html",
+    "privacy.html",
+    "public-accent.js",
+    "public-shell.js",
+    "public-system.css",
+    "release-manifest-site.json",
+    "release-manifest.json",
+    "scripts/prod_full_sweep.js",
+    "scripts/prod_terminal_sweep.js",
+    "server.js",
+    "speed-insights-bundle.js",
+    "studio.html",
+    "terms.html",
+    "tests/homepage_visual_contract.test.js",
+    "tests/marketing_site_contract.test.js",
+    "tests/master_runner.js",
+    "tests/public_showcase.test.js",
+    "tests/seo_indexing_contract.test.js",
+    "weatheros-privacy.html",
+    "weatheros.html",
+    "weatheros/index.html",
+    "weatheros/privacy.html",
+    "weatheros/support.html",
+    "website-design.html"
   ],
   "excludedDirtyFiles": [
+    "client.html",
     "client.js",
-    "bookings.js",
-    "server/**",
+    "portal.html",
+    "client-editorial.css",
+    "portal-editorial.css",
     "supabase/**",
     "vault/**"
   ],
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed locally 2026-10-02"
+      "status": "passed 53/53 test programs locally 2026-10-03"
     },
     {
       "command": "npm run test:e2e",
-      "status": "passed 63/63 locally 2026-10-02"
+      "status": "passed 63/63 browser checks locally 2026-10-03"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed locally 2026-10-02"
+      "status": "passed local secret scan 2026-10-03"
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed locally 2026-10-02"
+      "status": "passed locally 2026-10-03"
     },
     {
       "command": "npm run build:speed-insights",
-      "status": "passed locally 2026-10-02"
+      "status": "passed locally 2026-10-03"
     },
     {
       "command": "npm run master_test:ci",
-      "status": "passed locally 2026-10-02"
+      "status": "passed 53/53 with canonical live API 2026-10-03"
     },
     {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
-      "status": "passed public production checks 2026-10-02; authenticated checks run by protected workflow"
+      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
+      "status": "passed public production reads 2026-10-03; no local authenticated checks"
     },
     {
       "command": "git diff --check",
-      "status": "passed locally 2026-10-02"
+      "status": "passed locally 2026-10-03"
     },
     {
-      "command": "node --check server.js",
-      "status": "passed locally 2026-10-02"
+      "command": "node --check server.js, home-reel.js, public-accent.js, public-shell.js and sweep scripts",
+      "status": "passed locally 2026-10-03"
     }
   ],
   "browserQa": {
     "status": "passed",
     "routes": [
       "/",
-      "/signal"
+      "/archive",
+      "/studio"
     ],
     "viewports": [
       320,
@@ -62,10 +99,13 @@
       768,
       1440
     ],
-    "details": "No horizontal overflow or console errors. Replaced overlapping stacked type with readable wordmark, verified CTA navigation."
+    "details": "No horizontal overflow on all three routes at all four widths. Real YouTube playback and clip changes observed in browser; pause control and Music videos filter checked. Refresh changes accent; Reduce Motion prevents automatic iframe loading. Desktop browser viewport emulation, not physical iPhone QA."
   },
   "authenticatedSweep": {
-    "status": "pending protected Production Release workflow for exact release commit"
+    "status": "passed",
+    "sourceCommit": "20b4f4a4545baee1dcd65673198a8ff773cfda93",
+    "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37036645512",
+    "details": "Verified successful authenticated sweep for the last deployed backend. This public release preserves its auth and operational routes; server change only permits the YouTube player script hosts in CSP. Exact candidate MUST pass the mandatory fresh authenticated production sweep in production-release.yml before deploy. Local credentials are unavailable; this does not claim a new local authenticated sweep."
   },
   "deploymentTarget": {
     "provider": "Vercel",

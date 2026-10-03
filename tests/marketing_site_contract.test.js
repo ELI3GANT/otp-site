@@ -46,12 +46,13 @@ assert.ok(
     'index homepage canonical/og use final www canonical host'
 );
 assert.ok(!index.includes('https://onlytrueperspective.tech/og.jpg'), 'index avoids apex social image URLs in head/schema because apex redirects to www');
-assert.ok(index.includes('helps artists, creators, and businesses build cinematic visuals'), 'index meta description uses SEO entity summary');
+assert.ok(index.includes('helps artists, creators, and businesses with music videos'), 'index meta description uses SEO entity summary');
 assert.ok(index.includes('"@type": "ProfessionalService"'), 'index includes ProfessionalService entity schema');
 assert.ok(index.includes('ELI3GANT is the creative artist identity of Elijah Huertas'), 'index includes official ELI3GANT schema description');
 assert.ok(!index.includes('https://onlytrueperspective.tech/'), 'index avoids apex-only https homepage URLs in head/schema');
 assert.ok(index.includes('"name": "ELI3GANT"'), 'homepage schema identifies ELI3GANT as founder');
-assert.ok(index.includes('OnlyTruePerspective is the creative technology and media company founded by ELI3GANT'), 'homepage copy connects ELI3GANT to OTP naturally');
+assert.ok(index.includes('OnlyTruePerspective is a Rhode Island creative studio founded by ELI3GANT'), 'homepage copy connects ELI3GANT to OTP naturally');
+const refreshedSocialImage = 'https://www.onlytrueperspective.tech/assets/seo/otp-video-studio-20261003.jpg';
 const officialSocialImage = 'https://www.onlytrueperspective.tech/assets/seo/otp-og-image.webp';
 for (const [label, html] of [
     ['index', index],
@@ -62,8 +63,9 @@ for (const [label, html] of [
     ['privacy', privacy],
     ['bookings', bookings]
 ]) {
-    assert.ok(html.includes(`property="og:image" content="${officialSocialImage}"`), `${label} uses official OTP OG image`);
-    assert.ok(html.includes(`name="twitter:image" content="${officialSocialImage}"`), `${label} uses official OTP Twitter image`);
+    const socialImage = ['index', 'archive'].includes(label) ? refreshedSocialImage : officialSocialImage;
+    assert.ok(html.includes(`property="og:image" content="${socialImage}"`), `${label} uses official OTP OG image`);
+    assert.ok(html.includes(`name="twitter:image" content="${socialImage}"`), `${label} uses official OTP Twitter image`);
 }
 assert.ok(![index, insight, archive, insightsList, terms, privacy, bookings].join('\n').includes('https://www.onlytrueperspective.tech/og.jpg'), 'public pages no longer point social cards at the generic OG image');
 assert.ok(index.includes('"image": "https://www.onlytrueperspective.tech/assets/seo/eli3gant-founder.webp"'), 'homepage schema keeps optimized ELI3GANT founder image');

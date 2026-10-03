@@ -28,7 +28,7 @@ const pages = {
     indexable: true
   },
   'index.html': {
-    title: 'OnlyTruePerspective | Rhode Island Creative Technology & Media Studio',
+    title: 'OnlyTruePerspective | Video Production & Creative Studio',
     canonical: 'https://www.onlytrueperspective.tech/',
     descriptionSnippet: 'helps artists, creators, and businesses',
     indexable: true
@@ -40,7 +40,7 @@ const pages = {
     indexable: true
   },
   'archive.html': {
-    title: 'Creative Archive | OnlyTruePerspective',
+    title: 'Video & Project Portfolio | OnlyTruePerspective',
     canonical: 'https://www.onlytrueperspective.tech/archive',
     descriptionSnippet: 'Explore OnlyTruePerspective projects',
     indexable: true

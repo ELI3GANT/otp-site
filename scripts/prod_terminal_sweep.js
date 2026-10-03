@@ -15,8 +15,14 @@ const {
 const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytrueperspective.tech').replace(/\/+$/, '');
 const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_TOKEN || '').trim();
 
+const HOMEPAGE_TITLE = 'OnlyTruePerspective | Video Production &amp; Creative Studio';
+const PREVIOUS_HOMEPAGE_TITLE = 'OnlyTruePerspective | Rhode Island Creative Technology &amp; Media Studio';
+const homepageMarker = process.env.OTP_SWEEP_EXPECT_REFRESHED_HOME === '1'
+  ? HOMEPAGE_TITLE
+  : new RegExp([HOMEPAGE_TITLE, PREVIOUS_HOMEPAGE_TITLE].map(title => title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'));
+
 const publicTargets = [
-  { name: 'home', path: '/', kind: 'html', markers: ['OnlyTruePerspective | Rhode Island Creative Technology &amp; Media Studio', 'rel="canonical" href="https://www.onlytrueperspective.tech/"', 'href="/archive"', 'href="/portal"'] },
+  { name: 'home', path: '/', kind: 'html', markers: [homepageMarker, 'rel="canonical" href="https://www.onlytrueperspective.tech/"', 'href="/archive"', 'href="/portal"'] },
   { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css', '/bookings.js', 'canonical', 'Project Inquiry', 'Start Project Inquiry', 'id="booking-form"'] },
   { name: 'booking-alias', path: '/booking', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },
   { name: 'book-alias', path: '/book', kind: 'html', markers: ['/bookings.css', '/bookings.js'] },

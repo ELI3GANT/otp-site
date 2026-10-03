@@ -86,3 +86,5 @@
 }
 @media(max-width:390px) { .archive-grid { grid-template-columns: 1fr; } }
 @media(prefers-reduced-motion:reduce) { .archive-project-media img, .archive-film-image img { transition: none; } }
+.archive-jump { display: flex; flex-wrap: wrap; gap: 12px 32px; padding-block: 24px; }
+.archive-jump a { min-height: 44px; display: inline-flex; align-items: center; color: var(--accent-otp); }
