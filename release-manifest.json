@@ -15,6 +15,7 @@
     "index.html",
     "insight.html",
     "insights.html",
+    "package.json",
     "privacy.html",
     "public-accent.js",
     "public-shell.js",
@@ -103,9 +104,9 @@
   },
   "authenticatedSweep": {
     "status": "passed",
-    "sourceCommit": "20b4f4a4545baee1dcd65673198a8ff773cfda93",
-    "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37036645512",
-    "details": "Verified successful authenticated sweep for the last deployed backend. This public release preserves its auth and operational routes; server change only permits the YouTube player script hosts in CSP. Exact candidate MUST pass the mandatory fresh authenticated production sweep in production-release.yml before deploy. Local credentials are unavailable; this does not claim a new local authenticated sweep."
+    "sourceCommit": "ca554b981ead1e75006ca92ee6d4982fb41c7778",
+    "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37158506968",
+    "details": "Fresh authenticated production sweep passed for ca554b9 in run 37158506968. Deployment was correctly blocked by a generated bundle path mismatch. Follow-up only stabilizes build paths; exact final candidate must pass all mandatory protected workflow checks again."
   },
   "deploymentTarget": {
     "provider": "Vercel",

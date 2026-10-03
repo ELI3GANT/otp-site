@@ -1,4 +1,4 @@
-// ../../../../Documents/GitHub/otp-site/node_modules/@vercel/speed-insights/dist/index.mjs
+// node_modules/@vercel/speed-insights/dist/index.mjs
 var initQueue = () => {
   if (window.si) return;
   window.si = function a(...params) {

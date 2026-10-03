@@ -19,6 +19,7 @@ This worktree starts at deployed commit `20b4f4a`. The unreleased private-portal
 - `docs/releases/PUBLIC-VIDEO-20261003.md`
 - `home-reel.js`
 - `home.css`
+- `package.json`
 - `index.html`
 - `insight.html`
 - `insights.html`
@@ -57,7 +58,7 @@ This worktree starts at deployed commit `20b4f4a`. The unreleased private-portal
 ## Deployment checklist
 - [x] Isolated from last deployed production source.
 - [x] Tests, browser QA, build and local secret scan.
-- [x] Prior deployed authenticated backend sweep verified: run 37036645512.
+- [x] Fresh authenticated backend sweep verified: run 37158506968; deployment stopped at the clean-source check.
 - [ ] Clean scoped release gate on final commit.
 - [ ] Protected workflow fresh authenticated sweep, browser regression checks, and Vercel production build/deploy.
 - [ ] Canonical post-deploy exact refreshed title, new image/script assets and live browser checks.
@@ -66,3 +67,6 @@ The sweep accepts the prior or new title before deployment and requires the exac
 
 ## Next migration
 Release the private portal read delegation separately after the canonical OTP OS client route and role isolation have their own release evidence.
+
+## Release repair
+Run 37158506968 passed unit, browser and authenticated checks, then correctly blocked deployment because esbuild emitted a machine-specific symlink path comment. The build now uses `--preserve-symlinks` to keep module paths identical across local worktrees and Linux CI. No release check was removed. Final candidate is rerun through the complete protected workflow.

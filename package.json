@@ -12,7 +12,7 @@
     "master_test": "node tests/master_runner.js",
     "master_test:live": "node tests/master_runner.js --live-api-url=https://otp-site.vercel.app",
     "master_test:ci": "node tests/master_runner.js --live-api-url=https://www.onlytrueperspective.tech",
-    "build:speed-insights": "npx --yes esbuild@0.24.2 speed-insights-entry.mjs --bundle --platform=browser --format=esm --outfile=speed-insights-bundle.js --define:process.env.NODE_ENV=\\\"production\\\"",
+    "build:speed-insights": "npx --yes esbuild@0.24.2 speed-insights-entry.mjs --bundle --preserve-symlinks --platform=browser --format=esm --outfile=speed-insights-bundle.js --define:process.env.NODE_ENV=\\\"production\\\"",
     "test": "node tests/master_runner.js",
     "test:oracle": "node tests/oracle_terminal_contract.test.js && node tests/oracle_master.test.js",
     "test:e2e": "node tests/e2e/adversarial_qa.js",
