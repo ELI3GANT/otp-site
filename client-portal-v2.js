@@ -42,7 +42,7 @@ function safeUrl(value = '') {
   const raw = text(value);
   if (!raw) return '';
   if (raw.startsWith('/') && !raw.startsWith('//')) {
-    return /^\/api\/client\/portal\//.test(raw) ? raw : '';
+    return /^\/api\/(?:client\/portal\/|v1\/client\/portal\/[A-Za-z0-9][A-Za-z0-9._~-]{5,512}\/documents\/[a-z-]+\/(?:view|pdf)$)/.test(raw) ? raw : '';
   }
   try {
     const parsed = new URL(raw);
@@ -56,7 +56,8 @@ function safeUrl(value = '') {
 
 function currentPhase(status = '') {
   const value = text(status).toLowerCase();
-  if (/complete|paid|archive/.test(value)) return 'Completed';
+  if (/complete|archive/.test(value)) return 'Completed';
+  if (/^(?:pending review|new|new lead|draft)$/.test(value)) return 'Request received';
   if (/deliver/.test(value)) return 'Delivery';
   if (/review|revision|approval/.test(value)) return 'Review / revisions';
   if (/production|progress|scheduled/.test(value)) return 'Production / work in progress';
@@ -120,8 +121,6 @@ function paymentView(payload = {}, identity = {}, options = {}, rootPayload = {}
   const rawLink = text(p.paymentLink || p.payment_link || p.stripe_link || p.stripeLink);
   const paymentLink = safeUrl(rawLink);
   const unsafeLink = Boolean(rawLink && !paymentLink);
-  const jobStatus = text(rootPayload.project?.status || rootPayload.job_status || rootPayload.status || p.job_status || p.status).toLowerCase();
-  const isCompletedJob = /complete|paid|delivered|archive/.test(jobStatus);
 
   const summary = buildPaymentSummaryV2({
     clientName: identity.clientName,
@@ -129,20 +128,20 @@ function paymentView(payload = {}, identity = {}, options = {}, rootPayload = {}
     jobType: identity.jobType,
     totalAmountCents: total ?? undefined,
     depositAmountCents: deposit ?? undefined,
-    amountPaidCents: paid ?? (isCompletedJob && total ? total : undefined),
-    remainingBalanceCents: balance ?? (isCompletedJob ? 0 : undefined),
+    amountPaidCents: paid ?? undefined,
+    remainingBalanceCents: balance ?? undefined,
     dueDate: text(p.dueDate || p.due_date),
-    paymentStatus: text(p.status || p.paymentStatus || p.payment_status || (isCompletedJob ? 'Paid' : '')),
+    paymentStatus: text(p.status || p.paymentStatus || p.payment_status),
     paymentMethod: text(p.method || p.paymentMethod || p.payment_method),
     paymentLink,
     paymentLinkStatus: text(p.paymentLinkStatus || p.payment_link_status),
-    receiptStatus: text(p.receiptStatus || p.receipt_status || (isCompletedJob ? 'Receipt ready' : '')),
+    receiptStatus: text(p.receiptStatus || p.receipt_status),
     receiptGeneratedAt: text(p.receiptGeneratedAt || p.receipt_generated_at),
     receiptSentAt: text(p.receiptSentAt || p.receipt_sent_at),
     invoiceStatus: text(p.invoiceStatus || p.invoice_status)
   }, { now: options.now });
 
-  const manualReviewRequired = (summary.manualReviewRequired && !isCompletedJob && total === null) || unsafeLink;
+  const manualReviewRequired = summary.manualReviewRequired || unsafeLink;
   const state = manualReviewRequired ? 'manual_review_required' : summary.state;
   return Object.freeze({
     state,
@@ -153,16 +152,16 @@ function paymentView(payload = {}, identity = {}, options = {}, rootPayload = {}
     balanceCents: manualReviewRequired ? null : summary.balanceCents,
     dueDate: manualReviewRequired ? '' : summary.dueDate,
     depositPaid: summary.depositPaid,
-    paidInFull: summary.paidInFull || isCompletedJob,
+    paidInFull: summary.paidInFull,
     overdue: summary.overdue,
-    receiptReady: summary.receiptReady || isCompletedJob,
-    receiptStatus: summary.receiptSent ? 'Receipt sent' : (summary.receiptReady || isCompletedJob) ? 'Receipt ready after OTP review' : 'Locked until payment is saved',
+    receiptReady: summary.receiptReady,
+    receiptStatus: summary.receiptSent ? 'Receipt sent' : summary.receiptReady ? 'Receipt ready after OTP review' : 'Locked until payment is saved',
     reminderReady: summary.reminderReady,
     paymentLinkReady: !manualReviewRequired && summary.paymentLinkReady && Boolean(paymentLink),
     paymentLink: !manualReviewRequired && summary.paymentLinkReady ? paymentLink : '',
     message: manualReviewRequired
       ? 'Payment details are being reviewed by OTP. No payment action is required until OTP confirms the next step.'
-      : (summary.paidInFull || isCompletedJob)
+      : summary.paidInFull
         ? 'Payment is recorded as paid in full. Receipt status is shown below.'
         : summary.overdue
           ? 'Payment is overdue. Please process payment using the link below.'
@@ -186,6 +185,7 @@ function timelineView(project = {}, documents = [], payment = {}, delivery = {})
     let status = index < phaseIndex ? 'Complete' : index === phaseIndex ? 'Current' : 'Upcoming';
     if (label === 'Proposal / invoice ready' && proposalReady) status = 'Complete';
     if (label === 'Deposit / payment step' && paymentReady) status = 'Complete';
+    if (label === 'Deposit / payment step' && !paymentReady) status = 'Upcoming';
     if (label === 'Delivery' && deliveryReady) status = phase === 'Completed' ? 'Complete' : 'Current';
     if (label === 'Completed' && phase === 'Completed') status = 'Complete';
     return Object.freeze({ label, status, date: '', description: status === 'Current' ? 'This is the current client-facing project phase.' : '' });

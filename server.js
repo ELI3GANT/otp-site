@@ -10,6 +10,7 @@ process.on('unhandledRejection', (reason) => {
 // Load environment variables (Standard)
 require('dotenv').config();
 const express = require('express');
+const { forwardClientPortalRead } = require('./server/client-portal-handoff');
 const path = require('path');
 const crypto = require('crypto');
 const { execFile } = require('child_process');
@@ -2946,6 +2947,9 @@ const OTP_CLIENT_PORTAL_UPSTREAM = String(
     || process.env.OTP_OS_PUBLIC_BASE
     || OTP_BOOKINGS_UPSTREAM
 ).replace(/\/+$/, '');
+if (!['otp_os', 'legacy_direct'].includes(process.env.OTP_CLIENT_PORTAL_READER_MODE || 'otp_os')) {
+    throw new Error('Invalid client portal reader mode');
+}
 const OTP_BOOKING_WRITER_POLICY = resolveBookingWriterPolicy();
 const OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS = positiveNumber(process.env.OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS, 9000);
 const OTP_OS_JOB_MUTATION_UPSTREAM = String(process.env.OTP_OS_JOB_MUTATION_UPSTREAM_URL || OTP_BOOKINGS_UPSTREAM).replace(/\/+$/, '');
@@ -4262,6 +4266,9 @@ app.get('/api/client-portal/:token', async (req, res) => {
     if (e2eTestModeEnabled() && (safeToken === SAFE_E2E_PORTAL_FIXTURE.portalToken || rawToken.includes('PROP') || rawToken.includes('INSPECT') || rawToken.includes('PROPOSAL') || rawToken.includes('WEB-') || safeToken.startsWith('test-') || safeToken.startsWith('inspect-'))) {
         return res.json(buildSafeE2EClientPortalData(rawToken));
     }
+    if (process.env.OTP_CLIENT_PORTAL_READER_MODE !== 'legacy_direct') {
+        return forwardClientPortalRead(req, res, { base: OTP_CLIENT_PORTAL_UPSTREAM });
+    }
     if (!supabaseAdmin) {
         try {
             const upstreamUrl = `${OTP_CLIENT_PORTAL_UPSTREAM}/api/client-portal/${encodeURIComponent(req.params.token)}`;
@@ -4321,6 +4328,9 @@ app.get('/api/client-portal/:token', async (req, res) => {
         });
     }
 });
+
+app.get('/api/v1/client/portal/:token/documents/:type/:format', (req, res) =>
+    forwardClientPortalRead(req, res, { base: OTP_CLIENT_PORTAL_UPSTREAM }));
 
 const quoteCreationLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,

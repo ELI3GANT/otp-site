@@ -2,6 +2,10 @@
 
 OTP OS is the canonical owner of CRM, leads/prospects, bookings, jobs, projects, and client-portal operational records. OTP Site owns the public experience, validation, bounded proxy behavior, and presentation.
 
+## Client portal reads
+
+`/api/client-portal/:token` delegates to OTP OS `/api/v1/client/portal/:token` by default. Client document previews and PDFs use the same token-authenticated canonical reader through Site's `/api/v1/client/portal/:token/documents/:type/:format` proxy. These are bounded, private, uncached reads; upstream failures never trigger a second database reader. Existing Site direct reads are a manual `LEGACY` rollback only, selected explicitly with `OTP_CLIENT_PORTAL_READER_MODE=legacy_direct`. Portal links remain on onlytrueperspective.tech. Approval and payment writes are outside this read migration.
+
 ## Booking routing
 
 New booking submissions use `OTP_BOOKINGS_WRITER_MODE=otp_os` by default. Site validates the public payload, sends it to OTP OS with a bounded timeout, and returns a public-safe response using `otp-booking-intake-v1`.

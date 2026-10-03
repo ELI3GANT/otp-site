@@ -60,6 +60,7 @@ export function formatPortalDate(value = '') {
 function isBlockedPortalPath(pathname = '') {
   const path = String(pathname || '').toLowerCase();
   if (/^\/api\/client\/portal\//.test(path)) return false;
+  if (/^\/api\/v1\/client\/portal\/[a-z0-9][a-z0-9._~-]{5,512}\/documents\/[a-z-]+\/(view|pdf)$/.test(path)) return false;
   if (/^\/api(?:\/|$)/.test(path)) return true;
   if (/^\/(?:admin|terminal)(?:\/|$)/.test(path)) return true;
   return false;
