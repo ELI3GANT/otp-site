@@ -59,9 +59,9 @@ This worktree starts at deployed commit `20b4f4a`. The unreleased private-portal
 - [x] Isolated from last deployed production source.
 - [x] Tests, browser QA, build and local secret scan.
 - [x] Fresh authenticated backend sweep verified: run 37158506968; deployment stopped at the clean-source check.
-- [ ] Clean scoped release gate on final commit.
-- [ ] Protected workflow fresh authenticated sweep, browser regression checks, and Vercel production build/deploy.
-- [ ] Canonical post-deploy exact refreshed title, new image/script assets and live browser checks.
+- [x] Clean scoped release gate on final commit.
+- [x] Protected workflow fresh authenticated sweep, browser regression checks, and Vercel production build/deploy.
+- [x] Canonical post-deploy exact refreshed title, new image/script assets and live browser checks.
 
 The sweep accepts the prior or new title before deployment and requires the exact refreshed title after deployment. No source gate or authenticated check is disabled. Existing shared-image URLs remain available for old links. iMessage/social services control their caches; old message cards may retain earlier artwork.
 
@@ -70,3 +70,11 @@ Release the private portal read delegation separately after the canonical OTP OS
 
 ## Release repair
 Run 37158506968 passed unit, browser and authenticated checks, then correctly blocked deployment because esbuild emitted a machine-specific symlink path comment. The build now uses `--preserve-symlinks` to keep module paths identical across local worktrees and Linux CI. No release check was removed. Final candidate is rerun through the complete protected workflow.
+
+## Production closeout
+Deployed app commit: `6f52d78ce250f287d00cf2c07b4a4f9ec902519e`.
+Protected workflow: https://github.com/ELI3GANT/otp-site/actions/runs/37158705387 — both jobs succeeded. Fresh authenticated sweep, production build/deploy, and the exact new-title post-deploy sweep passed.
+
+Canonical live assets (home CSS, reel JS, accent JS, shared CSS and 1200×630 JPEG) returned 200 with byte hashes identical to the tested source. Home, Portfolio, Services, `/book`, `/booking`, `/bookings`, `/book-otp`, `/portal` and `/client` returned 200. Apex resolves to the canonical www home. The live browser played real films, changed clips, and reported no console errors or horizontal overflow at 390px. Clear menu labels and descriptive text were verified on live production. No production inquiry was submitted, and this does not certify the separate intake persistence or OTP OS release.
+
+This closeout changes release evidence only; the deployed app source remains the exact commit above.

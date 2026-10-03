@@ -104,9 +104,9 @@
   },
   "authenticatedSweep": {
     "status": "passed",
-    "sourceCommit": "ca554b981ead1e75006ca92ee6d4982fb41c7778",
-    "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37158506968",
-    "details": "Fresh authenticated production sweep passed for ca554b9 in run 37158506968. Deployment was correctly blocked by a generated bundle path mismatch. Follow-up only stabilizes build paths; exact final candidate must pass all mandatory protected workflow checks again."
+    "sourceCommit": "6f52d78ce250f287d00cf2c07b4a4f9ec902519e",
+    "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37158705387",
+    "details": "Fresh protected authenticated sweep passed before deployment. Both workflow jobs succeeded, including browser regressions, clean scope, Vercel production build/deploy and exact refreshed-title post-deploy sweep."
   },
   "deploymentTarget": {
     "provider": "Vercel",
@@ -114,6 +114,8 @@
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
-    ]
+    ],
+    "verifiedReleaseCommit": "6f52d78ce250f287d00cf2c07b4a4f9ec902519e",
+    "workflowUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37158705387"
   }
 }
