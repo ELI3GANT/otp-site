@@ -70,7 +70,7 @@ Next migration: continue client portal and OTP OS separately under their operati
 - Protected workflow: [https://github.com/ELI3GANT/otp-site/actions/runs/37238173897](https://github.com/ELI3GANT/otp-site/actions/runs/37238173897); both jobs succeeded, including fresh authenticated pre-deployment checks and post-deployment public checks.
 - Vercel deployment: `dpl_DAx1Au2Q3HvX2W2347XkZnHDtoNa`, READY, correct otp-site project and canonical www/apex aliases.
 - Canonical custom-domain verification: 17 public routes returned HTTP 200, including Home, Archive, Studio, Signal, all four Inquiry aliases, safe portal/client landing pages and all seven project stories.
-- Fourteen fetched HTML/JS/CSS assets exactly matched release source. HTML comparison only normalizes Cloudflare email protection, not application content.
+- Thirteen fetched HTML/JS/CSS assets exactly matched release source. HTML comparison only normalizes Cloudflare email protection, not application content.
 - Empty-state copy and all five ordered public choices verified on live HTML. All seven project links work; non-FIXLINE stories use contextual project inquiries and FIXLINE keeps its review route.
 - Apex redirects to www and returns 200.
 - Live custom-domain four-step campaign inquiry reached review with the correct public label and The Engine recommendation; no console errors/warnings. Form was reset without submitting, and live mobile choices were inspected and captured at `/tmp/otp-final-live-inquiry.png`.
