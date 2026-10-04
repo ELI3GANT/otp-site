@@ -43,6 +43,8 @@ No server routes, redirects, proxy mappings, backend contracts, or operational w
 - `tests/e2e/adversarial_qa.js`
 - `tests/marketing_site_contract.test.js`
 - `tests/seo_indexing_contract.test.js`
+- `tests/archive_url_sync_and_fallback.test.js`
+- `tests/youtube_video_contract.test.js`
 - `weatheros-privacy.html`
 - `weatheros.html`
 - `weatheros/index.html`
@@ -61,3 +63,6 @@ No server routes, redirects, proxy mappings, backend contracts, or operational w
 
 ## Next migration
 Keep the private portal read delegation and OTP OS client/native release work in a separate change with their own identity/isolation and release evidence.
+
+## Release gate repair
+Initial run 37231131909 blocked deployment because two legacy contracts still demanded the removed database count and film filters. The local summary had missed their failures. Those assertions now exercise category URL normalization/history and the curated rail, while preserving static fallback, quote, booking, video safety, and routing coverage. The entire suite is rerun before release; no gate is bypassed.

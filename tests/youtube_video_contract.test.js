@@ -70,9 +70,8 @@ for (const video of fallback) {
 }
 
 assert.ok(archive.includes('data-video-feed="archive"'), 'archive mounts Vault from video feed');
-assert.ok(archive.includes('Video / Recap'), 'archive exposes requested category filters');
-assert.ok(archive.includes('Music / Visuals'), 'archive exposes requested category filters');
-assert.ok(archive.includes('Creative Systems'), 'archive exposes requested category filters');
+for (const category of ['All', 'Video', 'Digital', 'Music / Campaigns']) assert.ok(archive.includes(`data-archive-collection="${category}"`), 'Archive exposes curated category ' + category);
+assert.ok(!archive.includes('data-filter='), 'duplicate film filtering UI is removed');
 assert.ok(archive.includes('otp-projects.js?v='), 'archive loads reusable project library before rendering work');
 assert.ok(archive.includes('otp-video-library.js?v='), 'archive loads shared video library');
 assert.ok(projects.includes('hyh-architecture-design'), 'HYH exists as a reusable project entry');

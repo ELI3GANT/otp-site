@@ -22,8 +22,8 @@ const bookingsJs = read('bookings.js');
 
 // 1. Static Fallback Cards & Pre-rendered markup
 assert.ok(
-  archiveHtml.includes('07 / 07 projects'),
-  'archive.html pre-renders initial project count "07 / 07 projects"'
+  !archiveHtml.includes('07 / 07 projects'),
+  'Archive avoids public database counts'
 );
 const cardMatches = archiveHtml.match(/class="archive-case-study-card/g) || [];
 assert.strictEqual(
@@ -46,35 +46,25 @@ assert.ok(
 assert.ok(archiveHtml.includes('data-project-id="vault"'), 'archive.html static cards include VAULT');
 assert.ok(archiveHtml.includes('Coming Soon'), 'archive.html labels VAULT as coming soon');
 
-// 2. Archive URL Sync & History Semantics
-assert.ok(
-  archiveJs.includes('parseUrlParams'),
-  'archive.js includes URL search parameter parser'
-);
-assert.ok(
-  archiveJs.includes('buildCanonicalQueryString'),
-  'archive.js builds canonical query string with deterministic key order'
-);
-assert.ok(
-  archiveJs.includes('syncUrl'),
-  'archive.js synchronizes state with browser history'
-);
-assert.ok(
-  archiveJs.includes('history.pushState'),
-  'archive.js uses pushState for deliberate filter changes'
-);
-assert.ok(
-  archiveJs.includes('history.replaceState'),
-  'archive.js uses replaceState for search typing / url normalization'
-);
-assert.ok(
-  archiveJs.includes("addEventListener('popstate'"),
-  'archive.js listens for popstate events to support browser back/forward navigation'
-);
-assert.ok(
-  archiveJs.includes('searchDebounceTimer'),
-  'archive.js debounces search input before synchronizing URL'
-);
+// 2. Real category URL normalization and history restoration.
+const { JSDOM } = require('jsdom');
+const dom = new JSDOM(archiveHtml, { url: 'https://www.onlytrueperspective.tech/archive?collection=Digital&search=weather&year=2026', runScripts: 'outside-only' });
+dom.window.eval(read('otp-projects.js'));
+dom.window.eval(archiveJs);
+const document = dom.window.document;
+assert.equal(dom.window.location.search, '?collection=Digital', 'removed filters cannot silently narrow projects');
+assert.equal(document.querySelectorAll('[data-project-id]').length, 5);
+const historyLength = dom.window.history.length;
+document.querySelector('[data-archive-collection="Music / Campaigns"]').click();
+assert.equal(dom.window.history.length, historyLength + 1, 'selection creates navigable history');
+assert.equal(dom.window.location.search, '?collection=Music+%2F+Campaigns');
+assert.equal(document.querySelectorAll('[data-project-id]').length, 2);
+dom.window.history.replaceState({}, '', '/archive?collection=Video');
+dom.window.dispatchEvent(new dom.window.PopStateEvent('popstate'));
+assert.equal(document.querySelector('[data-archive-collection="Video"]').getAttribute('aria-pressed'), 'true');
+assert.equal(document.querySelector('#motion').hidden, false);
+assert.equal(document.querySelector('[data-archive-project-section]').hidden, true);
+dom.window.close();
 
 // 3. Routing and Aliases in server.js & vercel.json
 assert.ok(
