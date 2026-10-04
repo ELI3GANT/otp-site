@@ -60,10 +60,21 @@ No routes or server logic changed. Existing `/`, `/signal`, `/bookings`, categor
 ## Deployment checklist
 - [x] Scoped clean branch, dirty portal/backend checkout excluded.
 - [x] Local unit/browser/build/security/contracts and public live reads.
-- [ ] Final clean release gate and protected workflow authenticated checks.
-- [ ] Vercel build/deploy and canonical live asset/route/browser verification.
+- [x] Final clean release gate and protected workflow authenticated checks.
+- [x] Vercel build/deploy and canonical live asset/route/browser verification.
 
 ## Next migration
 Keep private portal read delegation and OTP OS identity/isolation/native releases separate from this public visual change.
 
 Initial public polish run 37232390293 was canceled before deployment to incorporate the user-requested icon pass. The updated candidate must complete the full protected workflow.
+
+## Production closeout
+Deployed app commit: `65e8ae776010b1bae94452af5a18007bd5300434`.
+Protected workflow: https://github.com/ELI3GANT/otp-site/actions/runs/37232725779 — both jobs passed, including fresh authenticated production checks and the post-deploy sweep.
+Vercel deployment `dpl_3dW7QW3tpAH9SC1D1A2jHNHgZ8o9` is READY on canonical www/apex aliases.
+
+All seven project stories, Home, Archive, Studio, Signal, four inquiry aliases, and generic portal/client entries returned 200. Tested Home/Studio/shared/inquiry CSS, shared shell JS, Archive assets, and Signal configuration match deployed bytes at their versioned URLs. Home/Archive/Studio HTML match after normalizing only Cloudflare email-obfuscation markup.
+
+The live browser renders the new process icons without console errors. Home → inquiry retained `#ffad96` in both root and action accent tokens; 1280px inquiry had no horizontal overflow. Existing browser tests cover all four responsive widths and music timeline/card routing. No production inquiry/payment was submitted and no physical-device testing is claimed.
+
+This evidence closeout does not change the deployed app source. Dirty primary portal/backend work remains untouched. The local preview remains available while the user is viewing it.
