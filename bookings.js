@@ -214,12 +214,23 @@ const state = {
 };
 
 const SERVICE_CATEGORIES = [
-  { label: 'Website / redesign', serviceType: 'Website / Digital System' },
-  { label: 'Booking or client system', serviceType: 'Business System' },
-  { label: 'Automation / AI tool', serviceType: 'AI / Automation' },
-  { label: 'Creative / media', serviceType: 'Video / Content' },
+  { label: 'Video production / editing', serviceType: 'Video / Content' },
+  { label: 'Creative direction / campaign', serviceType: 'Brand Launch' },
+  { label: 'Website / digital product', serviceType: 'Website / Digital System' },
+  { label: 'Business system / automation', serviceType: 'Business System' },
   { label: 'Something custom', serviceType: 'Custom Build' }
 ];
+// Existing campaign and product links resolve to canonical intake service types.
+const SERVICE_ALIASES = {
+  'artist campaign': 'Brand Launch',
+  'event community rollout': 'Brand Launch',
+  'launch package': 'Brand Launch',
+  'product design': 'Website / Digital System',
+  'website business fix': 'Website / Digital System',
+  'business systems': 'Business System',
+  'ai / automation': 'Business System',
+  'same day signal': 'Video / Content'
+};
 const stepNames = ['Need', 'Scope', 'Contact', 'Review'];
 const $ = (id) => document.getElementById(id);
 
@@ -836,7 +847,7 @@ function suggestedPackage() {
   let packageName = 'The Signal';
   if (serviceType === 'Business System' || serviceType === 'AI / Automation' || serviceType === 'Custom Build' || (serviceType === 'Website / Digital System' && connectedSystem)) {
     packageName = 'The System';
-  } else if (serviceType === 'Website / Digital System' || (serviceType === 'Video / Content' && broadCreative)) {
+  } else if (serviceType === 'Brand Launch' || serviceType === 'Website / Digital System' || (serviceType === 'Video / Content' && broadCreative)) {
     packageName = 'The Engine';
   }
   const pkg = packageByName(packageName);
@@ -1214,8 +1225,9 @@ async function init() {
   }
 
   if (serviceParam && els.service) {
-    const cleanService = serviceParam.replace(/_/g, ' ').replace(/-/g, ' ');
-    const matchedService = SERVICE_CATEGORIES.find((category) => category.serviceType.toLowerCase() === cleanService.toLowerCase());
+    const cleanService = serviceParam.replace(/_/g, ' ').replace(/-/g, ' ').trim();
+    const canonicalService = SERVICE_ALIASES[cleanService.toLowerCase()] || cleanService;
+    const matchedService = SERVICE_CATEGORIES.find((category) => category.serviceType.toLowerCase() === canonicalService.toLowerCase());
     if (matchedService) selectServiceCategory(matchedService.serviceType);
   }
 

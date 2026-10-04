@@ -36,7 +36,7 @@ const pages = {
   'bookings.html': {
     title: 'Project Inquiry | OnlyTruePerspective',
     canonical: 'https://www.onlytrueperspective.tech/bookings',
-    descriptionSnippet: 'Tell OnlyTruePerspective what you are building',
+    descriptionSnippet: 'Tell OnlyTruePerspective what you would like to make',
     indexable: true
   },
   'archive.html': {

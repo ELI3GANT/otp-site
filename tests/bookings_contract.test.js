@@ -86,7 +86,7 @@ for (const source of [html, js, pricing, server]) {
 assert.ok(html.includes('Start your project.'), 'project inquiry hero is direct and conversion-focused');
 assert.ok(html.includes('class="skip-link"') && html.includes('href="#booking-form"'), 'booking page provides a keyboard skip link to the intake form');
 assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');
-assert.ok(html.includes('Tell us what you’re trying to build. We’ll review the scope and follow up with the right next step or a quote. No payment required.'), 'hero explains the inquiry and truthful follow-up');
+assert.ok(html.includes('Tell us what you’re looking to make. We’ll review the scope and follow up with the right next step or a quote. No payment required.'), 'hero explains the inquiry and truthful follow-up');
 assert.ok(html.includes('Start Project Inquiry'), 'primary CTA names the project inquiry');
 assert.ok(html.includes('Send Project Inquiry'), 'final CTA names the project inquiry');
 assert.ok(html.includes('official-brand-mark'), 'header keeps the official OTP site mark');
@@ -104,7 +104,7 @@ const scopeStep = html.indexOf('aria-label="Tell us about the project"');
 const contactStep = html.indexOf('aria-label="Where should we send next steps?"');
 const reviewStep = html.indexOf('aria-label="Review project inquiry"');
 assert.ok(needStep >= 0 && needStep < scopeStep && scopeStep < contactStep && contactStep < reviewStep, 'flow order is Need, Scope, Contact, Review');
-for (const label of ['Website / redesign', 'Booking or client system', 'Automation / AI tool', 'Creative / media', 'Something custom']) {
+for (const label of ['Video production / editing', 'Creative direction / campaign', 'Website / digital product', 'Business system / automation', 'Something custom']) {
     assert.ok(html.includes(`>${label}</span>`), `need step includes ${label}`);
 }
 assert.strictEqual((html.match(/name="service_category"/g) || []).length, 5, 'only five service choices appear');
@@ -121,7 +121,7 @@ assert.ok(html.includes('Files are not uploaded here.'), 'page does not imply un
 assert.ok(html.includes('no call, appointment, or delivery slot has been scheduled'), 'confirmation describes what happens next without claiming a booking');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
 assert.ok(html.includes('bookings.css?v=20261004-accent'), 'booking stylesheet cache-bust matches inquiry release');
-assert.ok(html.includes('bookings.js?v=20260928-project-inquiry'), 'booking script cache-bust matches inquiry release');
+assert.ok(html.includes('bookings.js?v=20261004-final'), 'booking script cache-bust matches inquiry release');
 assert.strictEqual((html.match(/<script src="\/otp-conversion-analytics\.js/g) || []).length, 1, 'booking conversion analytics loads once');
 assert.ok(fs.existsSync(path.join(root, 'otp-conversion-analytics.js')), 'booking conversion analytics asset exists');
 assert.ok(html.includes('preferred_next_step') && html.includes('contact_consent'), 'existing backend routing and consent fields remain present');

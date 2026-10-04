@@ -196,7 +196,9 @@ assert.ok([...otpOsStory.querySelectorAll('main a')].some((link) => link.getAttr
 for (const project of projects) {
   const page = new JSDOM(renderProjectPage(project, projects)).window.document;
   assert.equal(page.querySelectorAll('h1').length, 1);
-  assert.ok([...page.querySelectorAll('a')].some(a => a.getAttribute('href') === '/fixline/intake?source=project-' + project.slug), project.id + ' preserves attributed conversion');
+  const inquiry = new URL(project.bookingUrl, 'https://www.onlytrueperspective.tech');
+  inquiry.searchParams.set('source', 'project-' + project.slug);
+  assert.ok([...page.querySelectorAll('a')].some(a => a.getAttribute('href') === inquiry.pathname + inquiry.search), project.id + ' preserves context and attributed conversion');
   assert.ok(page.querySelector('.project-status-note').textContent.trim(), project.id + ' gives evidence context');
   assert.doesNotMatch(page.body.textContent, /\b\d+(?:\.\d+)?\s*(?:%|x growth|million users|conversions)/i, 'no fabricated performance metrics');
   for (const img of page.querySelectorAll('main img')) {

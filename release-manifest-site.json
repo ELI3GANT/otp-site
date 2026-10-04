@@ -1,38 +1,18 @@
 {
-  "release": "Project previews, ELI3GANT music lore, clickable footer arrows and inquiry accent continuity and consistent SVG icons",
+  "release": "Final public studio consistency: video-first inquiry, curated Archive empty state and contextual project conversion",
   "includedFiles": [
     "archive.html",
-    "bookings.css",
     "bookings.html",
-    "consultant-audit.html",
-    "docs/releases/PUBLIC-PROJECT-POLISH-20261004.md",
-    "home.css",
-    "index.html",
-    "insight.html",
-    "insights.html",
-    "privacy.html",
+    "bookings.js",
     "project-stories.js",
-    "protocol.html",
-    "public-shell.js",
-    "public-system.css",
-    "release-manifest-site.json",
-    "release-manifest.json",
-    "signal-config.js",
-    "signal.html",
-    "songwars.html",
-    "studio.css",
     "studio.html",
-    "terms.html",
+    "tests/archive_case_study_contract.test.js",
     "tests/bookings_contract.test.js",
     "tests/e2e/adversarial_qa.js",
-    "tests/signal_contract.test.js",
-    "weatheros-privacy.html",
-    "weatheros-support.html",
-    "weatheros.html",
-    "weatheros/index.html",
-    "weatheros/privacy.html",
-    "weatheros/support.html",
-    "website-design.html"
+    "tests/seo_indexing_contract.test.js",
+    "release-manifest.json",
+    "release-manifest-site.json",
+    "docs/releases/PUBLIC-FINAL-POLISH-20261004.md"
   ],
   "excludedDirtyFiles": [
     "client-editorial.css",
@@ -51,7 +31,7 @@
     },
     {
       "command": "npm run test:e2e",
-      "status": "passed 88/88 browser checks 2026-10-04"
+      "status": "passed 106/106 browser checks 2026-10-04"
     },
     {
       "command": "npm run security:scan",
@@ -78,7 +58,7 @@
       "status": "passed whitespace 2026-10-04"
     },
     {
-      "command": "node --check public-shell.js, signal-config.js, project-stories.js",
+      "command": "node --check bookings.js; node --check project-stories.js",
       "status": "passed syntax 2026-10-04"
     }
   ],
@@ -97,13 +77,13 @@
       768,
       1440
     ],
-    "details": "88/88 browser checks, project containment, footer anchors, Home-to-inquiry accent and music routing. Desktop and 390px visuals inspected. Existing responsive, booking review and Archive checks retained. No physical device or production submission. All fifteen Studio SVG icon bounds checked."
+    "details": "106/106 checks, five canonical service submissions intercepted locally, eight existing service aliases, seven project routes, responsive comparisons at 390/1440 and overflow at 320/390/768/1440. Current icons, arrows, music timeline, accent and four-step flow retained. No physical-device test or real production inquiry submitted."
   },
   "authenticatedSweep": {
     "status": "passed",
     "sourceCommit": "65e8ae776010b1bae94452af5a18007bd5300434",
     "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37232725779",
-    "details": "Fresh authenticated production sweep passed before deployment for this exact app source. Both workflow jobs succeeded."
+    "details": "Last successful unchanged-backend baseline at sourceCommit and evidenceUrl; this candidate requires a fresh authenticated sweep in the protected workflow before deployment."
   },
   "deploymentTarget": {
     "provider": "Vercel",
@@ -111,9 +91,6 @@
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
-    ],
-    "verifiedReleaseCommit": "65e8ae776010b1bae94452af5a18007bd5300434",
-    "workflowUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37232725779",
-    "deploymentId": "dpl_3dW7QW3tpAH9SC1D1A2jHNHgZ8o9"
+    ]
   }
 }

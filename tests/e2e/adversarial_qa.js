@@ -184,6 +184,45 @@ async function runAdversarialQA() {
       report('Booking page has no console errors', bookingConsoleErrors.length === 0, bookingConsoleErrors.join(' | '));
     }
 
+    // Public choices must reach the writer with existing canonical service values.
+    {
+      await page.unroute('**/api/bookings/submit');
+      const choices = [
+        ['Video production / editing', 'Video / Content', 'The Signal'],
+        ['Creative direction / campaign', 'Brand Launch', 'The Engine'],
+        ['Website / digital product', 'Website / Digital System', 'The Engine'],
+        ['Business system / automation', 'Business System', 'The System'],
+        ['Something custom', 'Custom Build', 'The System']
+      ];
+      for (const [label, service, recommendation] of choices) {
+        await page.goto(`${baseUrl}/bookings`, { waitUntil: 'load' });
+        await page.waitForFunction(() => document.querySelector('#booking-service').options.length > 1);
+        await page.getByText(label, { exact: true }).click();
+        await page.click('#next-step');
+        await page.fill('#booking-description', 'A focused creative deliverable.');
+        await page.fill('#booking-success-criteria', 'Clear, finished work.');
+        await page.click('#next-step');
+        await page.fill('#booking-name', 'Mapping QA');
+        await page.fill('#booking-email', 'qa@example.invalid');
+        await page.click('#next-step');
+        report(label + ' review keeps the public label and recommendation', (await page.textContent('#review-summary')).includes(label) && (await page.textContent('#recommended-package-name')).includes(recommendation));
+        await page.check('#booking-consent');
+        let payload;
+        await page.route('**/api/bookings/submit', async route => {
+          payload = route.request().postDataJSON();
+          await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ ok: false, message: 'QA intercepted; no write performed.' }) });
+        });
+        await Promise.all([page.waitForResponse('**/api/bookings/submit'), page.click('#submit-booking')]);
+        report(label + ' submits canonical service', payload?.service_type === service);
+        await page.unroute('**/api/bookings/submit');
+      }
+      for (const [alias, expected] of [['artist-campaign', 'Brand Launch'], ['event-community-rollout', 'Brand Launch'], ['launch-package', 'Brand Launch'], ['product-design', 'Website / Digital System'], ['website-business-fix', 'Website / Digital System'], ['business-systems', 'Business System'], ['AI / Automation', 'Business System'], ['same-day-signal', 'Video / Content']]) {
+        await page.goto(`${baseUrl}/bookings?service=${encodeURIComponent(alias)}`, { waitUntil: 'load' });
+        await page.waitForFunction(() => document.querySelector('#booking-service').options.length > 1);
+        report('Inquiry alias resolves: ' + alias, await page.inputValue('#booking-service') === expected);
+      }
+    }
+
     // 9. Honest Quote State
     {
       await page.goto(`${baseUrl}/quote`, { waitUntil: 'domcontentloaded' });
@@ -209,7 +248,11 @@ async function runAdversarialQA() {
           const hasOverflow = await page.evaluate(() => {
             return document.documentElement.scrollWidth > document.documentElement.clientWidth + 1;
           });
-          if (process.env.OTP_QA_SCREENSHOT_DIR && route === '/archive' && [390, 1440].includes(vp.width)) await page.screenshot({ path: path.join(process.env.OTP_QA_SCREENSHOT_DIR, `otp-clarity-archive-${vp.width}.png`) });
+          if (process.env.OTP_QA_SCREENSHOT_DIR && ['/', '/archive', '/studio', '/signal', '/bookings'].includes(route) && [390, 1440].includes(vp.width)) await page.screenshot({ path: path.join(process.env.OTP_QA_SCREENSHOT_DIR, `otp-final-${route.replaceAll('/', '') || 'home'}-${vp.width}.png`) });
+          if (process.env.OTP_QA_SCREENSHOT_DIR && route === '/bookings' && [390, 1440].includes(vp.width)) {
+            await page.locator('#booking-form').scrollIntoViewIfNeeded();
+            await page.screenshot({ path: path.join(process.env.OTP_QA_SCREENSHOT_DIR, `otp-final-choices-${vp.width}.png`), fullPage: false });
+          }
           report(`Zero horizontal overflow on ${route} at ${vp.name} (${vp.width}px)`, !hasOverflow, hasOverflow ? 'OVERFLOW DETECTED' : 'OK');
         }
       }
