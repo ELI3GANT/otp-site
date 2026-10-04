@@ -2570,13 +2570,13 @@ body.booking-site {
   --text: #f1f0e8;
   --muted: #aeb3a5;
   --muted-2: #d6d9cf;
-  --accent: #dcff5f;
-  --accent-2: #dcff5f;
-  --active-accent: #dcff5f;
-  --active-accent-2: #dcff5f;
-  --active-glow: rgba(220, 255, 95, .16);
-  --active-glow-2: rgba(220, 255, 95, .08);
-  --active-surface: rgba(220, 255, 95, .08);
+  --accent: var(--accent-otp, #dcff5f);
+  --accent-2: var(--accent-otp, #dcff5f);
+  --active-accent: var(--accent-otp, #dcff5f);
+  --active-accent-2: var(--accent-otp, #dcff5f);
+  --active-glow: color-mix(in srgb, var(--accent-otp) 16%, transparent);
+  --active-glow-2: color-mix(in srgb, var(--accent-otp) 8%, transparent);
+  --active-surface: color-mix(in srgb, var(--accent-otp) 8%, transparent);
   background: var(--bg);
   color: var(--text);
 }

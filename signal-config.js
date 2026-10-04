@@ -21,7 +21,7 @@ const BLACKBOX_SIGNAL_CONFIG = {
   transmissionStatus: 'TRANSMISSION ACTIVE',
   offlineStatus: 'SIGNAL OFFLINE',
   transmissionBadge: 'UNRELEASED // VAULT TRANSMISSION',
-  tagline: 'Signal intercepted from an unreleased session.',
+  tagline: 'Unreleased music from ELI3GANT. The next chapter after PROTOCOL.',
   sourceModeLabel: '[ 24 SEC INTERCEPT ]',
 
   // Audio Teaser Sources
@@ -79,14 +79,9 @@ const BLACKBOX_SIGNAL_CONFIG = {
       statusText: 'OUT NOW'
     },
     {
-      name: 'SIGNAL 001',
+      name: 'SIGNAL / LORE',
       state: 'active',
-      statusText: 'ACTIVE'
-    },
-    {
-      name: '[ REDACTED ]',
-      state: 'locked',
-      statusText: 'ENCRYPTED'
+      statusText: 'NEXT CHAPTER / UNRELEASED'
     }
   ]
 };

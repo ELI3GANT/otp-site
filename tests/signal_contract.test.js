@@ -41,7 +41,7 @@ assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/signal</lo
 assert.ok(html.includes('<title>BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE</title>'), 'page title is set');
 assert.ok(html.includes('rel="canonical" href="https://www.onlytrueperspective.tech/signal"'), 'canonical URL is set');
 assert.ok(html.includes('property="og:title" content="BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE"'), 'og:title is set');
-assert.ok(html.includes('property="og:description" content="An unreleased transmission from the OTP vault."'), 'og:description is set');
+assert.ok(html.includes('property="og:description" content="ELI3GANT’s music, unreleased signals, and lore. From PROTOCOL into the next chapter."'), 'og:description is set');
 assert.ok(html.includes('property="og:url" content="https://www.onlytrueperspective.tech/signal"'), 'og:url is set');
 assert.ok(html.includes('name="twitter:card" content="summary_large_image"'), 'twitter:card is summary_large_image');
 assert.ok(html.includes('name="twitter:title" content="BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE"'), 'twitter:title is set');
@@ -59,7 +59,7 @@ assert.ok(audioTypes.includes('audio/wav'), 'audioSources includes WAV (audio/wa
 
 assert.ok(config.teaserDurationSeconds === null || typeof config.teaserDurationSeconds === 'number', 'teaser duration supports dynamic or capped length');
 assert.ok(Array.isArray(config.currentReleases) && config.currentReleases.length >= 2, 'config declares current releases');
-assert.ok(Array.isArray(config.timeline) && config.timeline.length >= 3, 'config declares timeline');
+assert.ok(Array.isArray(config.timeline) && config.timeline.length === 2, 'config declares timeline');
 
 // Release items
 const protocolRel = config.currentReleases.find((r) => r.id === 'protocol');
@@ -73,8 +73,8 @@ assert.strictEqual(letsGetLitRel.url, 'https://soundcloud.com/eli3gant/lgl-lets-
 // Timeline items
 const timelineNames = config.timeline.map((t) => t.name);
 assert.ok(timelineNames.includes('PROTOCOL'), 'timeline has PROTOCOL');
-assert.ok(timelineNames.includes('SIGNAL 001'), 'timeline has SIGNAL 001');
-assert.ok(timelineNames.includes('[ REDACTED ]'), 'timeline has [ REDACTED ]');
+assert.ok(timelineNames.includes('SIGNAL / LORE'), 'timeline names the next music chapter');
+assert.ok(!timelineNames.includes('[ REDACTED ]'), 'no invented future chapter');
 
 // 4. Anti-Leak & Audio Protection (No fake tech claims, no red dev boxes)
 assert.ok(!html.includes('<audio controls'), 'page does not expose browser default audio controls');
@@ -129,8 +129,8 @@ assert.strictEqual(canvasNode.getAttribute('aria-hidden'), 'true', 'visualizer c
 // Timeline nodes
 const timelineSteps = Array.from(doc.querySelectorAll('.timeline-step .step-name')).map((n) => n.textContent.trim());
 assert.ok(timelineSteps.includes('PROTOCOL'), 'DOM renders PROTOCOL in timeline');
-assert.ok(timelineSteps.includes('SIGNAL 001'), 'DOM renders SIGNAL 001 in timeline');
-assert.ok(timelineSteps.includes('[ REDACTED ]'), 'DOM renders [ REDACTED ] in timeline');
+assert.ok(timelineSteps.includes('SIGNAL / LORE'), 'DOM renders the next chapter');
+assert.ok(!timelineSteps.includes('[ REDACTED ]'), 'DOM avoids invented future chapters');
 
 // 6. CSS System & Motion Guards & Glitch System
 assert.ok(css.includes('--signal-gold: #dcff5f;'), 'Signal adopts the shared acid accent while preserving audio motion states');
@@ -180,7 +180,7 @@ assert.ok(css.includes('data-state="error"'), 'CSS defines error beacon state st
 // 8. Homepage Subtle Non-Intrusive Integration
 assert.ok(index.includes('href="/signal"'), 'index.html links to /signal');
 assert.ok(index.includes('home-signal'), 'homepage dedicates a teaser to Signal discovery');
-assert.ok(index.includes('Enter Signal'), 'homepage provides a clear Signal destination');
+assert.ok(index.includes('Explore the music'), 'homepage provides a clear Signal destination');
 assert.ok(!index.includes('nav-dropdown'), 'desktop nav avoids extraneous dropdowns to preserve clean single-row layout');
 
 console.log('   ✅ Blackbox Signal Contract passed all validations.');

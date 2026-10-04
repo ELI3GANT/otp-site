@@ -92,6 +92,23 @@ async function runAdversarialQA() {
       await page.emulateMedia({ reducedMotion: 'no-preference' });
     }
 
+    {
+      await page.goto(`${baseUrl}/`);
+      const accent = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent-otp').trim());
+      await page.locator('a[href="/bookings?source=homepage-hero"]').click();
+      report('Inquiry retains homepage accent', await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent-otp').trim()) === accent);
+      report('Inquiry action uses selected accent', await page.locator('.booking-site').evaluate(el => getComputedStyle(el).getPropertyValue('--accent').trim()) === accent);
+      await page.goto(`${baseUrl}/`);
+      const cards = page.locator('.home-work-pair .home-project-image');
+      const heights = await cards.evaluateAll(items => items.map(item => item.getBoundingClientRect().height));
+      report('Desktop project previews align', Math.abs(heights[0] - heights[1]) < 2);
+      report('Full app screenshot fits its frame', await page.locator('.home-project-phone .home-project-image').evaluate(el => el.querySelector('img').getBoundingClientRect().height <= el.getBoundingClientRect().height));
+      const footerLinks = page.locator('.public-footer-links a');
+      report('Every footer navigation arrow is clickable inside its link', await footerLinks.count() === await page.locator('.public-footer-links a .public-link-arrow').count());
+      await page.locator('.home-signal-type').click();
+      report('Signal card opens ELI3GANT music timeline', new URL(page.url()).pathname === '/signal' && (await page.locator('.signal-timeline').textContent()).includes('SIGNAL / LORE'));
+    }
+
     // 8. Booking Flow Validation, A11y, and Enter Key Progression
     {
       const bookingConsoleErrors = [];

@@ -85,3 +85,6 @@ html { scroll-behavior: smooth; scroll-padding-top: 100px; }
   .public-page *, .public-page *::before, .public-page *::after { animation: none !important; transition: none !important; }
 }
 .public-menu .public-nav-description { display: block; margin-top: 8px; font-size: .875rem; line-height: 1.5; letter-spacing: 0; color: var(--text-secondary); }
+
+.public-footer-links a { display: inline-flex; align-items: center; gap: 12px; }
+.public-link-arrow { display: inline-block; font-size: .85em; }

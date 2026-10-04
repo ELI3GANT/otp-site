@@ -1,28 +1,32 @@
 {
-  "release": "OTP video-first identity and curated Archive clarity",
+  "release": "Project previews, ELI3GANT music lore, clickable footer arrows and inquiry accent continuity",
   "includedFiles": [
-    "DESIGN.md",
-    "archive.css",
     "archive.html",
-    "archive.js",
+    "bookings.css",
+    "bookings.html",
     "consultant-audit.html",
-    "docs/releases/PUBLIC-CLARITY-20261004.md",
+    "docs/releases/PUBLIC-PROJECT-POLISH-20261004.md",
+    "home.css",
     "index.html",
     "insight.html",
     "insights.html",
     "privacy.html",
+    "project-stories.js",
+    "protocol.html",
     "public-shell.js",
+    "public-system.css",
     "release-manifest-site.json",
     "release-manifest.json",
+    "signal-config.js",
+    "signal.html",
+    "songwars.html",
     "studio.html",
     "terms.html",
-    "tests/archive_case_study_contract.test.js",
-    "tests/archive_url_sync_and_fallback.test.js",
+    "tests/bookings_contract.test.js",
     "tests/e2e/adversarial_qa.js",
-    "tests/marketing_site_contract.test.js",
-    "tests/seo_indexing_contract.test.js",
-    "tests/youtube_video_contract.test.js",
+    "tests/signal_contract.test.js",
     "weatheros-privacy.html",
+    "weatheros-support.html",
     "weatheros.html",
     "weatheros/index.html",
     "weatheros/privacy.html",
@@ -42,11 +46,11 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed 53/53 local test programs 2026-10-04"
+      "status": "passed 53/53 local programs 2026-10-04"
     },
     {
       "command": "npm run test:e2e",
-      "status": "passed 80/80 browser checks 2026-10-04"
+      "status": "passed 86/86 browser checks 2026-10-04"
     },
     {
       "command": "npm run security:scan",
@@ -62,7 +66,7 @@
     },
     {
       "command": "npm run master_test:ci",
-      "status": "passed 53/53 using canonical live API 2026-10-04"
+      "status": "passed 53/53 with canonical live API 2026-10-04"
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
@@ -73,7 +77,7 @@
       "status": "passed whitespace 2026-10-04"
     },
     {
-      "command": "node --check archive.js and public-shell.js",
+      "command": "node --check public-shell.js, signal-config.js, project-stories.js",
       "status": "passed syntax 2026-10-04"
     }
   ],
@@ -92,13 +96,13 @@
       768,
       1440
     ],
-    "details": "80/80 browser checks including all seven project links, category history/deep links, no-JS, reduced motion, booking review and responsive geometry. Desktop visual and 390px screenshot inspected. No physical device or production submission."
+    "details": "86/86 browser checks, project containment, footer anchors, Home-to-inquiry accent and music routing. Desktop and 390px visuals inspected. Existing responsive, booking review and Archive checks retained. No physical device or production submission."
   },
   "authenticatedSweep": {
     "status": "passed",
     "sourceCommit": "037fffebddf535a54c6e61e5512aa4efab0b7a0a",
     "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37231294406",
-    "details": "Fresh authenticated production sweep passed for this exact deployed source before release. Both protected workflow jobs succeeded."
+    "details": "Prior deployed unchanged-backend evidence only. Candidate requires fresh authenticated checks in production-release.yml before deployment."
   },
   "deploymentTarget": {
     "provider": "Vercel",
@@ -106,9 +110,6 @@
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
-    ],
-    "verifiedReleaseCommit": "037fffebddf535a54c6e61e5512aa4efab0b7a0a",
-    "workflowUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37231294406",
-    "deploymentId": "dpl_BujH174X39N84iaYE7AZukygXGxd"
+    ]
   }
 }

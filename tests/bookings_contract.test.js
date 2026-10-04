@@ -120,7 +120,7 @@ assert.ok(html.includes('Phone <span>Optional</span>'), 'phone is optional');
 assert.ok(html.includes('Files are not uploaded here.'), 'page does not imply unsupported upload behavior');
 assert.ok(html.includes('no call, appointment, or delivery slot has been scheduled'), 'confirmation describes what happens next without claiming a booking');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
-assert.ok(html.includes('bookings.css?v=20260928-project-inquiry'), 'booking stylesheet cache-bust matches inquiry release');
+assert.ok(html.includes('bookings.css?v=20261004-accent'), 'booking stylesheet cache-bust matches inquiry release');
 assert.ok(html.includes('bookings.js?v=20260928-project-inquiry'), 'booking script cache-bust matches inquiry release');
 assert.strictEqual((html.match(/<script src="\/otp-conversion-analytics\.js/g) || []).length, 1, 'booking conversion analytics loads once');
 assert.ok(fs.existsSync(path.join(root, 'otp-conversion-analytics.js')), 'booking conversion analytics asset exists');
