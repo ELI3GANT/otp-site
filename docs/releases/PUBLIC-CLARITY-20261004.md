@@ -58,11 +58,22 @@ No server routes, redirects, proxy mappings, backend contracts, or operational w
 ## Deployment checklist
 - [x] Clean scoped branch based on verified deployed public source; dirty portal/backend checkout excluded.
 - [x] Local automated, browser, security, build, contracts and public production reads.
-- [ ] Final clean release gate and protected workflow fresh authenticated checks.
-- [ ] Vercel production build/deploy and canonical post-deploy asset/route checks.
+- [x] Final clean release gate and protected workflow fresh authenticated checks.
+- [x] Vercel production build/deploy and canonical post-deploy asset/route checks.
 
 ## Next migration
 Keep the private portal read delegation and OTP OS client/native release work in a separate change with their own identity/isolation and release evidence.
 
 ## Release gate repair
 Initial run 37231131909 blocked deployment because two legacy contracts still demanded the removed database count and film filters. The local summary had missed their failures. Those assertions now exercise category URL normalization/history and the curated rail, while preserving static fallback, quote, booking, video safety, and routing coverage. The entire suite is rerun before release; no gate is bypassed.
+
+## Production closeout
+Deployed app source: `037fffebddf535a54c6e61e5512aa4efab0b7a0a`.
+Protected workflow: https://github.com/ELI3GANT/otp-site/actions/runs/37231294406 — both jobs succeeded, including fresh authenticated sweep and post-deploy public checks.
+Vercel deployment `dpl_BujH174X39N84iaYE7AZukygXGxd` is READY for both canonical aliases.
+
+Home, Archive, Studio, Signal, all four booking aliases, generic portal/client entries, and every one of the seven project stories returned 200. Archive CSS and JS match the tested source bytes exactly. Home, Archive, and Studio HTML match after normalizing only Cloudflare email-obfuscation markup/script. No application mismatch remained.
+
+Live mobile Archive: four categories, correct PROTOCOL/Song Wars grouping, All restores seven projects, 390px scroll width equals client width, no console errors. Live desktop Studio: existing hero visual language, clearer opening copy and service hierarchy, 1280px without horizontal overflow or console errors. No production submission/payment or physical-device testing was performed.
+
+This closeout changes evidence only; the app deployed is the exact source commit above. Primary dirty portal/server work remains excluded and untouched.

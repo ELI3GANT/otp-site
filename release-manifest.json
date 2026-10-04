@@ -96,9 +96,9 @@
   },
   "authenticatedSweep": {
     "status": "passed",
-    "sourceCommit": "6f52d78ce250f287d00cf2c07b4a4f9ec902519e",
-    "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37158705387",
-    "details": "Prior deployed unchanged-backend evidence only. This candidate must pass a fresh authenticated sweep in protected production-release.yml before deployment; no local authenticated claim."
+    "sourceCommit": "037fffebddf535a54c6e61e5512aa4efab0b7a0a",
+    "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37231294406",
+    "details": "Fresh authenticated production sweep passed for this exact deployed source before release. Both protected workflow jobs succeeded."
   },
   "deploymentTarget": {
     "provider": "Vercel",
@@ -106,6 +106,9 @@
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
-    ]
+    ],
+    "verifiedReleaseCommit": "037fffebddf535a54c6e61e5512aa4efab0b7a0a",
+    "workflowUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37231294406",
+    "deploymentId": "dpl_BujH174X39N84iaYE7AZukygXGxd"
   }
 }
