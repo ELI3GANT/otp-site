@@ -83,6 +83,13 @@ for (const source of [html, js, pricing, server]) {
     assert.ok(!source.includes('Brand Launch Pack'), 'old Brand Launch Pack wording is not referenced');
 }
 
+const { JSDOM } = require('jsdom');
+const inquiryDocument = new JSDOM(html).window.document;
+assert.deepStrictEqual([...inquiryDocument.querySelectorAll('.top-actions a')].map(a => [a.textContent.trim(), a.getAttribute('href')]), [
+    ['OTP Home', '/'], ['Portfolio', '/archive'], ['Services', '/studio'], ['Start Project Inquiry', '#booking-form']
+], 'Inquiry navigation uses canonical public pages and the existing inquiry anchor');
+assert.strictEqual(inquiryDocument.querySelector('.booking-footer a[href="/bookings"]').textContent.trim(), 'Project Inquiry', 'footer keeps the current inquiry flow');
+
 assert.ok(html.includes('Start your project.'), 'project inquiry hero is direct and conversion-focused');
 assert.ok(html.includes('class="skip-link"') && html.includes('href="#booking-form"'), 'booking page provides a keyboard skip link to the intake form');
 assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');

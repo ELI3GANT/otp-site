@@ -1,18 +1,11 @@
 {
-  "release": "Final public studio consistency: video-first inquiry, curated Archive empty state and contextual project conversion",
+  "release": "Project Inquiry Services navigation to canonical Studio",
   "includedFiles": [
-    "archive.html",
     "bookings.html",
-    "bookings.js",
-    "project-stories.js",
-    "studio.html",
-    "tests/archive_case_study_contract.test.js",
     "tests/bookings_contract.test.js",
-    "tests/e2e/adversarial_qa.js",
-    "tests/seo_indexing_contract.test.js",
     "release-manifest.json",
     "release-manifest-site.json",
-    "docs/releases/PUBLIC-FINAL-POLISH-20261004.md"
+    "docs/releases/PUBLIC-INQUIRY-NAV-20261004.md"
   ],
   "excludedDirtyFiles": [
     "client-editorial.css",
@@ -58,7 +51,7 @@
       "status": "passed whitespace 2026-10-04"
     },
     {
-      "command": "node --check bookings.js; node --check project-stories.js",
+      "command": "node --check tests/bookings_contract.test.js",
       "status": "passed syntax 2026-10-04"
     }
   ],
@@ -77,13 +70,13 @@
       768,
       1440
     ],
-    "details": "106/106 checks, five canonical service submissions intercepted locally, eight existing service aliases, seven project routes, responsive comparisons at 390/1440 and overflow at 320/390/768/1440. Current icons, arrows, music timeline, accent and four-step flow retained. No physical-device test or real production inquiry submitted."
+    "details": "106/106 browser regression checks passed; local Services link click opened /studio. Canonical header and footer navigation validated. Four-step Review, mapping and responsive coverage unchanged. No production inquiry submitted."
   },
   "authenticatedSweep": {
     "status": "passed",
     "sourceCommit": "17199ce93b90f4786c62a997cba05cc4533b15b7",
     "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37238173897",
-    "details": "Fresh authenticated production sweep passed for this exact app source before deployment. Both protected workflow jobs and post-deployment checks succeeded."
+    "details": "Last successful unchanged-backend baseline at the cited source and workflow. Candidate production workflow must freshly pass authenticated checks before deployment."
   },
   "deploymentTarget": {
     "provider": "Vercel",
@@ -91,9 +84,6 @@
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
-    ],
-    "verifiedReleaseCommit": "17199ce93b90f4786c62a997cba05cc4533b15b7",
-    "workflowUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37238173897",
-    "deploymentId": "dpl_DAx1Au2Q3HvX2W2347XkZnHDtoNa"
+    ]
   }
 }
