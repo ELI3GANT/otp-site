@@ -1,37 +1,24 @@
 {
-  "release": "Video-first portfolio, public accents, and social preview",
+  "release": "OTP video-first identity and curated Archive clarity",
   "includedFiles": [
-    ".github/workflows/production-release.yml",
+    "DESIGN.md",
     "archive.css",
     "archive.html",
-    "assets/films/fame-and-fortune.jpg",
-    "assets/films/froze-tour.jpg",
-    "assets/films/tjs-night.jpg",
-    "assets/seo/otp-video-studio-20261003.jpg",
+    "archive.js",
     "consultant-audit.html",
-    "docs/releases/PUBLIC-VIDEO-20261003.md",
-    "home-reel.js",
-    "home.css",
+    "docs/releases/PUBLIC-CLARITY-20261004.md",
     "index.html",
     "insight.html",
     "insights.html",
-    "package.json",
     "privacy.html",
-    "public-accent.js",
     "public-shell.js",
-    "public-system.css",
     "release-manifest-site.json",
     "release-manifest.json",
-    "scripts/prod_full_sweep.js",
-    "scripts/prod_terminal_sweep.js",
-    "server.js",
-    "speed-insights-bundle.js",
     "studio.html",
     "terms.html",
-    "tests/homepage_visual_contract.test.js",
+    "tests/archive_case_study_contract.test.js",
+    "tests/e2e/adversarial_qa.js",
     "tests/marketing_site_contract.test.js",
-    "tests/master_runner.js",
-    "tests/public_showcase.test.js",
     "tests/seo_indexing_contract.test.js",
     "weatheros-privacy.html",
     "weatheros.html",
@@ -41,50 +28,51 @@
     "website-design.html"
   ],
   "excludedDirtyFiles": [
+    "client-editorial.css",
     "client.html",
     "client.js",
-    "portal.html",
-    "client-editorial.css",
     "portal-editorial.css",
+    "portal.html",
+    "server.js",
     "supabase/**",
     "vault/**"
   ],
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed 53/53 test programs locally 2026-10-03"
+      "status": "passed 53/53 local test programs 2026-10-04"
     },
     {
       "command": "npm run test:e2e",
-      "status": "passed 63/63 browser checks locally 2026-10-03"
+      "status": "passed 80/80 browser checks 2026-10-04"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed local secret scan 2026-10-03"
+      "status": "passed local secret scan 2026-10-04"
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed locally 2026-10-03"
+      "status": "passed four pinned contracts 2026-10-04"
     },
     {
       "command": "npm run build:speed-insights",
-      "status": "passed locally 2026-10-03"
+      "status": "passed local build 2026-10-04"
     },
     {
       "command": "npm run master_test:ci",
-      "status": "passed 53/53 with canonical live API 2026-10-03"
+      "status": "passed 53/53 using canonical live API 2026-10-04"
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed public production reads 2026-10-03; no local authenticated checks"
+      "status": "passed public reads; authenticated checks skipped locally 2026-10-04"
     },
     {
       "command": "git diff --check",
-      "status": "passed locally 2026-10-03"
+      "status": "passed whitespace 2026-10-04"
     },
     {
-      "command": "node --check server.js, home-reel.js, public-accent.js, public-shell.js and sweep scripts",
-      "status": "passed locally 2026-10-03"
+      "command": "node --check archive.js and public-shell.js",
+      "status": "passed syntax 2026-10-04"
     }
   ],
   "browserQa": {
@@ -92,7 +80,9 @@
     "routes": [
       "/",
       "/archive",
-      "/studio"
+      "/studio",
+      "/signal",
+      "/bookings"
     ],
     "viewports": [
       320,
@@ -100,13 +90,13 @@
       768,
       1440
     ],
-    "details": "No horizontal overflow on all three routes at all four widths. Real YouTube playback and clip changes observed in browser; pause control and Music videos filter checked. Refresh changes accent; Reduce Motion prevents automatic iframe loading. Desktop browser viewport emulation, not physical iPhone QA."
+    "details": "80/80 browser checks including all seven project links, category history/deep links, no-JS, reduced motion, booking review and responsive geometry. Desktop visual and 390px screenshot inspected. No physical device or production submission."
   },
   "authenticatedSweep": {
     "status": "passed",
     "sourceCommit": "6f52d78ce250f287d00cf2c07b4a4f9ec902519e",
     "evidenceUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37158705387",
-    "details": "Fresh protected authenticated sweep passed before deployment. Both workflow jobs succeeded, including browser regressions, clean scope, Vercel production build/deploy and exact refreshed-title post-deploy sweep."
+    "details": "Prior deployed unchanged-backend evidence only. This candidate must pass a fresh authenticated sweep in protected production-release.yml before deployment; no local authenticated claim."
   },
   "deploymentTarget": {
     "provider": "Vercel",
@@ -114,8 +104,6 @@
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
-    ],
-    "verifiedReleaseCommit": "6f52d78ce250f287d00cf2c07b4a4f9ec902519e",
-    "workflowUrl": "https://github.com/ELI3GANT/otp-site/actions/runs/37158705387"
+    ]
   }
 }

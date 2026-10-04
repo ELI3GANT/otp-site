@@ -108,13 +108,9 @@ assert.deepStrictEqual(
 );
 
 assert.ok(archive.includes('data-archive-projects'), 'archive mounts the dedicated project renderer');
-assert.ok(archive.includes('data-archive-search'), 'archive exposes project search');
-assert.ok(archive.includes('data-archive-category'), 'archive exposes category filtering');
-assert.ok(archive.includes('data-archive-status'), 'archive exposes status filtering');
-assert.ok(archive.includes('data-archive-year'), 'archive exposes year filtering');
-assert.ok(archive.includes('data-archive-technology'), 'archive exposes technology filtering');
-assert.ok(archive.includes('data-archive-timeline'), 'archive exposes the OTP timeline');
-assert.ok(archive.includes('Featured Projects') && archive.includes('Internal Products'), 'archive exposes collection discovery');
+for (const category of ['All', 'Video', 'Digital', 'Music / Campaigns']) assert.ok(archive.includes(`data-archive-collection="${category}"`));
+for (const control of ['search', 'category', 'status', 'year', 'technology', 'result-count']) assert.ok(!archive.includes(`data-archive-${control}`), 'advanced public control removed: ' + control);
+assert.ok(archive.includes('data-archive-timeline'), 'curated history is retained');
 assert.ok(archive.includes('data-video-feed="archive"'), 'existing visual vault remains available');
 assert.ok(archive.includes('data-video-sync="curated"'), 'archive renders its curated video set without a launch-blocking sync');
 assert.ok(archive.includes('archive.css?v=') && archive.includes('archive.js?v='), 'archive loads scoped production assets');
@@ -165,35 +161,24 @@ assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-co
 assert.ok(!renderedDocument.querySelector('[data-archive-timeline]').textContent.includes('Invalid Date'), 'undated VAULT timeline entry stays readable');
 assert.ok(renderedDocument.querySelector('[data-archive-timeline]').textContent.includes('Coming soon'), 'VAULT timeline entry has an honest date state');
 const ids = () => [...renderedDocument.querySelectorAll('[data-project-id]')].map(card => card.dataset.projectId);
-const set = (key, value) => {
-  const control = renderedDocument.querySelector(`[data-archive-${key}]`);
-  control.value = value;
-  control.dispatchEvent(new dom.window.Event(key === 'search' ? 'input' : 'change', { bubbles: true }));
-};
-const reset = () => renderedDocument.querySelector('[data-archive-reset]').click();
-set('search', 'HYH');
-assert.deepStrictEqual(ids(), [hyh.id], 'search narrows results');
-set('status', hyh.status);
-set('category', hyh.categories[0]);
-set('technology', hyh.technology[0]);
-set('year', String(hyh.year));
-assert.deepStrictEqual(ids(), [hyh.id], 'all filters combine with search');
-set('search', 'unmatched-project-123');
+const choose = value => renderedDocument.querySelector(`[data-archive-collection="${value}"]`).click();
+choose('Digital');
+assert.deepStrictEqual(ids(), ['hyh-architecture-design', 'weatheros', 'otp-fixline', 'otp-os', 'vault']);
+assert.equal(renderedDocument.querySelector('#motion').hidden, true);
+assert.equal(dom.window.location.search, '?collection=Digital');
+choose('Music / Campaigns');
+assert.deepStrictEqual(ids(), ['protocol', 'song-wars']);
+choose('Video');
 assert.deepStrictEqual(ids(), []);
-assert.strictEqual(renderedDocument.querySelector('[data-archive-empty]').hidden, false, 'empty search explains zero results');
-assert.match(renderedDocument.querySelector('[data-archive-result-count]').textContent, /^00/);
-reset();
-assert.strictEqual(ids().length, projects.length, 'reset restores whole catalog');
-assert.strictEqual(renderedDocument.querySelector('[data-archive-empty]').hidden, true);
-for (const key of ['search', 'category', 'technology', 'year', 'status']) assert.equal(renderedDocument.querySelector(`[data-archive-${key}]`).value, '', 'reset clears ' + key);
-for (const button of renderedDocument.querySelectorAll('[data-archive-collection]')) {
-  button.click();
-  assert.equal(button.getAttribute('aria-pressed'), 'true');
-  const collection = button.dataset.archiveCollection;
-  const expected = projects.filter(project => collection === 'Everything' || (collection === 'Creative' ? project.collections.some(c => ['Music', 'Events'].includes(c)) : project.collections.includes(collection)));
-  assert.deepStrictEqual(ids().sort(), expected.map(project => project.id).sort(), collection + ' shows correct projects');
-}
-reset();
+assert.equal(renderedDocument.querySelector('#motion').hidden, false);
+assert.equal(renderedDocument.querySelector('[data-archive-project-section]').hidden, true);
+assert.equal(renderedDocument.querySelector('[data-archive-empty]').hidden, true);
+dom.window.history.replaceState({}, '', '/archive?collection=Internal+Products&search=weather&year=2026');
+dom.window.dispatchEvent(new dom.window.PopStateEvent('popstate'));
+assert.equal(ids().length, 5, 'legacy links never retain hidden advanced filters');
+choose('All');
+assert.equal(ids().length, 7);
+assert.equal(dom.window.location.search, '');
 for (const project of projects) {
   const card = renderedDocument.querySelector(`[data-project-id="${project.id}"]`);
   assert.equal(card.querySelector('.archive-project-action-primary').getAttribute('href'), new URL(project.caseStudyUrl, dom.window.location.origin).href);

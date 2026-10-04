@@ -5,11 +5,15 @@
   if (!library || !projectRoot) return;
   const order = ['hyh-architecture-design', 'weatheros', 'otp-fixline', 'protocol', 'song-wars', 'otp-os', 'vault'];
   const projects = library.getProjects().sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
-  const state = { collection: 'Everything', search: '', category: '', status: '', year: '', technology: '' };
-  const controls = Object.fromEntries(Object.keys(state).filter((key) => key !== 'collection').map((key) => [key, document.querySelector(`[data-archive-${key}]`)]));
   const buttons = [...document.querySelectorAll('[data-archive-collection]')];
-  const count = document.querySelector('[data-archive-result-count]');
+  const films = document.getElementById('motion');
+  const projectSection = document.querySelector('[data-archive-project-section]');
+  const status = document.querySelector('[data-archive-selection-status]');
   const empty = document.querySelector('[data-archive-empty]');
+  const history = document.querySelector('.archive-history');
+  const categories = ['All', 'Video', 'Digital', 'Music / Campaigns'];
+  const legacy = { Everything: 'All', Creative: 'Music / Campaigns', Music: 'Music / Campaigns', Events: 'Music / Campaigns', 'Internal Products': 'Digital', Software: 'Digital', 'Client Projects': 'Digital', 'Featured Projects': 'All', Newest: 'All' };
+  let category = 'All';
   const blurbs = {
     'hyh-architecture-design': 'A new frame for architecture. Website, visual direction, and a clearer path into the work.',
     weatheros: 'Atmospheric weather, visual forecasts, and an interface with room to breathe.',
@@ -76,215 +80,64 @@
     card.append(content);
     return card;
   }
-  function matches(project) {
-    const creative = project.collections.some((value) => ['Music', 'Events'].includes(value));
-    const collection = state.collection === 'Everything' || (state.collection === 'Creative' ? creative : project.collections.includes(state.collection));
-    const haystack = [project.title, project.type, project.shortDescription, ...project.categories, ...project.disciplines, ...project.services, ...project.technology, ...project.tags].join(' ').toLowerCase();
-    return collection && (!state.search || haystack.includes(state.search.toLowerCase()))
-      && (!state.category || project.categories.includes(state.category))
-      && (!state.status || project.status === state.status)
-      && (!state.year || String(project.year) === state.year)
-      && (!state.technology || project.technology.includes(state.technology));
+  function readCategory() {
+    const value = new URLSearchParams(root.location.search).get('collection') || 'All';
+    return categories.find(item => item.toLowerCase() === value.trim().toLowerCase())
+      || Object.entries(legacy).find(([key]) => key.toLowerCase() === value.trim().toLowerCase())?.[1] || 'All';
   }
-
-  const options = {
-    category: [...new Set(projects.flatMap((p) => p.categories))].sort(),
-    status: [...new Set(projects.map((p) => p.status))],
-    year: library.getYears(),
-    technology: library.getTechnologies()
-  };
-
-  function parseUrlParams() {
-    const nextState = { collection: 'Everything', search: '', category: '', status: '', year: '', technology: '' };
-    try {
-      if (!root.location || !root.location.search) return nextState;
-      const params = new URLSearchParams(root.location.search);
-
-      const col = params.get('collection');
-      if (col) {
-        const matchedCol = buttons.map((b) => b.dataset.archiveCollection).find((c) => c.toLowerCase() === col.trim().toLowerCase());
-        if (matchedCol) nextState.collection = matchedCol;
-      }
-
-      const q = params.get('search');
-      if (q) nextState.search = q.trim();
-
-      const cat = params.get('category');
-      if (cat) {
-        const matchedCat = options.category.find((c) => c.toLowerCase() === cat.trim().toLowerCase());
-        if (matchedCat) nextState.category = matchedCat;
-      }
-
-      const stat = params.get('status');
-      if (stat) {
-        const matchedStat = options.status.find((s) => s.toLowerCase() === stat.trim().toLowerCase());
-        if (matchedStat) nextState.status = matchedStat;
-      }
-
-      const yr = params.get('year');
-      if (yr) {
-        const matchedYear = options.year.map(String).find((y) => y === yr.trim());
-        if (matchedYear) nextState.year = matchedYear;
-      }
-
-      const tech = params.get('technology');
-      if (tech) {
-        const matchedTech = options.technology.find((t) => t.toLowerCase() === tech.trim().toLowerCase());
-        if (matchedTech) nextState.technology = matchedTech;
-      }
-    } catch (_) {
-      // Safe fallback on any malformed input
-    }
-    return nextState;
+  function belongs(project) {
+    const music = project.collections.some(value => ['Music', 'Events'].includes(value));
+    return category === 'All' || (category === 'Digital' && !music) || (category === 'Music / Campaigns' && music);
   }
-
-  function buildCanonicalQueryString(targetState) {
-    const params = new URLSearchParams();
-    if (targetState.collection && targetState.collection !== 'Everything') {
-      params.set('collection', targetState.collection);
-    }
-    if (targetState.category) {
-      params.set('category', targetState.category);
-    }
-    if (targetState.status) {
-      params.set('status', targetState.status);
-    }
-    if (targetState.year) {
-      params.set('year', targetState.year);
-    }
-    if (targetState.technology) {
-      params.set('technology', targetState.technology);
-    }
-    if (targetState.search) {
-      params.set('search', targetState.search);
-    }
-    const qs = params.toString();
-    return qs ? `?${qs}` : '';
-  }
-
-  function syncUrl(action = 'none') {
-    if (!root.history || !root.location) return;
-    const newQs = buildCanonicalQueryString(state);
-    const targetUrl = root.location.pathname + newQs + (root.location.hash || '');
-    const currentUrl = root.location.pathname + (root.location.search || '') + (root.location.hash || '');
-
-    if (targetUrl === currentUrl) return;
-
-    if (action === 'push' && typeof root.history.pushState === 'function') {
-      root.history.pushState({ otpArchive: true }, '', targetUrl);
-    } else if (action === 'replace' && typeof root.history.replaceState === 'function') {
-      root.history.replaceState({ otpArchive: true }, '', targetUrl);
-    }
-  }
-
-  function syncControlsFromState() {
-    if (controls.search) controls.search.value = state.search;
-    if (controls.category) controls.category.value = state.category;
-    if (controls.status) controls.status.value = state.status;
-    if (controls.year) controls.year.value = state.year;
-    if (controls.technology) controls.technology.value = state.technology;
-
-    const hasRefine = Boolean(state.category || state.status || state.year || state.technology);
-    const refineDetails = document.querySelector('.archive-refine');
-    if (refineDetails && hasRefine) {
-      refineDetails.open = true;
-    }
-  }
-
-  function render(historyAction = 'none') {
-    const selected = projects.filter(matches);
+  function render(historyAction) {
+    const selected = projects.filter(belongs);
     projectRoot.replaceChildren(...selected.map(createProjectCard));
     projectRoot.setAttribute('aria-busy', 'false');
-    count.textContent = `${String(selected.length).padStart(2, '0')} / ${String(projects.length).padStart(2, '0')} projects`;
-    empty.hidden = selected.length > 0;
-    buttons.forEach((button) => {
-      const active = button.dataset.archiveCollection === state.collection;
+    films.hidden = !['All', 'Video'].includes(category);
+    projectSection.hidden = category === 'Video';
+    if (history) history.hidden = category === 'Video';
+    if (empty) empty.hidden = selected.length > 0 || category === 'Video';
+    const messages = { All: 'Showing video work and selected projects.', Video: 'Showing video work.', Digital: 'Showing websites, apps, and systems.', 'Music / Campaigns': 'Showing music and campaign projects.' };
+    if (status) status.textContent = messages[category];
+    buttons.forEach(button => {
+      const active = button.dataset.archiveCollection === category;
       button.classList.toggle('is-active', active);
       button.setAttribute('aria-pressed', String(active));
+      button.disabled = false;
     });
-    if (historyAction === 'push' || historyAction === 'replace') {
-      syncUrl(historyAction);
+    const videoLink = document.querySelector('.archive-hero-bottom a');
+    if (videoLink) videoLink.setAttribute('href', films.hidden ? '?collection=Video#motion' : '#motion');
+    const params = new URLSearchParams();
+    if (category !== 'All') params.set('collection', category);
+    const query = params.toString();
+    const url = root.location.pathname + (query ? '?' + query : '') + root.location.hash;
+    if (historyAction && url !== root.location.pathname + root.location.search + root.location.hash) {
+      root.history[historyAction === 'push' ? 'pushState' : 'replaceState']({ otpArchive: true }, '', url);
     }
-  }
-
-  function reset() {
-    Object.assign(state, { collection: 'Everything', search: '', category: '', status: '', year: '', technology: '' });
-    Object.values(controls).forEach((control) => { if (control) control.value = ''; });
-    render('push');
-  }
-
-  Object.entries(options).forEach(([key, values]) => values.forEach((value) => {
-    const option = node('option', '', value);
-    option.value = value;
-    if (controls[key]) controls[key].append(option);
-  }));
-
-  buttons.forEach((button) => button.addEventListener('click', () => {
-    if (state.collection === button.dataset.archiveCollection) return;
-    state.collection = button.dataset.archiveCollection;
-    render('push');
-  }));
-
-  ['category', 'status', 'year', 'technology'].forEach((key) => {
-    if (controls[key]) {
-      controls[key].addEventListener('change', () => {
-        state[key] = controls[key].value.trim();
-        render('push');
+    const timeline = document.querySelector('[data-archive-timeline]');
+    if (timeline) {
+      timeline.replaceChildren();
+      [...selected].sort((a, b) => String(a.launchDate || '9999-12-31').localeCompare(String(b.launchDate || '9999-12-31'))).forEach((project) => {
+        const row = node('li', 'archive-timeline-item');
+        const hasLaunchDate = /^\d{4}-\d{2}-\d{2}$/.test(String(project.launchDate || ''));
+        const dateLabel = hasLaunchDate
+          ? new Date(`${project.launchDate}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })
+          : project.status === 'Coming Soon' ? 'Coming soon' : String(project.year || 'Date not set');
+        const date = node('time', '', dateLabel);
+        if (hasLaunchDate) date.dateTime = project.launchDate;
+        row.append(date, createAction(project.title, project.caseStudyUrl, ''), node('span', '', project.category));
+        timeline.append(row);
       });
     }
-  });
 
-  let searchDebounceTimer = null;
-  if (controls.search) {
-    controls.search.addEventListener('input', () => {
-      state.search = controls.search.value.trim();
-      render('none');
-      clearTimeout(searchDebounceTimer);
-      searchDebounceTimer = setTimeout(() => {
-        syncUrl('replace');
-      }, 150);
-    });
-
-    controls.search.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        clearTimeout(searchDebounceTimer);
-        state.search = controls.search.value.trim();
-        render('replace');
-      }
-    });
   }
-
-  document.querySelectorAll('[data-archive-clear], [data-archive-reset]').forEach((button) => button.addEventListener('click', reset));
-
-  if (typeof root.addEventListener === 'function') {
-    root.addEventListener('popstate', () => {
-      const parsed = parseUrlParams();
-      Object.assign(state, parsed);
-      syncControlsFromState();
-      render('none');
-    });
-  }
-
-  const timeline = document.querySelector('[data-archive-timeline]');
-  if (timeline) {
-    [...projects].sort((a, b) => String(a.launchDate || '9999-12-31').localeCompare(String(b.launchDate || '9999-12-31'))).forEach((project) => {
-      const row = node('li', 'archive-timeline-item');
-      const hasLaunchDate = /^\d{4}-\d{2}-\d{2}$/.test(String(project.launchDate || ''));
-      const dateLabel = hasLaunchDate
-        ? new Date(`${project.launchDate}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })
-        : project.status === 'Coming Soon' ? 'Coming soon' : String(project.year || 'Date not set');
-      const date = node('time', '', dateLabel);
-      if (hasLaunchDate) date.dateTime = project.launchDate;
-      row.append(date, createAction(project.title, project.caseStudyUrl, ''), node('span', '', project.category));
-      timeline.append(row);
-    });
-  }
-
-  // Initialize state from URL params
-  const initialParams = parseUrlParams();
-  Object.assign(state, initialParams);
-  syncControlsFromState();
-  render('none');
-  syncUrl('replace');
+  buttons.forEach(button => button.addEventListener('click', () => {
+    if (category === button.dataset.archiveCollection) return;
+    category = button.dataset.archiveCollection;
+    render('push');
+  }));
+  document.querySelectorAll('[data-archive-reset]').forEach(button => button.addEventListener('click', () => { category = 'All'; render('push'); }));
+  root.addEventListener('popstate', () => { category = readCategory(); render(); });
+  category = readCategory();
+  render('replace');
 })(typeof window !== 'undefined' ? window : globalThis);

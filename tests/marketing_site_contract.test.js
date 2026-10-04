@@ -51,7 +51,7 @@ assert.ok(index.includes('"@type": "ProfessionalService"'), 'index includes Prof
 assert.ok(index.includes('ELI3GANT is the creative artist identity of Elijah Huertas'), 'index includes official ELI3GANT schema description');
 assert.ok(!index.includes('https://onlytrueperspective.tech/'), 'index avoids apex-only https homepage URLs in head/schema');
 assert.ok(index.includes('"name": "ELI3GANT"'), 'homepage schema identifies ELI3GANT as founder');
-assert.ok(index.includes('OnlyTruePerspective is a Rhode Island creative studio founded by ELI3GANT'), 'homepage copy connects ELI3GANT to OTP naturally');
+assert.ok(index.includes('OnlyTruePerspective is a Video Production &amp; Creative Studio founded by ELI3GANT'), 'homepage copy connects ELI3GANT to OTP naturally');
 const refreshedSocialImage = 'https://www.onlytrueperspective.tech/assets/seo/otp-video-studio-20261003.jpg';
 const officialSocialImage = 'https://www.onlytrueperspective.tech/assets/seo/otp-og-image.webp';
 for (const [label, html] of [

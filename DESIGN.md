@@ -246,13 +246,13 @@ The user's redesign explicitly supersedes the previous gold-only public directio
 
 `public-system.css` provides `.public-wrap`, `.public-section`, `.public-label`, `.public-title`, `.public-lead`, `.public-button`, `.public-text-link`, `.public-header`, `.public-footer`, `.public-paper`, `.public-cta`. Links have underlines or arrow affordances. 44px minimum interactive targets. Focus uses a 2px contrasting outline and 4px offset. Hover transitions use 180ms ease-out, image link zoom uses 320ms ease-out (1.025 scale); active buttons shift 1px; all movement disabled under reduced motion. All content visible without animation/JS.
 
-Archive: collection buttons and search first; optional native details houses status/category/year/technology and timeline. Broad collections are All, Products & systems, Client work, Music & events, Featured. Image-led card: image, index/type, title, short sentence, project-story link and quieter service enquiry. Hero card spans width; two-up supporting work; no repeated technology/service lists until project pages. Clear resets every field, collection and result count. Empty state has usable reset.
+Archive: one category rail with All, Video, Digital, Music / Campaigns. All presents video work first, then all seven projects. Digital groups HYH, WeatherOS, FIXLINE, OTP OS, and VAULT; Music / Campaigns groups PROTOCOL and Song Wars. Keep status labels and project stories; no public search, year, technology, discipline, status dropdowns, or database counts. Retain the existing card, typography, motion, and responsive system.
 
 Project story: readable static server-rendered HTML, real screenshot or comparison with caption, factual scope, contextual narrative, related work. Phone screenshots use contain and intrinsic dimensions. No invented release verification or outcomes.
 
 ### Audience and accessibility
 
-Prospective clients must find relevant work then start an enquiry. Creative visitors must reach Signal and the media archive without wading through sales copy. Returning clients reach portal from every company footer. Keyboard/touch users receive native controls, visible focus, search labels, result announcements, reduced motion and no hover-only navigation. Mobile: single column, full-sized images, readable metadata, wrapped collection controls. CMS/admin, booking/payment, protected access and remote FIXLINE remain independent.
+Prospective clients must find relevant work then start an enquiry. Creative visitors must reach Signal and the media archive without wading through sales copy. Returning clients reach portal from every company footer. Keyboard/touch users receive native controls, visible focus, category labels, selection announcements, reduced motion and no hover-only navigation. Mobile: single column, full-sized images, readable metadata, wrapped collection controls. CMS/admin, booking/payment, protected access and remote FIXLINE remain independent.
 
 ### Accepted implementation boundary
 

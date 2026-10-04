@@ -42,7 +42,7 @@ const pages = {
   'archive.html': {
     title: 'Video & Project Portfolio | OnlyTruePerspective',
     canonical: 'https://www.onlytrueperspective.tech/archive',
-    descriptionSnippet: 'Explore OnlyTruePerspective projects',
+    descriptionSnippet: 'Music videos, event films, and edits by OnlyTruePerspective',
     indexable: true
   },
   'consultant-audit.html': {

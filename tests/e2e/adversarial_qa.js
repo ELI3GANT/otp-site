@@ -49,89 +49,47 @@ async function runAdversarialQA() {
       report('Route /weatheros-privacy.html redirects 308', resPriv.status() === 308, `location: ${resPriv.headers()['location']}`);
     }
 
-    // 2. Archive Initial Hydration & Static Pre-rendered cards
+    // Curated categories, deep links, and browser history.
     {
       await page.goto(`${baseUrl}/archive`, { waitUntil: 'domcontentloaded' });
-      const initialCount = await page.textContent('[data-archive-result-count]');
-      report('Archive initial count matches 07 / 07', initialCount.includes('07 / 07'), `count: ${initialCount.trim()}`);
-
-      const cardCount = await page.locator('.archive-case-study-card').count();
-      report('Archive exactly 7 cards rendered', cardCount === 7, `cards: ${cardCount}`);
-      report('Song Wars is archived and Vault is coming soon', await page.locator('[data-project-id="song-wars"]').textContent().then((text) => text.includes('Archived')) && await page.locator('[data-project-id="vault"]').textContent().then((text) => text.includes('Coming Soon')));
-    }
-
-    // 3. Archive Collection Filter & pushState
-    {
-      const initialHistoryLen = await page.evaluate(() => window.history.length);
-      await page.click('button[data-archive-collection="Internal Products"]');
-      await page.waitForTimeout(100);
-
-      const newUrl = page.url();
-      const filteredCount = await page.textContent('[data-archive-result-count]');
-      const productsCardCount = await page.locator('.archive-case-study-card').count();
-      const newHistoryLen = await page.evaluate(() => window.history.length);
-
-      report('Collection button updates URL', newUrl.includes('collection=Internal+Products') || newUrl.includes('collection=Internal%20Products'), `url: ${newUrl}`);
-      report('Collection button pushes history state', newHistoryLen > initialHistoryLen, `length: ${initialHistoryLen} -> ${newHistoryLen}`);
-      report('Filter reduces card count correctly', productsCardCount > 0 && productsCardCount < 7, `visible: ${productsCardCount}`);
-    }
-
-    // 4. Browser Back & Forward Navigation (popstate)
-    {
+      report('Archive retains seven projects', await page.locator('.archive-case-study-card').count() === 7);
+      const projectLinks = await page.locator('.archive-project-action-primary').evaluateAll(items => items.map(item => item.href));
+      for (const link of projectLinks) report('Project story returns 200: ' + new URL(link).pathname, (await page.request.get(link)).status() === 200);
+      report('All retains eight films', await page.locator('#motion a[href*="youtube.com/watch"]').count() === 8);
+      report('Archive has four category controls', await page.locator('[data-archive-collection]').count() === 4);
+      report('Advanced database controls are removed', await page.locator('[data-archive-search], [data-archive-year], [data-archive-technology], [data-archive-status], [data-archive-category], [data-archive-result-count]').count() === 0);
+      report('Song Wars archived and VAULT coming soon', (await page.locator('[data-project-id="song-wars"]').textContent()).includes('Archived') && (await page.locator('[data-project-id="vault"]').textContent()).includes('Coming Soon'));
+      const historyLength = await page.evaluate(() => history.length);
+      await page.click('[data-archive-collection="Digital"]');
+      report('Digital shows five projects and hides films', await page.locator('.archive-case-study-card').count() === 5 && await page.locator('#motion').isHidden());
+      report('Categories push shareable history', page.url().includes('collection=Digital') && await page.evaluate(() => history.length) > historyLength);
       await page.goBack();
-      await page.waitForTimeout(150);
-      const backCount = await page.textContent('[data-archive-result-count]');
-      const backActiveCollection = await page.getAttribute('button[data-archive-collection="Everything"]', 'aria-pressed');
-
-      report('Back button restores Everything collection', backActiveCollection === 'true' && backCount.includes('07 / 07'), `count: ${backCount.trim()}`);
-
+      report('Back restores all projects', await page.locator('.archive-case-study-card').count() === 7 && await page.locator('#motion').isVisible());
       await page.goForward();
-      await page.waitForTimeout(150);
-      const fwdActiveCollection = await page.getAttribute('button[data-archive-collection="Internal Products"]', 'aria-pressed');
-      report('Forward button restores Internal Products', fwdActiveCollection === 'true', `active: ${fwdActiveCollection}`);
+      report('Forward restores Digital', await page.locator('.archive-case-study-card').count() === 5 && await page.getAttribute('[data-archive-collection="Digital"]', 'aria-pressed') === 'true');
+      await page.click('[data-archive-collection="Music / Campaigns"]');
+      report('Music maps to PROTOCOL and Song Wars', JSON.stringify(await page.locator('[data-project-id]').evaluateAll(items => items.map(item => item.dataset.projectId))) === JSON.stringify(['protocol', 'song-wars']));
+      await page.click('[data-archive-collection="Video"]');
+      report('Video shows films without an empty project state', await page.locator('#motion').isVisible() && await page.locator('[data-archive-project-section]').isHidden() && await page.locator('[data-archive-empty]').isHidden());
+      await page.goto(`${baseUrl}/archive?collection=Music%20%2F%20Campaigns`);
+      report('Music deep link restores selection', await page.locator('.archive-case-study-card').count() === 2);
+      await page.goto(`${baseUrl}/archive?collection=Internal+Products&search=weather&year=2026`);
+      report('Legacy URLs normalize without hidden filters', await page.locator('.archive-case-study-card').count() === 5 && new URL(page.url()).search === '?collection=Digital');
+      await page.goto(`${baseUrl}/archive?collection=%3Cscript%3E&status=unknown&year=99999`);
+      report('Adversarial queries safely restore All', await page.locator('.archive-case-study-card').count() === 7 && new URL(page.url()).search === '');
     }
 
-    // 5. Debounced Search & replaceState
     {
-      await page.goto(`${baseUrl}/archive`, { waitUntil: 'domcontentloaded' });
-      const historyBeforeSearch = await page.evaluate(() => window.history.length);
-
-      await page.fill('[data-archive-search]', 'weather');
-      await page.waitForTimeout(250); // wait for 150ms debounce
-
-      const historyAfterSearch = await page.evaluate(() => window.history.length);
-      const searchUrl = page.url();
-      const searchCount = await page.textContent('[data-archive-result-count]');
-      const searchCards = await page.locator('.archive-case-study-card').count();
-
-      report('Search uses replaceState (history length unchanged)', historyAfterSearch === historyBeforeSearch, `len: ${historyAfterSearch}`);
-      report('Search updates canonical URL', searchUrl.includes('search=weather'), `url: ${searchUrl}`);
-      report('Search filters correctly to WeatherOS', searchCards === 1 && searchCount.includes('01 / 07'), `cards: ${searchCards}`);
-    }
-
-    // 6. Direct Deep-linking & Deterministic Sync
-    {
-      await page.goto(`${baseUrl}/archive?search=weather&category=Software`, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(100);
-
-      const searchVal = await page.inputValue('[data-archive-search]');
-      const catVal = await page.inputValue('[data-archive-category]');
-      const deepCards = await page.locator('.archive-case-study-card').count();
-
-      report('Deep link populates search input', searchVal === 'weather', `search: "${searchVal}"`);
-      report('Deep link populates category select', catVal === 'Software', `category: "${catVal}"`);
-      report('Deep link renders filtered results', deepCards === 1, `cards: ${deepCards}`);
-    }
-
-    // 7. Malformed / Adversarial Query Strings
-    {
-      await page.goto(`${baseUrl}/archive?category=garbage&status=unknown&year=99999&technology=%3Cscript%3Ealert(1)%3C%2Fscript%3E&collection=fake`, { waitUntil: 'domcontentloaded' });
-      await page.waitForTimeout(100);
-
-      const advCount = await page.textContent('[data-archive-result-count]');
-      const advCards = await page.locator('.archive-case-study-card').count();
-
-      report('Adversarial query fails safely to all projects', advCards === 7 && advCount.includes('07 / 07'), `cards: ${advCards}, count: ${advCount.trim()}`);
+      const noJS = await browser.newContext({ javaScriptEnabled: false, serviceWorkers: 'block' });
+      const fallback = await noJS.newPage();
+      await fallback.goto(`${baseUrl}/archive`);
+      report('No-JS Archive retains all seven stories', await fallback.locator('.archive-case-study-card').count() === 7);
+      report('No-JS categories truthfully disabled', await fallback.locator('[data-archive-collection]:disabled').count() === 4);
+      await noJS.close();
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto(`${baseUrl}/archive`);
+      report('Reduced Motion preserves visible portfolio', await page.locator('#motion').isVisible() && await page.locator('[data-archive-project-section]').isVisible());
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
     }
 
     // 8. Booking Flow Validation, A11y, and Enter Key Progression
@@ -217,7 +175,7 @@ async function runAdversarialQA() {
 
     // 10. Viewport & Safe Area Overflows
     {
-      const testRoutes = ['/', '/archive', '/bookings', '/weatheros', '/songwars'];
+      const testRoutes = ['/', '/archive', '/studio', '/signal', '/bookings', '/weatheros', '/songwars'];
       const viewports = [
         { width: 320, height: 568, name: 'iPhone SE' },
         { width: 390, height: 844, name: 'iPhone 14' },
@@ -233,6 +191,7 @@ async function runAdversarialQA() {
           const hasOverflow = await page.evaluate(() => {
             return document.documentElement.scrollWidth > document.documentElement.clientWidth + 1;
           });
+          if (process.env.OTP_QA_SCREENSHOT_DIR && route === '/archive' && [390, 1440].includes(vp.width)) await page.screenshot({ path: path.join(process.env.OTP_QA_SCREENSHOT_DIR, `otp-clarity-archive-${vp.width}.png`) });
           report(`Zero horizontal overflow on ${route} at ${vp.name} (${vp.width}px)`, !hasOverflow, hasOverflow ? 'OVERFLOW DETECTED' : 'OK');
         }
       }
