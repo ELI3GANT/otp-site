@@ -9,12 +9,15 @@ Every shared footer navigation link now contains one consistent arrow inside its
 
 The project inquiry page loads the same accent selector as Home and derives its action/form accent tokens from that selection. Navigating from Home retains the selected color; refresh continues using the existing rotation behavior. Booking logic, package choices, submission, payments, backend routes, and portal operations are untouched.
 
+## Icon consistency
+All fifteen Studio service, engagement, process, and FAQ icons now share a clean 24px viewbox and 1.5px rounded stroke. The ambiguous wrench is replaced by a creative pen. Shared header/footer and homepage project arrows use crisp SVGs inside their existing links. Decorative vectors are hidden from screen readers and cannot take focus. Light-surface icons use a darker accent tint for readability. Existing OTP branding and audio/artwork are preserved. Browser QA checks all fifteen paths stay inside their viewboxes.
+
 ## Routes
 No routes or server logic changed. Existing `/`, `/signal`, `/bookings`, category and project links remain. The new clickable Signal display uses the existing `/signal` destination.
 
 ## Verification
 - 53/53 local test programs and 53/53 with the canonical live API.
-- 86/86 browser checks: aligned desktop image frames, full phone-image containment, clickable footer arrows, Home-to-inquiry accent continuity, music-card navigation, existing Archive mappings/history, all seven project stories, no-JS, Reduced Motion, booking review, responsive 320/390/768/1440px and mobile menu.
+- 88/88 browser checks: aligned desktop image frames, full phone-image containment, clickable footer arrows, Home-to-inquiry accent continuity, music-card navigation, existing Archive mappings/history, all seven project stories, no-JS, Reduced Motion, booking review, responsive 320/390/768/1440px and mobile menu.
 - Local secret scan, four pinned contracts, Speed Insights build, syntax and whitespace passed.
 - Desktop project previews and 390px mobile cards inspected; no physical-device claim.
 - Public production read-only sweep passed; local authenticated checks unavailable. The protected workflow must run them fresh before deployment. Existing Song Wars registration/poster deferrals remain.
@@ -38,6 +41,7 @@ No routes or server logic changed. Existing `/`, `/signal`, `/bookings`, categor
 - `signal.html`
 - `songwars.html`
 - `studio.html`
+- `studio.css`
 - `terms.html`
 - `tests/bookings_contract.test.js`
 - `tests/e2e/adversarial_qa.js`
@@ -61,3 +65,5 @@ No routes or server logic changed. Existing `/`, `/signal`, `/bookings`, categor
 
 ## Next migration
 Keep private portal read delegation and OTP OS identity/isolation/native releases separate from this public visual change.
+
+Initial public polish run 37232390293 was canceled before deployment to incorporate the user-requested icon pass. The updated candidate must complete the full protected workflow.

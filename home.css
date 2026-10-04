@@ -133,3 +133,5 @@
 }
 
 .home-signal-type { display: block; color: var(--text-primary); }
+
+.home-project-arrow .public-arrow { width: 20px; height: 20px; }

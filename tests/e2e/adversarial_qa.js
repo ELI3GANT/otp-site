@@ -105,6 +105,7 @@ async function runAdversarialQA() {
       report('Full app screenshot fits its frame', await page.locator('.home-project-phone .home-project-image').evaluate(el => el.querySelector('img').getBoundingClientRect().height <= el.getBoundingClientRect().height));
       const footerLinks = page.locator('.public-footer-links a');
       report('Every footer navigation arrow is clickable inside its link', await footerLinks.count() === await page.locator('.public-footer-links a .public-link-arrow').count());
+      report('Footer arrows stay small and render as strokes', await page.locator('.public-link-arrow').evaluateAll(items => items.every(el => { const box = el.getBoundingClientRect(); return box.width > 0 && box.width <= 24 && box.height <= 24 && getComputedStyle(el).fill === 'none'; })));
       await page.locator('.home-signal-type').click();
       report('Signal card opens ELI3GANT music timeline', new URL(page.url()).pathname === '/signal' && (await page.locator('.signal-timeline').textContent()).includes('SIGNAL / LORE'));
     }
@@ -218,6 +219,9 @@ async function runAdversarialQA() {
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(`${baseUrl}/studio`, { waitUntil: 'load' });
       const studioHeaderHeight = await page.locator('.public-header').evaluate((header) => Math.round(header.getBoundingClientRect().height));
+      const iconBounds = await page.locator('.studio-service-icon, .studio-section-icon, .studio-question-icon svg').evaluateAll(items => items.map(el => { const b = el.getBBox(); return { x: b.x, y: b.y, right: b.x + b.width, bottom: b.y + b.height }; }));
+      report('All fifteen Studio icons render inside their viewboxes', iconBounds.length === 15 && iconBounds.every(b => b.x >= 1 && b.y >= 1 && b.right <= 23 && b.bottom <= 23));
+
       await page.goto(`${baseUrl}/website-design.html`, { waitUntil: 'load' });
       const serviceHeaderHeight = await page.locator('.public-header').evaluate((header) => Math.round(header.getBoundingClientRect().height));
       report('Service page uses shared mobile header height', serviceHeaderHeight === studioHeaderHeight, `${serviceHeaderHeight}px vs ${studioHeaderHeight}px`);

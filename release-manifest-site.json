@@ -1,5 +1,5 @@
 {
-  "release": "Project previews, ELI3GANT music lore, clickable footer arrows and inquiry accent continuity",
+  "release": "Project previews, ELI3GANT music lore, clickable footer arrows and inquiry accent continuity and consistent SVG icons",
   "includedFiles": [
     "archive.html",
     "bookings.css",
@@ -20,6 +20,7 @@
     "signal-config.js",
     "signal.html",
     "songwars.html",
+    "studio.css",
     "studio.html",
     "terms.html",
     "tests/bookings_contract.test.js",
@@ -50,7 +51,7 @@
     },
     {
       "command": "npm run test:e2e",
-      "status": "passed 86/86 browser checks 2026-10-04"
+      "status": "passed 88/88 browser checks 2026-10-04"
     },
     {
       "command": "npm run security:scan",
@@ -96,7 +97,7 @@
       768,
       1440
     ],
-    "details": "86/86 browser checks, project containment, footer anchors, Home-to-inquiry accent and music routing. Desktop and 390px visuals inspected. Existing responsive, booking review and Archive checks retained. No physical device or production submission."
+    "details": "88/88 browser checks, project containment, footer anchors, Home-to-inquiry accent and music routing. Desktop and 390px visuals inspected. Existing responsive, booking review and Archive checks retained. No physical device or production submission. All fifteen Studio SVG icon bounds checked."
   },
   "authenticatedSweep": {
     "status": "passed",
