@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const express = require('express');
 const { createClientAccountBridge } = require('../server/client-account-bridge.js');
 
-function fixture({ enabled = true, member = true } = {}) {
+function fixture({ enabled = true, member = true, refreshable = false } = {}) {
     const calls = [];
     const authRequests = [];
     const app = express();
@@ -17,7 +17,11 @@ function fixture({ enabled = true, member = true } = {}) {
                     ? { data: { user: { id: 'user-a', email_confirmed_at: '2026-09-29T12:00:00Z' } } }
                     : { data: null, error: new Error('invalid') };
             },
-            async refreshSession() { return { error: new Error('expired') }; },
+            async refreshSession({ refresh_token }) {
+                return refreshable && refresh_token === 'r'.repeat(32)
+                    ? { data: { session: { access_token: 'a'.repeat(32), refresh_token: 'n'.repeat(32), expires_in: 3600 } } }
+                    : { error: new Error('expired') };
+            },
             async signInWithOtp(options) { authRequests.push(options); return { error: null }; }
         } }),
         async fetchUpstream(url, options) {
@@ -129,4 +133,29 @@ test('sign-in requests never create an arbitrary Auth user', async () => {
     });
     assert.equal(authRequests.length, 1);
     assert.equal(authRequests[0].options.shouldCreateUser, false);
+});
+
+test('client recovers after the short-lived access cookie expires using a verified refresh session', async () => {
+    const { app, calls } = fixture({ refreshable: true });
+    await withServer(app, async (base) => {
+        const response = await fetch(`${base}/api/client/projects/JOB-A`, {
+            headers: { Cookie: `__Host-otp_client_refresh=${'r'.repeat(32)}` }
+        });
+        assert.equal(response.status, 200);
+        assert.equal((await response.json()).project.id, 'JOB-A');
+        assert.match(response.headers.get('set-cookie'), /__Host-otp_client_access=.*HttpOnly; Secure; SameSite=Lax/);
+    });
+    assert.equal(calls[0].authorization, `Bearer ${'a'.repeat(32)}`);
+});
+
+test('expired refresh cookie cannot recover project access or set a new session', async () => {
+    const { app, calls } = fixture({ refreshable: true });
+    await withServer(app, async (base) => {
+        const response = await fetch(`${base}/api/client/projects/JOB-A`, {
+            headers: { Cookie: `__Host-otp_client_refresh=${'x'.repeat(32)}` }
+        });
+        assert.equal(response.status, 401);
+        assert.doesNotMatch(response.headers.get('set-cookie') || '', /Max-Age=3600/);
+    });
+    assert.equal(calls.length, 0);
 });

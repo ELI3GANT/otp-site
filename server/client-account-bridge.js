@@ -125,8 +125,9 @@ function createClientAccountBridge({ enabled = false, authClient, upstreamBase, 
         const client = authClient();
         let accessToken = cookie(req, ACCESS_COOKIE);
         const refreshToken = cookie(req, REFRESH_COOKIE);
-        if (!tokenShape(accessToken, 4096)) return null;
-        let { data, error: authError } = await client.auth.getUser(accessToken);
+        let { data, error: authError } = tokenShape(accessToken, 4096)
+            ? await client.auth.getUser(accessToken)
+            : { data: null, error: null };
         if (authError || !verifiedUser(data?.user)) {
             if (!tokenShape(refreshToken, 1024)) return null;
             const refreshed = await client.auth.refreshSession({ refresh_token: refreshToken });
