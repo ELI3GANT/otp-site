@@ -2641,7 +2641,7 @@ async function proxyFloorOpsApp(req, res, next, isRawAsset = false) {
                 noStoreHtml(res);
                 return res.sendFile(path.join(staticPath, 'floorops.html'));
             }
-            if (mappedPath === '/contact') mappedPath = '/request-demo';
+            // Forward /contact to the actual FloorOps contact page.
         }
 
         const proxyBody = await readProxyRequestBody(req);
@@ -2690,8 +2690,8 @@ async function proxyFloorOpsApp(req, res, next, isRawAsset = false) {
         const queryIndex = req.originalUrl.indexOf('?');
         const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
         let mappedPath = req.path.replace(/^\/floorops/, '');
-        if (mappedPath === '/contact') mappedPath = '/request-demo';
-        return res.redirect(307, `https://floorops.onlytrueperspective.com${mappedPath}${query}`);
+        // Do not rewrite /contact to /request-demo.
+        return res.status(502).type('text/plain').send('FloorOps is temporarily unavailable. Please try again later.');
     }
 }
 
