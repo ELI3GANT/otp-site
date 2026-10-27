@@ -74,6 +74,6 @@ assert.ok(!robots.includes('/sales/demo-script'), 'robots does not publicize pri
 assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'private sales tools are not explicitly exposed');
 assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'Archive includes FloorOps card');
 assert.ok(archiveHtml.includes('/images/warehouse/handheld-barcode-scanning.jpg'), 'Archive static card uses warehouse image');
-assert.ok(archiveJs.includes('archive-floorops-mark-title'), 'Archive JS preserves FloorOps branding');
+assert.ok(archiveJs.includes('archive-floorops-mini-panel') && archiveHtml.includes('archive-floorops-mini-panel'), 'Archive JS and static HTML preserve FloorOps product preview');
 assert.ok(studio.includes('href="/floorops"'), 'Studio navigation includes FloorOps');
 console.log('FloorOps live integration contract passed.');
