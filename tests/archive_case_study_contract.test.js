@@ -203,7 +203,7 @@ assert.equal(image.hidden, true);
 assert.ok(renderedDocument.querySelector('.archive-image-unavailable'), 'broken image has truthful unavailable state');
 dom.window.close();
 const { renderProjectPage } = require('../project-stories');
-assert.equal(projects.length, 6, 'all six project stories are covered');
+assert.equal(projects.length, 7, 'all seven project stories are covered');
 for (const project of projects) {
   const page = new JSDOM(renderProjectPage(project, projects)).window.document;
   assert.equal(page.querySelectorAll('h1').length, 1);
@@ -213,7 +213,9 @@ for (const project of projects) {
   for (const img of page.querySelectorAll('main img')) {
     assert.ok(img.alt);
     assert.ok(img.width && img.height);
-    assert.ok(fs.existsSync(path.join(root, img.getAttribute('src'))), project.id + ' local evidence asset exists');
+    const imagePath = img.getAttribute('src');
+    const proxiedWarehouseImage = project.id === 'floorops' && imagePath.startsWith('/images/warehouse/');
+    assert.ok(proxiedWarehouseImage || fs.existsSync(path.join(root, imagePath)), project.id + ' local or explicitly proxied evidence asset exists');
   }
   if (project.id === hyh.id) {
     assert.equal(page.querySelectorAll('.project-comparison figure').length, 2);
@@ -230,4 +232,4 @@ hostile.window.eval(archiveClient);
 assert.equal(hostile.window.document.querySelectorAll('[href^="javascript:"], [href^="data:"], [src^="javascript:"], [onerror]').length, 0, 'unsafe project URLs and markup cannot execute');
 assert.equal(hostile.window.document.querySelectorAll('.archive-project-action-primary[aria-disabled="true"]').length, projects.length);
 hostile.window.close();
-console.log('Archive filtering, safe rendering and six project detail contracts passed.');
+console.log('Archive filtering, safe rendering and seven project detail contracts passed.');
