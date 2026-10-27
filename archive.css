@@ -86,57 +86,193 @@
 @media(max-width:390px) { .archive-grid { grid-template-columns: 1fr; } }
 @media(prefers-reduced-motion:reduce) { .archive-project-media img, .archive-film-image img { transition: none; } }
 
-/* FloorOps: photograph-first Archive cover, visually tied to the live DockGuard product. */
+/* FloorOps is a miniature product experience, not an OTP brand-logo placeholder. */
 .archive-case-study-card[data-project-id="floorops"] .archive-project-media {
   isolation: isolate;
-  background: #0a1825;
+  background: #07111e;
+  color: #f4faff;
 }
-.archive-case-study-card[data-project-id="floorops"] .archive-project-media img {
+.archive-case-study-card[data-project-id="floorops"] .archive-project-media > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   padding: 0;
   object-fit: cover;
-  object-position: center;
-  filter: saturate(.88) contrast(1.08);
+  opacity: .18;
+  filter: saturate(.65) contrast(1.25);
 }
-.archive-case-study-card[data-project-id="floorops"] .archive-project-media::after {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  inset: 25% 0 0;
-  pointer-events: none;
-  background: linear-gradient(0deg,rgba(3,10,21,.92),rgba(3,10,21,.38) 52%,transparent);
-}
-.archive-floorops-mark {
+.archive-floorops-scene,
+.archive-floorops-scene * { box-sizing: border-box; }
+.archive-floorops-scene {
   position: absolute;
   z-index: 1;
-  left: clamp(16px,3vw,28px);
-  right: 16px;
-  bottom: clamp(16px,3vw,28px);
+  inset: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 5px;
-  color: #f7fbff;
-  text-shadow: 0 2px 14px rgba(0,0,0,.65);
+  justify-content: space-between;
+  gap: 12px;
+  padding: clamp(18px, 3vw, 28px);
+  color: #f6fbff;
+  font-family: Inter, system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse at 85% 23%, rgba(37,155,220,.21), transparent 58%),
+    linear-gradient(106deg, rgba(4,11,23,.94), rgba(7,18,34,.78) 64%, rgba(5,20,34,.78));
+}
+.archive-floorops-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   pointer-events: none;
+  background: linear-gradient(transparent 75%,rgba(2,9,17,.35));
 }
-.archive-floorops-mark-label {
-  color: #79e5ec;
-  font-size: .72rem;
-  letter-spacing: .18em;
+.archive-floorops-scene-top,
+.archive-floorops-scene-center,
+.archive-floorops-scene-foot {
+  z-index: 1;
+  position: relative;
+}
+.archive-floorops-scene-top,
+.archive-floorops-scene-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.archive-floorops-scene-top { padding-left: 34px; }
+.archive-floorops-brand {
+  font-size: clamp(.55rem,.9vw,.75rem);
+  font-weight: 850;
+  letter-spacing: .13em;
+  color: #9beaf4;
+  white-space: nowrap;
+}
+.archive-floorops-live {
+  padding: 6px 9px;
+  border: 1px solid rgba(116,234,185,.4);
+  border-radius: 50px;
+  background: rgba(16,90,69,.32);
+  color: #91f1bf;
+  font: 800 clamp(.5rem,.75vw,.66rem) Inter,system-ui,sans-serif;
+  letter-spacing: .05em;
+  white-space: nowrap;
+}
+.archive-floorops-scene-center {
+  display: grid;
+  align-items: center;
+  grid-template-columns: minmax(0,1.12fr) minmax(0,1fr);
+  gap: clamp(10px,2.4vw,24px);
+  min-width: 0;
+  flex: 1;
+}
+.archive-floorops-headline {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.archive-floorops-eyebrow {
+  color: #9db4c9;
+  font-size: clamp(.51rem,.8vw,.67rem);
   font-weight: 800;
+  letter-spacing: .09em;
 }
-.archive-floorops-mark-title {
-  font-size: clamp(1.1rem, 2vw, 1.9rem);
-  line-height: 1.1;
-  letter-spacing: -.035em;
-  font-weight: 800;
+.archive-floorops-bigline {
+  display: block;
+  color: #f6fcff;
+  font-family: Syne, Inter, system-ui, sans-serif;
+  font-size: clamp(1.14rem, 3vw, 2.15rem);
+  line-height: 1.07;
+  font-weight: 850;
+  letter-spacing: -.05em;
+  text-wrap: balance;
 }
-.archive-floorops-mark-steps {
-  font-size: .67rem;
+.archive-floorops-bigline > span {
+  display: block;
+  margin-top: 3px;
+  background: linear-gradient(100deg,#69e4f4,#7da5fa 65%,#b491ec);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.archive-floorops-caption {
+  color: #c1d2e0;
+  font-size: clamp(.66rem,1vw,.81rem);
+  line-height: 1.45;
+  max-width: 30ch;
+}
+.archive-floorops-mini-panel {
+  min-width: 0;
+  padding: clamp(9px,1.5vw,16px);
+  border: 1px solid rgba(115,176,223,.4);
+  border-radius: 12px;
+  background: rgba(15,33,57,.89);
+  box-shadow: 0 14px 34px rgba(0,0,0,.3);
+}
+.archive-floorops-mini-title {
+  display: block;
+  margin-bottom: 9px;
+  color: #91abc8;
+  font: 800 clamp(.5rem,.7vw,.6rem) Inter,system-ui,sans-serif;
   letter-spacing: .08em;
-  font-weight: 700;
-  color: #e8f4ff;
 }
+.archive-floorops-mini-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 8px 6px;
+  border: 1px solid rgba(108,151,194,.19);
+  border-radius: 7px;
+  background: rgba(8,20,37,.72);
+  margin-top: 6px;
+}
+.archive-floorops-mini-num {
+  flex-shrink: 0;
+  color: #ffbe64;
+  font: 850 .65rem Inter,system-ui,sans-serif;
+}
+.archive-floorops-mini-label {
+  min-width: 0;
+  color: #eef7ff;
+  font-size: clamp(.55rem,.9vw,.7rem);
+  font-weight: 700;
+  line-height: 1.18;
+}
+.archive-floorops-mini-status {
+  margin-left: auto;
+  color: #80e8bd;
+  font-size: .8rem;
+}
+.archive-floorops-scene-foot {
+  padding-top: 10px;
+  border-top: 1px solid rgba(169,204,230,.2);
+  color: #c8e2f5;
+  font: 800 clamp(.5rem,.75vw,.62rem) Inter,system-ui,sans-serif;
+  letter-spacing: .065em;
+}
+.archive-floorops-scene-foot span:last-child { color: #ffbf57; }
 .archive-case-study-card[data-project-id="floorops"] .archive-project-index {
-  z-index: 2;
+  z-index: 3;
+  top: 17px;
+  left: 17px;
+  background: #111f32;
+  color: #bce6ff;
+  border: 1px solid #2c4e6a;
+  border-radius: 6px;
+}
+@media (max-width: 767px) {
+  .archive-floorops-scene { padding: clamp(14px,4vw,22px); gap: 7px; }
+  .archive-floorops-scene-top { padding-left: 34px; }
+  .archive-floorops-scene-center { grid-template-columns: minmax(0,1.12fr) minmax(0,1fr); gap: 9px; }
+  .archive-floorops-headline { gap: 7px; }
+  .archive-floorops-bigline { font-size: clamp(1.12rem,5vw,1.65rem); }
+  .archive-floorops-mini-panel { padding: 8px; }
+  .archive-floorops-mini-row { gap: 5px; padding: 6px 4px; margin-top: 4px; }
+  .archive-floorops-brand { font-size: .55rem; }
+}
+@media (max-width: 390px) {
+  .archive-floorops-mini-title { font-size: .47rem; }
+  .archive-floorops-mini-num { font-size: .58rem; }
+  .archive-floorops-mini-label { font-size: .53rem; }
+  .archive-floorops-scene-foot span:last-child { display: none; }
+  .archive-floorops-caption { font-size: .62rem; }
+  .archive-floorops-eyebrow { font-size: .47rem; }
 }
