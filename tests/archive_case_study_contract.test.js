@@ -67,6 +67,14 @@ projects.forEach((project) => {
 const protocol = projects.find((project) => project.id === 'protocol');
 const songWars = projects.find((project) => project.id === 'song-wars');
 const hyh = projects.find((project) => project.id === 'hyh-architecture-design');
+const floorops = projects.find((project) => project.id === 'floorops');
+assert.ok(floorops, 'FloorOps appears in the Archive');
+assert.strictEqual(floorops.heroImage.src, '/images/warehouse/handheld-barcode-scanning.jpg', 'FloorOps uses a warehouse scanner photo rather than the parent-company logo');
+assert.strictEqual(floorops.heroFit, 'cover', 'FloorOps photograph fills the Archive thumbnail');
+assert.ok(archive.includes('archive-floorops-mark-title'), 'pre-rendered FloorOps card includes the product workflow overlay');
+assert.ok(archiveClient.includes('archive-floorops-mark-title'), 'client-side renderer preserves the FloorOps workflow overlay');
+assert.ok(archiveStyles.includes('.archive-floorops-mark {'), 'Archive provides styling for the FloorOps photograph overlay');
+
 
 assert.ok(protocol && protocol.featured, 'PROTOCOL is a featured Archive case study');
 assert.strictEqual(protocol.projectUrl, '/protocol', 'PROTOCOL links to its live project');
@@ -146,6 +154,11 @@ const dom = new JSDOM(archive, { url: 'https://www.onlytrueperspective.tech/arch
 dom.window.eval(read('otp-projects.js'));
 dom.window.eval(archiveClient);
 const renderedDocument = dom.window.document;
+const flooropsCard = renderedDocument.querySelector('[data-project-id="floorops"]');
+assert.ok(flooropsCard, 'runtime includes FloorOps');
+assert.ok(flooropsCard.querySelector('.archive-project-media img').src.endsWith('/images/warehouse/handheld-barcode-scanning.jpg'), 'runtime uses the correct warehouse photograph');
+assert.ok(flooropsCard.querySelector('.archive-floorops-mark-title')?.textContent.includes('FROM DOCK TO DECISION'), 'runtime includes the product-specific visual label');
+
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-primary').length, projects.length, 'runtime renders one primary action per project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-conversion').length, projects.length, 'runtime renders one booking conversion action per project');
