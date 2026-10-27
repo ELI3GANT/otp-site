@@ -3,7 +3,7 @@
   const library = root.OTP_PROJECT_LIBRARY;
   const projectRoot = document.querySelector('[data-archive-projects]');
   if (!library || !projectRoot) return;
-  const order = ['hyh-architecture-design', 'weatheros', 'otp-fixline', 'protocol', 'song-wars', 'otp-os'];
+  const order = ['hyh-architecture-design', 'weatheros', 'floorops', 'otp-fixline', 'protocol', 'song-wars', 'otp-os'];
   const projects = library.getProjects().sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
   const state = { collection: 'Everything', search: '', category: '', status: '', year: '', technology: '' };
   const controls = Object.fromEntries(Object.keys(state).filter((key) => key !== 'collection').map((key) => [key, document.querySelector(`[data-archive-${key}]`)]));
@@ -13,6 +13,7 @@
   const blurbs = {
     'hyh-architecture-design': 'A new frame for architecture. Website, visual direction, and a clearer path into the work.',
     weatheros: 'Atmospheric weather, visual forecasts, and an interface with room to breathe.',
+    floorops: 'Warehouse exception management: 45-second dock reporting, quarantine hold enforcement, and defensible carrier sign-offs.',
     'otp-fixline': 'A structured starting point for understanding a business’s digital presence.',
     protocol: 'Music, identity, and a digital release world for ELI3GANT.',
     'song-wars': 'An event identity and online entry point for The Smack Club’s music community.',

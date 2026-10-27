@@ -90,7 +90,7 @@
       disciplines: Object.freeze(['Warehouse SaaS', 'Multi-Tenant Architecture', 'Dock Operations', 'Defensible Audit Trails']),
       collections: Object.freeze(['Featured Projects', 'Newest', 'Software', 'Everything']),
       featured: true,
-      homepageFeatured: true,
+      homepageFeatured: false,
       pinned: true,
       status: 'Live',
       launchDate: '2026-10-27',

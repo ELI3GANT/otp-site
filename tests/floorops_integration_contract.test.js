@@ -68,4 +68,13 @@ assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/r
 assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
 assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
 
-console.log('✅ All 7 FloorOps live OTP.tech integration contract checks PASSED!');
+// 8. Archive & Studio Portfolio Integration
+const archiveHtml = read('archive.html');
+const archiveJs = read('archive.js');
+const studioHtml = read('studio.html');
+assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
+assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
+assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
+assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
+
+console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');

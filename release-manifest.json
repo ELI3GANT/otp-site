@@ -2,6 +2,8 @@
   "releaseName": "otp-floorops-live-integration-v21-2",
   "includedFiles": [
     ".vercelignore",
+    "archive.html",
+    "archive.js",
     "assets/evehalo/app-icon.png",
     "assets/evehalo/app-icon.webp",
     "assets/evehalo/apple-reminders-manager.png",
@@ -45,6 +47,7 @@
     "scripts/capture_evehalo_previews.js",
     "server.js",
     "sitemap.xml",
+    "studio.html",
     "tests/evehalo_experience_contract.test.js",
     "tests/floorops_integration_contract.test.js",
     "tests/master_runner.js",
