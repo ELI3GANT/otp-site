@@ -85,3 +85,58 @@
 }
 @media(max-width:390px) { .archive-grid { grid-template-columns: 1fr; } }
 @media(prefers-reduced-motion:reduce) { .archive-project-media img, .archive-film-image img { transition: none; } }
+
+/* FloorOps: photograph-first Archive cover, visually tied to the live DockGuard product. */
+.archive-case-study-card[data-project-id="floorops"] .archive-project-media {
+  isolation: isolate;
+  background: #0a1825;
+}
+.archive-case-study-card[data-project-id="floorops"] .archive-project-media img {
+  padding: 0;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(.88) contrast(1.08);
+}
+.archive-case-study-card[data-project-id="floorops"] .archive-project-media::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 25% 0 0;
+  pointer-events: none;
+  background: linear-gradient(0deg,rgba(3,10,21,.92),rgba(3,10,21,.38) 52%,transparent);
+}
+.archive-floorops-mark {
+  position: absolute;
+  z-index: 1;
+  left: clamp(16px,3vw,28px);
+  right: 16px;
+  bottom: clamp(16px,3vw,28px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  color: #f7fbff;
+  text-shadow: 0 2px 14px rgba(0,0,0,.65);
+  pointer-events: none;
+}
+.archive-floorops-mark-label {
+  color: #79e5ec;
+  font-size: .72rem;
+  letter-spacing: .18em;
+  font-weight: 800;
+}
+.archive-floorops-mark-title {
+  font-size: clamp(1.1rem, 2vw, 1.9rem);
+  line-height: 1.1;
+  letter-spacing: -.035em;
+  font-weight: 800;
+}
+.archive-floorops-mark-steps {
+  font-size: .67rem;
+  letter-spacing: .08em;
+  font-weight: 700;
+  color: #e8f4ff;
+}
+.archive-case-study-card[data-project-id="floorops"] .archive-project-index {
+  z-index: 2;
+}
