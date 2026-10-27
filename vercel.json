@@ -90,32 +90,56 @@
     {
       "src": "^/archive\\.html$",
       "status": 308,
-      "headers": { "Location": "/archive" }
+      "headers": {
+        "Location": "/archive"
+      }
     },
     {
       "src": "^/songwars\\.html$",
       "status": 308,
-      "headers": { "Location": "/songwars" }
+      "headers": {
+        "Location": "/songwars"
+      }
     },
     {
       "src": "^/(?:consultant-audit\\.html|consultant-audit)/?$",
       "status": 308,
-      "headers": { "Location": "/services/consultant-audit" }
+      "headers": {
+        "Location": "/services/consultant-audit"
+      }
     },
     {
       "src": "^/protocol\\.html$",
       "status": 308,
-      "headers": { "Location": "/protocol" }
+      "headers": {
+        "Location": "/protocol"
+      }
     },
     {
       "src": "^/signal\\.html$",
       "status": 308,
-      "headers": { "Location": "/signal" }
+      "headers": {
+        "Location": "/signal"
+      }
     },
     {
       "src": "^/floorops\\.html$",
       "status": 308,
-      "headers": { "Location": "/floorops" }
+      "headers": {
+        "Location": "/floorops"
+      }
+    },
+    {
+      "src": "^/images/demo/(.*)$",
+      "dest": "https://otp-floorops.vercel.app/images/demo/$1"
+    },
+    {
+      "src": "^/images/warehouse/(.*)$",
+      "dest": "https://otp-floorops.vercel.app/images/warehouse/$1"
+    },
+    {
+      "src": "^/_next/(.*)$",
+      "dest": "https://otp-floorops.vercel.app/_next/$1"
     },
     {
       "src": "^/floorops/?$",
@@ -152,32 +176,44 @@
     {
       "src": "^/weatheros\\.html$",
       "status": 308,
-      "headers": { "Location": "/weatheros" }
+      "headers": {
+        "Location": "/weatheros"
+      }
     },
     {
       "src": "^/(?:weatheros-support\\.html|weatheros-support)/?$",
       "status": 308,
-      "headers": { "Location": "/weatheros/support" }
+      "headers": {
+        "Location": "/weatheros/support"
+      }
     },
     {
       "src": "^/(?:weatheros-privacy\\.html|weatheros-privacy)/?$",
       "status": 308,
-      "headers": { "Location": "/weatheros/privacy" }
+      "headers": {
+        "Location": "/weatheros/privacy"
+      }
     },
     {
       "src": "^/evehalo\\.html$",
       "status": 308,
-      "headers": { "Location": "/evehalo" }
+      "headers": {
+        "Location": "/evehalo"
+      }
     },
     {
       "src": "^/(?:evehalo-support\\.html|evehalo-support)/?$",
       "status": 308,
-      "headers": { "Location": "/evehalo/support" }
+      "headers": {
+        "Location": "/evehalo/support"
+      }
     },
     {
       "src": "^/(?:evehalo-privacy\\.html|evehalo-privacy)/?$",
       "status": 308,
-      "headers": { "Location": "/evehalo/privacy" }
+      "headers": {
+        "Location": "/evehalo/privacy"
+      }
     },
     {
       "src": "/evehalo/?",
