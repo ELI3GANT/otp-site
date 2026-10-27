@@ -58,7 +58,7 @@
               "description": "$699/month per facility plus $999 one-time onboarding"
             },
             "availability": "https://schema.org/InStock",
-            "url": "https://floorops.onlytrueperspective.com/pricing"
+            "url": "https://www.onlytrueperspective.tech/floorops/pricing"
           },
           {
             "@type": "Offer",
@@ -73,7 +73,7 @@
               "description": "Starting at $1,499/month plus implementation starting at $7,000 depending on scope"
             },
             "availability": "https://schema.org/InStock",
-            "url": "https://floorops.onlytrueperspective.com/pricing"
+            "url": "https://www.onlytrueperspective.tech/floorops/pricing"
           }
         ],
         "description": "Commercial warehouse operations software for dock exceptions, photographic evidence capture, quarantine hold enforcement, and supervisor resolution."
@@ -88,6 +88,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
 
   <script src="/theme-chrono.js?v=10"></script>
+  <link rel="stylesheet" href="/public-system.css?v=20261027-floorops-mobile" />
   <link rel="stylesheet" href="/styles.css?v=16.8.29" />
 
   <style>
@@ -104,7 +105,7 @@
     .fo-btn-secondary { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; color: #e2e8f0; font-weight: 600; font-size: 0.95rem; padding: 0.85rem 1.5rem; border-radius: 0.75rem; text-decoration: none; transition: border-color 0.15s ease, background 0.15s ease; }
     .fo-btn-secondary:hover { border-color: #64748b; background: rgba(30, 41, 59, 0.8); color: #ffffff; }
     .fo-notice-bar { background: rgba(8, 47, 73, 0.5); border-bottom: 1px solid rgba(14, 165, 233, 0.3); padding: 0.75rem 1rem; font-size: 0.8rem; text-align: center; color: #bae6fd; }
-    .fo-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+    .fo-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
     .fo-card { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 1.25rem; padding: 2rem; transition: border-color 0.2s ease; }
     .fo-card:hover { border-color: rgba(245, 158, 11, 0.4); }
     .fo-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 700; color: #f8fafc; margin: 0.75rem 0 0.5rem; }
@@ -114,7 +115,7 @@
     .fo-section-head { margin-bottom: 2.5rem; }
     .fo-section-head h2 { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; color: #ffffff; margin: 0 0 0.75rem; }
     .fo-section-head p { font-size: 1rem; color: #94a3b8; max-width: 36rem; margin: 0; }
-    .fo-pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2rem; margin-top: 2rem; }
+    .fo-pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 2rem; margin-top: 2rem; }
     .fo-price-card { background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; border-radius: 1.5rem; padding: 2.5rem; position: relative; }
     .fo-price-card.featured { border-color: rgba(245, 158, 11, 0.6); box-shadow: 0 20px 40px -15px rgba(245, 158, 11, 0.15); }
     .fo-price-tag { font-family: 'Space Grotesk', monospace; font-size: 2.5rem; font-weight: 800; color: #f59e0b; margin: 1rem 0 0.25rem; }
@@ -122,6 +123,32 @@
     .fo-list { list-style: none; padding: 0; margin: 1.5rem 0 2rem; space-y: 0.75rem; }
     .fo-list li { display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.75rem; }
     .fo-list-check { color: #f59e0b; font-weight: bold; flex-shrink: 0; }
+    /* Production mobile layout: prevent horizontal overflow while preserving the shared shell. */
+    .fo-wrap { width: 100%; box-sizing: border-box; }
+    .fo-wrap > *, .fo-card, .fo-price-card { min-width: 0; }
+    .fo-badge { max-width: 100%; flex-wrap: wrap; white-space: normal; }
+    .fo-title, .fo-section-head h2 { overflow-wrap: break-word; }
+    .fo-btn-primary, .fo-btn-secondary { box-sizing: border-box; max-width: 100%; }
+    .fo-bottom-title { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 4vw, 2.6rem); line-height: 1.12; font-weight: 800; margin: 0 0 1rem; }
+    .fo-bottom-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    @media (max-width: 680px) {
+      .fo-wrap { padding-inline: 1.25rem; }
+      .fo-hero { padding-block: 3rem 2.5rem; }
+      .fo-title { font-size: clamp(1.95rem, 8vw, 2.45rem); line-height: 1.12; letter-spacing: -0.035em; }
+      .fo-lead { font-size: 1rem; line-height: 1.6; }
+      .fo-badge { border-radius: 1rem; font-size: .65rem; line-height: 1.5; letter-spacing: .06em; }
+      .fo-notice-bar { font-size: .78rem; line-height: 1.5; padding: .75rem 1.25rem; }
+      .fo-actions, .fo-bottom-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; }
+      .fo-actions > a, .fo-bottom-actions > a { width: 100%; min-height: 48px; justify-content: space-between; text-align: left; white-space: normal; }
+      .fo-grid-3, .fo-pricing-grid { grid-template-columns: minmax(0, 1fr); gap: 1rem; margin-top: 1.5rem; }
+      .fo-card { padding: 1.4rem; }
+      .fo-price-card { padding: 1.4rem; }
+      .fo-price-tag { font-size: clamp(1.9rem, 7vw, 2.5rem); }
+      .fo-section { padding-block: 3rem; }
+      .fo-section-head { margin-bottom: 1.5rem; }
+      .fo-section-head h2 { font-size: clamp(1.7rem, 6.6vw, 2.1rem); }
+      .fo-bottom-title { font-size: clamp(1.9rem, 7vw, 2.4rem); }
+    }
   </style>
 </head>
 <body class="public-page">
@@ -145,7 +172,7 @@
     <a href="/signal">Signal</a>
     <a href="/studio">Studio</a>
   </nav>
-  <a class="public-header-cta" href="https://floorops.onlytrueperspective.com/request-demo">Request Demo <span aria-hidden="true">↗</span></a>
+  <a class="public-header-cta" href="/floorops/request-demo">Request Demo <span aria-hidden="true">↗</span></a>
   <details class="public-menu">
     <summary aria-label="Navigation menu">Menu <span aria-hidden="true">+</span></summary>
     <nav aria-label="Mobile">
@@ -154,7 +181,7 @@
       <a href="/floorops" aria-current="page">FloorOps</a>
       <a href="/signal">Signal</a>
       <a href="/studio">Studio</a>
-      <a href="https://floorops.onlytrueperspective.com/request-demo">Request Demo ↗</a>
+      <a href="/floorops/request-demo">Request Demo ↗</a>
     </nav>
   </details>
 </header>
@@ -173,10 +200,10 @@
         Report damaged, missing, and quarantined freight in 45 seconds. Give supervisors clear dock visibility. Capture defensible photographic proof before carrier drivers leave.
       </p>
       <div class="fo-actions">
-        <a href="https://floorops.onlytrueperspective.com/demo" class="fo-btn-primary">
+        <a href="/floorops/demo" class="fo-btn-primary">
           Try the Interactive Demo <span>→</span>
         </a>
-        <a href="https://floorops.onlytrueperspective.com/request-demo" class="fo-btn-secondary">
+        <a href="/floorops/request-demo" class="fo-btn-secondary">
           Schedule a 10-Min Walkthrough <span>↗</span>
         </a>
         <a href="#packages" class="fo-btn-secondary">
@@ -278,7 +305,7 @@
             <li><span class="fo-list-check">✓</span> Pre-shift forklift and machinery safety inspections</li>
             <li><span class="fo-list-check">✓</span> Defensible carrier claim PDF export</li>
           </ul>
-          <a href="https://floorops.onlytrueperspective.com/request-demo?package=core" class="fo-btn-primary" style="width: 100%; justify-content: center; box-sizing: border-box;">
+          <a href="/floorops/request-demo?package=core" class="fo-btn-primary" style="width: 100%; justify-content: center; box-sizing: border-box;">
             Get Started with Core <span>→</span>
           </a>
         </div>
@@ -298,7 +325,7 @@
             <li><span class="fo-list-check">✓</span> Tailored facility safety and SLA escalation rules</li>
             <li><span class="fo-list-check">✓</span> Dedicated engineering onboarding &amp; priority SLA</li>
           </ul>
-          <a href="https://floorops.onlytrueperspective.com/request-demo?package=premium_custom" class="fo-btn-secondary" style="width: 100%; justify-content: center; box-sizing: border-box;">
+          <a href="/floorops/request-demo?package=premium_custom" class="fo-btn-secondary" style="width: 100%; justify-content: center; box-sizing: border-box;">
             Discuss Custom Scope <span>↗</span>
           </a>
         </div>
@@ -312,17 +339,17 @@
   <!-- BOTTOM CTA -->
   <section class="fo-section" style="background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.1) 0%, rgba(2, 6, 23, 1) 70%);">
     <div class="fo-wrap" style="text-align: center;">
-      <h2 style="font-family: 'Syne', sans-serif; font-size: 2.4rem; font-weight: 800; margin: 0 0 1rem;">
+      <h2 class="fo-bottom-title">
         See FloorOps in Action
       </h2>
       <p style="color: #94a3b8; max-width: 32rem; margin: 0 auto 2rem; line-height: 1.6;">
         Walk through a live damage report, quarantine hold, and supervisor resolution in less than three minutes.
       </p>
-      <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
-        <a href="https://floorops.onlytrueperspective.com/demo" class="fo-btn-primary">
+      <div class="fo-bottom-actions">
+        <a href="/floorops/demo" class="fo-btn-primary">
           Launch Interactive Demo Showroom <span>→</span>
         </a>
-        <a href="https://floorops.onlytrueperspective.com/request-demo" class="fo-btn-secondary">
+        <a href="/floorops/request-demo" class="fo-btn-secondary">
           Request a 10-Minute Walkthrough <span>↗</span>
         </a>
       </div>
@@ -346,7 +373,7 @@
         <a href="/insights">Journal</a>
       </nav>
       <nav aria-label="Work with OTP">
-        <a href="https://floorops.onlytrueperspective.com/request-demo">FloorOps Walkthrough ↗</a>
+        <a href="/floorops/request-demo">FloorOps Walkthrough ↗</a>
         <a href="/fixline/intake?source=public-footer">Start a project ↗</a>
         <a href="/fixline">FIXLINE</a>
         <a href="/portal">Client Portal</a>
