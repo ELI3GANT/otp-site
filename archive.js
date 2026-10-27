@@ -54,6 +54,14 @@
     img.decoding = 'async';
     img.addEventListener('error', () => { img.hidden = true; media.append(node('span', 'archive-image-unavailable', `${project.title} · Image unavailable`)); }, { once: true });
     media.append(img);
+    if (project.id === 'floorops') {
+      const overlay = node('span', 'archive-floorops-mark');
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.append(node('span', 'archive-floorops-mark-label', 'OTP / FLOOROPS'));
+      overlay.append(node('strong', 'archive-floorops-mark-title', 'FROM DOCK TO DECISION'));
+      overlay.append(node('span', 'archive-floorops-mark-steps', 'CAPTURE  /  REVIEW  /  RESOLVE'));
+      media.append(overlay);
+    }
     const serial = node('span', 'archive-project-index', String(order.indexOf(project.id) + 1).padStart(2, '0'));
     serial.setAttribute('aria-hidden', 'true');
     media.append(serial);
