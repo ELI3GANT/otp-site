@@ -10,8 +10,8 @@ for (const [file, active] of [['index.html', 'Home'], ['archive.html', 'Archive'
   dom.window.matchMedia = () => ({ addEventListener: (_, fn) => { resize = fn; } });
   dom.window.eval(read('public-shell.js'));
   const nav = [...document.querySelectorAll('.public-desktop-nav a')];
-  assert.deepEqual(nav.map(a => a.getAttribute('href')), ['/', '/archive', '/signal', '/studio'], file + ' primary destinations');
-  assert.deepEqual([...document.querySelectorAll('.public-menu nav a')].slice(0, 4).map(a => a.getAttribute('href')), nav.map(a => a.getAttribute('href')), file + ' mobile navigation parity');
+  assert.deepEqual(nav.map(a => a.getAttribute('href')), ['/', '/archive', '/floorops', '/signal', '/studio'], file + ' primary destinations');
+  assert.deepEqual([...document.querySelectorAll('.public-menu nav a')].slice(0, nav.length).map(a => a.getAttribute('href')), nav.map(a => a.getAttribute('href')), file + ' mobile navigation parity');
   assert.equal(nav.find(a => a.getAttribute('aria-current') === 'page').textContent, active);
   const menu = document.querySelector('details.public-menu');
   assert.ok(menu.querySelector('summary'), 'menu remains native and keyboard accessible without JS');
