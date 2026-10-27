@@ -22,19 +22,20 @@ const bookingsJs = read('bookings.js');
 
 // 1. Static Fallback Cards & Pre-rendered markup
 assert.ok(
-  archiveHtml.includes('06 / 06 projects'),
-  'archive.html pre-renders initial project count "06 / 06 projects"'
+  archiveHtml.includes('07 / 07 projects'),
+  'archive.html pre-renders initial project count "07 / 07 projects"'
 );
 const cardMatches = archiveHtml.match(/class="archive-case-study-card/g) || [];
 assert.strictEqual(
   cardMatches.length,
-  6,
-  'archive.html contains exactly 6 pre-rendered static fallback project cards'
+  7,
+  'archive.html contains exactly 7 pre-rendered static fallback project cards'
 );
 assert.ok(
   archiveHtml.includes('data-project-id="weatheros"'),
   'archive.html static cards include WeatherOS'
 );
+assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps');
 assert.ok(
   archiveHtml.includes('data-project-id="otp-fixline"'),
   'archive.html static cards include FIXLINE'
