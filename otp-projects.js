@@ -100,12 +100,12 @@
       services: Object.freeze(['Multi-tenant SaaS', 'Zebra scanner web app', 'PostgreSQL database', 'Next.js application', 'Live interactive showroom']),
       technology: Object.freeze(['Next.js', 'React', 'TypeScript', 'PostgreSQL', 'Tailwind CSS', 'Docker']),
       heroImage: Object.freeze({
-        src: '/assets/otp-logo-transparent.png',
-        alt: 'OTP FloorOps Warehouse Operations Platform',
-        width: 512,
-        height: 512
+        src: '/images/warehouse/handheld-barcode-scanning.jpg',
+        alt: 'Warehouse team using a handheld barcode scanner, illustrating FloorOps receiving workflows',
+        width: 1600,
+        height: 1000
       }),
-      heroFit: 'contain',
+      heroFit: 'cover',
       projectUrl: '/floorops',
       projectCtaLabel: 'Explore FloorOps',
       demoUrl: '/floorops/demo',
