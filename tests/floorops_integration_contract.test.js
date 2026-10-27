@@ -27,7 +27,7 @@ assert.ok(flooropsLanding.includes('https://www.onlytrueperspective.tech/floorop
 assert.ok(flooropsLanding.includes('/public-system.css?v='), 'FloorOps loads shared public header/footer styling');
 assert.ok(flooropsLanding.includes('@media(max-width:600px)'), 'FloorOps has responsive mobile layout');
 assert.ok(flooropsLanding.includes('grid-template-columns:minmax(0,1fr)'), 'Mobile cards avoid horizontal overflow');
-assert.ok(flooropsLanding.includes('class="fo-final"'), 'Bottom CTA has responsive heading');
+assert.ok(flooropsLanding.includes('class="fo-section fo-final"'), 'Bottom CTA has responsive heading');
 assert.ok(flooropsLanding.includes('href="/floorops/demo"'), 'Demo CTA stays on OTP primary domain');
 assert.ok(flooropsLanding.includes('href="/floorops/request-demo"'), 'Walkthrough CTA stays on OTP primary domain');
 assert.ok(!flooropsLanding.includes('floorops.onlytrueperspective.com'), 'Legacy subdomain links were removed');
