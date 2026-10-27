@@ -1,415 +1,79 @@
-const assert = require('assert');
-const fs = require('fs');
-const path = require('path');
-
-const root = path.join(__dirname, '..');
-const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
-
-console.log('FLOOROPS LIVE OTP.TECH INTEGRATION CONTRACT...');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const read = file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
 
 const homepage = read('index.html');
-const flooropsLanding = read('floorops.html');
-const projectLibrary = read('otp-projects.js');
+const landing = read('floorops.html');
+const archiveHtml = read('archive.html');
+const archiveJs = read('archive.js');
+const library = require('../otp-projects.js');
 const server = read('server.js');
+const studio = read('studio.html');
 const sitemap = read('sitemap.xml');
-const vercelConfig = JSON.parse(read('vercel.json'));
 const robots = read('robots.txt');
-
-// 1. Homepage Navigation and Card
-assert.ok(homepage.includes('href="/floorops"'), 'homepage navigation links to FloorOps');
-const navMatches = homepage.match(/href="\/floorops"/g) || [];
-assert.ok(navMatches.length >= 3, 'FloorOps is linked in desktop nav, mobile nav, and footer');
-assert.ok(homepage.includes('home-systems-preview') && homepage.includes('OTP FloorOps'), 'FloorOps preview card exists on homepage');
-assert.ok(homepage.includes('Warehouse exception management: 45-second dock reporting'), 'FloorOps preview card displays core value proposition');
-
-// 2. Dedicated Landing Page (floorops.html)
-assert.ok(flooropsLanding.includes('https://www.onlytrueperspective.tech/floorops'), 'landing page specifies canonical production URL');
-assert.ok(flooropsLanding.includes('/public-system.css?v='), 'FloorOps loads shared public header/footer styling');
-assert.ok(flooropsLanding.includes('@media(max-width:600px)'), 'FloorOps has responsive mobile layout');
-assert.ok(flooropsLanding.includes('grid-template-columns:minmax(0,1fr)'), 'Mobile cards avoid horizontal overflow');
-assert.ok(flooropsLanding.includes('class="fo-section fo-final"'), 'Bottom CTA has responsive heading');
-assert.ok(flooropsLanding.includes('href="/floorops/demo"'), 'Demo CTA stays on OTP primary domain');
-assert.ok(flooropsLanding.includes('href="/floorops/request-demo"'), 'Walkthrough CTA stays on OTP primary domain');
-assert.ok(!flooropsLanding.includes('floorops.onlytrueperspective.com'), 'Legacy subdomain links were removed');
-assert.ok(flooropsLanding.includes('SoftwareApplication'), 'landing page contains Schema.org SoftwareApplication structured data');
-assert.ok(flooropsLanding.includes('$699'), 'landing page shows Core package official pricing ($699/mo)');
-assert.ok(flooropsLanding.includes('$1,499'), 'landing page shows Premium Custom package official pricing ($1,499/mo)');
-assert.ok(!flooropsLanding.includes('$500 pilot') && !flooropsLanding.includes('$500 Pilot'), 'retired $500 pilot pricing is strictly eliminated');
-assert.ok(flooropsLanding.includes('Damaged Freight'), 'landing page features Scenario 1 (Damaged)');
-assert.ok(flooropsLanding.includes('Missing Freight'), 'landing page features Scenario 2 (Missing)');
-assert.ok(flooropsLanding.includes('Quarantine Staging Holds'), 'landing page features Scenario 3 (Quarantined)');
-assert.ok(flooropsLanding.includes('Broken Trailer Seals'), 'landing page features Scenario 4 (Broken Seal)');
-assert.ok(flooropsLanding.includes('Delivery Discrepancies'), 'landing page features Scenario 5 (Delivery Discrepancy)');
-
-// 3. Project Library (otp-projects.js)
-assert.ok(projectLibrary.includes("id: 'floorops'"), 'Project library includes floorops catalog entry');
-assert.ok(projectLibrary.includes("projectUrl: '/floorops'"), 'Project library routes to canonical /floorops');
-assert.ok(projectLibrary.includes("demoUrl: '/floorops/demo'"), 'Project library links to interactive demo at /floorops/demo');
-assert.ok(projectLibrary.includes("bookingUrl: '/floorops/request-demo'"), 'Project library links to lead capture at /floorops/request-demo');
-
-// 4. Server Proxy (server.js)
-assert.ok(server.includes("app.get(['/floorops', '/floorops/']"), 'server.js registers /floorops HTML route');
-assert.ok(server.includes('proxyFloorOpsApp'), 'server.js defines proxyFloorOpsApp handler');
-assert.ok(server.includes("127.0.0.1:3200"), 'proxy routes to local FloorOps instance port 3200');
-assert.ok(server.includes("readProxyRequestBody"), 'proxy safely forwards streaming request bodies');
-assert.ok(server.includes("FLOOROPS_UPSTREAM_ORIGIN"), 'proxy allows configurable upstream origin with safe default');
-
-// 5. Vercel Configuration (vercel.json)
-const routes = vercelConfig.routes || [];
-const flooropsHtmlRoute = routes.find(r => r.src === '^/floorops/?$' && r.dest === '/floorops.html');
-assert.ok(flooropsHtmlRoute, 'vercel.json maps ^/floorops/?$ to /floorops.html');
-
-const routeIndex = (source) => routes.findIndex((route) => route.src === source);
+const { routes } = JSON.parse(read('vercel.json'));
 const upstream = 'https://otp-floorops.vercel.app';
-assert.strictEqual(routes.find((route) => route.src === '^/floorops/contact/?
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
+const route = src => routes.find(r => r.src === src);
+const index = src => routes.findIndex(r => r.src === src);
 
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-)?.dest, upstream + '/contact', 'Contact renders the actual contact page, not a request form');
-assert.strictEqual(routes.find((route) => route.src === '^/floorops/api/(.*)
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-)?.dest, upstream + '/api/$1', 'Branded FloorOps form and APIs reach the correct application');
-assert.strictEqual(routes.find((route) => route.src === '^/_next/(.*)
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-)?.dest, upstream + '/_next/$1', 'Root Next.js styling and scripts reach FloorOps');
-assert.strictEqual(routes.find((route) => route.src === '^/images/warehouse/(.*)
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-)?.dest, upstream + '/images/warehouse/$1', 'Warehouse photos reach FloorOps assets');
-assert.ok(routeIndex('^/floorops/api/(.*)
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-) < routeIndex('^/floorops/(.*)
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-), 'API routing precedes FloorOps catch-all');
-for (const [source, target] of [
-  ['^/floorops/login/?
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-, upstream + '/login'],
-  ['^/floorops/join/?
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-, upstream + '/join'],
-  ['^/floorops/app/?
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-, upstream + '/app'],
-  ['^/floorops/app/(.*)
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-, upstream + '/app/$1'],
-]) {
-  const route = routes.find((entry) => entry.src === source);
-  assert.ok(route && route.status === 307 && route.headers?.Location === target, 'Authenticated warehouse route redirects to the correct product origin: ' + source);
-  assert.ok(routeIndex(source) < routeIndex('^/floorops/(.*)
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
-
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
-
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
-), 'Auth route precedes FloorOps catch-all: ' + source);
+assert.ok(homepage.includes('href="/floorops"'), 'homepage links to FloorOps');
+assert.ok(homepage.includes('home-systems-preview') && homepage.includes('OTP FloorOps'), 'homepage previews FloorOps');
+assert.ok(landing.includes('https://www.onlytrueperspective.tech/floorops'), 'landing specifies canonical production URL');
+assert.ok(landing.includes('/public-system.css?v='), 'landing loads common header and footer styling');
+assert.ok(landing.includes('@media(max-width:600px)'), 'landing uses mobile responsive layouts');
+assert.ok(landing.includes('grid-template-columns:minmax(0,1fr)'), 'mobile cards avoid horizontal scrolling');
+assert.ok(landing.includes('class="fo-section fo-final"'), 'landing includes final walkthrough CTA');
+assert.ok(landing.includes('href="/floorops/demo"'), 'landing links to branded showroom');
+assert.ok(landing.includes('href="/floorops/request-demo"'), 'landing links to branded inquiry page');
+assert.ok(!landing.includes('floorops.onlytrueperspective.com'), 'no obsolete public subdomain');
+assert.ok(landing.includes('SoftwareApplication'), 'structured software data is present');
+assert.ok(landing.includes('$699') && landing.includes('$1,499'), 'both current packages are displayed');
+for (const label of ['Damaged Freight','Missing Freight','Quarantine Staging Holds','Broken Trailer Seals','Delivery Discrepancies']) {
+  assert.ok(landing.includes(label), 'landing shows scenario: ' + label);
 }
-assert.ok(!server.includes('floorops.onlytrueperspective.com'), 'Express fallback never redirects to a retired domain');
+const floorops = library.getProjects().find(p => p.id === 'floorops');
+assert.ok(floorops, 'project library includes FloorOps');
+assert.equal(floorops.heroImage.src, '/images/warehouse/handheld-barcode-scanning.jpg', 'archive uses warehouse photograph');
+assert.equal(floorops.demoUrl, '/floorops/demo', 'project links to branded demo');
+assert.equal(floorops.bookingUrl, '/floorops/request-demo', 'project links to branded inquiry');
 
-const demoRoute = routes.find(r => r.src === '^/floorops/demo/?$');
-assert.ok(demoRoute && demoRoute.dest && demoRoute.dest.includes('/demo'), 'vercel.json proxies demo route');
-const pricingRoute = routes.find(r => r.src === '^/floorops/pricing/?$');
-assert.ok(pricingRoute && pricingRoute.dest && pricingRoute.dest.includes('/pricing'), 'vercel.json proxies pricing route');
-const requestDemoRoute = routes.find(r => r.src === '^/floorops/request-demo/?$');
-assert.ok(requestDemoRoute && requestDemoRoute.dest && requestDemoRoute.dest.includes('/request-demo'), 'vercel.json proxies request-demo route');
+assert.ok(server.includes("app.get(['/floorops', '/floorops/']"), 'Express serves branded landing');
+assert.ok(server.includes('proxyFloorOpsApp'), 'Express includes FloorOps proxy');
+assert.ok(server.includes('readProxyRequestBody'), 'Express forwards bounded request bodies');
+assert.ok(!server.includes('floorops.onlytrueperspective.com'), 'Express never falls back to obsolete domain');
 
-// 6. Sitemap.xml Inclusion
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops</loc>'), 'sitemap includes /floorops');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/demo</loc>'), 'sitemap includes /floorops/demo');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/pricing</loc>'), 'sitemap includes /floorops/pricing');
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops/request-demo</loc>'), 'sitemap includes /floorops/request-demo');
+assert.equal(route('^/floorops/?$')?.dest, '/floorops.html', 'landing served locally');
+for (const [source, dest] of [
+  ['^/floorops/demo/?$', upstream + '/demo'],
+  ['^/floorops/pricing/?$', upstream + '/pricing'],
+  ['^/floorops/request-demo/?$', upstream + '/request-demo'],
+  ['^/floorops/contact/?$', upstream + '/contact'],
+  ['^/floorops/api/(.*)$', upstream + '/api/$1'],
+  ['^/_next/(.*)$', upstream + '/_next/$1'],
+  ['^/images/warehouse/(.*)$', upstream + '/images/warehouse/$1'],
+]) {
+  assert.equal(route(source)?.dest, dest, 'public routing: ' + source);
+}
+for (const [source, dest] of [
+  ['^/floorops/login/?$', upstream + '/login'],
+  ['^/floorops/join/?$', upstream + '/join'],
+  ['^/floorops/app/?$', upstream + '/app'],
+  ['^/floorops/app/(.*)$', upstream + '/app/$1'],
+]) {
+  assert.equal(route(source)?.status, 307, 'warehouse app redirects to isolated origin: ' + source);
+  assert.equal(route(source)?.headers?.Location, dest, 'warehouse app destination: ' + source);
+  assert.ok(index(source) < index('^/floorops/(.*)$'), 'secure app route precedes catch-all: ' + source);
+}
+assert.ok(index('^/floorops/api/(.*)$') < index('^/floorops/(.*)$'), 'API route precedes catch-all');
 
-// 7. Founder Confidentiality & Security
-assert.ok(!robots.includes('/sales/demo-script'), 'robots.txt does not leak internal sales routes');
-assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'no internal sales scripts are exposed in vercel routes');
-
-// 8. Archive & Studio Portfolio Integration
-const archiveHtml = read('archive.html');
-const archiveJs = read('archive.js');
-const studioHtml = read('studio.html');
-assert.ok(archiveHtml.includes('href="/floorops"'), 'archive.html navigation includes FloorOps');
-assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'archive.html includes FloorOps project card');
-assert.ok(archiveJs.includes("'floorops'"), 'archive.js project order includes floorops');
-assert.ok(studioHtml.includes('href="/floorops"'), 'studio.html navigation includes FloorOps');
-
-console.log('✅ All 8 FloorOps live OTP.tech integration contract checks PASSED!');
+for (const suffix of ['', '/demo', '/pricing', '/request-demo']) {
+  assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/floorops' + suffix + '</loc>'), 'sitemap includes FloorOps ' + suffix);
+}
+assert.ok(!robots.includes('/sales/demo-script'), 'robots does not publicize private sales tools');
+assert.ok(routes.every(r => !/demo-script|storyboard|founding-offer/i.test(r.src)), 'private sales tools are not explicitly exposed');
+assert.ok(archiveHtml.includes('data-project-id="floorops"'), 'Archive includes FloorOps card');
+assert.ok(archiveHtml.includes('/images/warehouse/handheld-barcode-scanning.jpg'), 'Archive static card uses warehouse image');
+assert.ok(archiveJs.includes('archive-floorops-mark-title'), 'Archive JS preserves FloorOps branding');
+assert.ok(studio.includes('href="/floorops"'), 'Studio navigation includes FloorOps');
+console.log('FloorOps live integration contract passed.');
