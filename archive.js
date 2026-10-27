@@ -55,12 +55,30 @@
     img.addEventListener('error', () => { img.hidden = true; media.append(node('span', 'archive-image-unavailable', `${project.title} · Image unavailable`)); }, { once: true });
     media.append(img);
     if (project.id === 'floorops') {
-      const overlay = node('span', 'archive-floorops-mark');
-      overlay.setAttribute('aria-hidden', 'true');
-      overlay.append(node('span', 'archive-floorops-mark-label', 'OTP / FLOOROPS'));
-      overlay.append(node('strong', 'archive-floorops-mark-title', 'FROM DOCK TO DECISION'));
-      overlay.append(node('span', 'archive-floorops-mark-steps', 'CAPTURE  /  REVIEW  /  RESOLVE'));
-      media.append(overlay);
+      // Product-specific visual: never fall back to the parent-company OTP logo.
+      const scene = node('div', 'archive-floorops-scene');
+      scene.setAttribute('aria-hidden', 'true');
+      const top = node('div', 'archive-floorops-scene-top');
+      top.append(node('span', 'archive-floorops-brand', 'FLOOROPS / DOCKGUARD'));
+      top.append(node('span', 'archive-floorops-live', 'LIVE SHOWROOM'));
+      const center = node('div', 'archive-floorops-scene-center');
+      const headline = node('div', 'archive-floorops-headline');
+      headline.append(node('span', 'archive-floorops-eyebrow', 'WAREHOUSE EXCEPTION MANAGEMENT'));
+      const heading = node('strong', 'archive-floorops-bigline', 'CATCH THE ISSUE.');
+      heading.append(node('span', '', 'CLEAR THE DOCK.'));
+      headline.append(heading, node('span', 'archive-floorops-caption', 'From dock report to supervisor decision.'));
+      const panel = node('div', 'archive-floorops-mini-panel');
+      panel.append(node('span', 'archive-floorops-mini-title', 'SAMPLE / EXCEPTION FLOW'));
+      [['01', 'Damage reported', '●'], ['02', 'Evidence attached', '●'], ['03', 'Supervisor review', '✓']].forEach(([num, label, status]) => {
+        const item = node('div', 'archive-floorops-mini-row');
+        item.append(node('span', 'archive-floorops-mini-num', num), node('span', 'archive-floorops-mini-label', label), node('span', 'archive-floorops-mini-status', status));
+        panel.append(item);
+      });
+      center.append(headline, panel);
+      const foot = node('div', 'archive-floorops-scene-foot');
+      foot.append(node('span', '', 'CAPTURE  /  DOCUMENT  /  RESOLVE'), node('span', '', 'EXPLORE THE PLATFORM ↗'));
+      scene.append(top, center, foot);
+      media.append(scene);
     }
     const serial = node('span', 'archive-project-index', String(order.indexOf(project.id) + 1).padStart(2, '0'));
     serial.setAttribute('aria-hidden', 'true');
