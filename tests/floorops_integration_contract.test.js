@@ -24,6 +24,13 @@ assert.ok(homepage.includes('Warehouse exception management: 45-second dock repo
 
 // 2. Dedicated Landing Page (floorops.html)
 assert.ok(flooropsLanding.includes('https://www.onlytrueperspective.tech/floorops'), 'landing page specifies canonical production URL');
+assert.ok(flooropsLanding.includes('/public-system.css?v='), 'FloorOps loads shared public header/footer styling');
+assert.ok(flooropsLanding.includes('@media (max-width: 680px)'), 'FloorOps has responsive mobile layout');
+assert.ok(flooropsLanding.includes('grid-template-columns: minmax(0, 1fr)'), 'Mobile cards avoid horizontal overflow');
+assert.ok(flooropsLanding.includes('class="fo-bottom-title"'), 'Bottom CTA has responsive heading');
+assert.ok(flooropsLanding.includes('href="/floorops/demo"'), 'Demo CTA stays on OTP primary domain');
+assert.ok(flooropsLanding.includes('href="/floorops/request-demo"'), 'Walkthrough CTA stays on OTP primary domain');
+assert.ok(!flooropsLanding.includes('floorops.onlytrueperspective.com'), 'Legacy subdomain links were removed');
 assert.ok(flooropsLanding.includes('SoftwareApplication'), 'landing page contains Schema.org SoftwareApplication structured data');
 assert.ok(flooropsLanding.includes('$699'), 'landing page shows Core package official pricing ($699/mo)');
 assert.ok(flooropsLanding.includes('$1,499'), 'landing page shows Premium Custom package official pricing ($1,499/mo)');
