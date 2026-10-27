@@ -71,9 +71,9 @@ const floorops = projects.find((project) => project.id === 'floorops');
 assert.ok(floorops, 'FloorOps appears in the Archive');
 assert.strictEqual(floorops.heroImage.src, '/images/warehouse/handheld-barcode-scanning.jpg', 'FloorOps uses a warehouse scanner photo rather than the parent-company logo');
 assert.strictEqual(floorops.heroFit, 'cover', 'FloorOps photograph fills the Archive thumbnail');
-assert.ok(archive.includes('archive-floorops-mark-title'), 'pre-rendered FloorOps card includes the product workflow overlay');
-assert.ok(archiveClient.includes('archive-floorops-mark-title'), 'client-side renderer preserves the FloorOps workflow overlay');
-assert.ok(archiveStyles.includes('.archive-floorops-mark {'), 'Archive provides styling for the FloorOps photograph overlay');
+assert.ok(archive.includes('archive-floorops-mini-panel'), 'pre-rendered FloorOps card contains the simulated DockGuard workflow preview');
+assert.ok(archiveClient.includes('archive-floorops-mini-panel'), 'client-side renderer preserves the new FloorOps product interface');
+assert.ok(archiveStyles.includes('.archive-floorops-scene {'), 'Archive provides responsive styling for the bespoke FloorOps cover');
 
 
 assert.ok(protocol && protocol.featured, 'PROTOCOL is a featured Archive case study');
@@ -157,7 +157,9 @@ const renderedDocument = dom.window.document;
 const flooropsCard = renderedDocument.querySelector('[data-project-id="floorops"]');
 assert.ok(flooropsCard, 'runtime includes FloorOps');
 assert.ok(flooropsCard.querySelector('.archive-project-media img').src.endsWith('/images/warehouse/handheld-barcode-scanning.jpg'), 'runtime uses the correct warehouse photograph');
-assert.ok(flooropsCard.querySelector('.archive-floorops-mark-title')?.textContent.includes('FROM DOCK TO DECISION'), 'runtime includes the product-specific visual label');
+assert.ok(flooropsCard.querySelector('.archive-floorops-bigline')?.textContent.includes('CLEAR THE DOCK.'), 'runtime includes FloorOps branded preview headline');
+assert.strictEqual(flooropsCard.querySelectorAll('.archive-floorops-mini-row').length, 3, 'runtime shows three illustrative workflow steps');
+assert.ok(archive.includes('archive.css?v=20261027-floorops-card-v3') && archive.includes('archive.js?v=20261027-floorops-card-v3'), 'Archive busts previous CSS/JS caches');
 
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-primary').length, projects.length, 'runtime renders one primary action per project');
