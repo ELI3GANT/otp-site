@@ -91,304 +91,161 @@
   <link rel="stylesheet" href="/public-system.css?v=20261027-floorops-mobile" />
   <link rel="stylesheet" href="/styles.css?v=16.8.29" />
 
+
   <style>
-    body { margin: 0 !important; background: #020617; color: #f8fafc; font-family: 'Inter', system-ui, sans-serif; }
-    .fo-wrap { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
-    .fo-hero { padding: 5rem 0 3.5rem; position: relative; overflow: hidden; }
-    .fo-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 9999px; font-family: 'Space Grotesk', monospace; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; margin-bottom: 1.5rem; }
-    .fo-title { font-family: 'Syne', sans-serif; font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 1.25rem; color: #ffffff; }
-    .fo-title span { color: #f59e0b; }
-    .fo-lead { font-size: clamp(1.05rem, 2vw, 1.25rem); line-height: 1.6; color: #94a3b8; max-width: 44rem; margin: 0 0 2rem; }
-    .fo-actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
-    .fo-btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: #020617; font-weight: 700; font-size: 0.95rem; padding: 0.85rem 1.6rem; border-radius: 0.75rem; text-decoration: none; box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.3); transition: transform 0.15s ease, background 0.15s ease; }
-    .fo-btn-primary:hover { transform: translateY(-2px); background: linear-gradient(135deg, #fbbf24, #f59e0b); }
-    .fo-btn-secondary { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; color: #e2e8f0; font-weight: 600; font-size: 0.95rem; padding: 0.85rem 1.5rem; border-radius: 0.75rem; text-decoration: none; transition: border-color 0.15s ease, background 0.15s ease; }
-    .fo-btn-secondary:hover { border-color: #64748b; background: rgba(30, 41, 59, 0.8); color: #ffffff; }
-    .fo-notice-bar { background: rgba(8, 47, 73, 0.5); border-bottom: 1px solid rgba(14, 165, 233, 0.3); padding: 0.75rem 1rem; font-size: 0.8rem; text-align: center; color: #bae6fd; }
-    .fo-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
-    .fo-card { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(51, 65, 85, 0.8); border-radius: 1.25rem; padding: 2rem; transition: border-color 0.2s ease; }
-    .fo-card:hover { border-color: rgba(245, 158, 11, 0.4); }
-    .fo-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 700; color: #f8fafc; margin: 0.75rem 0 0.5rem; }
-    .fo-card p { font-size: 0.9rem; line-height: 1.6; color: #94a3b8; margin: 0; }
-    .fo-card-badge { font-family: 'Space Grotesk', monospace; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #38bdf8; letter-spacing: 0.05em; }
-    .fo-section { padding: 4rem 0; border-top: 1px solid rgba(51, 65, 85, 0.6); }
-    .fo-section-head { margin-bottom: 2.5rem; }
-    .fo-section-head h2 { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 3.5vw, 2.5rem); font-weight: 800; color: #ffffff; margin: 0 0 0.75rem; }
-    .fo-section-head p { font-size: 1rem; color: #94a3b8; max-width: 36rem; margin: 0; }
-    .fo-pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 2rem; margin-top: 2rem; }
-    .fo-price-card { background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; border-radius: 1.5rem; padding: 2.5rem; position: relative; }
-    .fo-price-card.featured { border-color: rgba(245, 158, 11, 0.6); box-shadow: 0 20px 40px -15px rgba(245, 158, 11, 0.15); }
-    .fo-price-tag { font-family: 'Space Grotesk', monospace; font-size: 2.5rem; font-weight: 800; color: #f59e0b; margin: 1rem 0 0.25rem; }
-    .fo-price-detail { font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem; }
-    .fo-list { list-style: none; padding: 0; margin: 1.5rem 0 2rem; space-y: 0.75rem; }
-    .fo-list li { display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.75rem; }
-    .fo-list-check { color: #f59e0b; font-weight: bold; flex-shrink: 0; }
-    /* Production mobile layout: prevent horizontal overflow while preserving the shared shell. */
-    .fo-wrap { width: 100%; box-sizing: border-box; }
-    .fo-wrap > *, .fo-card, .fo-price-card { min-width: 0; }
-    .fo-badge { max-width: 100%; flex-wrap: wrap; white-space: normal; }
-    .fo-title, .fo-section-head h2 { overflow-wrap: break-word; }
-    .fo-btn-primary, .fo-btn-secondary { box-sizing: border-box; max-width: 100%; }
-    .fo-bottom-title { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 4vw, 2.6rem); line-height: 1.12; font-weight: 800; margin: 0 0 1rem; }
-    .fo-bottom-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-    @media (max-width: 680px) {
-      .fo-wrap { padding-inline: 1.25rem; }
-      .fo-hero { padding-block: 3rem 2.5rem; }
-      .fo-title { font-size: clamp(1.95rem, 8vw, 2.45rem); line-height: 1.12; letter-spacing: -0.035em; }
-      .fo-lead { font-size: 1rem; line-height: 1.6; }
-      .fo-badge { border-radius: 1rem; font-size: .65rem; line-height: 1.5; letter-spacing: .06em; }
-      .fo-notice-bar { font-size: .78rem; line-height: 1.5; padding: .75rem 1.25rem; }
-      .fo-actions, .fo-bottom-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; }
-      .fo-actions > a, .fo-bottom-actions > a { width: 100%; min-height: 48px; justify-content: space-between; text-align: left; white-space: normal; }
-      .fo-grid-3, .fo-pricing-grid { grid-template-columns: minmax(0, 1fr); gap: 1rem; margin-top: 1.5rem; }
-      .fo-card { padding: 1.4rem; }
-      .fo-price-card { padding: 1.4rem; }
-      .fo-price-tag { font-size: clamp(1.9rem, 7vw, 2.5rem); }
-      .fo-section { padding-block: 3rem; }
-      .fo-section-head { margin-bottom: 1.5rem; }
-      .fo-section-head h2 { font-size: clamp(1.7rem, 6.6vw, 2.1rem); }
-      .fo-bottom-title { font-size: clamp(1.9rem, 7vw, 2.4rem); }
-    }
+    :root{--fo-bg:#060a14;--fo-ink:#f6f7fa;--fo-muted:#b2c0d3;--fo-orange:#ffb020;--fo-cyan:#47d5e7;--fo-stroke:rgba(182,202,228,.18)}
+    html{scroll-behavior:smooth}
+    body.public-page{margin:0;background:var(--fo-bg);color:var(--fo-ink);font-family:'Inter',system-ui,sans-serif;overflow-x:clip}
+    .fo-wrap{width:min(100%,1200px);margin:0 auto;padding-inline:clamp(20px,4vw,56px);box-sizing:border-box}
+    .fo-page *{box-sizing:border-box}
+    .fo-page a:not(.public-header a):not(.public-footer a){text-decoration:none}
+    .public-header{background:#080e1b;border-color:rgba(255,255,255,.12)}
+    .public-header .public-menu,.public-header .public-desktop-nav{z-index:3}
+    .public-header-cta{color:#ffc55b!important}
+    .fo-kicker{display:inline-flex;align-items:center;gap:9px;color:#8ee4ee;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;font-weight:800}
+    .fo-kicker::before{content:"";width:7px;height:7px;background:var(--fo-cyan);border-radius:100%;box-shadow:0 0 12px rgba(71,213,231,.7)}
+    .fo-display{font-family:'Syne','Inter',sans-serif;font-size:clamp(2.45rem,5.9vw,5.8rem);line-height:1.04;letter-spacing:-.055em;font-weight:800;margin:22px 0}
+    .fo-display em{font-style:normal;background:linear-gradient(110deg,#68eff2 10%,#95a9ff 55%,#ed9afb);color:transparent;background-clip:text;-webkit-background-clip:text}
+    .fo-lead{color:#c6d1e0;line-height:1.66;font-size:clamp(1rem,1.6vw,1.13rem);max-width:56ch}
+    .fo-hero{position:relative;isolation:isolate;overflow:hidden;border-bottom:1px solid var(--fo-stroke);background:radial-gradient(ellipse at 83% 15%,rgba(27,107,167,.18),transparent 60%),#060a14}
+    .fo-hero-inner{min-height:670px;padding-block:80px 78px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.91fr);gap:clamp(32px,5vw,72px);align-items:center}
+    .fo-hero::before{content:"";position:absolute;inset:0;z-index:-2;background-image:linear-gradient(90deg,#060a14 3%,rgba(6,10,20,.92) 45%,rgba(6,10,20,.45)),url('/images/warehouse/loading-dock.jpg');background-size:cover;background-position:center;opacity:.33}
+    .fo-hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#060a14,transparent 35%)}
+    .fo-buttons{display:flex;gap:13px;flex-wrap:wrap;margin-top:32px}
+    .fo-button{display:inline-flex;align-items:center;justify-content:center;min-height:51px;padding:14px 20px;border-radius:12px;font-weight:800;font-size:.91rem;text-decoration:none!important;gap:18px;line-height:1.25;transition:transform .2s,filter .2s}
+    .fo-button:hover{transform:translateY(-2px);filter:brightness(1.1)}
+    .fo-primary{background:linear-gradient(110deg,#ffc152,#f49a0a);color:#15120e!important;box-shadow:0 12px 25px rgba(249,166,25,.18)}
+    .fo-outline{background:rgba(17,28,45,.8);border:1px solid #516176;color:#e5edfa!important}
+    .fo-meta{margin-top:26px;color:#b6c2d3;font-size:.79rem;letter-spacing:.01em}
+    .fo-meta span{color:#5fe8d4;margin-right:6px}
+    .fo-console{max-width:540px;width:100%;border:1px solid rgba(157,197,237,.29);border-radius:20px;background:#111c2e;box-shadow:0 34px 80px rgba(0,0,0,.4);overflow:hidden;transform:rotate(-1deg)}
+    .fo-console-header{background:#18263d;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--fo-stroke)}
+    .fo-console-header strong{font-size:.75rem;letter-spacing:.15em;color:#e4edff}
+    .fo-sample-tag{font-size:.62rem;font-weight:800;border:1px solid rgba(83,211,229,.35);background:rgba(50,170,185,.12);color:#a3f6f0;padding:5px 8px;border-radius:99px}
+    .fo-console-body{padding:22px}
+    .fo-console-topline{color:#97acc7;font-size:.7rem;text-transform:uppercase;letter-spacing:.11em;font-weight:700}
+    .fo-console-title{font-size:clamp(1.1rem,2vw,1.5rem);font-weight:800;margin:8px 0 18px}
+    .fo-console-row{display:flex;gap:13px;align-items:center;border:1px solid #32415b;border-radius:12px;padding:13px;margin-bottom:10px;background:#101b2b}
+    .fo-console-index{flex:none;width:34px;height:34px;border-radius:10px;background:#243954;color:#9bd1fc;display:grid;place-items:center;font-weight:900;font-size:.8rem}
+    .fo-console-row:nth-of-type(2) .fo-console-index{background:#3b2c12;color:#ffcc70}
+    .fo-console-row:nth-of-type(3) .fo-console-index{background:#19392e;color:#90edc2}
+    .fo-console-row div:last-child{flex:1;min-width:0}
+    .fo-console-row strong{display:block;font-size:.85rem}
+    .fo-console-row small{display:block;color:#a7b8ce;margin-top:4px;font-size:.72rem}
+    .fo-console-foot{border-top:1px solid #273753;display:flex;justify-content:space-between;gap:8px;margin-top:16px;padding-top:14px;font-size:.7rem;color:#b3c4d7}
+    .fo-console-foot b{color:#86e6be;font-weight:800}
+    .fo-section{padding-block:clamp(58px,7vw,100px);border-bottom:1px solid var(--fo-stroke)}
+    .fo-section-heading{font-family:'Syne','Inter',sans-serif;font-size:clamp(1.9rem,3.3vw,3rem);line-height:1.12;letter-spacing:-.035em;margin:14px 0;color:#fff}
+    .fo-section-intro{font-size:1rem;color:var(--fo-muted);line-height:1.65;max-width:65ch;margin:0}
+    .fo-story{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:32px}
+    .fo-step{border:1px solid var(--fo-stroke);background:linear-gradient(145deg,#111d30,#0c1320);border-radius:20px;overflow:hidden;min-width:0}
+    .fo-step-image{height:195px;width:100%;object-fit:cover;display:block;filter:saturate(.85)}
+    .fo-step-content{padding:21px}
+    .fo-step-number{display:inline-flex;font-size:.69rem;letter-spacing:.12em;font-weight:800;color:#5ddce7;text-transform:uppercase}
+    .fo-step h3{margin:9px 0 8px;font-size:1.15rem;color:#fff}
+    .fo-step p{color:#b8c4d7;line-height:1.55;font-size:.86rem;margin:0}
+    .fo-dark-panel{background:#0d1524}
+    .fo-scenario-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:28px}
+    .fo-scenario{background:#141f30;border:1px solid #2b3c54;border-radius:11px;padding:16px;display:flex;align-items:center;gap:12px;font-size:.86rem;font-weight:700;color:#e9f1fa;min-width:0}
+    .fo-scenario span{display:grid;place-items:center;flex:none;width:30px;height:30px;background:rgba(255,176,32,.12);color:#ffc15b;border:1px solid rgba(255,176,32,.23);border-radius:9px;font-size:.69rem}
+    .fo-compat{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap}
+    .fo-compat span{border:1px solid #30425b;border-radius:99px;color:#b9d0e7;background:#101c2e;padding:9px 14px;font-size:.79rem}
+    .fo-price-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:30px}
+    .fo-price-card{background:linear-gradient(155deg,#152339,#0e1828);border:1px solid #374d6b;border-radius:18px;padding:clamp(23px,3vw,36px);min-width:0}
+    .fo-price-card:first-child{border-color:#d2963d;box-shadow:inset 0 1px 0 rgba(255,174,48,.1)}
+    .fo-price-eyebrow{font-size:.69rem;letter-spacing:.14em;color:#8de2ef;text-transform:uppercase;font-weight:800}
+    .fo-price-card h3{font-size:1.4rem;margin:12px 0 0}
+    .fo-price{font-family:'Syne',sans-serif;color:#ffc153;font-size:clamp(2.25rem,3.5vw,3.2rem);font-weight:800;margin:19px 0 4px}
+    .fo-price small{font-family:'Inter',sans-serif;font-size:.77rem;color:#c5d0de;font-weight:500}
+    .fo-price-note{color:#b9c9dd;font-size:.85rem;line-height:1.6;min-height:50px}
+    .fo-price-card ul{padding:16px 0 0;border-top:1px solid #324257;list-style:none;margin:22px 0 25px}
+    .fo-price-card li{padding:6px 0;font-size:.86rem;color:#dae4f1}
+    .fo-price-card li::before{content:'✓';color:#7be6c9;font-weight:800;margin-right:9px}
+    .fo-footnote{color:#aab8cc;font-size:.78rem;margin-top:22px;line-height:1.6}
+    .fo-final{text-align:center;background:radial-gradient(ellipse at center,rgba(20,98,148,.25),transparent 60%),#070d19}
+    .fo-final p{margin:14px auto 0;max-width:55ch;color:#b5c6dc;line-height:1.65}
+    .fo-final .fo-buttons{justify-content:center}
+    .fo-final-visual{display:flex;justify-content:center;gap:8px;margin-bottom:25px}
+    .fo-final-visual span{border-radius:10px;padding:12px 14px;background:#15253a;border:1px solid #304159;color:#bfe5fa;font-size:.78rem;font-weight:800}
+    .fo-final-visual span:last-child{color:#86e3b7}
+    .public-footer{border-top:1px solid #28354b;background:#080e19}
+    @media(max-width:900px){.fo-hero-inner{grid-template-columns:1fr;gap:42px;padding-block:58px}.fo-console{max-width:640px;transform:none}.fo-story{grid-template-columns:1fr 1fr}.fo-scenario-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:600px){.fo-hero-inner{padding-block:44px 50px}.fo-display{font-size:clamp(2.25rem,10vw,3.1rem)}.fo-buttons{display:grid;grid-template-columns:minmax(0,1fr)}.fo-buttons .fo-button{width:100%;justify-content:space-between}.fo-story,.fo-price-grid,.fo-scenario-grid{grid-template-columns:minmax(0,1fr)}.fo-step-image{height:170px}.fo-console-body{padding:16px}.fo-console-foot{flex-wrap:wrap}.fo-scenario{padding:13px}.fo-final-visual{flex-wrap:wrap}.fo-section{padding-block:54px}.public-header{padding-inline:20px}}
+    @media(prefers-reduced-motion:reduce){.fo-button{transition:none}.fo-button:hover{transform:none}}
   </style>
 </head>
-<body class="public-page">
+<body class="public-page fo-page">
 <a class="public-skip" href="#main-content">Skip to content</a>
-
-<!-- NOTICE BAR -->
-<aside class="fo-notice-bar" aria-label="Product announcement">
-  <strong>OTP FloorOps is now public.</strong> Experience the interactive 5-step warehouse demo with synthetic live records. No login required.
-</aside>
-
-<!-- PUBLIC HEADER -->
 <header class="public-header" id="top">
-  <a class="public-brand" href="/" aria-label="OnlyTrue Perspective home">
-    <img src="/assets/otp-logo-transparent.png" width="44" height="44" alt="" />
-    <span>OnlyTrue<br>Perspective</span>
-  </a>
-  <nav class="public-desktop-nav" aria-label="Primary">
-    <a href="/">Home</a>
-    <a href="/archive">Archive</a>
-    <a href="/floorops" aria-current="page">FloorOps</a>
-    <a href="/signal">Signal</a>
-    <a href="/studio">Studio</a>
-  </nav>
-  <a class="public-header-cta" href="/floorops/request-demo">Request Demo <span aria-hidden="true">↗</span></a>
-  <details class="public-menu">
-    <summary aria-label="Navigation menu">Menu <span aria-hidden="true">+</span></summary>
-    <nav aria-label="Mobile">
-      <a href="/">Home</a>
-      <a href="/archive">Archive</a>
-      <a href="/floorops" aria-current="page">FloorOps</a>
-      <a href="/signal">Signal</a>
-      <a href="/studio">Studio</a>
-      <a href="/floorops/request-demo">Request Demo ↗</a>
-    </nav>
-  </details>
+  <a class="public-brand" href="/" aria-label="OnlyTruePerspective home"><img src="/assets/otp-logo-transparent.png" width="44" height="44" alt=""><span>OnlyTrue<br>Perspective</span></a>
+  <nav class="public-desktop-nav" aria-label="Primary"><a href="/">Home</a><a href="/archive">Archive</a><a href="/floorops" aria-current="page">FloorOps</a><a href="/signal">Signal</a><a href="/studio">Studio</a></nav>
+  <a class="public-header-cta" href="/floorops/request-demo">Request a walkthrough <span aria-hidden="true">↗</span></a>
+  <details class="public-menu"><summary aria-label="Navigation menu">Menu <span aria-hidden="true">+</span></summary><nav aria-label="Mobile"><a href="/">Home</a><a href="/archive">Archive</a><a href="/floorops" aria-current="page">FloorOps</a><a href="/floorops/demo">Try the demo</a><a href="/floorops/pricing">Pricing</a><a href="/floorops/request-demo">Request a walkthrough ↗</a></nav></details>
 </header>
-
 <main id="main-content">
-  <!-- HERO SECTION -->
-  <section class="fo-hero">
-    <div class="fo-wrap">
-      <div class="fo-badge">
-        <span>● Real Warehouse Infrastructure</span> · OnlyTruePerspective LLC
-      </div>
-      <h1 class="fo-title">
-        Warehouse Exception Management,<br><span>Simplified.</span>
-      </h1>
-      <p class="fo-lead">
-        Report damaged, missing, and quarantined freight in 45 seconds. Give supervisors clear dock visibility. Capture defensible photographic proof before carrier drivers leave.
-      </p>
-      <div class="fo-actions">
-        <a href="/floorops/demo" class="fo-btn-primary">
-          Try the Interactive Demo <span>→</span>
-        </a>
-        <a href="/floorops/request-demo" class="fo-btn-secondary">
-          Schedule a 10-Min Walkthrough <span>↗</span>
-        </a>
-        <a href="#packages" class="fo-btn-secondary">
-          View Pricing (Two Packages)
-        </a>
+  <section class="fo-hero" aria-labelledby="fo-heading"><div class="fo-wrap fo-hero-inner">
+    <div>
+      <span class="fo-kicker">Warehouse exception management</span>
+      <h1 class="fo-display" id="fo-heading">Catch the issue.<br><em>Clear the dock.</em></h1>
+      <p class="fo-lead">Damaged pallet? Missing cartons? Broken seal? FloorOps helps your team document the problem, alert a supervisor, and record what happened—without replacing your WMS.</p>
+      <div class="fo-buttons"><a class="fo-button fo-primary" href="/floorops/demo">Try the interactive demo <span aria-hidden="true">↗</span></a><a class="fo-button fo-outline" href="/floorops/request-demo">Book a 10-minute walkthrough <span aria-hidden="true">→</span></a></div>
+      <p class="fo-meta"><span aria-hidden="true">●</span> Free demo · No login · Sample warehouse data</p>
+    </div>
+    <div class="fo-console" role="img" aria-label="Illustrative three-step FloorOps workflow: employee reports damaged freight, evidence is attached, supervisor reviews the issue. This is a sample preview, not live warehouse records.">
+      <div class="fo-console-header"><strong>FLOOROPS / DOCKGUARD</strong><span class="fo-sample-tag">SAMPLE PREVIEW</span></div>
+      <div class="fo-console-body">
+        <span class="fo-console-topline">Exception · BOL-48291-X · Dock 14</span>
+        <div class="fo-console-title">One issue. One clear handoff.</div>
+        <div class="fo-console-row"><div class="fo-console-index">01</div><div><strong>Employee reports damage</strong><small>Crushed cases identified at receiving</small></div><span aria-hidden="true" style="color:#ffc15b">●</span></div>
+        <div class="fo-console-row"><div class="fo-console-index">02</div><div><strong>Photos & BOL logged</strong><small>Evidence tied to the shipment reference</small></div><span aria-hidden="true" style="color:#ffc15b">●</span></div>
+        <div class="fo-console-row"><div class="fo-console-index">03</div><div><strong>Supervisor reviews</strong><small>Decision, accountability, audit trail</small></div><span aria-hidden="true" style="color:#81e6b8">✓</span></div>
+        <div class="fo-console-foot"><span>Designed for phones · tablets · scanners</span><b>SEE THE REAL DEMO ↗</b></div>
       </div>
     </div>
-  </section>
+  </div></section>
 
-  <!-- 5 CRITICAL WAREHOUSE SCENARIOS -->
-  <section class="fo-section" id="scenarios">
-    <div class="fo-wrap">
-      <div class="fo-section-head">
-        <h2>Five Common Inbound Freight Problems. One Clean Workflow.</h2>
-        <p>Built specifically for dock receiving doors, crossdock operations, and 3PL contract facilities.</p>
-      </div>
-      <div class="fo-grid-3">
-        <div class="fo-card">
-          <span class="fo-card-badge">Scenario 01 · Inbound Freight</span>
-          <h3>Damaged Freight &amp; Leaks</h3>
-          <p>Crushed pallets, punctured drums, and liquid seepage documented with photos and locked to the BOL before the driver departs.</p>
-        </div>
-        <div class="fo-card">
-          <span class="fo-card-badge">Scenario 02 · Discrepancy</span>
-          <h3>Missing Freight / Shortages</h3>
-          <p>Piece-level barcode counts cross-checked against carrier manifests to substantiate shortage claims immediately.</p>
-        </div>
-        <div class="fo-card">
-          <span class="fo-card-badge">Scenario 03 · Quality &amp; Hazmat</span>
-          <h3>Quarantine Staging Holds</h3>
-          <p>Compromised safety seals or temperature alerts automatically reserve containment lanes and restrict put-away routing.</p>
-        </div>
-        <div class="fo-card">
-          <span class="fo-card-badge">Scenario 04 · Security</span>
-          <h3>Broken Trailer Seals</h3>
-          <p>Severed bolt seals or mismatched replacement tags photographed at the dock door to stop pilferage liability cold.</p>
-        </div>
-        <div class="fo-card">
-          <span class="fo-card-badge">Scenario 05 · Logistics</span>
-          <h3>Delivery Discrepancies &amp; Misroutes</h3>
-          <p>Instant consignee barcode verification flags misdirected cartons intended for other regional distribution centers.</p>
-        </div>
-        <div class="fo-card">
-          <span class="fo-card-badge">Core Engine · Supervisor</span>
-          <h3>Defensible Audit Trails</h3>
-          <p>Export carrier-ready PDF exception packets stamped with exact timestamps, high-res photos, and driver sign-offs.</p>
-        </div>
-      </div>
+  <section class="fo-section" id="workflow"><div class="fo-wrap">
+    <span class="fo-kicker">How FloorOps works</span><h2 class="fo-section-heading">From discovery to decision.</h2>
+    <p class="fo-section-intro">Show the exact workflow to your receiving team in minutes. No slide deck needed.</p>
+    <div class="fo-story">
+      <article class="fo-step"><img class="fo-step-image" src="/images/warehouse/handheld-barcode-scanning.jpg" width="500" height="310" loading="lazy" alt="Warehouse worker using a handheld scanner"><div class="fo-step-content"><span class="fo-step-number">01 / Capture</span><h3>Report the exception</h3><p>Scan a reference. Flag damage, shortages, or a hold directly on the floor.</p></div></article>
+      <article class="fo-step"><img class="fo-step-image" src="/images/warehouse/damaged-freight.jpg" width="500" height="310" loading="lazy" alt="Damaged freight at a warehouse"><div class="fo-step-content"><span class="fo-step-number">02 / Document</span><h3>Keep the evidence</h3><p>Attach photos and notes to the shipment instead of scattering them across texts.</p></div></article>
+      <article class="fo-step"><img class="fo-step-image" src="/images/warehouse/supervisor-tablet.jpg" width="500" height="310" loading="lazy" alt="Warehouse supervisor reviewing information on a tablet"><div class="fo-step-content"><span class="fo-step-number">03 / Resolve</span><h3>Give supervisors clarity</h3><p>Review the queue, manage holds, and record the resolution history.</p></div></article>
     </div>
-  </section>
+  </div></section>
 
-  <!-- HARDWARE & INTEGRATIONS -->
-  <section class="fo-section" id="hardware">
-    <div class="fo-wrap">
-      <div class="fo-section-head">
-        <h2>Works on the Devices Your Team Already Uses.</h2>
-        <p>Zero proprietary hardware lock-in. Optimized for rugged warehouse handhelds and standard mobile browsers.</p>
-      </div>
-      <div class="fo-grid-3">
-        <div class="fo-card">
-          <span class="fo-card-badge">Industrial Scanners</span>
-          <h3>Zebra Android Computers</h3>
-          <p>Native barcode wedge scanning support for Zebra TC52, TC57, TC21, and TC26 handheld terminals.</p>
-        </div>
-        <div class="fo-card">
-          <span class="fo-card-badge">Enterprise Mobile</span>
-          <h3>Honeywell Terminals</h3>
-          <p>Compatible with Honeywell Dolphin, CT40, and EDA mobile computers running warehouse floor browsers.</p>
-        </div>
-        <div class="fo-card">
-          <span class="fo-card-badge">Phones &amp; Tablets</span>
-          <h3>iOS, Android &amp; Desktop</h3>
-          <p>Fast camera capture on company iPads, supervisor iPhones, and dock-door desktop workstations.</p>
-        </div>
-      </div>
+  <section class="fo-section fo-dark-panel" id="scenarios"><div class="fo-wrap">
+    <span class="fo-kicker">Practical, not complicated</span><h2 class="fo-section-heading">Built around real dock problems.</h2>
+    <p class="fo-section-intro">Five common inbound freight problems, plus supervisor visibility, inside one workflow.</p>
+    <div class="fo-scenario-grid">
+      <div class="fo-scenario"><span>01</span>Damaged Freight &amp; Leaks</div>
+      <div class="fo-scenario"><span>02</span>Missing Freight / Shortages</div>
+      <div class="fo-scenario"><span>03</span>Quarantine Staging Holds</div>
+      <div class="fo-scenario"><span>04</span>Broken Trailer Seals</div>
+      <div class="fo-scenario"><span>05</span>Delivery Discrepancies &amp; Misroutes</div>
+      <div class="fo-scenario"><span>✓</span>Supervisor Review &amp; Audit Trails</div>
     </div>
-  </section>
+    <h3 style="margin:34px 0 0;font-size:1.05rem;color:#e9f3ff">Works with the devices your team already uses.</h3>
+    <div class="fo-compat" aria-label="Supported form factors"><span>Mobile browsers</span><span>Tablets</span><span>Desktop stations</span><span>Keyboard-wedge scanners</span><span>Zebra / Honeywell devices (validate model)</span></div>
+  </div></section>
 
-  <!-- TWO-PACKAGE PRICING -->
-  <section class="fo-section" id="packages">
-    <div class="fo-wrap">
-      <div class="fo-section-head">
-        <h2>Transparent Commercial Pricing.</h2>
-        <p>One platform. Exactly two packages. No hidden user fees or arbitrary tier jumps.</p>
-      </div>
-      <div class="fo-pricing-grid">
-        <!-- CORE PACKAGE -->
-        <div class="fo-price-card featured">
-          <span class="fo-card-badge" style="color: #fbbf24;">Standardized Warehouse Operations</span>
-          <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.75rem; margin: 0.5rem 0;">FloorOps Core</h3>
-          <p style="font-size: 0.9rem; color: #94a3b8;">Standardized freight exception management for single or multi-facility operations.</p>
-          <div class="fo-price-tag">$699</div>
-          <div class="fo-price-detail">per facility / month · + $999 one-time facility onboarding</div>
-          <ul class="fo-list">
-            <li><span class="fo-list-check">✓</span> Unlimited dock workers, supervisors, and managers</li>
-            <li><span class="fo-list-check">✓</span> 45-second exception intake with camera capture</li>
-            <li><span class="fo-list-check">✓</span> BOL barcode scanning and freight status transitions</li>
-            <li><span class="fo-list-check">✓</span> Supervisor quarantine and lane allocation</li>
-            <li><span class="fo-list-check">✓</span> Pre-shift forklift and machinery safety inspections</li>
-            <li><span class="fo-list-check">✓</span> Defensible carrier claim PDF export</li>
-          </ul>
-          <a href="/floorops/request-demo?package=core" class="fo-btn-primary" style="width: 100%; justify-content: center; box-sizing: border-box;">
-            Get Started with Core <span>→</span>
-          </a>
-        </div>
-
-        <!-- PREMIUM CUSTOM PACKAGE -->
-        <div class="fo-price-card">
-          <span class="fo-card-badge">Custom Architecture</span>
-          <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 1.75rem; margin: 0.5rem 0;">FloorOps Premium Custom</h3>
-          <p style="font-size: 0.9rem; color: #94a3b8;">Tailored integrations, private cloud environments, and custom warehouse workflows.</p>
-          <div class="fo-price-tag">From $1,499</div>
-          <div class="fo-price-detail">per month · Implementation starting at $7,000 depending on scope</div>
-          <ul class="fo-list">
-            <li><span class="fo-list-check">✓</span> Everything included in FloorOps Core</li>
-            <li><span class="fo-list-check">✓</span> Direct WMS and ERP API integrations</li>
-            <li><span class="fo-list-check">✓</span> Custom dock-door hardware integrations &amp; RFID</li>
-            <li><span class="fo-list-check">✓</span> Dedicated single-tenant database deployment</li>
-            <li><span class="fo-list-check">✓</span> Tailored facility safety and SLA escalation rules</li>
-            <li><span class="fo-list-check">✓</span> Dedicated engineering onboarding &amp; priority SLA</li>
-          </ul>
-          <a href="/floorops/request-demo?package=premium_custom" class="fo-btn-secondary" style="width: 100%; justify-content: center; box-sizing: border-box;">
-            Discuss Custom Scope <span>↗</span>
-          </a>
-        </div>
-      </div>
-      <div style="margin-top: 2rem; font-size: 0.8rem; color: #64748b; text-align: center;">
-        The interactive browser showroom is free to explore and uses sample data. It is a product demonstration, not a subscription package.
-      </div>
+  <section class="fo-section" id="packages"><div class="fo-wrap">
+    <span class="fo-kicker">Clear commercial options</span><h2 class="fo-section-heading">Two packages. No guessing.</h2>
+    <p class="fo-section-intro">Start with Core or discuss a scoped custom implementation. Final terms are confirmed before onboarding.</p>
+    <div class="fo-price-grid">
+      <article class="fo-price-card"><span class="fo-price-eyebrow">Standardized operations</span><h3>FloorOps Core</h3><div class="fo-price">$699 <small>/ facility / month</small></div><p class="fo-price-note">$999 one-time onboarding. For standard freight exception and supervisor workflows.</p><ul><li>DockGuard freight reporting</li><li>ShiftGuard inspection workflows</li><li>Supervisor queue &amp; history</li><li>Role-based access &amp; standard reporting</li></ul><a class="fo-button fo-primary" href="/floorops/request-demo?package=core">Discuss Core <span aria-hidden="true">↗</span></a></article>
+      <article class="fo-price-card"><span class="fo-price-eyebrow">Scoped implementation</span><h3>FloorOps Premium Custom</h3><div class="fo-price">From $1,499 <small>/ month</small></div><p class="fo-price-note">Implementation from $7,000. For facilities needing tailored workflows or feasible integrations.</p><ul><li>Everything in Core</li><li>Custom workflows and configuration</li><li>Scoped reporting and dashboards</li><li>Integration discovery &amp; engineering scope</li></ul><a class="fo-button fo-outline" href="/floorops/request-demo?package=premium_custom">Discuss Custom <span aria-hidden="true">↗</span></a></article>
     </div>
-  </section>
+    <p class="fo-footnote">The free interactive showroom is a product demonstration using synthetic records, not a subscription package. Production services, device compatibility, and tenant security require verification for each live rollout.</p>
+  </div></section>
 
-  <!-- BOTTOM CTA -->
-  <section class="fo-section" style="background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.1) 0%, rgba(2, 6, 23, 1) 70%);">
-    <div class="fo-wrap" style="text-align: center;">
-      <h2 class="fo-bottom-title">
-        See FloorOps in Action
-      </h2>
-      <p style="color: #94a3b8; max-width: 32rem; margin: 0 auto 2rem; line-height: 1.6;">
-        Walk through a live damage report, quarantine hold, and supervisor resolution in less than three minutes.
-      </p>
-      <div class="fo-bottom-actions">
-        <a href="/floorops/demo" class="fo-btn-primary">
-          Launch Interactive Demo Showroom <span>→</span>
-        </a>
-        <a href="/floorops/request-demo" class="fo-btn-secondary">
-          Request a 10-Minute Walkthrough <span>↗</span>
-        </a>
-      </div>
-    </div>
-  </section>
+  <section class="fo-section fo-final" id="demo"><div class="fo-wrap">
+    <div class="fo-final-visual" aria-hidden="true"><span>Dock worker</span><span>→</span><span>Supervisor</span><span>→</span><span>Resolved ✓</span></div>
+    <span class="fo-kicker">See it in action</span><h2 class="fo-section-heading">Give us three minutes.<br>We'll show the workflow.</h2>
+    <p>Explore a damaged-freight report, a quarantine hold, and a supervisor resolution using safe sample data.</p>
+    <div class="fo-buttons"><a class="fo-button fo-primary" href="/floorops/demo">Launch the free showroom <span aria-hidden="true">↗</span></a><a class="fo-button fo-outline" href="/floorops/request-demo">Request a walkthrough <span aria-hidden="true">→</span></a></div>
+  </div></section>
 </main>
-
-<!-- PUBLIC FOOTER -->
-<footer class="public-footer">
-  <div class="public-wrap">
-    <div class="public-footer-top">
-      <a href="/" class="public-footer-brand">OnlyTruePerspective</a>
-      <p>Independent perspective.<br>Rhode Island · Working everywhere.</p>
-    </div>
-    <div class="public-footer-links">
-      <nav aria-label="Explore">
-        <a href="/archive">Archive</a>
-        <a href="/floorops">FloorOps</a>
-        <a href="/signal">Signal</a>
-        <a href="/studio">Studio</a>
-        <a href="/insights">Journal</a>
-      </nav>
-      <nav aria-label="Work with OTP">
-        <a href="/floorops/request-demo">FloorOps Walkthrough ↗</a>
-        <a href="/fixline/intake?source=public-footer">Start a project ↗</a>
-        <a href="/fixline">FIXLINE</a>
-        <a href="/portal">Client Portal</a>
-      </nav>
-      <nav aria-label="Elsewhere">
-        <a href="https://instagram.com/onlytrueperspective" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
-        <a href="mailto:contact@onlytrueperspective.tech">Email ↗</a>
-      </nav>
-    </div>
-    <div class="public-footer-bottom">
-      <span>© <span data-public-year>2026</span> OnlyTruePerspective LLC</span>
-      <span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="#top">Back to top ↑</a></span>
-    </div>
-  </div>
-</footer>
+<footer class="public-footer"><div class="public-wrap"><div class="public-footer-top"><div><a href="/" class="public-footer-brand">OnlyTruePerspective</a><p>Independent perspective.<br>Rhode Island · Working everywhere.</p></div><p>FloorOps · Industrial operations software<br>Built by OnlyTruePerspective LLC</p></div><div class="public-footer-links"><nav aria-label="Explore"><a href="/">Home</a><a href="/archive">Archive</a><a href="/floorops/demo">Free Demo</a><a href="/floorops/pricing">Pricing</a></nav><nav aria-label="Work with us"><a href="/floorops/request-demo">FloorOps Walkthrough ↗</a><a href="/fixline/intake?source=public-footer">Start a project ↗</a><a href="/fixline">FIXLINE</a><a href="/portal">Client Portal</a></nav><nav aria-label="Elsewhere"><a href="https://instagram.com/onlytrueperspective" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="mailto:contact@onlytrueperspective.tech">Email ↗</a></nav></div><div class="public-footer-bottom"><span>© <span data-public-year>2026</span> OnlyTruePerspective LLC</span><span><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="#top">Back to top ↑</a></span></div></div></footer>
 <script src="/public-shell.js?v=20260915b" defer></script>
-</body>
-</html>
+</body></html>
