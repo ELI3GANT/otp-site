@@ -159,7 +159,7 @@
     },
     {
       "src": "^/floorops/contact/?$",
-      "dest": "https://otp-floorops.vercel.app/request-demo"
+      "dest": "https://otp-floorops.vercel.app/contact"
     },
     {
       "src": "^/floorops/api/(.*)$",
@@ -168,6 +168,34 @@
     {
       "src": "^/floorops/_next/(.*)$",
       "dest": "https://otp-floorops.vercel.app/_next/$1"
+    },
+    {
+      "src": "^/floorops/login/?$",
+      "status": 307,
+      "headers": {
+        "Location": "https://otp-floorops.vercel.app/login"
+      }
+    },
+    {
+      "src": "^/floorops/join/?$",
+      "status": 307,
+      "headers": {
+        "Location": "https://otp-floorops.vercel.app/join"
+      }
+    },
+    {
+      "src": "^/floorops/app/?$",
+      "status": 307,
+      "headers": {
+        "Location": "https://otp-floorops.vercel.app/app"
+      }
+    },
+    {
+      "src": "^/floorops/app/(.*)$",
+      "status": 307,
+      "headers": {
+        "Location": "https://otp-floorops.vercel.app/app/$1"
+      }
     },
     {
       "src": "^/floorops/(.*)$",
