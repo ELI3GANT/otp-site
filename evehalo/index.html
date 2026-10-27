@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>EVEHALO — Your Universe. In Motion. | OnlyTruePerspective</title>
+  <meta name="description" content="Bring your days, goals, routines, and personal intelligence into one extraordinary space. EVEHALO is an entirely private personal operating system for iPhone by OnlyTruePerspective." />
+  <meta name="keywords" content="EVEHALO, OnlyTruePerspective, personal operating system, iPhone planner app, private AI, on-device intelligence, EVO, Horizon calendar, Focus timer, SwiftData, iOS 27" />
+  <meta name="theme-color" content="#020108" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://www.onlytrueperspective.tech/evehalo" />
+
+  <!-- Social Graph Meta -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="OnlyTruePerspective" />
+  <meta property="og:url" content="https://www.onlytrueperspective.tech/evehalo" />
+  <meta property="og:title" content="EVEHALO — Your Universe. In Motion." />
+  <meta property="og:description" content="Bring your days, goals, routines, and personal intelligence into one extraordinary space. Entirely on-device, private, and crafted with celestial beauty." />
+  <meta property="og:image" content="https://www.onlytrueperspective.tech/assets/evehalo/hero-launch.webp" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="EVEHALO — Your Universe. In Motion." />
+  <meta name="twitter:description" content="Bring your days, goals, routines, and personal intelligence into one extraordinary space. Private on-device intelligence for iPhone." />
+  <meta name="twitter:image" content="https://www.onlytrueperspective.tech/assets/evehalo/hero-launch.webp" />
+
+  <!-- Schema.org SoftwareApplication Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.onlytrueperspective.tech/#organization",
+        "name": "OnlyTruePerspective LLC",
+        "url": "https://www.onlytrueperspective.tech/",
+        "logo": "https://www.onlytrueperspective.tech/icon.png",
+        "email": "contact@onlytrueperspective.tech"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://www.onlytrueperspective.tech/evehalo#application",
+        "name": "EVEHALO",
+        "operatingSystem": "iOS",
+        "applicationCategory": "ProductivityApplication",
+        "author": {
+          "@type": "Organization",
+          "name": "OnlyTruePerspective LLC"
+        },
+        "offers": [
+          {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "name": "Free Tier"
+          },
+          {
+            "@type": "Offer",
+            "price": "4.99",
+            "priceCurrency": "USD",
+            "name": "Plus Monthly"
+          },
+          {
+            "@type": "Offer",
+            "price": "39.99",
+            "priceCurrency": "USD",
+            "name": "Plus Yearly"
+          },
+          {
+            "@type": "Offer",
+            "price": "79.99",
+            "priceCurrency": "USD",
+            "name": "Plus Lifetime"
+          }
+        ],
+        "screenshot": "https://www.onlytrueperspective.tech/assets/evehalo/hero-launch.webp",
+        "description": "Personal planning, reflection, and intelligence app for iPhone featuring Today dashboard, Horizon calendar, EVO on-device voice assistant, and customizable cosmic atmospheres."
+      }
+    ]
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/evehalo/app-icon.png" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/evehalo/evehalo.css" />
+</head>
+<body>
+  <!-- Accessibility Skip Target -->
+  <a href="#main-content" class="cosmic-skip-link">Skip to main content</a>
+
+  <!-- Animated Cosmic Background Canvas -->
+  <canvas id="cosmic-canvas" aria-hidden="true"></canvas>
+
+  <!-- Layered Nebula Atmosphere -->
+  <div class="nebula-backdrop" aria-hidden="true">
+    <div class="nebula-cloud primary"></div>
+    <div class="nebula-cloud secondary"></div>
+    <div class="nebula-cloud tertiary"></div>
+  </div>
+
+  <!-- Floating Navigation Pill -->
+  <header class="cosmic-header">
+    <nav class="cosmic-nav-pill" aria-label="EVEHALO Experience Navigation">
+      <a href="#hero" class="cosmic-brand" aria-label="EVEHALO Home">
+        <picture>
+          <source srcset="/assets/evehalo/app-icon.webp" type="image/webp" />
+          <img src="/assets/evehalo/app-icon.png" alt="EVEHALO App Icon" class="cosmic-brand-icon" width="32" height="32" />
+        </picture>
+        <div>
+          <span class="cosmic-brand-name">EVEHALO</span>
+          <span class="cosmic-brand-by">by OTP</span>
+        </div>
+      </a>
+
+      <ul class="cosmic-nav-links">
+        <li><a href="#today" class="cosmic-nav-link">Today</a></li>
+        <li><a href="#horizon" class="cosmic-nav-link">Horizon</a></li>
+        <li><a href="#evo" class="cosmic-nav-link">EVO</a></li>
+        <li><a href="#focus" class="cosmic-nav-link">Focus</a></li>
+        <li><a href="#spaces" class="cosmic-nav-link">Spaces</a></li>
+        <li><a href="#duo" class="cosmic-nav-link">iPhone Duo</a></li>
+        <li><a href="#plus" class="cosmic-nav-link">Plus</a></li>
+      </ul>
+
+      <span class="cosmic-badge-preview" title="Internal Pre-Launch Preview">
+        Pre-Release
+      </span>
+    </nav>
+  </header>
+
+  <!-- Main Experience -->
+  <main id="main-content" class="cosmic-shell">
+    
+    <!-- ====================================================================
+         HERO: THE UNIVERSE IN MOTION
+         ==================================================================== -->
+    <section id="hero" class="cosmic-hero" aria-labelledby="hero-heading">
+      <!-- The Central EVEHALO Energy Halo Visual -->
+      <div class="halo-energy-orb" aria-hidden="true">
+        <div class="halo-ring"></div>
+        <div class="halo-ring-inner"></div>
+        <div class="halo-ring-core"></div>
+        <div class="halo-orbiting-particle halo-particle-1"></div>
+        <div class="halo-orbiting-particle halo-particle-2"></div>
+        <div class="halo-orbiting-particle halo-particle-3"></div>
+      </div>
+
+      <div class="cosmic-container hero-content">
+        <div class="hero-kicker">
+          <span>✧</span> Personal Life Operating System <span>✧</span>
+        </div>
+
+        <h1 id="hero-heading" class="hero-title">
+          EVEHALO — <span class="hero-title-highlight">Your Universe. In Motion.</span>
+        </h1>
+
+        <p class="hero-lead">
+          Bring your days, goals, routines, and personal intelligence into one extraordinary space. Crafted natively for iPhone with local sovereignty and celestial elegance.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#today" class="btn-cosmic-primary">
+            Explore the Universe
+            <span aria-hidden="true">↓</span>
+          </a>
+          <a href="#plus" class="btn-cosmic-secondary">
+            View Membership & Pricing
+          </a>
+        </div>
+
+        <!-- Realistic iPhone 18 Pro Showcase Frame -->
+        <div class="hero-device-wrapper">
+          <div id="hero-device-frame" class="device-frame-titanium">
+            <div class="device-screen">
+              <div class="device-notch-island" aria-hidden="true"></div>
+              <picture>
+                <source srcset="/assets/evehalo/hero-launch.webp" type="image/webp" />
+                <img src="/assets/evehalo/hero-launch.png" alt="EVEHALO Welcome Home launch screen on iPhone 18 Pro showing celestial time atmosphere and illuminated halo" width="1206" height="2622" fetchpriority="high" />
+              </picture>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 1: TODAY — YOUR COMMAND CENTER
+         ==================================================================== -->
+    <section id="today" class="cosmic-section" aria-labelledby="today-heading">
+      <div class="cosmic-container">
+        <div class="section-header">
+          <div class="section-label">Command Center</div>
+          <h2 id="today-heading" class="section-title">TODAY — Wake to Complete Clarity</h2>
+          <p class="section-description">
+            Your daily anchor. Grounded in circadian rhythm, Today presents everything that matters right now while keeping long-term trajectories in quiet view.
+          </p>
+        </div>
+
+        <div class="cosmic-split">
+          <div class="split-content">
+            <div class="feature-pill-list">
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon">☼</div>
+                  <h3 class="feature-card-title">Circadian Atmosphere Engine</h3>
+                </div>
+                <p class="feature-card-body">
+                  Greets you with time-attuned energy: <em>"Good morning"</em> for awakening focus, <em>"Good afternoon"</em> for steady momentum, and <em>"Welcome home"</em> for quiet nocturnal reflection.
+                </p>
+              </article>
+
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon">⚡</div>
+                  <h3 class="feature-card-title">Centralized Add Menu</h3>
+                </div>
+                <p class="feature-card-body">
+                  A single tap captures tasks, routine commitments, habit trackers, and long-range goals into your local SwiftData engine instantly.
+                </p>
+              </article>
+
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon">☑</div>
+                  <h3 class="feature-card-title">Apple Reminders Live Preview</h3>
+                </div>
+                <p class="feature-card-body">
+                  A four-item live glance of scheduled Apple Reminders with instant one-tap launch into the full native searchable Reminders manager.
+                </p>
+              </article>
+            </div>
+          </div>
+
+          <div class="split-visual">
+            <div class="device-frame-titanium" style="max-width: 360px; margin-inline: auto;">
+              <div class="device-screen">
+                <div class="device-notch-island" aria-hidden="true"></div>
+                <picture>
+                  <source srcset="/assets/evehalo/today-command.webp" type="image/webp" />
+                  <img src="/assets/evehalo/today-command.png" alt="Today command center dashboard showing daily routine progress, tasks, and energy tracking" width="1206" height="2622" loading="lazy" />
+                </picture>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 2: HORIZON — SEE BEYOND TODAY
+         ==================================================================== -->
+    <section id="horizon" class="cosmic-section" aria-labelledby="horizon-heading">
+      <div class="cosmic-container">
+        <div class="section-header">
+          <div class="section-label">Temporal Perspective</div>
+          <h2 id="horizon-heading" class="section-title">HORIZON — See Beyond Today</h2>
+          <p class="section-description">
+            A calendar built on astronomical perspective. Seamlessly navigate from this exact hour to the full arc of your year without losing momentum.
+          </p>
+        </div>
+
+        <div class="cosmic-split reverse">
+          <div class="split-content">
+            <div class="feature-pill-list">
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon">1</div>
+                  <h3 class="feature-card-title">Daily Time-of-Day Bucketing</h3>
+                </div>
+                <p class="feature-card-body">
+                  Morning, Afternoon, Evening, and All-Day priority buckets keep micro-commitments organized around your natural energy peaks.
+                </p>
+              </article>
+
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon">7</div>
+                  <h3 class="feature-card-title">7-Day Momentum Strip</h3>
+                </div>
+                <p class="feature-card-body">
+                  Dynamic week agenda highlighting active days, task density dots, and full compliance with your system locale’s first day of week.
+                </p>
+              </article>
+
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon">30</div>
+                  <h3 class="feature-card-title">Interactive 7-Column Month Grid</h3>
+                </div>
+                <p class="feature-card-body">
+                  Leap-year precise date calculations, illumination rings on selected days, and immediate bottom-sheet task creation.
+                </p>
+              </article>
+
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon">365</div>
+                  <h3 class="feature-card-title">12-Month Annual Horizon</h3>
+                </div>
+                <p class="feature-card-body">
+                  A high-level 3×4 mini-grid overview revealing project density across every season with instant jump-to-month navigation.
+                </p>
+              </article>
+            </div>
+          </div>
+
+          <div class="split-visual">
+            <div class="dual-device-canvas">
+              <!-- Primary: Month view -->
+              <div class="dual-phone primary device-frame-titanium">
+                <div class="device-screen">
+                  <div class="device-notch-island" aria-hidden="true"></div>
+                  <picture>
+                    <source srcset="/assets/evehalo/horizon-month.webp" type="image/webp" />
+                    <img src="/assets/evehalo/horizon-month.png" alt="EVEHALO Horizon interactive monthly calendar grid" width="1206" height="2622" loading="lazy" />
+                  </picture>
+                </div>
+              </div>
+              <!-- Secondary: Year view -->
+              <div class="dual-phone secondary device-frame-titanium">
+                <div class="device-screen">
+                  <div class="device-notch-island" aria-hidden="true"></div>
+                  <picture>
+                    <source srcset="/assets/evehalo/horizon-year.webp" type="image/webp" />
+                    <img src="/assets/evehalo/horizon-year.png" alt="EVEHALO Horizon 12-month year density overview" width="1206" height="2622" loading="lazy" />
+                  </picture>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 3: EVO — INTELLIGENCE THAT MOVES WITH YOU
+         ==================================================================== -->
+    <section id="evo" class="cosmic-section" aria-labelledby="evo-heading">
+      <div class="cosmic-container">
+        <div class="section-header">
+          <div class="section-label">On-Device Intelligence</div>
+          <h2 id="evo-heading" class="section-title">EVO — Private. Conversational. Grounded.</h2>
+          <p class="section-description">
+            Your conversational companion. EVO talks, listens, and remembers—running entirely on your hardware with zero external prompt harvesting or cloud latency.
+          </p>
+        </div>
+
+        <!-- Interactive EVO Gallery Tabs -->
+        <div class="interactive-gallery">
+          <div class="gallery-tabs" role="tablist" aria-label="EVO Experience Modes">
+            <button class="gallery-tab-btn active" role="tab" id="tab-voice" aria-selected="true" aria-controls="panel-voice" data-tab-target="panel-voice">
+              Voice Engine & Synthesis
+            </button>
+            <button class="gallery-tab-btn" role="tab" id="tab-intel" aria-selected="false" aria-controls="panel-intel" data-tab-target="panel-intel">
+              Contextual Intelligence
+            </button>
+            <button class="gallery-tab-btn" role="tab" id="tab-memory" aria-selected="false" aria-controls="panel-memory" data-tab-target="panel-memory">
+              Memory Vault
+            </button>
+          </div>
+
+          <div class="gallery-stage">
+            <!-- Panel 1: Voice Active -->
+            <div id="panel-voice" class="gallery-panel active" role="tabpanel" aria-labelledby="tab-voice">
+              <div class="device-frame-titanium">
+                <div class="device-screen">
+                  <div class="device-notch-island" aria-hidden="true"></div>
+                  <picture>
+                    <source srcset="/assets/evehalo/evo-voice.webp" type="image/webp" />
+                    <img src="/assets/evehalo/evo-voice.png" alt="EVO active voice conversation showing audio-reactive energy waveforms and schedule guidance" width="1206" height="2622" loading="lazy" />
+                  </picture>
+                </div>
+              </div>
+              <p class="gallery-caption">Local SpeechRecognizer · Decibel-reactive waveforms · Push-to-talk</p>
+            </div>
+
+            <!-- Panel 2: Intelligence Active -->
+            <div id="panel-intel" class="gallery-panel" role="tabpanel" aria-labelledby="tab-intel" hidden>
+              <div class="device-frame-titanium">
+                <div class="device-screen">
+                  <div class="device-notch-island" aria-hidden="true"></div>
+                  <picture>
+                    <source srcset="/assets/evehalo/evo-intelligence.webp" type="image/webp" />
+                    <img src="/assets/evehalo/evo-intelligence.png" alt="EVO contextual chat proposing actions with explicit confirmation cards" width="1206" height="2622" loading="lazy" />
+                  </picture>
+                </div>
+              </div>
+              <p class="gallery-caption">Action Safety Architecture · Explicit Confirmation Cards · 6-Turn Bounded Context</p>
+            </div>
+
+            <!-- Panel 3: Memory Vault -->
+            <div id="panel-memory" class="gallery-panel" role="tabpanel" aria-labelledby="tab-memory" hidden>
+              <div class="device-frame-titanium">
+                <div class="device-screen">
+                  <div class="device-notch-island" aria-hidden="true"></div>
+                  <picture>
+                    <source srcset="/assets/evehalo/evo-memory-vault.webp" type="image/webp" />
+                    <img src="/assets/evehalo/evo-memory-vault.png" alt="EVO native Memory Vault UI with complete transparency and zero-exfiltration controls" width="1206" height="2622" loading="lazy" />
+                  </picture>
+                </div>
+              </div>
+              <p class="gallery-caption">Personal Memory Vault · 5 Structured Categories · Complete Sovereignty</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bento Breakdown of EVO Principles -->
+        <div class="bento-grid" style="margin-top: 54px;">
+          <div class="bento-card col-4">
+            <h3 class="bento-title">Audio-Reactive Avatar</h3>
+            <p class="bento-text">
+              Eight distinct living states (.idle, .listening, .transcribing, .thinking, .speaking, .actionConfirmation, .error, .focus) pulsing in real time to audio decibel power.
+            </p>
+          </div>
+          <div class="bento-card col-4">
+            <h3 class="bento-title">Action Safety Guarantee</h3>
+            <p class="bento-text">
+              EVO will never silently mutate your schedule, tasks, or database. Every proposal requires an explicit physical tap on a liquid glass confirmation card.
+            </p>
+          </div>
+          <div class="bento-card col-4">
+            <h3 class="bento-title">0% Data Exfiltration</h3>
+            <p class="bento-text">
+              Prompts and memories reside in encrypted local SwiftData storage. No third-party LLM APIs, no token sales, and no telemetry tracking your life.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 4: FOCUS — FIND YOUR ORBIT
+         ==================================================================== -->
+    <section id="focus" class="cosmic-section" aria-labelledby="focus-heading">
+      <div class="cosmic-container">
+        <div class="section-header">
+          <div class="section-label">Deep Immersion</div>
+          <h2 id="focus-heading" class="section-title">FOCUS — Find Your Orbit</h2>
+          <p class="section-description">
+            Protected deep work guided by celestial time. Stay immersed without losing your trajectory across your iPhone experience.
+          </p>
+        </div>
+
+        <div class="cosmic-split">
+          <div class="split-content">
+            <article class="feature-card">
+              <div class="feature-card-header">
+                <div class="feature-card-icon">◎</div>
+                <h3 class="feature-card-title">Dynamic Island & ActivityKit</h3>
+              </div>
+              <p class="feature-card-body">
+                Initiate a focus session and watch EVEHALO expand effortlessly into Apple’s Dynamic Island and Lock Screen Live Activities. Pause, resume, or finish with immediate feedback.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-card-header">
+                <div class="feature-card-icon">◷</div>
+                <h3 class="feature-card-title">Custom Celestial Intervals</h3>
+              </div>
+              <p class="feature-card-body">
+                Tailor session lengths to your personal cognitive momentum. Gentle completion chimes guide transitions without harsh jarring alarms.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="feature-card-header">
+                <div class="feature-card-icon">◈</div>
+                <h3 class="feature-card-title">Linked Space Immersion</h3>
+              </div>
+              <p class="feature-card-body">
+                Attach focus blocks directly to your active Space—whether mastering Swift development, writing music, or deep architectural design.
+              </p>
+            </article>
+          </div>
+
+          <div class="split-visual">
+            <div class="device-frame-titanium" style="max-width: 360px; margin-inline: auto;">
+              <div class="device-screen">
+                <div class="device-notch-island" aria-hidden="true"></div>
+                <picture>
+                  <source srcset="/assets/evehalo/focus-dynamic-island.webp" type="image/webp" />
+                  <img src="/assets/evehalo/focus-dynamic-island.png" alt="Dynamic Island Focus session on physical iPhone 18 Pro" width="1206" height="2622" loading="lazy" />
+                </picture>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 5: YOUR SPACE & ATMOSPHERE EXPLORER
+         ==================================================================== -->
+    <section id="spaces" class="cosmic-section" aria-labelledby="spaces-heading">
+      <div class="cosmic-container">
+        <div class="section-header">
+          <div class="section-label">Customizable Sanctuaries</div>
+          <h2 id="spaces-heading" class="section-title">YOUR SPACE — Make It Yours</h2>
+          <p class="section-description">
+            Build personal environments tailored to your creative workflow, wellness rituals, or life goals. Choose from 12 authentic celestial atmospheres.
+          </p>
+        </div>
+
+        <!-- Live Interactive Theme Explorer -->
+        <div id="atmosphere-preview-stage" class="feature-card" style="padding: 32px; margin-bottom: 32px; border-radius: 28px; transition: all 500ms ease;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <div style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--theme-accent);">Active Atmosphere Preset</div>
+              <h3 id="live-theme-name" style="font-family: var(--font-display); font-size: 2rem; font-weight: 700; color: #fff; margin-top: 4px;">Nocturne</h3>
+              <p id="live-theme-desc" style="color: var(--text-muted); font-size: 0.95rem;">Midnight sky, celestial stars, silver &amp; lavender</p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim);">Live Palette:</span>
+              <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--theme-primary-bg); border: 2px solid rgba(255,255,255,0.2);" title="Primary Background"></div>
+              <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--theme-secondary-bg); border: 2px solid rgba(255,255,255,0.2);" title="Secondary Background"></div>
+              <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--theme-accent); box-shadow: 0 0 12px var(--theme-accent-glow);" title="Accent Glow"></div>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-cyan); text-align: center; margin-bottom: 20px;">
+          Click an atmosphere to test the live celestial colorway
+        </p>
+
+        <!-- 12 Authentic Themes Grid -->
+        <div class="atmosphere-explorer-grid">
+          <!-- 1. Nocturne -->
+          <div class="theme-chip-card active" data-theme-id="nocturne" tabindex="0" role="button" aria-label="Activate Nocturne Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #050715, #120e2c);">
+              <span class="theme-chip-badge">Core 01</span>
+            </div>
+            <h4 class="theme-chip-name">Nocturne</h4>
+            <p class="theme-chip-desc">Midnight sky, celestial stars, silver &amp; lavender.</p>
+          </div>
+
+          <!-- 2. Daybreak -->
+          <div class="theme-chip-card" data-theme-id="daybreak" tabindex="0" role="button" aria-label="Activate Daybreak Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #241426, #421c2a);">
+              <span class="theme-chip-badge">Core 02</span>
+            </div>
+            <h4 class="theme-chip-name">Daybreak</h4>
+            <p class="theme-chip-desc">Soft dawn, golden horizon, gentle warmth.</p>
+          </div>
+
+          <!-- 3. Stillwater -->
+          <div class="theme-chip-card" data-theme-id="stillwater" tabindex="0" role="button" aria-label="Activate Stillwater Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #051E2E, #0a334a);">
+              <span class="theme-chip-badge">Core 03</span>
+            </div>
+            <h4 class="theme-chip-name">Stillwater</h4>
+            <p class="theme-chip-desc">Deep oceanic indigo, serene teal &amp; cyan.</p>
+          </div>
+
+          <!-- 4. Minimal -->
+          <div class="theme-chip-card" data-theme-id="minimal" tabindex="0" role="button" aria-label="Activate Minimal Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #14141A, #24252e);">
+              <span class="theme-chip-badge">Core 04</span>
+            </div>
+            <h4 class="theme-chip-name">Minimal</h4>
+            <p class="theme-chip-desc">Restrained obsidian, pure silver, quiet focus.</p>
+          </div>
+
+          <!-- 5. Aurora -->
+          <div class="theme-chip-card" data-theme-id="aurora" tabindex="0" role="button" aria-label="Activate Aurora Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #102F54, #1b4b75);">
+              <span class="theme-chip-badge" style="background: rgba(82, 209, 158, 0.4); color: #fff;">Plus</span>
+            </div>
+            <h4 class="theme-chip-name">Aurora</h4>
+            <p class="theme-chip-desc">Ethereal northern lights, dancing across the sky.</p>
+          </div>
+
+          <!-- 6. Crimson -->
+          <div class="theme-chip-card" data-theme-id="crimson" tabindex="0" role="button" aria-label="Activate Crimson Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #3B1414, #661d25);">
+              <span class="theme-chip-badge" style="background: rgba(255, 59, 102, 0.4); color: #fff;">Plus</span>
+            </div>
+            <h4 class="theme-chip-name">Crimson</h4>
+            <p class="theme-chip-desc">Mysterious crimson, blood moon intensity.</p>
+          </div>
+
+          <!-- 7. Serenity -->
+          <div class="theme-chip-card" data-theme-id="serenity" tabindex="0" role="button" aria-label="Activate Serenity Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #16283D, #22425e);">
+              <span class="theme-chip-badge" style="background: rgba(56, 189, 248, 0.4); color: #fff;">Plus</span>
+            </div>
+            <h4 class="theme-chip-name">Serenity</h4>
+            <p class="theme-chip-desc">Peaceful zen garden, natural harmony.</p>
+          </div>
+
+          <!-- 8. Nebula -->
+          <div class="theme-chip-card" data-theme-id="nebula" tabindex="0" role="button" aria-label="Activate Nebula Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #25154D, #40237a);">
+              <span class="theme-chip-badge" style="background: rgba(135, 107, 240, 0.4); color: #fff;">Plus</span>
+            </div>
+            <h4 class="theme-chip-name">Nebula</h4>
+            <p class="theme-chip-desc">Cosmic clouds, vibrant celestial energy.</p>
+          </div>
+
+          <!-- 9. Solar Flare -->
+          <div class="theme-chip-card" data-theme-id="solarFlare" tabindex="0" role="button" aria-label="Activate Solar Flare Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #33150A, #5e260f);">
+              <span class="theme-chip-badge" style="background: rgba(255, 184, 77, 0.4); color: #fff;">Plus</span>
+            </div>
+            <h4 class="theme-chip-name">Solar Flare</h4>
+            <p class="theme-chip-desc">Warm ember, bright amber, sunrise momentum.</p>
+          </div>
+
+          <!-- 10. Rosewood -->
+          <div class="theme-chip-card" data-theme-id="rosewood" tabindex="0" role="button" aria-label="Activate Rosewood Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #2E0F2B, #52194b);">
+              <span class="theme-chip-badge" style="background: rgba(240, 102, 168, 0.4); color: #fff;">Plus</span>
+            </div>
+            <h4 class="theme-chip-name">Rosewood</h4>
+            <p class="theme-chip-desc">Deep plum, rose light, quiet confidence.</p>
+          </div>
+
+          <!-- 11. Arctic Glass -->
+          <div class="theme-chip-card" data-theme-id="arcticGlass" tabindex="0" role="button" aria-label="Activate Arctic Glass Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #0E233E, #16375c);">
+              <span class="theme-chip-badge" style="background: rgba(41, 179, 245, 0.4); color: #fff;">Plus</span>
+            </div>
+            <h4 class="theme-chip-name">Arctic Glass</h4>
+            <p class="theme-chip-desc">Glacier blue, crisp ice, clear focus.</p>
+          </div>
+
+          <!-- 12. Electric Garden -->
+          <div class="theme-chip-card" data-theme-id="electricGarden" tabindex="0" role="button" aria-label="Activate Electric Garden Theme">
+            <div class="theme-chip-swatch" style="background: linear-gradient(135deg, #0A2E20, #134e38);">
+              <span class="theme-chip-badge" style="background: rgba(82, 209, 158, 0.4); color: #fff;">Plus</span>
+            </div>
+            <h4 class="theme-chip-name">Electric Garden</h4>
+            <p class="theme-chip-desc">Forest green, vivid mint, fresh momentum.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 6: THE APPLE EXPERIENCE
+         ==================================================================== -->
+    <section id="apple" class="cosmic-section" aria-labelledby="apple-heading">
+      <div class="cosmic-container">
+        <div class="section-header">
+          <div class="section-label">Ecosystem Synergy</div>
+          <h2 id="apple-heading" class="section-title">Built Deeply for Apple</h2>
+          <p class="section-description">
+            SwiftUI. SwiftData. ActivityKit. Dynamic Island. Integrated seamlessly with the Apple services you already trust.
+          </p>
+        </div>
+
+        <div class="cosmic-split">
+          <div class="split-content">
+            <div class="feature-pill-list">
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon"></div>
+                  <h3 class="feature-card-title">Searchable Reminders Manager</h3>
+                </div>
+                <p class="feature-card-body">
+                  Two-way sync with Apple Reminders. Access lists, filter completed items, and search through thousands of records without leaving your flow.
+                </p>
+              </article>
+
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon">📅</div>
+                  <h3 class="feature-card-title">Read-Only Calendar Integration</h3>
+                </div>
+                <p class="feature-card-body">
+                  Pulls external Apple Calendar schedules into Horizon seamlessly. Zero mutation risk ensures your master calendar remains pristine.
+                </p>
+              </article>
+
+              <article class="feature-card">
+                <div class="feature-card-header">
+                  <div class="feature-card-icon">📱</div>
+                  <h3 class="feature-card-title">Home Screen & Lock Screen Widgets</h3>
+                </div>
+                <p class="feature-card-body">
+                  Launch shortcuts and Live Activities keep your trajectory within thumb's reach throughout your daily commute.
+                </p>
+              </article>
+            </div>
+          </div>
+
+          <div class="split-visual">
+            <div class="device-frame-titanium" style="max-width: 360px; margin-inline: auto;">
+              <div class="device-screen">
+                <div class="device-notch-island" aria-hidden="true"></div>
+                <picture>
+                  <source srcset="/assets/evehalo/apple-reminders-manager.webp" type="image/webp" />
+                  <img src="/assets/evehalo/apple-reminders-manager.png" alt="EVEHALO Apple Reminders searchable manager on iOS 27" width="1206" height="2622" loading="lazy" />
+                </picture>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 7: iPHONE DUO DEDICATED SHOWCASE
+         ==================================================================== -->
+    <section id="duo" class="cosmic-section" aria-labelledby="duo-heading">
+      <div class="cosmic-container">
+        <div class="section-header">
+          <div class="section-label">Expanded Architecture</div>
+          <h2 id="duo-heading" class="section-title">iPhone Duo — Dual-Column Canvas</h2>
+          <p class="section-description">
+            When the display expands, EVEHALO expands with it. Intelligently shifting from compact single-column focus to a balanced dual-column dashboard.
+          </p>
+        </div>
+
+        <div class="duo-showcase-container">
+          <!-- Duo Simulator Device Frame -->
+          <div class="duo-device-frame">
+            <div class="duo-device-screen">
+              <picture>
+                <source srcset="/assets/evehalo/iphone-duo-expanded.webp" type="image/webp" />
+                <img src="/assets/evehalo/iphone-duo-expanded.png" alt="EVEHALO Today screen rendered on iPhone Duo simulator in iOS 27.1 showing vertical rail and dual column cards" width="1398" height="2034" loading="lazy" />
+              </picture>
+            </div>
+          </div>
+
+          <div class="duo-verified-badge">
+            <span aria-hidden="true">🔬</span>
+            Verified Simulator Capture · Dual-Column Layout on iOS 27.1 Runtime
+          </div>
+
+          <div class="bento-grid" style="width: 100%; margin-top: 16px;">
+            <div class="bento-card col-6">
+              <h3 class="bento-title">Adaptive Layout Engine</h3>
+              <p class="bento-text">
+                Compact displays utilize single-column priority cards. When regular-width canvas is detected, Today automatically balances into twin ergonomic columns with a vertical navigation rail.
+              </p>
+            </div>
+
+            <div class="bento-card col-6">
+              <h3 class="bento-title">Truthful Engineering Disclosure</h3>
+              <p class="bento-text">
+                Simulator capture demonstrating regular-width adaptive SwiftUI execution. Physical folding transitions and multi-angle postures will be verified upon hardware availability.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 8: PLUS MEMBERSHIP & TRANSPARENT PRICING
+         ==================================================================== -->
+    <section id="plus" class="cosmic-section" aria-labelledby="pricing-heading">
+      <div class="cosmic-container">
+        <div class="section-header">
+          <div class="section-label">Transparent Value</div>
+          <h2 id="pricing-heading" class="section-title">Plus Membership — Pure Sovereignty</h2>
+          <p class="section-description">
+            Everything essential is free forever. No tracking, no locked basic features, and no artificial obstacles. Plus unlocks our full gallery of 8 premium handcrafted atmospheres.
+          </p>
+        </div>
+
+        <div class="pricing-grid">
+          <!-- Tier 1: Free -->
+          <div class="pricing-card">
+            <div>
+              <h3 class="pricing-tier-name">Free</h3>
+              <p class="pricing-tier-desc">Complete core life operating system for personal clarity.</p>
+
+              <div class="pricing-price-box">
+                <span class="pricing-currency">$</span>
+                <span class="pricing-amount">0</span>
+                <span class="pricing-period">/ forever</span>
+              </div>
+
+              <ul class="pricing-benefits">
+                <li class="pricing-benefit-item">Today Command Center &amp; Add Menu</li>
+                <li class="pricing-benefit-item">Horizon Calendar (Day, Week, Month, Year)</li>
+                <li class="pricing-benefit-item">EVO Conversational Intelligence &amp; Voice</li>
+                <li class="pricing-benefit-item">Personal Memory Vault &amp; Custom Spaces</li>
+                <li class="pricing-benefit-item">Focus Timer &amp; Dynamic Island Live Activity</li>
+                <li class="pricing-benefit-item">4 Core Atmospheres: Nocturne, Daybreak, Stillwater, Minimal</li>
+              </ul>
+            </div>
+
+            <div class="pricing-btn-placeholder">
+              Included at Launch
+            </div>
+          </div>
+
+          <!-- Tier 2: Plus Monthly -->
+          <div class="pricing-card">
+            <div>
+              <h3 class="pricing-tier-name">Plus Monthly</h3>
+              <p class="pricing-tier-desc">Flexible monthly access to all premium atmospheres.</p>
+
+              <div class="pricing-price-box">
+                <span class="pricing-currency">$</span>
+                <span class="pricing-amount">4.99</span>
+                <span class="pricing-period">/ month</span>
+              </div>
+
+              <ul class="pricing-benefits">
+                <li class="pricing-benefit-item">All Free features included</li>
+                <li class="pricing-benefit-item">All 8 Premium Atmospheres unlocked</li>
+                <li class="pricing-benefit-item">Aurora, Crimson, Serenity &amp; Nebula</li>
+                <li class="pricing-benefit-item">Solar Flare, Rosewood, Arctic Glass &amp; Electric Garden</li>
+                <li class="pricing-benefit-item">Standard Apple In-App auto-renewal</li>
+              </ul>
+            </div>
+
+            <div class="pricing-btn-placeholder">
+              Apple In-App Purchase
+            </div>
+          </div>
+
+          <!-- Tier 3: Plus Yearly (Featured) -->
+          <div class="pricing-card featured">
+            <span class="pricing-featured-badge">Founder Recommended · Save 33%</span>
+            <div>
+              <h3 class="pricing-tier-name">Plus Yearly</h3>
+              <p class="pricing-tier-desc">Continuous celestial immersion for an entire annual orbit.</p>
+
+              <div class="pricing-price-box">
+                <span class="pricing-currency">$</span>
+                <span class="pricing-amount">39.99</span>
+                <span class="pricing-period">/ year</span>
+              </div>
+
+              <ul class="pricing-benefits">
+                <li class="pricing-benefit-item">All Free features included</li>
+                <li class="pricing-benefit-item">All 8 Premium Atmospheres unlocked</li>
+                <li class="pricing-benefit-item">Full access across iPhone &amp; iPhone Duo</li>
+                <li class="pricing-benefit-item">Equivalent to $3.33/month</li>
+                <li class="pricing-benefit-item">Standard Apple In-App auto-renewal</li>
+              </ul>
+            </div>
+
+            <div class="pricing-btn-placeholder" style="background: rgba(77, 148, 255, 0.15); color: #fff; border-color: var(--accent-electric);">
+              Apple In-App Purchase
+            </div>
+          </div>
+
+          <!-- Tier 4: Plus Lifetime -->
+          <div class="pricing-card">
+            <div>
+              <h3 class="pricing-tier-name">Plus Lifetime</h3>
+              <p class="pricing-tier-desc">One single investment. Permanent celestial ownership.</p>
+
+              <div class="pricing-price-box">
+                <span class="pricing-currency">$</span>
+                <span class="pricing-amount">79.99</span>
+                <span class="pricing-period">/ once</span>
+              </div>
+
+              <ul class="pricing-benefits">
+                <li class="pricing-benefit-item">All Free &amp; Plus atmospheres forever</li>
+                <li class="pricing-benefit-item">All future premium atmosphere additions</li>
+                <li class="pricing-benefit-item">Non-consumable one-time purchase</li>
+                <li class="pricing-benefit-item">Zero recurring subscriptions</li>
+                <li class="pricing-benefit-item">Restorable across all your personal devices</li>
+              </ul>
+            </div>
+
+            <div class="pricing-btn-placeholder">
+              One-Time Purchase
+            </div>
+          </div>
+        </div>
+
+        <p style="text-align: center; margin-top: 32px; font-size: 0.82rem; color: var(--text-dim); font-family: var(--font-mono);">
+          Purchases will activate directly via Apple StoreKit upon public App Store release. No external payment collection or pre-orders prior to launch.
+        </p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECTION 9: SOVEREIGNTY & ABSOLUTE PRIVACY
+         ==================================================================== -->
+    <section id="privacy" class="cosmic-section" aria-labelledby="sovereignty-heading">
+      <div class="cosmic-container">
+        <div class="section-header">
+          <div class="section-label">Zero Telemetry</div>
+          <h2 id="sovereignty-heading" class="section-title">Local Sovereignty. Complete Privacy.</h2>
+          <p class="section-description">
+            Your life is not raw material for advertising algorithms. EVEHALO operates with absolute local integrity.
+          </p>
+        </div>
+
+        <div class="bento-grid">
+          <div class="bento-card col-4">
+            <h3 class="bento-title">Local SwiftData Engine</h3>
+            <p class="bento-text">
+              All tasks, goals, memories, and personal trackers remain physically stored on your iPhone in native SwiftData tables.
+            </p>
+          </div>
+
+          <div class="bento-card col-4">
+            <h3 class="bento-title">Zero Analytics SDKs</h3>
+            <p class="bento-text">
+              No Google Firebase, no Meta pixel, no Mixpanel, and no background crash scrapers. We do not inspect your usage.
+            </p>
+          </div>
+
+          <div class="bento-card col-4">
+            <h3 class="bento-title">Native JSON Export</h3>
+            <p class="bento-text">
+              Export your entire database at any second into a clean human-readable JSON backup. Your data never gets locked in.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="cosmic-footer">
+    <div class="cosmic-container footer-inner">
+      <div class="cosmic-brand">
+        <picture>
+          <source srcset="/assets/evehalo/app-icon.webp" type="image/webp" />
+          <img src="/assets/evehalo/app-icon.png" alt="EVEHALO Logo" class="cosmic-brand-icon" width="28" height="28" />
+        </picture>
+        <span class="cosmic-brand-name">EVEHALO</span>
+      </div>
+
+      <ul class="footer-nav">
+        <li><a href="#hero">Overview</a></li>
+        <li><a href="#today">Today</a></li>
+        <li><a href="#horizon">Horizon</a></li>
+        <li><a href="#evo">EVO</a></li>
+        <li><a href="#plus">Membership</a></li>
+        <li><a href="/evehalo/support">Support Center</a></li>
+        <li><a href="/evehalo/privacy">Privacy Policy</a></li>
+        <li><a href="#hero">Back to Top ↑</a></li>
+      </ul>
+
+      <p class="footer-disclaimer">
+        EVEHALO is a proprietary registered software product created and engineered by OnlyTruePerspective LLC. Apple, iPhone, Dynamic Island, and App Store are registered trademarks of Apple Inc.
+      </p>
+
+      <p class="footer-copy">
+        &copy; 2026 OnlyTruePerspective LLC · Confidential Pre-Release Preview · All Rights Reserved
+      </p>
+    </div>
+  </footer>
+
+  <!-- Controller Script -->
+  <script src="/evehalo/evehalo.js" defer></script>
+</body>
+</html>

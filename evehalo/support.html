@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>EVEHALO Support &amp; Knowledge Base | OnlyTruePerspective LLC</title>
+  <meta name="description" content="Official customer support, system requirements, troubleshooting, and privacy guide for EVEHALO by OnlyTruePerspective LLC." />
+  <meta name="keywords" content="EVEHALO support, EVEHALO help, EVO speech recognition, SwiftData backup, Apple Reminders sync, Focus Live Activity, OnlyTruePerspective" />
+  <meta name="theme-color" content="#020108" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://www.onlytrueperspective.tech/evehalo/support" />
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/evehalo/app-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/evehalo/evehalo.css" />
+  <style>
+    .support-article-wrap {
+      max-width: 860px;
+      margin-inline: auto;
+      padding-block: 120px 80px;
+    }
+    .support-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+    }
+    .support-breadcrumb a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+    .support-faq-item {
+      padding: 24px 28px;
+      background: var(--cosmic-card);
+      border: 1px solid var(--cosmic-border);
+      border-radius: 20px;
+      margin-bottom: 18px;
+      backdrop-filter: blur(16px);
+    }
+    .support-faq-q {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-pure);
+      margin-bottom: 12px;
+    }
+    .support-faq-a {
+      font-size: 0.98rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+    .support-contact-box {
+      margin-top: 48px;
+      padding: 36px;
+      text-align: center;
+      background: radial-gradient(circle at center, rgba(77, 148, 255, 0.15) 0%, rgba(13, 14, 26, 0.8) 70%);
+      border: 1px solid var(--cosmic-border-active);
+      border-radius: 24px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="cosmic-header">
+    <nav class="cosmic-nav-pill">
+      <a href="/evehalo" class="cosmic-brand">
+        <img src="/assets/evehalo/app-icon.png" alt="EVEHALO Logo" class="cosmic-brand-icon" width="28" height="28" />
+        <span class="cosmic-brand-name">EVEHALO</span>
+        <span class="cosmic-brand-by">Support</span>
+      </a>
+      <ul class="cosmic-nav-links">
+        <li><a href="/evehalo" class="cosmic-nav-link">← Return to Universe</a></li>
+        <li><a href="/evehalo/privacy" class="cosmic-nav-link">Privacy Policy</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Content -->
+  <main class="cosmic-shell">
+    <div class="cosmic-container support-article-wrap">
+      <div class="support-breadcrumb">
+        <a href="/evehalo">EVEHALO</a>
+        <span>/</span>
+        <span>Support &amp; Knowledge Base</span>
+      </div>
+
+      <h1 class="hero-title" style="font-size: 2.8rem; text-align: left; margin-bottom: 16px;">
+        EVEHALO Support Center
+      </h1>
+      <p class="section-description" style="text-align: left; margin-bottom: 48px;">
+        Everything you need to know about setting up, troubleshooting, and mastering your EVEHALO personal operating system.
+      </p>
+
+      <!-- FAQ Section -->
+      <div class="support-faq-item">
+        <h2 class="support-faq-q">Where is my personal data stored?</h2>
+        <div class="support-faq-a">
+          All tasks, routine trackers, goals, spaces, and personal memories are stored physically on your iPhone using Apple’s local <strong>SwiftData</strong> framework. There is no external cloud database, no user profile tracking, and zero data mining.
+        </div>
+      </div>
+
+      <div class="support-faq-item">
+        <h2 class="support-faq-q">How does EVO voice recognition maintain privacy?</h2>
+        <div class="support-faq-a">
+          EVO utilizes Apple’s native <code>SFSpeechRecognizer</code> with <code>requiresOnDeviceRecognition = true</code>. Your speech audio is converted to text entirely by the Neural Engine inside your iPhone's Apple Silicon processor. No audio bytes or speech recordings are ever uploaded to cloud servers.
+        </div>
+      </div>
+
+      <div class="support-faq-item">
+        <h2 class="support-faq-q">How does Apple Reminders and Calendar integration work?</h2>
+        <div class="support-faq-a">
+          Calendar access is strictly <strong>read-only</strong> to pull your scheduled events into the Horizon timeline without risking mutations. Apple Reminders integration allows two-way synchronization so you can manage your native Reminders lists within the EVEHALO interface. Permissions are completely optional and can be toggled anytime in iOS Settings.
+        </div>
+      </div>
+
+      <div class="support-faq-item">
+        <h2 class="support-faq-q">How do I export or back up my database?</h2>
+        <div class="support-faq-a">
+          In EVEHALO, navigate to <strong>Settings → Data &amp; Sovereignty</strong>. Tap <strong>Export JSON Backup</strong> to generate a complete, unencrypted human-readable file that can be saved to Apple Files, iCloud Drive, or sent to your computer. You can restore your data anytime using the Import tool.
+        </div>
+      </div>
+
+      <div class="support-faq-item">
+        <h2 class="support-faq-q">What devices and iOS versions are supported?</h2>
+        <div class="support-faq-a">
+          EVEHALO requires an iPhone running iOS 26.0 or newer. It is optimized for the latest iPhone 18 Pro family (including 120Hz ProMotion and Dynamic Island Live Activities) and features adaptive regular-width dual-column layouts for expanded devices such as the iPhone Duo.
+        </div>
+      </div>
+
+      <div class="support-faq-item">
+        <h2 class="support-faq-q">How does Plus Membership work?</h2>
+        <div class="support-faq-a">
+          All essential planning, Horizon calendar views, EVO voice assistant, and personal space features are 100% free forever. Plus Membership unlocks eight additional handcrafted cosmic atmospheres (Aurora, Crimson, Serenity, Nebula, Solar Flare, Rosewood, Arctic Glass, and Electric Garden). Available as Monthly ($4.99/mo), Yearly ($39.99/yr), or Lifetime ($79.99 once) via standard Apple In-App Purchase.
+        </div>
+      </div>
+
+      <!-- Contact Box -->
+      <div class="support-contact-box">
+        <h3 style="font-family: var(--font-display); font-size: 1.5rem; color: #fff; margin-bottom: 8px;">Still need assistance?</h3>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem;">
+          Our engineering team at OnlyTruePerspective is here to assist with any questions or feedback.
+        </p>
+        <a href="mailto:contact@onlytrueperspective.tech?subject=EVEHALO%20Support%20Inquiry" class="btn-cosmic-primary" style="display: inline-flex;">
+          Email Support: contact@onlytrueperspective.tech
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="cosmic-footer">
+    <div class="cosmic-container footer-inner">
+      <p class="footer-copy">
+        &copy; 2026 OnlyTruePerspective LLC · All Rights Reserved
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

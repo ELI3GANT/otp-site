@@ -4,4 +4,6 @@ Disallow: /otp-terminal.html
 Disallow: /portal-gate.html
 Disallow: /admin-core.js
 Disallow: /admin-styles.css
+Disallow: /evehalo
+Disallow: /evehalo/
 Sitemap: https://www.onlytrueperspective.tech/sitemap.xml

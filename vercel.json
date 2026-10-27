@@ -28,7 +28,8 @@
           "assets/**",
           "components/**",
           "supabase/migrations/**",
-          "weatheros/**"
+          "weatheros/**",
+          "evehalo/**"
         ]
       }
     }
@@ -112,6 +113,43 @@
       "headers": { "Location": "/signal" }
     },
     {
+      "src": "^/floorops\\.html$",
+      "status": 308,
+      "headers": { "Location": "/floorops" }
+    },
+    {
+      "src": "^/floorops/?$",
+      "dest": "/floorops.html"
+    },
+    {
+      "src": "^/floorops/demo/?$",
+      "dest": "https://otp-floorops.vercel.app/demo"
+    },
+    {
+      "src": "^/floorops/pricing/?$",
+      "dest": "https://otp-floorops.vercel.app/pricing"
+    },
+    {
+      "src": "^/floorops/request-demo/?$",
+      "dest": "https://otp-floorops.vercel.app/request-demo"
+    },
+    {
+      "src": "^/floorops/contact/?$",
+      "dest": "https://otp-floorops.vercel.app/request-demo"
+    },
+    {
+      "src": "^/floorops/api/(.*)$",
+      "dest": "https://otp-floorops.vercel.app/api/$1"
+    },
+    {
+      "src": "^/floorops/_next/(.*)$",
+      "dest": "https://otp-floorops.vercel.app/_next/$1"
+    },
+    {
+      "src": "^/floorops/(.*)$",
+      "dest": "https://otp-floorops.vercel.app/$1"
+    },
+    {
       "src": "^/weatheros\\.html$",
       "status": 308,
       "headers": { "Location": "/weatheros" }
@@ -125,6 +163,37 @@
       "src": "^/(?:weatheros-privacy\\.html|weatheros-privacy)/?$",
       "status": 308,
       "headers": { "Location": "/weatheros/privacy" }
+    },
+    {
+      "src": "^/evehalo\\.html$",
+      "status": 308,
+      "headers": { "Location": "/evehalo" }
+    },
+    {
+      "src": "^/(?:evehalo-support\\.html|evehalo-support)/?$",
+      "status": 308,
+      "headers": { "Location": "/evehalo/support" }
+    },
+    {
+      "src": "^/(?:evehalo-privacy\\.html|evehalo-privacy)/?$",
+      "status": 308,
+      "headers": { "Location": "/evehalo/privacy" }
+    },
+    {
+      "src": "/evehalo/?",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/evehalo/support/?",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/evehalo/privacy/?",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/evehalo/(.*)",
+      "dest": "/server.js"
     },
     {
       "src": "^/website-design/?$",

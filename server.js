@@ -2543,28 +2543,41 @@ app.get(/^\/os$/, (req, res) => {
 app.all(/^\/os(?:\/.*)?$/, proxyOtpOs);
 
 app.use(['/_next', '/_next/*'], async (req, res) => {
-    try {
-        const upstream = await fetch(`http://127.0.0.1:3001${req.originalUrl}`, {
-            headers: {
-                'accept': req.headers.accept || '*/*',
-                'user-agent': req.headers['user-agent'] || ''
+    // Try Fixline (3001) first, then FloorOps (3200)
+    for (const port of [3001, 3200]) {
+        try {
+            const upstream = await fetch(`http://127.0.0.1:${port}${req.originalUrl}`, {
+                headers: {
+                    'accept': req.headers.accept || '*/*',
+                    'user-agent': req.headers['user-agent'] || ''
+                }
+            });
+            if (upstream.status !== 404) {
+                res.status(upstream.status);
+                upstream.headers.forEach((val, key) => {
+                    const lowerKey = key.toLowerCase();
+                    if (lowerKey !== 'content-encoding' && lowerKey !== 'transfer-encoding' && lowerKey !== 'content-length') {
+                        res.setHeader(key, val);
+                    }
+                });
+                const arrayBuf = await upstream.arrayBuffer();
+                return res.send(Buffer.from(arrayBuf));
             }
-        });
-        res.status(upstream.status);
-        upstream.headers.forEach((val, key) => {
-            const lowerKey = key.toLowerCase();
-            if (lowerKey !== 'content-encoding' && lowerKey !== 'transfer-encoding' && lowerKey !== 'content-length') {
-                res.setHeader(key, val);
-            }
-        });
-        const arrayBuf = await upstream.arrayBuffer();
-        return res.send(Buffer.from(arrayBuf));
-    } catch (_err) {
-        return res.status(404).end();
+        } catch (_err) {
+            // port not active, continue to next
+        }
     }
+    return res.status(404).end();
 });
 
 app.use(['/fixline', '/fixline/*'], proxyFixlineApp);
+
+app.get(['/floorops', '/floorops/'], (req, res) => {
+    noStoreHtml(res);
+    res.sendFile(path.join(staticPath, 'floorops.html'));
+});
+
+app.use(['/floorops/*', '/floorops/_next/*'], (req, res, next) => proxyFloorOpsApp(req, res, next, false));
 
 app.get('/', (req, res) => {
     noStoreHtml(res);
@@ -2617,6 +2630,71 @@ async function proxyFixlineApp(req, res) {
     }
 }
 
+async function proxyFloorOpsApp(req, res, next, isRawAsset = false) {
+    try {
+        const queryIndex = req.originalUrl.indexOf('?');
+        const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
+        let mappedPath = req.path;
+        if (!isRawAsset) {
+            mappedPath = req.path.replace(/^\/floorops/, '');
+            if (mappedPath === '' || mappedPath === '/') {
+                noStoreHtml(res);
+                return res.sendFile(path.join(staticPath, 'floorops.html'));
+            }
+            if (mappedPath === '/contact') mappedPath = '/request-demo';
+        }
+
+        const proxyBody = await readProxyRequestBody(req);
+        const headers = {
+            'x-forwarded-host': req.headers.host || 'localhost:3000',
+            'x-forwarded-proto': req.headers['x-forwarded-proto'] || req.protocol || 'http',
+            'accept': req.headers.accept || '*/*',
+            'user-agent': req.headers['user-agent'] || '',
+            'cookie': req.headers.cookie || '',
+            ...(req.headers['content-type'] ? { 'content-type': req.headers['content-type'] } : {})
+        };
+        if (proxyBody) {
+            headers['content-length'] = String(proxyBody.length);
+        }
+
+        let targetUrl = `http://127.0.0.1:3200${mappedPath}${query}`;
+        let upstream;
+        try {
+            upstream = await fetch(targetUrl, {
+                method: req.method,
+                headers,
+                body: proxyBody
+            });
+        } catch (_localErr) {
+            const fallbackOrigin = process.env.FLOOROPS_UPSTREAM_ORIGIN || 'https://otp-floorops.vercel.app';
+            targetUrl = `${fallbackOrigin}${mappedPath}${query}`;
+            headers['x-forwarded-host'] = req.headers.host || 'www.onlytrueperspective.tech';
+            headers['x-forwarded-proto'] = 'https';
+            upstream = await fetch(targetUrl, {
+                method: req.method,
+                headers,
+                body: proxyBody
+            });
+        }
+        res.status(upstream.status);
+        upstream.headers.forEach((val, key) => {
+            const lowerKey = key.toLowerCase();
+            if (lowerKey !== 'content-encoding' && lowerKey !== 'transfer-encoding' && lowerKey !== 'content-length') {
+                res.setHeader(key, val);
+            }
+        });
+        const arrayBuf = await upstream.arrayBuffer();
+        return res.send(Buffer.from(arrayBuf));
+    } catch (err) {
+        if (isRawAsset) return res.status(404).end();
+        const queryIndex = req.originalUrl.indexOf('?');
+        const query = queryIndex === -1 ? '' : req.originalUrl.slice(queryIndex);
+        let mappedPath = req.path.replace(/^\/floorops/, '');
+        if (mappedPath === '/contact') mappedPath = '/request-demo';
+        return res.redirect(307, `https://floorops.onlytrueperspective.com${mappedPath}${query}`);
+    }
+}
+
 app.get(['/services/consultant-audit', '/services/consultant-audit/'], (req, res) => {
     res.sendFile(path.join(staticPath, 'consultant-audit.html'));
 });
@@ -2635,6 +2713,9 @@ app.get(['/blackbox', '/blackbox-signal'], (req, res) => res.redirect(302, '/sig
 app.get('/weatheros.html', (req, res) => res.redirect(308, '/weatheros'));
 app.get(['/weatheros-support.html', '/weatheros-support'], (req, res) => res.redirect(308, '/weatheros/support'));
 app.get(['/weatheros-privacy.html', '/weatheros-privacy'], (req, res) => res.redirect(308, '/weatheros/privacy'));
+app.get('/evehalo.html', (req, res) => res.redirect(308, '/evehalo'));
+app.get(['/evehalo-support.html', '/evehalo-support'], (req, res) => res.redirect(308, '/evehalo/support'));
+app.get(['/evehalo-privacy.html', '/evehalo-privacy'], (req, res) => res.redirect(308, '/evehalo/privacy'));
 
 // Preserve the public package alias and attribution at Studio engagement guidance.
 app.get('/packages', (req, res) => {
@@ -2676,6 +2757,13 @@ const staticAliases = {
     '/weatheros/support.html': 'weatheros/support.html',
     '/weatheros/privacy': 'weatheros/privacy.html',
     '/weatheros/privacy.html': 'weatheros/privacy.html',
+    '/evehalo': 'evehalo/index.html',
+    '/evehalo/': 'evehalo/index.html',
+    '/evehalo.html': 'evehalo/index.html',
+    '/evehalo/support': 'evehalo/support.html',
+    '/evehalo/support.html': 'evehalo/support.html',
+    '/evehalo/privacy': 'evehalo/privacy.html',
+    '/evehalo/privacy.html': 'evehalo/privacy.html',
     '/terms': 'terms.html',
     '/archive': 'archive.html',
     '/vault': 'archive.html',
@@ -2688,9 +2776,56 @@ const staticAliases = {
     '/otp-terminal': 'otp-terminal.html',
     '/payment-success': 'payment_success.html'
 };
+function isEvehaloAuthorized(req) {
+    const host = String(req.hostname || req.headers?.host || '');
+    if (host.includes('localhost') || host.includes('127.0.0.1')) return true;
+    if (process.env.NODE_ENV !== 'production') return true;
+    if (process.env.EVEHALO_PUBLIC_RELEASE === 'true') return true;
+
+    const previewKey = req.query?.preview || req.headers?.['x-otp-preview-token'];
+    if (previewKey === 'evehalo2026' || (process.env.EVEHALO_PREVIEW_SECRET && previewKey === process.env.EVEHALO_PREVIEW_SECRET)) {
+        return true;
+    }
+    const cookies = String(req.headers?.cookie || '');
+    if (cookies.includes('evehalo_preview=authorized')) return true;
+
+    return false;
+}
+
 const privateStaticAliases = new Set(['/portal', '/portal-gate', '/payment-success']);
 Object.entries(staticAliases).forEach(([route, file]) => {
     app.get(route, (req, res) => {
+        if (file.startsWith('evehalo/')) {
+            if (!isEvehaloAuthorized(req)) {
+                return res.status(403).type('html').send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><title>EVEHALO — Access Controlled Preview | OnlyTruePerspective</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    body { background: #020108; color: #f0f4ff; font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; text-align: center; padding: 20px; }
+    .gate-box { max-width: 480px; padding: 40px; background: rgba(13, 14, 26, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+    h1 { font-size: 1.6rem; margin-bottom: 12px; }
+    p { color: #9ba5c0; font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; }
+    .badge { font-family: monospace; font-size: 0.75rem; text-transform: uppercase; padding: 4px 12px; background: rgba(77, 148, 255, 0.15); border: 1px solid rgba(77, 148, 255, 0.3); border-radius: 999px; color: #4d94ff; display: inline-block; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="gate-box">
+    <div class="badge">Unreleased Product Preview</div>
+    <h1>EVEHALO · Access Required</h1>
+    <p>This marketing universe is currently unreleased and held in a private preview environment. Founder authorization is required to access before launch.</p>
+    <p style="font-size: 0.8rem; color: #626c88;">OnlyTruePerspective LLC &bull; Confidential</p>
+  </div>
+</body>
+</html>`);
+            }
+            if (req.query?.preview === 'evehalo2026') {
+                res.setHeader('Set-Cookie', 'evehalo_preview=authorized; Path=/evehalo; HttpOnly; SameSite=Lax');
+            }
+            res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+        }
+
         if (privateStaticAliases.has(route)) privatePortalHtml(res);
         else noStoreHtml(res);
         res.sendFile(path.join(staticPath, file));
