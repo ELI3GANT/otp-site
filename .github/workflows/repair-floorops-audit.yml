@@ -24,7 +24,7 @@ jobs:
           cache: npm
       - name: Update vulnerable dependency lock entries without forced major upgrades
         run: |
-          npm ci
+          npm install --package-lock-only --ignore-scripts --no-fund
           npm audit fix --package-lock-only --ignore-scripts --no-fund || true
           npm audit --omit=dev --audit-level=low
       - name: Confirm repaired dependencies and core tests
