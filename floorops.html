@@ -85,40 +85,40 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="/public-system.css?v=20261027-floorops-mobile" />
+  <link rel="stylesheet" href="/public-system.css?v=20261027-floorops-typography" />
 
 
   <style>
     :root{--fo-bg:#060a14;--fo-ink:#f6f7fa;--fo-muted:#b2c0d3;--fo-orange:#ffb020;--fo-cyan:#47d5e7;--fo-stroke:rgba(182,202,228,.18)}
     html{scroll-behavior:smooth}
-    body.public-page{margin:0;background:var(--fo-bg);color:var(--fo-ink);font-family:'Inter',system-ui,sans-serif;overflow-x:clip}
-    .fo-wrap{width:min(100%,1200px);margin:0 auto;padding-inline:clamp(20px,4vw,56px);box-sizing:border-box}
+    body.public-page{margin:0;background:var(--fo-bg);color:var(--fo-ink);font-family:'Inter',system-ui,sans-serif;font-size:16px;line-height:1.55;overflow-x:clip}
+    .fo-wrap{width:min(100%,1240px);margin:0 auto;padding-inline:clamp(20px,3.4vw,52px);box-sizing:border-box}
     .fo-page *{box-sizing:border-box}
     .fo-page a:not(.public-header a):not(.public-footer a){text-decoration:none}
     .public-header{background:#080e1b;border-color:rgba(255,255,255,.12)}
     .public-header .public-menu,.public-header .public-desktop-nav{z-index:3}
     .public-header-cta{color:#ffc55b!important}
-    .fo-kicker{display:inline-flex;align-items:center;gap:9px;color:#8ee4ee;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;font-weight:800}
+    .fo-kicker{display:inline-flex;align-items:center;gap:9px;color:#9deaf1;font-size:clamp(.72rem,.86vw,.8rem);line-height:1.4;letter-spacing:.095em;text-transform:uppercase;font-weight:700}
     .fo-kicker::before{content:"";width:7px;height:7px;background:var(--fo-cyan);border-radius:100%;box-shadow:0 0 12px rgba(71,213,231,.7)}
-    .fo-display{font-family:'Syne','Inter',sans-serif;font-size:clamp(2.45rem,5.9vw,5.8rem);line-height:1.04;letter-spacing:-.055em;font-weight:800;margin:22px 0}
-    .fo-display em{font-style:normal;background:linear-gradient(110deg,#68eff2 10%,#95a9ff 55%,#ed9afb);color:transparent;background-clip:text;-webkit-background-clip:text}
-    .fo-lead{color:#c6d1e0;line-height:1.66;font-size:clamp(1rem,1.6vw,1.13rem);max-width:56ch}
+    .fo-display{font-family:'Space Grotesk','Inter',system-ui,sans-serif;font-size:clamp(2.65rem,4.3vw,4.15rem);line-height:1.075;letter-spacing:-.052em;font-weight:700;margin:20px 0 22px;max-width:100%;text-wrap:balance}
+    .fo-display-line{display:block;white-space:nowrap}.fo-display-accent{background:linear-gradient(110deg,#68eff2 10%,#95a9ff 55%,#e6acff);color:transparent;background-clip:text;-webkit-background-clip:text}
+    .fo-lead{color:#ced9e8;line-height:1.62;font-size:clamp(1rem,1.25vw,1.125rem);max-width:54ch}
     .fo-hero{position:relative;isolation:isolate;overflow:hidden;border-bottom:1px solid var(--fo-stroke);background:radial-gradient(ellipse at 83% 15%,rgba(27,107,167,.18),transparent 60%),#060a14}
-    .fo-hero-inner{min-height:670px;padding-block:80px 78px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.91fr);gap:clamp(32px,5vw,72px);align-items:center}
+    .fo-hero-inner{min-height:630px;padding-block:clamp(64px,6vw,88px);display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:clamp(30px,3.4vw,54px);align-items:center}.fo-hero-copy{min-width:0;max-width:650px}
     .fo-hero::before{content:"";position:absolute;inset:0;z-index:-2;background-image:linear-gradient(90deg,#060a14 3%,rgba(6,10,20,.92) 45%,rgba(6,10,20,.45)),url('/images/warehouse/loading-dock.jpg');background-size:cover;background-position:center;opacity:.33}
     .fo-hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#060a14,transparent 35%)}
     .fo-buttons{display:flex;gap:13px;flex-wrap:wrap;margin-top:32px}
-    .fo-button{display:inline-flex;align-items:center;justify-content:center;min-height:51px;padding:14px 20px;border-radius:12px;font-weight:800;font-size:.91rem;text-decoration:none!important;gap:18px;line-height:1.25;transition:transform .2s,filter .2s}
+    .fo-button{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:13px 18px;border-radius:10px;font-weight:700;font-size:.875rem;text-decoration:none!important;gap:12px;line-height:1.35;text-align:center;transition:transform .2s,filter .2s}
     .fo-button:hover{transform:translateY(-2px);filter:brightness(1.1)}
     .fo-primary{background:linear-gradient(110deg,#ffc152,#f49a0a);color:#15120e!important;box-shadow:0 12px 25px rgba(249,166,25,.18)}
     .fo-outline{background:rgba(17,28,45,.8);border:1px solid #516176;color:#e5edfa!important}
     .fo-meta{margin-top:26px;color:#b6c2d3;font-size:.79rem;letter-spacing:.01em}
     .fo-meta span{color:#5fe8d4;margin-right:6px}
-    .fo-console{max-width:540px;width:100%;border:1px solid rgba(157,197,237,.29);border-radius:20px;background:#111c2e;box-shadow:0 34px 80px rgba(0,0,0,.4);overflow:hidden;transform:rotate(-1deg)}
+    .fo-console{max-width:540px;width:100%;min-width:0;border:1px solid rgba(157,197,237,.29);border-radius:18px;background:#111c2e;box-shadow:0 24px 64px rgba(0,0,0,.32);overflow:hidden;transform:none}
     .fo-console-header{background:#18263d;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--fo-stroke)}
-    .fo-console-header strong{font-size:.75rem;letter-spacing:.15em;color:#e4edff}
+    .fo-console-header strong{font-size:.75rem;letter-spacing:.09em;color:#e4edff}
     .fo-sample-tag{font-size:.62rem;font-weight:800;border:1px solid rgba(83,211,229,.35);background:rgba(50,170,185,.12);color:#a3f6f0;padding:5px 8px;border-radius:99px}
     .fo-console-body{padding:22px}
     .fo-console-topline{color:#97acc7;font-size:.7rem;text-transform:uppercase;letter-spacing:.11em;font-weight:700}
@@ -128,36 +128,37 @@
     .fo-console-row:nth-of-type(2) .fo-console-index{background:#3b2c12;color:#ffcc70}
     .fo-console-row:nth-of-type(3) .fo-console-index{background:#19392e;color:#90edc2}
     .fo-console-row div:last-child{flex:1;min-width:0}
-    .fo-console-row strong{display:block;font-size:.85rem}
-    .fo-console-row small{display:block;color:#a7b8ce;margin-top:4px;font-size:.72rem}
+    .fo-console-row strong{display:block;font-size:.9rem;line-height:1.35}
+    .fo-console-row small{display:block;color:#b7c9df;margin-top:4px;font-size:.78rem;line-height:1.45}
     .fo-console-foot{border-top:1px solid #273753;display:flex;justify-content:space-between;gap:8px;margin-top:16px;padding-top:14px;font-size:.7rem;color:#b3c4d7}
     .fo-console-foot b{color:#86e6be;font-weight:800}
     .fo-section{padding-block:clamp(58px,7vw,100px);border-bottom:1px solid var(--fo-stroke)}
-    .fo-section-heading{font-family:'Syne','Inter',sans-serif;font-size:clamp(1.9rem,3.3vw,3rem);line-height:1.12;letter-spacing:-.035em;margin:14px 0;color:#fff}
-    .fo-section-intro{font-size:1rem;color:var(--fo-muted);line-height:1.65;max-width:65ch;margin:0}
+    .fo-section-heading{font-family:'Space Grotesk','Inter',system-ui,sans-serif;font-weight:700;font-size:clamp(1.85rem,3.1vw,2.8rem);line-height:1.17;letter-spacing:-.038em;margin:14px 0 18px;color:#fff;text-wrap:balance;max-width:23ch}
+    .fo-section-intro{font-size:clamp(1rem,1.3vw,1.1rem);color:#c2cfe1;line-height:1.65;max-width:62ch;margin:0}
     .fo-story{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:32px}
     .fo-step{border:1px solid var(--fo-stroke);background:linear-gradient(145deg,#111d30,#0c1320);border-radius:20px;overflow:hidden;min-width:0}
     .fo-step-image{height:195px;width:100%;object-fit:cover;display:block;filter:saturate(.85)}
     .fo-step-content{padding:21px}
     .fo-step-number{display:inline-flex;font-size:.69rem;letter-spacing:.12em;font-weight:800;color:#5ddce7;text-transform:uppercase}
-    .fo-step h3{margin:9px 0 8px;font-size:1.15rem;color:#fff}
-    .fo-step p{color:#b8c4d7;line-height:1.55;font-size:.86rem;margin:0}
+    .fo-step h3{margin:10px 0 8px;font-size:1.15rem;line-height:1.35;font-weight:700;color:#fff}
+    .fo-step p{color:#c3cfe0;line-height:1.6;font-size:.93rem;margin:0}
     .fo-dark-panel{background:#0d1524}
     .fo-scenario-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:28px}
-    .fo-scenario{background:#141f30;border:1px solid #2b3c54;border-radius:11px;padding:16px;display:flex;align-items:center;gap:12px;font-size:.86rem;font-weight:700;color:#e9f1fa;min-width:0}
+    .fo-scenario{background:#141f30;border:1px solid #2b3c54;border-radius:11px;padding:16px;display:flex;align-items:center;gap:12px;font-size:.93rem;line-height:1.45;font-weight:600;color:#e9f1fa;min-width:0}
     .fo-scenario span{display:grid;place-items:center;flex:none;width:30px;height:30px;background:rgba(255,176,32,.12);color:#ffc15b;border:1px solid rgba(255,176,32,.23);border-radius:9px;font-size:.69rem}
+    .fo-compat-heading{margin:34px 0 0;font-size:1.08rem;line-height:1.4;font-weight:700;color:#e9f3ff}
     .fo-compat{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap}
     .fo-compat span{border:1px solid #30425b;border-radius:99px;color:#b9d0e7;background:#101c2e;padding:9px 14px;font-size:.79rem}
     .fo-price-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:30px}
     .fo-price-card{background:linear-gradient(155deg,#152339,#0e1828);border:1px solid #374d6b;border-radius:18px;padding:clamp(23px,3vw,36px);min-width:0}
     .fo-price-card:first-child{border-color:#d2963d;box-shadow:inset 0 1px 0 rgba(255,174,48,.1)}
     .fo-price-eyebrow{font-size:.69rem;letter-spacing:.14em;color:#8de2ef;text-transform:uppercase;font-weight:800}
-    .fo-price-card h3{font-size:1.4rem;margin:12px 0 0}
-    .fo-price{font-family:'Syne',sans-serif;color:#ffc153;font-size:clamp(2.25rem,3.5vw,3.2rem);font-weight:800;margin:19px 0 4px}
+    .fo-price-card h3{font-size:1.4rem;line-height:1.3;font-weight:700;margin:12px 0 0}
+    .fo-price{font-family:'Space Grotesk','Inter',system-ui,sans-serif;color:#ffc153;font-size:clamp(2rem,3vw,2.8rem);line-height:1.15;letter-spacing:-.04em;font-weight:700;margin:19px 0 8px}
     .fo-price small{font-family:'Inter',sans-serif;font-size:.77rem;color:#c5d0de;font-weight:500}
-    .fo-price-note{color:#b9c9dd;font-size:.85rem;line-height:1.6;min-height:50px}
+    .fo-price-note{color:#c3d0e1;font-size:.94rem;line-height:1.55;min-height:48px}
     .fo-price-card ul{padding:16px 0 0;border-top:1px solid #324257;list-style:none;margin:22px 0 25px}
-    .fo-price-card li{padding:6px 0;font-size:.86rem;color:#dae4f1}
+    .fo-price-card li{padding:6px 0;font-size:.93rem;line-height:1.5;color:#dae4f1}
     .fo-price-card li::before{content:'✓';color:#7be6c9;font-weight:800;margin-right:9px}
     .fo-footnote{color:#aab8cc;font-size:.78rem;margin-top:22px;line-height:1.6}
     .fo-final{text-align:center;background:radial-gradient(ellipse at center,rgba(20,98,148,.25),transparent 60%),#070d19}
@@ -167,8 +168,8 @@
     .fo-final-visual span{border-radius:10px;padding:12px 14px;background:#15253a;border:1px solid #304159;color:#bfe5fa;font-size:.78rem;font-weight:800}
     .fo-final-visual span:last-child{color:#86e3b7}
     .public-footer{border-top:1px solid #28354b;background:#080e19}
-    @media(max-width:900px){.fo-hero-inner{grid-template-columns:1fr;gap:42px;padding-block:58px}.fo-console{max-width:640px;transform:none}.fo-story{grid-template-columns:1fr 1fr}.fo-scenario-grid{grid-template-columns:1fr 1fr}}
-    @media(max-width:600px){.fo-hero-inner{padding-block:44px 50px}.fo-display{font-size:clamp(2.25rem,10vw,3.1rem)}.fo-buttons{display:grid;grid-template-columns:minmax(0,1fr)}.fo-buttons .fo-button{width:100%;justify-content:space-between}.fo-story,.fo-price-grid,.fo-scenario-grid{grid-template-columns:minmax(0,1fr)}.fo-step-image{height:170px}.fo-console-body{padding:16px}.fo-console-foot{flex-wrap:wrap}.fo-scenario{padding:13px}.fo-final-visual{flex-wrap:wrap}.fo-section{padding-block:54px}.public-header{padding-inline:20px}}
+    @media(max-width:980px){.fo-hero-inner{grid-template-columns:minmax(0,1fr);gap:36px;padding-block:58px}.fo-hero-copy{max-width:680px}.fo-console{max-width:660px}.fo-story{grid-template-columns:1fr 1fr}.fo-scenario-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:600px){.fo-hero-inner{padding-block:44px 50px;gap:32px}.fo-display{font-size:clamp(1.86rem,8.5vw,2.85rem);letter-spacing:-.05em;margin:18px 0}.fo-buttons{display:grid;grid-template-columns:minmax(0,1fr);gap:11px}.fo-buttons .fo-button{width:100%;justify-content:space-between}.fo-story,.fo-price-grid,.fo-scenario-grid{grid-template-columns:minmax(0,1fr)}.fo-step-image{height:170px}.fo-console-header{gap:10px;flex-wrap:wrap}.fo-console-body{padding:16px}.fo-console-foot{flex-wrap:wrap}.fo-scenario{padding:14px}.fo-final-visual{flex-wrap:wrap}.fo-section{padding-block:54px}.fo-section-heading{max-width:100%}.public-header{padding-inline:20px}}
     @media(prefers-reduced-motion:reduce){.fo-button{transition:none}.fo-button:hover{transform:none}}
   </style>
 </head>
@@ -182,9 +183,9 @@
 </header>
 <main id="main-content">
   <section class="fo-hero" aria-labelledby="fo-heading"><div class="fo-wrap fo-hero-inner">
-    <div>
+    <div class="fo-hero-copy">
       <span class="fo-kicker">Warehouse exception management</span>
-      <h1 class="fo-display" id="fo-heading">Catch the issue.<br><em>Clear the dock.</em></h1>
+      <h1 class="fo-display" id="fo-heading"><span class="fo-display-line">Catch the issue.</span><span class="fo-display-line fo-display-accent">Clear the dock.</span></h1>
       <p class="fo-lead">Damaged pallet? Missing cartons? Broken seal? FloorOps helps your team document the problem, alert a supervisor, and record what happened—without replacing your WMS.</p>
       <div class="fo-buttons"><a class="fo-button fo-primary" href="/floorops/demo">Try the interactive demo <span aria-hidden="true">↗</span></a><a class="fo-button fo-outline" href="/floorops/request-demo">Book a 10-minute walkthrough <span aria-hidden="true">→</span></a></div>
       <p class="fo-meta"><span aria-hidden="true">●</span> Free demo · No login · Sample warehouse data</p>
@@ -223,7 +224,7 @@
       <div class="fo-scenario"><span>05</span>Delivery Discrepancies &amp; Misroutes</div>
       <div class="fo-scenario"><span>✓</span>Supervisor Review &amp; Audit Trails</div>
     </div>
-    <h3 style="margin:34px 0 0;font-size:1.05rem;color:#e9f3ff">Works with the devices your team already uses.</h3>
+    <h3 class="fo-compat-heading">Works with the devices your team already uses.</h3>
     <div class="fo-compat" aria-label="Supported form factors"><span>Mobile browsers</span><span>Tablets</span><span>Desktop stations</span><span>Keyboard-wedge scanners</span><span>Zebra / Honeywell devices (validate model)</span></div>
   </div></section>
 
