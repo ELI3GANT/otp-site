@@ -977,6 +977,124 @@ progress::-moz-progress-bar {
   outline-offset: var(--space-1);
 }
 
+
+/* Confirmed winner spotlight — music and artwork appear only after delivery. */
+.winner-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  min-height: 48px;
+  color: var(--accent-event);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.winner-spotlight {
+  width: min(100%, var(--content-width));
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-4);
+  border-bottom: var(--border-default-width) solid var(--border-default);
+  scroll-margin-top: var(--space-8);
+}
+.winner-overline, .winner-bottom {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  line-height: 1.6;
+}
+.winner-overline {
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-default-width) solid var(--border-strong);
+  color: var(--accent-event);
+}
+.winner-layout {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  gap: var(--space-8);
+  padding: var(--space-10) 0;
+}
+.winner-copy { min-width: 0; align-self: center; }
+.winner-kicker {
+  margin: 0 0 var(--space-5);
+  color: var(--accent-event);
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+.winner-copy h2 {
+  margin: 0;
+  max-width: 12ch;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 9.5vw, 7.5rem);
+  font-weight: 900;
+  line-height: .92;
+  letter-spacing: -.07em;
+}
+.winner-description {
+  max-width: 36rem;
+  margin: var(--space-6) 0 0;
+  color: var(--text-primary);
+  font-size: clamp(1rem, 2vw, 1.24rem);
+  line-height: 1.55;
+}
+.winner-footnote {
+  max-width: 36rem;
+  margin: var(--space-4) 0 0;
+  color: var(--text-secondary);
+  font-size: .84rem;
+  line-height: 1.6;
+}
+.winner-emblem {
+  display: flex;
+  min-height: 240px;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-6);
+  border: var(--border-strong-width) solid var(--accent-event);
+  background: radial-gradient(circle at 70% 25%, color-mix(in srgb, var(--accent-event) 19%, transparent), transparent 60%), var(--surface-secondary);
+}
+.winner-emblem span {
+  font-family: var(--font-mono);
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+.winner-emblem strong {
+  color: var(--accent-event);
+  font-family: var(--font-display);
+  font-size: clamp(6rem, 19vw, 11rem);
+  font-weight: 900;
+  line-height: .8;
+  letter-spacing: -.09em;
+}
+.winner-emblem span:last-child { align-self: flex-end; }
+.winner-bottom {
+  padding-top: var(--space-4);
+  border-top: var(--border-default-width) solid var(--border-strong);
+  color: var(--text-secondary);
+}
+.winner-bottom a { color: var(--text-primary); text-underline-offset: 4px; }
+.winner-bottom a:hover, .winner-bottom a:focus-visible, .winner-jump:hover, .winner-jump:focus-visible { color: var(--accent-event-hover); }
+@media (min-width: 768px) {
+  .winner-spotlight { padding: var(--space-20) var(--space-8); }
+  .winner-layout { grid-template-columns: minmax(0,1.45fr) minmax(230px,.55fr); align-items: stretch; }
+  .winner-emblem { min-height: 360px; }
+}
+@media (min-width: 1024px) {
+  .winner-spotlight { padding-inline: var(--space-12); }
+}
+
 @media (min-width: 640px) {
   .event-date {
     display: block;
