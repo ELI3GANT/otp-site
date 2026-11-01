@@ -31,10 +31,10 @@ const stories = {
     role: 'Product design & diagnostic workflow'
   },
   songwars: {
-    title: 'A stage before the first song.',
-    introduction: 'A campaign and digital entry point for The Smack Club’s Song Wars music event.',
-    built: 'The campaign combines event positioning, creative direction, a responsive landing page, and a focused Discord registration path. A share-ready visual identity connects the event poster to the online experience.',
-    note: 'This is an archive of the July 2026 campaign. Registration figures and dates are historical; visit the community for current updates.',
+    title: 'From the first battle to the winner.',
+    introduction: 'The Smack Club Song Wars campaign by OnlyTruePerspective, now featuring confirmed 2026 winner KawaiiBoyDamani.',
+    built: 'The campaign connects creative direction, event identity, a responsive music-community landing page, Discord participation, and a public winner spotlight. KawaiiBoyDamani has approved the feature, with winning music and cover artwork still awaiting delivery.',
+    note: 'The July 2026 campaign and registration figures are historical. KawaiiBoyDamani is the confirmed winner; the winning song, artwork and artist link have not yet been delivered.',
     caption: 'The Smack Club · Original July 2026 campaign poster',
     role: 'Creative direction & event website'
   },
