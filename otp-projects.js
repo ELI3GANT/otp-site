@@ -194,7 +194,7 @@
       status: 'Released',
       launchDate: '2026-07-05',
       year: 2026,
-      shortDescription: 'A cinematic July 2026 event campaign with a focused Discord entry path and share-ready storytelling. Registration details are historical.',
+      shortDescription: 'The Smack Club Song Wars 2026 campaign and winner reveal. KawaiiBoyDamani is confirmed as the winning artist; track and cover art are pending delivery.',
       tags: Object.freeze(['Song Wars', 'The Smack Club', 'Community Voting', 'Independent Artists', 'Event Launch']),
       services: Object.freeze(['Creative direction', 'Campaign landing page', 'Event positioning', 'Registration UX', 'Social sharing system', 'Responsive production']),
       technology: Object.freeze(['HTML', 'CSS', 'JavaScript', 'Express', 'Vercel']),
