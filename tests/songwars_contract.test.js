@@ -205,4 +205,8 @@ console.log('Song Wars landing page contract passed.');
 
 assert.ok(html.includes('Campaign archive · July 2026'), 'past campaign is labeled as archived');
 assert.ok(html.includes('historical, not live availability'), 'counts cannot be mistaken for current capacity');
+assert.ok(html.includes('id="winner"'), 'public Song Wars page includes a direct winner anchor');
+assert.ok(html.includes('KawaiiBoyDamani'), 'approved winning artist is credited');
+assert.ok(html.includes('Winning song, cover art, and preferred artist link will be added'), 'missing artist assets are represented truthfully');
+assert.ok(css.includes('.winner-spotlight'), 'winner feature is styled for the event experience');
 assert.ok(!html.includes('REGISTRATION OPEN'), 'archived event does not advertise open registration');
