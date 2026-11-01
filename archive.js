@@ -16,7 +16,7 @@
     floorops: 'Warehouse exception management: 45-second dock reporting, quarantine hold enforcement, and defensible carrier sign-offs.',
     'otp-fixline': 'A structured starting point for understanding a business’s digital presence.',
     protocol: 'Music, identity, and a digital release world for ELI3GANT.',
-    'song-wars': 'An event identity and online entry point for The Smack Club’s music community.',
+    'song-wars': 'Song Wars 2026 winner: KawaiiBoyDamani. Explore the official spotlight and original campaign.',
     'otp-os': 'The private operational system behind OTP’s client work, documents, and delivery.'
   };
   const node = (tag, className, text) => {
@@ -43,7 +43,8 @@
     card.dataset.projectId = project.id;
     const titleId = `archive-project-${project.id}`;
     card.setAttribute('aria-labelledby', titleId);
-    const media = createAction('', project.caseStudyUrl, `archive-project-media${project.heroFit === 'contain' ? ' is-contain' : ''}`);
+    const featureUrl = project.id === 'song-wars' ? project.projectUrl : project.caseStudyUrl;
+    const media = createAction('', featureUrl, `archive-project-media${project.heroFit === 'contain' ? ' is-contain' : ''}`);
     media.setAttribute('aria-label', `Explore ${project.title}`);
     const img = document.createElement('img');
     img.src = safeHref(project.heroImage.src);
@@ -90,10 +91,10 @@
     content.append(meta);
     const title = node('h2', 'archive-project-title');
     title.id = titleId;
-    title.append(createAction(project.title, project.caseStudyUrl, ''));
+    title.append(createAction(project.title, featureUrl, ''));
     content.append(title, node('p', 'archive-project-summary', blurbs[project.id] || project.shortDescription));
     const actions = node('div', 'archive-project-actions');
-    actions.append(createAction('Explore project ↗', project.caseStudyUrl, 'archive-project-action-primary'));
+    actions.append(createAction(project.id === 'song-wars' ? 'Meet the winner ↗' : 'Explore project ↗', project.id === 'song-wars' ? `${project.projectUrl}#winner` : project.caseStudyUrl, 'archive-project-action-primary'));
     const booking = createAction(project.bookingCtaLabel, project.bookingUrl, 'archive-project-action-conversion');
     if (project.id === 'otp-fixline') booking.dataset.fixlineEvent = 'audit_cta_selected';
     actions.append(booking);
