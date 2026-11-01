@@ -89,6 +89,8 @@ assert.strictEqual(songWars.bookingUrl, '/bookings?source=archive-songwars&servi
 assert.ok(songWars.disciplines.includes('Live Event'), 'Song Wars exposes event discipline');
 assert.ok(songWars.disciplines.includes('Community'), 'Song Wars exposes community discipline');
 assert.strictEqual(songWars.status, 'Released');
+assert.ok(songWars.shortDescription.includes('KawaiiBoyDamani'), 'winner is credited in the Archive project data');
+assert.ok(archive.includes('href="/songwars#winner"'), 'static Archive spotlights the winner on the event page');
 
 assert.ok(hyh && hyh.beforeAfter, 'HYH keeps its existing before-and-after case-study media');
 assert.strictEqual(hyh.bookingUrl, '/bookings?source=archive-hyh&service=website-business-fix', 'HYH routes conversion CTA to website/business fix intake');
@@ -159,7 +161,7 @@ assert.ok(flooropsCard, 'runtime includes FloorOps');
 assert.ok(flooropsCard.querySelector('.archive-project-media img').src.endsWith('/images/warehouse/handheld-barcode-scanning.jpg'), 'runtime uses the correct warehouse photograph');
 assert.ok(flooropsCard.querySelector('.archive-floorops-bigline')?.textContent.includes('CLEAR THE DOCK.'), 'runtime includes FloorOps branded preview headline');
 assert.strictEqual(flooropsCard.querySelectorAll('.archive-floorops-mini-row').length, 3, 'runtime shows three illustrative workflow steps');
-assert.ok(archive.includes('archive.css?v=20261027-floorops-card-v3') && archive.includes('archive.js?v=20261027-floorops-card-v3'), 'Archive busts previous CSS/JS caches');
+assert.ok(archive.includes('archive.css?v=20261027-floorops-card-v3') && archive.includes('archive.js?v=20261031-songwars-winner-v1'), 'Archive retains styled FloorOps card and refreshes project links');
 
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-primary').length, projects.length, 'runtime renders one primary action per project');
@@ -196,7 +198,7 @@ for (const button of renderedDocument.querySelectorAll('[data-archive-collection
 reset();
 for (const project of projects) {
   const card = renderedDocument.querySelector(`[data-project-id="${project.id}"]`);
-  assert.equal(card.querySelector('.archive-project-action-primary').getAttribute('href'), new URL(project.caseStudyUrl, dom.window.location.origin).href);
+  assert.equal(card.querySelector('.archive-project-action-primary').getAttribute('href'), new URL(project.id === 'song-wars' ? '/songwars#winner' : project.caseStudyUrl, dom.window.location.origin).href);
   assert.equal(card.querySelector('.archive-project-action-conversion').getAttribute('href'), new URL(project.bookingUrl, dom.window.location.origin).href);
 }
 const image = renderedDocument.querySelector('.archive-project-media img');
