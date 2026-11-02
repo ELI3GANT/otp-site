@@ -230,7 +230,7 @@ for (const project of projects) {
   }
 }
 const hostile = new JSDOM(archive, { url: 'https://www.onlytrueperspective.tech/archive', runScripts: 'outside-only' });
-const unsafeProjects = projects.map(p => ({ ...p, title: '<img src=x onerror=alert(1)>', caseStudyUrl: 'javascript:alert(1)', bookingUrl: 'data:text/html,bad', heroImage: { ...p.heroImage, src: 'javascript:alert(1)' } }));
+const unsafeProjects = projects.map(p => ({ ...p, title: '<img src=x onerror=alert(1)>', projectUrl: 'javascript:alert(1)', caseStudyUrl: 'javascript:alert(1)', bookingUrl: 'data:text/html,bad', heroImage: { ...p.heroImage, src: 'javascript:alert(1)' } }));
 hostile.window.OTP_PROJECT_LIBRARY = { ...library, getProjects: () => unsafeProjects };
 hostile.window.eval(archiveClient);
 assert.equal(hostile.window.document.querySelectorAll('[href^="javascript:"], [href^="data:"], [src^="javascript:"], [onerror]').length, 0, 'unsafe project URLs and markup cannot execute');
