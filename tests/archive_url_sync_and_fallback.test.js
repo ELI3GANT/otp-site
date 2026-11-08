@@ -22,14 +22,14 @@ const bookingsJs = read('bookings.js');
 
 // 1. Static Fallback Cards & Pre-rendered markup
 assert.ok(
-  archiveHtml.includes('07 / 07 projects'),
-  'archive.html pre-renders initial project count "07 / 07 projects"'
+  archiveHtml.includes('08 / 08 projects'),
+  'archive.html pre-renders initial project count "08 / 08 projects"'
 );
 const cardMatches = archiveHtml.match(/class="archive-case-study-card/g) || [];
 assert.strictEqual(
   cardMatches.length,
-  7,
-  'archive.html contains exactly 7 pre-rendered static fallback project cards'
+  8,
+  'archive.html contains exactly 8 pre-rendered static fallback project cards'
 );
 assert.ok(
   archiveHtml.includes('data-project-id="weatheros"'),

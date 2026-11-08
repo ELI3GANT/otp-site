@@ -2732,6 +2732,11 @@ app.get('/packages', (req, res) => {
 });
 
 app.get('/projects/:slug', (req, res, next) => {
+    if (req.params.slug === 'floivation') {
+        noStoreHtml(res);
+        const story = require('./floivation-case-study');
+        return res.type('html').send(story.renderCaseStudy(story.floivation));
+    }
     const library = require('./otp-projects');
     const projects = library.getProjects();
     const project = projects.find((entry) => entry.slug === req.params.slug);

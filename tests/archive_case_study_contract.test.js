@@ -51,12 +51,12 @@ projects.forEach((project) => {
     'title',
     'shortDescription',
     'status',
-    'launchDate',
     'projectUrl',
     'bookingUrl',
     'bookingCtaLabel',
     'heroImage'
   ].forEach((field) => assert.ok(project[field], `${project.id} supplies ${field}`));
+  if (project.id !== 'floivation') assert.ok(project.launchDate, `${project.id} supplies launchDate`);
   ['categories', 'disciplines', 'services', 'technology', 'tags', 'collections'].forEach((field) => {
     assert.ok(Array.isArray(project[field]) && project[field].length > 0, `${project.id} supplies ${field}`);
   });
@@ -68,7 +68,12 @@ const protocol = projects.find((project) => project.id === 'protocol');
 const songWars = projects.find((project) => project.id === 'song-wars');
 const hyh = projects.find((project) => project.id === 'hyh-architecture-design');
 const floorops = projects.find((project) => project.id === 'floorops');
+const floivation = projects.find((project) => project.id === 'floivation');
 assert.ok(floorops, 'FloorOps appears in the Archive');
+assert.ok(floivation && floivation.status === 'In Progress', 'FLOIVATION appears as client work still in progress');
+assert.strictEqual(floivation.caseStudyUrl, '/projects/floivation', 'FLOIVATION archive card opens the public case study');
+assert.ok(archive.includes('data-project-id="floivation"') && archive.includes('href="/projects/floivation"'), 'static Archive includes a no-JavaScript FLOIVATION case-study card');
+assert.ok(archiveClient.includes("floivation: 'A digital home"), 'client-side Archive keeps the FLOIVATION description');
 assert.strictEqual(floorops.heroImage.src, '/images/warehouse/handheld-barcode-scanning.jpg', 'FloorOps uses a warehouse scanner photo rather than the parent-company logo');
 assert.strictEqual(floorops.heroFit, 'cover', 'FloorOps photograph fills the Archive thumbnail');
 assert.ok(archive.includes('archive-floorops-mini-panel'), 'pre-rendered FloorOps card contains the simulated DockGuard workflow preview');
@@ -161,7 +166,7 @@ assert.ok(flooropsCard, 'runtime includes FloorOps');
 assert.ok(flooropsCard.querySelector('.archive-project-media img').src.endsWith('/images/warehouse/handheld-barcode-scanning.jpg'), 'runtime uses the correct warehouse photograph');
 assert.ok(flooropsCard.querySelector('.archive-floorops-bigline')?.textContent.includes('CLEAR THE DOCK.'), 'runtime includes FloorOps branded preview headline');
 assert.strictEqual(flooropsCard.querySelectorAll('.archive-floorops-mini-row').length, 3, 'runtime shows three illustrative workflow steps');
-assert.ok(archive.includes('archive.css?v=20261027-floorops-card-v3') && archive.includes('archive.js?v=20261031-songwars-winner-v1'), 'Archive retains styled FloorOps card and refreshes project links');
+assert.ok(archive.includes('archive.css?v=20261027-floorops-card-v3') && archive.includes('archive.js?v=20261108-floivation-case-study-v1'), 'Archive retains styled FloorOps card and refreshes project links');
 
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-primary').length, projects.length, 'runtime renders one primary action per project');
@@ -207,11 +212,15 @@ assert.equal(image.hidden, true);
 assert.ok(renderedDocument.querySelector('.archive-image-unavailable'), 'broken image has truthful unavailable state');
 dom.window.close();
 const { renderProjectPage } = require('../project-stories');
-assert.equal(projects.length, 7, 'all seven project stories are covered');
+assert.equal(projects.length, 8, 'all eight project stories are covered');
 for (const project of projects) {
   const page = new JSDOM(renderProjectPage(project, projects)).window.document;
   assert.equal(page.querySelectorAll('h1').length, 1);
-  assert.ok([...page.querySelectorAll('a')].some(a => a.getAttribute('href') === '/fixline/intake?source=project-' + project.slug), project.id + ' preserves attributed conversion');
+  if (project.id === 'floivation') {
+    assert.ok([...page.querySelectorAll('a')].some(a => a.getAttribute('href') === '/start-project?source=archive-floivation'), 'floivation preserves its Start a Project path');
+  } else {
+    assert.ok([...page.querySelectorAll('a')].some(a => a.getAttribute('href') === new URL(project.bookingUrl, 'https://www.onlytrueperspective.tech').pathname + new URL(project.bookingUrl, 'https://www.onlytrueperspective.tech').search), project.id + ' preserves its project-specific booking path');
+  }
   assert.ok(page.querySelector('.project-status-note').textContent.trim(), project.id + ' gives evidence context');
   assert.doesNotMatch(page.body.textContent, /\b\d+(?:\.\d+)?\s*(?:%|x growth|million users|conversions)/i, 'no fabricated performance metrics');
   for (const img of page.querySelectorAll('main img')) {
@@ -236,4 +245,4 @@ hostile.window.eval(archiveClient);
 assert.equal(hostile.window.document.querySelectorAll('[href^="javascript:"], [href^="data:"], [src^="javascript:"], [onerror]').length, 0, 'unsafe project URLs and markup cannot execute');
 assert.equal(hostile.window.document.querySelectorAll('.archive-project-action-primary[aria-disabled="true"]').length, projects.length);
 hostile.window.close();
-console.log('Archive filtering, safe rendering and seven project detail contracts passed.');
+console.log('Archive filtering, safe rendering and eight project detail contracts passed.');

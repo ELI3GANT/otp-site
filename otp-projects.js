@@ -296,6 +296,38 @@
       caseStudyCtaLabel: 'Read Case Study',
       ctaHref: '/bookings?source=hyh-project',
       ctaLabel: 'Start a Similar Project'
+    }),
+    Object.freeze({
+      id: 'floivation',
+      slug: 'floivation',
+      title: 'FLOIVATION',
+      type: 'Website Design & Digital Brand Experience',
+      category: 'Client Work',
+      categories: Object.freeze(['Client Work', 'Branding', 'Web Development', 'Content Production']),
+      disciplines: Object.freeze(['Website Design', 'Brand Storytelling', 'Community Experience', 'Video Production']),
+      collections: Object.freeze(['Newest', 'Client Projects', 'Everything']),
+      featured: false,
+      homepageFeatured: false,
+      pinned: false,
+      status: 'In Progress',
+      year: 2026,
+      shortDescription: 'A digital home for FLOIVATION’s streetwear, fitness, and community story, with a brand-led homepage and clear paths into the shop, gallery, and contact.',
+      tags: Object.freeze(['FLOIVATION', 'Website Design', 'Brand Experience', 'Fitness', 'Streetwear', 'Community']),
+      services: Object.freeze(['Website design', 'Brand storytelling', 'Video production', 'Digital experience']),
+      technology: Object.freeze(['Responsive Web Design', 'Content System', 'Video']),
+      heroImage: Object.freeze({
+        src: '/assets/case-studies/floivation/after-home.jpg',
+        alt: 'FLOIVATION redesigned homepage with the brand navigation and hero section',
+        width: 1440,
+        height: 900
+      }),
+      heroFit: 'cover',
+      projectUrl: '/projects/floivation',
+      projectCtaLabel: 'Explore FLOIVATION',
+      bookingUrl: '/start-project?source=archive-floivation',
+      bookingCtaLabel: 'Start a project like this',
+      caseStudyUrl: '/projects/floivation',
+      caseStudyCtaLabel: 'Read Case Study'
     })
   ]);
 
