@@ -27,6 +27,12 @@
         }
     }
 
+    function storageSet(key, value) {
+        try {
+            if (value) localStorage.setItem(key, value);
+        } catch (e) { /* ignore */ }
+    }
+
     function storageRemove(key) {
         try {
             localStorage.removeItem(key);
@@ -172,6 +178,17 @@
     } catch (e3) {
         hueIndex = 0;
     }
+
+    // Rotate the public home accent on each refresh without repeating the last color.
+    try {
+        if (document.documentElement.hasAttribute('data-refresh-palette')) {
+            var previousPalette = storageGet('otp_public_home_last_palette');
+            if (window.OTP_PALETTES[hueIndex] && window.OTP_PALETTES[hueIndex].name === previousPalette) {
+                hueIndex = (hueIndex + 1) % window.OTP_PALETTES.length;
+            }
+            storageSet('otp_public_home_last_palette', window.OTP_PALETTES[hueIndex] && window.OTP_PALETTES[hueIndex].name);
+        }
+    } catch (ePaletteRotation) { /* keep the randomly selected palette */ }
 
     var selectedHue = window.OTP_PALETTES[hueIndex] || findPalette('blue') || window.OTP_PALETTES[0];
     var spectralVariant = '';
