@@ -2744,6 +2744,7 @@ const staticAliases = {
     '/studio': 'studio.html',
     '/portal': 'portal.html',
     '/bookings': 'bookings.html',
+    '/start-project': 'bookings.html',
     '/booking': 'bookings.html',
     '/book': 'bookings.html',
     '/book-otp': 'bookings.html',
