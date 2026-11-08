@@ -18,7 +18,7 @@ const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
 const bookingHandoff = read('server/booking-handoff.js');
-const offerSystemKey = '20260713-mobile-input-v1';
+const offerSystemKey = '20261108-day-night';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -77,7 +77,7 @@ for (const source of [html, js, pricing, server]) {
 assert.ok(html.includes('Start a Project with OTP.'), 'booking hero is direct and conversion-focused');
 assert.ok(html.includes('class="skip-link"') && html.includes('href="#booking-form"'), 'booking page provides a keyboard skip link to the intake form');
 assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');
-assert.ok(html.includes('OTP will route the work into The Signal, The Engine, or The System'), 'booking hero sets current package ladder expectations');
+assert.ok(html.includes('Tell us what you need. OTP reviews your goals and recommends a focused next step.'), 'booking hero explains the project review and next step');
 assert.ok(html.includes('official-brand-mark'), 'header keeps the official OTP site mark');
 assert.ok(html.includes('/assets/otp-hero-poster-frame.png'), 'header uses the stable optimized OTP poster mark');
 assert.ok(!html.includes('/assets/otp-hero-centered.gif'), 'header does not render the edge-on spinning GIF as the primary mark');

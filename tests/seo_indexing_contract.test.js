@@ -35,7 +35,7 @@ const pages = {
   },
   'bookings.html': {
     title: 'Start a Project | OnlyTruePerspective',
-    canonical: 'https://www.onlytrueperspective.tech/bookings',
+    canonical: 'https://www.onlytrueperspective.tech/start-project',
     descriptionSnippet: 'Book a project with OnlyTruePerspective',
     indexable: true
   },

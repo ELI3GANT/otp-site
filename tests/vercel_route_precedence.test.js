@@ -30,7 +30,7 @@ assert.strictEqual(routes[osPathIndex].dest, '/server.js');
 assert(filesystemIndex > osPathIndex, 'filesystem handle must stay after /os proxy routes');
 assert(catchAllIndex > osPathIndex, 'catch-all route must stay after /os proxy routes');
 
-const bookingIndex = routes.findIndex((route) => route.src === '/(bookings|booking|book|book-otp)/?');
+const bookingIndex = routes.findIndex((route) => route.src === '/(start-project|bookings|booking|book|book-otp)/?');
 const apiIndex = routes.findIndex((route) => route.src === '/api/(.*)');
 
 assert(bookingIndex > osPathIndex, 'booking aliases must stay after /os proxy routes');

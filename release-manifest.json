@@ -1,9 +1,16 @@
 {
-  "releaseName": "otp-floorops-live-integration-v21-2",
+  "releaseName": "floivation-case-study-archive-2026-11-08",
   "includedFiles": [
+    ".github/workflows/production-release.yml",
     ".vercelignore",
     "archive.html",
     "archive.js",
+    "assets/case-studies/floivation/after-home.jpg",
+    "assets/case-studies/floivation/after-recordly-web.mp4",
+    "assets/case-studies/floivation/before-recordly-web.mp4",
+    "assets/case-studies/floivation/before-viewport.webp",
+    "assets/case-studies/floivation/transformation-poster.webp",
+    "assets/case-studies/floivation/transformation-web.mp4",
     "assets/evehalo/app-icon.png",
     "assets/evehalo/app-icon.webp",
     "assets/evehalo/apple-reminders-manager.png",
@@ -34,11 +41,13 @@
     "assets/evehalo/studio-atmospheres.webp",
     "assets/evehalo/today-command.png",
     "assets/evehalo/today-command.webp",
+    "docs/FLOIVATION_CASE_STUDY_RELEASE.md",
     "evehalo/evehalo.css",
     "evehalo/evehalo.js",
     "evehalo/index.html",
     "evehalo/privacy.html",
     "evehalo/support.html",
+    "floivation-case-study.js",
     "floorops.html",
     "index.html",
     "otp-projects.js",
@@ -48,9 +57,17 @@
     "server.js",
     "sitemap.xml",
     "studio.html",
+    "tests/archive_case_study_contract.test.js",
+    "tests/archive_url_sync_and_fallback.test.js",
+    "tests/bookings_contract.test.js",
+    "tests/e2e/adversarial_qa.js",
     "tests/evehalo_experience_contract.test.js",
+    "tests/floivation_case_study_contract.test.js",
     "tests/floorops_integration_contract.test.js",
+    "tests/homepage_visual_contract.test.js",
     "tests/master_runner.js",
+    "tests/seo_indexing_contract.test.js",
+    "tests/vercel_route_precedence.test.js",
     "vercel.json"
   ],
   "excludedDirtyFiles": [
@@ -68,7 +85,7 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed_53_of_53"
+      "status": "passed_54_of_54"
     },
     {
       "command": "npm run test:e2e",
@@ -79,23 +96,23 @@
       "status": "passed_4_pinned_contracts"
     },
     {
-      "command": "npm run master_test:ci",
-      "status": "passed_53_of_53"
-    },
-    {
       "command": "npm run security:scan",
-      "status": "passed_308_files"
+      "status": "passed_348_files"
     },
     {
       "command": "npm run build:speed-insights",
       "status": "passed"
     },
     {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
-      "status": "passed_public_34_checks_predeploy"
+      "command": "npm run master_test:ci",
+      "status": "passed_54_of_54"
     },
     {
-      "command": "node --check server.js otp-projects.js tests/floorops_integration_contract.test.js",
+      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
+      "status": "passed_34_public_checks; admin-auth sweep deferred to production workflow"
+    },
+    {
+      "command": "node --check server.js && node --check otp-projects.js && node --check archive.js && node --check floivation-case-study.js",
       "status": "passed"
     },
     {
@@ -105,11 +122,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Preview deployment https://otp-site-22hnnqlb2-only-true-perspective.vercel.app verified at /floorops, /floorops/demo, /floorops/pricing, and /floorops/request-demo returning HTTP 200 with zero console errors. Navigation header and footer links verified on index.html."
+    "summary": "Local Chrome review of /projects/floivation at 1440x900, 768x1024, and 390x844: HTTP 200, no console errors or horizontal overflow, all three videos had controls, three improvement icons appeared, comparison slider responded to keyboard and touch, and the Archive rendered one FLOIVATION card."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Upstream FloorOps authenticated APIs verified returning 401/403 for unauthorized public visitors (/floorops/api/sales/analytics, /floorops/app/sales). Predeploy sweep passed."
+    "summary": "The previous production authenticated sweep verified unauthorized public access to protected OTP OS endpoints returns 401/403. Production release workflow requires and reruns the authenticated sweep with OTP_ADMIN_TOKEN from GitHub before deployment; the local predeploy HTTP-only sweep intentionally skipped admin authentication."
   },
   "deploymentTarget": {
     "project": "otp-site",

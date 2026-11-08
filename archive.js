@@ -3,7 +3,7 @@
   const library = root.OTP_PROJECT_LIBRARY;
   const projectRoot = document.querySelector('[data-archive-projects]');
   if (!library || !projectRoot) return;
-  const order = ['hyh-architecture-design', 'weatheros', 'floorops', 'otp-fixline', 'protocol', 'song-wars', 'otp-os'];
+  const order = ['hyh-architecture-design', 'weatheros', 'floorops', 'otp-fixline', 'protocol', 'song-wars', 'otp-os', 'floivation'];
   const projects = library.getProjects().sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
   const state = { collection: 'Everything', search: '', category: '', status: '', year: '', technology: '' };
   const controls = Object.fromEntries(Object.keys(state).filter((key) => key !== 'collection').map((key) => [key, document.querySelector(`[data-archive-${key}]`)]));
@@ -17,7 +17,8 @@
     'otp-fixline': 'A structured starting point for understanding a business’s digital presence.',
     protocol: 'Music, identity, and a digital release world for ELI3GANT.',
     'song-wars': 'Song Wars 2026 winner: KawaiiBoyDamani. Explore the official spotlight and original campaign.',
-    'otp-os': 'The private operational system behind OTP’s client work, documents, and delivery.'
+    'otp-os': 'The private operational system behind OTP’s client work, documents, and delivery.',
+    floivation: 'A digital home for FLOIVATION’s streetwear, fitness, and community story.'
   };
   const node = (tag, className, text) => {
     const element = document.createElement(tag);
@@ -94,7 +95,12 @@
     title.append(createAction(project.title, featureUrl, ''));
     content.append(title, node('p', 'archive-project-summary', blurbs[project.id] || project.shortDescription));
     const actions = node('div', 'archive-project-actions');
-    actions.append(createAction(project.id === 'song-wars' ? 'Meet the winner ↗' : 'Explore project ↗', project.id === 'song-wars' ? `${project.projectUrl}#winner` : project.caseStudyUrl, 'archive-project-action-primary'));
+    const primaryLabel = project.id === 'song-wars'
+      ? 'Meet the winner ↗'
+      : project.id === 'floivation'
+        ? `${project.caseStudyCtaLabel || 'Read Case Study'} ↗`
+        : 'Explore project ↗';
+    actions.append(createAction(primaryLabel, project.id === 'song-wars' ? `${project.projectUrl}#winner` : project.caseStudyUrl, 'archive-project-action-primary'));
     const booking = createAction(project.bookingCtaLabel, project.bookingUrl, 'archive-project-action-conversion');
     if (project.id === 'otp-fixline') booking.dataset.fixlineEvent = 'audit_cta_selected';
     actions.append(booking);
@@ -294,10 +300,12 @@
 
   const timeline = document.querySelector('[data-archive-timeline]');
   if (timeline) {
-    [...projects].sort((a, b) => a.launchDate.localeCompare(b.launchDate)).forEach((project) => {
+    [...projects].sort((a, b) => (Date.parse(a.launchDate || `${a.year}-12-31`) || 0) - (Date.parse(b.launchDate || `${b.year}-12-31`) || 0)).forEach((project) => {
       const row = node('li', 'archive-timeline-item');
-      const date = node('time', '', new Date(`${project.launchDate}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }));
-      date.dateTime = project.launchDate;
+      const date = project.launchDate
+        ? node('time', '', new Date(`${project.launchDate}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }))
+        : node('span', '', String(project.year));
+      if (project.launchDate) date.dateTime = project.launchDate;
       row.append(date, createAction(project.title, project.caseStudyUrl, ''), node('span', '', project.category));
       timeline.append(row);
     });
