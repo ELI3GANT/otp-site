@@ -1,6 +1,6 @@
 :root {
   --surface-primary: #101110; --surface-secondary: #1c1e1a;
-  --text-primary: #f1f0e8; --text-secondary: #b7bbb0; --accent-otp: #dcff5f;
+  --text-primary: #f1f0e8; --text-secondary: #b7bbb0; --accent-otp: var(--accent2, #dcff5f);
   --border-default: #3c4036; --paper: #f1f0e8; --ink: #101110; --paper-muted: #54594c; --paper-rule: #c7cabf;
   --font-public: 'Helvetica Neue', Helvetica, Arial, sans-serif; --font-mono: 'SFMono-Regular', Consolas, monospace;
   --public-gutter: clamp(20px, 4vw, 64px); --public-section: clamp(64px, 9vw, 144px);

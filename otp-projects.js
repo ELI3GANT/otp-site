@@ -174,7 +174,7 @@
       }),
       projectUrl: '/fixline',
       projectCtaLabel: 'Explore OTP FIXLINE',
-      bookingUrl: '/fixline/intake?source=archive-fixline',
+      bookingUrl: '/start-project?source=archive-fixline',
       bookingCtaLabel: 'Start My FIXLINE Review',
       caseStudyUrl: '/projects/otp-fixline',
       caseStudyCtaLabel: 'View Future Case Studies'

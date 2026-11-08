@@ -27,6 +27,12 @@
         }
     }
 
+    function storageSet(key, value) {
+        try {
+            if (value) localStorage.setItem(key, value);
+        } catch (e) { /* ignore */ }
+    }
+
     function storageRemove(key) {
         try {
             localStorage.removeItem(key);
@@ -172,6 +178,19 @@
     } catch (e3) {
         hueIndex = 0;
     }
+
+    // The public home page rotates its accent on every refresh while avoiding
+    // an identical palette two visits in a row. Other theme-chrono consumers
+    // keep their existing random-palette behavior.
+    try {
+        if (document.documentElement.hasAttribute('data-refresh-palette')) {
+            var previousPalette = storageGet('otp_public_home_last_palette');
+            if (window.OTP_PALETTES[hueIndex] && window.OTP_PALETTES[hueIndex].name === previousPalette) {
+                hueIndex = (hueIndex + 1) % window.OTP_PALETTES.length;
+            }
+            storageSet('otp_public_home_last_palette', window.OTP_PALETTES[hueIndex] && window.OTP_PALETTES[hueIndex].name);
+        }
+    } catch (ePaletteRotation) { /* keep the randomly selected palette */ }
 
     var selectedHue = window.OTP_PALETTES[hueIndex] || findPalette('blue') || window.OTP_PALETTES[0];
     var spectralVariant = '';
