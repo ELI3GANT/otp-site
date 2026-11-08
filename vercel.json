@@ -276,7 +276,7 @@
       "dest": "/weatheros/privacy.html"
     },
     {
-      "src": "/(start-project|bookings|booking|book|book-otp)/?",
+      "src": "/(bookings|booking|book|book-otp)/?",
       "dest": "/bookings.html"
     },
     {

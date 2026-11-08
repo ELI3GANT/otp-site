@@ -2732,13 +2732,6 @@ app.get('/packages', (req, res) => {
 });
 
 app.get('/projects/:slug', (req, res, next) => {
-    // FLOIVATION's client showcase stays unavailable on public deployments until
-    // the client's public-use approval and release checklist are recorded.
-    if (req.params.slug === 'floivation' && process.env.FLOIVATION_PUBLIC_APPROVED !== 'true') return next();
-    if (req.params.slug === 'floivation') {
-        noStoreHtml(res);
-        return res.type('html').send(require('./floivation-case-study').renderCaseStudy(require('./floivation-case-study').floivation));
-    }
     const library = require('./otp-projects');
     const projects = library.getProjects();
     const project = projects.find((entry) => entry.slug === req.params.slug);
@@ -2747,33 +2740,10 @@ app.get('/projects/:slug', (req, res, next) => {
     return res.type('html').send(require('./project-stories').renderProjectPage(project, projects));
 });
 
-app.get('/case-study-media/floivation/:name', (req, res, next) => {
-    if (process.env.FLOIVATION_PUBLIC_APPROVED !== 'true') return next();
-    const media = {
-        'before-viewport.webp': 'before-viewport.webp',
-        'after-home.jpg': 'after-home.jpg',
-        'transformation-master.mp4': 'transformation-master.mp4',
-        'transformation-web.mp4': 'transformation-web.mp4',
-        'transformation-poster.webp': 'transformation-poster.webp',
-        'before-recordly-web.mp4': 'before-recordly-web.mp4',
-        'after-recordly-web.mp4': 'after-recordly-web.mp4'
-    }[req.params.name];
-    if (!media) return next();
-    res.set('Cache-Control', 'public, max-age=300, must-revalidate');
-    return res.sendFile(path.join(staticPath, 'assets/case-studies/floivation', media));
-});
-
-app.use('/assets/case-studies/floivation', (req, res, next) => {
-    if (process.env.FLOIVATION_PUBLIC_APPROVED === 'true') return next();
-    res.set('Cache-Control', 'private, no-store');
-    return res.status(404).sendFile(path.join(staticPath, '404.html'));
-});
-
 const staticAliases = {
     '/studio': 'studio.html',
     '/portal': 'portal.html',
     '/bookings': 'bookings.html',
-    '/start-project': 'bookings.html',
     '/booking': 'bookings.html',
     '/book': 'bookings.html',
     '/book-otp': 'bookings.html',
