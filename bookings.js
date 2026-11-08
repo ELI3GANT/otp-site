@@ -494,15 +494,14 @@ function themeFor(packageName) {
 function applyActiveTheme(packageName = '') {
   const theme = themeFor(packageName);
   const root = document.documentElement;
-  const siteAccent = !packageName ? getComputedStyle(root).getPropertyValue('--accent2').trim() : '';
+  const siteAccent = getComputedStyle(root).getPropertyValue('--accent2').trim();
+  const sharedAccent = siteAccent || theme.accent;
   root.dataset.activePackage = theme.slug;
-  root.style.setProperty('--active-accent', siteAccent || theme.accent);
-  root.style.setProperty('--active-accent-2', theme.accent2);
-  root.style.setProperty('--active-glow', theme.glow);
-  root.style.setProperty('--active-glow-2', theme.glow2);
-  root.style.setProperty('--active-surface', theme.surface);
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme.meta);
+  root.style.setProperty('--active-accent', sharedAccent);
+  root.style.setProperty('--active-accent-2', sharedAccent);
+  root.style.setProperty('--active-glow', `color-mix(in srgb, ${sharedAccent} 20%, transparent)`);
+  root.style.setProperty('--active-glow-2', `color-mix(in srgb, ${sharedAccent} 11%, transparent)`);
+  root.style.setProperty('--active-surface', `color-mix(in srgb, ${sharedAccent} 8%, transparent)`);
 }
 
 function selectedDisplay() {

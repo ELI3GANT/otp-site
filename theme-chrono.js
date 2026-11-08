@@ -39,6 +39,18 @@
         } catch (e) { /* ignore */ }
     }
 
+    function sessionGet(key) {
+        try { return sessionStorage.getItem(key); } catch (e) { return null; }
+    }
+
+    function sessionSet(key, value) {
+        try { if (value) sessionStorage.setItem(key, value); } catch (e) { /* ignore */ }
+    }
+
+    function sessionRemove(key) {
+        try { sessionStorage.removeItem(key); } catch (e) { /* ignore */ }
+    }
+
     function normalizeTheme(t) {
         if (t === 'light' || t === 'dark') return t;
         return null;
@@ -51,6 +63,7 @@
             storageRemove('theme_manual');
             storageRemove('theme_manual_time');
             storageRemove('last_global_theme');
+            sessionRemove('otp_public_session_palette');
         }
     } catch (eReset) { /* ignore */ }
 
@@ -179,14 +192,28 @@
         hueIndex = 0;
     }
 
-    // Rotate the public home accent on each refresh without repeating the last color.
+    // Keep one palette while navigating the public site; rotate on a true refresh.
     try {
         if (document.documentElement.hasAttribute('data-refresh-palette')) {
-            var previousPalette = storageGet('otp_public_home_last_palette');
-            if (window.OTP_PALETTES[hueIndex] && window.OTP_PALETTES[hueIndex].name === previousPalette) {
-                hueIndex = (hueIndex + 1) % window.OTP_PALETTES.length;
+            var activeSessionPalette = sessionGet('otp_public_session_palette');
+            var navigationEntries = window.performance && typeof window.performance.getEntriesByType === 'function'
+                ? window.performance.getEntriesByType('navigation') : [];
+            var isRefresh = navigationEntries.length && navigationEntries[0].type === 'reload';
+            var sessionPaletteIndex = -1;
+            for (var paletteIndex = 0; paletteIndex < window.OTP_PALETTES.length; paletteIndex += 1) {
+                if (window.OTP_PALETTES[paletteIndex].name === activeSessionPalette) sessionPaletteIndex = paletteIndex;
             }
-            storageSet('otp_public_home_last_palette', window.OTP_PALETTES[hueIndex] && window.OTP_PALETTES[hueIndex].name);
+            if (!isRefresh && sessionPaletteIndex >= 0) {
+                hueIndex = sessionPaletteIndex;
+            } else {
+                var previousPalette = storageGet('otp_public_home_last_palette');
+                if (window.OTP_PALETTES[hueIndex] && window.OTP_PALETTES[hueIndex].name === previousPalette) {
+                    hueIndex = (hueIndex + 1) % window.OTP_PALETTES.length;
+                }
+                var nextSessionPalette = window.OTP_PALETTES[hueIndex] && window.OTP_PALETTES[hueIndex].name;
+                sessionSet('otp_public_session_palette', nextSessionPalette);
+                storageSet('otp_public_home_last_palette', nextSessionPalette);
+            }
         }
     } catch (ePaletteRotation) { /* keep the randomly selected palette */ }
 
@@ -247,6 +274,10 @@
         rootStyle.setProperty('--accent2-rgb', activeRgb);
         rootStyle.setProperty('--accent2', 'rgb(' + activeRgb + ')');
         rootStyle.setProperty('--accent2-text', contrastText(activeRgb));
+        // Shared OTP public surfaces consume these tokens so the selected
+        // refresh palette stays in sync beyond the homepage and booking form.
+        rootStyle.setProperty('--accent-otp', 'rgb(' + activeRgb + ')');
+        rootStyle.setProperty('--accent-otp-ink', contrastText(activeRgb));
         applyBrowserThemeHints(normalized, palette);
         return palette;
     };

@@ -227,18 +227,18 @@ The default public campaign strategy is **borders-only**. Strong rules, contrast
 | Strong | `2px solid var(--border-strong)` | Featured poster and major fields |
 | Accent | `4px solid var(--accent-event)` | One campaign emphasis edge |
 
-## 8. Public editorial system · September 2026
+## 8. Public editorial system · November 2026
 
-The user's redesign explicitly supersedes the previous gold-only public direction. Existing campaign-specific identities remain intentional. New company surfaces use the following shared tokens in `public-system.css`:
+The user's redesign explicitly supersedes the previous gold-only public direction. Existing campaign-specific identities remain intentional. New company surfaces use shared tokens in `public-system.css`. The OTP accent comes from the refresh palette in `theme-chrono.js`; it stays consistent while visitors move between public pages and rotates on refresh. Booking uses the same accent through its service cards, form steps, and calls to action.
 
 - Ink / `--surface-primary`, `--ink`: #101110; panel / `--surface-secondary`: #1c1e1a.
 - Paper / `--text-primary`, `--paper`: #f1f0e8; secondary text: #b7bbb0.
-- Accent / `--accent-otp`: #dcff5f acid yellow; rule / `--border-default`: #3c4036.
+- Accent / `--accent-otp`: selected palette color; contrast foreground / `--accent-otp-ink`; rule / `--border-default`: #3c4036.
 - Muted paper text: #54594c; paper rule: #c7cabf.
 - Typography: existing Helvetica Neue stack with heavy negative-tracked display and mono folios. Display clamp(3.5rem, 11vw, 10rem); hero wordmark clamp(3rem, 10.9vw, 11rem); h2 clamp(2.25rem, 5.5vw, 5rem); h3 clamp(1.5rem, 3vw, 2.75rem); body 1rem/1.6; lead clamp(1.125rem, 2vw, 1.5rem); labels .75rem/1.4.
 - Layout: 1440px max, gutters clamp(20px, 4vw, 64px), sections clamp(64px, 9vw, 144px). Existing 4px spacing scale retained. Editorial grid 7:5 / 5:7, mobile single column. Corners square; structural 1px rules; no floating cards or glass.
-- Hero: paper wordmark on ink, acid typographic inset and real OTP emblem. No perpetual decorative motion or blocking loader.
-- Paper surfaces alternate deliberately at major content roles: portfolio teaser and capabilities, framed by dark intro and Signal. Project art supplies additional color without new UI accents.
+- Hero: paper wordmark on ink, palette accent inset and real OTP emblem. No perpetual decorative motion or blocking loader.
+- Paper surfaces alternate deliberately at major content roles: portfolio teaser and capabilities, framed by dark intro and Signal. Project art supplies additional color; product and campaign pages retain their own identities.
 
 ### Shared public primitives and states
 

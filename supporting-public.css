@@ -1,4 +1,4 @@
-.supporting-page { --accent2: var(--accent-otp); --accent2-text: var(--ink); --accent2-rgb: 220,255,95; --muted: var(--text-secondary); --muted2: var(--text-secondary); }
+.supporting-page { --accent2: var(--accent-otp); --accent2-text: var(--accent-otp-ink); --muted: var(--text-secondary); --muted2: var(--text-secondary); }
 .supporting-page main { padding: clamp(48px,7vw,96px) var(--public-gutter) clamp(64px,8vw,120px); }
 .supporting-page main > .wrap { max-width: 1312px; margin-inline: auto; }
 .secondary-intro { padding-bottom: 48px; border-bottom: 1px solid var(--border-default); margin-bottom: 32px; }
@@ -7,7 +7,7 @@
 .intro-text { font-size: var(--public-lead); color: var(--text-secondary); max-width: 45ch; }
 #filter-wrap { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 40px; }
 .filter-btn { min-height: 44px; padding: 10px 20px; background: transparent; border: 1px solid var(--border-default); color: var(--paper); }
-.filter-btn.active, .filter-btn:hover { background: var(--accent-otp); border-color: var(--accent-otp); color: var(--ink); }
+.filter-btn.active, .filter-btn:hover { background: var(--accent-otp); border-color: var(--accent-otp); color: var(--accent-otp-ink); }
 .insights-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1px; background: var(--border-default); border: 1px solid var(--border-default); }
 .insight-card { min-width: 0; background: var(--ink); padding: clamp(24px,4vw,48px); }
 .insight-card:hover { background: var(--surface-secondary); }
