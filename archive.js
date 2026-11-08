@@ -95,7 +95,12 @@
     title.append(createAction(project.title, featureUrl, ''));
     content.append(title, node('p', 'archive-project-summary', blurbs[project.id] || project.shortDescription));
     const actions = node('div', 'archive-project-actions');
-    actions.append(createAction(project.id === 'song-wars' ? 'Meet the winner ↗' : 'Explore project ↗', project.id === 'song-wars' ? `${project.projectUrl}#winner` : project.caseStudyUrl, 'archive-project-action-primary'));
+    const primaryLabel = project.id === 'song-wars'
+      ? 'Meet the winner ↗'
+      : project.id === 'floivation'
+        ? `${project.caseStudyCtaLabel || 'Read Case Study'} ↗`
+        : 'Explore project ↗';
+    actions.append(createAction(primaryLabel, project.id === 'song-wars' ? `${project.projectUrl}#winner` : project.caseStudyUrl, 'archive-project-action-primary'));
     const booking = createAction(project.bookingCtaLabel, project.bookingUrl, 'archive-project-action-conversion');
     if (project.id === 'otp-fixline') booking.dataset.fixlineEvent = 'audit_cta_selected';
     actions.append(booking);

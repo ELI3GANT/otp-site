@@ -162,10 +162,12 @@ dom.window.eval(read('otp-projects.js'));
 dom.window.eval(archiveClient);
 const renderedDocument = dom.window.document;
 const flooropsCard = renderedDocument.querySelector('[data-project-id="floorops"]');
+const floivationCard = renderedDocument.querySelector('[data-project-id="floivation"]');
 assert.ok(flooropsCard, 'runtime includes FloorOps');
 assert.ok(flooropsCard.querySelector('.archive-project-media img').src.endsWith('/images/warehouse/handheld-barcode-scanning.jpg'), 'runtime uses the correct warehouse photograph');
 assert.ok(flooropsCard.querySelector('.archive-floorops-bigline')?.textContent.includes('CLEAR THE DOCK.'), 'runtime includes FloorOps branded preview headline');
 assert.strictEqual(flooropsCard.querySelectorAll('.archive-floorops-mini-row').length, 3, 'runtime shows three illustrative workflow steps');
+assert.strictEqual(floivationCard.querySelector('.archive-project-action-primary').textContent, 'Read Case Study ↗', 'FLOIVATION keeps its custom case-study action in the rendered Archive card');
 assert.ok(archive.includes('archive.css?v=20261027-floorops-card-v3') && archive.includes('archive.js?v=20261108-floivation-case-study-v1'), 'Archive retains styled FloorOps card and refreshes project links');
 
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
