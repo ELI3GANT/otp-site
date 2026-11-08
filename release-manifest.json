@@ -1,6 +1,7 @@
 {
   "releaseName": "floivation-case-study-archive-2026-11-08",
   "includedFiles": [
+    ".github/workflows/production-release.yml",
     ".vercelignore",
     "archive.html",
     "archive.js",
