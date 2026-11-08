@@ -494,8 +494,9 @@ function themeFor(packageName) {
 function applyActiveTheme(packageName = '') {
   const theme = themeFor(packageName);
   const root = document.documentElement;
+  const siteAccent = !packageName ? getComputedStyle(root).getPropertyValue('--accent2').trim() : '';
   root.dataset.activePackage = theme.slug;
-  root.style.setProperty('--active-accent', theme.accent);
+  root.style.setProperty('--active-accent', siteAccent || theme.accent);
   root.style.setProperty('--active-accent-2', theme.accent2);
   root.style.setProperty('--active-glow', theme.glow);
   root.style.setProperty('--active-glow-2', theme.glow2);
@@ -1230,6 +1231,27 @@ if (els.form) {
     if (event.target !== els.package && event.target !== els.service) updateSummaries();
   });
   els.form.addEventListener('submit', submitBooking);
+}
+
+const bookingThemeToggle = document.querySelector('[data-booking-theme-toggle]');
+if (bookingThemeToggle && window.OTP && typeof window.OTP.applyPaletteForTheme === 'function') {
+  const syncBookingThemeToggle = () => {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    bookingThemeToggle.textContent = isLight ? 'Night mode' : 'Day mode';
+    bookingThemeToggle.setAttribute('aria-label', `Switch to ${isLight ? 'night' : 'day'} mode`);
+    bookingThemeToggle.setAttribute('aria-pressed', String(isLight));
+  };
+  bookingThemeToggle.addEventListener('click', () => {
+    const nextTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    try {
+      localStorage.setItem('theme', nextTheme);
+      localStorage.setItem('theme_manual', 'true');
+      localStorage.setItem('theme_manual_time', Date.now().toString());
+    } catch (error) { /* Theme still changes for this page when storage is unavailable. */ }
+    window.OTP.applyPaletteForTheme(nextTheme);
+    syncBookingThemeToggle();
+  });
+  syncBookingThemeToggle();
 }
 
 init();
