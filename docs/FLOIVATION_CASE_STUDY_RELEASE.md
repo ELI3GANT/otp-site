@@ -22,7 +22,7 @@
 
 ## Verification
 
-- Passed: case-study and Archive contract checks; full local and live CI suites (54/54 each); four pinned contracts; secret scan across 348 files; Speed Insights build; and the HTTP-only predeploy sweep (34 public checks).
+- Passed: case-study and Archive contract checks; full local and live CI suites (54/54 each); browser adversarial suite (51/51); four pinned contracts; secret scan across 348 files; Speed Insights build; and the HTTP-only predeploy sweep (34 public checks).
 - Passed: local Chrome review at 1440 × 900, 768 × 1024, and 390 × 844. The case-study route returned 200, the Archive showed one card, all three videos had controls, the three feature icons appeared, the page had no horizontal overflow or console errors, and the comparison slider responded to keyboard and touch input.
 - Basic accessibility markup checked: one page heading, image alt text, labeled comparison control, video controls, and visible keyboard focus.
 - Still unverified: mobile Safari, same-state source captures, full-page source captures, and the client-owned live website URL. The case study does not imply these are complete.

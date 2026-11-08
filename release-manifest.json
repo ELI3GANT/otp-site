@@ -60,6 +60,7 @@
     "tests/archive_case_study_contract.test.js",
     "tests/archive_url_sync_and_fallback.test.js",
     "tests/bookings_contract.test.js",
+    "tests/e2e/adversarial_qa.js",
     "tests/evehalo_experience_contract.test.js",
     "tests/floivation_case_study_contract.test.js",
     "tests/floorops_integration_contract.test.js",
@@ -88,7 +89,7 @@
     },
     {
       "command": "npm run test:e2e",
-      "status": "passed_http_e2e; built-in Chromium launch skipped; dedicated Chrome browser QA passed separately"
+      "status": "passed_51_of_51"
     },
     {
       "command": "npm run contracts:verify",
