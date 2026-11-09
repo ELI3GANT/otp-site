@@ -295,3 +295,12 @@ Primitives: line-icon capability card (Build / Refine / Connect / Launch), scree
 Motion reuses shared autonomous 28/38-second ambient light, below-fold section entrances and restrained 320ms image hover (1.025 scale). No additional animation dependency or continuous JavaScript loop. Pointer interaction on the comparison changes a CSS custom property; reduced motion keeps the same controls and static content. No results, customer metrics, price or release availability are invented. FLOIVATION remains in production; HYH is presented as a website redesign.
 
 FLOIVATION public status is now Live with ongoing development. The client-owned site is https://floivation.life/; its shop is a coming-soon destination with its first drop being prepared. Preserve historical Nov 6 screenshot/video dates and clarify that the live site can evolve beyond those captures. Case study and Archive expose the live URL; no personal client name, store checkout capability, release date, sales or performance result is inferred.
+
+
+## V2 application and portal parity — November 9, 2026
+
+Reference: the live OTP Site public-system.css and theme-chrono.js. Preserve the current workspace layout, private invite model, status semantics and existing controls. Use Helvetica Neue/Helvetica/Arial, warm dark #101110 / #1c1e1a / #252821 with #f1f0e8 text and #b7bbb0 supporting text; day #f5f4ef / white / #eaece4 with #181914 text and #55594f supporting text. Rules are #3c4036 dark and #c8cdc0 light. Shared 4px spacing, 44px targets, restrained tonal layering and native disclosures remain.
+
+Reuse the seven public-site palettes (purple, orange, blue, gold, white, glitch and neon) with their exact paired light/dark RGB values from theme-chrono.js. Select one palette per navigation session, rotate on refresh, preserve day/night preference and carry the selected palette to public booking/portal entry links. Compute action text contrast using the existing site luminance rule. Status colors remain semantic, independent of accent. No new continuous animation, dependency, auth storage or client data is introduced.
+
+Stored portal payloads retain the saved client profile, scope, formatted money and server-gated document previews. Ready previews use native details/summary and textContent; blocked previews remain hidden. Neither rendering nor theme changes alter payment records or tokens.

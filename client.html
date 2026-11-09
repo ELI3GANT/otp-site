@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-refresh-palette>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -9,7 +9,9 @@
     <meta name="referrer" content="no-referrer" />
     <meta name="otp-api-base" content="" />
     <title>OTP Client Portal</title>
+    <script src="/theme-chrono.js?v=20261109-site-v2"></script>
     <link rel="stylesheet" href="/client.css?v=20260702-client-portal-v2" />
+    <link rel="stylesheet" href="/otp-v2-theme.css?v=20261109-portal-v3" />
   </head>
   <body>
     <main class="portal-shell">
@@ -24,6 +26,7 @@
           </div>
         </div>
         <span id="portal-status" class="status-pill">Loading</span>
+        <button id="portal-theme-toggle" class="portal-theme-toggle secondary" type="button" aria-label="Switch day or night mode">Day / Night</button>
       </header>
 
       <section id="portal-root" class="portal-root">
@@ -40,6 +43,6 @@
         Powered by OnlyTruePerspective LLC
       </footer>
     </main>
-    <script type="module" src="/client.js?v=20260702-client-portal-v2"></script>
+    <script type="module" src="/client.js?v=20261109-portal-compat-v2"></script>
   </body>
 </html>

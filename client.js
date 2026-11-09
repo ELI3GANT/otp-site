@@ -270,7 +270,7 @@ async function copyText(text = '') {
 }
 
 function documentItem(document = {}) {
-  const ready = Boolean(document.ready);
+  const ready = document.ready === true || (document.ready === undefined && document.status === 'ready');
   const item = el('article', 'document-item');
   const top = el('div', 'document-top');
   const actions = el('div', 'document-actions');
@@ -278,6 +278,12 @@ function documentItem(document = {}) {
   item.append(top, el('p', '', clean(document.message) || (ready ? 'Ready to view or download.' : 'OTP is preparing this document.')));
   if (ready && document.viewUrl) actions.append(buttonLink('View', document.viewUrl, true));
   if (ready && document.downloadUrl) actions.append(buttonLink('Download', document.downloadUrl));
+  if (ready && clean(document.preview)) {
+    const preview = el('details', 'document-preview');
+    const text = el('pre', '', clean(document.preview));
+    preview.append(el('summary', '', 'View document'), text);
+    item.append(preview);
+  }
   if (!ready) {
     const disabled = el('button', 'secondary', 'Awaiting OTP');
     disabled.disabled = true;
@@ -525,7 +531,65 @@ function renderDashboard(data, token = '') {
 }
 
 function renderPortal(data) {
+  if (data.profile && !data.client) {
+    renderStoredPortal(data);
+    return;
+  }
   renderDashboard(data, tokenFromLocation());
+}
+
+function renderStoredPortal(data) {
+  const profile = data.profile || {};
+  const project = data.project || {};
+  const payment = data.payment || {};
+  const hero = el('section', 'hero');
+  hero.append(
+    el('p', 'eyebrow', clean(profile.businessName) || 'OnlyTruePerspective'),
+    el('h2', '', clean(project.title) || 'Your project'),
+    el('p', '', clean(profile.clientName) || 'Client'),
+    badge(clean(project.status) || 'Pending review')
+  );
+  const grid = el('div', 'grid');
+  grid.append(card('Client profile', [
+    infoRow('Name', profile.clientName),
+    infoRow('Business', profile.businessName),
+    infoRow('Email', profile.email),
+    infoRow('Phone', profile.phone)
+  ]));
+  const projectCard = card('Project', [
+    infoRow('Service', project.serviceType),
+    infoRow('Package', project.packageType),
+    infoRow('Status', project.status),
+    infoRow('Start date', humanDate(project.startDate)),
+    infoRow('Due date', humanDate(project.dueDate)),
+    infoRow('Scope', project.description),
+    infoRow('Client notes', project.notes)
+  ]);
+  grid.append(projectCard, documentsCard(Array.isArray(data.documents) ? data.documents : []));
+  const billing = card('Payment', [
+    infoRow('Status', displayPaymentStatus(payment.status)),
+    infoRow('Project total', payment.total),
+    infoRow('Deposit', payment.deposit),
+    infoRow('Remaining balance', payment.remaining),
+    infoRow('Method', payment.method)
+  ]);
+  if (payment.paymentLinkReady === true && payment.cta?.href) {
+    billing.append(buttonLink('Open Secure Payment Link', payment.cta.href));
+  }
+  grid.append(billing);
+  const items = Array.isArray(data.deliverables?.items) ? data.deliverables.items : [];
+  if (items.length) {
+    const list = el('ul', 'info-list');
+    items.forEach(item => list.append(el('li', '', clean(item))));
+    const delivery = el('section', 'card');
+    delivery.append(el('h3', '', 'Deliverables'), list);
+    grid.append(delivery);
+  }
+  const help = el('section', 'card');
+  help.append(el('h3', '', 'Project support'), buttonLink('Contact OTP', `mailto:${supportEmail}`, true, { allowMailto: true }));
+  grid.append(help);
+  portalRoot.replaceChildren(hero, grid);
+  setStatus('Portal Active', 'ready');
 }
 
 function renderEntry(config = {}) {
@@ -625,6 +689,19 @@ function handleFatalPortalError(error) {
 }
 
 async function init() {
+  const themeToggle = document.getElementById('portal-theme-toggle');
+  if (themeToggle && window.OTP?.setTheme) {
+    function labelTheme() {
+      const isLight = document.documentElement.dataset.theme === 'light';
+      themeToggle.textContent = isLight ? 'Night' : 'Day';
+      themeToggle.setAttribute('aria-label', isLight ? 'Switch to night mode' : 'Switch to day mode');
+    }
+    themeToggle.addEventListener('click', () => {
+      window.OTP.setTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
+      labelTheme();
+    });
+    labelTheme();
+  }
   const token = tokenFromLocation();
   if (!token) {
     renderEntry(await fetchAccountConfig().catch(() => ({})));
@@ -632,13 +709,9 @@ async function init() {
   }
 
   try {
-    renderDashboard(await fetchDashboard(token), token);
-  } catch (dashboardError) {
-    try {
-      renderPortal(await fetchPortal(token));
-    } catch (portalError) {
-      renderError(portalError.message || dashboardError.message || PORTAL_FALLBACK_MESSAGE);
-    }
+    renderPortal(await fetchPortal(token));
+  } catch (portalError) {
+    renderError(portalError.message || PORTAL_FALLBACK_MESSAGE);
   }
 }
 
