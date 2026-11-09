@@ -2482,30 +2482,6 @@ html[data-theme="light"] body.booking-site .project-intake-panel .project-intake
   body.booking-site .booking-theme-toggle { min-height: 40px; padding: 8px 10px; }
 }
 
-/* Keep every booking step on the same refresh palette as the main OTP site. */
-html[data-palette] body.booking-site {
-  --accent: var(--accent-otp);
-  --accent-2: var(--accent-otp);
-  --active-accent: var(--accent-otp);
-  --active-accent-2: var(--accent-otp);
-  --active-glow: color-mix(in srgb, var(--accent-otp) 20%, transparent);
-  --active-glow-2: color-mix(in srgb, var(--accent-otp) 11%, transparent);
-  --active-surface: color-mix(in srgb, var(--accent-otp) 8%, transparent);
-}
-html[data-palette] body.booking-site .top-actions a:last-child,
-html[data-palette] body.booking-site .primary-action,
-html[data-palette] body.booking-site button:not(.ghost-button),
-html[data-palette] body.booking-site .success-actions a,
-html[data-palette] body.booking-site .success-actions button {
-  color: var(--accent-otp-ink) !important;
-}
-html[data-palette] body.booking-site .project-intake-panel { color: var(--accent-otp-ink) !important; }
-html[data-palette] body.booking-site .project-intake-panel h2,
-html[data-palette] body.booking-site .project-intake-panel .project-intake-lead,
-html[data-palette] body.booking-site .project-intake-panel .project-intake-support,
-  html[data-palette] body.booking-site .project-intake-panel .project-intake-eyebrow { color: var(--accent-otp-ink) !important; }
-html[data-palette] body.booking-site textarea:focus { outline-color: color-mix(in srgb, var(--accent-otp) 24%, transparent); }
-
 /* LIGHT MODE THEME FOR OTP BOOKINGS */
 [data-theme="light"] body,
 [data-theme="light"] .booking-page {
@@ -3076,3 +3052,39 @@ html[data-theme="light"] body.booking-site .success-actions button { color: #181
   body.booking-site .top-actions { flex-wrap: wrap; justify-content: flex-start; }
   body.booking-site .booking-theme-toggle { min-height: 40px; padding: 8px 10px; }
 }
+
+/* Keep every booking step on the same refresh palette as the main OTP site. */
+html[data-palette] body.booking-site {
+  --accent: var(--accent-otp);
+  --accent-2: var(--accent-otp);
+  --active-accent: var(--accent-otp);
+  --active-accent-2: var(--accent-otp);
+  --active-glow: color-mix(in srgb, var(--accent-otp) 20%, transparent);
+  --active-glow-2: color-mix(in srgb, var(--accent-otp) 11%, transparent);
+  --active-surface: color-mix(in srgb, var(--accent-otp) 8%, transparent);
+}
+html[data-palette] body.booking-site .top-actions a:last-child,
+html[data-palette] body.booking-site .primary-action,
+html[data-palette] body.booking-site .booking-form button:not(.ghost-button),
+html[data-palette] body.booking-site .success-actions a,
+html[data-palette] body.booking-site .success-actions button {
+  color: var(--accent-otp-ink) !important;
+}
+html[data-palette] body.booking-site .project-intake-panel { background: var(--accent-otp) !important; color: var(--accent-otp-ink) !important; }
+html[data-palette] body.booking-site .project-intake-panel h2,
+html[data-palette] body.booking-site .project-intake-panel .project-intake-lead,
+html[data-palette] body.booking-site .project-intake-panel .project-intake-support,
+html[data-palette] body.booking-site .project-intake-panel .project-intake-eyebrow { color: var(--accent-otp-ink) !important; }
+html[data-palette] body.booking-site textarea:focus { outline-color: color-mix(in srgb, var(--accent-otp) 24%, transparent); }
+html[data-palette] body.booking-site .booking-theme-toggle {
+  min-height: 44px;
+  padding: 10px 12px;
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text) !important;
+  font: 500 .6875rem/1.4 var(--font-mono);
+  white-space: nowrap;
+}
+html[data-palette] body.booking-site .primary-action:hover,
+html[data-palette] body.booking-site .top-actions a:last-child:hover,
+html[data-palette] body.booking-site .booking-form button:not(.ghost-button):hover { color: var(--ink) !important; }

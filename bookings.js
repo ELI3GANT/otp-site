@@ -1248,6 +1248,7 @@ if (bookingThemeToggle && window.OTP && typeof window.OTP.applyPaletteForTheme =
       localStorage.setItem('theme_manual_time', Date.now().toString());
     } catch (error) { /* Theme still changes for this page when storage is unavailable. */ }
     window.OTP.applyPaletteForTheme(nextTheme);
+    applyActiveTheme(state.selectedPackage);
     syncBookingThemeToggle();
   });
   syncBookingThemeToggle();

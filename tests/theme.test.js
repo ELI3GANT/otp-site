@@ -98,3 +98,27 @@ if (finalTheme === 'dark') console.log("PASS: Local user preference overrides re
 else console.error(`FAIL: Remote state clobbered local preference. Got ${finalTheme}`);
 
 console.log("Theme tests complete.");
+
+// Exercise the actual first-paint script: a random spectral roll must not
+// replace a palette carried from Home into the booking flow.
+const assert = require('node:assert/strict');
+const themeSource = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'theme-chrono.js'), 'utf8');
+function paintPublicPalette(navigationType) {
+    const page = new JSDOM('<html data-refresh-palette="true"><head></head><body></body></html>', {
+        url: 'https://www.onlytrueperspective.tech/start-project', runScripts: 'outside-only'
+    });
+    page.window.sessionStorage.setItem('otp_public_session_palette', 'purple');
+    page.window.localStorage.setItem('otp_public_home_last_palette', 'blue');
+    page.window.Math.random = () => 0;
+    page.window.performance.getEntriesByType = () => [{ type: navigationType }];
+    page.window.eval(themeSource);
+    const result = {
+        selected: page.window.document.documentElement.dataset.palette,
+        saved: page.window.sessionStorage.getItem('otp_public_session_palette')
+    };
+    page.window.close();
+    return result;
+}
+assert.deepEqual(paintPublicPalette('navigate'), { selected: 'purple', saved: 'purple' }, 'navigation preserves the selected palette even when random rolls would normally choose a spectral hue');
+assert.deepEqual(paintPublicPalette('reload'), { selected: 'orange', saved: 'orange' }, 'refresh chooses a different palette from this tab even if another tab changed the global last palette');
+console.log('Public palette navigation and refresh regressions passed.');

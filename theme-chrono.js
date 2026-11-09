@@ -206,7 +206,7 @@
             if (!isRefresh && sessionPaletteIndex >= 0) {
                 hueIndex = sessionPaletteIndex;
             } else {
-                var previousPalette = storageGet('otp_public_home_last_palette');
+                var previousPalette = activeSessionPalette || storageGet('otp_public_home_last_palette');
                 if (window.OTP_PALETTES[hueIndex] && window.OTP_PALETTES[hueIndex].name === previousPalette) {
                     hueIndex = (hueIndex + 1) % window.OTP_PALETTES.length;
                 }
@@ -220,7 +220,7 @@
     var selectedHue = window.OTP_PALETTES[hueIndex] || findPalette('blue') || window.OTP_PALETTES[0];
     var spectralVariant = '';
     try {
-        var spectralRoll = Math.random();
+        var spectralRoll = document.documentElement.hasAttribute('data-refresh-palette') ? 1 : Math.random();
         if (selectedHue && selectedHue.name === 'glitch') {
             spectralVariant = 'spectral-revelation';
         } else if (spectralRoll < 0.02) {

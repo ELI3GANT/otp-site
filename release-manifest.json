@@ -1,77 +1,32 @@
 {
-  "releaseName": "floivation-case-study-archive-2026-11-08",
+  "releaseName": "otp-public-motion-booking-palette-2026-11-08",
   "includedFiles": [
-    ".github/workflows/production-release.yml",
-    ".vercelignore",
+    "DESIGN.md",
     "archive.html",
-    "archive.js",
-    "assets/case-studies/floivation/after-home.jpg",
-    "assets/case-studies/floivation/after-recordly-web.mp4",
-    "assets/case-studies/floivation/before-recordly-web.mp4",
-    "assets/case-studies/floivation/before-viewport.webp",
-    "assets/case-studies/floivation/transformation-poster.webp",
-    "assets/case-studies/floivation/transformation-web.mp4",
-    "assets/evehalo/app-icon.png",
-    "assets/evehalo/app-icon.webp",
-    "assets/evehalo/apple-reminders-manager.png",
-    "assets/evehalo/apple-reminders-manager.webp",
-    "assets/evehalo/evo-intelligence.png",
-    "assets/evehalo/evo-intelligence.webp",
-    "assets/evehalo/evo-memory-vault.png",
-    "assets/evehalo/evo-memory-vault.webp",
-    "assets/evehalo/evo-voice.png",
-    "assets/evehalo/evo-voice.webp",
-    "assets/evehalo/focus-dynamic-island.png",
-    "assets/evehalo/focus-dynamic-island.webp",
-    "assets/evehalo/halo-artwork.png",
-    "assets/evehalo/halo-artwork.webp",
-    "assets/evehalo/hero-launch.png",
-    "assets/evehalo/hero-launch.webp",
-    "assets/evehalo/horizon-month.png",
-    "assets/evehalo/horizon-month.webp",
-    "assets/evehalo/horizon-year.png",
-    "assets/evehalo/horizon-year.webp",
-    "assets/evehalo/iphone-duo-expanded.png",
-    "assets/evehalo/iphone-duo-expanded.webp",
-    "assets/evehalo/plus-atmospheres.png",
-    "assets/evehalo/plus-atmospheres.webp",
-    "assets/evehalo/settings-privacy.png",
-    "assets/evehalo/settings-privacy.webp",
-    "assets/evehalo/studio-atmospheres.png",
-    "assets/evehalo/studio-atmospheres.webp",
-    "assets/evehalo/today-command.png",
-    "assets/evehalo/today-command.webp",
-    "docs/FLOIVATION_CASE_STUDY_RELEASE.md",
-    "evehalo/evehalo.css",
-    "evehalo/evehalo.js",
-    "evehalo/index.html",
-    "evehalo/privacy.html",
-    "evehalo/support.html",
+    "bookings.css",
+    "bookings.html",
+    "bookings.js",
+    "consultant-audit.html",
     "floivation-case-study.js",
     "floorops.html",
     "index.html",
-    "otp-projects.js",
+    "insight.html",
+    "insights.html",
+    "privacy.html",
+    "project-stories.js",
+    "public-motion.js",
+    "public-system.css",
     "release-manifest.json",
-    "robots.txt",
-    "scripts/capture_evehalo_previews.js",
-    "server.js",
-    "sitemap.xml",
     "studio.html",
-    "tests/archive_case_study_contract.test.js",
-    "tests/archive_url_sync_and_fallback.test.js",
+    "terms.html",
     "tests/bookings_contract.test.js",
-    "tests/e2e/adversarial_qa.js",
-    "tests/evehalo_experience_contract.test.js",
-    "tests/floivation_case_study_contract.test.js",
-    "tests/floorops_integration_contract.test.js",
-    "tests/homepage_visual_contract.test.js",
-    "tests/master_runner.js",
-    "tests/seo_indexing_contract.test.js",
-    "tests/vercel_route_precedence.test.js",
-    "vercel.json"
+    "tests/theme.test.js",
+    "theme-chrono.js",
+    "website-design.html"
   ],
   "excludedDirtyFiles": [
-    "Local .vercel environment and generated test artifacts are ignored; no credentials or business records are release material."
+    "The eight untracked FLOIVATION review images and transformation master remain local media sources and are excluded from this release.",
+    "Ignored local configuration, credentials, node_modules and generated test/browser artifacts are excluded."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -85,19 +40,19 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed_54_of_54"
+      "status": "passed"
     },
     {
-      "command": "npm run test:e2e",
-      "status": "passed_51_of_51"
+      "command": "node tests/theme.test.js",
+      "status": "passed_actual_first_paint_navigation_and_refresh_regressions"
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed_4_pinned_contracts"
+      "status": "passed"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed_348_files"
+      "status": "passed_357_files"
     },
     {
       "command": "npm run build:speed-insights",
@@ -105,14 +60,14 @@
     },
     {
       "command": "npm run master_test:ci",
-      "status": "passed_54_of_54"
+      "status": "passed"
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed_34_public_checks; admin-auth sweep deferred to production workflow"
+      "status": "passed_public_http_sweep_auth_deferred_to_required_workflow_gate"
     },
     {
-      "command": "node --check server.js && node --check otp-projects.js && node --check archive.js && node --check floivation-case-study.js",
+      "command": "node --check theme-chrono.js && node --check public-motion.js && node --check bookings.js && node --check floivation-case-study.js",
       "status": "passed"
     },
     {
@@ -122,11 +77,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local Chrome review of /projects/floivation at 1440x900, 768x1024, and 390x844: HTTP 200, no console errors or horizontal overflow, all three videos had controls, three improvement icons appeared, comparison slider responded to keyboard and touch, and the Archive rendered one FLOIVATION card."
+    "summary": "Local owned Chromium at 1440x900 and 390x844: Home to Start a Project preserves the exact computed accent; service selection preserves palette; refresh rotates; day/night switches rendered colors; booking and case study have no horizontal overflow; closing CTA screenshots inspected; ambient animation runs and reduced motion removes the atmosphere and reveals all sections."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "The previous production authenticated sweep verified unauthorized public access to protected OTP OS endpoints returns 401/403. Production release workflow requires and reruns the authenticated sweep with OTP_ADMIN_TOKEN from GitHub before deployment; the local predeploy HTTP-only sweep intentionally skipped admin authentication."
+    "summary": "Baseline authenticated production sweep passed in release run 42536867896. The production workflow requires and reruns an authenticated sweep with GitHub-held credentials before deploying this candidate."
   },
   "deploymentTarget": {
     "project": "otp-site",
