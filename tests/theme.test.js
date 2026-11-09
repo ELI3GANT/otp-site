@@ -109,16 +109,20 @@ function paintPublicPalette(navigationType) {
     });
     page.window.sessionStorage.setItem('otp_public_session_palette', 'purple');
     page.window.localStorage.setItem('otp_public_home_last_palette', 'blue');
+    page.window.localStorage.setItem('theme', 'dark');
+    page.window.localStorage.setItem('theme_manual', 'true');
+    page.window.localStorage.setItem('theme_manual_time', String(Date.now()));
     page.window.Math.random = () => 0;
     page.window.performance.getEntriesByType = () => [{ type: navigationType }];
     page.window.eval(themeSource);
     const result = {
         selected: page.window.document.documentElement.dataset.palette,
-        saved: page.window.sessionStorage.getItem('otp_public_session_palette')
+        saved: page.window.sessionStorage.getItem('otp_public_session_palette'),
+        ink: page.window.document.documentElement.style.getPropertyValue('--accent-otp-ink')
     };
     page.window.close();
     return result;
 }
-assert.deepEqual(paintPublicPalette('navigate'), { selected: 'purple', saved: 'purple' }, 'navigation preserves the selected palette even when random rolls would normally choose a spectral hue');
-assert.deepEqual(paintPublicPalette('reload'), { selected: 'orange', saved: 'orange' }, 'refresh chooses a different palette from this tab even if another tab changed the global last palette');
+assert.deepEqual(paintPublicPalette('navigate'), { selected: 'purple', saved: 'purple', ink: '#050609' }, 'navigation preserves the selected palette even when random rolls would normally choose a spectral hue');
+assert.deepEqual(paintPublicPalette('reload'), { selected: 'orange', saved: 'orange', ink: '#050609' }, 'refresh rotates this tab and selects the higher contrast dark foreground for orange');
 console.log('Public palette navigation and refresh regressions passed.');

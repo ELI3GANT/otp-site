@@ -108,11 +108,15 @@
 
     function contrastText(rgb) {
         var parts = String(rgb || '').split(',').map(function (n) { return Number(n.trim()); });
-        var r = parts[0] || 0;
-        var g = parts[1] || 0;
-        var b = parts[2] || 0;
-        var luminance = (r * 299 + g * 587 + b * 114) / 1000;
-        return luminance > 148 ? '#050609' : '#ffffff';
+        function linear(channel) {
+            var value = Math.max(0, Math.min(255, channel || 0)) / 255;
+            return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+        }
+        var luminance = linear(parts[0]) * 0.2126 + linear(parts[1]) * 0.7152 + linear(parts[2]) * 0.0722;
+        var darkLuminance = linear(5) * 0.2126 + linear(6) * 0.7152 + linear(9) * 0.0722;
+        var darkContrast = (luminance + 0.05) / (darkLuminance + 0.05);
+        var lightContrast = 1.05 / (luminance + 0.05);
+        return darkContrast >= lightContrast ? '#050609' : '#ffffff';
     }
 
     window.OTP_PALETTES = [
