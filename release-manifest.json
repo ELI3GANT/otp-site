@@ -1,31 +1,25 @@
 {
-  "releaseName": "otp-website-design-showcase-floivation-live-2026-11-09",
+  "releaseName": "otp-client-portal-v2-2026-11-09",
   "includedFiles": [
     "DESIGN.md",
-    "archive.html",
-    "archive.js",
-    "floivation-case-study.js",
-    "otp-projects.js",
-    "website-design.html",
-    "website-design.css",
-    "website-design.js",
-    "tests/archive_case_study_contract.test.js",
-    "tests/floivation_case_study_contract.test.js",
-    "tests/homepage_visual_contract.test.js",
+    "client.html",
+    "client.js",
+    "otp-v2-theme.css",
+    "tests/client_portal_render.test.js",
+    "tests/master_runner.js",
     "release-manifest.json"
   ],
   "excludedDirtyFiles": [
-    "The eight untracked FLOIVATION review images and transformation master remain local media sources and are excluded from this release.",
-    "Ignored local configuration, credentials, node_modules and generated test/browser artifacts are excluded."
+    "Unrelated FLOIVATION media files stay in the original checkout.",
+    "OTP OS native/backend work releases from its own repository."
   ],
   "generatedArtifactsExcluded": [
     ".env",
     ".env.*",
     "node_modules",
-    "output/playwright",
     "test-report.xml",
-    "*.har",
-    "docs/redesign-evidence/*.log"
+    "output/playwright",
+    "*.har"
   ],
   "testsRun": [
     {
@@ -49,25 +43,25 @@
       "status": "passed"
     },
     {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed"
-    },
-    {
-      "command": "node --check website-design.js && node --check archive.js && node --check floivation-case-study.js && node --check otp-projects.js",
+      "command": "node --check client.js",
       "status": "passed"
     },
     {
       "command": "git diff --check",
       "status": "passed"
+    },
+    {
+      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
+      "status": "passed baseline 42685029771; candidate workflow must rerun before deploying"
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "In-app browser candidate: desktop hero/project imagery and before/after rendering inspected; comparison keyboard ArrowRight/Home/End updates 51/0/100% reveal and accessible description; both comparison images loaded; dark/light page states and native FAQ disclosure inspected. Actual narrow layout measured at 391 CSS pixels with no horizontal overflow and stacked primary actions; mobile screenshot scaling is a browser evidence limitation, not claimed as pixel-perfect comparison. Runtime JSDOM comparison contract passed. Live FLOIVATION homepage and shop fetched: public domain works; shop explicitly says coming soon and first drop loading. Historical Nov 6 case-study capture dates are preserved."
+    "summary": "Local candidate with fictional Northstar Studio only: desktop and 390px browser layouts inspected; day/night switch and ready invoice disclosure work; blocked proposal stays gated; $600 total/$300 deposit/$300 remaining render correctly. Fixed legacy day-mode card/status/logo contrast. No real client or staff screenshots. Native device validation is separate."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Baseline authenticated sweep passed in production release 42637994581. The guarded workflow requires the authenticated sweep again before deploying this candidate."
+    "summary": "Verified unchanged production baseline from guarded workflow 42685029771 at commit 43a0232: all five authenticated GET checks passed. The candidate workflow reruns the authenticated sweep with repository secrets before deployment; local skipped-auth sweep is not used as evidence."
   },
   "deploymentTarget": {
     "project": "otp-site",

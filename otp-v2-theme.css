@@ -1,0 +1,102 @@
+/* Shared V2 tokens from OTP Site public-system.css and theme-chrono.js. */
+:root {
+  --otp-v2-bg: #101110;
+  --otp-v2-panel: #1c1e1a;
+  --otp-v2-muted-panel: #252821;
+  --otp-v2-text: #f1f0e8;
+  --otp-v2-muted: #b7bbb0;
+  --otp-v2-rule: #3c4036;
+  --otp-v2-strong-rule: #687060;
+  --otp-v2-accent: var(--accent-otp, #d5b56c);
+  --otp-v2-ink: var(--accent-otp-ink, #101110);
+}
+html[data-theme="light"] {
+  --otp-v2-bg: #f5f4ef;
+  --otp-v2-panel: #ffffff;
+  --otp-v2-muted-panel: #eaece4;
+  --otp-v2-text: #181914;
+  --otp-v2-muted: #55594f;
+  --otp-v2-rule: #c8cdc0;
+  --otp-v2-strong-rule: #747c6b;
+}
+body,
+body.authenticated.dark-mode,
+body.authenticated:not(.dark-mode),
+body:not(.authenticated) {
+  --app-bg: var(--otp-v2-bg);
+  --surface: var(--otp-v2-panel);
+  --surface-solid: var(--otp-v2-panel);
+  --surface-muted: var(--otp-v2-muted-panel);
+  --text: var(--otp-v2-text);
+  --muted: var(--otp-v2-muted);
+  --border: var(--otp-v2-rule);
+  --border-strong: var(--otp-v2-strong-rule);
+  --accent: var(--otp-v2-accent);
+  --gold: var(--otp-v2-accent);
+  --primary: var(--otp-v2-accent);
+  --primary-contrast: var(--otp-v2-ink);
+  --otp-text-secondary: var(--otp-v2-muted);
+  --otp-border-focus: var(--otp-v2-accent);
+  --otp-bg-recessed: var(--otp-v2-bg);
+  --otp-action-secondary-bg: var(--otp-v2-muted-panel);
+  --otp-action-secondary-border: var(--otp-v2-rule);
+  --glow: color-mix(in srgb, var(--otp-v2-accent) 9%, transparent);
+  --aura-primary: color-mix(in srgb, var(--otp-v2-accent) 7%, transparent);
+  --aura-secondary: transparent;
+  --aura-tertiary: transparent;
+  --welcome-ink: var(--otp-v2-bg);
+  --welcome-panel: var(--otp-v2-panel);
+  --welcome-paper: var(--otp-v2-text);
+  --welcome-muted: var(--otp-v2-muted);
+  --welcome-rule: var(--otp-v2-rule);
+  --welcome-accent: var(--otp-v2-accent);
+  color: var(--otp-v2-text);
+  background: radial-gradient(ellipse at 80% 10%, color-mix(in srgb, var(--otp-v2-accent) 6%, transparent), transparent 48%), var(--otp-v2-bg);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+body:not(.authenticated) #theme-toggle { display: inline-flex; }
+body:not(.authenticated) .welcome-portal,
+body:not(.authenticated) #unlock-button,
+body.authenticated .workspace-tab.active,
+body.authenticated .mobile-nav-button.active,
+body.authenticated .primary-button,
+body.authenticated .action-button.priority {
+  color: var(--otp-v2-ink) !important;
+  border-color: transparent !important;
+  background: var(--otp-v2-accent) !important;
+}
+body:not(.authenticated) .welcome-staff .ghost-button { color: var(--otp-v2-text); background: transparent; }
+.document-preview { margin-top: 16px; }
+.document-preview summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; }
+.document-preview pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.6; }
+.portal-header { gap: 16px; flex-wrap: wrap; }
+.portal-theme-toggle { min-height: 44px; padding: 8px 16px; }
+
+/* Legacy client cards must consume the same tokens in both modes. */
+.portal-shell .card,
+.portal-shell .empty,
+.portal-shell .error-card,
+.portal-shell .loading-card,
+.portal-shell .hero {
+  background: var(--otp-v2-panel);
+  border-color: var(--otp-v2-rule);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--otp-v2-text) 5%, transparent);
+}
+.portal-shell .document-item {
+  background: var(--otp-v2-muted-panel);
+  border-color: var(--otp-v2-rule);
+}
+.portal-shell .info-row { border-bottom-color: var(--otp-v2-rule); }
+.portal-shell .info-row span,
+.portal-shell .portal-field span,
+.portal-shell .money-tile span,
+.portal-shell .entry-copy,
+.portal-shell .entry-card p,
+.portal-shell .entry-note { color: var(--otp-v2-muted); }
+.portal-shell .logo-mark { background: #101110; border-color: var(--otp-v2-rule); }
+html[data-theme="light"] .portal-shell .status-pill.ready,
+html[data-theme="light"] .portal-shell .badge.ready { color: #166534; background: #e3f3e7; border-color: #79a987; }
+html[data-theme="light"] .portal-shell .status-pill.warning,
+html[data-theme="light"] .portal-shell .badge.warning { color: #805000; background: #fff1d0; border-color: #b18b44; }
+html[data-theme="light"] .portal-shell .status-pill.error,
+html[data-theme="light"] .portal-shell .badge.error { color: #9f1239; background: #ffe4e6; border-color: #c5798b; }

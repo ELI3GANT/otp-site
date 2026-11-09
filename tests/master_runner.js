@@ -22,6 +22,7 @@ const tests = [
     { name: 'Client Journey (public intake)', path: 'tests/client_journey_contract.test.js' },
     { name: 'Client Portal Route Contract', path: 'tests/portal_route_contract.test.js' },
     { name: 'Client Portal Logic', path: 'tests/client_portal_logic.test.js' },
+    { name: 'Stored Client Portal Rendering', path: 'tests/client_portal_render.test.js' },
     { name: 'OTP Bookings Contract', path: 'tests/bookings_contract.test.js' },
     { name: 'OTP Booking Writer Policy', path: 'tests/booking_writer_policy.test.js' },
     { name: 'OTP Booking OS Handoff', path: 'tests/booking_os_handoff.test.js' },
