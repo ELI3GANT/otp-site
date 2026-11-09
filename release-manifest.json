@@ -1,39 +1,16 @@
 {
-  "releaseName": "otp-site-visual-intake-continuity-2026-11-09",
+  "releaseName": "otp-v2-experience-lore-checkpoint-2026-11-09",
   "includedFiles": [
     "DESIGN.md",
-    "archive.html",
     "bookings.css",
     "bookings.html",
-    "bookings.js",
-    "consultant-audit.html",
-    "floivation-case-study.js",
-    "floorops.html",
-    "home.css",
+    "docs/checkpoints/OTP_V2_EXPERIENCE.md",
+    "home-lore.css",
+    "home-lore.js",
     "index.html",
-    "insight.html",
-    "insights.html",
-    "privacy.html",
-    "project-stories.js",
-    "protocol.html",
-    "public-motion.js",
-    "public-system.css",
     "release-manifest.json",
-    "songwars.html",
-    "studio.css",
-    "studio.html",
-    "terms.html",
-    "tests/archive_case_study_contract.test.js",
     "tests/bookings_contract.test.js",
-    "tests/theme.test.js",
-    "theme-chrono.js",
-    "weatheros-privacy.html",
-    "weatheros-support.html",
-    "weatheros.html",
-    "weatheros/index.html",
-    "weatheros/privacy.html",
-    "weatheros/support.html",
-    "website-design.html"
+    "tests/homepage_visual_contract.test.js"
   ],
   "excludedDirtyFiles": [
     "The eight untracked FLOIVATION review images and transformation master remain local media sources and are excluded from this release.",
@@ -54,16 +31,12 @@
       "status": "passed"
     },
     {
-      "command": "node tests/theme.test.js && node tests/bookings_contract.test.js && node tests/homepage_visual_contract.test.js && node tests/archive_case_study_contract.test.js",
-      "status": "passed"
-    },
-    {
       "command": "npm run contracts:verify",
       "status": "passed"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed_359_files"
+      "status": "passed"
     },
     {
       "command": "npm run build:speed-insights",
@@ -78,7 +51,7 @@
       "status": "passed"
     },
     {
-      "command": "node --check theme-chrono.js && node --check public-motion.js && node --check bookings.js",
+      "command": "node --check home-lore.js",
       "status": "passed"
     },
     {
@@ -88,11 +61,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Owned Chromium: 12 public routes in both modes (24 states), no sampled contrast findings or horizontal overflow; shared/mobile mode controls, autonomous ambient transforms and reduced motion passed. 1440/390px Studio map, homepage FLOIVATION feature and compact Fast Lane selection passed; cross-origin preference URL verified. Isolated deeper intake passed both modes and sizes, disclosures, package changes, quote-first synthetic submission and return preferences. Eye refresh variants and restoration of original logo passed. Homepage hero markup preserved exactly."
+    "summary": "LORE and compact booking context inspected in desktop and actual 320/390/768px viewports, both modes, with no horizontal overflow. Settled and interference states captured. In-app browser confirmed running code trails and working pause/resume controls; stable accessible heading verified. Real-script lifecycle regression tests passed for scramble/final restoration, manual pause, off-screen stop, hidden-tab stop and reduced motion. Existing homepage outside the target section and added asset includes is byte-for-byte preserved. Reviewer approved scoped source and inspected visuals. Headless screenshot timeouts are an evidence-tool limitation, not claimed as product verification."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Baseline authenticated production sweep passed in release run 42538397920. The production workflow requires and reruns the authenticated sweep with GitHub-held credentials before deploying this candidate."
+    "summary": "Production baseline passed in run 42569463757. The guarded workflow reruns the required authenticated sweep before releasing this exact candidate."
   },
   "deploymentTarget": {
     "project": "otp-site",

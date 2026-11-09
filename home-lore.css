@@ -1,0 +1,68 @@
+/* A self-contained artist transmission. Outer page modes and motion stay independent. */
+.home-lore {
+  --lore-surface: #080a09;
+  --lore-text: #f1f0e8;
+  --lore-muted: #a6b0a7;
+  --lore-rule: #303831;
+  --lore-accent: color-mix(in srgb, var(--accent-otp) 60%, white);
+  --lore-ghost: #80e8d5;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-block: clamp(64px, 7vw, 112px);
+  background: var(--lore-surface);
+  color: var(--lore-text);
+  border-top: 1px solid var(--lore-rule);
+  contain: paint;
+}
+.home-lore::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 68% 55%, color-mix(in srgb, var(--lore-accent) 9%, transparent), transparent 65%), repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / .18) 3px 4px);
+}
+.lore-transmission { position: relative; z-index: 1; }
+.lore-topline, .lore-bottomline { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.home-lore p.lore-artist { margin: 0; max-width: none; color: var(--lore-text); font: 500 clamp(1.25rem, 3vw, 2.75rem)/1 var(--font-mono); letter-spacing: -.06em; }
+.lore-channel { font: .75rem/1.4 var(--font-mono); color: var(--lore-accent); letter-spacing: .16em; }
+.home-lore h2.lore-title { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: clamp(40px, 5vw, 80px) 0; font: 700 clamp(4rem, 22vw, 22rem)/.86 var(--font-public); letter-spacing: -.07em; color: var(--lore-text); text-wrap: nowrap; }
+.lore-glyph { position: relative; display: block; text-align: center; min-width: 0; }
+.lore-glyph::before, .lore-glyph::after { content: attr(data-glyph); position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.lore-glyph::before { color: var(--lore-accent); clip-path: inset(20% 0 58%); }
+.lore-glyph::after { color: var(--lore-ghost); clip-path: inset(61% 0 25%); }
+.home-lore.is-interference .lore-glyph::before { animation: lore-chroma-a 720ms steps(1, end) both; }
+.home-lore.is-interference .lore-glyph::after { animation: lore-chroma-b 720ms steps(1, end) both; }
+.home-lore .lore-bottomline p { margin: 0; color: var(--lore-muted); font-size: .75rem; }
+.lore-controls { display: flex; align-items: center; gap: 28px; }
+.home-lore .lore-link { color: var(--lore-text); }
+.lore-link>span { color: var(--lore-accent); transition: transform 180ms ease-out; }
+.lore-link:hover>span { transform: translate(3px,-3px); }
+.lore-motion-toggle { display: grid; place-items: center; width: 44px; height: 44px; padding: 12px; border: 1px solid var(--lore-rule); color: var(--lore-muted); background: transparent; }
+.lore-motion-toggle:hover { color: var(--lore-text); background: color-mix(in srgb, var(--lore-text) 6%, transparent); }
+.lore-motion-toggle svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+.lore-motion-toggle .lore-play-icon { display: none; }
+.lore-motion-toggle[aria-pressed="true"] .lore-pause-icon { display: none; }
+.lore-motion-toggle[aria-pressed="true"] .lore-play-icon { display: block; }
+.lore-code-field { position: absolute; z-index: -1; inset: 0; display: grid; grid-template-columns: repeat(14,minmax(0,1fr)); overflow: hidden; pointer-events: none; opacity: .13; color: var(--lore-accent); mask-image: linear-gradient(90deg, transparent, black 12%, black 88%, transparent); }
+.lore-code-column { align-self: start; font: .75rem/36px var(--font-mono); text-align: center; animation: lore-code-fall var(--trail-duration, 32s) linear var(--trail-delay, 0s) infinite; animation-play-state: paused; }
+.lore-code-column>span { display: block; white-space: pre; }
+.lore-scan { position: absolute; z-index: -1; inset: -100% 0 0; pointer-events: none; background: linear-gradient(180deg, transparent 0 45%, color-mix(in srgb, var(--lore-accent) 6%, transparent) 50%, transparent 55%); animation: lore-scan-pass 24s linear infinite; animation-play-state: paused; }
+.home-lore.is-running .lore-code-column, .home-lore.is-running .lore-scan { animation-play-state: running; }
+@keyframes lore-code-fall { from { transform: translate3d(0,-50%,0); } to { transform: translate3d(0,0,0); } }
+@keyframes lore-scan-pass { from { transform: translate3d(0,-25%,0); } to { transform: translate3d(0,75%,0); } }
+@keyframes lore-chroma-a { 0%,100% { opacity: 0; transform: translateX(0); } 12%,68% { opacity: .85; transform: translateX(-.025em); } 35% { opacity: .65; transform: translateX(.018em); } }
+@keyframes lore-chroma-b { 0%,100% { opacity: 0; transform: translateX(0); } 20%,70% { opacity: .7; transform: translateX(.02em); } 44% { opacity: .5; transform: translateX(-.012em); } }
+@media(max-width:600px) {
+  .lore-channel { font-size: .625rem; letter-spacing: .05em; }
+  .home-lore h2.lore-title { margin-block: 48px; }
+  .lore-controls { gap: 16px; }
+  .lore-bottomline { gap: 16px; align-items: start; }
+  .home-lore .lore-bottomline p { max-width: 12ch; font-size: .625rem; padding-top: 8px; }
+  .lore-code-field { opacity: .1; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .home-lore .lore-code-column, .home-lore .lore-scan, .home-lore .lore-glyph::before, .home-lore .lore-glyph::after { animation: none !important; }
+  .home-lore .lore-glyph::before, .home-lore .lore-glyph::after { opacity: 0; }
+}

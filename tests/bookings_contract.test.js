@@ -122,7 +122,7 @@ assert.ok(html.includes('private Client Portal link for documents, payment steps
 assert.ok(html.includes('OTP received your request. We’ll review the scope and reply with the cleanest next step.'), 'success screen uses final OTP copy');
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
-assert.ok(html.includes(`bookings.css?v=${offerSystemKey}`), 'booking stylesheet cache-bust matches offer system release');
+assert.ok(html.includes('bookings.css?v=20261109-compact-context-v1'), 'booking stylesheet cache-bust matches offer system release');
 assert.ok(html.includes(`bookings.js?v=${offerSystemKey}`), 'booking script cache-bust matches offer system release');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
