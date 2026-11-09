@@ -1,12 +1,8 @@
 {
-  "releaseName": "otp-client-portal-v2-2026-11-09",
+  "releaseName": "otp-linked-client-contact-read-2026-11-09",
   "includedFiles": [
-    "DESIGN.md",
-    "client.html",
-    "client.js",
-    "otp-v2-theme.css",
-    "tests/client_portal_render.test.js",
-    "tests/master_runner.js",
+    "server.js",
+    "tests/client_portal_logic.test.js",
     "release-manifest.json"
   ],
   "excludedDirtyFiles": [
@@ -43,7 +39,7 @@
       "status": "passed"
     },
     {
-      "command": "node --check client.js",
+      "command": "node --check server.js",
       "status": "passed"
     },
     {
@@ -52,16 +48,16 @@
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed baseline 42685029771; candidate workflow must rerun before deploying"
+      "status": "passed baseline 42694027017; candidate workflow reruns before deployment"
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local candidate with fictional Northstar Studio only: desktop and 390px browser layouts inspected; day/night switch and ready invoice disclosure work; blocked proposal stays gated; $600 total/$300 deposit/$300 remaining render correctly. Fixed legacy day-mode card/status/logo contrast. No real client or staff screenshots. Native device validation is separate."
+    "summary": "Frontend unchanged from passed production release 42694027017. Existing fictional browser day/night, document, balance and 390px layout evidence remains applicable. New server contact hydration is covered by injected-client regression tests and does not write records."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Verified unchanged production baseline from guarded workflow 42685029771 at commit 43a0232: all five authenticated GET checks passed. The candidate workflow reruns the authenticated sweep with repository secrets before deployment; local skipped-auth sweep is not used as evidence."
+    "summary": "Current production baseline verified by successful guarded release 42694027017. Candidate workflow must rerun all five authenticated GET checks before deployment; local skipped-auth checks are not counted."
   },
   "deploymentTarget": {
     "project": "otp-site",

@@ -3454,6 +3454,11 @@ async function loadClientPortalRecord(token, {
         data = await storedLookup(token);
     }
 
+    if (data && client && data.contact_id && !isClientPortalJobArchived(data)) {
+        const contact = await client.from('contacts').select('email,phone').eq('id', data.contact_id).maybeSingle();
+        if (contact.error) throw contact.error;
+        if (contact.data) data = { ...data, email: contact.data.email || '', phone: contact.data.phone || '' };
+    }
     return { parsed, data };
 }
 

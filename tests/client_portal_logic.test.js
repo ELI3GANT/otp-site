@@ -73,6 +73,26 @@ function fakePortalClient(result, calls = []) {
 }
 
 async function main() {
+  const linkedJob = { ...jobRow, contact_id: 'contact-sample', email: 'stale@example.test', phone: '' };
+  const linkedContact = { email: 'current@example.test', phone: '2025550148' };
+  const linkedCalls = [];
+  const linkedClient = {
+    from(table) {
+      linkedCalls.push(table);
+      return { select() { return this; }, eq(field, value) {
+        assert.strictEqual(field, table === 'contacts' ? 'id' : 'job_id');
+        assert.strictEqual(value, table === 'contacts' ? 'contact-sample' : jobRow.job_id);
+        return this;
+      }, async maybeSingle() { return { data: table === 'contacts' ? linkedContact : linkedJob, error: null }; } };
+    }
+  };
+  const linkedBefore = JSON.stringify(linkedJob);
+  const hydrated = await hooks.loadClientPortalRecord(token, { client: linkedClient });
+  const linkedPayload = hooks.buildClientPortalData(hydrated.data);
+  assert.strictEqual(linkedPayload.profile.email, linkedContact.email);
+  assert.strictEqual(linkedPayload.profile.phone, linkedContact.phone);
+  assert.deepStrictEqual(linkedCalls, ['ops_jobs', 'contacts']);
+  assert.strictEqual(JSON.stringify(linkedJob), linkedBefore, 'portal contact hydration is read-only');
   const parsed = hooks.readClientPortalToken(token);
   assert.deepStrictEqual(parsed, { ok: true, jobId: jobRow.job_id }, 'valid portal token resolves to job id server-side');
   assert.strictEqual(hooks.readClientPortalToken('bad-token').ok, false, 'invalid token is rejected safely');
