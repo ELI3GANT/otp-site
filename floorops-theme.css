@@ -1,0 +1,24 @@
+html[data-theme="light"] body.fo-page {
+  --fo-bg: #f5f7fa;
+  --fo-ink: #15243a;
+  --fo-muted: #526074;
+  --fo-stroke: #cad4df;
+}
+html[data-theme="light"] .fo-page .public-header,
+html[data-theme="light"] .fo-page .public-footer {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+html[data-theme="light"] .fo-page .public-header-cta { color: #805300 !important; }
+html[data-theme="light"] .fo-page .fo-hero,
+html[data-theme="light"] .fo-page .fo-console,
+html[data-theme="light"] .fo-page .fo-price-card,
+html[data-theme="light"] .fo-page .fo-dark-panel,
+html[data-theme="light"] .fo-page .fo-final { color: #f6f7fa; }
+html[data-theme="light"] .fo-page .fo-section:not(.fo-dark-panel):not(.fo-final) .fo-section-heading,
+html[data-theme="light"] .fo-page .fo-section:not(.fo-dark-panel):not(.fo-final) .fo-compat-heading { color: #15243a; }
+html[data-theme="light"] .fo-page .fo-section:not(.fo-dark-panel):not(.fo-final) .fo-section-intro,
+html[data-theme="light"] .fo-page .fo-footnote { color: #526074; }
+html[data-theme="light"] .fo-page .fo-kicker { color: #086c79; }
+html[data-theme="light"] .fo-page :is(.fo-hero,.fo-dark-panel,.fo-final) .fo-kicker { color: #9deaf1; }

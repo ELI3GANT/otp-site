@@ -1,5 +1,5 @@
 {
-  "releaseName": "otp-public-motion-booking-palette-2026-11-08",
+  "releaseName": "otp-site-day-night-slow-motion-2026-11-08",
   "includedFiles": [
     "DESIGN.md",
     "archive.html",
@@ -8,16 +8,20 @@
     "bookings.js",
     "consultant-audit.html",
     "floivation-case-study.js",
+    "floorops-theme.css",
     "floorops.html",
     "index.html",
     "insight.html",
     "insights.html",
     "privacy.html",
+    "project-page.css",
     "project-stories.js",
     "public-motion.js",
+    "public-shell.js",
     "public-system.css",
     "release-manifest.json",
     "studio.html",
+    "supporting-public.css",
     "terms.html",
     "tests/bookings_contract.test.js",
     "tests/theme.test.js",
@@ -44,7 +48,7 @@
     },
     {
       "command": "node tests/theme.test.js",
-      "status": "passed_actual_first_paint_navigation_and_refresh_regressions"
+      "status": "passed_palette_contrast_refresh_manual_mode_and_cross_tab_sync"
     },
     {
       "command": "npm run contracts:verify",
@@ -52,7 +56,7 @@
     },
     {
       "command": "npm run security:scan",
-      "status": "passed_357_files"
+      "status": "passed_358_files"
     },
     {
       "command": "npm run build:speed-insights",
@@ -77,11 +81,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local owned Chromium at 1440x900 and 390x844: Home to Start a Project preserves the exact computed accent; service selection preserves palette; refresh rotates; day/night switches rendered colors; booking and case study have no horizontal overflow; closing CTA screenshots inspected; ambient animation runs and reduced motion removes the atmosphere and reveals all sections."
+    "summary": "Owned Chromium at 1440x900 and 390x844: shared day/night control and saved mode checked across 12 routes in each mode (24 page states), including booking, Archive, Studio, services, journal list, legal pages, project stories and FloorOps. Sampled headings, copy, captions, filters and primary actions had no contrast findings; mobile menu and mode control did not overlap; no horizontal overflow; 28-second ambient transform changed between frames and reduced motion removed the atmosphere."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Baseline authenticated production sweep passed in release run 42536867896. The production workflow requires and reruns an authenticated sweep with GitHub-held credentials before deploying this candidate."
+    "summary": "Baseline authenticated production sweep passed in release run 42538397920. The production workflow requires and reruns the authenticated sweep with GitHub-held credentials before deploying this candidate."
   },
   "deploymentTarget": {
     "project": "otp-site",

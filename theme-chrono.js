@@ -283,8 +283,29 @@
         rootStyle.setProperty('--accent-otp', 'rgb(' + activeRgb + ')');
         rootStyle.setProperty('--accent-otp-ink', contrastText(activeRgb));
         applyBrowserThemeHints(normalized, palette);
+        window.dispatchEvent(new CustomEvent('otp:themechange', { detail: { theme: normalized } }));
         return palette;
     };
+
+    window.OTP.setTheme = function (nextTheme) {
+        var normalized = nextTheme === 'light' ? 'light' : 'dark';
+        storageSet('theme_manual_time', String(Date.now()));
+        storageSet('theme', normalized);
+        storageSet('theme_manual', 'true');
+        return window.OTP.applyPaletteForTheme(normalized);
+    };
+
+    function syncStoredTheme() {
+        var effectiveTheme = window.OTP.getEffectiveThemeForPaint();
+        var currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+        if (effectiveTheme !== currentTheme) window.OTP.applyPaletteForTheme(effectiveTheme);
+    }
+    window.addEventListener('storage', function (event) {
+        if (event.key === 'theme' || event.key === 'theme_manual' || event.key === 'theme_manual_time') syncStoredTheme();
+    });
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) syncStoredTheme();
+    });
 
     if (spectralVariant) {
         document.documentElement.classList.add(spectralVariant, 'spectral-v-sync');

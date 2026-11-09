@@ -3088,3 +3088,12 @@ html[data-palette] body.booking-site .booking-theme-toggle {
 html[data-palette] body.booking-site .primary-action:hover,
 html[data-palette] body.booking-site .top-actions a:last-child:hover,
 html[data-palette] body.booking-site .booking-form button:not(.ghost-button):hover { color: var(--ink) !important; }
+html[data-palette] body.booking-site .project-intake-cta {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper) !important;
+}
+html[data-palette] body.booking-site .project-intake-cta:hover {
+  background: var(--paper);
+  color: var(--ink) !important;
+}

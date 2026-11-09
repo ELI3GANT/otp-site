@@ -126,3 +126,19 @@ function paintPublicPalette(navigationType) {
 assert.deepEqual(paintPublicPalette('navigate'), { selected: 'purple', saved: 'purple', ink: '#050609' }, 'navigation preserves the selected palette even when random rolls would normally choose a spectral hue');
 assert.deepEqual(paintPublicPalette('reload'), { selected: 'orange', saved: 'orange', ink: '#050609' }, 'refresh rotates this tab and selects the higher contrast dark foreground for orange');
 console.log('Public palette navigation and refresh regressions passed.');
+
+const publicPage = new JSDOM('<html data-refresh-palette="true"><body></body></html>', {
+    url: 'https://www.onlytrueperspective.tech/', runScripts: 'outside-only'
+});
+publicPage.window.sessionStorage.setItem('otp_public_session_palette', 'blue');
+publicPage.window.eval(themeSource);
+publicPage.window.OTP.setTheme('light');
+assert.equal(publicPage.window.document.documentElement.dataset.theme, 'light');
+assert.equal(publicPage.window.localStorage.getItem('theme_manual'), 'true');
+assert.equal(publicPage.window.OTP.getEffectiveThemeForPaint(), 'light');
+publicPage.window.localStorage.setItem('theme', 'dark');
+publicPage.window.dispatchEvent(new publicPage.window.StorageEvent('storage', { key: 'theme' }));
+assert.equal(publicPage.window.document.documentElement.hasAttribute('data-theme'), false, 'mode changes from another tab update the page');
+assert.equal(publicPage.window.document.documentElement.dataset.palette, 'blue', 'day/night changes preserve the chosen color family');
+publicPage.window.close();
+console.log('Shared manual theme and cross-tab synchronization passed.');

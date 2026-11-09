@@ -1242,15 +1242,11 @@ if (bookingThemeToggle && window.OTP && typeof window.OTP.applyPaletteForTheme =
   };
   bookingThemeToggle.addEventListener('click', () => {
     const nextTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    try {
-      localStorage.setItem('theme', nextTheme);
-      localStorage.setItem('theme_manual', 'true');
-      localStorage.setItem('theme_manual_time', Date.now().toString());
-    } catch (error) { /* Theme still changes for this page when storage is unavailable. */ }
-    window.OTP.applyPaletteForTheme(nextTheme);
+    window.OTP.setTheme(nextTheme);
     applyActiveTheme(state.selectedPackage);
     syncBookingThemeToggle();
   });
+  window.addEventListener('otp:themechange', syncBookingThemeToggle);
   syncBookingThemeToggle();
 }
 

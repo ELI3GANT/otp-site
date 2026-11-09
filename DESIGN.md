@@ -246,7 +246,7 @@ The user's redesign explicitly supersedes the previous gold-only public directio
 
 `public-system.css` provides `.public-wrap`, `.public-section`, `.public-label`, `.public-title`, `.public-lead`, `.public-button`, `.public-text-link`, `.public-header`, `.public-footer`, `.public-paper`, `.public-cta`. Links have underlines or arrow affordances. 44px minimum interactive targets. Focus uses a 2px contrasting outline and 4px offset. Hover transitions use 180ms ease-out, image link zoom uses 320ms ease-out (1.025 scale); active buttons shift 1px; all movement disabled under reduced motion. All content visible without animation/JS.
 
-`public-motion.js` adds an inert palette light layer and a single entrance for sections below the first viewport. Entrances use IntersectionObserver, opacity, and an 18px translation. Ambient motion pauses in background tabs. Reduced-motion preference removes the atmosphere and immediately reveals every section, including when the preference changes during a visit.
+`public-motion.js` adds an inert palette light layer and a single entrance for sections below the first viewport. Entrances use IntersectionObserver, opacity, and an 18px translation. Ambient light follows a closed, slow path over 28 and 38 seconds and pauses in background tabs. Reduced-motion preference removes the atmosphere and immediately reveals every section, including when the preference changes during a visit.
 
 Archive: collection buttons and search first; optional native details houses status/category/year/technology and timeline. Broad collections are All, Products & systems, Client work, Music & events, Featured. Image-led card: image, index/type, title, short sentence, project-story link and quieter service enquiry. Hero card spans width; two-up supporting work; no repeated technology/service lists until project pages. Clear resets every field, collection and result count. Empty state has usable reset.
 
@@ -259,3 +259,7 @@ Prospective clients must find relevant work then start an enquiry. Creative visi
 ### Accepted implementation boundary
 
 Legacy campaign/product styling can keep its own palette; shared navigation connects the ecosystem. Legacy `styles.css` stays available for operational and older pages; new Home, Archive, Studio and project stories do not load its accumulated overrides. Old visual snapshot assertions must be replaced by meaningful behavioral coverage where this explicitly authorized redesign changes their expected layout.
+
+### Public day and night modes
+
+The shared first-paint theme controls page surfaces, text, borders, navigation, form states, and logo contrast. A 44px sun/moon control in the shared header uses the same saved manual preference as booking; changes synchronize across tabs without changing the selected palette. Shared layouts use a compact menu at 1000px and below. Legal and journal reading surfaces follow the selected mode. Intentional paper callouts and dark product demonstration panels keep explicit contrasting text. FloorOps supplies its own daylight surface overrides while preserving readable product demonstration panels.
