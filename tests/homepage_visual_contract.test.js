@@ -103,3 +103,24 @@ console.log('Homepage, Studio and shared navigation runtime contracts passed.');
   dom.window.close();
 }
 console.log('LORE motion pause, viewport, hidden-tab and reduced-motion contracts passed.');
+
+// The website showcase keeps native comparison controls and a useful no-script view.
+{
+  const dom = new JSDOM(read('website-design.html'), { url: 'https://www.onlytrueperspective.tech/website-design', runScripts: 'outside-only' });
+  const doc = dom.window.document;
+  const comparison = doc.querySelector('[data-web-compare]');
+  const range = comparison.querySelector('input[type="range"]');
+  assert.equal(comparison.querySelectorAll('figure img').length, 2);
+  assert.ok(doc.querySelector('a[href*="service=Website"]'));
+  dom.window.eval(read('website-design.js'));
+  assert.equal(comparison.querySelector('.web-compare-controls').hidden, false);
+  assert.equal(comparison.style.getPropertyValue('--compare'), '50%');
+  for (const value of ['0', '75', '100']) {
+    range.value = value;
+    range.dispatchEvent(new dom.window.Event('input'));
+    assert.equal(comparison.style.getPropertyValue('--compare'), value + '%');
+    assert.equal(range.getAttribute('aria-valuetext'), value + '% of the OTP redesign revealed');
+  }
+  dom.window.close();
+}
+console.log('Website service showcase and accessible comparison controls passed.');

@@ -18,7 +18,7 @@
     protocol: 'Music, identity, and a digital release world for ELI3GANT.',
     'song-wars': 'Song Wars 2026 winner: KawaiiBoyDamani. Explore the official spotlight and original campaign.',
     'otp-os': 'The private operational system behind OTP’s client work, documents, and delivery.',
-    floivation: 'A digital home for FLOIVATION’s streetwear, fitness, and community story.'
+    floivation: 'A digital home for FLOIVATION’s streetwear, fitness, and community story. Live now, with shop and content updates in progress.'
   };
   const node = (tag, className, text) => {
     const element = document.createElement(tag);
@@ -104,6 +104,12 @@
     const booking = createAction(project.bookingCtaLabel, project.bookingUrl, 'archive-project-action-conversion');
     if (project.id === 'otp-fixline') booking.dataset.fixlineEvent = 'audit_cta_selected';
     actions.append(booking);
+    if (project.id === 'floivation' && project.liveUrl) {
+      const live = createAction('Visit live site ↗', project.liveUrl, 'archive-project-action-live');
+      live.target = '_blank';
+      live.rel = 'noopener noreferrer';
+      actions.append(live);
+    }
     content.append(actions);
     card.append(content);
     return card;

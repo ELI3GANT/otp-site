@@ -283,3 +283,15 @@ Mechanism references: react-bits [DecryptedText](https://reactbits.dev/r/Decrypt
 ### Start a Project context sidebar
 
 The left `booking-context` becomes a compact companion to the existing four-step form. Keep every summary ID and all form behavior. Use the existing section label, heading `A clear next step.` at clamp(1.5rem,2.5vw,2.25rem), three line-icon rows (Review / Plan / Build), one short no-payment note, and a two-by-two live summary. Neutral rules, shared mode tokens, 44px targets and public type stacks remain. No repeated operational document lists or oversized stacked headline. Mobile keeps this compact block after the form so the primary entry comes first.
+
+## Website design service page · V2 continuation
+
+The dedicated `/website-design` page uses the shared public editorial system and seven refresh palettes. Replace text-heavy service explanation with real project imagery and concise icon-led information. Preserve the existing canonical `.html` URL, service schema, enquiry routing and shared day/night controls.
+
+The hero uses a 7:5 desktop grid, shared display type (`clamp(3.5rem,7.5vw,7rem)` / 500 / .95 / -.065em), a real FLOIVATION browser-frame screenshot with an explicit in-production label, and two clear enquiry/work links. Use Helvetica Neue and the mono labels already documented. Shared surface/text/accent/rule tokens drive every new panel; existing 4px spacing grid, 1440px maximum and public gutters apply. Mobile stacks at 800px; every image reserves intrinsic dimensions.
+
+Primitives: line-icon capability card (Build / Refine / Connect / Launch), screenshot case-study card with factual status, a native range-controlled HYH before/after comparison with labelled sides and a full-story link, a four-step process rail, native FAQ disclosures and the shared closing enquiry action. The comparison uses real before/after assets, 0–100 percent input and a 50-percent default; CSS clips the after image without reflow. Keyboard arrows and native touch input work. Without JS both labelled images are shown side by side. Decorative browser chrome, icons and illustrative miniatures are hidden from assistive technology.
+
+Motion reuses shared autonomous 28/38-second ambient light, below-fold section entrances and restrained 320ms image hover (1.025 scale). No additional animation dependency or continuous JavaScript loop. Pointer interaction on the comparison changes a CSS custom property; reduced motion keeps the same controls and static content. No results, customer metrics, price or release availability are invented. FLOIVATION remains in production; HYH is presented as a website redesign.
+
+FLOIVATION public status is now Live with ongoing development. The client-owned site is https://floivation.life/; its shop is a coming-soon destination with its first drop being prepared. Preserve historical Nov 6 screenshot/video dates and clarify that the live site can evolve beyond those captures. Case study and Archive expose the live URL; no personal client name, store checkout capability, release date, sales or performance result is inferred.

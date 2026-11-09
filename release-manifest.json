@@ -1,16 +1,18 @@
 {
-  "releaseName": "otp-v2-experience-lore-checkpoint-2026-11-09",
+  "releaseName": "otp-website-design-showcase-floivation-live-2026-11-09",
   "includedFiles": [
     "DESIGN.md",
-    "bookings.css",
-    "bookings.html",
-    "docs/checkpoints/OTP_V2_EXPERIENCE.md",
-    "home-lore.css",
-    "home-lore.js",
-    "index.html",
-    "release-manifest.json",
-    "tests/bookings_contract.test.js",
-    "tests/homepage_visual_contract.test.js"
+    "archive.html",
+    "archive.js",
+    "floivation-case-study.js",
+    "otp-projects.js",
+    "website-design.html",
+    "website-design.css",
+    "website-design.js",
+    "tests/archive_case_study_contract.test.js",
+    "tests/floivation_case_study_contract.test.js",
+    "tests/homepage_visual_contract.test.js",
+    "release-manifest.json"
   ],
   "excludedDirtyFiles": [
     "The eight untracked FLOIVATION review images and transformation master remain local media sources and are excluded from this release.",
@@ -51,7 +53,7 @@
       "status": "passed"
     },
     {
-      "command": "node --check home-lore.js",
+      "command": "node --check website-design.js && node --check archive.js && node --check floivation-case-study.js && node --check otp-projects.js",
       "status": "passed"
     },
     {
@@ -61,11 +63,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "LORE and compact booking context inspected in desktop and actual 320/390/768px viewports, both modes, with no horizontal overflow. Settled and interference states captured. In-app browser confirmed running code trails and working pause/resume controls; stable accessible heading verified. Real-script lifecycle regression tests passed for scramble/final restoration, manual pause, off-screen stop, hidden-tab stop and reduced motion. Existing homepage outside the target section and added asset includes is byte-for-byte preserved. Reviewer approved scoped source and inspected visuals. Headless screenshot timeouts are an evidence-tool limitation, not claimed as product verification."
+    "summary": "In-app browser candidate: desktop hero/project imagery and before/after rendering inspected; comparison keyboard ArrowRight/Home/End updates 51/0/100% reveal and accessible description; both comparison images loaded; dark/light page states and native FAQ disclosure inspected. Actual narrow layout measured at 391 CSS pixels with no horizontal overflow and stacked primary actions; mobile screenshot scaling is a browser evidence limitation, not claimed as pixel-perfect comparison. Runtime JSDOM comparison contract passed. Live FLOIVATION homepage and shop fetched: public domain works; shop explicitly says coming soon and first drop loading. Historical Nov 6 case-study capture dates are preserved."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Production baseline passed in run 42569463757. The guarded workflow reruns the required authenticated sweep before releasing this exact candidate."
+    "summary": "Baseline authenticated sweep passed in production release 42637994581. The guarded workflow requires the authenticated sweep again before deploying this candidate."
   },
   "deploymentTarget": {
     "project": "otp-site",
