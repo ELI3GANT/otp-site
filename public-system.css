@@ -115,3 +115,6 @@ html[data-theme="light"] .public-theme-toggle .public-theme-moon { display: bloc
   .public-page *, .public-page *::before, .public-page *::after { animation: none !important; transition: none !important; }
 }
 @media(max-width:1000px){.public-header:has(.public-menu[open]) .public-theme-toggle{margin-right:80px}}
+
+.otp-line-icon{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.home-emblem{position:relative}.home-emblem .eye-draw{position:absolute;width:75%;height:75%;filter:brightness(0);pointer-events:none}.home-emblem.is-drawing>img{visibility:hidden}html[data-theme="light"] .home-emblem .eye-draw{filter:brightness(0) invert(1)}

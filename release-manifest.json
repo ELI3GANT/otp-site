@@ -1,5 +1,5 @@
 {
-  "releaseName": "otp-site-day-night-slow-motion-2026-11-08",
+  "releaseName": "otp-site-visual-intake-continuity-2026-11-09",
   "includedFiles": [
     "DESIGN.md",
     "archive.html",
@@ -7,25 +7,27 @@
     "bookings.html",
     "bookings.js",
     "consultant-audit.html",
-    "floivation-case-study.js",
-    "floorops-theme.css",
     "floorops.html",
+    "home.css",
     "index.html",
     "insight.html",
     "insights.html",
     "privacy.html",
-    "project-page.css",
-    "project-stories.js",
+    "protocol.html",
     "public-motion.js",
-    "public-shell.js",
     "public-system.css",
     "release-manifest.json",
+    "songwars.html",
+    "studio.css",
     "studio.html",
-    "supporting-public.css",
     "terms.html",
+    "tests/archive_case_study_contract.test.js",
     "tests/bookings_contract.test.js",
     "tests/theme.test.js",
     "theme-chrono.js",
+    "weatheros-privacy.html",
+    "weatheros-support.html",
+    "weatheros.html",
     "website-design.html"
   ],
   "excludedDirtyFiles": [
@@ -47,8 +49,8 @@
       "status": "passed"
     },
     {
-      "command": "node tests/theme.test.js",
-      "status": "passed_palette_contrast_refresh_manual_mode_and_cross_tab_sync"
+      "command": "node tests/theme.test.js && node tests/bookings_contract.test.js && node tests/homepage_visual_contract.test.js && node tests/archive_case_study_contract.test.js",
+      "status": "passed"
     },
     {
       "command": "npm run contracts:verify",
@@ -56,7 +58,7 @@
     },
     {
       "command": "npm run security:scan",
-      "status": "passed_358_files"
+      "status": "passed_359_files"
     },
     {
       "command": "npm run build:speed-insights",
@@ -68,10 +70,10 @@
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed_public_http_sweep_auth_deferred_to_required_workflow_gate"
+      "status": "passed"
     },
     {
-      "command": "node --check theme-chrono.js && node --check public-motion.js && node --check bookings.js && node --check floivation-case-study.js",
+      "command": "node --check theme-chrono.js && node --check public-motion.js && node --check bookings.js",
       "status": "passed"
     },
     {
@@ -81,7 +83,7 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Owned Chromium at 1440x900 and 390x844: shared day/night control and saved mode checked across 12 routes in each mode (24 page states), including booking, Archive, Studio, services, journal list, legal pages, project stories and FloorOps. Sampled headings, copy, captions, filters and primary actions had no contrast findings; mobile menu and mode control did not overlap; no horizontal overflow; 28-second ambient transform changed between frames and reduced motion removed the atmosphere."
+    "summary": "Owned Chromium: 12 public routes in both modes (24 states), no sampled contrast findings or horizontal overflow; shared/mobile mode controls, autonomous ambient transforms and reduced motion passed. 1440/390px Studio map, homepage FLOIVATION feature and compact Fast Lane selection passed; cross-origin preference URL verified. Isolated deeper intake passed both modes and sizes, disclosures, package changes, quote-first synthetic submission and return preferences. Eye refresh variants and restoration of original logo passed. Homepage hero markup preserved exactly."
   },
   "authenticatedSweep": {
     "status": "passed",

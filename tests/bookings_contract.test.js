@@ -18,7 +18,7 @@ const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
 const bookingHandoff = read('server/booking-handoff.js');
-const offerSystemKey = '20261108-day-night-motion-v4';
+const offerSystemKey = '20261109-visual-intake-v1';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -109,8 +109,8 @@ assert.ok(html.indexOf('id="service-selector"') < html.indexOf('class="booking-s
 assert.ok(html.includes('package-selection-summary'), 'selected package summary is present');
 assert.ok(html.includes('id="fast-lanes"'), 'Fast Lane section is visible on the bookings page');
 assert.ok(html.includes('id="fast-lane-grid"'), 'Fast Lane card grid is present');
-assert.ok(html.includes('Urgent work can still start cleanly.'), 'Fast Lane section remains visible after intake');
-assert.ok(html.includes('Same-day reels, event promos, website cleanup, business packs, brand launch assets, and urgent client-flow fixes'), 'Fast Lane section explains the visible offer lanes');
+assert.ok(html.includes('Focused work. Choose a lane; we’ll confirm scope and availability.'), 'Fast Lane section remains visible after intake');
+assert.ok(js.includes('const visuals =') && js.includes('fast-lane-icon'), 'Fast Lane section explains the visible offer lanes');
 assert.ok(html.includes('booking-mini-summary'), 'desktop booking mini-summary is present');
 assert.ok(html.includes('Submit Booking Request'), 'final CTA is explicit');
 assert.ok(html.includes('Not Sure Yet'), 'Oracle recommendation path is visible');

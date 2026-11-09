@@ -555,6 +555,7 @@ function updateSummaries() {
   const pillName = els.activePackagePill.querySelector('strong');
   if (pillName) pillName.textContent = selected.pill;
   updateQuickSelectorState();
+  try { wireProjectIntakeAttribution(); } catch (_) { /* Display preferences never block the form. */ }
 }
 
 function selectPackage(packageName, options = {}) {
@@ -685,43 +686,33 @@ function renderFastLanes() {
     card.setAttribute('aria-pressed', selected ? 'true' : 'false');
     card.setAttribute('aria-label', `${service} maps to ${offer.package_fit || mappedPackage}${selected ? ' selected' : ''}`);
 
-    const eyebrow = document.createElement('span');
-    eyebrow.className = 'fast-lane-eyebrow';
-    eyebrow.textContent = 'Fast Lane';
-
-    const head = document.createElement('div');
-    head.className = 'fast-lane-head';
-    const headCopy = document.createElement('div');
-    appendText(headCopy, 'h3', service, 'Fast Lane');
-    appendText(headCopy, 'strong', mappedPackage, 'Mapped package');
+    const visuals = {
+      'Same-Day Reel': ['M4 7h24v20H4z M4 13h24 M9 7l4 6 M18 7l4 6 M14 17l7 4-7 4z', 'Footage ready. One focused edit.'],
+      'Event Promo': ['M5 8h22v20H5z M10 4v8 M22 4v8 M5 16h22 M11 21h10', 'A clear promo for your next event.'],
+      'Business Content Pack': ['M5 6h16v19H5z M11 11h16v18H11 M9 11h8 M9 16h8', 'Connected assets for your business.'],
+      'Website Cleanup': ['M4 5h24v22H4z M4 11h24 M10 17l-4 3 4 3 M22 17l4 3-4 3', 'Polish a page. Clear the friction.'],
+      'Brand Launch Assets': ['M11 21c-2-8 3-15 15-16 0 12-7 17-15 16z M11 21l-5 5 M8 17H4l5-7 M15 24v4l7-7', 'The essentials for your next launch.'],
+      'Emergency Booking/Client Flow Fix': ['M5 5h8v8H5z M19 19h8v8h-8z M9 13v10h10 M13 9h10v10', 'Get the client path moving again.']
+    };
+    const [path, summary] = visuals[service] || ['M16 4l-9 14h8l-1 10 11-16h-9z', 'Focused work. Scope confirmed first.'];
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('viewBox', '0 0 32 32');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.classList.add('fast-lane-icon');
+    const stroke = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    stroke.setAttribute('d', path); icon.append(stroke);
+    const head = document.createElement('div'); head.className = 'fast-lane-head';
+    appendText(head, 'h3', service, 'Fast Lane');
     const status = document.createElement('span');
     status.className = selected ? 'selected-indicator selected' : 'selected-indicator';
-    status.textContent = selected ? 'Selected' : 'Select';
-    head.append(headCopy, status);
-
+    status.textContent = selected ? '✓ Selected' : '↗'; head.append(status);
     const description = document.createElement('p');
-    description.className = 'fast-lane-description';
-    description.textContent = text(offer.description || details.description, 'A focused OTP lane for a scoped creative request.');
-
-    const meta = document.createElement('div');
-    meta.className = 'fast-lane-meta';
-    [
-      ['Urgency', offer.urgency || details.turnaround || 'Scoped after review'],
-      ['Best for', details.ideal || 'Fast creative requests'],
-      ['Package fit', `${offer.package_fit || mappedPackage}${pkg ? ` / Selects ${packageLabel(pkg)}` : ''}`]
-    ].forEach(([label, value]) => {
-      const item = document.createElement('span');
-      const key = document.createElement('em');
-      const val = document.createElement('b');
-      key.textContent = label;
-      val.textContent = value;
-      item.append(key, val);
-      meta.append(item);
-    });
-
-    const cta = document.createElement('span');
-    cta.className = 'fast-lane-cta';
-    cta.textContent = selected ? 'Lane selected' : 'Use this lane';
+    description.className = 'fast-lane-description'; description.textContent = summary;
+    const meta = document.createElement('div'); meta.className = 'fast-lane-meta';
+    appendText(meta, 'span', offer.urgency || details.turnaround || 'Scope reviewed first', 'Scoped timing');
+    appendText(meta, 'span', mappedPackage, 'Mapped package');
+    const cta = document.createElement('span'); cta.className = 'fast-lane-cta';
+    cta.textContent = selected ? 'Lane selected ✓' : 'Use this lane ↗';
 
     const handleSelect = () => selectFastLane(offer);
     card.addEventListener('click', handleSelect);
@@ -731,7 +722,7 @@ function renderFastLanes() {
       handleSelect();
     });
 
-    card.append(eyebrow, head, description, meta, cta);
+    card.append(icon, head, description, meta, cta);
     els.fastLaneGrid.append(card);
   });
 }
@@ -1135,11 +1126,20 @@ async function submitBooking(event) {
 
 function wireProjectIntakeAttribution() {
   const cta = document.querySelector('.project-intake-cta');
-  if (!cta || !window.OTPAttribution) return;
+  if (!cta) return;
   const base = cta.getAttribute('data-intake-base') || cta.getAttribute('href') || '';
-  const href = window.OTPAttribution.buildUrlWithAttribution(base);
+  const href = window.OTPAttribution ? window.OTPAttribution.buildUrlWithAttribution(base) : base;
   if (href) {
-    cta.href = href;
+    const destination = new URL(href, window.location.origin);
+    if (window.OTP && typeof window.OTP.getPublicThemeState === 'function') {
+      const preference = window.OTP.getPublicThemeState();
+      destination.searchParams.set('otp_palette', preference.palette);
+      destination.searchParams.set('otp_theme', preference.theme);
+      destination.searchParams.set('otp_theme_mode', preference.mode);
+    }
+    if (els.service.value) destination.searchParams.set('service', els.service.value);
+    if (state.selectedPackage) destination.searchParams.set('package', state.selectedPackage);
+    cta.href = destination.href;
     cta.rel = 'noopener noreferrer';
   }
 }
@@ -1233,6 +1233,7 @@ if (els.form) {
 }
 
 const bookingThemeToggle = document.querySelector('[data-booking-theme-toggle]');
+window.addEventListener('otp:themechange', wireProjectIntakeAttribution);
 if (bookingThemeToggle && window.OTP && typeof window.OTP.applyPaletteForTheme === 'function') {
   const syncBookingThemeToggle = () => {
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';

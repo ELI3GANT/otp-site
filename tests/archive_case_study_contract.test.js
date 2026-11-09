@@ -168,7 +168,7 @@ assert.ok(flooropsCard.querySelector('.archive-project-media img').src.endsWith(
 assert.ok(flooropsCard.querySelector('.archive-floorops-bigline')?.textContent.includes('CLEAR THE DOCK.'), 'runtime includes FloorOps branded preview headline');
 assert.strictEqual(flooropsCard.querySelectorAll('.archive-floorops-mini-row').length, 3, 'runtime shows three illustrative workflow steps');
 assert.strictEqual(floivationCard.querySelector('.archive-project-action-primary').textContent, 'Read Case Study ↗', 'FLOIVATION keeps its custom case-study action in the rendered Archive card');
-assert.ok(archive.includes('archive.css?v=20261027-floorops-card-v3') && archive.includes('archive.js?v=20261108-floivation-case-study-v1'), 'Archive retains styled FloorOps card and refreshes project links');
+assert.ok(archive.includes('archive.css?v=20261109-day-night-v5') && archive.includes('archive.js?v=20261108-floivation-case-study-v1'), 'Archive retains styled FloorOps card and refreshes project links');
 
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-primary').length, projects.length, 'runtime renders one primary action per project');

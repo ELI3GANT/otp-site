@@ -189,6 +189,20 @@
         return null;
     }
 
+    var entryParams = new URLSearchParams(window.location.search || '');
+    var entryPalette = entryParams.get('reset_theme') === '1' ? null : findPalette(entryParams.get('otp_palette'));
+    var entryTheme = entryParams.get('reset_theme') === '1' ? null : normalizeTheme(entryParams.get('otp_theme'));
+    if (entryTheme) {
+        if (entryParams.get('otp_theme_mode') === 'auto') {
+            storageRemove('theme_manual');
+            storageRemove('theme_manual_time');
+        } else {
+            storageSet('theme_manual_time', String(Date.now()));
+            storageSet('theme', entryTheme);
+            storageSet('theme_manual', 'true');
+        }
+    }
+
     var hueIndex = 0;
     try {
         hueIndex = Math.floor(Math.random() * window.OTP_PALETTES.length);
@@ -207,7 +221,11 @@
             for (var paletteIndex = 0; paletteIndex < window.OTP_PALETTES.length; paletteIndex += 1) {
                 if (window.OTP_PALETTES[paletteIndex].name === activeSessionPalette) sessionPaletteIndex = paletteIndex;
             }
-            if (!isRefresh && sessionPaletteIndex >= 0) {
+            if (!isRefresh && entryPalette) {
+                hueIndex = window.OTP_PALETTES.indexOf(entryPalette);
+                sessionSet('otp_public_session_palette', entryPalette.name);
+                storageSet('otp_public_home_last_palette', entryPalette.name);
+            } else if (!isRefresh && sessionPaletteIndex >= 0) {
                 hueIndex = sessionPaletteIndex;
             } else {
                 var previousPalette = activeSessionPalette || storageGet('otp_public_home_last_palette');
@@ -283,6 +301,17 @@
         rootStyle.setProperty('--accent-otp', 'rgb(' + activeRgb + ')');
         rootStyle.setProperty('--accent-otp-ink', contrastText(activeRgb));
         applyBrowserThemeHints(normalized, palette);
+        if (entryParams.has('otp_palette') || entryParams.has('otp_theme')) {
+            try {
+                var address = new URL(window.location.href);
+                if (entryParams.has('otp_palette')) address.searchParams.set('otp_palette', palette.name);
+                if (entryParams.has('otp_theme')) {
+                    address.searchParams.set('otp_theme', normalized);
+                    address.searchParams.set('otp_theme_mode', storageGet('theme_manual') === 'true' ? 'manual' : 'auto');
+                }
+                window.history.replaceState(window.history.state, '', address.href);
+            } catch (eAddress) { /* Display still updates when history is unavailable. */ }
+        }
         window.dispatchEvent(new CustomEvent('otp:themechange', { detail: { theme: normalized } }));
         return palette;
     };
@@ -293,6 +322,14 @@
         storageSet('theme', normalized);
         storageSet('theme_manual', 'true');
         return window.OTP.applyPaletteForTheme(normalized);
+    };
+
+    window.OTP.getPublicThemeState = function () {
+        return {
+            palette: window.OTP_ACTIVE_PALETTE_ID,
+            theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark',
+            mode: storageGet('theme_manual') === 'true' ? 'manual' : 'auto'
+        };
     };
 
     function syncStoredTheme() {

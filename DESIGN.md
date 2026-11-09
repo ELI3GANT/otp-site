@@ -263,3 +263,9 @@ Legacy campaign/product styling can keep its own palette; shared navigation conn
 ### Public day and night modes
 
 The shared first-paint theme controls page surfaces, text, borders, navigation, form states, and logo contrast. A 44px sun/moon control in the shared header uses the same saved manual preference as booking; changes synchronize across tabs without changing the selected palette. Shared layouts use a compact menu at 1000px and below. Legal and journal reading surfaces follow the selected mode. Intentional paper callouts and dark product demonstration panels keep explicit contrasting text. FloorOps supplies its own daylight surface overrides while preserving readable product demonstration panels.
+
+## November 2026 visual and intake continuation
+
+Preserve the entire homepage hero layout and typography. Below it, feature the approved FLOIVATION case study using its existing published screenshot, concise project context, and line icons. Studio uses a native SVG/CSS discipline map and icon-led capability/process cards. The map's 36/48-second orbital loops and 12-second node drift pause in hidden tabs; the shared reduced-motion override removes movement. No animation dependencies or invented outcome claims.
+
+The homepage eye reveals the original logo through an animated SVG mask in about 2.4 seconds, once per page load. Four stroke order/direction variants avoid consecutive repetition when session storage is available. Completion and reduced-motion changes restore the original image; image loading failure leaves the static fallback. Public cross-origin intake links carry only allowlisted palette, mode, service and package preferences; private/admin APIs remain unchanged. Fast Lanes keep their keyboard selection and package mapping while using one-sentence, icon-led cards.

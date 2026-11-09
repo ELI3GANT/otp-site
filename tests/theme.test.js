@@ -142,3 +142,26 @@ assert.equal(publicPage.window.document.documentElement.hasAttribute('data-theme
 assert.equal(publicPage.window.document.documentElement.dataset.palette, 'blue', 'day/night changes preserve the chosen color family');
 publicPage.window.close();
 console.log('Shared manual theme and cross-tab synchronization passed.');
+
+for (const [query, expected] of [
+    ['otp_palette=purple&otp_theme=light&otp_theme_mode=manual', {palette:'purple',theme:'light',mode:'manual'}],
+    ['otp_palette=unknown&otp_theme=invalid', null],
+    ['otp_palette=blue&otp_theme=light&otp_theme_mode=auto', {palette:'blue',mode:'auto'}]
+]) {
+    const page = new JSDOM('<html data-refresh-palette="true"><body></body></html>', {
+        url: 'https://otp-os.vercel.app/bookings?' + query, runScripts:'outside-only'
+    });
+    page.window.performance.getEntriesByType = () => [{type:'navigate'}];
+    page.window.eval(themeSource);
+    const state = page.window.OTP.getPublicThemeState();
+    if (expected) for (const key of Object.keys(expected)) assert.equal(state[key], expected[key]);
+    else {
+        assert.notEqual(state.palette, 'unknown');
+        assert.equal(state.mode, 'auto');
+    }
+    page.window.OTP.setTheme('dark');
+    assert.equal(page.window.OTP.getPublicThemeState().theme, 'dark');
+    assert.equal(page.window.OTP.getPublicThemeState().mode, 'manual');
+    page.window.close();
+}
+console.log('Cross-origin public display preferences accept allowlisted values and preserve automatic mode.');
