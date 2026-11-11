@@ -1,13 +1,20 @@
 {
-  "releaseName": "otp-linked-client-contact-read-2026-11-09",
+  "releaseName": "lore-signal-transmission-2026-11-11",
   "includedFiles": [
-    "server.js",
-    "tests/client_portal_logic.test.js",
+    "assets/audio/blackbox-signal.m4a",
+    "assets/audio/blackbox-signal.mp3",
+    "signal-config.js",
+    "signal.css",
+    "signal.html",
+    "signal.js",
+    "tests/signal_contract.test.js",
     "release-manifest.json"
   ],
+  "removedFiles": [
+    "assets/audio/blackbox-signal.wav: removed because the old 24-second asset did not match the supplied master; the approved excerpt remains available as M4A and MP3."
+  ],
   "excludedDirtyFiles": [
-    "Unrelated FLOIVATION media files stay in the original checkout.",
-    "OTP OS native/backend work releases from its own repository."
+    "Only the scoped LORE signal page, its two 24-second teaser encodings, its contract test, and this manifest are included; the previous mismatched WAV asset is removed."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -20,7 +27,7 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed"
+      "status": "passed after npm ci; full master suite passed"
     },
     {
       "command": "npm run contracts:verify",
@@ -36,28 +43,32 @@
     },
     {
       "command": "npm run master_test:ci",
+      "status": "passed against https://www.onlytrueperspective.tech"
+    },
+    {
+      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
+      "status": "passed for public HTTP checks; authenticated checks are rerun by the guarded workflow"
+    },
+    {
+      "command": "node --check signal.js && node --check signal-config.js && node --check server.js",
       "status": "passed"
     },
     {
-      "command": "node --check server.js",
+      "command": "node tests/signal_contract.test.js",
       "status": "passed"
     },
     {
       "command": "git diff --check",
       "status": "passed"
-    },
-    {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed baseline 42694027017; candidate workflow reruns before deployment"
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Frontend unchanged from passed production release 42694027017. Existing fictional browser day/night, document, balance and 390px layout evidence remains applicable. New server contact hydration is covered by injected-client regression tests and does not write records."
+    "summary": "Zen browser local QA after cache-busted reload: Current Transmissions heading and description are stacked without overlap; decorative code field and scan sweep move visibly; play/pause updates state and the 24-second preview progresses. Reduced-motion CSS remains enabled."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Current production baseline verified by successful guarded release 42694027017. Candidate workflow must rerun all five authenticated GET checks before deployment; local skipped-auth checks are not counted."
+    "summary": "Release workflow performs authenticated production GET checks using configured OTP admin credentials before deployment; local public-only sweep passed and did not claim authenticated coverage."
   },
   "deploymentTarget": {
     "project": "otp-site",
