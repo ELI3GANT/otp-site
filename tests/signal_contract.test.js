@@ -1,9 +1,7 @@
 /**
- * BLACKBOX SIGNAL CONTRACT TEST
- * Validates route wiring, SEO/OpenGraph metadata, UI architecture,
- * multi-codec audio configuration, anti-leak protection, and accessibility.
+ * LORE SIGNAL contract: route, first-screen identity, audio privacy, responsive
+ * behavior, accessible controls, and reduced-motion/background lifecycle.
  */
-
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
@@ -11,9 +9,6 @@ const { JSDOM } = require('jsdom');
 
 const root = path.join(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
-
-console.log('🧪 BLACKBOX SIGNAL CONTRACT TEST...');
-
 const html = read('signal.html');
 const css = read('signal.css');
 const js = read('signal.js');
@@ -23,165 +18,72 @@ const sitemap = read('sitemap.xml');
 const index = read('index.html');
 const config = require(path.join(root, 'signal-config.js'));
 
-// 1. Server Routing & Aliases
-assert.match(server, /'\/signal': 'signal\.html'/, 'server exposes clean /signal route');
-assert.match(server, /app\.get\('\/signal\.html',\s*\(req,\s*res\)\s*=>\s*res\.redirect\(308,\s*'\/signal'\)\)/, 'server issues 308 redirect for /signal.html');
-assert.match(server, /'\/(?:blackbox|blackbox-signal)'/, 'server provides blackbox alias routes');
+console.log('🧪 LORE SIGNAL CONTRACT TEST...');
 
-// Vercel Routing
-const vercelRedirect = vercel.routes.find((r) => r.src === '^/signal\\.html$');
-assert.ok(vercelRedirect, 'vercel.json defines redirect for ^/signal\\.html$');
-assert.strictEqual(vercelRedirect.status, 308, 'vercel redirect is 308 permanent');
-assert.strictEqual(vercelRedirect.headers.Location, '/signal', 'vercel redirect points to /signal');
+assert.match(server, /'\/signal': 'signal\.html'/, 'server serves /signal');
+assert.match(server, /app\.get\('\/signal\.html',\s*\(req,\s*res\)\s*=>\s*res\.redirect\(308,\s*'\/signal'\)\)/, 'legacy route redirects to /signal');
+assert.ok(vercel.routes.some((route) => route.src === '^/signal\\.html$' && route.status === 308 && route.headers.Location === '/signal'), 'Vercel preserves canonical route redirect');
+assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/signal</loc>'), 'sitemap contains canonical Signal URL');
 
-// Sitemap
-assert.ok(sitemap.includes('<loc>https://www.onlytrueperspective.tech/signal</loc>'), 'sitemap includes /signal canonical');
+assert.match(html, /<title>LORE \/\/ SIGNAL 001 — ELI3GANT<\/title>/, 'page metadata identifies LORE');
+assert.match(html, /rel="canonical" href="https:\/\/www\.onlytrueperspective\.tech\/signal"/, 'canonical URL remains unchanged');
+assert.match(html, /property="og:image" content="https:\/\/www\.onlytrueperspective\.tech\/assets\/otp-social-preview\.png"/, 'social preview image is configured');
+assert.match(html, /name="twitter:card" content="summary_large_image"/, 'large social card is configured');
+assert.match(html, /signal\.css\?v=20261111-lore-signal-v4/);
+assert.match(html, /signal\.js\?v=20261111-lore-signal-v4/);
 
-// 2. SEO & OpenGraph Metadata
-assert.ok(html.includes('<title>BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE</title>'), 'page title is set');
-assert.ok(html.includes('rel="canonical" href="https://www.onlytrueperspective.tech/signal"'), 'canonical URL is set');
-assert.ok(html.includes('property="og:title" content="BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE"'), 'og:title is set');
-assert.ok(html.includes('property="og:description" content="An unreleased transmission from the OTP vault."'), 'og:description is set');
-assert.ok(html.includes('property="og:url" content="https://www.onlytrueperspective.tech/signal"'), 'og:url is set');
-assert.ok(html.includes('name="twitter:card" content="summary_large_image"'), 'twitter:card is summary_large_image');
-assert.ok(html.includes('name="twitter:title" content="BLACKBOX SIGNAL — ONLYTRUEPERSPECTIVE"'), 'twitter:title is set');
+assert.strictEqual(config.teaserDurationSeconds, 24, 'production teaser remains 24 seconds');
+assert.strictEqual(config.audioSources[0].src, '/assets/audio/blackbox-signal.m4a', 'Safari-first M4A is the primary source');
+assert.strictEqual(config.audioSources[1].src, '/assets/audio/blackbox-signal.mp3', 'MP3 is the browser fallback');
+assert.deepStrictEqual(config.audioSources.map((source) => source.type), ['audio/mp4', 'audio/mpeg'], 'public sources are M4A and MP3 only');
+assert.ok(!config.audioSources.some((source) => source.src.includes('.wav')), 'uncompressed WAV is not publicly configured');
+assert.ok(!fs.existsSync(path.join(root, 'assets/audio/blackbox-signal.wav')), 'public WAV is removed');
+assert.ok(config.currentReleases.some((release) => release.id === 'protocol' && release.url.includes('distrokid.com')), 'PROTOCOL keeps its verified listening link');
+assert.strictEqual(config.currentReleases.find((release) => release.id === 'lets-get-lit').url, 'https://soundcloud.com/eli3gant/lgl-lets-get-lit', 'LET’S GET LIT keeps its verified SoundCloud link');
 
-// 3. Centralized Multi-Codec Audio Configuration
-assert.ok(config.signalNumber, 'config defines signalNumber');
-assert.ok(config.signalName, 'config defines signalName');
-assert.ok(config.audioSource || config.audioSources, 'config defines audio source(s)');
-assert.ok(Array.isArray(config.audioSources), 'config defines multi-codec audioSources array');
-
-const audioTypes = config.audioSources.map((s) => s.type);
-assert.ok(audioTypes.includes('audio/mpeg'), 'audioSources includes MP3 (audio/mpeg)');
-assert.ok(audioTypes.includes('audio/mp4'), 'audioSources includes M4A (audio/mp4)');
-assert.ok(audioTypes.includes('audio/wav'), 'audioSources includes WAV (audio/wav)');
-
-assert.ok(config.teaserDurationSeconds === null || typeof config.teaserDurationSeconds === 'number', 'teaser duration supports dynamic or capped length');
-assert.ok(Array.isArray(config.currentReleases) && config.currentReleases.length >= 2, 'config declares current releases');
-assert.ok(Array.isArray(config.timeline) && config.timeline.length >= 3, 'config declares timeline');
-
-// Release items
-const protocolRel = config.currentReleases.find((r) => r.id === 'protocol');
-assert.ok(protocolRel, 'PROTOCOL is in current releases config');
-assert.ok(protocolRel.url.includes('distrokid.com'), 'PROTOCOL uses official DistroKid URL');
-
-const letsGetLitRel = config.currentReleases.find((r) => r.id === 'lets-get-lit');
-assert.ok(letsGetLitRel, "LET'S GET LIT is in current releases config");
-assert.strictEqual(letsGetLitRel.url, 'https://soundcloud.com/eli3gant/lgl-lets-get-lit', "LET'S GET LIT points to exact official SoundCloud track URL");
-
-// Timeline items
-const timelineNames = config.timeline.map((t) => t.name);
-assert.ok(timelineNames.includes('PROTOCOL'), 'timeline has PROTOCOL');
-assert.ok(timelineNames.includes('SIGNAL 001'), 'timeline has SIGNAL 001');
-assert.ok(timelineNames.includes('[ REDACTED ]'), 'timeline has [ REDACTED ]');
-
-// 4. Anti-Leak & Audio Protection (No fake tech claims, no red dev boxes)
-assert.ok(!html.includes('<audio controls'), 'page does not expose browser default audio controls');
-assert.ok(!html.includes('download='), 'page does not present audio download links');
-assert.ok(!html.includes('24-BIT ENCRYPTED'), 'fake encryption language removed');
-assert.ok(!html.includes('signal-standby-banner'), 'red developer error box removed');
-assert.ok(html.includes('[ 24 SEC INTERCEPT ]'), 'intentional intercept telemetry present');
-
-// 5. DOM & Accessibility
-const dom = new JSDOM(html, {
-  url: 'https://www.onlytrueperspective.tech/signal',
-  runScripts: 'outside-only'
-});
+const dom = new JSDOM(html, { url: 'https://www.onlytrueperspective.tech/signal' });
 const doc = dom.window.document;
+assert.strictEqual(doc.querySelector('.signal-skip').getAttribute('href'), '#signal-main', 'keyboard skip link targets main');
+assert.strictEqual(doc.querySelector('#signal-title').textContent.trim(), 'LORE', 'hero uses the homepage LORE identity');
+assert.strictEqual(doc.querySelector('#signal-title').getAttribute('data-text'), 'LORE', 'glitch layer duplicates LORE only');
+assert.ok(doc.querySelector('.signal-identity-row').textContent.includes('ELI3GANT'), 'artist identity is visible in the hero');
+assert.ok(doc.querySelector('.signal-identity-code').textContent.includes('L / 0 / R / 3'), 'hero carries the LORE code signature');
+assert.ok(doc.querySelector('.signal-subline').textContent.includes('ROLLOUT'), 'rollout label is present');
+assert.strictEqual(doc.querySelector('#signal-play-btn').getAttribute('type'), 'button', 'player control is a button');
+assert.strictEqual(doc.querySelector('#signal-play-btn').getAttribute('aria-label'), 'Play LORE signal', 'play control is labeled accessibly');
+assert.strictEqual(doc.querySelector('#signal-progress-bar').getAttribute('role'), 'slider', 'progress supports keyboard seeking');
+assert.strictEqual(doc.querySelector('#signal-time-display').textContent.trim(), '0:00 / 0:24', 'initial duration display is accurate');
+assert.strictEqual(doc.querySelector('#signal-audio').getAttribute('preload'), 'none', 'full media is not requested before interaction');
+assert.strictEqual(doc.querySelector('#signal-audio').hasAttribute('src'), false, 'audio URL is assigned only after user interaction');
+assert.strictEqual(doc.querySelector('#signal-audio').hasAttribute('playsinline'), true, 'iPhone audio remains inline');
+assert.ok(!html.includes('<audio controls') && !html.includes('download='), 'audio is not exposed as a downloadable browser control');
+assert.ok(!html.includes('LORE.m4a') && !html.includes('LORE.wav'), 'source master filename is not exposed in public HTML');
 
-// Header status
-const headerStatusEl = doc.querySelector('#signal-badge-status');
-assert.ok(headerStatusEl, 'header status badge exists');
-assert.strictEqual(headerStatusEl.textContent.trim(), 'SIGNAL READY', 'header status starts as SIGNAL READY prior to playback');
+assert.ok(doc.querySelectorAll('.release-row').length === 2, 'released tracks use two compact editorial rows');
+assert.ok(doc.body.textContent.includes('CURRENT TRANSMISSIONS'), 'current release section remains visible');
+assert.ok(doc.body.textContent.includes('NOT EVERYTHING IS MEANT'), 'vault closing section is present');
+assert.ok(doc.querySelector('.signal-timeline [aria-current="step"]'), 'active Signal step is announced');
+assert.ok(doc.querySelector('.signal-atmosphere[aria-hidden="true"] .signal-codefield'), 'decorative encoded field is hidden from assistive technology');
 
-// Skip link
-const skipLink = doc.querySelector('.signal-skip');
-assert.ok(skipLink, 'skip link exists');
-assert.strictEqual(skipLink.getAttribute('href'), '#signal-main', 'skip link targets main container');
+assert.ok(css.includes('prefers-reduced-motion: reduce'), 'motion respects reduced-motion preference');
+assert.ok(css.includes('100svh'), 'layout uses stable mobile viewport sizing');
+assert.ok(css.includes('env(safe-area-inset'), 'mobile safe areas are considered');
+assert.ok(css.includes('max-width: 700px') && css.includes('max-width: 370px'), 'small and standard mobile layouts are defined');
+assert.ok(css.includes('focus-visible'), 'keyboard focus is visible');
+assert.ok(css.includes('@keyframes codeDrift') && css.includes('@keyframes signalSweep'), 'signal field and scan pass move continuously');
+assert.ok(css.includes('animation: codeDrift 10s ease-in-out infinite alternate'), 'code field drift stays visible across browsers');
+assert.ok(css.includes('animation: signalSweep 7s linear infinite'), 'scan sweep stays visible across browsers');
+assert.ok(css.includes('translate3d(0, -110px, 0)') && css.includes('translate3d(0, 110px, 0)'), 'code field travels far enough to read as motion');
+assert.ok(css.includes('.signal-releases .section-heading { display: grid; grid-template-columns: minmax(0, 1fr)') && css.includes('.signal-releases .section-heading .section-intro { grid-column: 1;'), 'transmission heading and description use a single stacked column');
+assert.ok(css.includes('animation-play-state: paused'), 'decorative motion pauses in hidden tabs');
+assert.ok(js.includes('GLITCH_AUDIO_COOLDOWN_MS'), 'audio-reactive title glitches are rate limited');
+assert.ok(js.includes('audio.preload = \'none\''), 'script defers audio loading');
+assert.ok(js.includes('requestAnimationFrame') && js.includes('cancelAnimationFrame'), 'visualizer runs only while playback is active');
+assert.ok(js.includes("document.addEventListener('visibilitychange'"), 'animation work suspends in hidden tabs');
+assert.ok(js.includes('mediaSource.connect(audioContext.destination)'), 'Web Audio keeps a direct audible route');
+assert.ok(js.includes('mediaSource.connect(analyser)'), 'visualizer can read actual playback audio');
+assert.ok(js.includes('--signal-audio-pulse'), 'ambient field intensity responds to real playback amplitude');
+assert.ok(js.includes("setButtonState('ended')"), 'completion offers replay without autoplay');
+assert.ok(index.includes('href="/signal"') && index.includes('Enter Signal'), 'homepage still links into Signal');
 
-// Hero title glitch markup
-const titleEl = doc.querySelector('.signal-title');
-assert.ok(titleEl, 'hero title exists');
-assert.strictEqual(titleEl.getAttribute('data-text'), 'BLACKBOX SIGNAL', 'hero title has data-text attribute for glitch system');
-
-// Play button
-const playBtn = doc.querySelector('#signal-play-btn');
-assert.ok(playBtn, 'play button exists');
-assert.strictEqual(playBtn.getAttribute('type'), 'button', 'play button has explicit type=button');
-assert.ok(playBtn.getAttribute('aria-label'), 'play button has aria-label');
-
-// Progress slider
-const progressBar = doc.querySelector('#signal-progress-bar');
-assert.ok(progressBar, 'progress bar exists');
-assert.strictEqual(progressBar.getAttribute('role'), 'slider', 'progress bar has role=slider');
-
-// Reliable duration in time display (never stuck on --:--)
-const timeDisplayEl = doc.querySelector('#signal-time-display');
-assert.ok(timeDisplayEl, 'time display exists');
-assert.ok(timeDisplayEl.textContent.includes('0:24'), 'time display starts with valid 0:00 / 0:24 duration');
-
-// Canvas
-const canvasNode = doc.querySelector('#signal-canvas');
-assert.ok(canvasNode, 'visualizer canvas element exists');
-assert.strictEqual(canvasNode.getAttribute('aria-hidden'), 'true', 'visualizer canvas is aria-hidden');
-
-// Timeline nodes
-const timelineSteps = Array.from(doc.querySelectorAll('.timeline-step .step-name')).map((n) => n.textContent.trim());
-assert.ok(timelineSteps.includes('PROTOCOL'), 'DOM renders PROTOCOL in timeline');
-assert.ok(timelineSteps.includes('SIGNAL 001'), 'DOM renders SIGNAL 001 in timeline');
-assert.ok(timelineSteps.includes('[ REDACTED ]'), 'DOM renders [ REDACTED ] in timeline');
-
-// 6. CSS System & Motion Guards & Glitch System
-assert.ok(css.includes('--signal-gold: #dcff5f;'), 'Signal adopts the shared acid accent while preserving audio motion states');
-assert.ok(css.includes('prefers-reduced-motion: reduce'), 'CSS supports prefers-reduced-motion');
-assert.ok(css.includes('safe-area-inset-bottom'), 'CSS implements mobile safe area insets');
-assert.ok(!css.includes('#ff4757'), 'red developer error color removed from signal stylesheet');
-assert.ok(css.includes('data-glitch="burst"'), 'CSS defines glitch burst styling');
-assert.ok(css.includes('data-glitch="micro"'), 'CSS defines micro glitch styling');
-assert.ok(css.includes('clip-path: polygon('), 'CSS defines horizontal slice displacement');
-assert.ok(css.includes('.signal-tear-line'), 'CSS defines subtle background tear line');
-assert.ok(css.includes('.btn-tactile-press'), 'CSS defines tactical press styling');
-assert.ok(css.includes('data-state="loading"'), 'CSS defines loading state styling');
-assert.ok(css.includes('data-state="replay"'), 'CSS defines replay state styling');
-assert.ok(css.includes('data-state="ready"'), 'CSS defines ready beacon state styling');
-
-// 7. JS Glitch Controller, Audio Lifecycle & Multi-Event Duration
-assert.ok(js.includes('triggerTitleGlitch'), 'JS implements glitch controller');
-assert.ok(js.includes('GLITCH_AUDIO_COOLDOWN_MS'), 'JS enforces audio transient cooldown');
-assert.ok(js.includes('TRANSMISSION ENDED'), 'JS implements transmission ended sequence');
-assert.ok(js.includes('ACQUIRING SIGNAL...'), 'JS supports acquiring signal loading state');
-assert.ok(js.includes('REPLAY SIGNAL'), 'JS supports replay signal state');
-assert.ok(js.includes('RETRY SIGNAL'), 'JS supports retry signal state');
-assert.ok(js.includes('SIGNAL ERROR'), 'JS supports signal error state');
-assert.ok(js.includes('loadedmetadata') && js.includes('durationchange') && js.includes('canplay'), 'JS handles multi-event duration discovery');
-assert.ok(js.includes('selectOptimalAudioSource'), 'JS determines optimal audio source based on browser engine');
-assert.ok(js.includes('sourceNode.connect(audioCtx.destination)'), 'Web Audio graph explicitly connects sourceNode to audioCtx.destination');
-assert.ok(js.includes('sourceNode.connect(analyser)'), 'Web Audio graph connects sourceNode to analyser for reactive visualizer');
-assert.ok(js.includes('!sourceNode'), 'MediaElementSource guarded from duplicate creation');
-assert.ok(js.includes('!audio.paused'), 'TRANSMISSION ACTIVE strictly guarded by real playback');
-
-// DOM Audio Element & CSS States
-assert.ok(html.includes('id="signal-audio"'), 'HTML mounts hidden audio element in DOM to protect WebKit routing');
-assert.ok(html.includes('class="signal-band"'), 'HTML mounts signal-band background layer');
-assert.ok(css.includes('.signal-band'), 'CSS defines signal-band background layer');
-assert.ok(css.includes('scanDrift'), 'CSS defines continuous scanline drift');
-assert.ok(css.includes('noiseJitter'), 'CSS defines continuous noise jitter');
-assert.ok(css.includes('bandFloat'), 'CSS defines continuous interference band float');
-assert.ok(css.includes('beamBreathe'), 'CSS defines continuous atmospheric beam breathing');
-assert.ok(css.includes('titleAmbientCyan'), 'CSS defines continuous cyan title ambient glitch');
-assert.ok(css.includes('titleAmbientGold'), 'CSS defines continuous gold title ambient glitch');
-assert.ok(css.includes('titleAmbientJitter'), 'CSS defines continuous title ambient jitter');
-assert.ok(css.includes('data-playback="playing"'), 'CSS defines playing state intensity escalation');
-assert.ok(css.includes('data-playback="peak"'), 'CSS defines peak transient intensity escalation');
-assert.ok(css.includes('data-state="retry"'), 'CSS defines retry button state styling');
-assert.ok(css.includes('data-state="error"'), 'CSS defines error beacon state styling');
-
-// 8. Homepage Subtle Non-Intrusive Integration
-assert.ok(index.includes('href="/signal"'), 'index.html links to /signal');
-assert.ok(index.includes('home-signal'), 'homepage dedicates a teaser to Signal discovery');
-assert.ok(index.includes('Enter Signal'), 'homepage provides a clear Signal destination');
-assert.ok(!index.includes('nav-dropdown'), 'desktop nav avoids extraneous dropdowns to preserve clean single-row layout');
-
-console.log('   ✅ Blackbox Signal Contract passed all validations.');
-console.log('🎉 BLACKBOX SIGNAL CONTRACT COMPLETE');
+console.log('   ✅ LORE Signal contract passed.');

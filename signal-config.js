@@ -7,7 +7,7 @@
  * Supported Audio Input Formats:
  * - .mp3 (audio/mpeg) — Recommended for cellular/web delivery
  * - .m4a (audio/mp4)  — High-efficiency AAC
- * - .wav (audio/wav)  — Uncompressed studio master export
+ * Only the approved first 24 seconds of the master are exported publicly.
  *
  * To deploy the next transmission:
  * 1. Place your teaser into /assets/audio/ (e.g., signal-002.mp3)
@@ -20,33 +20,27 @@ const BLACKBOX_SIGNAL_CONFIG = {
   signalName: 'SIGNAL 001',
   transmissionStatus: 'TRANSMISSION ACTIVE',
   offlineStatus: 'SIGNAL OFFLINE',
-  transmissionBadge: 'UNRELEASED // VAULT TRANSMISSION',
+  transmissionBadge: 'LORE // SIGNAL 001',
   tagline: 'Signal intercepted from an unreleased session.',
   sourceModeLabel: '[ 24 SEC INTERCEPT ]',
 
   // Audio Teaser Sources
   // Supports multi-codec candidate list with automatic browser capability detection:
-  // - M4A/AAC: optimized for WebKit / Safari mobile
-  // - MP3: universal broadcast fallback
-  // - WAV: studio master export (not loaded on startup)
+  // M4A/AAC is first for Safari/mobile; MP3 is the playback fallback.
+  // Both files contain only the first 24.000 seconds of the source master.
   audioSources: [
-    {
-      src: '/assets/audio/blackbox-signal.mp3',
-      type: 'audio/mpeg'
-    },
     {
       src: '/assets/audio/blackbox-signal.m4a',
       type: 'audio/mp4'
     },
     {
-      src: '/assets/audio/blackbox-signal.wav',
-      type: 'audio/wav'
+      src: '/assets/audio/blackbox-signal.mp3',
+      type: 'audio/mpeg'
     }
   ],
-  // Default primary source fallback
-  audioSource: '/assets/audio/blackbox-signal.mp3',
+  audioSource: '/assets/audio/blackbox-signal.m4a',
 
-  // Configured teaser duration in seconds (24.0s master teaser; synced with live audio duration)
+  // Starts at the source master’s 0:00.000 and ends at 0:24.000.
   teaserDurationSeconds: 24,
 
   // Current Releases (Graduated from the Vault)

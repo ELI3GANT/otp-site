@@ -1,942 +1,381 @@
-/**
- * BLACKBOX SIGNAL — Audio Engine & Reactive Visualizer
- * OnlyTruePerspective × Vault Experience
- *
- * Supports M4A/AAC and MP3 inputs with WebKit/Safari detection,
- * reliable multi-event duration discovery, real Web Audio FFT analysis,
- * robust playback lifecycle, and battery-conscious performance.
- */
-
 (function () {
   'use strict';
 
-  // Configuration Fallback
-  const DEFAULT_CONFIG = {
-    signalNumber: '001',
-    signalName: 'SIGNAL 001',
-    transmissionStatus: 'TRANSMISSION ACTIVE',
-    offlineStatus: 'SIGNAL OFFLINE',
-    sourceModeLabel: '[ 24 SEC INTERCEPT ]',
-    tagline: 'Signal intercepted from an unreleased session.',
-    audioSources: [
-      { src: '/assets/audio/blackbox-signal.m4a', type: 'audio/mp4' },
-      { src: '/assets/audio/blackbox-signal.mp3', type: 'audio/mpeg' },
-      { src: '/assets/audio/blackbox-signal.wav', type: 'audio/wav' }
-    ],
-    audioSource: '/assets/audio/blackbox-signal.mp3',
-    teaserDurationSeconds: 24
-  };
+  var config = window.BLACKBOX_SIGNAL_CONFIG || {};
+  var duration = Number(config.teaserDurationSeconds) || 24;
+  var sources = Array.isArray(config.audioSources) ? config.audioSources.slice() : [];
+  var body = document.body;
+  var playButton = document.getElementById('signal-play-btn');
+  var buttonIcon = document.getElementById('signal-btn-icon');
+  var buttonLabel = document.getElementById('signal-btn-label');
+  var audio = document.getElementById('signal-audio');
+  var progress = document.getElementById('signal-progress-bar');
+  var progressFill = document.getElementById('signal-progress-fill');
+  var timeDisplay = document.getElementById('signal-time-display');
+  var statusText = document.getElementById('signal-status-text');
+  var errorMessage = document.getElementById('signal-player-error');
+  var canvas = document.getElementById('signal-canvas');
+  var ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
+  var atmosphere = document.querySelector('.signal-atmosphere');
+  var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var audioContext = null;
+  var mediaSource = null;
+  var analyser = null;
+  var frameId = 0;
+  var glitchTimer = 0;
+  var ambientTimer = 0;
+  var previousPeak = 0;
+  var lastGlitch = 0;
+  var playing = false;
+  var activeSourceIndex = 0;
+  var sourceAssigned = false;
+  var pointerSeeking = false;
+  var canvasWidth = 900;
+  var canvasHeight = 180;
+  var timeData = null;
+  var GLITCH_AUDIO_COOLDOWN_MS = 4500;
 
-  const config = (typeof window !== 'undefined' && window.BLACKBOX_SIGNAL_CONFIG) || DEFAULT_CONFIG;
+  if (!audio || !playButton || !progress) return;
+  audio.preload = 'none';
+  audio.playsInline = true;
+  if (!sources.length && config.audioSource) sources = [{ src: config.audioSource, type: 'audio/mpeg' }];
 
-  // Diagnostic mode flag (disabled in production; enabled via ?debug=1 or window.__DEBUG_BLACKBOX__)
-  const DEBUG = (typeof window !== 'undefined' && (
-    Boolean(window.location && window.location.search && window.location.search.indexOf('debug=1') !== -1) ||
-    window.__DEBUG_BLACKBOX__ === true
-  ));
-
-  function logDiagnostic(label, data) {
-    if (DEBUG && typeof console !== 'undefined' && console.log) {
-      console.log('[BLACKBOX AUDIO] ' + label + ':', data);
-    }
-  }
-
-  // DOM Elements
-  const playBtn = document.getElementById('signal-play-btn');
-  const btnIcon = document.getElementById('signal-btn-icon');
-  const btnLabel = document.getElementById('signal-btn-label');
-  const progressBar = document.getElementById('signal-progress-bar');
-  const progressFill = document.getElementById('signal-progress-fill');
-  const timeDisplay = document.getElementById('signal-time-display');
-  const badgeStatus = document.getElementById('signal-badge-status');
-  const statusBeacon = document.getElementById('signal-status-beacon');
-  const modePill = document.getElementById('signal-mode-pill');
-  const canvas = document.getElementById('signal-canvas');
-  const signalTitle = document.getElementById('signal-title');
-  const atmosphere = document.getElementById('signal-atmosphere');
-  const body = document.body;
-
-  // State
-  let audio = null;
-  let audioCtx = null;
-  let analyser = null;
-  let sourceNode = null;
-  let dataArray = null;
-  let isPlaying = false;
-  let isLoaded = false;
-  let isAudioAvailable = true;
-  let animFrameId = null;
-  let duration = (config.teaserDurationSeconds && isFinite(config.teaserDurationSeconds) && config.teaserDurationSeconds > 0)
-    ? config.teaserDurationSeconds
-    : 24;
-  let activeSourceIndex = 0;
-  let sortedSources = [];
-
-  // Visualizer Smooth Energy Decay State
-  let currentAvgEnergy = 0;
-  let currentBassEnergy = 0;
-
-  // Glitch System State
-  let glitchTimeoutId = null;
-  let lastGlitchTimestamp = 0;
-  let prevBassEnergy = 0;
-  const GLITCH_AUDIO_COOLDOWN_MS = 2400; // Minimum 2.4s between bass transients
-  let ambientGlitchTimer = null;
-  let endSequenceTimer = null;
-
-  // Prefers-reduced-motion check
-  const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  // Animation frame fallbacks
-  const raf = (typeof window !== 'undefined' && window.requestAnimationFrame)
-    ? window.requestAnimationFrame.bind(window)
-    : function (cb) { return setTimeout(cb, 1000 / 60); };
-  const caf = (typeof window !== 'undefined' && window.cancelAnimationFrame)
-    ? window.cancelAnimationFrame.bind(window)
-    : function (id) { clearTimeout(id); };
-
-  // Format seconds to M:SS
   function formatTime(seconds) {
-    if (!seconds || !isFinite(seconds) || seconds <= 0) return '0:00';
-    const s = Math.floor(seconds);
-    const mins = Math.floor(s / 60);
-    const secs = s % 60;
-    return mins + ':' + secs.toString().padStart(2, '0');
+    var safe = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+    return Math.floor(safe / 60) + ':' + String(safe % 60).padStart(2, '0');
   }
 
-  // Update time display
-  function updateTimeDisplay(current, total) {
-    if (!timeDisplay) return;
-    const safeTotal = (total && isFinite(total) && total > 0) ? total : duration;
-    const currentStr = formatTime(current);
-    const totalStr = safeTotal > 0 ? formatTime(safeTotal) : '0:24';
-    timeDisplay.textContent = currentStr + ' / ' + totalStr;
+  function showTime(current, total) {
+    var max = Number.isFinite(total) && total > 0 ? total : duration;
+    var value = Math.min(Math.max(0, current || 0), max);
+    if (timeDisplay) timeDisplay.textContent = formatTime(value) + ' / ' + formatTime(max);
+    progress.setAttribute('aria-valuemax', String(Math.round(max)));
+    progress.setAttribute('aria-valuenow', String(Math.round(value)));
+    progress.setAttribute('aria-valuetext', formatTime(value) + ' of ' + formatTime(max));
+    if (progressFill) progressFill.style.width = (max > 0 ? value / max * 100 : 0) + '%';
+    progress.style.setProperty('--signal-progress', (max > 0 ? value / max * 100 : 0) + '%');
   }
 
-  // Set top telemetry status pill
-  function setSystemStatus(state) {
-    if (!badgeStatus || !statusBeacon) return;
-    if (state === 'ready') {
-      badgeStatus.textContent = 'SIGNAL READY';
-      statusBeacon.setAttribute('data-state', 'ready');
-    } else if (state === 'loading') {
-      badgeStatus.textContent = 'ACQUIRING SIGNAL...';
-      statusBeacon.setAttribute('data-state', 'loading');
-    } else if (state === 'playing') {
-      badgeStatus.textContent = config.transmissionStatus || 'TRANSMISSION ACTIVE';
-      statusBeacon.setAttribute('data-state', 'playing');
-    } else if (state === 'paused') {
-      badgeStatus.textContent = 'SIGNAL PAUSED';
-      statusBeacon.setAttribute('data-state', 'paused');
-    } else if (state === 'ended') {
-      badgeStatus.textContent = 'TRANSMISSION ENDED';
-      statusBeacon.setAttribute('data-state', 'ended');
-    } else if (state === 'offline') {
-      badgeStatus.textContent = config.offlineStatus || 'SIGNAL OFFLINE';
-      statusBeacon.setAttribute('data-state', 'offline');
-    } else if (state === 'error') {
-      badgeStatus.textContent = 'SIGNAL ERROR';
-      statusBeacon.setAttribute('data-state', 'error');
+  function setStatus(state) {
+    var labels = {
+      idle: 'SIGNAL READY',
+      loading: 'ACQUIRING SIGNAL',
+      playing: 'TRANSMITTING',
+      paused: 'SIGNAL PAUSED',
+      ended: 'TRANSMISSION COMPLETE',
+      error: 'SIGNAL UNAVAILABLE'
+    };
+    body.setAttribute('data-playback', state);
+    if (statusText) statusText.textContent = labels[state] || labels.idle;
+  }
+
+  function setButtonState(state) {
+    playButton.setAttribute('data-state', state);
+    if (buttonLabel) {
+      var labels = {
+        idle: 'PLAY SIGNAL', loading: 'ACQUIRING SIGNAL...', playing: 'PAUSE SIGNAL',
+        paused: 'RESUME SIGNAL', ended: 'REPLAY SIGNAL', error: 'RETRY SIGNAL'
+      };
+      buttonLabel.textContent = labels[state] || labels.idle;
     }
-  }
-
-  // Canvas Setup & Hi-DPI Scaling
-  let ctx = null;
-  let canvasWidth = 520;
-  let canvasHeight = 140;
-
-  function initCanvas() {
-    if (!canvas) return;
-    ctx = canvas.getContext('2d');
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas, { passive: true });
+    if (buttonIcon) {
+      if (state === 'playing') {
+        buttonIcon.innerHTML = '<path d="M6 4v12M14 4v12" fill="none" stroke="currentColor" stroke-width="2.5" />';
+      } else if (state === 'ended' || state === 'error') {
+        buttonIcon.innerHTML = '<path d="M15.8 7.1A6.1 6.1 0 1 0 16 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M12.5 4h4v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+      } else {
+        buttonIcon.innerHTML = '<path d="M6 3.7v12.6L16 10z" />';
+      }
+    }
+    var names = { idle: 'Play LORE signal', loading: 'Acquiring signal', playing: 'Pause LORE signal', paused: 'Resume LORE signal', ended: 'Replay LORE signal from the beginning', error: 'Retry LORE signal' };
+    playButton.setAttribute('aria-label', names[state] || names.idle);
   }
 
   function resizeCanvas() {
     if (!canvas || !ctx) return;
-    const rect = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvasWidth = Math.max(280, Math.floor(rect.width || 520));
-    canvasHeight = Math.max(90, Math.floor(rect.height || 140));
-
-    canvas.width = Math.floor(canvasWidth * dpr);
-    canvas.height = Math.floor(canvasHeight * dpr);
-    ctx.scale(dpr, dpr);
+    var rect = canvas.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvasWidth = Math.max(1, Math.round(rect.width * dpr));
+    canvasHeight = Math.max(1, Math.round(rect.height * dpr));
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    drawWave(false);
   }
 
-  // Ambient Particles for Visualizer
-  const particles = [];
-  const PARTICLE_COUNT = 22;
+  function drawWave(reactive) {
+    if (!ctx) return;
+    var width = canvasWidth;
+    var height = canvasHeight;
+    var centerY = height / 2;
+    var scale = Math.min(window.devicePixelRatio || 1, 2);
+    ctx.clearRect(0, 0, width, height);
 
-  function initParticles() {
-    particles.length = 0;
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push({
-        x: Math.random() * canvasWidth,
-        y: Math.random() * canvasHeight,
-        radius: Math.random() * 1.4 + 0.6,
-        speedX: (Math.random() - 0.5) * 0.3,
-        speedY: (Math.random() - 0.5) * 0.3,
-        alpha: Math.random() * 0.45 + 0.15
-      });
-    }
-  }
+    ctx.strokeStyle = 'rgba(104, 217, 187, .2)';
+    ctx.lineWidth = Math.max(1, scale);
+    ctx.beginPath();
+    ctx.arc(width / 2, centerY, 42 * scale, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(216, 255, 91, .16)';
+    ctx.beginPath();
+    ctx.arc(width / 2, centerY, 58 * scale, 0, Math.PI * 2);
+    ctx.stroke();
 
-  // Candidate audio source detection
-  function getCandidateSources() {
-    const list = [];
-    if (Array.isArray(config.audioSources) && config.audioSources.length > 0) {
-      config.audioSources.forEach(function (item) {
-        if (typeof item === 'string') {
-          list.push({ src: item, type: getMimeFromUrl(item) });
-        } else if (item && item.src) {
-          list.push({ src: item.src, type: item.type || getMimeFromUrl(item.src) });
-        }
-      });
-    } else if (config.audioSource) {
-      list.push({ src: config.audioSource, type: getMimeFromUrl(config.audioSource) });
-    }
-    return list;
-  }
-
-  function getMimeFromUrl(url) {
-    if (/\.m4a(\?.*)?$/i.test(url)) return 'audio/mp4';
-    if (/\.wav(\?.*)?$/i.test(url)) return 'audio/wav';
-    if (/\.aac(\?.*)?$/i.test(url)) return 'audio/aac';
-    if (/\.ogg(\?.*)?$/i.test(url)) return 'audio/ogg';
-    return 'audio/mpeg';
-  }
-
-  // Browser capability and codec priority determination:
-  // - Prefer MP3 (320kbps, 940KB) as rock-solid universal broadcast baseline across all browsers
-  // - Prefer M4A (AAC 256kbps, 780KB) as secondary high-efficiency stream
-  // - WAV (4MB) is only a last resort fallback, NOT downloaded on startup
-  function selectOptimalAudioSource(sources) {
-    const temp = document.createElement('audio');
-
-    const mp3Candidate = sources.find(function (s) { return s.type === 'audio/mpeg' || s.src.endsWith('.mp3'); });
-    const m4aCandidate = sources.find(function (s) { return s.type === 'audio/mp4' || s.src.endsWith('.m4a'); });
-    const wavCandidate = sources.find(function (s) { return s.type === 'audio/wav' || s.src.endsWith('.wav'); });
-
-    const prioritized = [];
-
-    // Clean capability detection via canPlayType (no fragile regex user-agent sniffing)
-    const canMp3 = Boolean(temp.canPlayType && temp.canPlayType('audio/mpeg') !== '');
-    const canM4a = Boolean(temp.canPlayType && (temp.canPlayType('audio/mp4; codecs="mp4a.40.2"') !== '' || temp.canPlayType('audio/mp4') !== ''));
-
-    logDiagnostic('Capability check', {
-      canPlayMp3: canMp3,
-      canPlayM4a: canM4a,
-      audioMpegType: temp.canPlayType ? temp.canPlayType('audio/mpeg') : 'unsupported',
-      audioMp4Type: temp.canPlayType ? temp.canPlayType('audio/mp4; codecs="mp4a.40.2"') : 'unsupported'
-    });
-
-    // MP3 is the rock-solid universal baseline across all modern browsers
-    if (canMp3 && mp3Candidate) {
-      prioritized.push(mp3Candidate);
-    }
-    if (canM4a && m4aCandidate && !prioritized.includes(m4aCandidate)) {
-      prioritized.push(m4aCandidate);
-    }
-    // Fallbacks if not already added
-    if (m4aCandidate && !prioritized.includes(m4aCandidate)) {
-      prioritized.push(m4aCandidate);
-    }
-    if (mp3Candidate && !prioritized.includes(mp3Candidate)) {
-      prioritized.push(mp3Candidate);
-    }
-
-    // WAV is strictly an emergency fallback
-    if (wavCandidate && !prioritized.includes(wavCandidate)) {
-      prioritized.push(wavCandidate);
-    }
-
-    return prioritized.length > 0 ? prioritized : sources;
-  }
-
-  // Audio Engine Initialization
-  function initAudio() {
-    if (audio) return;
-    const candidates = getCandidateSources();
-    if (candidates.length === 0) {
-      handleAudioUnavailable();
-      return;
-    }
-
-    sortedSources = selectOptimalAudioSource(candidates);
-    activeSourceIndex = 0;
-
-    // Use DOM element if present to avoid WebKit detached media throttling/muting
-    const existingAudio = document.getElementById('signal-audio');
-    if (existingAudio) {
-      audio = existingAudio;
-    } else {
-      audio = new Audio();
-      audio.id = 'signal-audio';
-      audio.style.display = 'none';
-      if (document.body) {
-        document.body.appendChild(audio);
-      }
-    }
-
-    audio.preload = 'metadata';
-
-    const primaryUrl = sortedSources[0].src;
-    // Only set crossOrigin if URL is strictly cross-origin to avoid WebKit CORS false positives on same-origin assets
-    if (typeof window !== 'undefined' && primaryUrl.startsWith('http') && !primaryUrl.startsWith(window.location.origin)) {
-      audio.crossOrigin = 'anonymous';
-    } else {
-      audio.removeAttribute('crossorigin');
-    }
-
-    // Set src directly without redundant <source> children to avoid parallel downloads of WAV
-    audio.src = primaryUrl;
-
-    logDiagnostic('Audio Initialized', {
-      selectedSource: primaryUrl,
-      readyState: audio.readyState,
-      networkState: audio.networkState
-    });
-
-    // Immediately display configured teaser duration (0:00 / 0:24)
-    updateTimeDisplay(0, duration);
-    if (progressBar) {
-      progressBar.setAttribute('aria-valuemax', String(Math.floor(duration)));
-      progressBar.setAttribute('aria-valuenow', '0');
-    }
-
-    // Multi-event duration discovery & sync
-    function syncDurationFromMedia() {
-      if (!audio) return;
-      const mediaDuration = audio.duration;
-      if (isFinite(mediaDuration) && mediaDuration > 0) {
-        if (config.teaserDurationSeconds && config.teaserDurationSeconds < mediaDuration) {
-          duration = config.teaserDurationSeconds;
-        } else {
-          duration = Math.round(mediaDuration * 10) / 10;
-        }
-        isLoaded = true;
-        isAudioAvailable = true;
-        updateTimeDisplay(audio.currentTime, duration);
-        if (progressBar) progressBar.setAttribute('aria-valuemax', String(Math.floor(duration)));
-      }
-    }
-
-    audio.addEventListener('loadedmetadata', syncDurationFromMedia);
-    audio.addEventListener('durationchange', syncDurationFromMedia);
-    audio.addEventListener('loadeddata', syncDurationFromMedia);
-    audio.addEventListener('canplay', syncDurationFromMedia);
-    audio.addEventListener('canplaythrough', syncDurationFromMedia);
-
-    audio.addEventListener('timeupdate', function () {
-      if (!audio) return;
-      const current = Math.min(audio.currentTime, duration || audio.duration || 0);
-      const percent = duration > 0 ? (current / duration) * 100 : 0;
-
-      if (progressFill) progressFill.style.width = percent + '%';
-      if (progressBar) progressBar.setAttribute('aria-valuenow', String(Math.floor(current)));
-      updateTimeDisplay(current, duration);
-
-      if (duration > 0 && current >= duration) {
-        handlePlaybackEnded();
-      }
-    });
-
-    audio.addEventListener('ended', handlePlaybackEnded);
-
-    audio.addEventListener('error', function (err) {
-      logDiagnostic('Media error event', {
-        error: audio ? audio.error : err,
-        code: audio && audio.error ? audio.error.code : null,
-        message: audio && audio.error ? audio.error.message : null
-      });
-      // Gracefully switch to alternative format if chosen source fails
-      activeSourceIndex++;
-      if (activeSourceIndex < sortedSources.length) {
-        audio.src = sortedSources[activeSourceIndex].src;
-        try {
-          audio.load();
-        } catch (e) {
-          // Ignored
-        }
+    if (reactive && analyser && timeData) analyser.getByteTimeDomainData(timeData);
+    ctx.beginPath();
+    for (var i = 0; i < 180; i += 1) {
+      var x = i / 179 * width;
+      var y = centerY;
+      if (reactive && analyser && timeData) {
+        var sample = timeData[Math.floor(i / 179 * (timeData.length - 1))] / 128 - 1;
+        y += sample * 27 * scale;
       } else {
-        handleAudioUnavailable();
+        var envelope = .42 + .58 * Math.sin(i / 179 * Math.PI);
+        y += Math.sin(i * .155) * 2.4 * scale * envelope;
       }
-    });
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = 'rgba(216, 255, 91, .72)';
+    ctx.lineWidth = 1.5 * scale;
+    ctx.shadowColor = 'rgba(104, 217, 187, .22)';
+    ctx.shadowBlur = reactive ? 8 * scale : 0;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
 
-    // Explicitly initiate metadata load
+  function ensureAudioGraph() {
+    if (audioContext || !window.AudioContext && !window.webkitAudioContext) return;
     try {
-      audio.load();
-    } catch (e) {
-      // Ignored in restricted environments
-    }
-  }
-
-  function handleAudioUnavailable() {
-    isAudioAvailable = false;
-    isPlaying = false;
-    updatePlayButtonState('offline');
-    setSystemStatus('offline');
-    body.setAttribute('data-playback', 'idle');
-  }
-
-  // Web Audio Context Setup (Unlocked on user gesture for iOS Safari)
-  function ensureAudioContext() {
-    if (!audioCtx) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContextClass) return;
+      var Context = window.AudioContext || window.webkitAudioContext;
+      audioContext = new Context();
+      mediaSource = audioContext.createMediaElementSource(audio);
+      mediaSource.connect(audioContext.destination);
       try {
-        audioCtx = new AudioContextClass();
-      } catch (e) {
-        logDiagnostic('AudioContext creation failed', e);
-        return;
-      }
-    }
-
-    if (audioCtx && audioCtx.state === 'suspended') {
-      try {
-        const resumePromise = audioCtx.resume();
-        if (resumePromise && typeof resumePromise.catch === 'function') {
-          resumePromise.catch(function (e) {
-            logDiagnostic('audioCtx.resume() warning', e);
-          });
-        }
-      } catch (e) {
-        logDiagnostic('audioCtx.resume() error', e);
-      }
-    }
-
-    // Guard against duplicate createMediaElementSource call (throws InvalidStateError)
-    if (!sourceNode && audioCtx && audio) {
-      try {
-        sourceNode = audioCtx.createMediaElementSource(audio);
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 128;
-        analyser.smoothingTimeConstant = 0.8;
-        // Direct parallel fan-out routing:
-        // 1. sourceNode -> analyser (for real-time FFT visualizer)
-        sourceNode.connect(analyser);
-        // 2. sourceNode -> audioCtx.destination (direct, uncompromised audible signal)
-        sourceNode.connect(audioCtx.destination);
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        logDiagnostic('Web Audio graph connected successfully', {
-          destinationConnected: true,
-          analyserConnected: true,
-          audioCtxState: audioCtx.state
-        });
-      } catch (e) {
-        logDiagnostic('createMediaElementSource failed, falling back to native audio', e);
-        // Fallback to native audio playback without analyser
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = .83;
+        mediaSource.connect(analyser);
+        timeData = new Uint8Array(analyser.fftSize);
+      } catch (_) {
         analyser = null;
-        sourceNode = null;
       }
+    } catch (_) {
+      audioContext = null;
+      mediaSource = null;
+      analyser = null;
+      timeData = null;
     }
   }
 
-  // ==========================================================================
-  // Glitch Transmission System (Controlled, Cinematic, Premium)
-  // ==========================================================================
-  function triggerTitleGlitch(type, durationMs) {
-    type = type || 'burst';
-    durationMs = durationMs || 240;
-    if (prefersReducedMotion || !signalTitle) return;
-    if (typeof document !== 'undefined' && document.hidden) return;
+  function assignSource() {
+    if (sourceAssigned || !sources.length) return;
+    activeSourceIndex = 0;
+    audio.src = sources[activeSourceIndex].src;
+    sourceAssigned = true;
+  }
 
-    if (glitchTimeoutId) {
-      clearTimeout(glitchTimeoutId);
-      glitchTimeoutId = null;
-    }
-
-    signalTitle.setAttribute('data-glitch', type);
-
-    if (atmosphere) {
-      atmosphere.setAttribute('data-glitch', 'true');
-      const randomY = Math.floor(Math.random() * 65 + 18);
-      atmosphere.style.setProperty('--tear-y', randomY + '%');
-    }
-
-    glitchTimeoutId = setTimeout(function () {
-      if (signalTitle) signalTitle.removeAttribute('data-glitch');
-      if (atmosphere) atmosphere.removeAttribute('data-glitch');
-      glitchTimeoutId = null;
-    }, durationMs);
+  function triggerGlitch(kind, length) {
+    var title = document.getElementById('signal-title');
+    if (!title || reducedMotion || document.hidden) return;
+    window.clearTimeout(glitchTimer);
+    title.setAttribute('data-glitch', kind || 'micro');
+    glitchTimer = window.setTimeout(function () { title.removeAttribute('data-glitch'); }, length || 150);
   }
 
   function scheduleAmbientGlitch() {
-    if (prefersReducedMotion) return;
-    if (ambientGlitchTimer) clearTimeout(ambientGlitchTimer);
-
-    // Organic non-repetitive interval between 4.2s and 8.8s
-    const nextDelay = Math.floor(Math.random() * 4600 + 4200);
-
-    ambientGlitchTimer = setTimeout(function () {
-      const now = Date.now();
-      if (!document.hidden && now - lastGlitchTimestamp > 3200) {
-        // Shift ambient tear line to an unpredictable coordinate
-        if (atmosphere) {
-          const randomY = Math.floor(Math.random() * 70 + 15);
-          atmosphere.style.setProperty('--tear-y', randomY + '%');
-        }
-        triggerTitleGlitch('micro', 160);
-        lastGlitchTimestamp = now;
-      }
+    if (reducedMotion || document.hidden || playing) return;
+    window.clearTimeout(ambientTimer);
+    ambientTimer = window.setTimeout(function () {
+      if (!document.hidden && !playing) triggerGlitch('micro', 130);
       scheduleAmbientGlitch();
-    }, nextDelay);
-  }
-
-  // Playback Controls
-  function togglePlay() {
-    if (!audio) initAudio();
-    if (!isAudioAvailable) {
-      isAudioAvailable = true;
-      initAudio();
-    }
-    ensureAudioContext();
-
-    if (isPlaying) {
-      pauseAudio();
-    } else {
-      playAudio();
-    }
-  }
-
-  function playAudio() {
-    if (!audio) return;
-
-    if (endSequenceTimer) {
-      clearTimeout(endSequenceTimer);
-      endSequenceTimer = null;
-    }
-
-    if (duration > 0 && audio.currentTime >= duration) {
-      audio.currentTime = 0;
-    }
-
-    // Tactical button compression feedback
-    if (playBtn) {
-      playBtn.classList.add('btn-tactile-press');
-      setTimeout(function () {
-        if (playBtn) playBtn.classList.remove('btn-tactile-press');
-      }, 150);
-    }
-
-    // Immediate responsiveness
-    updatePlayButtonState('loading');
-    setSystemStatus('loading');
-
-    // Initiate signal drop glitch burst
-    triggerTitleGlitch('burst', 260);
-    lastGlitchTimestamp = Date.now();
-
-    // Ensure audio context is running on user gesture
-    if (audioCtx && audioCtx.state === 'suspended') {
-      try {
-        audioCtx.resume();
-      } catch (e) {
-        // Ignored
-      }
-    }
-
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(function () {
-          // ONLY transition to TRANSMISSION ACTIVE when audio is genuinely playing
-          if (audio && !audio.paused) {
-            isPlaying = true;
-            updatePlayButtonState('playing');
-            setSystemStatus('playing');
-            body.setAttribute('data-playback', 'playing');
-            startVisualizer();
-            logDiagnostic('play() resolved', {
-              currentTime: audio.currentTime,
-              paused: audio.paused,
-              audioCtxState: audioCtx ? audioCtx.state : 'none'
-            });
-          }
-        })
-        .catch(function (error) {
-          logDiagnostic('play() rejected', error);
-          isPlaying = false;
-          body.setAttribute('data-playback', 'idle');
-          updatePlayButtonState('retry');
-          setSystemStatus('error');
-        });
-    }
-  }
-
-  function pauseAudio() {
-    if (!audio) return;
-    if (endSequenceTimer) {
-      clearTimeout(endSequenceTimer);
-      endSequenceTimer = null;
-    }
-    audio.pause();
-    isPlaying = false;
-    updatePlayButtonState('paused');
-    setSystemStatus('paused');
-    body.setAttribute('data-playback', 'idle');
-  }
-
-  function handlePlaybackEnded() {
-    if (audio) {
-      audio.pause();
-      audio.currentTime = 0;
-    }
-    isPlaying = false;
-    body.setAttribute('data-playback', 'idle');
-    if (progressFill) progressFill.style.width = '0%';
-    updateTimeDisplay(0, duration);
-
-    // Final transmission collapse micro-glitch
-    triggerTitleGlitch('micro', 180);
-    lastGlitchTimestamp = Date.now();
-
-    // Set momentary ended sequence before displaying REPLAY SIGNAL
-    if (endSequenceTimer) clearTimeout(endSequenceTimer);
-
-    setSystemStatus('ended');
-    updatePlayButtonState('ended');
-
-    endSequenceTimer = setTimeout(function () {
-      updatePlayButtonState('replay');
-      setSystemStatus('ready');
-      endSequenceTimer = null;
-    }, 1000);
-  }
-
-  function updatePlayButtonState(state) {
-    if (!playBtn) return;
-    playBtn.setAttribute('data-state', state);
-
-    if (state === 'loading') {
-      if (btnIcon) btnIcon.textContent = '◌';
-      if (btnLabel) btnLabel.textContent = 'ACQUIRING SIGNAL...';
-      playBtn.setAttribute('aria-label', 'Acquiring signal transmission');
-    } else if (state === 'playing') {
-      if (btnIcon) btnIcon.textContent = '❚❚';
-      if (btnLabel) btnLabel.textContent = 'PAUSE SIGNAL';
-      playBtn.setAttribute('aria-label', 'Pause transmission');
-    } else if (state === 'paused') {
-      if (btnIcon) btnIcon.textContent = '▶';
-      if (btnLabel) btnLabel.textContent = 'RESUME SIGNAL';
-      playBtn.setAttribute('aria-label', 'Resume transmission');
-    } else if (state === 'ended') {
-      if (btnIcon) btnIcon.textContent = '○';
-      if (btnLabel) btnLabel.textContent = 'TRANSMISSION ENDED';
-      playBtn.setAttribute('aria-label', 'Transmission ended');
-    } else if (state === 'replay') {
-      if (btnIcon) btnIcon.textContent = '↺';
-      if (btnLabel) btnLabel.textContent = 'REPLAY SIGNAL';
-      playBtn.setAttribute('aria-label', 'Replay transmission from start');
-    } else if (state === 'retry') {
-      if (btnIcon) btnIcon.textContent = '↺';
-      if (btnLabel) btnLabel.textContent = 'RETRY SIGNAL';
-      playBtn.setAttribute('aria-label', 'Retry transmission');
-    } else if (state === 'offline') {
-      if (btnIcon) btnIcon.textContent = '○';
-      if (btnLabel) btnLabel.textContent = 'SIGNAL OFFLINE';
-      playBtn.setAttribute('aria-label', 'Transmission currently offline');
-    } else {
-      if (btnIcon) btnIcon.textContent = '▶';
-      if (btnLabel) btnLabel.textContent = 'PLAY SIGNAL';
-      playBtn.setAttribute('aria-label', 'Play unreleased signal transmission');
-    }
-  }
-
-  // Scrubbing & Seeking
-  function seekTo(targetSeconds) {
-    if (!audio) initAudio();
-    if (!isAudioAvailable) return;
-    const maxTime = duration > 0 ? duration : (audio ? audio.duration : 24);
-    const clamped = Math.max(0, Math.min(targetSeconds, maxTime));
-    if (audio) audio.currentTime = clamped;
-    const percent = maxTime > 0 ? (clamped / maxTime) * 100 : 0;
-    if (progressFill) progressFill.style.width = percent + '%';
-    if (progressBar) progressBar.setAttribute('aria-valuenow', String(Math.floor(clamped)));
-    updateTimeDisplay(clamped, maxTime);
-  }
-
-  function handleProgressClick(e) {
-    if (!progressBar) return;
-    const rect = progressBar.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const ratio = Math.max(0, Math.min(clickX / rect.width, 1));
-    const maxTime = duration > 0 ? duration : (audio ? audio.duration : 24);
-    seekTo(ratio * maxTime);
-  }
-
-  // Keyboard accessibility for progress bar
-  if (progressBar) {
-    progressBar.addEventListener('click', handleProgressClick);
-    progressBar.addEventListener('keydown', function (e) {
-      const step = 2;
-      const current = audio ? audio.currentTime : 0;
-      const maxTime = duration > 0 ? duration : (audio ? audio.duration : 24);
-      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        seekTo(current + step);
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        seekTo(current - step);
-      } else if (e.key === 'Home') {
-        e.preventDefault();
-        seekTo(0);
-      } else if (e.key === 'End') {
-        e.preventDefault();
-        seekTo(maxTime);
-      } else if (e.key === ' ' || e.key === 'Enter') {
-        e.preventDefault();
-        togglePlay();
-      }
-    });
-  }
-
-  if (playBtn) {
-    playBtn.addEventListener('click', togglePlay);
-  }
-
-  // ==========================================================================
-  // Reactive Visualizer Loop (Cinematic Transmission Wave + Sonar Rings)
-  // ==========================================================================
-  let phase = 0;
-
-  function renderVisualizer() {
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-    const centerX = canvasWidth / 2;
-    const centerY = canvasHeight / 2;
-
-    // Prefers-reduced-motion: clean, minimal static telemetry
-    if (prefersReducedMotion) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(213, 181, 108, 0.4)';
-      ctx.lineWidth = 1.5;
-      ctx.moveTo(centerX - 140, centerY);
-      ctx.lineTo(centerX + 140, centerY);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, 24, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(213, 181, 108, 0.6)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      return;
-    }
-
-    // Read real frequency data if playing
-    let targetAvg = 0;
-    let targetBass = 0;
-
-    if (isPlaying && analyser && dataArray) {
-      analyser.getByteFrequencyData(dataArray);
-      let sum = 0;
-      let bassSum = 0;
-      const binCount = dataArray.length;
-      const bassBins = Math.floor(binCount * 0.2);
-
-      for (let i = 0; i < binCount; i++) {
-        sum += dataArray[i];
-        if (i < bassBins) bassSum += dataArray[i];
-      }
-
-      targetAvg = sum / (binCount * 255);
-      targetBass = bassSum / (bassBins * 255);
-
-      // Audio-reactive transient glitch trigger (rare, impactful, cooldown-governed)
-      const now = Date.now();
-      if (
-        targetBass > 0.62 &&
-        targetBass - prevBassEnergy > 0.12 &&
-        now - lastGlitchTimestamp > GLITCH_AUDIO_COOLDOWN_MS
-      ) {
-        triggerTitleGlitch('burst', 240);
-        lastGlitchTimestamp = now;
-      }
-      prevBassEnergy = targetBass;
-
-      // Peak state escalation check
-      if (targetAvg > 0.45 || targetBass > 0.55) {
-        body.setAttribute('data-playback', 'peak');
-      } else {
-        body.setAttribute('data-playback', 'playing');
-      }
-    } else {
-      // Idle breathing simulation
-      phase += 0.028;
-      targetAvg = (Math.sin(phase) + 1) * 0.06;
-      targetBass = (Math.cos(phase * 0.8) + 1) * 0.05;
-    }
-
-    // Smooth exponential energy decay / response
-    currentAvgEnergy += (targetAvg - currentAvgEnergy) * 0.14;
-    currentBassEnergy += (targetBass - currentBassEnergy) * 0.14;
-
-    const avg = currentAvgEnergy;
-    const bass = currentBassEnergy;
-
-    // 1. Draw Ambient Particles
-    ctx.fillStyle = 'rgba(213, 181, 108, 0.35)';
-    for (let i = 0; i < particles.length; i++) {
-      const p = particles[i];
-      p.x += p.speedX * (1 + bass * 2.5);
-      p.y += p.speedY * (1 + bass * 2.5);
-
-      if (p.x < 0) p.x = canvasWidth;
-      if (p.x > canvasWidth) p.x = 0;
-      if (p.y < 0) p.y = canvasHeight;
-      if (p.y > canvasHeight) p.y = 0;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius * (1 + avg * 0.8), 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(213, 181, 108, ' + (p.alpha * (0.6 + avg)) + ')';
-      ctx.fill();
-    }
-
-    // 2. Draw Radar Range Rings & Crosshairs
-    const ringBase = Math.min(canvasWidth, canvasHeight) * 0.28;
-    const ringRadius = ringBase + bass * 18;
-
-    // Outer range ring with subtle telemetry tick marks
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, ringRadius * 1.35, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(0, 240, 255, ' + (0.08 + avg * 0.18) + ')';
-    ctx.lineWidth = 1;
-    ctx.setLineDash([2, 6]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Main Gold Pulse Ring
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, ringRadius, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(213, 181, 108, ' + (0.25 + avg * 0.55) + ')';
-    ctx.lineWidth = 1.2 + avg * 2;
-    ctx.stroke();
-
-    // Cross-hair ticks at 4 compass points
-    const tickLen = 6 + bass * 4;
-    ctx.beginPath();
-    ctx.strokeStyle = 'rgba(213, 181, 108, ' + (0.3 + avg * 0.4) + ')';
-    ctx.lineWidth = 1;
-    // Top
-    ctx.moveTo(centerX, centerY - ringRadius - tickLen);
-    ctx.lineTo(centerX, centerY - ringRadius + tickLen);
-    // Bottom
-    ctx.moveTo(centerX, centerY + ringRadius - tickLen);
-    ctx.lineTo(centerX, centerY + ringRadius + tickLen);
-    // Left
-    ctx.moveTo(centerX - ringRadius - tickLen, centerY);
-    ctx.lineTo(centerX - ringRadius + tickLen, centerY);
-    // Right
-    ctx.moveTo(centerX + ringRadius - tickLen, centerY);
-    ctx.lineTo(centerX + ringRadius + tickLen, centerY);
-    ctx.stroke();
-
-    // Center Intercept Core Node
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 3.5 + bass * 3.5, 0, Math.PI * 2);
-    ctx.fillStyle = isPlaying ? '#00f0ff' : '#d5b56c';
-    ctx.shadowBlur = 10 * (1 + avg * 1.5);
-    ctx.shadowColor = isPlaying ? '#00f0ff' : '#d5b56c';
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    // 3. Draw Carrier Frequency Waveform (Dual Harmonic Layer)
-    const wavePoints = 54;
-    const waveWidth = Math.min(canvasWidth * 0.88, 460);
-    const startX = centerX - waveWidth / 2;
-    const step = waveWidth / wavePoints;
-
-    // Secondary Cyan Harmonic Underlay
-    ctx.beginPath();
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = 'rgba(0, 240, 255, ' + (0.15 + avg * 0.4) + ')';
-
-    for (let i = 0; i <= wavePoints; i++) {
-      const x = startX + i * step;
-      let amp = 0;
-
-      if (isPlaying && dataArray) {
-        const binIndex = Math.floor((i / wavePoints) * (dataArray.length / 2));
-        amp = (dataArray[binIndex] / 255) * 32;
-      } else {
-        amp = Math.sin(phase * 1.2 + i * 0.28) * 6;
-      }
-
-      const distFromCenter = Math.abs(i - wavePoints / 2) / (wavePoints / 2);
-      const envelope = 1 - Math.pow(distFromCenter, 2);
-      const y = centerY + Math.sin(phase * 1.6 + i * 0.35) * amp * envelope;
-
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    // Primary Gold Transmission Wave
-    ctx.beginPath();
-    ctx.lineWidth = 1.6 + avg * 1.2;
-    ctx.strokeStyle = 'rgba(213, 181, 108, ' + (0.45 + avg * 0.5) + ')';
-
-    for (let i = 0; i <= wavePoints; i++) {
-      const x = startX + i * step;
-      let amp = 0;
-
-      if (isPlaying && dataArray) {
-        const binIndex = Math.floor((i / wavePoints) * (dataArray.length / 2));
-        amp = (dataArray[binIndex] / 255) * 36;
-      } else {
-        amp = Math.sin(phase + i * 0.22) * 7.5;
-      }
-
-      const distFromCenter = Math.abs(i - wavePoints / 2) / (wavePoints / 2);
-      const envelope = 1 - Math.pow(distFromCenter, 2);
-      const y = centerY + Math.sin(phase * 1.4 + i * 0.3) * amp * envelope;
-
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    animFrameId = raf(renderVisualizer);
+    }, 6500 + Math.random() * 6500);
   }
 
   function startVisualizer() {
-    if (!animFrameId) {
-      animFrameId = raf(renderVisualizer);
+    if (!ctx || frameId || document.hidden || reducedMotion) return;
+    function tick() {
+      frameId = 0;
+      if (!playing || document.hidden) return;
+      drawWave(true);
+      if (analyser && timeData) {
+        analyser.getByteTimeDomainData(timeData);
+        var sum = 0;
+        for (var i = 0; i < timeData.length; i += 1) {
+          var sample = (timeData[i] - 128) / 128;
+          sum += sample * sample;
+        }
+        var level = Math.sqrt(sum / timeData.length);
+        if (atmosphere) {
+          var intensity = Math.min(1, level / .32);
+          atmosphere.style.setProperty('--signal-audio-pulse', (.18 + intensity * .48).toFixed(3));
+          atmosphere.style.setProperty('--signal-code-opacity', (.21 + intensity * .11).toFixed(3));
+        }
+        if (level > .18 && level - previousPeak > .07 && Date.now() - lastGlitch > GLITCH_AUDIO_COOLDOWN_MS) {
+          triggerGlitch('burst', 180);
+          lastGlitch = Date.now();
+        }
+        previousPeak = level;
+      }
+      frameId = window.requestAnimationFrame(tick);
+    }
+    frameId = window.requestAnimationFrame(tick);
+  }
+
+  function stopVisualizer() {
+    if (frameId) window.cancelAnimationFrame(frameId);
+    frameId = 0;
+    drawWave(false);
+    if (atmosphere) {
+      atmosphere.style.setProperty('--signal-audio-pulse', '.24');
+      atmosphere.style.setProperty('--signal-code-opacity', '.23');
     }
   }
 
-  // Handle visibility changes to preserve battery and CPU
+  function onPlaybackError() {
+    if (activeSourceIndex + 1 < sources.length) {
+      activeSourceIndex += 1;
+      audio.src = sources[activeSourceIndex].src;
+      audio.load();
+      audio.play().then(onPlaybackStarted).catch(function () { showPlaybackError(); });
+      return;
+    }
+    showPlaybackError();
+  }
+
+  function showPlaybackError() {
+    playing = false;
+    stopVisualizer();
+    setStatus('error');
+    setButtonState('error');
+    if (errorMessage) errorMessage.hidden = false;
+  }
+
+  function onPlaybackStarted() {
+    if (audio.paused) return;
+    playing = true;
+    if (errorMessage) errorMessage.hidden = true;
+    setStatus('playing');
+    setButtonState('playing');
+    if (audioContext && audioContext.state === 'suspended') audioContext.resume().catch(function () {});
+    startVisualizer();
+  }
+
+  function play() {
+    assignSource();
+    if (!sourceAssigned) { showPlaybackError(); return; }
+    ensureAudioGraph();
+    if (audioContext && audioContext.state === 'suspended') audioContext.resume().catch(function () {});
+    if (audio.ended || audio.currentTime >= duration) audio.currentTime = 0;
+    setStatus('loading');
+    setButtonState('loading');
+    triggerGlitch('burst', 190);
+    audio.play().then(onPlaybackStarted).catch(showPlaybackError);
+  }
+
+  function pause() {
+    audio.pause();
+    playing = false;
+    stopVisualizer();
+    setStatus('paused');
+    setButtonState('paused');
+  }
+
+  function togglePlayback() {
+    if (playing && !audio.paused) pause(); else play();
+  }
+
+  function seekTo(clientX) {
+    var rect = progress.getBoundingClientRect();
+    if (!rect.width) return;
+    var fraction = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    var target = fraction * duration;
+    assignSource();
+    audio.currentTime = target;
+    showTime(target, duration);
+  }
+
+  playButton.addEventListener('click', togglePlayback);
+  audio.addEventListener('loadedmetadata', function () {
+    if (Number.isFinite(audio.duration) && audio.duration > 0) duration = audio.duration;
+    showTime(audio.currentTime, duration);
+  });
+  audio.addEventListener('durationchange', function () {
+    if (Number.isFinite(audio.duration) && audio.duration > 0) duration = audio.duration;
+    showTime(audio.currentTime, duration);
+  });
+  audio.addEventListener('timeupdate', function () {
+    var current = Math.min(audio.currentTime, duration);
+    showTime(current, duration);
+    if (current >= duration && !audio.ended) {
+      audio.pause();
+      onEnded();
+    }
+  });
+  audio.addEventListener('playing', onPlaybackStarted);
+  audio.addEventListener('pause', function () {
+    if (!playing && audio.currentTime > 0 && !audio.ended && body.getAttribute('data-playback') === 'playing') pause();
+  });
+  audio.addEventListener('ended', onEnded);
+  audio.addEventListener('error', function () {
+    if (sourceAssigned && !audio.paused) onPlaybackError();
+    else if (sourceAssigned && activeSourceIndex + 1 < sources.length) onPlaybackError();
+  });
+
+  function onEnded() {
+    playing = false;
+    stopVisualizer();
+    showTime(duration, duration);
+    setStatus('ended');
+    setButtonState('ended');
+    if (audioContext && audioContext.state === 'running') audioContext.suspend().catch(function () {});
+  }
+
+  progress.addEventListener('pointerdown', function (event) {
+    pointerSeeking = true;
+    if (progress.setPointerCapture) progress.setPointerCapture(event.pointerId);
+    seekTo(event.clientX);
+  });
+  progress.addEventListener('pointermove', function (event) {
+    if (pointerSeeking) seekTo(event.clientX);
+  });
+  progress.addEventListener('pointerup', function () { pointerSeeking = false; });
+  progress.addEventListener('pointercancel', function () { pointerSeeking = false; });
+  progress.addEventListener('keydown', function (event) {
+    var current = audio.currentTime || 0;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowUp') { event.preventDefault(); assignSource(); audio.currentTime = Math.min(duration, current + 2); }
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') { event.preventDefault(); assignSource(); audio.currentTime = Math.max(0, current - 2); }
+    else if (event.key === 'Home') { event.preventDefault(); assignSource(); audio.currentTime = 0; }
+    else if (event.key === 'End') { event.preventDefault(); assignSource(); audio.currentTime = duration; }
+  });
+
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) {
-      if (animFrameId && !isPlaying) {
-        caf(animFrameId);
-        animFrameId = null;
-      }
+      body.setAttribute('data-page-hidden', 'true');
+      if (frameId) window.cancelAnimationFrame(frameId);
+      frameId = 0;
+      window.clearTimeout(ambientTimer);
+      var title = document.getElementById('signal-title');
+      if (title) title.removeAttribute('data-glitch');
     } else {
-      if (!animFrameId) {
-        startVisualizer();
-      }
+      body.removeAttribute('data-page-hidden');
+      if (playing) startVisualizer();
+      else scheduleAmbientGlitch();
     }
   });
+  window.addEventListener('resize', resizeCanvas, { passive: true });
+  if (window.ResizeObserver && canvas) new ResizeObserver(resizeCanvas).observe(canvas);
 
-  // Page Load Setup
-  document.addEventListener('DOMContentLoaded', function () {
-    // Synchronize mode badge text with configuration
-    if (modePill && config.sourceModeLabel) {
-      modePill.textContent = config.sourceModeLabel;
-    }
+  if (window.matchMedia) {
+    var motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    motionQuery.addEventListener && motionQuery.addEventListener('change', function (event) {
+      reducedMotion = event.matches;
+      if (reducedMotion) stopVisualizer(); else if (playing) startVisualizer();
+    });
+  }
 
-    if (body && !body.hasAttribute('data-playback')) {
-      body.setAttribute('data-playback', 'idle');
-    }
-
-    initCanvas();
-    initParticles();
-    initAudio();
-    scheduleAmbientGlitch();
-    startVisualizer();
-  });
+  resizeCanvas();
+  if (document.hidden) body.setAttribute('data-page-hidden', 'true');
+  showTime(0, duration);
+  setStatus('idle');
+  setButtonState('idle');
+  scheduleAmbientGlitch();
 })();
