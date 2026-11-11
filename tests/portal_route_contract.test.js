@@ -98,7 +98,7 @@ assert.ok(clientCss.includes('prefers-reduced-motion'), 'client portal respects 
 
 assert.ok(indexHtml.includes('href="/portal"'), 'homepage exposes clean same-origin Client Portal CTA');
 assert.ok(bookingsHtml.includes('/portal'), 'bookings header exposes clean Client Portal CTA');
-assert.ok(bookingsJs.includes('private Client Portal link for documents, payment steps, and approvals'), 'booking success copy references clean portal wording');
+assert.ok(bookingsJs.includes('Private portal access is sent only after OTP reviews and approves the next step.'), 'booking success keeps portal access gated on OTP review');
 assert.ok(bookingsJs.includes('safePortalHref'), 'booking success validates returned portal links');
 assert.ok(bookingsHtml.includes('https://otp-os.vercel.app/bookings'), 'bookings exposes secure project intake CTA');
 assert.ok(bookingsHtml.includes('Open Secure Project Intake'), 'bookings labels secure intake next step');

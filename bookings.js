@@ -203,11 +203,60 @@ const FAST_LANE_DETAILS = {
   }
 };
 
+const QUICK_SERVICE_OPTIONS = [
+  { value: 'Website / Digital System', label: 'Website & Digital' },
+  { value: 'Video / Content', label: 'Video & Content' },
+  { value: 'Brand Launch', label: 'Branding & Design' },
+  { value: 'AI / Automation', label: 'Custom Systems' },
+  { value: 'Same-Day Reel', label: 'Fast Lane' },
+  { value: 'Custom Request', label: 'Not sure yet — help me choose' }
+];
+
+const SERVICE_GUIDANCE = {
+  'website / digital system': {
+    label: 'Website & Digital',
+    package: 'The Signal for a focused page fix; The Engine for connected pages. Larger client workflows may need The System.',
+    next: 'Share your site link and the page or booking step you want to improve.'
+  },
+  'video / content': {
+    label: 'Video & Content',
+    package: 'A single focused edit may fit The Signal; a connected campaign may fit The Engine.',
+    next: 'Mention the deliverable, where it will be used, and whether footage is ready.'
+  },
+  'brand launch': {
+    label: 'Branding & Design',
+    package: 'A focused design piece may fit The Signal; connected launch assets may fit The Engine.',
+    next: 'Share what exists today and what you want people to see at launch.'
+  },
+  'ai / automation': {
+    label: 'Custom Systems',
+    package: 'A focused workflow fix may need a smaller scope; connected systems may fit The System.',
+    next: 'Describe the current process, who uses it, and what should be easier.'
+  },
+  'custom build': {
+    label: 'Custom Systems',
+    package: 'A focused workflow fix may need a smaller scope; connected systems may fit The System.',
+    next: 'Describe the current process, who uses it, and what should be easier.'
+  },
+  'custom request': {
+    label: 'Custom project',
+    package: 'OTP can recommend a fit after reviewing the goal and scope.',
+    next: 'Tell us what you want to make or improve. You can leave the service choice open.'
+  },
+  'same-day reel': {
+    label: 'Fast Lane',
+    package: 'A focused request may fit The Signal. OTP confirms scope and availability first.',
+    next: 'Share the deadline and whether footage or references are ready. Availability is confirmed after review.'
+  }
+};
+
 const state = {
   config: fallbackConfig,
   step: 1,
   submitting: false,
   submitted: false,
+  quickStarted: false,
+  detailedStarted: false,
   selectedPackage: '',
   bookingToken: makeBookingToken(),
   sourceTracking: {}
@@ -247,6 +296,21 @@ const els = {
   successMeta: $('success-meta'),
   successActions: $('success-actions'),
   quickSelectors: [...document.querySelectorAll('[data-quick-service]')],
+  quickForm: $('quick-inquiry-form'),
+  quickService: $('quick-service'),
+  quickName: $('quick-name'),
+  quickEmail: $('quick-email'),
+  quickPhone: $('quick-phone'),
+  quickDescription: $('quick-description'),
+  quickLink: $('quick-link'),
+  quickBudget: $('quick-budget'),
+  quickConsent: $('quick-consent'),
+  quickHoneypot: $('quick-otp-company-website'),
+  quickSubmit: $('submit-quick-inquiry'),
+  quickStatus: $('quick-status'),
+  quickError: $('quick-error'),
+  detailedBrief: $('detailed-brief'),
+  openDetailedButtons: [...document.querySelectorAll('[data-open-detailed]')],
   service: $('booking-service'),
   package: $('booking-package'),
   name: $('booking-name'),
@@ -382,6 +446,18 @@ function showStatus(message = '') {
   els.status.classList.toggle('hidden', !message);
 }
 
+function showQuickError(message = '') {
+  if (!els.quickError) return;
+  els.quickError.textContent = message;
+  els.quickError.classList.toggle('hidden', !message);
+}
+
+function showQuickStatus(message = '') {
+  if (!els.quickStatus) return;
+  els.quickStatus.textContent = message;
+  els.quickStatus.classList.toggle('hidden', !message);
+}
+
 function optionList(select, values, placeholder) {
   select.replaceChildren();
   if (placeholder) {
@@ -392,10 +468,20 @@ function optionList(select, values, placeholder) {
   }
   values.forEach((value) => {
     const opt = document.createElement('option');
-    opt.value = value;
-    opt.textContent = value;
+    if (value && typeof value === 'object') {
+      opt.value = String(value.value || value.label || '');
+      opt.textContent = String(value.label || value.value || '');
+    } else {
+      opt.value = value;
+      opt.textContent = value;
+    }
     select.append(opt);
   });
+}
+
+function fillQuickSelects() {
+  optionList(els.quickService, QUICK_SERVICE_OPTIONS, 'Choose a service');
+  optionList(els.quickBudget, state.config.budgetRanges || fallbackConfig.budgetRanges, 'Select if known');
 }
 
 function packageLabel(pkg = {}) {
@@ -531,24 +617,41 @@ function selectedDisplay() {
   return {
     name: 'No package selected',
     price: 'Scope will appear here',
-    message: PACKAGE_THEMES.default.message,
-    formTitle: 'Start with the real project details.',
+    message: 'A package is optional. OTP can recommend a fit after reviewing your project.',
+    formTitle: 'Send OTP the full project brief.',
     pill: 'No package selected'
   };
 }
 
+function guidanceForService(serviceType = '') {
+  const key = String(serviceType || '').trim().toLowerCase();
+  if (SERVICE_GUIDANCE[key]) return SERVICE_GUIDANCE[key];
+  if (/website|digital|landing|booking|portal/.test(key)) return SERVICE_GUIDANCE['website / digital system'];
+  if (/video|content|reel|event promo/.test(key)) return SERVICE_GUIDANCE['video / content'];
+  if (/brand|logo|identity|launch/.test(key)) return SERVICE_GUIDANCE['brand launch'];
+  if (/automation|system|software|custom/.test(key)) return SERVICE_GUIDANCE['custom build'];
+  if (/fast|urgent|emergency/.test(key)) return SERVICE_GUIDANCE['same-day reel'];
+  return null;
+}
+
 function updateSummaries() {
   const selected = selectedDisplay();
+  const serviceName = (els.quickService && els.quickService.value) || (els.service && els.service.value) || '';
+  const guidance = guidanceForService(serviceName);
   els.selectedPackageName.textContent = selected.name;
   els.selectedPackageMessage.textContent = selected.message;
   els.selectedPackagePrice.textContent = selected.price;
-  els.oraclePackageName.textContent = selected.name === 'No package selected' ? 'Package system standing by' : selected.name;
-  els.oraclePackageMessage.textContent = selected.name === 'No package selected'
-    ? 'OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'
-    : `${selected.message} OTP Oracle will use that scope to route documents and next actions.`;
+  els.oraclePackageName.textContent = guidance
+    ? (state.selectedPackage && state.selectedPackage !== 'Not Sure Yet' ? `${state.selectedPackage} · ${guidance.label}` : guidance.label)
+    : (selected.name === 'No package selected' ? 'Scope guidance' : selected.name);
+  els.oraclePackageMessage.textContent = guidance
+    ? `${guidance.package} ${guidance.next}`
+    : (selected.name === 'No package selected'
+      ? 'Choose a service to see what details will help OTP recommend a next step.'
+      : `${selected.message} OTP will confirm the right scope after review.`);
   els.miniPackage.textContent = selected.name;
-  els.miniService.textContent = text(els.service.value, 'Not selected');
-  els.miniBudget.textContent = text(els.budget.value, 'Not selected');
+  els.miniService.textContent = text(serviceName, 'Not selected');
+  els.miniBudget.textContent = text((els.quickBudget && els.quickBudget.value) || (els.budget && els.budget.value), 'Not selected');
   els.miniTimeline.textContent = formatDeadline(els.deadline.value || els.urgency.value);
   els.formTitle.textContent = selected.formTitle;
   els.formPackageNote.textContent = selected.message;
@@ -601,11 +704,13 @@ function selectFastLane(service) {
   const mappedPackage = offer?.recommended_package || fastLanePackageFor(service);
   if (!mappedPackage) return;
   setSelectIfAvailable(els.service, offer?.label || service);
+  setQuickServiceIfAvailable(offer?.label || service);
   selectPackage(mappedPackage, { advance: false, preserveService: true });
   renderFastLanes();
   showError('');
   window.requestAnimationFrame(() => {
-    if (els.form) els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
+    openDetailedBrief({ scroll: false });
+    if (els.detailedBrief) els.detailedBrief.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
   });
 }
 
@@ -617,13 +722,29 @@ function setSelectIfAvailable(select, value) {
   return true;
 }
 
+function setQuickServiceIfAvailable(value) {
+  if (!els.quickService) return false;
+  const normalized = String(value || '').trim().toLowerCase();
+  if (!normalized) return false;
+  const direct = QUICK_SERVICE_OPTIONS.find((option) => option.value.toLowerCase() === normalized);
+  if (direct) return setSelectIfAvailable(els.quickService, direct.value);
+
+  let mapped = '';
+  if (/same-day|fast lane|urgent/.test(normalized)) mapped = 'Same-Day Reel';
+  else if (/website|digital|landing|booking|portal|client flow/.test(normalized)) mapped = 'Website / Digital System';
+  else if (/video|content|reel|event|film|edit|music|artist|campaign|coverage/.test(normalized)) mapped = 'Video / Content';
+  else if (/brand|logo|identity|design|launch/.test(normalized)) mapped = 'Brand Launch';
+  else if (/automation|software|system|custom/.test(normalized)) mapped = 'AI / Automation';
+  return mapped ? setSelectIfAvailable(els.quickService, mapped) : false;
+}
+
 function updateQuickSelectorState() {
   if (!els.quickSelectors.length) return;
   els.quickSelectors.forEach((control) => {
     const service = control.dataset.quickService || '';
     const packageName = control.dataset.quickPackage || '';
     const selected = service
-      ? els.service.value === service
+      ? ((els.quickService && els.quickService.value) || els.service.value) === service
       : Boolean(packageName && state.selectedPackage === packageName);
     control.classList.toggle('active', selected);
     control.setAttribute('aria-pressed', selected ? 'true' : 'false');
@@ -635,19 +756,18 @@ function updateQuickSelectorState() {
 function selectQuickService(control) {
   if (!control) return;
   const service = cleanTrackingValue(control.dataset.quickService || '', 160);
-  const packageName = cleanTrackingValue(control.dataset.quickPackage || '', 160);
-  if (service) setSelectIfAvailable(els.service, service);
-  if (packageName) {
-    selectPackage(packageName, { advance: false, preserveService: true });
-  } else {
-    applyFastLaneServiceSelection();
+  if (service) {
+    setSelectIfAvailable(els.service, service);
+    setQuickServiceIfAvailable(service);
+    markQuickInquiryStarted();
+    trackBookingEvent('booking_service_selected', { service, intake_path: 'service_guide' });
   }
   renderFastLanes();
   updateSummaries();
   updateQuickSelectorState();
   showError('');
   window.requestAnimationFrame(() => {
-    els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
+    if (els.quickForm) els.quickForm.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
   });
 }
 
@@ -799,7 +919,9 @@ function renderPackages() {
 
     const handleSelect = () => {
       selectPackage(name);
+      trackBookingEvent('booking_package_selected', { package: name });
       window.requestAnimationFrame(() => {
+        openDetailedBrief({ scroll: false });
         if (els.form) els.form.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
       });
     };
@@ -827,36 +949,217 @@ function fillSelects() {
   optionList(els.nextStep, state.config.preferredNextSteps || fallbackConfig.preferredNextSteps, 'Choose next step');
 }
 
-function payload() {
-  const selectedOffer = fastLaneOfferForService(els.service.value);
-  const fastLanePackage = selectedOffer ? fastLanePackageFitFor(els.service.value) : '';
+function openDetailedBrief({ scroll = true } = {}) {
+  if (!els.detailedBrief) return;
+  const wasHidden = els.detailedBrief.hidden;
+  els.detailedBrief.hidden = false;
+  syncQuickToDetailed();
+  els.openDetailedButtons.forEach((button) => button.setAttribute('aria-expanded', 'true'));
+  if (wasHidden && !state.detailedStarted) {
+    state.detailedStarted = true;
+    trackBookingEvent('detailed_brief_started', {});
+  }
+  if (scroll) {
+    window.requestAnimationFrame(() => els.detailedBrief.scrollIntoView({ behavior: motionBehavior(), block: 'start' }));
+  }
+}
+
+function syncValue(source, destination, { preferSource = false } = {}) {
+  if (!source || !destination || destination.value === source.value) return;
+  const sourceHasValue = Boolean(String(source.value || '').trim());
+  const destinationHasValue = Boolean(String(destination.value || '').trim());
+  // A blank field on one path must never erase details already entered on the other.
+  if (!sourceHasValue && destinationHasValue) return;
+  // When the visitor edits a field directly, that field is the active source of truth.
+  if (sourceHasValue && destinationHasValue && !preferSource) return;
+  destination.value = source.value;
+}
+
+function syncQuickToDetailed(field = '') {
+  if (field === 'consent') {
+    els.consent.checked = els.quickConsent.checked;
+    return;
+  }
+  if ((!field || field === 'service') && els.quickService.value && (!els.service.value || field === 'service')) {
+    setSelectIfAvailable(els.service, els.quickService.value);
+  }
+  const pairs = [
+    ['name', els.quickName, els.name],
+    ['email', els.quickEmail, els.email],
+    ['phone', els.quickPhone, els.phone],
+    ['description', els.quickDescription, els.description],
+    ['link', els.quickLink, els.social],
+    ['budget', els.quickBudget, els.budget]
+  ];
+  pairs.forEach(([key, source, destination]) => {
+    if (!field || field === key) syncValue(source, destination, { preferSource: Boolean(field) });
+  });
+  if (!field && (els.quickConsent.checked || els.consent.checked)) {
+    els.quickConsent.checked = true;
+    els.consent.checked = true;
+  }
+}
+
+function syncDetailedToQuick(field = '') {
+  if (field === 'consent') {
+    els.quickConsent.checked = els.consent.checked;
+    return;
+  }
+  if ((!field || field === 'service') && els.service.value && (!els.quickService.value || field === 'service')) {
+    setQuickServiceIfAvailable(els.service.value);
+  }
+  const pairs = [
+    ['name', els.name, els.quickName],
+    ['email', els.email, els.quickEmail],
+    ['phone', els.phone, els.quickPhone],
+    ['description', els.description, els.quickDescription],
+    ['link', els.social, els.quickLink],
+    ['budget', els.budget, els.quickBudget]
+  ];
+  pairs.forEach(([key, source, destination]) => {
+    if (!field || field === key) syncValue(source, destination, { preferSource: Boolean(field) });
+  });
+  if (!field && (els.consent.checked || els.quickConsent.checked)) {
+    els.quickConsent.checked = true;
+    els.consent.checked = true;
+  }
+}
+
+function wireInquiryFieldSync() {
+  const quickFields = [
+    ['name', els.quickName], ['email', els.quickEmail], ['phone', els.quickPhone],
+    ['description', els.quickDescription], ['link', els.quickLink]
+  ];
+  quickFields.forEach(([key, field]) => field.addEventListener('input', () => {
+    syncQuickToDetailed(key);
+    updateSummaries();
+    markQuickInquiryStarted();
+  }));
+  els.quickService.addEventListener('change', () => {
+    syncQuickToDetailed('service');
+    updateSummaries();
+    markQuickInquiryStarted();
+  });
+  els.quickBudget.addEventListener('change', () => {
+    syncQuickToDetailed('budget');
+    updateSummaries();
+    markQuickInquiryStarted();
+  });
+  els.quickService.addEventListener('change', () => {
+    trackBookingEvent('booking_service_selected', { service: els.quickService.value, intake_path: 'quick_inquiry' });
+  });
+  const detailedFields = [
+    ['name', els.name], ['email', els.email], ['phone', els.phone],
+    ['description', els.description], ['link', els.social]
+  ];
+  detailedFields.forEach(([key, field]) => field.addEventListener('input', () => {
+    syncDetailedToQuick(key);
+    updateSummaries();
+    if (!state.detailedStarted) {
+      state.detailedStarted = true;
+      trackBookingEvent('detailed_brief_started', {});
+    }
+  }));
+  els.service.addEventListener('change', () => {
+    syncDetailedToQuick('service');
+    updateSummaries();
+  });
+  els.budget.addEventListener('change', () => {
+    syncDetailedToQuick('budget');
+    updateSummaries();
+  });
+  els.quickConsent.addEventListener('change', () => syncQuickToDetailed('consent'));
+  els.consent.addEventListener('change', () => syncDetailedToQuick('consent'));
+}
+
+function payload(path = 'detailed_brief') {
+  const isQuick = path === 'quick_inquiry';
+  const selectedService = isQuick ? els.quickService.value : els.service.value;
+  const selectedOffer = fastLaneOfferForService(selectedService);
+  const fastLanePackage = selectedOffer ? fastLanePackageFitFor(selectedService) : '';
+  const selectedPackage = isQuick ? state.selectedPackage : els.package.value;
   return {
     booking_token: state.bookingToken,
-    source_tracking: state.sourceTracking,
-    otp_company_website: els.honeypot ? els.honeypot.value.trim() : '',
-    name: els.name.value.trim(),
-    email: els.email.value.trim(),
-    phone: els.phone.value.trim(),
-    business_name: els.business.value.trim(),
-    preferred_contact_method: els.contactMethod.value.trim(),
-    social_link: els.social.value.trim(),
-    service_type: els.service.value.trim(),
-    project_type: els.projectType.value.trim(),
-    package_interest: els.package.value.trim(),
+    source_tracking: { ...state.sourceTracking, intake_path: path },
+    otp_company_website: isQuick
+      ? (els.quickHoneypot ? els.quickHoneypot.value.trim() : '')
+      : (els.honeypot ? els.honeypot.value.trim() : ''),
+    name: (isQuick ? els.quickName.value : els.name.value).trim(),
+    email: (isQuick ? els.quickEmail.value : els.email.value).trim(),
+    phone: (isQuick ? els.quickPhone.value : els.phone.value).trim(),
+    business_name: isQuick ? '' : els.business.value.trim(),
+    preferred_contact_method: isQuick ? '' : els.contactMethod.value.trim(),
+    social_link: isQuick ? els.quickLink.value.trim() : els.social.value.trim(),
+    service_type: String(selectedService || '').trim(),
+    project_type: isQuick ? '' : els.projectType.value.trim(),
+    package_interest: String(selectedPackage || (isQuick ? 'Not Sure Yet' : '')).trim(),
     selected_fast_offer: selectedOffer ? selectedOffer.label : '',
     fast_lane_package: fastLanePackage,
-    project_description: els.description.value.trim(),
-    desired_deliverables: els.deliverables.value.trim(),
-    reference_link: els.reference.value.trim(),
-    budget_range: els.budget.value.trim(),
-    ideal_deadline: els.deadline.value.trim(),
-    urgency_level: els.urgency.value.trim(),
-    deposit_readiness: els.deposit.value.trim(),
-    location: els.location.value.trim(),
-    referral_source: els.referralSource.value.trim(),
-    preferred_next_step: els.nextStep.value.trim(),
-    contact_consent: Boolean(els.consent.checked)
+    project_description: (isQuick ? els.quickDescription.value : els.description.value).trim(),
+    desired_deliverables: isQuick ? '' : els.deliverables.value.trim(),
+    reference_link: isQuick ? '' : els.reference.value.trim(),
+    budget_range: (isQuick ? els.quickBudget.value : els.budget.value).trim(),
+    ideal_deadline: isQuick ? '' : els.deadline.value.trim(),
+    urgency_level: isQuick ? (selectedOffer?.urgency || '') : els.urgency.value.trim(),
+    deposit_readiness: isQuick ? '' : els.deposit.value.trim(),
+    location: isQuick ? '' : els.location.value.trim(),
+    referral_source: isQuick ? '' : els.referralSource.value.trim(),
+    preferred_next_step: isQuick ? 'Send me the best next step' : els.nextStep.value.trim(),
+    contact_consent: Boolean(isQuick ? els.quickConsent.checked : els.consent.checked)
   };
+}
+
+function trackBookingEvent(eventName, data = {}) {
+  try {
+    if (window.OTPAnalytics && typeof window.OTPAnalytics.trackEvent === 'function') {
+      window.OTPAnalytics.trackEvent(eventName, data);
+    }
+  } catch (_) { /* Analytics never blocks the inquiry. */ }
+}
+
+function markQuickInquiryStarted() {
+  if (state.quickStarted) return;
+  state.quickStarted = true;
+  trackBookingEvent('quick_inquiry_started', {});
+}
+
+function quickInquiryMissing() {
+  const p = payload('quick_inquiry');
+  const missing = [];
+  if (!p.service_type) missing.push('service');
+  if (!p.project_description) missing.push('project description');
+  else if (p.project_description.length < 12) missing.push('a little more project detail');
+  if (!p.name) missing.push('name');
+  if (!p.email && !p.phone) missing.push('email or phone');
+  if (p.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) missing.push('valid email');
+  if (!p.contact_consent) missing.push('contact consent');
+  return missing;
+}
+
+function focusQuickInquiryError(missing) {
+  const first = missing[0] || '';
+  const target = first === 'service' ? els.quickService
+    : first === 'project description' || first === 'a little more project detail' ? els.quickDescription
+      : first === 'name' ? els.quickName
+        : first === 'email or phone' ? (els.quickEmail.value ? els.quickPhone : els.quickEmail)
+          : first === 'valid email' ? els.quickEmail
+            : first === 'contact consent' ? els.quickConsent : null;
+  if (target && typeof target.focus === 'function') target.focus();
+}
+
+function validateQuickInquiry() {
+  const missing = quickInquiryMissing();
+  if (!missing.length) {
+    els.quickError.textContent = '';
+    els.quickError.classList.add('hidden');
+    return true;
+  }
+  const message = `Please add ${missing.join(', ')} before sending your inquiry.`;
+  els.quickError.textContent = message;
+  els.quickError.classList.remove('hidden');
+  trackBookingEvent('booking_validation_error', { intake_path: 'quick_inquiry', fields: missing });
+  focusQuickInquiryError(missing);
+  return false;
 }
 
 function missingForStep(step) {
@@ -967,14 +1270,21 @@ function setStep(step) {
   updateSummaries();
 }
 
-function renderSuccess(data) {
+function hasOtpPersistenceEvidence(data = {}) {
+  const evidence = data.writerEvidence || data.writer_evidence || {};
+  return evidence.writer === 'otp_os' && ['persisted', 'duplicate_replay'].includes(evidence.status);
+}
+
+function renderSuccess(data, path = 'detailed_brief') {
   const recommendation = data.recommendation && typeof data.recommendation === 'object' ? data.recommendation : null;
   state.submitted = true;
   els.success.classList.remove('hidden');
   els.success.classList.toggle('partial', !recommendation);
   els.form.classList.add('submitted');
-  els.successTitle.textContent = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
-  els.successCopy.textContent = 'After review, OTP may send scope questions, a package recommendation, a proposal, or a private Client Portal link for documents, payment steps, and approvals.';
+  els.successTitle.textContent = path === 'quick_inquiry'
+    ? 'Your inquiry reached OTP.'
+    : 'Your full brief reached OTP.';
+  els.successCopy.textContent = 'OTP will review the scope and follow up with questions, a package recommendation, or a proposed next step. This inquiry is not a confirmed booking or purchase.';
   els.successMeta.replaceChildren();
   els.successActions.replaceChildren();
 
@@ -1080,48 +1390,92 @@ function renderSuccess(data) {
   els.successActions.append(newBooking);
   els.submit.disabled = true;
   els.submit.textContent = 'Request Submitted';
+  els.quickSubmit.disabled = true;
+  els.quickSubmit.textContent = 'Inquiry Received';
+  try { sessionStorage.removeItem('otp_booking_token'); } catch (_) { /* Keep success state even if storage is unavailable. */ }
   els.success.scrollIntoView({ behavior: motionBehavior(), block: 'start' });
 }
 
-async function submitBooking(event) {
+async function submitIntake(event, path) {
   event.preventDefault();
   if (state.submitting || state.submitted) return;
+  const isQuick = path === 'quick_inquiry';
   state.sourceTracking = getAttributionTracking();
-  if (!validateStep(1) || !validateStep(2) || !validateStep(4)) {
+
+  if (isQuick) {
+    if (!validateQuickInquiry()) return;
+  } else if (!validateStep(1) || !validateStep(2) || !validateStep(4)) {
+    const missing = [...new Set([1, 2, 4].flatMap(missingForStep))];
+    trackBookingEvent('booking_validation_error', { intake_path: path, fields: missing });
     setStep(missingForStep(1).length ? 1 : missingForStep(2).length ? 2 : 4);
     return;
   }
 
+  const requestPayload = payload(path);
+  const activeButton = isQuick ? els.quickSubmit : els.submit;
   state.submitting = true;
   els.submit.disabled = true;
-  els.submit.classList.add('is-loading');
-  els.submit.textContent = 'Submitting';
+  els.quickSubmit.disabled = true;
+  activeButton.classList.add('is-loading');
+  activeButton.textContent = isQuick ? 'Sending…' : 'Submitting';
   showError('');
-  showStatus('Sending booking request to OTP...');
+  showQuickError('');
+  showStatus(isQuick ? '' : 'Sending full brief to OTP...');
+  showQuickStatus(isQuick ? 'Sending your inquiry to OTP...' : '');
+  trackBookingEvent('booking_submission_attempted', { intake_path: path, service: requestPayload.service_type });
 
+  let failureCode = 'request_failed';
   try {
     const response = await fetch('/api/bookings/submit', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(payload())
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Idempotency-Key': requestPayload.booking_token
+      },
+      body: JSON.stringify(requestPayload)
     });
     const data = await response.json().catch(() => ({}));
+    failureCode = String(data.errorCode || data.error_code || `http_${response.status}`);
     if (!response.ok || data.ok === false || data.error) {
-      throw new Error(text(data.message, 'Something blocked the request. Please check your contact info and try again.'));
+      throw new Error(text(data.message, 'OTP could not receive the request. Please try again shortly.'));
     }
-    renderSuccess(data);
+    if (!hasOtpPersistenceEvidence(data)) {
+      failureCode = 'writer_evidence_missing';
+      throw new Error('OTP could not verify that the request reached the lead system. Please try again shortly.');
+    }
+    trackBookingEvent('booking_submission_persisted', { intake_path: path, writer: 'otp_os' });
+    renderSuccess(data, path);
     showStatus('');
+    showQuickStatus('');
   } catch (error) {
-    showStatus('');
-    showError(text(error?.message, 'Something blocked the request. Please check your contact info and try again.'));
+    trackBookingEvent('booking_submission_failed', { intake_path: path, error_code: failureCode });
+    const message = text(error?.message, 'OTP could not receive the request. Please try again shortly.');
+    if (isQuick) {
+      showQuickStatus('');
+      showQuickError(message);
+    } else {
+      showStatus('');
+      showError(message);
+    }
   } finally {
     state.submitting = false;
-    els.submit.classList.remove('is-loading');
+    activeButton.classList.remove('is-loading');
     if (!state.submitted) {
       els.submit.disabled = false;
+      els.quickSubmit.disabled = false;
       els.submit.textContent = 'Submit Booking Request';
+      els.quickSubmit.textContent = 'Request My Quote ↗';
     }
   }
+}
+
+function submitBooking(event) {
+  return submitIntake(event, 'detailed_brief');
+}
+
+function submitQuickInquiry(event) {
+  return submitIntake(event, 'quick_inquiry');
 }
 
 function wireProjectIntakeAttribution() {
@@ -1151,6 +1505,7 @@ async function init() {
     }
   } catch (_) { /* non-blocking */ }
   state.sourceTracking = getAttributionTracking();
+  trackBookingEvent('booking_page_viewed', { route: window.location.pathname || '/start-project' });
   try { wireProjectIntakeAttribution(); } catch (_) { /* non-blocking */ }
   applyActiveTheme('');
   let offlineMode = false;
@@ -1162,6 +1517,8 @@ async function init() {
     offlineMode = true;
   }
   fillSelects();
+  fillQuickSelects();
+  wireInquiryFieldSync();
   wireQuickSelectors();
   renderPackages();
   renderFastLanes();
@@ -1182,6 +1539,7 @@ async function init() {
     else if (lowerPkg.includes('signal')) matchedPkg = 'The Signal';
 
     selectPackage(matchedPkg, { advance: false });
+    openDetailedBrief({ scroll: false });
   }
 
   if (fastParam && els.service) {
@@ -1189,7 +1547,8 @@ async function init() {
     const matchedService = Array.from(els.service.options).find(opt => opt.value.toLowerCase() === cleanFast.toLowerCase() || opt.value.toLowerCase().includes(cleanFast.toLowerCase()));
     if (matchedService) {
       els.service.value = matchedService.value;
-      applyFastLaneServiceSelection();
+      setQuickServiceIfAvailable(matchedService.value);
+      updateSummaries();
     }
   }
 
@@ -1198,6 +1557,7 @@ async function init() {
     if (els.description && !els.description.value) {
       els.description.value = `Conversion & digital experience optimization for ${clientParam}`;
     }
+    syncDetailedToQuick();
   }
 
   if (statusParam === 'deposit_paid') {
@@ -1208,12 +1568,37 @@ async function init() {
 }
 
 if (els.next) els.next.addEventListener('click', () => {
-  if (!validateStep(state.step)) return;
+  if (!validateStep(state.step)) {
+    trackBookingEvent('booking_validation_error', { intake_path: 'detailed_brief', step: state.step });
+    return;
+  }
   setStep(state.step + 1);
 });
 if (els.prev) els.prev.addEventListener('click', () => setStep(state.step - 1));
-if (els.package) els.package.addEventListener('change', () => selectPackage(els.package.value, { advance: false }));
-if (els.service) els.service.addEventListener('change', applyFastLaneServiceSelection);
+if (els.package) els.package.addEventListener('change', () => {
+  selectPackage(els.package.value, { advance: false });
+  if (els.package.value) trackBookingEvent('booking_package_selected', { package: els.package.value });
+});
+if (els.service) els.service.addEventListener('change', () => {
+  setQuickServiceIfAvailable(els.service.value);
+  applyFastLaneServiceSelection();
+  trackBookingEvent('booking_service_selected', { service: els.service.value, intake_path: 'detailed_brief' });
+});
+if (els.quickForm) els.quickForm.addEventListener('submit', submitQuickInquiry);
+els.openDetailedButtons.forEach((button) => {
+  button.setAttribute('aria-controls', 'detailed-brief');
+  button.setAttribute('aria-expanded', 'false');
+  button.addEventListener('click', () => {
+    els.openDetailedButtons.forEach((control) => control.setAttribute('aria-expanded', 'true'));
+    openDetailedBrief();
+  });
+});
+document.querySelectorAll('.project-intake-cta').forEach((link) => {
+  link.addEventListener('click', () => trackBookingEvent('secure_intake_opened', { intake_path: state.detailedStarted ? 'detailed_brief' : 'quick_inquiry' }));
+});
+document.querySelectorAll('a[href="#quick-inquiry"]').forEach((link) => {
+  link.addEventListener('click', () => trackBookingEvent('booking_primary_cta_selected', { route: link.getAttribute('href') }));
+});
 if (els.form) {
   els.form.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && event.target && event.target.tagName !== 'TEXTAREA' && event.target.tagName !== 'BUTTON') {
@@ -1221,6 +1606,8 @@ if (els.form) {
         event.preventDefault();
         if (validateStep(state.step)) {
           setStep(state.step + 1);
+        } else {
+          trackBookingEvent('booking_validation_error', { intake_path: 'detailed_brief', step: state.step });
         }
       }
     }

@@ -1,20 +1,19 @@
 {
-  "releaseName": "lore-signal-transmission-2026-11-11",
+  "releaseName": "booking-conversion-2026-11-11",
   "includedFiles": [
-    "assets/audio/blackbox-signal.m4a",
-    "assets/audio/blackbox-signal.mp3",
-    "signal-config.js",
-    "signal.css",
-    "signal.html",
-    "signal.js",
-    "tests/signal_contract.test.js",
+    "bookings.html",
+    "bookings.css",
+    "bookings.js",
+    "tests/bookings_contract.test.js",
+    "tests/booking_conversion_flow.test.js",
+    "tests/e2e/adversarial_qa.js",
+    "tests/master_runner.js",
+    "tests/portal_route_contract.test.js",
     "release-manifest.json"
   ],
-  "removedFiles": [
-    "assets/audio/blackbox-signal.wav: removed because the old 24-second asset did not match the supplied master; the approved excerpt remains available as M4A and MP3."
-  ],
+  "removedFiles": [],
   "excludedDirtyFiles": [
-    "Only the scoped LORE signal page, its two 24-second teaser encodings, its contract test, and this manifest are included; the previous mismatched WAV asset is removed."
+    "Only the project inquiry form, bounded selected-work media frames, and their booking-flow contracts are included in this release."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -27,15 +26,19 @@
   "testsRun": [
     {
       "command": "npm test",
-      "status": "passed after npm ci; full master suite passed"
+      "status": "passed; full master suite including Booking Conversion Flow"
+    },
+    {
+      "command": "npm run test:e2e",
+      "status": "passed; 51/51 local adversarial browser checks"
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed"
+      "status": "passed; 4 pinned contracts"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed"
+      "status": "passed across 365 files"
     },
     {
       "command": "npm run build:speed-insights",
@@ -47,14 +50,10 @@
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed for public HTTP checks; authenticated checks are rerun by the guarded workflow"
+      "status": "passed for public production HTTP checks; authenticated checks were intentionally skipped locally"
     },
     {
-      "command": "node --check signal.js && node --check signal-config.js && node --check server.js",
-      "status": "passed"
-    },
-    {
-      "command": "node tests/signal_contract.test.js",
+      "command": "node --check bookings.js && node --check server.js",
       "status": "passed"
     },
     {
@@ -64,11 +63,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Zen browser local QA after cache-busted reload: Current Transmissions heading and description are stacked without overlap; decorative code field and scan sweep move visibly; play/pause updates state and the 24-second preview progresses. Reduced-motion CSS remains enabled."
+    "summary": "In-app browser visual QA of /start-project showed FLOIVATION, HYH, and WeatherOS images loaded into equal bounded media frames; no card was stretched by the portrait WeatherOS image. The full adversarial suite also passed booking-flow keyboard validation and responsive overflow checks at 320px, 390px, 768px, and 1440px."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Release workflow performs authenticated production GET checks using configured OTP admin credentials before deployment; local public-only sweep passed and did not claim authenticated coverage."
+    "summary": "The guarded production workflow will run authenticated read-only checks with configured OTP admin credentials before deployment; local public-only sweep did not claim authenticated coverage."
   },
   "deploymentTarget": {
     "project": "otp-site",

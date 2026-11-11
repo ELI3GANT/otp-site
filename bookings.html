@@ -25,10 +25,10 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <script src="/theme-chrono.js?v=20261109-visual-intake-v1"></script>
     <link rel="stylesheet" href="/public-system.css?v=20261109-visual-intake-v1" />
-    <link rel="stylesheet" href="/bookings.css?v=20261109-compact-context-v1" />
+    <link rel="stylesheet" href="/bookings.css?v=20261111-booking-conversion-v1" />
   <script src="/public-motion.js?v=20261109-visual-intake-v1" defer></script></head>
   <body class="public-page booking-site">
-    <a class="skip-link" href="#booking-form">Skip to booking form</a>
+    <a class="skip-link" href="#quick-inquiry">Skip to quote inquiry</a>
     <main class="booking-page">
       <header class="booking-header">
         <a class="brand" href="/start-project" aria-label="OTP Bookings">
@@ -47,7 +47,7 @@
           <a href="/archive">Archive</a>
           <a href="/website-design">Services</a>
           <button class="booking-theme-toggle" type="button" data-booking-theme-toggle aria-label="Switch to day mode">Day mode</button>
-          <a href="#booking-form">Start Booking</a>
+          <a href="#quick-inquiry">Get a Quote</a>
         </nav>
       </header>
 
@@ -72,12 +72,13 @@
             </span>
             <p class="hero-label">Project intake</p>
           </div>
-          <h1 id="booking-title">Start a Project with OTP.</h1>
-          <p class="hero-copy">Tell us what you need. OTP reviews your goals and recommends a focused next step. For a website audit, share your site and the booking or contact issue you want improved. No payment is collected here.</p>
+          <h1 id="booking-title">Your next project starts here.</h1>
+          <p class="hero-copy">Websites, creative production, branding, and digital systems built around your goals. Tell us what you need and we’ll help define the right next step.</p>
           <div class="hero-actions">
-            <a class="primary-action" href="#booking-form">Start Booking</a>
-            <a class="secondary-action" href="#service-selector">Choose Service</a>
+            <a class="primary-action" href="#quick-inquiry">Get My Project Quote</a>
+            <a class="secondary-action" href="#service-selector">Explore Services</a>
           </div>
+          <p class="booking-reassurance">Free inquiry <span aria-hidden="true">·</span> No payment required <span aria-hidden="true">·</span> Reviewed by OTP</p>
           <div class="flow-chips" aria-label="OTP booking flow">
             <span>Tell us the project</span>
             <span>OTP reviews</span>
@@ -117,50 +118,110 @@
         </aside>
       </section>
 
+      <section id="quick-inquiry" class="section-block quick-inquiry-section" aria-labelledby="quick-inquiry-title">
+        <div class="quick-inquiry-copy">
+          <p class="quick-inquiry-eyebrow"><span class="quick-inquiry-pulse" aria-hidden="true"></span> Recommended · under a minute</p>
+          <h2 id="quick-inquiry-title">Request a project quote.</h2>
+          <p>Share the basics. OTP will review the scope and send the right next step.</p>
+          <div class="quick-inquiry-points" aria-label="Inquiry details">
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5"/></svg>No package required</span>
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5"/></svg>No payment collected</span>
+            <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5"/></svg>Not a confirmed booking</span>
+          </div>
+          <button class="quick-detailed-link" type="button" data-open-detailed>Have the details ready? Send a full brief <span aria-hidden="true">↗</span></button>
+        </div>
+
+        <form id="quick-inquiry-form" class="quick-inquiry-form" novalidate>
+          <label class="honeypot" aria-hidden="true" tabindex="-1">
+            Company website
+            <input id="quick-otp-company-website" tabindex="-1" autocomplete="off" />
+          </label>
+          <div class="quick-fields-grid">
+            <label for="quick-service">
+              What do you need? <span>Required</span>
+              <select id="quick-service" required aria-describedby="quick-service-help"></select>
+              <small id="quick-service-help">Choose the closest fit. “Not sure yet” is fine.</small>
+            </label>
+            <label for="quick-name">
+              Your name <span>Required</span>
+              <input id="quick-name" autocomplete="name" required maxlength="160" />
+            </label>
+            <label for="quick-email">
+              Email <span>Email or phone required</span>
+              <input id="quick-email" type="email" inputmode="email" autocomplete="email" maxlength="200" />
+            </label>
+            <label for="quick-phone">
+              Phone <span>Email or phone required</span>
+              <input id="quick-phone" type="tel" autocomplete="tel" maxlength="80" />
+            </label>
+            <label for="quick-description" class="quick-description-field">
+              A little about the project <span>Required</span>
+              <textarea id="quick-description" required minlength="12" maxlength="2400" placeholder="What are you trying to make or improve? A sentence or two is enough."></textarea>
+            </label>
+            <label for="quick-link">
+              Website or social link <small>Optional</small>
+              <input id="quick-link" inputmode="url" autocomplete="url" maxlength="500" placeholder="https:// or @handle" />
+            </label>
+            <label for="quick-budget">
+              Budget range <small>Optional</small>
+              <select id="quick-budget"></select>
+            </label>
+          </div>
+          <label class="checkbox-label quick-consent-label" for="quick-consent">
+            <input id="quick-consent" type="checkbox" required />
+            <span>OTP may contact me about this inquiry.</span>
+          </label>
+          <p class="quick-inquiry-footnote">Your request starts a conversation. OTP confirms scope and next steps before any project or payment begins.</p>
+          <p id="quick-status" class="form-message hidden" aria-live="polite"></p>
+          <p id="quick-error" class="form-message error hidden" role="alert"></p>
+          <button id="submit-quick-inquiry" class="quick-submit-button" type="submit">Request My Quote <span aria-hidden="true">↗</span></button>
+        </form>
+      </section>
+
       <section id="service-selector" class="section-block service-selector-section" aria-labelledby="service-selector-title">
         <div class="section-heading">
-          <p>Choose your starting path</p>
-          <h2 id="service-selector-title">Choose your starting point.</h2>
-          <span>Pick what is closest to your need. OTP confirms the scope after reviewing your request.</span>
+          <p>Explore services</p>
+          <h2 id="service-selector-title">Find the closest fit.</h2>
+          <span>Choose a lane to prefill your inquiry. The package recommendation stays flexible until OTP reviews the scope.</span>
         </div>
 
         <div class="service-selector-grid" aria-label="Booking service shortcuts">
-          <button class="service-selector-card" type="button" data-quick-service="Video / Content" data-quick-package="The Engine">
-            <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="3" y="6" width="26" height="20" rx="1"/><path d="m13 11 8 5-8 5V11Z"/></svg>Video / Content</span>
-            <strong class="service-card-title">Reels, edits, campaigns, recaps</strong>
-            <span class="service-card-copy">Best for content that needs a clean, ready-to-post finish.</span>
+          <button class="service-selector-card" type="button" data-quick-service="Video / Content">
+            <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="3" y="6" width="26" height="20" rx="1"/><path d="m13 11 8 5-8 5V11Z"/></svg>Video &amp; Content</span>
+            <strong class="service-card-title">Reels, edits, campaigns</strong>
+            <span class="service-card-copy">A single edit or a connected content rollout.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
-          <button class="service-selector-card" type="button" data-quick-service="Website / Digital System" data-quick-package="The Engine">
-            <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="3" y="5" width="26" height="22" rx="1"/><path d="M3 11h26M9 17h8m-8 5h13"/></svg>Website / Digital System</span>
-            <strong class="service-card-title">Landing pages, funnels, client flows</strong>
-            <span class="service-card-copy">Best for sharper digital presence and conversion systems.</span>
+          <button class="service-selector-card" type="button" data-quick-service="Website / Digital System">
+            <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="3" y="5" width="26" height="22" rx="1"/><path d="M3 11h26M9 17h8m-8 5h13"/></svg>Website &amp; Digital</span>
+            <strong class="service-card-title">Websites, booking flows, portals</strong>
+            <span class="service-card-copy">From a focused page update to a connected client journey.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
-          <button class="service-selector-card" type="button" data-quick-service="Brand Launch" data-quick-package="The Engine">
-            <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="m16 3 2.5 10.5L29 16l-10.5 2.5L16 29l-2.5-10.5L3 16l10.5-2.5L16 3Z"/></svg>Brand Launch</span>
-            <strong class="service-card-title">Identity, rollout, visuals, launch assets</strong>
-            <span class="service-card-copy">Best when the brand needs a complete public push.</span>
+          <button class="service-selector-card" type="button" data-quick-service="Brand Launch">
+            <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="m16 3 2.5 10.5L29 16l-10.5 2.5L16 29l-2.5-10.5L3 16l10.5-2.5L16 3Z"/></svg>Branding &amp; Design</span>
+            <strong class="service-card-title">Identity, visuals, launch assets</strong>
+            <span class="service-card-copy">A focused design piece or a wider brand rollout.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
-          <button class="service-selector-card" type="button" data-quick-service="Same-Day Reel" data-quick-package="The Signal">
+          <button class="service-selector-card" type="button" data-quick-service="Same-Day Reel">
             <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="m18 2-12 17h9l-1 11 12-17h-9l1-11Z"/></svg>Fast Lane</span>
             <strong class="service-card-title">Urgent reel, event promo, quick content</strong>
-            <span class="service-card-copy">Best when speed matters and the request is focused.</span>
+            <span class="service-card-copy">Focused, time-sensitive work. OTP confirms availability.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
-          <button class="service-selector-card" type="button" data-quick-service="Custom Build" data-quick-package="The System">
+          <button class="service-selector-card" type="button" data-quick-service="Custom Build">
             <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="3" y="3" width="9" height="9" rx="1"/><rect x="20" y="3" width="9" height="9" rx="1"/><rect x="11.5" y="20" width="9" height="9" rx="1"/><path d="M12 7.5h8M7.5 12v4l8.5 4M24.5 12v4L16 20"/></svg>Custom Build</span>
-            <strong class="service-card-title">Mixed, advanced, or unusual project</strong>
-            <span class="service-card-copy">Best when the work should route into The System.</span>
+            <strong class="service-card-title">Automation, software, integrations</strong>
+            <span class="service-card-copy">Describe the goal. OTP will scope the right level.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
         </div>
 
         <div class="selection-group-header">
-          <span class="selection-group-badge"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 1v4m0 14v4M1 12h4m14 0h4"/></svg>Standard Build Tiers</span>
-          <h3>Core Package Modules</h3>
-          <p>Choose a package tier if you know your scope level, or select an urgent Fast-Lane offer below.</p>
+          <span class="selection-group-badge"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 1v4m0 14v4M1 12h4m14 0h4"/></svg>Optional scope guide</span>
+          <h3>Three ways to shape the work.</h3>
+          <p>Choose a package only if it already fits what you have in mind. You can leave the choice to OTP.</p>
         </div>
         <div id="package-grid" class="package-grid" aria-live="polite">
           <article class="package-card loading-card">Loading packages...</article>
@@ -169,7 +230,7 @@
         <div id="fast-lanes" class="selection-group-header fast-lane-group-header">
           <span class="selection-group-badge fast-lane-badge"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 2 4 14h7l-1 8 10-12h-7l1-8Z"/></svg>24/48-Hour Speed Layer</span>
           <h3 id="fast-lanes-title">Priority Fast Lanes</h3>
-          <p>Focused work. Choose a lane; we’ll confirm scope and availability.</p>
+          <p>Focused work. OTP confirms scope and availability before anything is booked.</p>
         </div>
         <div id="fast-lane-grid" class="fast-lane-grid" aria-live="polite">
           <article class="fast-lane-card loading-card">Loading Fast Lane options...</article>
@@ -179,17 +240,48 @@
           <span class="summary-signal" aria-hidden="true"></span>
           <div>
             <strong id="selected-package-name">No package selected</strong>
-            <p id="selected-package-message">Select any package or Fast Lane above to pre-fill your request form below.</p>
+            <p id="selected-package-message">A package is optional. OTP can recommend a fit after reviewing your project.</p>
           </div>
           <span id="selected-package-price">Scope will appear here</span>
         </div>
       </section>
 
-      <section class="booking-shell" aria-labelledby="form-title">
+      <section class="section-block proof-section" aria-labelledby="proof-title">
+        <div class="section-heading">
+          <p>Selected work</p>
+          <h2 id="proof-title">Real projects. Clear examples.</h2>
+          <span>See the kind of digital and creative work OTP can shape around your goals.</span>
+        </div>
+        <div class="proof-grid">
+          <a class="proof-card" href="/projects/floivation">
+            <span class="proof-card-media"><img src="/assets/case-studies/floivation/after-home.jpg" alt="FLOIVATION redesigned homepage" width="1440" height="900" loading="lazy" decoding="async" /></span>
+            <span class="proof-card-meta"><span>Website · Brand experience</span><span>01</span></span>
+            <h3>FLOIVATION</h3>
+            <p>Brand storytelling, supporter movement, and clear paths to gallery, shop, and contact.</p>
+            <span class="proof-card-link">Explore the case study <span aria-hidden="true">↗</span></span>
+          </a>
+          <a class="proof-card" href="/projects/hyh-architecture-design">
+            <span class="proof-card-media"><img src="/assets/hyh-otp-rebuild.jpg" alt="OTP rebuild of the HYH Architecture and Design homepage" width="1600" height="869" loading="lazy" decoding="async" /></span>
+            <span class="proof-card-meta"><span>Website · Architecture</span><span>02</span></span>
+            <h3>HYH Architecture &amp; Design</h3>
+            <p>A cinematic architecture portfolio with clearer navigation and project-start paths.</p>
+            <span class="proof-card-link">Explore the case study <span aria-hidden="true">↗</span></span>
+          </a>
+          <a class="proof-card" href="/projects/weatheros">
+            <span class="proof-card-media"><img src="/assets/weatheros/screenshots/today-public.webp" alt="WeatherOS mobile weather interface" width="1080" height="1920" loading="lazy" decoding="async" /></span>
+            <span class="proof-card-meta"><span>Product · Interface</span><span>03</span></span>
+            <h3>WeatherOS</h3>
+            <p>A focused mobile weather experience with atmospheric visuals and clear forecast views.</p>
+            <span class="proof-card-link">Explore the case study <span aria-hidden="true">↗</span></span>
+          </a>
+        </div>
+      </section>
+
+      <section id="detailed-brief" class="booking-shell detailed-intake" aria-labelledby="form-title" hidden>
         <div class="booking-context">
           <p>What happens next</p>
           <h2>A clear next step.</h2>
-          <ol class="next-steps-list" aria-label="What happens after booking"><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 4h14l6 6v18H6z M20 4v7h6 M11 16h10 M11 21h7"/></svg><div><strong>Review</strong><span>We check the brief.</span></div></li><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 8h22 M10 4v8 M5 16h22 M22 12v8 M5 24h22 M14 20v8"/></svg><div><strong>Plan</strong><span>Agree on scope and quote.</span></div></li><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 16l7 7L27 8"/></svg><div><strong>Build</strong><span>Approve, then make it happen.</span></div></li></ol>
+          <ol class="next-steps-list" aria-label="What happens after an inquiry"><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 4h14l6 6v18H6z M20 4v7h6 M11 16h10 M11 21h7"/></svg><div><strong>01 · Tell us</strong><span>Send a quick inquiry or full brief.</span></div></li><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 8h22 M10 4v8 M5 16h22 M22 12v8 M5 24h22 M14 20v8"/></svg><div><strong>02 · We review</strong><span>OTP checks the scope and any open questions.</span></div></li><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 16l7 7L27 8"/></svg><div><strong>03 · Get your next step</strong><span>Receive questions, a proposed scope, or a quote.</span></div></li><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16h23 M18 7l9 9-9 9"/></svg><div><strong>04 · Approve and begin</strong><span>Work starts after scope, terms, and payment are agreed.</span></div></li></ol>
           <span class="booking-intake-note">This page starts the conversation: a quote request, not a final commitment. No payment is collected here.</span>
           <aside id="booking-mini-summary" class="mini-summary" aria-label="Selected booking summary">
             <div>
@@ -219,9 +311,9 @@
 
           <div class="form-topline">
             <div>
-              <p>Booking Request</p>
-              <h2 id="form-title">Start with the real project details.</h2>
-              <span id="form-package-note" class="form-package-note">Choose a package, or “Not Sure Yet” for a recommendation.</span>
+              <p>Detailed Project Brief</p>
+              <h2 id="form-title">Send OTP the full project brief.</h2>
+              <span id="form-package-note" class="form-package-note">Choose a package, or leave it to OTP after scope review.</span>
             </div>
             <span id="step-label">Step 1 of 4</span>
           </div>
@@ -366,9 +458,9 @@
 
       <section id="booking-success" class="success-panel hidden" aria-live="polite">
         <div class="success-mark" aria-hidden="true"><span></span></div>
-        <p>Booking received</p>
+        <p>Request received</p>
         <h2 id="success-title">OTP received your request. We’ll review the scope and reply with the cleanest next step.</h2>
-        <span id="success-copy">Your request is in the OTP review queue. When available, OTP replies within one business hour; otherwise, you will receive the next clear step as soon as possible. The reply may include scope questions, a package recommendation, a proposal, or a private Client Portal link for documents, payment steps, and approvals.</span>
+        <span id="success-copy">OTP will review the request and reply with questions, a package recommendation, or a proposed next step. No project or payment is confirmed by this inquiry.</span>
         <div id="success-meta" class="success-meta"></div>
         <div id="success-actions" class="success-actions"></div>
       </section>
@@ -390,7 +482,8 @@
       </footer>
     </main>
 
+    <script src="/otp-analytics-engine.js?v=20261111-booking-funnel-v1" defer></script>
     <script src="/otp-attribution.js?v=16.9.1" defer></script>
-    <script src="/bookings.js?v=20261109-visual-intake-v1" defer></script>
+    <script src="/bookings.js?v=20261111-booking-conversion-v1" defer></script>
   </body>
 </html>

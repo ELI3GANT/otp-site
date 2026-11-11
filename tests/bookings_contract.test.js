@@ -18,7 +18,7 @@ const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
 const bookingHandoff = read('server/booking-handoff.js');
-const offerSystemKey = '20261109-visual-intake-v1';
+const offerSystemKey = '20261111-booking-conversion-v1';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -74,10 +74,12 @@ for (const source of [html, js, pricing, server]) {
     assert.ok(!source.includes('Brand Launch Pack'), 'old Brand Launch Pack wording is not referenced');
 }
 
-assert.ok(html.includes('Start a Project with OTP.'), 'booking hero is direct and conversion-focused');
-assert.ok(html.includes('class="skip-link"') && html.includes('href="#booking-form"'), 'booking page provides a keyboard skip link to the intake form');
+assert.ok(html.includes('Your next project starts here.'), 'booking hero is direct and conversion-focused');
+assert.ok(html.includes('class="skip-link"') && html.includes('href="#quick-inquiry"'), 'booking page provides a keyboard skip link to the recommended quick inquiry');
 assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');
-assert.ok(html.includes('Tell us what you need. OTP reviews your goals and recommends a focused next step.'), 'booking hero explains the project review and next step');
+assert.ok(html.includes('Websites, creative production, branding, and digital systems built around your goals. Tell us what you need and we’ll help define the right next step.'), 'booking hero explains services and the project review');
+assert.ok(html.includes('Get My Project Quote') && html.includes('Explore Services'), 'booking hero provides a clear primary and secondary action');
+assert.ok(html.includes('Free inquiry') && html.includes('No payment required') && html.includes('Reviewed by OTP'), 'booking hero gives low-risk inquiry reassurance');
 assert.ok(html.includes('official-brand-mark'), 'header keeps the official OTP site mark');
 assert.ok(html.includes('/assets/otp-hero-poster-frame.png'), 'header uses the stable optimized OTP poster mark');
 assert.ok(!html.includes('/assets/otp-hero-centered.gif'), 'header does not render the edge-on spinning GIF as the primary mark');
@@ -96,33 +98,42 @@ assert.ok(html.includes('Best next step'), 'client-facing booking flow explains 
 assert.ok(html.includes('Proposal or portal'), 'client-facing booking flow explains portal/proposal step');
 assert.ok(html.includes('Build starts'), 'client-facing booking flow explains delivery step');
 assert.ok(html.includes('id="service-selector"'), 'service selector is visible before intake');
+assert.ok(html.includes('id="quick-inquiry-form"'), 'recommended short inquiry path is present');
+assert.ok(html.includes('id="detailed-brief"') && /id="detailed-brief"[^>]+hidden/.test(html), 'the four-step detailed brief remains available on demand');
+for (const field of ['quick-service', 'quick-description', 'quick-name', 'quick-email', 'quick-phone']) {
+    assert.ok(html.includes(`id="${field}"`), `Quick Inquiry includes ${field}`);
+}
+assert.ok(html.includes('data-open-detailed'), 'Quick Inquiry links to the full brief without removing it');
+assert.ok(html.includes('under a minute'), 'Quick Inquiry is framed as the short path');
 assert.ok(html.includes('Video / Content'), 'service selector includes video/content lane');
 assert.ok(html.includes('Website / Digital System'), 'service selector includes website/digital lane');
 assert.ok(html.includes('Brand Launch'), 'service selector includes brand launch lane');
 assert.ok(html.includes('Fast Lane'), 'service selector includes fast lane lane');
 assert.ok(html.includes('Custom Build'), 'service selector includes custom build lane');
 assert.ok(html.includes('data-quick-service="Website / Digital System"'), 'website selector uses the public Website / Digital System value');
-assert.ok(html.includes('data-quick-package="The System"'), 'custom selector routes into The System');
+assert.ok(html.includes('data-quick-service="Custom Build"') && js.includes("'custom build':"), 'custom systems selector opens the matching Oracle guidance');
 assert.ok(html.includes('service-card-badge') && html.includes('service-card-title') && html.includes('service-card-copy'), 'service selector cards use readable horizontal card structure');
 assert.ok(!html.includes('<em>Best for'), 'service selector cards do not use weak italic descriptions');
-assert.ok(html.indexOf('id="service-selector"') < html.indexOf('class="booking-shell"'), 'unified selection suite appears before booking intake form');
+assert.ok(html.indexOf('id="service-selector"') < html.indexOf('id="detailed-brief"'), 'service selection appears before the optional detailed intake');
 assert.ok(html.includes('package-selection-summary'), 'selected package summary is present');
 assert.ok(html.includes('id="fast-lanes"'), 'Fast Lane section is visible on the bookings page');
 assert.ok(html.includes('id="fast-lane-grid"'), 'Fast Lane card grid is present');
-assert.ok(html.includes('Focused work. Choose a lane; we’ll confirm scope and availability.'), 'Fast Lane section remains visible after intake');
+assert.ok(html.includes('Focused work. OTP confirms scope and availability before anything is booked.'), 'Fast Lane section remains visible with availability clearly qualified');
+assert.equal((html.match(/class="proof-card-media"/g) || []).length, 3, 'each proof card uses a bounded media frame');
+assert.ok(css.includes('.proof-card-media > img { position: absolute; inset: 0;'), 'proof images are cropped inside stable frames instead of using intrinsic height');
 assert.ok(js.includes('const visuals =') && js.includes('fast-lane-icon'), 'Fast Lane section explains the visible offer lanes');
 assert.ok(html.includes('booking-mini-summary'), 'desktop booking mini-summary is present');
 assert.ok(html.includes('Submit Booking Request'), 'final CTA is explicit');
-assert.ok(html.includes('Not Sure Yet'), 'Oracle recommendation path is visible');
+assert.ok(html.includes('“Not sure yet” is fine.'), 'Quick Inquiry does not require package or service certainty');
 assert.ok(html.includes('otp_company_website'), 'booking honeypot is present');
 assert.ok(html.includes('Email <span>Email or phone required</span>'), 'booking intake allows email or phone contact');
 assert.ok(html.includes('Phone <span>Email or phone required</span>'), 'booking phone field is a valid contact route');
 assert.ok(!/id="booking-email"[^>]+required/.test(html), 'email is not the only required contact field');
-assert.ok(html.includes('private Client Portal link for documents, payment steps, and approvals'), 'private client portal copy is present');
+assert.ok(js.includes('Private portal access is sent only after OTP reviews and approves the next step.'), 'portal access only follows review and approval');
 assert.ok(html.includes('OTP received your request. We’ll review the scope and reply with the cleanest next step.'), 'success screen uses final OTP copy');
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
-assert.ok(html.includes('bookings.css?v=20261109-compact-context-v1'), 'booking stylesheet cache-bust matches offer system release');
+assert.ok(html.includes('bookings.css?v=20261111-booking-conversion-v1'), 'booking stylesheet cache-bust matches conversion release');
 assert.ok(html.includes(`bookings.js?v=${offerSystemKey}`), 'booking script cache-bust matches offer system release');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');
@@ -147,6 +158,13 @@ assert.ok(!/otp-os\.vercel\.app/i.test(js), 'booking JS must not expose OTP OS h
 
 assert.ok(js.includes('/api/bookings/config'), 'frontend loads booking config');
 assert.ok(js.includes('/api/bookings/submit'), 'frontend submits to booking API');
+assert.ok(js.includes("submitIntake(event, 'quick_inquiry')"), 'Quick Inquiry uses the shared booking submission API');
+assert.ok(js.includes("submitIntake(event, 'detailed_brief')"), 'Detailed Brief uses the shared booking submission API');
+assert.ok(js.includes('source_tracking: { ...state.sourceTracking, intake_path: path }'), 'both paths retain attribution and record the intake path');
+assert.ok(js.includes("isQuick ? state.selectedPackage : els.package.value"), 'Quick Inquiry leaves package choice optional unless explicitly selected');
+assert.ok(js.includes("evidence.writer === 'otp_os'"), 'the UI only confirms persistence with OTP OS writer evidence');
+assert.ok(js.includes("['persisted', 'duplicate_replay'].includes(evidence.status)"), 'idempotent OTP OS replay is accepted as persisted evidence');
+assert.ok(js.includes('if (!sourceHasValue && destinationHasValue) return;'), 'cross-path sync does not erase details when the other path is blank');
 assert.ok(js.includes('getAttributionTracking'), 'bookings attaches stored attribution');
 assert.ok(js.includes('wireProjectIntakeAttribution'), 'bookings forwards attribution to secure intake');
 assert.ok(js.includes('data-intake-base') || js.includes("getAttribute('data-intake-base')"), 'bookings reads intake base from markup');
@@ -166,7 +184,7 @@ assert.ok(!/insertAdjacentHTML/.test(js), 'booking frontend does not inject adja
 assert.ok(js.includes('makeBookingToken'), 'frontend sends a booking token for duplicate-friendly handling');
 assert.ok(js.includes('otp_company_website'), 'frontend submits honeypot field');
 assert.ok(js.includes('buildSourceTracking'), 'frontend captures sanitized source tracking');
-assert.ok(js.includes('source_tracking: state.sourceTracking'), 'booking payload includes source tracking');
+assert.ok(js.includes('source_tracking: { ...state.sourceTracking, intake_path: path }'), 'booking payload preserves source tracking for each path');
 assert.ok(js.includes('platform:'), 'booking source tracking includes desktop/mobile platform');
 assert.ok(js.includes('captured_at'), 'booking source tracking includes a timestamp');
 assert.ok(js.includes('fastLanePackageFor'), 'booking frontend resolves fast lane package mapping');
@@ -209,9 +227,9 @@ assert.ok(js.includes('The Signal is selected for focused creative work.'), 'Sig
 assert.ok(js.includes('The Engine is selected for connected brand assets.'), 'Engine selection message exists');
 assert.ok(js.includes('The System is selected for full creative/business structure.'), 'System selection message exists');
 assert.ok(js.includes('Custom Build routes into The System or manual OTP scoping.'), 'Custom selection routes into System/manual scope');
-assert.ok(js.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle default message persists after JS init');
-assert.ok(js.includes('Sending booking request to OTP...'), 'submit loading copy stays client-facing');
-assert.ok(js.includes('Something blocked the request. Please check your contact info and try again.'), 'network error copy is client-ready');
+assert.ok(js.includes('Choose a service to see what details will help OTP recommend a next step.'), 'Oracle helps clients start with relevant project guidance');
+assert.ok(js.includes('Sending your inquiry to OTP...') && js.includes('Sending full brief to OTP...'), 'both submit loading states are client-facing');
+assert.ok(js.includes('OTP could not receive the request. Please try again shortly.'), 'network error copy is client-ready');
 assert.ok(!js.includes('OTP_BOOKINGS_UPSTREAM'), 'client does not expose internal upstream config');
 assert.ok(!js.includes('SUPABASE_SERVICE'), 'client does not expose service secrets');
 assert.ok(server.includes('cleanBookingSourceTracking'), 'server sanitizes booking source tracking');

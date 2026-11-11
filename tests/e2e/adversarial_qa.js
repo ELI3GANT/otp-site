@@ -136,6 +136,7 @@ async function runAdversarialQA() {
     // 8. Booking Flow Validation, A11y, and Enter Key Progression
     {
       await page.goto(`${baseUrl}/bookings`, { waitUntil: 'domcontentloaded' });
+      await page.click('[data-open-detailed]');
 
       // Click Next with empty form
       await page.click('#next-step');
