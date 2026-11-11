@@ -18,6 +18,8 @@ const css = read('bookings.css');
 const pricing = read('pricing-config.js');
 const pricingConfig = require('../pricing-config.js');
 const bookingHandoff = read('server/booking-handoff.js');
+const fullProductionSweep = read('scripts/prod_full_sweep.js');
+const terminalProductionSweep = read('scripts/prod_terminal_sweep.js');
 const offerSystemKey = '20261111-booking-conversion-v1';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
@@ -75,6 +77,10 @@ for (const source of [html, js, pricing, server]) {
 }
 
 assert.ok(html.includes('Your next project starts here.'), 'booking hero is direct and conversion-focused');
+for (const sweep of [fullProductionSweep, terminalProductionSweep]) {
+    assert.ok(sweep.includes('Your next project starts here.'), 'production sweeps expect the current booking hero');
+    assert.ok(!sweep.includes('Start a Project with OTP.'), 'production sweeps do not require the retired booking hero');
+}
 assert.ok(html.includes('class="skip-link"') && html.includes('href="#quick-inquiry"'), 'booking page provides a keyboard skip link to the recommended quick inquiry');
 assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');
 assert.ok(html.includes('Websites, creative production, branding, and digital systems built around your goals. Tell us what you need and we’ll help define the right next step.'), 'booking hero explains services and the project review');

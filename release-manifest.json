@@ -1,9 +1,11 @@
 {
-  "releaseName": "booking-conversion-2026-11-11",
+  "releaseName": "booking-conversion-postdeploy-sweep-fix-2026-11-11",
   "includedFiles": [
     "bookings.html",
     "bookings.css",
     "bookings.js",
+    "scripts/prod_full_sweep.js",
+    "scripts/prod_terminal_sweep.js",
     "tests/bookings_contract.test.js",
     "tests/booking_conversion_flow.test.js",
     "tests/e2e/adversarial_qa.js",
@@ -13,7 +15,7 @@
   ],
   "removedFiles": [],
   "excludedDirtyFiles": [
-    "Only the project inquiry form, bounded selected-work media frames, and their booking-flow contracts are included in this release."
+    "Only the project inquiry form, bounded selected-work media frames, booking-flow contracts, and matching production sweep markers are included in this release."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -50,10 +52,10 @@
     },
     {
       "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed for public production HTTP checks; authenticated checks were intentionally skipped locally"
+      "status": "passed against the deployed intake page after updating the retired-heading marker; HTTP-only, with authenticated checks run by the guarded workflow"
     },
     {
-      "command": "node --check bookings.js && node --check server.js",
+      "command": "node --check bookings.js && node --check server.js && node --check scripts/prod_full_sweep.js && node --check scripts/prod_terminal_sweep.js",
       "status": "passed"
     },
     {
