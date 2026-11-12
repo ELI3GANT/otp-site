@@ -10,7 +10,9 @@ for (const [file, active] of [['index.html', 'Home'], ['archive.html', 'Archive'
   dom.window.matchMedia = () => ({ addEventListener: (_, fn) => { resize = fn; } });
   dom.window.eval(read('public-shell.js'));
   const nav = [...document.querySelectorAll('.public-desktop-nav a')];
-  assert.deepEqual(nav.map(a => a.getAttribute('href')), ['/', '/archive', '/floorops', '/signal', '/studio'], file + ' primary destinations');
+  assert.deepEqual(nav.map(a => a.getAttribute('href')), ['/', '/archive', '/studio#digital', '/studio', '/portal'], file + ' client-first primary destinations');
+  assert.ok(!nav.some(a => a.getAttribute('href') === '/floorops'), file + ' keeps FloorOps out of the primary client navigation');
+  assert.equal(nav.find(a => a.getAttribute('href') === '/portal').textContent, 'Client Portal');
   assert.deepEqual([...document.querySelectorAll('.public-menu nav a')].slice(0, nav.length).map(a => a.getAttribute('href')), nav.map(a => a.getAttribute('href')), file + ' mobile navigation parity');
   assert.equal(nav.find(a => a.getAttribute('aria-current') === 'page').textContent, active);
   const menu = document.querySelector('details.public-menu');
@@ -46,6 +48,12 @@ for (const image of home.querySelectorAll('img')) {
 const css = read('public-system.css');
 assert.match(css, /prefers-reduced-motion:\s*reduce/, 'shared design respects motion preferences');
 assert.match(css, /animation-duration:\s*\.0*1ms|animation:\s*none|animation-duration:\s*0\.0*1ms/, 'reduced motion limits animation');
+assert.match(css, /public-light-drift 46s/, 'shared background drift moves slowly');
+assert.match(css, /public-light-drift 58s/, 'second background layer uses a separate slow cycle');
+assert.match(css, /0%, 100% \{ transform: translate3d\(-1\.5%,-1%,0\)/, 'shared background drift loops from the same position');
+const releaseSweep = read('scripts/prod_full_sweep.js');
+assert.ok(releaseSweep.includes('href="/studio#digital"') && releaseSweep.includes('budget-fit-preview') && releaseSweep.includes('budget-guide-intro'), 'production sweep verifies the client navigation and visual budget guidance');
+assert.ok(releaseSweep.includes('archive-project-newest') && releaseSweep.includes('public-light-drift 46s'), 'production sweep verifies the latest project and subtle background');
 const studio = new JSDOM(read('studio.html')).window.document;
 for (const id of ['digital', 'creative', 'launch', 'engagements', 'process', 'questions']) assert.ok(studio.getElementById(id), 'Studio owns ' + id);
 assert.ok(studio.querySelectorAll('#process li').length >= 3, 'Studio explains engagement steps');
