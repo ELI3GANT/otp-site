@@ -12,6 +12,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 console.log('CLIENT PORTAL ROUTE CONTRACT...');
 
 const server = read('server.js');
+const fullSweep = read('scripts/prod_full_sweep.js');
 const portalHtml = read('portal.html');
 const portalEntryCss = read('portal-entry.css');
 const portalJs = read('portal.js');
@@ -69,6 +70,10 @@ assert.ok(portalHtml.includes('noindex, nofollow'), 'portal entry must remain ou
 assert.ok(portalHtml.includes('no-referrer'), 'portal entry must not send invite referrers');
 assert.ok(!/otp-os\.vercel\.app/i.test(portalHtml), 'public portal page must not show OTP OS hostname');
 assert.ok(!/supabase|service[_-]?key|jwt|bearer/i.test(portalHtml), 'public portal page must not leak internal implementation terms');
+assert.ok(fullSweep.includes("markers: ['Client portal', 'Your project.', 'All in one place.', '/portal-entry.css', '/workspace-v2.css', '/portal.js']"), 'post-deploy sweep must recognize the redesigned portal entry');
+assert.ok(fullSweep.includes("path: '/portal-entry.css'"), 'post-deploy sweep must verify the redesigned portal stylesheet');
+assert.ok(fullSweep.includes("path: '/workspace-v2.css'"), 'post-deploy sweep must verify shared portal workspace styling');
+assert.ok(fullSweep.includes("path: '/portal-sections.js'"), 'post-deploy sweep must verify portal section navigation code');
 
 assert.ok(portalEntryCss.includes('prefers-reduced-motion'), 'portal page respects reduced motion');
 assert.ok(portalEntryCss.includes('--otp-v2-accent'), 'portal uses the shared OTP V2 accent token');

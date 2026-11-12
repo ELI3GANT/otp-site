@@ -1,5 +1,5 @@
 {
-  "releaseName": "otp-client-workspace-v2-document-access-2026-11-12",
+  "releaseName": "otp-client-workspace-v2-postdeploy-sweep-fix-2026-11-12",
   "includedFiles": [
     "client-portal-v2-renderer.js",
     "client.html",
@@ -9,6 +9,7 @@
     "portal.html",
     "portal.js",
     "server.js",
+    "scripts/prod_full_sweep.js",
     "workspace-v2.css",
     "tests/api_surface_security_contract.test.js",
     "tests/client_portal_render.test.js",
@@ -39,7 +40,7 @@
     },
     {
       "command": "npm run security:scan",
-      "status": "passed; secret scan covered 369 tracked release files"
+      "status": "passed; secret scan passed across 369 files after the sweep update"
     },
     {
       "command": "npm run build:speed-insights",
@@ -51,7 +52,7 @@
     },
     {
       "command": "PORT=1 OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed against current production; public-only HTTP sweep. Candidate workflow reruns authenticated checks before deployment."
+      "status": "passed against https://www.onlytrueperspective.tech after deployment of 59a20d1; redesigned portal HTML, CSS, and JavaScript assets returned 200. Public-only HTTP sweep; the guarded release workflow reruns authenticated checks before deployment."
     },
     {
       "command": "node --check server.js && node --check bookings.js && node --check scripts/prod_full_sweep.js && node --check scripts/prod_terminal_sweep.js && node --check client.js && node --check portal.js && git diff --check",
@@ -64,7 +65,7 @@
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Latest successful guarded production run 42995167299 verified current production auth checks; the candidate workflow reruns them read-only before deployment. No credential values are recorded here."
+    "summary": "Guarded production run 43159158402 passed the clean release gate and authenticated production sweep before deployment. Its deployment succeeded; only the post-deploy public sweep failed on stale portal markers. The next guarded run reruns the authenticated checks before redeployment. No credential values are recorded here."
   },
   "deploymentTarget": {
     "project": "otp-site",
