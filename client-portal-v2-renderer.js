@@ -23,8 +23,8 @@ function readableDate(value = '') {
 }
 
 function statusMode(value = '') {
-  if (/complete|paid|available|ready|received/i.test(value)) return 'ready';
-  if (/review|due|current|pending|upcoming|progress/i.test(value)) return 'warning';
+  if (/unpaid|unavailable|not available|awaiting|partial|review|due|current|pending|upcoming|progress|not ready/i.test(value)) return 'warning';
+  if (/complete|^paid$|paid in full|deposit paid|available|ready|received|approved/i.test(value)) return 'ready';
   return '';
 }
 
@@ -57,18 +57,30 @@ function valueRow(label, value) {
 
 function overviewCard(view) {
   const card = sectionCard('Project Overview', 'portal-v2-overview');
-  const status = node('div', 'portal-v2-status-row');
-  status.append(statusChip(view.overview.status), statusChip(view.overview.currentPhase));
-  card.append(
-    status,
+  const phase = node('div', 'portal-v2-brief-status');
+  phase.append(
+    node('span', 'portal-v2-overline', 'Current phase'),
+    node('strong', '', view.overview.currentPhase)
+  );
+  const next = node('div', 'portal-v2-focus-action');
+  next.append(
+    node('span', 'portal-v2-overline', 'Your next step'),
+    node('p', '', view.overview.nextClientAction)
+  );
+
+  const details = document.createElement('details');
+  details.className = 'portal-v2-disclosure';
+  details.append(node('summary', '', 'View full project scope and details'));
+  const content = node('div', 'portal-v2-disclosure-content');
+  content.append(
     node('p', 'portal-v2-summary', view.overview.summary),
     valueRow('Project', view.overview.projectTitle),
     valueRow('Job type', view.overview.jobType),
     valueRow('Service', view.overview.service),
-    valueRow('Current phase', view.overview.currentPhase),
-    valueRow('Next client action', view.overview.nextClientAction),
     valueRow('OTP support', view.contact.email)
   );
+  details.append(content);
+  card.append(phase, next, details);
   return card;
 }
 
@@ -187,35 +199,38 @@ function projectsCard(view) {
 }
 
 function assistantCard(view) {
-  const card = sectionCard('Oracle + IEI Assistant', 'portal-v2-assistant');
-  const badge = node('span', 'badge ready', '🧠 Oracle + 👁️ IEI Active');
-  const promptText = node('p', 'portal-v2-summary', 'Ask Oracle + IEI any question about your project scope, payment status, timeline, or deliverables.');
+  const card = sectionCard('Project help', 'portal-v2-assistant');
+  const badge = node('span', 'badge', 'Project information');
+  const promptText = node('p', 'portal-v2-summary', 'Quick answers using your current project details. For other requests, contact OTP directly.');
   const inputGroup = node('div', 'portal-v2-actions');
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'portal-v2-assistant-input';
   input.placeholder = 'e.g. What is my next milestone?';
-  input.style.cssText = 'flex: 1; min-height: 44px; padding: 0 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--line-strong); border-radius: 8px; color: var(--text); font-size: 14px;';
+  input.id = 'portal-project-help';
+  const label = node('label', 'portal-v2-help-label', 'Question about your project');
+  label.htmlFor = input.id;
 
-  const askBtn = node('button', 'button-link', 'Ask IEI');
+  const askBtn = node('button', 'button-link', 'Find answer');
   askBtn.type = 'button';
 
   const responseBox = node('div', 'portal-v2-assistant-response');
-  responseBox.style.cssText = 'margin-top: 12px; padding: 12px; background: rgba(167, 139, 250, 0.08); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 8px; font-size: 13px; display: none;';
+  responseBox.hidden = true;
+  responseBox.setAttribute('role', 'status');
 
   function handleAsk() {
     const query = input.value.trim().toLowerCase();
     if (!query) return;
-    responseBox.style.display = 'block';
+    responseBox.hidden = false;
 
     if (query.includes('status') || query.includes('phase') || query.includes('milestone')) {
-      responseBox.textContent = `🧠 Oracle + 👁️ IEI: Your project is currently in the ${view.overview.currentPhase} phase. Status: ${view.overview.status}. Next action: ${view.overview.nextClientAction}`;
+      responseBox.textContent = `Your project is currently in the ${view.overview.currentPhase} phase. Status: ${view.overview.status}. Next action: ${view.overview.nextClientAction}`;
     } else if (query.includes('pay') || query.includes('deposit') || query.includes('invoice') || query.includes('money') || query.includes('cost')) {
-      responseBox.textContent = `🧠 Oracle + 👁️ IEI: Payment state: ${view.payment.stateLabel}. Receipt status: ${view.payment.receiptStatus}. ${view.payment.message}`;
+      responseBox.textContent = `Payment state: ${view.payment.stateLabel}. Receipt status: ${view.payment.receiptStatus}. ${view.payment.message}`;
     } else if (query.includes('deliverable') || query.includes('file') || query.includes('link') || query.includes('download') || query.includes('proof')) {
-      responseBox.textContent = `🧠 Oracle + 👁️ IEI: Delivery proof status: ${view.delivery.proofStatus}. ${view.delivery.nextStep}`;
+      responseBox.textContent = `Delivery proof status: ${view.delivery.proofStatus}. ${view.delivery.nextStep}`;
     } else {
-      responseBox.textContent = `🧠 Oracle + 👁️ IEI: Your ${view.identity.projectTitle} project is currently ${view.overview.status}. Contact OTP support at ${view.contact.email} for custom requests.`;
+      responseBox.textContent = `Your ${view.identity.projectTitle} project is currently ${view.overview.status}. Contact OTP support at ${view.contact.email} for custom requests.`;
     }
   }
 
@@ -228,7 +243,7 @@ function assistantCard(view) {
   });
 
   inputGroup.append(input, askBtn);
-  card.append(badge, promptText, inputGroup, responseBox);
+  card.append(badge, promptText, label, inputGroup, responseBox, safeLink('Email OTP support', `mailto:${view.contact.email}`));
   return card;
 }
 
@@ -238,22 +253,39 @@ export function renderClientPortalViewV2(view) {
   const identity = node('div', 'portal-v2-client-identity');
   identity.append(
     node('p', 'eyebrow', view.identity.businessName),
-    node('h2', '', view.identity.clientName),
-    node('p', 'portal-v2-project-title', view.identity.projectTitle)
+    node('h2', '', view.identity.projectTitle),
+    node('p', 'portal-v2-project-title', view.identity.clientName)
   );
   mastheadTop.append(identity, statusChip(view.overview.status));
-  masthead.append(mastheadTop, node('p', 'portal-v2-welcome', 'Your private OTP project hub for reviewed documents, payment status, timeline, and delivery.'));
+  masthead.append(mastheadTop);
+  const summary = node('div', 'portal-summary-strip');
+  for (const [label, value] of [['Current phase', view.overview.currentPhase], ['Payment', view.payment.stateLabel], ['Documents', `${view.documents.filter((item) => item.viewUrl || item.downloadUrl).length} available`]]) {
+    const item = node('div', 'portal-summary-item');
+    item.append(node('span', '', label), node('strong', '', value));
+    summary.append(item);
+  }
+  masthead.append(summary);
 
+  const sections = {
+    overview: overviewCard(view),
+    projects: projectsCard(view),
+    documents: documentsCard(view),
+    payment: paymentCard(view),
+    timeline: timelineCard(view),
+    delivery: deliveryCard(view),
+    assistant: assistantCard(view)
+  };
+  // Preserve the legacy grid interface while giving the client app explicit
+  // views to organize into short, accessible screens.
   const grid = node('div', 'portal-v2-grid');
   const documentColumn = node('div', 'portal-v2-column');
   const statusColumn = node('div', 'portal-v2-column');
-  documentColumn.append(assistantCard(view), documentsCard(view));
-  const projectsList = projectsCard(view);
-  if (projectsList) statusColumn.append(projectsList);
-  statusColumn.append(paymentCard(view), timelineCard(view), deliveryCard(view));
-  grid.append(overviewCard(view), documentColumn, statusColumn);
+  documentColumn.append(sections.assistant, sections.documents);
+  if (sections.projects) statusColumn.append(sections.projects);
+  statusColumn.append(sections.payment, sections.timeline, sections.delivery);
+  grid.append(sections.overview, documentColumn, statusColumn);
 
   const footer = node('footer', 'portal-v2-footer');
   footer.append(node('strong', '', 'OnlyTruePerspective LLC'), node('p', '', view.guardrail));
-  return { masthead, grid, footer };
+  return { masthead, grid, footer, sections };
 }

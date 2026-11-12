@@ -1,3 +1,4 @@
+import { createPortalSections } from './portal-sections.js?v=20261109-workspace-v2';
 import {
   BUSINESS_WEBSITE,
   PORTAL_FALLBACK_MESSAGE,
@@ -9,7 +10,7 @@ import {
   safePortalUrl
 } from './client-portal-utils.js';
 import { buildClientPortalViewV2 } from './client-portal-v2.js';
-import { renderClientPortalViewV2 } from './client-portal-v2-renderer.js';
+import { renderClientPortalViewV2 } from './client-portal-v2-renderer.js?v=20261109-workspace-v2';
 
 // Locked until payment is saved
 
@@ -166,15 +167,15 @@ function friendlyPackage(value = '') {
 }
 
 function displayPaymentStatus(value = '') {
-  const raw = clean(value) || 'Unpaid';
+  const raw = clean(value) || 'Under review';
   if (/deposit|partial/i.test(raw)) return 'Partially Paid';
   if (/paid in full|^paid$/i.test(raw)) return 'Paid';
   return raw;
 }
 
 function badgeMode(label = '') {
+  if (/unpaid|unavailable|not ready|not available|due|pending|review/i.test(label)) return 'warning';
   if (/paid|completed|ready/i.test(label)) return 'ready';
-  if (/unpaid|due|pending|review/i.test(label)) return 'warning';
   return '';
 }
 
@@ -409,7 +410,7 @@ function paymentCard(payment = {}) {
 function nextStepCard(nextStep = {}, followUp = {}, contact = {}) {
   const section = el('section', 'card next-step');
   const actions = el('div', 'next-actions');
-  section.append(el('h3', '', 'Next Step'));
+  section.append(el('h3', '', 'Your next step'));
   section.append(el('p', '', clean(nextStep.message) || 'OTP is reviewing your project.'));
   if (followUp.message) {
     const copy = el('button', 'secondary', 'Copy Message');
@@ -507,34 +508,49 @@ function referencesCard(token = '', references = {}) {
 }
 
 function renderDashboard(data, token = '') {
-  const { portal, client, project, retainer, documents, payment, nextStep, followUp, contact, projects, approvals, references, account } = normalizePortalPayload(data);
+  const { portal, client, retainer, nextStep, followUp, contact, approvals, references } = normalizePortalPayload(data);
   const view = buildClientPortalViewV2(data, { now: portal.lastUpdated });
-  const { masthead, grid, footer } = renderClientPortalViewV2(view);
-  const columns = grid.querySelectorAll('.portal-v2-column');
-  const documentColumn = columns[0];
-  const statusColumn = columns[1];
-
-  const visibleRetainerCard = retainerCard(retainer);
-  if (visibleRetainerCard && statusColumn) statusColumn.append(visibleRetainerCard);
-
-  const appCard = approvalsCard(token, approvals, client);
-  if (appCard && documentColumn) documentColumn.append(appCard);
-
-  const refCard = referencesCard(token, references);
-  if (refCard && statusColumn) statusColumn.append(refCard);
-
-  const nsCard = nextStepCard(nextStep, followUp, contact);
-  if (nsCard && documentColumn) documentColumn.append(nsCard);
-
-  portalRoot.replaceChildren(masthead, grid, footer);
+  const { masthead, footer, sections } = renderClientPortalViewV2(view);
+  const selected = portalRoot.querySelector('.portal-sections')?.dataset.section || 'overview';
+  const workspace = createPortalSections({
+    overview: [sections.overview, approvals.length ? approvalsCard(token, approvals, client) : null],
+    project: [sections.timeline, sections.delivery, sections.projects],
+    documents: [sections.documents],
+    billing: [sections.payment, retainerCard(retainer)],
+    support: [nextStepCard(nextStep, followUp, contact), sections.assistant, referencesCard(token, references)]
+  }, { selected });
+  const toolbar = portalToolbar(token);
+  portalRoot.replaceChildren(masthead, toolbar, workspace.root, footer);
+  appendNativeBack();
   setStatus('Portal Active', 'ready');
 }
 
+function portalToolbar(token) {
+  const toolbar = el('div', 'portal-v2-toolbar');
+  const refresh = el('button', 'secondary', 'Refresh project');
+  refresh.type = 'button';
+  const feedback = el('p', 'portal-v2-refresh-feedback');
+  feedback.setAttribute('role', 'status');
+  refresh.addEventListener('click', async () => {
+    refresh.disabled = true;
+    feedback.textContent = 'Refreshing project…';
+    try {
+      renderPortal(await fetchPortal(token));
+    } catch {
+      refresh.disabled = false;
+      feedback.textContent = 'Unable to refresh. Your last loaded project view is still shown.';
+    }
+  });
+  toolbar.append(el('span', '', 'Your private project workspace'), refresh, feedback);
+  return toolbar;
+}
+
+function appendNativeBack() {
+
+}
+
 function renderPortal(data) {
-  if (data.profile && !data.client) {
-    renderStoredPortal(data);
-    return;
-  }
+  if (data.profile && !data.client) return renderStoredPortal(data);
   renderDashboard(data, tokenFromLocation());
 }
 
@@ -549,13 +565,12 @@ function renderStoredPortal(data) {
     el('p', '', clean(profile.clientName) || 'Client'),
     badge(clean(project.status) || 'Pending review')
   );
-  const grid = el('div', 'grid');
-  grid.append(card('Client profile', [
+  const profileCard = card('Client profile', [
     infoRow('Name', profile.clientName),
     infoRow('Business', profile.businessName),
     infoRow('Email', profile.email),
     infoRow('Phone', profile.phone)
-  ]));
+  ]);
   const projectCard = card('Project', [
     infoRow('Service', project.serviceType),
     infoRow('Package', project.packageType),
@@ -565,7 +580,7 @@ function renderStoredPortal(data) {
     infoRow('Scope', project.description),
     infoRow('Client notes', project.notes)
   ]);
-  grid.append(projectCard, documentsCard(Array.isArray(data.documents) ? data.documents : []));
+  const docs = documentsCard(Array.isArray(data.documents) ? data.documents : []);
   const billing = card('Payment', [
     infoRow('Status', displayPaymentStatus(payment.status)),
     infoRow('Project total', payment.total),
@@ -576,19 +591,30 @@ function renderStoredPortal(data) {
   if (payment.paymentLinkReady === true && payment.cta?.href) {
     billing.append(buttonLink('Open Secure Payment Link', payment.cta.href));
   }
-  grid.append(billing);
+  let delivery = null;
   const items = Array.isArray(data.deliverables?.items) ? data.deliverables.items : [];
   if (items.length) {
     const list = el('ul', 'info-list');
     items.forEach(item => list.append(el('li', '', clean(item))));
-    const delivery = el('section', 'card');
+    delivery = el('section', 'card');
     delivery.append(el('h3', '', 'Deliverables'), list);
-    grid.append(delivery);
+
   }
   const help = el('section', 'card');
   help.append(el('h3', '', 'Project support'), buttonLink('Contact OTP', `mailto:${supportEmail}`, true, { allowMailto: true }));
-  grid.append(help);
-  portalRoot.replaceChildren(hero, grid);
+  const next = card('Your next step', [infoRow('Project status', project.status)]);
+  next.append(el('p', '', 'Review the project details and documents shared by OTP. Contact us if you need a change or an update.'));
+  const summary = el('div', 'portal-summary-strip');
+  for (const [label, value] of [['Service', project.serviceType || 'Under review'], ['Payment', displayPaymentStatus(payment.status)], ['Balance', payment.remaining || 'Under review']]) {
+    const item = el('div', 'portal-summary-item');
+    item.append(el('span', '', label), el('strong', '', value));
+    summary.append(item);
+  }
+  hero.append(summary);
+  const selected = portalRoot.querySelector('.portal-sections')?.dataset.section || 'overview';
+  const workspace = createPortalSections({overview: [next], project: [projectCard, delivery], documents: [docs], billing: [billing], support: [help, profileCard]}, { selected });
+  portalRoot.replaceChildren(hero, portalToolbar(tokenFromLocation()), workspace.root);
+  appendNativeBack();
   setStatus('Portal Active', 'ready');
 }
 
@@ -683,9 +709,8 @@ function renderError(message = PORTAL_FALLBACK_MESSAGE) {
   setStatus('Unavailable', 'error');
 }
 
-function handleFatalPortalError(error) {
-  const message = clean(error?.message || error) || PORTAL_FALLBACK_MESSAGE;
-  renderError(message);
+function handleFatalPortalError() {
+  renderError(PORTAL_FALLBACK_MESSAGE);
 }
 
 async function init() {

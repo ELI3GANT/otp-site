@@ -27,6 +27,8 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/bookings/submit',
     'ALL /api/bookings/deposit-checkout',
     'GET /api/client-portal/:token',
+    // Client-safe document routes authenticate with the opaque portal token and proxy only allowlisted types.
+    'GET /api/client/portal/:token/documents/:type/:format',
     'GET /api/quote/:id',
     'GET /api/youtube/videos',
     'POST /api/contact',

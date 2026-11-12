@@ -1,21 +1,24 @@
 {
-  "releaseName": "booking-conversion-postdeploy-sweep-fix-2026-11-11",
+  "releaseName": "otp-client-workspace-v2-document-access-2026-11-12",
   "includedFiles": [
-    "bookings.html",
-    "bookings.css",
-    "bookings.js",
-    "scripts/prod_full_sweep.js",
-    "scripts/prod_terminal_sweep.js",
-    "tests/bookings_contract.test.js",
-    "tests/booking_conversion_flow.test.js",
-    "tests/e2e/adversarial_qa.js",
-    "tests/master_runner.js",
+    "client-portal-v2-renderer.js",
+    "client.html",
+    "client.js",
+    "portal-entry.css",
+    "portal-sections.js",
+    "portal.html",
+    "portal.js",
+    "server.js",
+    "workspace-v2.css",
+    "tests/api_surface_security_contract.test.js",
+    "tests/client_portal_render.test.js",
     "tests/portal_route_contract.test.js",
     "release-manifest.json"
   ],
-  "removedFiles": [],
   "excludedDirtyFiles": [
-    "Only the project inquiry form, bounded selected-work media frames, booking-flow contracts, and matching production sweep markers are included in this release."
+    "Original checkout DESIGN.md includes broader OTP OS workspace notes and is outside this client portal release.",
+    "Original checkout FLOIVATION media assets under assets/case-studies/floivation/ are untracked and are unrelated to this portal release.",
+    "OTP OS working tree changes are separate; no client records, app binary, or OTP OS deployment are included in this Site release."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -27,55 +30,55 @@
   ],
   "testsRun": [
     {
-      "command": "npm test",
-      "status": "passed; full master suite including Booking Conversion Flow"
-    },
-    {
-      "command": "npm run test:e2e",
-      "status": "passed; 51/51 local adversarial browser checks"
+      "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm test",
+      "status": "passed; full master suite. PORT=1 isolated the unrelated local listener on port 3000; database-backed local contact journey skipped as it does on CI."
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed; 4 pinned contracts"
+      "status": "passed; four pinned OTP contracts"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed across 365 files"
+      "status": "passed; secret scan covered 369 tracked release files"
     },
     {
       "command": "npm run build:speed-insights",
       "status": "passed"
     },
     {
-      "command": "npm run master_test:ci",
+      "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm run master_test:ci",
       "status": "passed against https://www.onlytrueperspective.tech"
     },
     {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed against the deployed intake page after updating the retired-heading marker; HTTP-only, with authenticated checks run by the guarded workflow"
+      "command": "PORT=1 OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
+      "status": "passed against current production; public-only HTTP sweep. Candidate workflow reruns authenticated checks before deployment."
     },
     {
-      "command": "node --check bookings.js && node --check server.js && node --check scripts/prod_full_sweep.js && node --check scripts/prod_terminal_sweep.js",
-      "status": "passed"
-    },
-    {
-      "command": "git diff --check",
+      "command": "node --check server.js && node --check bookings.js && node --check scripts/prod_full_sweep.js && node --check scripts/prod_terminal_sweep.js && node --check client.js && node --check portal.js && git diff --check",
       "status": "passed"
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "In-app browser visual QA of /start-project showed FLOIVATION, HYH, and WeatherOS images loaded into equal bounded media frames; no card was stretched by the portrait WeatherOS image. The full adversarial suite also passed booking-flow keyboard validation and responsive overflow checks at 320px, 390px, 768px, and 1440px."
+    "summary": "Local candidate browser check on /portal and the private workspace at 320, 375, 390, 768, and 1280px. Both stored and canonical portal payload render paths are covered by tests. Synthetic fixture showed three ready document actions; preview and PDF download succeeded, no horizontal overflow or browser errors. No real client token or record was used."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "The guarded production workflow will run authenticated read-only checks with configured OTP admin credentials before deployment; local public-only sweep did not claim authenticated coverage."
+    "summary": "Latest successful guarded production run 42995167299 verified current production auth checks; the candidate workflow reruns them read-only before deployment. No credential values are recorded here."
   },
   "deploymentTarget": {
     "project": "otp-site",
+    "previewUrl": "http://127.0.0.1:4330",
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
+    ],
+    "verificationRoutes": [
+      "/portal",
+      "/client/:portalToken",
+      "/api/client-portal/:portalToken",
+      "/api/client/portal/:portalToken/documents/:type/view",
+      "/api/client/portal/:portalToken/documents/:type/pdf"
     ]
   }
 }

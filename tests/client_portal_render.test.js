@@ -28,6 +28,8 @@ async function main() {
   dom.window.buildClientPortalViewV2 = () => { throw new Error('Stored payload must not use the incompatible canonical renderer'); };
   dom.window.renderClientPortalViewV2 = () => { throw new Error('Stored payload must not use the incompatible canonical renderer'); };
   const source = fs.readFileSync(path.join(__dirname, '../client.js'), 'utf8').replace(/^import[\s\S]*?from ['"][^'"]+['"];\s*/gm, '');
+  const sections = fs.readFileSync(path.join(__dirname, '../portal-sections.js'), 'utf8').replace('export function', 'function');
+  vm.runInContext(sections, dom.getInternalVMContext());
   vm.runInContext(source, dom.getInternalVMContext());
   await new Promise(resolve => setImmediate(resolve));
   const root = dom.window.document.getElementById('portal-root');
@@ -42,7 +44,43 @@ async function main() {
   assert.equal(root.querySelectorAll('a[href^="https://checkout"]').length, 0);
   assert.equal(dom.window.document.getElementById('portal-status').textContent, 'Portal Active');
   assert.deepEqual(requests, [{ url: 'https://www.onlytrueperspective.tech/api/client-portal/sample-private-invite', method: 'GET' }]);
+  const tabs = [...root.querySelectorAll('[role="tab"]')];
+  assert.deepEqual(tabs.map(tab => tab.textContent), ['Overview', 'Project', 'Documents', 'Billing', 'Support']);
+  for (const tab of tabs) {
+    tab.click();
+    assert.equal(root.querySelectorAll('[role="tabpanel"]:not([hidden])').length, 1);
+    assert.equal(root.querySelector('[role="tabpanel"]:not([hidden])').id, tab.getAttribute('aria-controls'));
+    assert.equal(tab.getAttribute('aria-selected'), 'true');
+    assert.equal(tab.tabIndex, 0);
+  }
+  tabs[4].dispatchEvent(new dom.window.KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true}));
+  assert.equal(tabs[0].getAttribute('aria-selected'), 'true', 'keyboard wraps to first section');
+  tabs[0].dispatchEvent(new dom.window.KeyboardEvent('keydown', {key: 'End', bubbles: true}));
+  assert.equal(dom.window.document.activeElement, tabs[4], 'End selects and focuses support');
+  tabs[3].click();
+  [...root.querySelectorAll('button')].find(button => button.textContent === 'Refresh project').click();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(root.querySelector('.portal-sections').dataset.section, 'billing', 'refresh preserves current section');
   assert.equal(JSON.stringify(fixture), before, 'rendering does not alter the stored payment projection');
+  const canonical = {portal:{status:'active'},client:{name:'Sample Client',brandBusiness:'Northstar Studio'},project:{title:'Northstar website',status:'In Production'},documents:[{type:'receipt',ready:false}],payment:{},contact:{email:'contact@onlytrueperspective.tech'}};
+  Object.assign(dom.window, await import('../client-portal-v2.js'));
+  const renderer = fs.readFileSync(path.join(__dirname, '../client-portal-v2-renderer.js'), 'utf8').replace('export function', 'function');
+  vm.runInContext(renderer, dom.getInternalVMContext());
+  dom.window.canonicalFixture = canonical;
+  vm.runInContext('renderPortal(canonicalFixture)', dom.getInternalVMContext());
+  assert.equal(root.querySelectorAll('[role="tab"]').length, 5);
+  assert.equal(root.querySelectorAll('[role="tabpanel"]:not([hidden])').length, 1);
+  assert.match(root.textContent, /Under review/);
+  assert.doesNotMatch(root.textContent, /Oracle \+|IEI Active|\$0\.00/);
+  const receipt = [...root.querySelectorAll('.portal-v2-document')].find(item => item.textContent.includes('Receipt'));
+  assert.equal(receipt.querySelector('a'), null, 'unready canonical document has no link');
+  root.querySelector('#portal-tab-support').click();
+  const helpInput = root.querySelector('#portal-project-help');
+  helpInput.value = 'payment';
+  [...root.querySelectorAll('button')].find(button => button.textContent === 'Find answer').click();
+  assert.equal(root.querySelector('.portal-v2-assistant-response').hidden, false);
+  assert.match(root.querySelector('.portal-v2-assistant-response').textContent, /Payment state/);
+  assert.ok(requests.every(request => request.method === 'GET'), 'rendering and navigating never write client records');
   dom.window.close();
   console.log('CLIENT PORTAL RENDER COMPLETE');
 }
