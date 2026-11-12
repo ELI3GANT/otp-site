@@ -14,7 +14,7 @@ async function main() {
     project: { title: 'Sample website', serviceType: 'Website design', status: 'In Progress' },
     payment: { status: 'Deposit Paid', total: '$600.00', deposit: '$300.00', remaining: '$300.00', paymentLinkReady: false },
     documents: [
-      { type: 'Invoice', label: 'Invoice', status: 'ready', preview: '# Sample invoice\nRemaining: $300.00\n<script>unsafe()</script>' },
+      { type: 'Invoice', label: 'Invoice', status: 'ready', updatedAt: '2026-07-01T10:00:00.000Z', preview: '# Sample invoice\nRemaining: $300.00\n<script>unsafe()</script>' },
       { type: 'Proposal', label: 'Proposal', ready: true, status: 'needs-info', preview: 'MUST NOT DISPLAY BLOCKED PREVIEW' }
     ],
     deliverables: { items: ['Responsive website'] }
@@ -43,19 +43,27 @@ async function main() {
   assert.equal(root.querySelector('script'), null, 'document previews render as text, never HTML');
   assert.equal(root.querySelectorAll('details').length, 1, 'full project details stay optional behind a disclosure');
   const invoice = [...root.querySelectorAll('.portal-v2-document')].find(item => item.textContent.includes('Invoice'));
-  const view = [...invoice.querySelectorAll('a')].find(link => link.textContent.includes('View document'));
+  const view = [...invoice.querySelectorAll('a')].find(link => link.getAttribute('aria-label')?.startsWith('View '));
   assert.match(view.href, /\/api\/client\/portal\/sample-private-invite\/documents\/invoice\/view$/);
-  const download = [...invoice.querySelectorAll('a')].find(link => link.textContent.includes('Download PDF'));
+  assert.equal(view.textContent.trim(), 'View', 'file preview action uses a short visible label');
+  const download = [...invoice.querySelectorAll('a')].find(link => link.getAttribute('aria-label')?.startsWith('Download PDF'));
   assert.match(download.href, /\/api\/client\/portal\/sample-private-invite\/documents\/invoice\/pdf$/);
   assert.equal(download.referrerPolicy, 'no-referrer', 'PDF actions do not forward the private invite as a referrer');
+  assert.equal(download.textContent.trim(), 'PDF', 'PDF action stays compact while its accessible name explains the download');
+  assert.equal(download.getAttribute('download'), '', 'PDF action downloads in the same tab');
+  assert.equal(download.target, '', 'PDF action does not open an unnecessary extra tab');
   const proposal = [...root.querySelectorAll('.portal-v2-document')].find(item => item.textContent.includes('Proposal'));
   assert.equal(proposal.querySelector('a'), null, 'a blocked readiness state overrides a stale ready flag');
+  assert.match(proposal.textContent, /Needs details/);
+  assert.match(proposal.textContent, /OTP needs more project details/);
+  assert.equal(invoice.querySelector('.portal-v2-document-freshness')?.textContent, 'Updated Jul 1, 2026');
   assert.equal(root.querySelectorAll('a[href^="https://checkout"]').length, 0);
   assert.equal(dom.window.document.getElementById('portal-status').textContent, 'Portal Active');
   assert.deepEqual(requests, [{ url: 'https://www.onlytrueperspective.tech/api/client-portal/sample-private-invite', method: 'GET' }]);
   const tabs = [...root.querySelectorAll('[role="tab"]')];
-  assert.deepEqual(tabs.map(tab => tab.textContent), ['Overview', 'Project', 'Documents', 'Billing', 'Support']);
+  assert.deepEqual(tabs.map(tab => tab.textContent), ['Overview', 'Project', 'Files', 'Payment', 'Help']);
   for (const tab of tabs) {
+    assert.ok(tab.querySelector('svg[aria-hidden="true"]'), `${tab.textContent} tab has a decorative icon`);
     tab.click();
     assert.equal(root.querySelectorAll('[role="tabpanel"]:not([hidden])').length, 1);
     assert.equal(root.querySelector('[role="tabpanel"]:not([hidden])').id, tab.getAttribute('aria-controls'));
@@ -71,29 +79,30 @@ async function main() {
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(root.querySelector('.portal-sections').dataset.section, 'billing', 'refresh preserves current section');
   assert.equal(JSON.stringify(fixture), before, 'rendering does not alter the stored payment projection');
-  const canonical = {portal:{status:'active'},client:{name:'Sample Client',brandBusiness:'Northstar Studio'},project:{title:'Northstar website',status:'In Production'},documents:[{type:'agreement',label:'Agreement',ready:true},{type:'proposal',label:'Proposal',ready:true,status:'needs-info'},{type:'Service Summary',ready:true,status:'ready'},{type:'Paid Receipt',label:'Receipt',ready:false,status:'locked'}],payment:{},contact:{email:'contact@onlytrueperspective.tech'}};
+  const canonical = {portal:{status:'active'},client:{name:'Sample Client',brandBusiness:'Northstar Studio'},project:{title:'Northstar website',status:'Scope Confirmed'},documents:[{type:'agreement',label:'Agreement',ready:true},{type:'proposal',label:'Proposal',ready:true,status:'needs-info'},{type:'Service Summary',ready:true,status:'ready'},{type:'Paid Receipt',label:'Receipt',ready:false,status:'locked'}],payment:{},contact:{email:'contact@onlytrueperspective.tech'}};
   dom.window.canonicalFixture = canonical;
   vm.runInContext('renderPortal(canonicalFixture)', dom.getInternalVMContext());
   assert.equal(root.querySelectorAll('[role="tab"]').length, 5);
   assert.equal(root.querySelectorAll('[role="tabpanel"]:not([hidden])').length, 1);
   assert.match(root.textContent, /Under review/);
   assert.doesNotMatch(root.textContent, /Oracle \+|IEI Active|\$0\.00/);
+  assert.ok(root.querySelector('.portal-v2-masthead .badge.ready'), 'confirmed scope reads as a positive status with a check icon');
   const receipt = [...root.querySelectorAll('.portal-v2-document')].find(item => item.textContent.includes('Receipt'));
   assert.equal(receipt.querySelector('a'), null, 'unready canonical document has no link');
   const agreement = [...root.querySelectorAll('.portal-v2-document')].find(item => item.textContent.includes('Agreement'));
-  assert.ok([...agreement.querySelectorAll('a')].some(link => link.textContent.includes('View document')), 'canonical portal documents expose the formatted document preview');
-  assert.match([...agreement.querySelectorAll('a')].find(link => link.textContent.includes('View document')).href, /\/documents\/agreement\/view$/);
-  assert.ok([...agreement.querySelectorAll('a')].some(link => link.textContent.includes('Download PDF')));
+  assert.ok([...agreement.querySelectorAll('a')].some(link => link.textContent.trim() === 'View'), 'canonical portal documents expose the formatted document preview');
+  assert.match([...agreement.querySelectorAll('a')].find(link => link.getAttribute('aria-label')?.startsWith('View ')).href, /\/documents\/agreement\/view$/);
+  assert.ok([...agreement.querySelectorAll('a')].some(link => link.textContent.trim() === 'PDF'));
   const blockedProposal = [...root.querySelectorAll('.portal-v2-document')].find(item => item.textContent.includes('Proposal'));
   assert.equal(blockedProposal.querySelector('a'), null, 'canonical renderer keeps documents with a blocked state unavailable');
   const serviceSummary = [...root.querySelectorAll('.portal-v2-document')].find(item => item.textContent.includes('Service Summary'));
-  assert.match([...serviceSummary.querySelectorAll('a')].find(link => link.textContent.includes('View document')).href, /\/documents\/service-summary\/view$/);
+  assert.match([...serviceSummary.querySelectorAll('a')].find(link => link.textContent.trim() === 'View').href, /\/documents\/service-summary\/view$/);
   const paidReceipt = [...root.querySelectorAll('.portal-v2-document')].find(item => item.textContent.includes('Receipt'));
   assert.equal(paidReceipt.querySelector('a'), null, 'paid receipt stays locked until payment is recorded');
   root.querySelector('#portal-tab-support').click();
   const helpInput = root.querySelector('#portal-project-help');
   helpInput.value = 'payment';
-  [...root.querySelectorAll('button')].find(button => button.textContent === 'Find answer').click();
+  [...root.querySelectorAll('button')].find(button => button.textContent === 'Ask').click();
   assert.equal(root.querySelector('.portal-v2-assistant-response').hidden, false);
   assert.match(root.querySelector('.portal-v2-assistant-response').textContent, /Payment state/);
   assert.ok(requests.every(request => request.method === 'GET'), 'rendering and navigating never write client records');

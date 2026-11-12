@@ -5,6 +5,42 @@ function node(tag, className = '', value = '') {
   return element;
 }
 
+const iconPaths = Object.freeze({
+  overview: ['M3 10.5 12 3l9 7.5M5.5 9.5V21h13V9.5M9 21v-7h6v7'],
+  phase: ['M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42M12 8v4l2.5 1.5'],
+  next: ['M5 12h14M13 6l6 6-6 6'],
+  project: ['M4 5h16v14H4zM8 9h8M8 13h5'],
+  documents: ['M7 3h8l4 4v14H5V3h2zM15 3v5h5M8 12h8M8 16h8'],
+  billing: ['M3 7h18v13H3zM3 10h18M7 16h3'],
+  timeline: ['M5 5h14M5 12h14M5 19h14M8 5v.01M8 12v.01M8 19v.01'],
+  delivery: ['M4 7h10v12H4zM14 11h3l3 3v5h-6zM7 19a2 2 0 1 0 4 0M16 19a2 2 0 1 0 4 0'],
+  support: ['M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9.6 9a2.5 2.5 0 0 1 4.8 1c0 1.7-2.4 2-2.4 4M12 17h.01'],
+  pending: ['M12 8v4l2.5 1.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'],
+  ready: ['M5 12l4 4L19 6'],
+  warning: ['M12 8v5M12 17h.01M10.3 4.7 2.9 18a2 2 0 0 0 1.8 3h14.6a2 2 0 0 0 1.8-3L13.7 4.7a2 2 0 0 0-3.4 0z'],
+});
+
+function icon(name, className = 'portal-ui-icon') {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '18');
+  svg.setAttribute('height', '18');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.8');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  if (className) svg.setAttribute('class', className);
+  for (const d of iconPaths[name] || iconPaths.pending) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    svg.append(path);
+  }
+  return svg;
+}
+
 function money(value) {
   if (!Number.isFinite(value)) return 'Under review';
   return new Intl.NumberFormat('en-US', {
@@ -23,13 +59,18 @@ function readableDate(value = '') {
 }
 
 function statusMode(value = '') {
+  if (/^(scope reviewed|scope confirmed)$/i.test(value.trim())) return 'ready';
   if (/unpaid|unavailable|not available|awaiting|partial|review|due|current|pending|upcoming|progress|not ready/i.test(value)) return 'warning';
-  if (/complete|^paid$|paid in full|deposit paid|available|ready|received|approved/i.test(value)) return 'ready';
+  if (/complete|^paid$|paid in full|deposit paid|available|ready|received|approved|confirmed|signed|active/i.test(value)) return 'ready';
   return '';
 }
 
 function statusChip(value = '') {
-  return node('span', `badge ${statusMode(value)}`.trim(), value || 'Pending Review');
+  const label = value || 'Pending review';
+  const mode = statusMode(label);
+  const chip = node('span', `badge ${mode}`.trim());
+  chip.append(icon(mode === 'ready' ? 'ready' : mode === 'warning' ? 'warning' : 'pending', 'portal-status-icon'), node('span', '', label));
+  return chip;
 }
 
 function safeLink(label, href, secondary = true) {
@@ -61,16 +102,23 @@ function pdfIcon(kind = 'preview') {
   return svg;
 }
 
-function documentPdfLink(label, href, kind = 'preview', secondary = false) {
+function portalDocumentActionLink(label, href, kind = 'preview', secondary = false, accessibleLabel = label) {
   const link = safeLink(label, href, secondary);
   link.prepend(pdfIcon(kind));
+  link.setAttribute('aria-label', accessibleLabel);
+  link.title = accessibleLabel;
+  if (kind === 'download') {
+    link.removeAttribute('target');
+    link.setAttribute('download', '');
+  }
   link.classList.add('document-pdf-action');
   return link;
 }
 
-function sectionCard(title, className = '') {
+function sectionCard(title, className = '', iconName = 'overview') {
   const section = node('section', `card portal-v2-card ${className}`.trim());
   const heading = node('h2', 'portal-v2-section-title', title);
+  heading.prepend(icon(iconName));
   section.setAttribute('aria-labelledby', `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-title`);
   heading.id = section.getAttribute('aria-labelledby');
   section.append(heading);
@@ -84,21 +132,21 @@ function valueRow(label, value) {
 }
 
 function overviewCard(view) {
-  const card = sectionCard('Project Overview', 'portal-v2-overview');
+  const card = sectionCard('Overview', 'portal-v2-overview', 'overview');
   const phase = node('div', 'portal-v2-brief-status');
   phase.append(
-    node('span', 'portal-v2-overline', 'Current phase'),
+    node('span', 'portal-v2-overline', 'Phase'),
     node('strong', '', view.overview.currentPhase)
   );
   const next = node('div', 'portal-v2-focus-action');
   next.append(
-    node('span', 'portal-v2-overline', 'Your next step'),
+    node('span', 'portal-v2-overline', 'Next'),
     node('p', '', view.overview.nextClientAction)
   );
 
   const details = document.createElement('details');
   details.className = 'portal-v2-disclosure';
-  details.append(node('summary', '', 'View full project scope and details'));
+  details.append(node('summary', '', 'Project details'));
   const content = node('div', 'portal-v2-disclosure-content');
   content.append(
     node('p', 'portal-v2-summary', view.overview.summary),
@@ -113,22 +161,21 @@ function overviewCard(view) {
 }
 
 function documentsCard(view) {
-  const card = sectionCard('Documents');
+  const card = sectionCard('Documents', '', 'documents');
   const list = node('div', 'portal-v2-document-list');
   for (const document of view.documents) {
     const item = node('article', 'portal-v2-document');
     const heading = node('div', 'portal-v2-document-heading');
+    const identity = node('div', 'portal-v2-document-identity');
     const actions = node('div', 'portal-v2-actions');
-    heading.append(node('strong', '', document.label), statusChip(document.status));
-    item.append(heading, node('p', '', document.message));
-    if (document.viewUrl) actions.append(documentPdfLink('View document', document.viewUrl, 'preview', true));
-    if (document.downloadUrl) actions.append(documentPdfLink('Download PDF', document.downloadUrl, 'download'));
-    if (!actions.children.length) {
-      const pending = node('span', 'portal-v2-pending-label', document.actionLabel);
-      pending.setAttribute('aria-disabled', 'true');
-      actions.append(pending);
-    }
-    item.append(actions);
+    identity.append(icon('documents', 'portal-document-icon'), node('strong', '', document.label));
+    heading.append(identity, statusChip(document.status));
+    item.append(heading);
+    if (document.message) item.append(node('p', '', document.message));
+    if (document.freshnessLabel) item.append(node('small', 'portal-v2-document-freshness', document.freshnessLabel));
+    if (document.viewUrl) actions.append(portalDocumentActionLink('View', document.viewUrl, 'preview', true, `View ${document.label}`));
+    if (document.downloadUrl) actions.append(portalDocumentActionLink('PDF', document.downloadUrl, 'download', false, `Download PDF for ${document.label}`));
+    if (actions.children.length) item.append(actions);
     list.append(item);
   }
   if (!view.documents.length) {
@@ -140,7 +187,7 @@ function documentsCard(view) {
 
 function paymentCard(view) {
   const payment = view.payment;
-  const card = sectionCard('Payment Status', `portal-v2-payment ${payment.manualReviewRequired ? 'needs-review' : ''}`);
+  const card = sectionCard('Payment', `portal-v2-payment ${payment.manualReviewRequired ? 'needs-review' : ''}`, 'billing');
   const amounts = node('div', 'portal-v2-money-grid');
   [
     ['Project investment', money(payment.totalCents)],
@@ -156,14 +203,14 @@ function paymentCard(view) {
     valueRow('Due date', readableDate(payment.dueDate)),
     valueRow('Receipt status', payment.receiptStatus),
     node('p', 'portal-v2-summary', payment.message),
-    node('p', 'portal-v2-next-action', `Next step: ${payment.nextAction}`)
+    node('p', 'portal-v2-next-action', `Next: ${payment.nextAction}`)
   );
   if (actions.children.length) card.append(actions);
   return card;
 }
 
 function timelineCard(view) {
-  const card = sectionCard('Project Timeline');
+  const card = sectionCard('Timeline', '', 'timeline');
   const timeline = node('ol', 'portal-timeline');
   for (const step of view.timeline) {
     const item = node('li', `portal-timeline-step ${step.status.toLowerCase()}`);
@@ -184,7 +231,7 @@ function timelineCard(view) {
 
 function deliveryCard(view) {
   const delivery = view.delivery;
-  const card = sectionCard('Delivery & Proof');
+  const card = sectionCard('Delivery', '', 'delivery');
   const items = node('div', 'portal-v2-document-list');
   card.append(statusChip(delivery.status), node('p', 'portal-v2-summary', delivery.nextStep));
   for (const deliverable of delivery.deliverables) {
@@ -211,7 +258,7 @@ function deliveryCard(view) {
 function projectsCard(view) {
   const projects = view.otherProjects || [];
   if (projects.length < 2) return null;
-  const card = sectionCard('Your Projects', 'portal-v2-projects');
+  const card = sectionCard('Projects', 'portal-v2-projects', 'project');
   const list = node('div', 'portal-v2-document-list');
   for (const project of projects) {
     const item = node('article', `portal-v2-document${project.isCurrent ? ' is-current' : ''}`);
@@ -227,19 +274,18 @@ function projectsCard(view) {
 }
 
 function assistantCard(view) {
-  const card = sectionCard('Project help', 'portal-v2-assistant');
-  const badge = node('span', 'badge', 'Project information');
-  const promptText = node('p', 'portal-v2-summary', 'Quick answers using your current project details. For other requests, contact OTP directly.');
+  const card = sectionCard('Help', 'portal-v2-assistant', 'support');
+  const promptText = node('p', 'portal-v2-summary', 'Ask about your project, payment, or files.');
   const inputGroup = node('div', 'portal-v2-actions');
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'portal-v2-assistant-input';
-  input.placeholder = 'e.g. What is my next milestone?';
+  input.placeholder = 'Ask about your project';
   input.id = 'portal-project-help';
-  const label = node('label', 'portal-v2-help-label', 'Question about your project');
+  const label = node('label', 'portal-v2-help-label', 'Question');
   label.htmlFor = input.id;
 
-  const askBtn = node('button', 'button-link', 'Find answer');
+  const askBtn = node('button', 'button-link', 'Ask');
   askBtn.type = 'button';
 
   const responseBox = node('div', 'portal-v2-assistant-response');
@@ -271,7 +317,7 @@ function assistantCard(view) {
   });
 
   inputGroup.append(input, askBtn);
-  card.append(badge, promptText, label, inputGroup, responseBox, safeLink('Email OTP support', `mailto:${view.contact.email}`));
+  card.append(promptText, label, inputGroup, responseBox, safeLink('Contact OTP', `mailto:${view.contact.email}`));
   return card;
 }
 
@@ -279,17 +325,20 @@ export function renderClientPortalViewV2(view) {
   const masthead = node('section', 'hero portal-v2-masthead');
   const mastheadTop = node('div', 'portal-v2-masthead-top');
   const identity = node('div', 'portal-v2-client-identity');
+  const businessName = view.identity.clientBusinessName;
   identity.append(
-    node('p', 'eyebrow', view.identity.businessName),
-    node('h2', '', view.identity.projectTitle),
-    node('p', 'portal-v2-project-title', view.identity.clientName)
+    node('h2', '', view.identity.clientName),
+    node('p', 'portal-v2-project-title', [businessName, view.identity.projectTitle].filter(Boolean).join(' · '))
   );
   mastheadTop.append(identity, statusChip(view.overview.status));
   masthead.append(mastheadTop);
   const summary = node('div', 'portal-summary-strip');
-  for (const [label, value] of [['Current phase', view.overview.currentPhase], ['Payment', view.payment.stateLabel], ['Documents', `${view.documents.filter((item) => item.viewUrl || item.downloadUrl).length} available`]]) {
+  const readyFiles = view.documents.filter((item) => item.viewUrl || item.downloadUrl).length;
+  for (const [label, value, iconName] of [['Phase', view.overview.currentPhase, 'phase'], ['Payment', view.payment.stateLabel, 'billing'], ['Files', readyFiles ? `${readyFiles} ready` : 'No files yet', 'documents']]) {
     const item = node('div', 'portal-summary-item');
-    item.append(node('span', '', label), node('strong', '', value));
+    const copy = node('div', 'portal-summary-copy');
+    copy.append(node('span', '', label), node('strong', '', value));
+    item.append(icon(iconName), copy);
     summary.append(item);
   }
   masthead.append(summary);

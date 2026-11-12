@@ -86,7 +86,7 @@
       "status": "passed against https://www.onlytrueperspective.tech; full master suite, 56 checks and 0 failures, validating the current production baseline before deployment."
     },
     {
-      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4492 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
+      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4493 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
       "status": "passed against the local site with every public target active, including the versioned private portal shell/assets, profile utility, safe document preview, and inline/attachment PDF fixture checks."
     },
     {
@@ -94,25 +94,25 @@
       "status": "previous guarded release 43165950182 completed successfully on base SHA e3fcbdf8beba533193eba727c048db693c3e2d14. This new portal documents change is being released in a separate guarded run after commit."
     },
     {
-      "command": "node --check server.js && node --check client.js && node --check client-portal-v2.js && node --check scripts/prod_full_sweep.js && node --check scripts/prod_sweep_v2_runner.js && git diff --check",
-      "status": "passed after the final client profile, cache-busting, and sweep edits"
+      "command": "node --check client.js && node --check client-portal-v2.js && node --check client-portal-v2-renderer.js && node --check portal-sections.js && node --check scripts/prod_full_sweep.js && git diff --check",
+      "status": "passed after the portal tabs, compact document actions, and cache-busting edits"
     },
     {
-      "command": "OTP_PRIMARY_CHECKOUT=/Users/eli/OTP/otp-site npm run release:scope",
-      "status": "passed; the 13 dirty release files are included, with no sensitive or generated artifacts."
+      "command": "OTP_PRIMARY_CHECKOUT=/Users/eli/Documents/GitHub/otp-site npm run release:scope",
+      "status": "passed; the 9 dirty portal release files are included, with no sensitive or generated artifacts."
     },
     {
       "command": "node tests/client_portal_render.test.js && node tests/portal_route_contract.test.js",
-      "status": "passed; ready flags cannot override blocked or needs-info states; Service Summary and Paid Receipt names map to supported document routes."
+      "status": "passed; blocked readiness stays safe, document preview/PDF links stay client-safe, Service Summary and Paid Receipt map to supported routes, and confirmed scope displays as complete."
     },
     {
-      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4492 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
+      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4493 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
       "status": "passed against the local site; safe fixture PDF signature and inline preview/attachment download dispositions verified."
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local browser QA confirmed profile-shaped OTP OS data renders in the v2 client workspace, the overview phase label is spaced cleanly, and document cards show icon-led View document and Download PDF actions. The safe test fixture validates the route and PDF headers only; its preview is intentionally synthetic and does not represent Jeff’s official documents. In the signed-in OTP OS workspace, Jeff/FLOIVATION’s live profile and active private portal invite were reviewed read-only. The proposal remains blocked because more project details are needed; ready document states remain available. No client record was edited, portal link copied or rotated, or document generated or sent. The tokenized client page itself was not opened."
+    "summary": "The signed-in production portal was checked read-only: it shows the real client-specific profile but still serves the older text-only tabs and document list. The local v2 preview displays compact icon-led sections and View/PDF actions; the local safe fixture verifies the preview route and PDF attachment/inline headers only, not client data. No client record was edited, portal invite copied or rotated, or document generated or sent."
   },
   "authenticatedSweep": {
     "status": "passed",
@@ -120,7 +120,7 @@
   },
   "deploymentTarget": {
     "project": "otp-site",
-    "previewUrl": "http://127.0.0.1:4492",
+    "previewUrl": "http://127.0.0.1:4493",
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"

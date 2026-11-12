@@ -19,6 +19,7 @@ const portalJs = read('portal.js');
 const clientHtml = read('client.html');
 const clientCss = read('client.css');
 const clientJs = read('client.js');
+const clientRenderer = read('client-portal-v2-renderer.js');
 const indexHtml = read('index.html');
 const bookingsHtml = read('bookings.html');
 const bookingsJs = read('bookings.js');
@@ -104,7 +105,8 @@ assert.ok(!/otp-os\.vercel\.app|supabase|service[_-]?key|jwt|bearer/i.test(clien
 assert.ok(clientJs.includes('/api/client-portal/'), 'client portal fetches the server-side portal API');
 assert.ok(clientJs.includes("cache: 'no-store'"), 'client portal fetch uses no-store');
 assert.ok(clientJs.includes('Locked until payment is saved'), 'client portal has locked receipt state');
-assert.ok(clientJs.includes('View document') && clientJs.includes('Download PDF'), 'client portal offers clear formatted document and PDF download actions');
+assert.ok(clientRenderer.includes("portalDocumentActionLink('View'") && clientRenderer.includes("portalDocumentActionLink('PDF'"), 'client portal uses compact document preview and PDF actions');
+assert.ok(clientRenderer.includes('Download PDF for ${document.label}'), 'compact PDF action keeps an accessible description');
 assert.ok(clientJs.includes("link.referrerPolicy = 'no-referrer'"), 'private PDF links do not forward portal tokens as referrers');
 assert.ok(server.includes('Receipt unlocks after a saved project payment'), 'server portal payload explains locked receipts');
 assert.ok(clientJs.includes('textContent'), 'client portal renders with textContent');

@@ -1,4 +1,4 @@
-import { createPortalSections } from './portal-sections.js?v=20261109-workspace-v2';
+import { createPortalSections } from './portal-sections.js?v=20261112-client-workspace-v5';
 import {
   BUSINESS_WEBSITE,
   PORTAL_FALLBACK_MESSAGE,
@@ -8,9 +8,9 @@ import {
   normalizePortalPayload,
   portalReferenceLabel,
   safePortalUrl
-} from './client-portal-utils.js?v=20261112-client-workspace-v4';
-import { buildClientPortalViewV2 } from './client-portal-v2.js?v=20261112-client-workspace-v4';
-import { renderClientPortalViewV2 } from './client-portal-v2-renderer.js?v=20261112-client-workspace-v4';
+} from './client-portal-utils.js?v=20261112-client-workspace-v5';
+import { buildClientPortalViewV2 } from './client-portal-v2.js?v=20261112-client-workspace-v5';
+import { renderClientPortalViewV2 } from './client-portal-v2-renderer.js?v=20261112-client-workspace-v5';
 
 // Locked until payment is saved
 

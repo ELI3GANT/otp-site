@@ -33,6 +33,19 @@ function text(value = '') {
   return /^(undefined|null|nan|\[object object\])$/i.test(cleaned) ? '' : cleaned;
 }
 
+function documentFreshnessLabel(value = '') {
+  const raw = text(value);
+  if (!raw) return '';
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return '';
+  return `Updated ${new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC'
+  }).format(date)}`;
+}
+
 function cents(value) {
   if (value === '' || value === null || value === undefined) return null;
   const amount = Number(value);
@@ -102,6 +115,8 @@ function safeDocuments(documents = [], rootPayload = {}, portalToken = '') {
     const rawDocUrl = document.viewUrl || document.view_url || document.url || document.link;
     const validDocUrl = safeUrl(rawDocUrl);
     const status = String(document.status || document.doc_status || '').trim().toLowerCase().replace(/[_\s]+/g, '-');
+    const needsDetails = /needs-info|incomplete|missing/.test(status);
+    const unavailable = /locked|unavailable|failed|rejected|not-ready/.test(status);
     const explicitlyBlocked = document.ready === false
       || document.blocked === true
       || document.validation?.blocking === true
@@ -124,10 +139,11 @@ function safeDocuments(documents = [], rootPayload = {}, portalToken = '') {
       type,
       label: text(document.label || document.title) || type.split('-').map((part) => `${part[0]?.toUpperCase() || ''}${part.slice(1)}`).join(' '),
       ready: isReady,
-      status: isReady ? 'Available' : 'Draft pending OTP review',
-      message: isReady ? 'This document is available for client review.' : 'No document is available yet. OTP will add it after review.',
-      actionLabel: isReady ? 'Ready for review' : 'Not available yet',
+      status: isReady ? 'Ready' : needsDetails ? 'Needs details' : unavailable ? 'Not ready' : 'In review',
+      message: isReady ? '' : needsDetails ? 'OTP needs more project details.' : unavailable ? 'This file is unavailable for now.' : 'OTP will update this file here.',
+      actionLabel: isReady ? 'Ready' : needsDetails ? 'Needs details' : unavailable ? 'Not ready' : 'In review',
       updatedAt: text(document.updatedAt || document.updated_at || document.createdAt || document.created_at),
+      freshnessLabel: isReady ? documentFreshnessLabel(document.updatedAt || document.updated_at || document.createdAt || document.created_at) : '',
       viewUrl,
       downloadUrl
     }));
@@ -259,7 +275,8 @@ export function buildClientPortalViewV2(payload = {}, options = {}) {
       ? payload.profile
       : {};
   const project = payload.project && typeof payload.project === 'object' ? payload.project : {};
-  const clientNameResolved = text(client.name || client.clientName || client.client_name || client.brandBusiness || client.brand_business || client.businessName || client.business_name || client.contact_name || payload.client_name || payload.clientName || payload.contact_name || (payload.email ? payload.email.split('@')[0] : ''));
+  const clientBusinessName = text(client.brandBusiness || client.brand_business || client.businessName || client.business_name);
+  const clientNameResolved = text(client.name || client.clientName || client.client_name || clientBusinessName || client.contact_name || payload.client_name || payload.clientName || payload.contact_name || (payload.email ? payload.email.split('@')[0] : ''));
   const projectTitleResolved = text(project.title || project.projectTitle || project.project_title || project.service || project.serviceType || project.service_type || project.name || payload.project_title || payload.projectTitle);
   const jobTypeResolved = text(project.projectType || project.project_type || project.jobType || project.job_type || project.service || project.serviceType || project.service_type || project.packageType || project.package_type);
   const projectDeliverables = Array.isArray(project.deliverables)
@@ -269,7 +286,8 @@ export function buildClientPortalViewV2(payload = {}, options = {}) {
       : [];
 
   const identity = Object.freeze({
-    businessName: text(client.brandBusiness || client.brand_business || client.businessName || client.business_name) || 'OnlyTruePerspective LLC',
+    businessName: clientBusinessName || 'OnlyTruePerspective LLC',
+    clientBusinessName,
     clientName: clientNameResolved || 'Valued Client',
     projectTitle: projectTitleResolved || 'OTP Project',
     jobType: jobTypeResolved || 'Custom Project'
