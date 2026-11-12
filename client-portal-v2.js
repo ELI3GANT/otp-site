@@ -8,6 +8,7 @@ const DOCUMENT_TYPES = Object.freeze([
   'agreement',
   'invoice',
   'receipt',
+  'paid-receipt',
   'project-scope',
   'service-summary',
   'delivery-summary',
@@ -32,10 +33,31 @@ function text(value = '') {
   return /^(undefined|null|nan|\[object object\])$/i.test(cleaned) ? '' : cleaned;
 }
 
+function documentFreshnessLabel(value = '') {
+  const raw = text(value);
+  if (!raw) return '';
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return '';
+  return `Updated ${new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC'
+  }).format(date)}`;
+}
+
 function cents(value) {
   if (value === '' || value === null || value === undefined) return null;
   const amount = Number(value);
   return Number.isFinite(amount) && amount >= 0 ? Math.round(amount) : null;
+}
+
+function displayMoneyCents(value) {
+  if (typeof value !== 'string') return null;
+  const raw = value.trim().replace(/[$,\s]/g, '');
+  if (!/^\d+(?:\.\d{1,2})?$/.test(raw)) return null;
+  const amount = Number(raw);
+  return Number.isFinite(amount) ? Math.round(amount * 100) : null;
 }
 
 function safeUrl(value = '') {
@@ -66,7 +88,15 @@ function currentPhase(status = '') {
   return 'Request received';
 }
 
-function safeDocuments(documents = [], rootPayload = {}) {
+function safePortalToken(value = '') {
+  const token = text(value);
+  if (!/^[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/.test(token)) return '';
+  if (!token.includes('.') && /(admin|terminal|api|schema|supabase|service|jwt|bearer)/i.test(token)) return '';
+  return token;
+}
+
+function safeDocuments(documents = [], rootPayload = {}, portalToken = '') {
+  const token = safePortalToken(portalToken);
   const sourceDocs = Array.isArray(documents) && documents.length
     ? documents
     : Array.isArray(rootPayload.docs) && rootPayload.docs.length
@@ -77,26 +107,43 @@ function safeDocuments(documents = [], rootPayload = {}) {
 
   const byType = new Map();
   for (const document of sourceDocs) {
-    const type = text(document?.type || document?.docType || document?.doc_type).toLowerCase().replace(/_/g, '-');
+    const type = text(document?.type || document?.docType || document?.doc_type || document?.label || document?.title)
+      .toLowerCase()
+      .replace(/[\s_]+/g, '-');
     if (!DOCUMENT_TYPES.includes(type) || byType.has(type)) continue;
     const readyExplicit = document.ready === true;
     const rawDocUrl = document.viewUrl || document.view_url || document.url || document.link;
     const validDocUrl = safeUrl(rawDocUrl);
-    const isReady = readyExplicit || (document.ready !== false && (
+    const status = String(document.status || document.doc_status || '').trim().toLowerCase().replace(/[_\s]+/g, '-');
+    const needsDetails = /needs-info|incomplete|missing/.test(status);
+    const unavailable = /locked|unavailable|failed|rejected|not-ready/.test(status);
+    const explicitlyBlocked = document.ready === false
+      || document.blocked === true
+      || document.validation?.blocking === true
+      || /blocked|needs-info|needs-review|not-ready|unavailable|locked|pending|draft|preparing|in-preparation|failed|rejected|incomplete|manual-review/.test(status);
+    const isReady = !explicitlyBlocked && (readyExplicit || (
       String(document.status || document.doc_status || '').toLowerCase() === 'ready'
       || String(document.status || document.doc_status || '').toLowerCase() === 'available'
       || Boolean(validDocUrl)
     ) && (!rawDocUrl || Boolean(validDocUrl)));
-    const viewUrl = isReady ? safeUrl(document.viewUrl || document.view_url || document.url || document.link) : '';
-    const downloadUrl = isReady ? safeUrl(document.downloadUrl || document.download_url || document.downloadLink || document.download_link) : '';
+    const documentPath = token
+      ? `/api/client/portal/${encodeURIComponent(token)}/documents/${encodeURIComponent(type)}`
+      : '';
+    const viewUrl = isReady
+      ? safeUrl(documentPath ? `${documentPath}/view` : document.viewUrl || document.view_url || document.url || document.link)
+      : '';
+    const downloadUrl = isReady
+      ? safeUrl(documentPath ? `${documentPath}/pdf` : document.downloadUrl || document.download_url || document.downloadLink || document.download_link)
+      : '';
     byType.set(type, Object.freeze({
       type,
       label: text(document.label || document.title) || type.split('-').map((part) => `${part[0]?.toUpperCase() || ''}${part.slice(1)}`).join(' '),
       ready: isReady,
-      status: isReady ? 'Available' : 'Draft pending OTP review',
-      message: isReady ? 'This document is available for client review.' : 'No document is available yet. OTP will add it after review.',
-      actionLabel: isReady ? 'Ready for review' : 'Not available yet',
+      status: isReady ? 'Ready' : needsDetails ? 'Needs details' : unavailable ? 'Not ready' : 'In review',
+      message: isReady ? '' : needsDetails ? 'OTP needs more project details.' : unavailable ? 'This file is unavailable for now.' : 'OTP will update this file here.',
+      actionLabel: isReady ? 'Ready' : needsDetails ? 'Needs details' : unavailable ? 'Not ready' : 'In review',
       updatedAt: text(document.updatedAt || document.updated_at || document.createdAt || document.created_at),
+      freshnessLabel: isReady ? documentFreshnessLabel(document.updatedAt || document.updated_at || document.createdAt || document.created_at) : '',
       viewUrl,
       downloadUrl
     }));
@@ -113,11 +160,15 @@ function paymentView(payload = {}, identity = {}, options = {}, rootPayload = {}
         ? rootPayload.job
         : rootPayload;
 
-  const total = cents(p.totalAmountCents ?? p.total_amount_cents ?? p.quoted_price_cents ?? p.total_price_cents ?? p.totalCents ?? p.total_cents ?? p.quotedPriceCents ?? p.totalPriceCents);
-  const deposit = cents(p.depositDueCents ?? p.deposit_amount_cents ?? p.deposit_cents ?? p.depositDue ?? p.depositCents);
-  const paid = cents(p.amountPaidCents ?? p.amount_paid_cents ?? p.paid_cents ?? p.paidCents);
-  const balance = cents(p.remainingBalanceCents ?? p.remaining_balance_cents ?? p.amountDueCents ?? p.amount_due_cents ?? p.balanceCents ?? p.balance_cents);
-  const rawLink = text(p.paymentLink || p.payment_link || p.stripe_link || p.stripeLink);
+  const total = cents(p.totalAmountCents ?? p.total_amount_cents ?? p.quoted_price_cents ?? p.total_price_cents ?? p.totalCents ?? p.total_cents ?? p.quotedPriceCents ?? p.totalPriceCents)
+    ?? displayMoneyCents(p.total);
+  const deposit = cents(p.depositDueCents ?? p.deposit_amount_cents ?? p.deposit_cents ?? p.depositDue ?? p.depositCents)
+    ?? displayMoneyCents(p.deposit);
+  const paid = cents(p.amountPaidCents ?? p.amount_paid_cents ?? p.paid_cents ?? p.paidCents)
+    ?? displayMoneyCents(p.amountPaid || p.amount_paid);
+  const balance = cents(p.remainingBalanceCents ?? p.remaining_balance_cents ?? p.amountDueCents ?? p.amount_due_cents ?? p.balanceCents ?? p.balance_cents)
+    ?? displayMoneyCents(p.remaining);
+  const rawLink = text(p.paymentLink || p.payment_link || p.stripe_link || p.stripeLink || (p.paymentLinkReady === true ? p.cta?.href : ''));
   const paymentLink = safeUrl(rawLink);
   const unsafeLink = Boolean(rawLink && !paymentLink);
   const jobStatus = text(rootPayload.project?.status || rootPayload.job_status || rootPayload.status || p.job_status || p.status).toLowerCase();
@@ -218,27 +269,38 @@ function deliveryView(payload = {}, project = {}) {
 }
 
 export function buildClientPortalViewV2(payload = {}, options = {}) {
-  const client = payload.client && typeof payload.client === 'object' ? payload.client : {};
+  const client = payload.client && typeof payload.client === 'object'
+    ? payload.client
+    : payload.profile && typeof payload.profile === 'object'
+      ? payload.profile
+      : {};
   const project = payload.project && typeof payload.project === 'object' ? payload.project : {};
-  const clientNameResolved = text(client.name || client.clientName || client.client_name || client.brandBusiness || client.brand_business || client.contact_name || payload.client_name || payload.clientName || payload.contact_name || (payload.email ? payload.email.split('@')[0] : ''));
-  const projectTitleResolved = text(project.title || project.projectTitle || project.project_title || project.service || project.service_type || project.name || payload.project_title || payload.projectTitle);
-  const jobTypeResolved = text(project.projectType || project.project_type || project.jobType || project.job_type || project.service || project.service_type);
+  const clientBusinessName = text(client.brandBusiness || client.brand_business || client.businessName || client.business_name);
+  const clientNameResolved = text(client.name || client.clientName || client.client_name || clientBusinessName || client.contact_name || payload.client_name || payload.clientName || payload.contact_name || (payload.email ? payload.email.split('@')[0] : ''));
+  const projectTitleResolved = text(project.title || project.projectTitle || project.project_title || project.service || project.serviceType || project.service_type || project.name || payload.project_title || payload.projectTitle);
+  const jobTypeResolved = text(project.projectType || project.project_type || project.jobType || project.job_type || project.service || project.serviceType || project.service_type || project.packageType || project.package_type);
+  const projectDeliverables = Array.isArray(project.deliverables)
+    ? project.deliverables
+    : Array.isArray(payload.deliverables?.items)
+      ? payload.deliverables.items.map((item) => typeof item === 'string' ? { name: item } : item)
+      : [];
 
   const identity = Object.freeze({
-    businessName: 'OnlyTruePerspective LLC',
+    businessName: clientBusinessName || 'OnlyTruePerspective LLC',
+    clientBusinessName,
     clientName: clientNameResolved || 'Valued Client',
     projectTitle: projectTitleResolved || 'OTP Project',
     jobType: jobTypeResolved || 'Custom Project'
   });
-  const documents = Object.freeze(safeDocuments(payload.documents, payload));
+  const documents = Object.freeze(safeDocuments(payload.documents, payload, options.portalToken));
   const payment = paymentView(payload.payment, identity, options, payload);
-  const delivery = deliveryView(payload.delivery, project);
+  const delivery = deliveryView(payload.delivery || payload.deliverables, { ...project, deliverables: projectDeliverables });
   const phase = currentPhase(project.status);
   const manualReviewRequired = payment.manualReviewRequired;
   const overview = Object.freeze({
     projectTitle: identity.projectTitle,
     jobType: identity.jobType,
-    service: text(project.service) || identity.jobType || 'OTP Custom Service',
+    service: text(project.service || project.serviceType || project.service_type) || identity.jobType || 'OTP Custom Service',
     status: text(project.status) || 'Pending Review',
     currentPhase: phase,
     summary: text(project.clientFacingSummary || project.client_facing_summary || project.description) || 'Project details are being reviewed by OTP.',

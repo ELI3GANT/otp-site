@@ -24,8 +24,8 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <script src="/theme-chrono.js?v=20261109-visual-intake-v1"></script>
-    <link rel="stylesheet" href="/public-system.css?v=20261109-visual-intake-v1" />
-    <link rel="stylesheet" href="/bookings.css?v=20261111-booking-conversion-v1" />
+    <link rel="stylesheet" href="/public-system.css?v=20261112-client-navigation-v1" />
+    <link rel="stylesheet" href="/bookings.css?v=20261112-budget-fit-preview-v2" />
   <script src="/public-motion.js?v=20261109-visual-intake-v1" defer></script></head>
   <body class="public-page booking-site">
     <a class="skip-link" href="#quick-inquiry">Skip to quote inquiry</a>
@@ -39,13 +39,14 @@
           </span>
           <span>
             <strong>OTP Bookings</strong>
-            <small>Site audit · project inquiry</small>
+            <small>Project quote · scope guidance</small>
           </span>
         </a>
         <nav class="top-actions" aria-label="Booking navigation">
           <a href="/">OTP Home</a>
           <a href="/archive">Archive</a>
-          <a href="/website-design">Services</a>
+          <a href="/studio#digital">Services</a>
+          <a href="/portal">Client Portal</a>
           <button class="booking-theme-toggle" type="button" data-booking-theme-toggle aria-label="Switch to day mode">Day mode</button>
           <a href="#quick-inquiry">Get a Quote</a>
         </nav>
@@ -128,6 +129,31 @@
             <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5"/></svg>No payment collected</span>
             <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7.5"/></svg>Not a confirmed booking</span>
           </div>
+          <aside class="quick-budget-preview" aria-labelledby="quick-fit-title" data-quick-fit-preview>
+            <div class="quick-fit-heading">
+              <span class="quick-fit-icon" id="quick-fit-icon" aria-hidden="true"></span>
+              <div class="quick-fit-heading-copy">
+                <p class="quick-fit-eyebrow">Budget to scope</p>
+                <h3 id="quick-fit-title">Choose a range to see the fit.</h3>
+              </div>
+              <span class="quick-fit-range" id="quick-fit-range">Budget optional</span>
+            </div>
+            <p class="quick-fit-summary" id="quick-fit-summary" aria-live="polite" aria-atomic="true">Share a range in the form and see the kind of scope and package it may support.</p>
+            <div class="quick-fit-package">
+              <span>Package fit</span>
+              <strong id="quick-fit-package">OTP recommendation</strong>
+              <small id="quick-fit-package-detail">No package is needed to start.</small>
+            </div>
+            <div class="quick-fit-deliverables">
+              <p id="quick-fit-examples-label">What this could cover</p>
+              <ul id="quick-fit-examples" aria-labelledby="quick-fit-examples-label">
+                <li>One focused deliverable</li>
+                <li>Connected creative assets</li>
+                <li>A larger digital system</li>
+              </ul>
+            </div>
+            <p class="quick-fit-footnote">Planning guide only. OTP confirms the deliverables and final quote after reviewing your idea.</p>
+          </aside>
           <button class="quick-detailed-link" type="button" data-open-detailed>Have the details ready? Send a full brief <span aria-hidden="true">↗</span></button>
         </div>
 
@@ -166,6 +192,7 @@
               Budget range <small>Optional</small>
               <select id="quick-budget"></select>
             </label>
+            <p id="quick-budget-fit" class="budget-fit-note quick-budget-fit" aria-live="polite">Share a range if you know it. It helps OTP match the idea to a realistic next step.</p>
           </div>
           <label class="checkbox-label quick-consent-label" for="quick-consent">
             <input id="quick-consent" type="checkbox" required />
@@ -388,11 +415,18 @@
           </section>
 
           <section class="form-step" data-step="3" aria-label="Budget and Timeline">
+            <div class="budget-guide-intro">
+              <p class="public-label">Budget guide</p>
+              <h3>See what each range can support.</h3>
+              <p>The range is a planning guide, not a quote or payment. Your idea, deliverables, and timeline help OTP recommend the right lane.</p>
+            </div>
+            <div class="budget-choice-field">
+              <label id="budget-range-label" for="booking-budget">Budget Range <small>Optional</small></label>
+              <select id="booking-budget" name="budget_range" aria-hidden="true" tabindex="-1" hidden></select>
+              <div id="booking-budget-options" class="budget-range-grid" role="group" aria-labelledby="budget-range-label"></div>
+              <p id="budget-fit-note" class="budget-fit-note" aria-live="polite">Choose a range to see the kind of scope it usually supports.</p>
+            </div>
             <div class="form-grid">
-              <label for="booking-budget">
-                Budget Range
-                <select id="booking-budget" name="budget_range"></select>
-              </label>
               <label for="booking-deadline">
                 Ideal Deadline
                 <input id="booking-deadline" name="ideal_deadline" type="date" />
@@ -484,6 +518,6 @@
 
     <script src="/otp-analytics-engine.js?v=20261111-booking-funnel-v1" defer></script>
     <script src="/otp-attribution.js?v=16.9.1" defer></script>
-    <script src="/bookings.js?v=20261111-booking-conversion-v1" defer></script>
+    <script src="/bookings.js?v=20261112-budget-fit-preview-v2" defer></script>
   </body>
 </html>

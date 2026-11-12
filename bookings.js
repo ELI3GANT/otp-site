@@ -258,6 +258,7 @@ const state = {
   quickStarted: false,
   detailedStarted: false,
   selectedPackage: '',
+  quickFitKey: '',
   bookingToken: makeBookingToken(),
   sourceTracking: {}
 };
@@ -304,6 +305,15 @@ const els = {
   quickDescription: $('quick-description'),
   quickLink: $('quick-link'),
   quickBudget: $('quick-budget'),
+  quickBudgetFit: $('quick-budget-fit'),
+  quickFitPreview: document.querySelector('[data-quick-fit-preview]'),
+  quickFitIcon: $('quick-fit-icon'),
+  quickFitTitle: $('quick-fit-title'),
+  quickFitRange: $('quick-fit-range'),
+  quickFitSummary: $('quick-fit-summary'),
+  quickFitPackage: $('quick-fit-package'),
+  quickFitPackageDetail: $('quick-fit-package-detail'),
+  quickFitExamples: $('quick-fit-examples'),
   quickConsent: $('quick-consent'),
   quickHoneypot: $('quick-otp-company-website'),
   quickSubmit: $('submit-quick-inquiry'),
@@ -324,6 +334,8 @@ const els = {
   projectType: $('booking-project-type'),
   reference: $('booking-reference'),
   budget: $('booking-budget'),
+  budgetOptions: $('booking-budget-options'),
+  budgetFit: $('budget-fit-note'),
   deadline: $('booking-deadline'),
   urgency: $('booking-urgency'),
   deposit: $('booking-deposit'),
@@ -482,6 +494,270 @@ function optionList(select, values, placeholder) {
 function fillQuickSelects() {
   optionList(els.quickService, QUICK_SERVICE_OPTIONS, 'Choose a service');
   optionList(els.quickBudget, state.config.budgetRanges || fallbackConfig.budgetRanges, 'Select if known');
+}
+
+function budgetGuideFor(range) {
+  const value = String(range || '').toLowerCase().replace(/[,$\s]/g, '');
+  if (!value) return {
+    lane: 'Choose a range to preview the fit',
+    detail: 'Share a range in the form and see the kind of scope and package it may support.',
+    packageName: 'OTP recommendation',
+    packageDetail: 'No package is needed to start.',
+    level: 'flexible',
+    examples: ['One focused deliverable', 'Connected creative assets', 'A larger digital system']
+  };
+  if (value.includes('under500') || value.includes('below500')) {
+    return {
+      lane: 'Fast Lane or focused scope',
+      detail: 'Under $500 routes toward a Fast Lane or smaller focused request. The Signal starts at $500.',
+      packageName: 'Fast Lane / focused request',
+      packageDetail: 'The Signal starts at $500.',
+      level: 'focused',
+      examples: ['One short edit or promo', 'A simple design or flyer', 'One focused page or booking-flow fix']
+    };
+  }
+  if (value.includes('500to1200')) {
+    return {
+      lane: 'The Signal · one clear deliverable',
+      detail: 'A focused edit, design piece, or page fix may fit. OTP confirms the final scope and quote.',
+      packageName: 'The Signal',
+      packageDetail: 'Starting at $500 · one focused deliverable.',
+      level: 'focused',
+      examples: ['One polished edit or promo', 'A logo refresh or single design', 'A landing-page section or site cleanup']
+    };
+  }
+  if (value.includes('1200to2000')) {
+    return {
+      lane: 'The Engine · connected assets',
+      detail: 'A few related deliverables or a more involved build may fit this range.',
+      packageName: 'The Engine',
+      packageDetail: 'Connected assets · final scope confirmed after review.',
+      level: 'connected',
+      examples: ['A brand kit with launch pieces', 'A small site or landing-page build', 'A connected video and content set']
+    };
+  }
+  if (value.includes('2000to3500')) {
+    return {
+      lane: 'The Engine · broader scope',
+      detail: 'A wider project with connected pieces may fit. OTP confirms scope before quoting.',
+      packageName: 'The Engine · broader scope',
+      packageDetail: 'Several connected deliverables · quote confirmed after review.',
+      level: 'broader',
+      examples: ['A multi-page web experience', 'A broader brand and content rollout', 'Several steps in a client journey']
+    };
+  }
+  if (value.includes('3500')) {
+    return {
+      lane: 'The System · connected build',
+      detail: 'Larger websites, client workflows, portals, or automation may need a connected system.',
+      packageName: 'The System',
+      packageDetail: 'Starting at $3,500 · scope confirmed after review.',
+      level: 'system',
+      examples: ['A complete website and brand system', 'Booking, portal, or automation workflows', 'Connected client documents and processes']
+    };
+  }
+  if (value.includes('notsure')) {
+    return {
+      lane: 'OTP will recommend a fit',
+      detail: 'Share the goal and what needs to be delivered. OTP will suggest a range after reviewing the scope.',
+      packageName: 'OTP recommendation',
+      packageDetail: 'Choose a package later, after scope review.',
+      level: 'flexible',
+      examples: ['A single priority deliverable', 'A few pieces that work together', 'A larger site or system']
+    };
+  }
+  return {
+    lane: 'Planning guide',
+    detail: 'Your idea and deliverables determine the right lane. OTP confirms scope and price after review.',
+    packageName: 'OTP recommendation',
+    packageDetail: 'Scope and price confirmed after review.',
+    level: 'flexible',
+    examples: ['A focused creative deliverable', 'Connected assets for a launch', 'A custom website or workflow']
+  };
+}
+
+function budgetExamplesFor(guide, serviceName = '') {
+  const service = String(serviceName || '').toLowerCase();
+  const examples = {
+    video: {
+      focused: ['One short edit or event promo', 'A focused social cut', 'Polish supplied footage'],
+      connected: ['Campaign edit with social cutdowns', 'Several related video assets', 'A connected launch rollout'],
+      broader: ['A multi-format content rollout', 'Campaign edits with launch visuals', 'Creative for several channels'],
+      system: ['A repeatable content system', 'Launch creative across channels', 'A production flow built around the brand'],
+      flexible: ['One priority edit', 'A connected campaign', 'A broader content system']
+    },
+    website: {
+      focused: ['One page or form fix', 'A booking-step cleanup', 'Focused website polish'],
+      connected: ['A small website or landing page', 'Connected pages and lead capture', 'A cleaner client journey'],
+      broader: ['A multi-page web experience', 'A wider booking or client flow', 'Several connected site sections'],
+      system: ['A full website and client journey', 'Booking, portal, or automation flow', 'Connected client tools and documents'],
+      flexible: ['A focused page update', 'A connected website flow', 'A larger client system']
+    },
+    brand: {
+      focused: ['One flyer or launch graphic', 'A logo or identity refresh', 'A single campaign asset'],
+      connected: ['A brand kit with launch assets', 'Related social and web visuals', 'A campaign-ready identity set'],
+      broader: ['A wider brand rollout', 'Launch visuals across channels', 'Connected brand and web assets'],
+      system: ['A full identity and digital system', 'Brand, website, and launch materials', 'A repeatable visual toolkit'],
+      flexible: ['One design piece', 'A connected brand kit', 'A wider launch system']
+    },
+    system: {
+      focused: ['A small workflow review', 'One focused process fix', 'A clearly scoped next step'],
+      connected: ['A connected workflow improvement', 'A focused automation or integration', 'A small custom tool'],
+      broader: ['Connected automation and client steps', 'A wider process or software build', 'Several linked business tools'],
+      system: ['A custom client portal or system', 'Connected automation and documents', 'A full business workflow'],
+      flexible: ['One process improvement', 'A connected workflow', 'A custom business system']
+    }
+  };
+  const key = /video|content|reel|promo/.test(service) ? 'video'
+    : /website|digital|page|booking|portal/.test(service) ? 'website'
+      : /brand|design|logo|launch/.test(service) ? 'brand'
+        : /automation|system|software|custom/.test(service) ? 'system' : '';
+  return key ? (examples[key][guide.level] || guide.examples) : guide.examples;
+}
+
+function renderQuickBudgetPreview(range = '') {
+  if (!els.quickFitPreview) return;
+  const guide = budgetGuideFor(range);
+  const serviceName = (els.quickService && els.quickService.value) || (els.service && els.service.value) || '';
+  const selectedPackage = String((els.package && els.package.value) || state.selectedPackage || '').trim();
+  const selectedPackageLower = selectedPackage.toLowerCase();
+  const selectedPackageRecord = selectedPackage ? packageByName(selectedPackage) : null;
+  const isOracleChoice = selectedPackageLower.includes('not sure');
+  const packageName = isOracleChoice
+    ? 'OTP recommendation'
+    : selectedPackageRecord
+      ? packageLabel(selectedPackageRecord)
+      : guide.packageName;
+  let packageDetail = selectedPackageRecord
+    ? packagePrice(selectedPackageRecord)
+    : guide.packageDetail;
+  const normalizedRange = String(range || '').toLowerCase().replace(/[,$\s]/g, '');
+  if (selectedPackageRecord) {
+    packageDetail = 'Selected package · final scope confirmed after review.';
+    if ((normalizedRange.includes('under500') || normalizedRange.includes('below500')) && selectedPackageLower.includes('signal')) {
+      packageDetail = 'The Signal starts at $500. OTP may suggest a Fast Lane or smaller focused scope.';
+    } else if ((normalizedRange.includes('under500') || normalizedRange.includes('below500') || normalizedRange.includes('500to1200')) && selectedPackageLower.includes('system')) {
+      packageDetail = 'This range may need a smaller starting scope. OTP will confirm a fit after review.';
+    } else if ((normalizedRange.includes('under500') || normalizedRange.includes('below500')) && selectedPackageLower.includes('engine')) {
+      packageDetail = 'This range may need a smaller starting scope. OTP will confirm a fit after review.';
+    }
+  } else if (isOracleChoice) {
+    packageDetail = 'You can leave package matching to OTP.';
+  }
+
+  const key = [range, serviceName, selectedPackage].join('|');
+  const shouldAnimate = Boolean(state.quickFitKey && state.quickFitKey !== key);
+  state.quickFitKey = key;
+  if (els.quickFitTitle) els.quickFitTitle.textContent = guide.lane;
+  if (els.quickFitRange) els.quickFitRange.textContent = range || 'Budget optional';
+  if (els.quickFitSummary) els.quickFitSummary.textContent = guide.detail;
+  if (els.quickFitPackage) els.quickFitPackage.textContent = packageName;
+  if (els.quickFitPackageDetail) els.quickFitPackageDetail.textContent = packageDetail;
+  if (els.quickFitExamples) {
+    const checkIcon = document.querySelector('.quick-inquiry-points svg');
+    els.quickFitExamples.replaceChildren();
+    budgetExamplesFor(guide, serviceName).forEach((label) => {
+      const item = document.createElement('li');
+      if (checkIcon) {
+        const check = checkIcon.cloneNode(true);
+        check.setAttribute('width', '17');
+        check.setAttribute('height', '17');
+        check.setAttribute('aria-hidden', 'true');
+        check.setAttribute('focusable', 'false');
+        item.append(check);
+      }
+      const copy = document.createElement('span');
+      copy.textContent = label;
+      item.append(copy);
+      els.quickFitExamples.append(item);
+    });
+  }
+  if (els.quickFitIcon && els.budgetOptions) {
+    const options = [...els.budgetOptions.querySelectorAll('[data-budget-option]')];
+    const selected = options.find((button) => button.dataset.budgetValue === range) || options[options.length - 1];
+    const icon = selected && selected.querySelector('.budget-range-icon svg');
+    els.quickFitIcon.replaceChildren();
+    if (icon) {
+      const previewIcon = icon.cloneNode(true);
+      previewIcon.setAttribute('width', '24');
+      previewIcon.setAttribute('height', '24');
+      previewIcon.setAttribute('aria-hidden', 'true');
+      previewIcon.setAttribute('focusable', 'false');
+      els.quickFitIcon.append(previewIcon);
+    }
+  }
+  if (shouldAnimate && typeof els.quickFitPreview.animate === 'function' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    els.quickFitPreview.getAnimations().forEach((animation) => animation.cancel());
+    els.quickFitPreview.animate([
+      { opacity: 0.76, transform: 'translate3d(0, 7px, 0)' },
+      { opacity: 1, transform: 'translate3d(0, 0, 0)' }
+    ], { duration: 260, easing: 'cubic-bezier(.16, 1, .3, 1)' });
+  }
+}
+
+function updateBudgetGuidance(range = '') {
+  const guide = budgetGuideFor(range);
+  if (els.quickBudgetFit) els.quickBudgetFit.textContent = range ? `${guide.lane}. ${guide.detail}` : guide.detail;
+  if (els.budgetFit) els.budgetFit.textContent = range ? `${guide.lane}. ${guide.detail}` : 'Choose a range to see the kind of scope it usually supports.';
+  if (els.budgetOptions) {
+    els.budgetOptions.querySelectorAll('[data-budget-option]').forEach((button) => {
+      const selected = button.dataset.budgetValue === range;
+      button.setAttribute('aria-pressed', String(selected));
+      button.classList.toggle('is-selected', selected);
+    });
+  }
+  renderQuickBudgetPreview(range);
+}
+
+function renderBudgetOptions() {
+  if (!els.budgetOptions) return;
+  const svgNamespace = 'http://www.w3.org/2000/svg';
+  const icons = [
+    [{ tag: 'path', attrs: { d: 'm18 2-12 17h9l-1 11 12-17h-9l1-11Z' } }],
+    [{ tag: 'circle', attrs: { cx: '16', cy: '16', r: '12' } }, { tag: 'circle', attrs: { cx: '16', cy: '16', r: '6' } }, { tag: 'path', attrs: { d: 'M16 2v4m0 20v4M2 16h4m20 0h4' } }],
+    [{ tag: 'path', attrs: { d: 'm4 10 12-6 12 6-12 6-12-6Zm0 6 12 6 12-6M4 22l12 6 12-6' } }],
+    [{ tag: 'rect', attrs: { x: '4', y: '4', width: '9', height: '9' } }, { tag: 'rect', attrs: { x: '19', y: '4', width: '9', height: '9' } }, { tag: 'rect', attrs: { x: '4', y: '19', width: '9', height: '9' } }, { tag: 'rect', attrs: { x: '19', y: '19', width: '9', height: '9' } }, { tag: 'path', attrs: { d: 'M13 8.5h6M8.5 13v6m15-6v6M13 23.5h6' } }],
+    [{ tag: 'path', attrs: { d: 'M4 28V8l12-5 12 5v20M10 28V16h12v12M10 21h12' } }],
+    [{ tag: 'circle', attrs: { cx: '16', cy: '16', r: '12' } }, { tag: 'path', attrs: { d: 'M12.5 12a3.6 3.6 0 1 1 6.1 2.6c-1.7 1.5-2.6 2.1-2.6 4.4M16 23.5h.1' } }]
+  ];
+  const ranges = state.config.budgetRanges || fallbackConfig.budgetRanges;
+  els.budgetOptions.replaceChildren();
+  ranges.forEach((range, index) => {
+    const guide = budgetGuideFor(range);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'budget-range-card';
+    button.dataset.budgetOption = '';
+    button.dataset.budgetValue = String(range);
+    button.setAttribute('aria-pressed', 'false');
+    const icon = document.createElement('span');
+    icon.className = 'budget-range-icon';
+    const svg = document.createElementNS(svgNamespace, 'svg');
+    svg.setAttribute('viewBox', '0 0 32 32');
+    svg.setAttribute('aria-hidden', 'true');
+    (icons[index] || icons[icons.length - 1]).forEach((shape) => {
+      const element = document.createElementNS(svgNamespace, shape.tag);
+      Object.entries(shape.attrs).forEach(([name, value]) => element.setAttribute(name, value));
+      svg.append(element);
+    });
+    icon.append(svg);
+    const amount = document.createElement('strong');
+    amount.className = 'budget-range-amount';
+    amount.textContent = String(range);
+    const lane = document.createElement('span');
+    lane.className = 'budget-range-lane';
+    lane.textContent = guide.lane;
+    const detail = document.createElement('span');
+    detail.className = 'budget-range-detail';
+    detail.textContent = guide.detail;
+    button.append(icon, amount, lane, detail);
+    button.addEventListener('click', () => {
+      els.budget.value = String(range);
+      els.budget.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    els.budgetOptions.append(button);
+  });
+  updateBudgetGuidance(els.quickBudget.value || els.budget.value);
 }
 
 function packageLabel(pkg = {}) {
@@ -653,6 +929,7 @@ function updateSummaries() {
   els.miniService.textContent = text(serviceName, 'Not selected');
   els.miniBudget.textContent = text((els.quickBudget && els.quickBudget.value) || (els.budget && els.budget.value), 'Not selected');
   els.miniTimeline.textContent = formatDeadline(els.deadline.value || els.urgency.value);
+  updateBudgetGuidance((els.quickBudget && els.quickBudget.value) || (els.budget && els.budget.value) || '');
   els.formTitle.textContent = selected.formTitle;
   els.formPackageNote.textContent = selected.message;
   const pillName = els.activePackagePill.querySelector('strong');
@@ -1518,6 +1795,7 @@ async function init() {
   }
   fillSelects();
   fillQuickSelects();
+  renderBudgetOptions();
   wireInquiryFieldSync();
   wireQuickSelectors();
   renderPackages();

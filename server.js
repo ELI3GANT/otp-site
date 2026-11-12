@@ -3119,6 +3119,19 @@ const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Booking received. OTP Oracle rec
 const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not submit the booking yet. Please check the required fields and try again.';
 const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit']);
 const CLIENT_PORTAL_TOKEN_RE = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/;
+const CLIENT_PORTAL_DOCUMENT_TYPES = new Set([
+    'proposal',
+    'agreement',
+    'invoice',
+    'receipt',
+    'paid-receipt',
+    'nda',
+    'project-scope',
+    'service-summary',
+    'delivery-summary',
+    'change-order',
+    'payment-reminder'
+]);
 const SAFE_E2E_PORTAL_FIXTURE = Object.freeze({
     clientName: 'OTP Test Client',
     email: 'test@onlytrueperspective.tech',
@@ -3627,9 +3640,9 @@ function buildSafeE2EClientPortalData(token = '') {
             ]
         },
         documents: [
-            { type: 'Proposal', label: 'Proposal', status: 'ready', message: 'Approved Scope & Proposal', preview: '# Proposal: Brand Launch & Digital Systems Build\nDeposit Paid: $500.00' },
-            { type: 'Invoice', label: 'Invoice', status: 'ready', message: 'Invoice Preview Available', preview: '# Invoice #OTP-PROP-001\nTotal: $1,500.00 | Deposit Paid: $500.00 | Balance: $1,000.00' },
-            { type: 'Paid Receipt', label: 'Receipt', status: 'ready', message: 'Receipt Available', preview: '# Deposit Payment Receipt\nAmount Paid: $500.00 via Stripe' }
+            { type: 'proposal', label: 'Proposal', ready: true, status: 'ready', message: 'Approved Scope & Proposal', viewUrl: '/api/client/portal/test-safe-portal-token/documents/proposal/view', downloadUrl: '/api/client/portal/test-safe-portal-token/documents/proposal/pdf' },
+            { type: 'invoice', label: 'Invoice', ready: true, status: 'ready', message: 'Invoice Preview Available', viewUrl: '/api/client/portal/test-safe-portal-token/documents/invoice/view', downloadUrl: '/api/client/portal/test-safe-portal-token/documents/invoice/pdf' },
+            { type: 'receipt', label: 'Receipt', ready: true, status: 'ready', message: 'Receipt Available', viewUrl: '/api/client/portal/test-safe-portal-token/documents/receipt/view', downloadUrl: '/api/client/portal/test-safe-portal-token/documents/receipt/pdf' }
         ]
     };
 }
@@ -4466,6 +4479,121 @@ app.get('/api/client-portal/:token', async (req, res) => {
             errorCode: 'portal_load_failed',
             message: 'Client Portal could not load right now.'
         });
+    }
+});
+
+function portalDocumentError(req, res, statusCode, message = 'This document is not available right now.') {
+    const browserNavigation = req.path.endsWith('/view') || req.accepts('html');
+    if (browserNavigation) {
+        privatePortalHtml(res);
+        res.set('Content-Type', 'text/html; charset=utf-8');
+        res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+        res.set('X-Content-Type-Options', 'nosniff');
+        const title = statusCode === 403 ? 'Document in preparation' : 'Document unavailable';
+        const detail = statusCode === 403
+            ? 'OTP is still preparing this document. Please check back soon or contact your project team.'
+            : 'This document could not be opened right now. Please try again shortly or contact your project team.';
+        return res.status(statusCode).send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} · OnlyTruePerspective</title><style> :root{color-scheme:dark;--gold:#d8be7a;--text:#f7f8f3;--muted:#b7c3ba;--line:#303a34}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 78% 4%,rgba(216,190,122,.13),transparent 28rem),linear-gradient(145deg,#151c18,#050706 58%);color:var(--text);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.card{width:min(100%,560px);padding:clamp(24px,6vw,44px);border:1px solid var(--line);border-radius:18px;background:rgba(16,21,18,.92);box-shadow:0 24px 70px rgba(0,0,0,.35)}.eyebrow{margin:0;color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}h1{margin:12px 0;font-size:clamp(26px,6vw,36px);line-height:1.12}p{margin:0;color:var(--muted)}a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:24px;padding:10px 18px;border:1px solid var(--gold);border-radius:9px;background:var(--gold);color:#101512;font-weight:800;text-decoration:none}</style></head><body><main class="card"><p class="eyebrow">OnlyTruePerspective · Client documents</p><h1>${title}</h1><p>${detail}</p><a href="/portal">Return to client portal</a></main></body></html>`);
+    }
+    privatePortalApi(res);
+    return res.status(statusCode).json({
+        ok: false,
+        errorCode: statusCode === 403 ? 'document_not_ready' : 'portal_document_unavailable',
+        message
+    });
+}
+
+function portalDocumentTitle(type) {
+    return type.split('-').map((part) => `${part[0].toUpperCase()}${part.slice(1)}`).join(' ');
+}
+
+async function safeE2EPortalDocument(res, type, format, { inlinePdf = false } = {}) {
+    const title = portalDocumentTitle(type);
+    privatePortalHtml(res);
+    if (format === 'view') {
+        res.set('Content-Type', 'text/html; charset=utf-8');
+        res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+        res.set('X-Content-Type-Options', 'nosniff');
+        return res.status(200).send(`<!doctype html><html lang="en"><meta charset="utf-8"><title>${title} · OTP test preview</title><body style="font:16px/1.6 system-ui,sans-serif;max-width:720px;margin:3rem auto;padding:0 1rem;color:#181818"><p style="color:#8a6b27;letter-spacing:.12em;text-transform:uppercase">Safe test document</p><h1>${title}</h1><p>This preview is a synthetic OTP portal fixture. It does not contain or change real client information.</p><hr><p>OnlyTruePerspective LLC · Test fixture</p></body></html>`);
+    }
+
+    const document = await PDFDocument.create();
+    const page = document.addPage([612, 792]);
+    const font = await document.embedFont(StandardFonts.Helvetica);
+    const bold = await document.embedFont(StandardFonts.HelveticaBold);
+    page.drawText('SAFE TEST DOCUMENT', { x: 54, y: 720, size: 10, font: bold, color: rgb(0.53, 0.39, 0.12) });
+    page.drawText(title, { x: 54, y: 674, size: 28, font: bold, color: rgb(0.06, 0.07, 0.09) });
+    page.drawText('Synthetic OTP portal fixture. Not a real client document.', { x: 54, y: 632, size: 12, font, color: rgb(0.25, 0.27, 0.3) });
+    page.drawText('OnlyTruePerspective LLC · Test fixture', { x: 54, y: 90, size: 10, font, color: rgb(0.35, 0.38, 0.44) });
+    const pdf = Buffer.from(await document.save());
+    res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `${inlinePdf ? 'inline' : 'attachment'}; filename="otp-test-${type}.pdf"`,
+        'Content-Length': String(pdf.length),
+        'X-Content-Type-Options': 'nosniff'
+    });
+    return res.status(200).send(pdf);
+}
+
+app.get('/api/client/portal/:token/documents/:type/:format', async (req, res) => {
+    const token = normalizeClientPortalToken(req.params.token);
+    const type = String(req.params.type || '').trim().toLowerCase().replace(/_/g, '-');
+    const format = req.params.format === 'pdf' ? 'pdf' : req.params.format === 'view' ? 'view' : '';
+    const inlinePdf = format === 'pdf' && req.query.inline === '1';
+    if (!token || !format || !CLIENT_PORTAL_DOCUMENT_TYPES.has(type)) {
+        return portalDocumentError(req, res, 404);
+    }
+
+    if (e2eTestModeEnabled() && token === SAFE_E2E_PORTAL_FIXTURE.portalToken) {
+        try {
+            return await safeE2EPortalDocument(res, type, format, { inlinePdf });
+        } catch (_) {
+            return portalDocumentError(req, res, 503);
+        }
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), CLIENT_PORTAL_PROXY_TIMEOUT_MS);
+    try {
+        const upstreamUrl = new URL(
+            `/api/client/portal/${encodeURIComponent(token)}/documents/${encodeURIComponent(type)}/${format}`,
+            OTP_CLIENT_PORTAL_UPSTREAM
+        );
+        const upstream = await fetch(upstreamUrl.href, {
+            method: 'GET',
+            headers: { Accept: format === 'pdf' ? 'application/pdf' : 'text/html' },
+            redirect: 'manual',
+            signal: controller.signal
+        });
+
+        if (upstream.status === 403) return portalDocumentError(req, res, 403, 'This document is not available yet. Please contact OTP.');
+        if ([404, 410].includes(upstream.status)) return portalDocumentError(req, res, upstream.status, 'This portal document is not available. Check your private link or contact OTP.');
+        if (!upstream.ok || upstream.status >= 300) return portalDocumentError(req, res, 503);
+
+        const contentType = String(upstream.headers.get('content-type') || '').toLowerCase();
+        const expectsPdf = format === 'pdf';
+        if (expectsPdf ? !contentType.includes('application/pdf') : !contentType.includes('text/html')) {
+            return portalDocumentError(req, res, 503);
+        }
+
+        const bytes = Buffer.from(await upstream.arrayBuffer());
+        const maxBytes = expectsPdf ? 25 * 1024 * 1024 : 3 * 1024 * 1024;
+        if (!bytes.length || bytes.length > maxBytes) return portalDocumentError(req, res, 503);
+
+        privatePortalHtml(res);
+        res.set('X-Content-Type-Options', 'nosniff');
+        if (expectsPdf) {
+            res.set('Content-Type', 'application/pdf');
+            res.set('Content-Disposition', `${inlinePdf ? 'inline' : 'attachment'}; filename="otp-${type}.pdf"`);
+        } else {
+            res.set('Content-Type', 'text/html; charset=utf-8');
+            res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+        }
+        return res.status(200).send(bytes);
+    } catch (_) {
+        return portalDocumentError(req, res, 503);
+    } finally {
+        clearTimeout(timer);
     }
 });
 

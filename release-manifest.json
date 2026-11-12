@@ -1,21 +1,60 @@
 {
-  "releaseName": "booking-conversion-postdeploy-sweep-fix-2026-11-11",
+  "releaseName": "otp-client-workspace-v2-documents-ui-2026-11-12",
   "includedFiles": [
-    "bookings.html",
+    ".github/workflows/production-release.yml",
+    "DESIGN.md",
+    "archive.css",
+    "archive.html",
+    "archive.js",
     "bookings.css",
+    "bookings.html",
     "bookings.js",
+    "client-portal-utils.js",
+    "client-portal-v2.js",
+    "client-portal-v2-renderer.js",
+    "client.html",
+    "client.css",
+    "client.js",
+    "consultant-audit.html",
+    "floorops.html",
+    "index.html",
+    "insight.html",
+    "insights.html",
+    "portal-entry.css",
+    "portal-sections.js",
+    "portal.html",
+    "portal.js",
+    "privacy.html",
+    "protocol.html",
+    "public-shell.js",
+    "public-system.css",
+    "release-manifest.json",
     "scripts/prod_full_sweep.js",
-    "scripts/prod_terminal_sweep.js",
-    "tests/bookings_contract.test.js",
+    "scripts/prod_sweep_v2_runner.js",
+    "server.js",
+    "songwars.html",
+    "studio.html",
+    "terms.html",
+    "tests/api_surface_security_contract.test.js",
+    "tests/archive_case_study_contract.test.js",
     "tests/booking_conversion_flow.test.js",
-    "tests/e2e/adversarial_qa.js",
-    "tests/master_runner.js",
+    "tests/bookings_contract.test.js",
+    "tests/client_portal_render.test.js",
+    "tests/homepage_visual_contract.test.js",
     "tests/portal_route_contract.test.js",
-    "release-manifest.json"
+    "weatheros-privacy.html",
+    "weatheros-support.html",
+    "weatheros.html",
+    "weatheros/index.html",
+    "weatheros/privacy.html",
+    "weatheros/support.html",
+    "website-design.html",
+    "workspace-v2.css"
   ],
-  "removedFiles": [],
   "excludedDirtyFiles": [
-    "Only the project inquiry form, bounded selected-work media frames, booking-flow contracts, and matching production sweep markers are included in this release."
+    "Only the scoped booking guidance update in DESIGN.md is included; unrelated OTP OS workspace changes remain out of scope.",
+    "Original checkout FLOIVATION media assets under assets/case-studies/floivation/ are untracked and are unrelated to this portal release.",
+    "OTP OS working tree changes are separate; no client records, app binary, or OTP OS deployment are included in this Site release."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -27,55 +66,75 @@
   ],
   "testsRun": [
     {
-      "command": "npm test",
-      "status": "passed; full master suite including Booking Conversion Flow"
-    },
-    {
-      "command": "npm run test:e2e",
-      "status": "passed; 51/51 local adversarial browser checks"
+      "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm test",
+      "status": "passed; final full master suite, 56 checks and 0 failures. PORT=1 isolated the unrelated local listener on port 3000; the database-backed contact journey is skipped without local database configuration."
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed; 4 pinned contracts"
+      "status": "passed; four pinned OTP contracts"
     },
     {
       "command": "npm run security:scan",
-      "status": "passed across 365 files"
+      "status": "passed; secret scan passed across 369 files after the final portal and sweep changes"
     },
     {
       "command": "npm run build:speed-insights",
-      "status": "passed"
+      "status": "passed; local Speed Insights bundle built successfully"
     },
     {
-      "command": "npm run master_test:ci",
-      "status": "passed against https://www.onlytrueperspective.tech"
+      "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm run master_test:ci",
+      "status": "passed against https://www.onlytrueperspective.tech; full master suite, 56 checks and 0 failures, validating the current production baseline before deployment."
     },
     {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed against the deployed intake page after updating the retired-heading marker; HTTP-only, with authenticated checks run by the guarded workflow"
+      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4493 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
+      "status": "passed against the local site with every public target active, including the versioned private portal shell/assets, profile utility, safe document preview, and inline/attachment PDF fixture checks."
     },
     {
-      "command": "node --check bookings.js && node --check server.js && node --check scripts/prod_full_sweep.js && node --check scripts/prod_terminal_sweep.js",
-      "status": "passed"
+      "command": "gh workflow run production-release.yml --ref codex/otp-client-workspace-release-20261111 -f confirm_clean_release=CLEAN_RELEASE",
+      "status": "previous guarded release 43165950182 completed successfully on base SHA e3fcbdf8beba533193eba727c048db693c3e2d14. This new portal documents change is being released in a separate guarded run after commit."
     },
     {
-      "command": "git diff --check",
-      "status": "passed"
+      "command": "node --check client.js && node --check client-portal-v2.js && node --check client-portal-v2-renderer.js && node --check portal-sections.js && node --check scripts/prod_full_sweep.js && git diff --check",
+      "status": "passed after the portal tabs, compact document actions, and cache-busting edits"
+    },
+    {
+      "command": "OTP_PRIMARY_CHECKOUT=/Users/eli/Documents/GitHub/otp-site npm run release:scope",
+      "status": "passed; the 9 dirty portal release files are included, with no sensitive or generated artifacts."
+    },
+    {
+      "command": "node tests/client_portal_render.test.js && node tests/portal_route_contract.test.js",
+      "status": "passed; blocked readiness stays safe, document preview/PDF links stay client-safe, Service Summary and Paid Receipt map to supported routes, and confirmed scope displays as complete."
+    },
+    {
+      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4493 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
+      "status": "passed against the local site; safe fixture PDF signature and inline preview/attachment download dispositions verified."
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "In-app browser visual QA of /start-project showed FLOIVATION, HYH, and WeatherOS images loaded into equal bounded media frames; no card was stretched by the portrait WeatherOS image. The full adversarial suite also passed booking-flow keyboard validation and responsive overflow checks at 320px, 390px, 768px, and 1440px."
+    "summary": "The signed-in production portal was checked read-only: it shows the real client-specific profile but still serves the older text-only tabs and document list. The local v2 preview displays compact icon-led sections and View/PDF actions; the local safe fixture verifies the preview route and PDF attachment/inline headers only, not client data. No client record was edited, portal invite copied or rotated, or document generated or sent."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "The guarded production workflow will run authenticated read-only checks with configured OTP admin credentials before deployment; local public-only sweep did not claim authenticated coverage."
+    "summary": "Guarded production run 43165950182 completed successfully on the current base commit, including its authenticated pre-deploy sweep. This release workflow will repeat the authenticated sweep for the portal document changes. New versioned portal assets and document routes are deferred only during pre-deploy checks and verified by the workflow's required post-deploy full sweep. No credential values or client records are included in this manifest."
   },
   "deploymentTarget": {
     "project": "otp-site",
+    "previewUrl": "http://127.0.0.1:4493",
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
+    ],
+    "verificationRoutes": [
+      "/",
+      "/start-project",
+      "/bookings",
+      "/archive",
+      "/portal",
+      "/client/:portalToken",
+      "/api/client-portal/:portalToken",
+      "/api/client/portal/:portalToken/documents/:type/view",
+      "/api/client/portal/:portalToken/documents/:type/pdf"
     ]
   }
 }

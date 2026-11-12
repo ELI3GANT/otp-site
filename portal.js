@@ -47,10 +47,25 @@
     if (status === 'invalid') {
       setMessage('That invite link could not be opened. Check the private link from OTP and try again.', 'error');
     } else if (status === 'missing') {
-      setMessage('Paste your private OTP Client Portal invite link or token to continue.', 'error');
+      setMessage('Paste your private OTP invite link or token to continue.');
     } else if (status === 'review') {
       setMessage('Your portal may still be pending OTP review. Use your latest private invite or book OTP to start.');
     }
+  }
+
+  function wireThemeToggle() {
+    const toggle = document.getElementById('portal-theme-toggle');
+    if (!toggle || !window.OTP?.setTheme) return;
+    function updateLabel() {
+      const isLight = document.documentElement.dataset.theme === 'light';
+      toggle.textContent = isLight ? 'Night' : 'Day';
+      toggle.setAttribute('aria-label', isLight ? 'Switch to night mode' : 'Switch to day mode');
+    }
+    toggle.addEventListener('click', () => {
+      window.OTP.setTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
+      updateLabel();
+    });
+    updateLabel();
   }
 
   if (form && input) {
@@ -66,5 +81,6 @@
     });
   }
 
+  wireThemeToggle();
   applyStatusMessage();
 })();

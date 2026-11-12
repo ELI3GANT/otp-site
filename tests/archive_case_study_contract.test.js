@@ -73,6 +73,14 @@ assert.ok(floorops, 'FloorOps appears in the Archive');
 assert.ok(floivation && floivation.status === 'Live', 'FLOIVATION is live client work with ongoing updates');
 assert.strictEqual(floivation.caseStudyUrl, '/projects/floivation', 'FLOIVATION archive card opens the public case study');
 assert.ok(archive.includes('data-project-id="floivation"') && archive.includes('href="/projects/floivation"'), 'static Archive includes a no-JavaScript FLOIVATION case-study card');
+const staticOrder = [...archive.matchAll(/<article class="archive-case-study-card[^>]*" data-project-id="([^"]+)"/g)].map((match) => match[1]);
+assert.deepStrictEqual(staticOrder, ['floivation', 'hyh-architecture-design', 'weatheros', 'floorops', 'otp-os', 'otp-fixline', 'protocol', 'song-wars'], 'static Archive starts with the newest FLOIVATION client work');
+assert.ok(archive.includes('class="archive-case-study-card is-featured" data-project-id="floivation"'), 'FLOIVATION leads the archive as the featured newest project');
+assert.ok(archive.includes('class="archive-project-newest">Newest</span>'), 'FLOIVATION is clearly marked newest');
+assert.ok(archiveClient.includes("const order = ['floivation', 'hyh-architecture-design'"), 'client renderer uses the same newest-first order');
+const archiveJsonLd = JSON.parse(archive.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+const archiveList = archiveJsonLd['@graph'].find((entry) => entry['@type'] === 'ItemList');
+assert.deepStrictEqual(archiveList.itemListElement.slice(0, 2).map((item) => item.name), ['FLOIVATION', 'HYH Architecture & Design'], 'structured project list follows the same newest-first order');
 assert.ok(archiveClient.includes("floivation: 'A digital home"), 'client-side Archive keeps the FLOIVATION description');
 assert.strictEqual(floorops.heroImage.src, '/images/warehouse/handheld-barcode-scanning.jpg', 'FloorOps uses a warehouse scanner photo rather than the parent-company logo');
 assert.strictEqual(floorops.heroFit, 'cover', 'FloorOps photograph fills the Archive thumbnail');
@@ -168,7 +176,7 @@ assert.ok(flooropsCard.querySelector('.archive-project-media img').src.endsWith(
 assert.ok(flooropsCard.querySelector('.archive-floorops-bigline')?.textContent.includes('CLEAR THE DOCK.'), 'runtime includes FloorOps branded preview headline');
 assert.strictEqual(flooropsCard.querySelectorAll('.archive-floorops-mini-row').length, 3, 'runtime shows three illustrative workflow steps');
 assert.strictEqual(floivationCard.querySelector('.archive-project-action-primary').textContent, 'Read Case Study ↗', 'FLOIVATION keeps its custom case-study action in the rendered Archive card');
-assert.ok(archive.includes('archive.css?v=20261109-day-night-v5') && archive.includes('archive.js?v=20261109-floivation-live-v1'), 'Archive retains styled FloorOps card and refreshes project links');
+assert.ok(archive.includes('archive.css?v=20261112-floivation-newest-v1') && archive.includes('archive.js?v=20261112-floivation-newest-v1'), 'Archive refreshes its newest-first project layout assets');
 
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-case-study-card').length, projects.length, 'runtime renders every project');
 assert.strictEqual(renderedDocument.querySelectorAll('.archive-project-action-primary').length, projects.length, 'runtime renders one primary action per project');

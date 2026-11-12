@@ -545,6 +545,24 @@ a.button-link.disabled {
   grid-column: 1 / -1;
 }
 
+.portal-v2-brief-status {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.portal-v2-brief-status .portal-v2-overline {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.portal-v2-brief-status strong {
+  font-size: 1.05rem;
+  line-height: 1.3;
+}
+
 .portal-v2-column {
   display: grid;
   align-content: start;
@@ -629,6 +647,33 @@ a.button-link.disabled {
 
 .portal-v2-actions .button-link {
   min-height: 44px;
+}
+
+.document-pdf-action {
+  gap: 0.55rem;
+}
+
+.document-pdf-action svg {
+  flex: 0 0 auto;
+}
+
+.document-preview summary {
+  color: var(--accent, var(--gold));
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.document-preview pre {
+  max-height: 28rem;
+  overflow: auto;
+  margin: 0.75rem 0 0;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.18);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 0.82rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .portal-v2-pending-label,
@@ -789,6 +834,10 @@ a.button-link.disabled {
     width: 100%;
   }
 
+  .document-actions .document-pdf-action {
+    width: 100%;
+  }
+
   .hero-top,
   .document-top {
     flex-direction: column;
@@ -865,5 +914,78 @@ html, body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Client workspace navigation, status, and file actions. */
+.portal-shell .portal-section-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.portal-shell .portal-section-tab svg,
+.portal-ui-icon,
+.portal-status-icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+}
+
+.portal-shell .portal-section-tab svg { color: var(--otp-v2-accent, var(--gold)); }
+.portal-shell .portal-section-tab[aria-selected="true"] svg { color: currentColor; }
+
+.portal-summary-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.portal-summary-item > .portal-ui-icon { color: var(--otp-v2-accent, var(--gold)); }
+.portal-summary-copy { display: grid; gap: 6px; min-width: 0; }
+.portal-summary-copy > span { color: var(--otp-v2-muted, var(--muted)); font-size: var(--workspace-caption, 14px); }
+.portal-summary-copy > strong { color: var(--otp-v2-text, var(--text)); font-size: 20px; font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
+
+.portal-v2-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.portal-v2-section-title .portal-ui-icon { color: var(--otp-v2-accent, var(--gold)); }
+.portal-v2-document-identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.portal-v2-document-identity .portal-document-icon { width: 19px; height: 19px; color: var(--otp-v2-accent, var(--gold)); }
+.portal-v2-document-identity strong { min-width: 0; overflow-wrap: anywhere; }
+.portal-shell .badge { display: inline-flex; align-items: center; gap: 6px; }
+.portal-status-icon { width: 15px; height: 15px; }
+.portal-v2-client-identity h2 { margin: 0; }
+.portal-v2-client-identity .portal-v2-project-title { margin-top: 10px; }
+
+.portal-shell .document-pdf-action:not(.secondary) {
+  border-color: var(--otp-v2-accent, var(--gold));
+  background: var(--otp-v2-accent, var(--gold));
+  color: #101512;
+}
+
+.portal-shell .document-pdf-action.secondary {
+  border-color: color-mix(in srgb, var(--otp-v2-accent, var(--gold)) 42%, var(--otp-v2-rule, var(--border)));
+  background: color-mix(in srgb, var(--otp-v2-accent, var(--gold)) 8%, transparent);
+  color: var(--otp-v2-text, var(--text));
+}
+
+.portal-shell .document-pdf-action:hover { filter: brightness(1.06); }
+
+@media (max-width: 480px) {
+  .portal-shell .portal-section-nav { gap: 2px; }
+  .portal-shell .portal-section-nav .portal-section-tab {
+    min-height: 54px;
+    flex-direction: column;
+    gap: 3px;
+    padding: 5px 2px;
+    font-size: 10px;
+    line-height: 1.1;
+  }
+  .portal-summary-copy > strong { font-size: 16px; }
 }
 
