@@ -82,8 +82,12 @@
       "status": "passed against https://www.onlytrueperspective.tech; full master suite, 56 checks and 0 failures."
     },
     {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster,home,bookings,booking-alias,book-alias,bookings-html,bookings-css,bookings-js,archive,archive-css,archive-js,public-navigation-js,public-system-css npm run prod:full-sweep",
-      "status": "passed against https://www.onlytrueperspective.tech. This public-only pre-deploy sweep deferred the changed homepage, booking, archive, navigation, and shared-style targets; the guarded release workflow reruns authenticated checks and the post-deploy sweep checks all targets."
+      "command": "OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
+      "status": "passed against the deployed https://www.onlytrueperspective.tech site with all public targets checked and no deferred booking, archive, navigation, or shared-style targets. The guarded release run separately passed its authenticated pre-deploy sweep."
+    },
+    {
+      "command": "gh workflow run production-release.yml --ref codex/otp-client-workspace-release-20261111 -f confirm_clean_release=CLEAN_RELEASE",
+      "status": "deployment succeeded in run 43164962795, but the immediate post-deploy sweep failed because it queried unversioned cached booking assets. The sweep now checks the exact versioned assets loaded by the page, and the complete public sweep passed afterward. The guarded release is being rerun with that correction."
     },
     {
       "command": "node --check server.js && node --check bookings.js && node --check archive.js && node --check client.js && node --check portal.js && node --check scripts/prod_full_sweep.js && node --check scripts/verify_release_scope.js && git diff --check",
@@ -91,16 +95,16 @@
     },
     {
       "command": "OTP_PRIMARY_CHECKOUT=/Users/eli/OTP/otp-site npm run release:scope",
-      "status": "passed; isolated worktree contains exactly the 33 dirty files listed in the release manifest."
+      "status": "passed; the isolated worktree’s four current changes are included in the release manifest, with no generated or sensitive artifacts."
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local booking preview confirms the navigation links to Archive, Services, and Client Portal; selecting Under $500 updates the budget panel to Fast Lane / focused request, states that The Signal starts at $500, and shows matching example deliverables. Icon geometry is 24x24px. Booking page had no horizontal overflow or failed requests at 375px, 390px, 768px, and 1440px. Archive runtime order begins FLOIVATION, HYH, WeatherOS, and FloorOps; production warehouse image route returned 200. Portal v2 rendering and synthetic document preview/download are covered by the passing suite. No real client token or record was used in local browser QA."
+    "summary": "Production browser check confirms the versioned booking CSS/JS load, and selecting Under $500 updates the panel to Fast Lane / focused request, states The Signal starts at $500, and shows matching example deliverables. The icon renders at 24x24px with no browser errors. The archive begins FLOIVATION, HYH, WeatherOS, and FloorOps; its production warehouse image returns 200. The redesigned portal entry page also loads without failed requests. Local booking checks show no horizontal overflow at 375px, 390px, 768px, or 1440px. Portal v2 rendering and synthetic document preview/download are covered by the passing suite. No real client token or record was used in this QA."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Guarded production run 43159158402 passed its clean release gate and authenticated pre-deploy sweep. It deployed the portal v2 update; the post-deploy public sweep then failed on stale portal markers. The current guarded release reruns authenticated checks before deployment and checks all changed public targets after deployment. No credential values or real client data are recorded here."
+    "summary": "Guarded run 43164962795 passed the clean release gate and authenticated pre-deploy sweep; deployment succeeded. Its post-deploy public sweep initially failed because the booking CSS/JS checks used unversioned URLs that returned stale cached files. After changing the checks to the cache-busted URLs used by the page, the full live public sweep passed. The corrected guarded release is being rerun. No credential values or real client data are recorded here."
   },
   "deploymentTarget": {
     "project": "otp-site",

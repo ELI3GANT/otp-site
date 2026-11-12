@@ -54,6 +54,8 @@ assert.match(css, /0%, 100% \{ transform: translate3d\(-1\.5%,-1%,0\)/, 'shared 
 const releaseSweep = read('scripts/prod_full_sweep.js');
 assert.ok(releaseSweep.includes('href="/studio#digital"') && releaseSweep.includes('budget-fit-preview') && releaseSweep.includes('budget-guide-intro'), 'production sweep verifies the client navigation and visual budget guidance');
 assert.ok(releaseSweep.includes('archive-project-newest') && releaseSweep.includes('public-light-drift 46s'), 'production sweep verifies the latest project and subtle background');
+assert.ok(releaseSweep.includes("path: '/archive.css?v=20261112-floivation-newest-v1'") && releaseSweep.includes("path: '/archive.js?v=20261112-floivation-newest-v1'"), 'archive sweep checks the cache-busted assets used by the page');
+assert.ok(releaseSweep.includes("path: '/public-shell.js?v=20261112-client-navigation-v1'") && releaseSweep.includes("path: '/public-system.css?v=20261112-client-navigation-v1'"), 'navigation sweep checks the cache-busted shared assets used by the page');
 const studio = new JSDOM(read('studio.html')).window.document;
 for (const id of ['digital', 'creative', 'launch', 'engagements', 'process', 'questions']) assert.ok(studio.getElementById(id), 'Studio owns ' + id);
 assert.ok(studio.querySelectorAll('#process li').length >= 3, 'Studio explains engagement steps');
