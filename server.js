@@ -47,6 +47,7 @@ const {
     forwardJobArchiveMutation
 } = require('./server/job-archive-handoff.js');
 const { BoundedTtlCache } = require('./server/bounded-ttl-cache.js');
+const { registerIeiPreviewRoute } = require('./server/iei-preview.js');
 const {
     SITE_COMMAND_SCHEMA,
     PUBLIC_SITE_CONTENT_KEYS,
@@ -2293,6 +2294,8 @@ app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, 
 
 // --- STATIC ASSETS (CRITICAL FIX) ---
 const staticPath = __dirname;
+// IEI previews are intentionally gated by owner approval in OTP OS.
+registerIeiPreviewRoute(app, supabaseAdmin);
 
 function renderSongWarsPage(origin = SONG_WARS_CONFIG.canonicalUrl) {
     const template = fs.readFileSync(path.join(staticPath, 'songwars.html'), 'utf8');
