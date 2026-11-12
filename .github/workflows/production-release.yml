@@ -68,7 +68,7 @@ jobs:
       - name: Run public production sweep
         env:
           OTP_SWEEP_HTTP_ONLY: "1"
-          OTP_SWEEP_DEFER: songwars,songwars-poster
+          OTP_SWEEP_DEFER: songwars,songwars-poster,home,bookings,booking-alias,book-alias,bookings-html,bookings-css,bookings-js,archive,archive-css,archive-js,public-navigation-js,public-system-css
         run: npm run prod:full-sweep
 
       - name: Require authenticated sweep credentials
@@ -85,7 +85,7 @@ jobs:
       - name: Run authenticated production sweep
         env:
           OTP_SWEEP_HTTP_ONLY: "1"
-          OTP_SWEEP_DEFER: songwars,songwars-poster
+          OTP_SWEEP_DEFER: songwars,songwars-poster,home,bookings,booking-alias,book-alias,bookings-html,bookings-css,bookings-js,archive,archive-css,archive-js,public-navigation-js,public-system-css
           OTP_ADMIN_PASSCODE: ${{ secrets.OTP_ADMIN_PASSCODE }}
           ADMIN_PASSCODE: ${{ secrets.ADMIN_PASSCODE }}
           OTP_ADMIN_TOKEN: ${{ secrets.OTP_ADMIN_TOKEN }}

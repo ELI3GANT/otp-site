@@ -1,23 +1,54 @@
 {
-  "releaseName": "otp-client-workspace-v2-postdeploy-sweep-fix-2026-11-12",
+  "releaseName": "otp-client-workspace-v2-navigation-booking-archive-2026-11-12",
   "includedFiles": [
+    ".github/workflows/production-release.yml",
+    "DESIGN.md",
+    "archive.css",
+    "archive.html",
+    "archive.js",
+    "bookings.css",
+    "bookings.html",
+    "bookings.js",
     "client-portal-v2-renderer.js",
     "client.html",
     "client.js",
+    "consultant-audit.html",
+    "floorops.html",
+    "index.html",
+    "insight.html",
+    "insights.html",
     "portal-entry.css",
     "portal-sections.js",
     "portal.html",
     "portal.js",
-    "server.js",
+    "privacy.html",
+    "protocol.html",
+    "public-shell.js",
+    "public-system.css",
+    "release-manifest.json",
     "scripts/prod_full_sweep.js",
-    "workspace-v2.css",
+    "server.js",
+    "songwars.html",
+    "studio.html",
+    "terms.html",
     "tests/api_surface_security_contract.test.js",
+    "tests/archive_case_study_contract.test.js",
+    "tests/booking_conversion_flow.test.js",
+    "tests/bookings_contract.test.js",
     "tests/client_portal_render.test.js",
+    "tests/homepage_visual_contract.test.js",
     "tests/portal_route_contract.test.js",
-    "release-manifest.json"
+    "weatheros-privacy.html",
+    "weatheros-support.html",
+    "weatheros.html",
+    "weatheros/index.html",
+    "weatheros/privacy.html",
+    "weatheros/support.html",
+    "website-design.html",
+    "workspace-v2.css"
   ],
   "excludedDirtyFiles": [
-    "Original checkout DESIGN.md includes broader OTP OS workspace notes and is outside this client portal release.",
+    "Only the scoped booking guidance update in DESIGN.md is included; unrelated OTP OS workspace changes remain out of scope.",
     "Original checkout FLOIVATION media assets under assets/case-studies/floivation/ are untracked and are unrelated to this portal release.",
     "OTP OS working tree changes are separate; no client records, app binary, or OTP OS deployment are included in this Site release."
   ],
@@ -32,7 +63,7 @@
   "testsRun": [
     {
       "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm test",
-      "status": "passed; full master suite. PORT=1 isolated the unrelated local listener on port 3000; database-backed local contact journey skipped as it does on CI."
+      "status": "passed; full master suite, 56 checks and 0 failures. PORT=1 isolated the unrelated local listener on port 3000; database-backed local contact journey skipped as it does on CI."
     },
     {
       "command": "npm run contracts:verify",
@@ -48,24 +79,28 @@
     },
     {
       "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm run master_test:ci",
-      "status": "passed against https://www.onlytrueperspective.tech"
+      "status": "passed against https://www.onlytrueperspective.tech; full master suite, 56 checks and 0 failures."
     },
     {
-      "command": "PORT=1 OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed against https://www.onlytrueperspective.tech after deployment of 59a20d1; redesigned portal HTML, CSS, and JavaScript assets returned 200. Public-only HTTP sweep; the guarded release workflow reruns authenticated checks before deployment."
+      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster,home,bookings,booking-alias,book-alias,bookings-html,bookings-css,bookings-js,archive,archive-css,archive-js,public-navigation-js,public-system-css npm run prod:full-sweep",
+      "status": "passed against https://www.onlytrueperspective.tech. This public-only pre-deploy sweep deferred the changed homepage, booking, archive, navigation, and shared-style targets; the guarded release workflow reruns authenticated checks and the post-deploy sweep checks all targets."
     },
     {
-      "command": "node --check server.js && node --check bookings.js && node --check scripts/prod_full_sweep.js && node --check scripts/prod_terminal_sweep.js && node --check client.js && node --check portal.js && git diff --check",
+      "command": "node --check server.js && node --check bookings.js && node --check archive.js && node --check client.js && node --check portal.js && node --check scripts/prod_full_sweep.js && node --check scripts/verify_release_scope.js && git diff --check",
       "status": "passed"
+    },
+    {
+      "command": "OTP_PRIMARY_CHECKOUT=/Users/eli/OTP/otp-site npm run release:scope",
+      "status": "passed; isolated worktree contains exactly the 33 dirty files listed in the release manifest."
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Local candidate browser check on /portal and the private workspace at 320, 375, 390, 768, and 1280px. Both stored and canonical portal payload render paths are covered by tests. Synthetic fixture showed three ready document actions; preview and PDF download succeeded, no horizontal overflow or browser errors. No real client token or record was used."
+    "summary": "Local booking preview confirms the navigation links to Archive, Services, and Client Portal; selecting Under $500 updates the budget panel to Fast Lane / focused request, states that The Signal starts at $500, and shows matching example deliverables. Icon geometry is 24x24px. Booking page had no horizontal overflow or failed requests at 375px, 390px, 768px, and 1440px. Archive runtime order begins FLOIVATION, HYH, WeatherOS, and FloorOps; production warehouse image route returned 200. Portal v2 rendering and synthetic document preview/download are covered by the passing suite. No real client token or record was used in local browser QA."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Guarded production run 43159158402 passed the clean release gate and authenticated production sweep before deployment. Its deployment succeeded; only the post-deploy public sweep failed on stale portal markers. The next guarded run reruns the authenticated checks before redeployment. No credential values are recorded here."
+    "summary": "Guarded production run 43159158402 passed its clean release gate and authenticated pre-deploy sweep. It deployed the portal v2 update; the post-deploy public sweep then failed on stale portal markers. The current guarded release reruns authenticated checks before deployment and checks all changed public targets after deployment. No credential values or real client data are recorded here."
   },
   "deploymentTarget": {
     "project": "otp-site",
@@ -75,6 +110,10 @@
       "https://onlytrueperspective.tech"
     ],
     "verificationRoutes": [
+      "/",
+      "/start-project",
+      "/bookings",
+      "/archive",
       "/portal",
       "/client/:portalToken",
       "/api/client-portal/:portalToken",
