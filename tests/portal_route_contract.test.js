@@ -33,7 +33,11 @@ assert.match(server, /CLIENT_PORTAL_DOCUMENT_TYPES/, 'document proxy must restri
 assert.match(server, /CLIENT_PORTAL_PROXY_TIMEOUT_MS/, 'document proxy must time out safely');
 assert.match(server, /redirect: 'manual'/, 'document proxy must not follow upstream redirects');
 assert.match(server, /Content-Disposition.*attachment; filename=/, 'PDF downloads must use a fixed safe attachment filename');
+assert.match(server, /req\.query\.inline === '1'/, 'client portal PDF preview requests must use an explicit inline disposition');
+assert.match(server, /inlinePdf \? 'inline' : 'attachment'/, 'PDF preview and download responses must use the correct browser disposition');
 assert.match(server, /safeE2EPortalDocument/, 'synthetic portal documents must be available for local and release verification');
+assert.match(server, /function portalDocumentError\(req, res/, 'document errors receive request negotiation for safe browser output');
+assert.match(server, /Document in preparation/, 'blocked document links return a client-friendly branded page');
 assert.match(server, /app\.post\('\/api\/admin\/ops\/jobs\/portal-link', verifyToken/, 'admin-only portal link generation endpoint must exist');
 assert.match(server, /privatePortalHtml/, 'private portal pages must use no-store/noindex/no-referrer headers');
 assert.match(server, /CLIENT_PORTAL_TOKEN_RE/, 'client portal token regex guard must exist');
@@ -100,6 +104,8 @@ assert.ok(!/otp-os\.vercel\.app|supabase|service[_-]?key|jwt|bearer/i.test(clien
 assert.ok(clientJs.includes('/api/client-portal/'), 'client portal fetches the server-side portal API');
 assert.ok(clientJs.includes("cache: 'no-store'"), 'client portal fetch uses no-store');
 assert.ok(clientJs.includes('Locked until payment is saved'), 'client portal has locked receipt state');
+assert.ok(clientJs.includes('View document') && clientJs.includes('Download PDF'), 'client portal offers clear formatted document and PDF download actions');
+assert.ok(clientJs.includes("link.referrerPolicy = 'no-referrer'"), 'private PDF links do not forward portal tokens as referrers');
 assert.ok(server.includes('Receipt unlocks after a saved project payment'), 'server portal payload explains locked receipts');
 assert.ok(clientJs.includes('textContent'), 'client portal renders with textContent');
 assert.ok(!/innerHTML\s*=/.test(clientJs), 'client portal JS must not assign unsafe HTML');
@@ -111,7 +117,13 @@ assert.ok(clientCss.includes('--gold'), 'client portal uses black/gold OTP style
 assert.ok(clientCss.includes('backdrop-filter: var(--glass)'), 'client portal cards use glass depth');
 assert.ok(clientCss.includes('@media (max-width: 430px)'), 'client portal has small-phone layout protection');
 assert.ok(clientCss.includes('overflow-x: hidden'), 'client portal protects mobile overflow');
+assert.ok(clientCss.includes('.document-pdf-action'), 'client portal document actions use the branded action style');
 assert.ok(clientCss.includes('prefers-reduced-motion'), 'client portal respects reduced motion');
+
+assert.ok(fullSweep.includes("client-document-pdf-preview"), 'production sweep checks inline client PDF preview');
+assert.ok(fullSweep.includes("client-document-pdf-download"), 'production sweep checks downloadable client PDF');
+assert.ok(fullSweep.includes("client-document-view"), 'production sweep checks the formatted document view route');
+assert.ok(fullSweep.includes("private-client-js-v2"), 'production sweep checks the refreshed private client portal assets after deploy');
 
 assert.ok(indexHtml.includes('href="/portal"'), 'homepage exposes clean same-origin Client Portal CTA');
 assert.ok(bookingsHtml.includes('/portal'), 'bookings header exposes clean Client Portal CTA');

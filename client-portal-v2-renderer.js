@@ -37,6 +37,34 @@ function safeLink(label, href, secondary = true) {
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
+  link.referrerPolicy = 'no-referrer';
+  return link;
+}
+
+function pdfIcon(kind = 'preview') {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '18');
+  svg.setAttribute('height', '18');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.7');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', kind === 'download'
+    ? 'M12 3v11m0 0 4-4m-4 4-4-4M5 18v3h14v-3'
+    : 'M8 3h7l4 4v14H8zM15 3v5h5M11 13h5M11 17h5');
+  svg.append(path);
+  return svg;
+}
+
+function documentPdfLink(label, href, kind = 'preview', secondary = false) {
+  const link = safeLink(label, href, secondary);
+  link.prepend(pdfIcon(kind));
+  link.classList.add('document-pdf-action');
   return link;
 }
 
@@ -93,8 +121,8 @@ function documentsCard(view) {
     const actions = node('div', 'portal-v2-actions');
     heading.append(node('strong', '', document.label), statusChip(document.status));
     item.append(heading, node('p', '', document.message));
-    if (document.viewUrl) actions.append(safeLink('View document', document.viewUrl));
-    if (document.downloadUrl) actions.append(safeLink('Download PDF', document.downloadUrl));
+    if (document.viewUrl) actions.append(documentPdfLink('View document', document.viewUrl, 'preview', true));
+    if (document.downloadUrl) actions.append(documentPdfLink('Download PDF', document.downloadUrl, 'download'));
     if (!actions.children.length) {
       const pending = node('span', 'portal-v2-pending-label', document.actionLabel);
       pending.setAttribute('aria-disabled', 'true');

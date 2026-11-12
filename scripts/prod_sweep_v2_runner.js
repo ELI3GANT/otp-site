@@ -162,6 +162,7 @@ function contentTypeLooksReasonable(kind, contentType) {
   if (kind === 'gif') return ct.includes('image/gif');
   if (kind === 'jpg' || kind === 'jpeg') return ct.includes('image/jpeg');
   if (kind === 'image') return ct.startsWith('image/');
+  if (kind === 'pdf') return ct.includes('application/pdf');
   if (kind === 'css') return ct.includes('text/css') || ct.includes('text/plain') || ct.includes('css');
   if (kind === 'js') return ct.includes('javascript') || ct.includes('text/plain') || ct.includes('ecmascript');
   if (kind === 'html') return ct.includes('text/html') || ct.includes('application/xhtml+xml');
@@ -184,9 +185,10 @@ async function fetchBinary(url, init = {}) {
   return { response, bytes };
 }
 
-function checkResult({ name, url, kind, response, text = '', bytes = null, required = true, markers = [] }) {
+function checkResult({ name, url, kind, response, text = '', bytes = null, required = true, markers = [], disposition = '' }) {
   const status = Number(response?.status || 0);
   const contentType = String(response?.headers?.get?.('content-type') || '');
+  const contentDisposition = String(response?.headers?.get?.('content-disposition') || '');
   const location = String(response?.headers?.get?.('location') || '');
   const bodyText = String(text || '');
   const bodyBytes = bytes ? bytes.length : Buffer.byteLength(bodyText);
@@ -206,6 +208,11 @@ function checkResult({ name, url, kind, response, text = '', bytes = null, requi
     if (kind === 'css' && bodyBytes === 0) checks.push('empty css body');
     if (kind === 'js' && bodyBytes === 0) checks.push('empty js body');
     if (kind === 'png' && bodyBytes === 0) checks.push('empty asset body');
+    if (kind === 'pdf' && bodyBytes === 0) checks.push('empty PDF body');
+    if (kind === 'pdf' && bytes && bytes.subarray(0, 5).toString() !== '%PDF-') checks.push('invalid PDF signature');
+  }
+  if (disposition && !contentDisposition.toLowerCase().includes(String(disposition).toLowerCase())) {
+    checks.push(`unexpected content-disposition ${contentDisposition || '(missing)'}`);
   }
   if (!redirect && kind && !contentTypeLooksReasonable(kind, contentType)) {
     checks.push(`unexpected content-type ${contentType || '(missing)'}`);
@@ -226,6 +233,7 @@ function checkResult({ name, url, kind, response, text = '', bytes = null, requi
     kind,
     status,
     contentType,
+    ...(contentDisposition ? { contentDisposition } : {}),
     bytes: bodyBytes,
     ok: checks.length === 0,
     redirect,
@@ -301,7 +309,8 @@ async function checkBinaryAsset(baseUrl, target) {
       response,
       bytes,
       required: target.required !== false,
-      markers: target.markers || []
+      markers: target.markers || [],
+      disposition: target.disposition || ''
     });
   } catch (error) {
     return {
@@ -480,7 +489,7 @@ async function runSweep({
     if (target.kind === 'json') check = await checkJson(baseUrl, target);
     else if (target.kind === 'text') check = await checkText(baseUrl, target);
     else if (target.kind === 'css' || target.kind === 'js') check = await checkTextAsset(baseUrl, target);
-    else if (['png', 'gif', 'jpg', 'jpeg', 'image'].includes(target.kind)) check = await checkBinaryAsset(baseUrl, target);
+    else if (['png', 'gif', 'jpg', 'jpeg', 'image', 'pdf'].includes(target.kind)) check = await checkBinaryAsset(baseUrl, target);
     else check = await checkHtml(baseUrl, target.kind === 'html' ? target : { ...target, kind: 'html' });
     publicChecks.push(check);
   }

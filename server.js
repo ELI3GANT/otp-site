@@ -4482,7 +4482,19 @@ app.get('/api/client-portal/:token', async (req, res) => {
     }
 });
 
-function portalDocumentError(res, statusCode, message = 'This document is not available right now.') {
+function portalDocumentError(req, res, statusCode, message = 'This document is not available right now.') {
+    const browserNavigation = req.path.endsWith('/view') || req.accepts('html');
+    if (browserNavigation) {
+        privatePortalHtml(res);
+        res.set('Content-Type', 'text/html; charset=utf-8');
+        res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+        res.set('X-Content-Type-Options', 'nosniff');
+        const title = statusCode === 403 ? 'Document in preparation' : 'Document unavailable';
+        const detail = statusCode === 403
+            ? 'OTP is still preparing this document. Please check back soon or contact your project team.'
+            : 'This document could not be opened right now. Please try again shortly or contact your project team.';
+        return res.status(statusCode).send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} · OnlyTruePerspective</title><style> :root{color-scheme:dark;--gold:#d8be7a;--text:#f7f8f3;--muted:#b7c3ba;--line:#303a34}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 78% 4%,rgba(216,190,122,.13),transparent 28rem),linear-gradient(145deg,#151c18,#050706 58%);color:var(--text);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.card{width:min(100%,560px);padding:clamp(24px,6vw,44px);border:1px solid var(--line);border-radius:18px;background:rgba(16,21,18,.92);box-shadow:0 24px 70px rgba(0,0,0,.35)}.eyebrow{margin:0;color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}h1{margin:12px 0;font-size:clamp(26px,6vw,36px);line-height:1.12}p{margin:0;color:var(--muted)}a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:24px;padding:10px 18px;border:1px solid var(--gold);border-radius:9px;background:var(--gold);color:#101512;font-weight:800;text-decoration:none}</style></head><body><main class="card"><p class="eyebrow">OnlyTruePerspective · Client documents</p><h1>${title}</h1><p>${detail}</p><a href="/portal">Return to client portal</a></main></body></html>`);
+    }
     privatePortalApi(res);
     return res.status(statusCode).json({
         ok: false,
@@ -4495,7 +4507,7 @@ function portalDocumentTitle(type) {
     return type.split('-').map((part) => `${part[0].toUpperCase()}${part.slice(1)}`).join(' ');
 }
 
-async function safeE2EPortalDocument(res, type, format) {
+async function safeE2EPortalDocument(res, type, format, { inlinePdf = false } = {}) {
     const title = portalDocumentTitle(type);
     privatePortalHtml(res);
     if (format === 'view') {
@@ -4516,7 +4528,7 @@ async function safeE2EPortalDocument(res, type, format) {
     const pdf = Buffer.from(await document.save());
     res.set({
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="otp-test-${type}.pdf"`,
+        'Content-Disposition': `${inlinePdf ? 'inline' : 'attachment'}; filename="otp-test-${type}.pdf"`,
         'Content-Length': String(pdf.length),
         'X-Content-Type-Options': 'nosniff'
     });
@@ -4527,15 +4539,16 @@ app.get('/api/client/portal/:token/documents/:type/:format', async (req, res) =>
     const token = normalizeClientPortalToken(req.params.token);
     const type = String(req.params.type || '').trim().toLowerCase().replace(/_/g, '-');
     const format = req.params.format === 'pdf' ? 'pdf' : req.params.format === 'view' ? 'view' : '';
+    const inlinePdf = format === 'pdf' && req.query.inline === '1';
     if (!token || !format || !CLIENT_PORTAL_DOCUMENT_TYPES.has(type)) {
-        return portalDocumentError(res, 404);
+        return portalDocumentError(req, res, 404);
     }
 
     if (e2eTestModeEnabled() && token === SAFE_E2E_PORTAL_FIXTURE.portalToken) {
         try {
-            return await safeE2EPortalDocument(res, type, format);
+            return await safeE2EPortalDocument(res, type, format, { inlinePdf });
         } catch (_) {
-            return portalDocumentError(res, 503);
+            return portalDocumentError(req, res, 503);
         }
     }
 
@@ -4553,32 +4566,32 @@ app.get('/api/client/portal/:token/documents/:type/:format', async (req, res) =>
             signal: controller.signal
         });
 
-        if (upstream.status === 403) return portalDocumentError(res, 403, 'This document is not available yet. Please contact OTP.');
-        if ([404, 410].includes(upstream.status)) return portalDocumentError(res, upstream.status, 'This portal document is not available. Check your private link or contact OTP.');
-        if (!upstream.ok || upstream.status >= 300) return portalDocumentError(res, 503);
+        if (upstream.status === 403) return portalDocumentError(req, res, 403, 'This document is not available yet. Please contact OTP.');
+        if ([404, 410].includes(upstream.status)) return portalDocumentError(req, res, upstream.status, 'This portal document is not available. Check your private link or contact OTP.');
+        if (!upstream.ok || upstream.status >= 300) return portalDocumentError(req, res, 503);
 
         const contentType = String(upstream.headers.get('content-type') || '').toLowerCase();
         const expectsPdf = format === 'pdf';
         if (expectsPdf ? !contentType.includes('application/pdf') : !contentType.includes('text/html')) {
-            return portalDocumentError(res, 503);
+            return portalDocumentError(req, res, 503);
         }
 
         const bytes = Buffer.from(await upstream.arrayBuffer());
         const maxBytes = expectsPdf ? 25 * 1024 * 1024 : 3 * 1024 * 1024;
-        if (!bytes.length || bytes.length > maxBytes) return portalDocumentError(res, 503);
+        if (!bytes.length || bytes.length > maxBytes) return portalDocumentError(req, res, 503);
 
         privatePortalHtml(res);
         res.set('X-Content-Type-Options', 'nosniff');
         if (expectsPdf) {
             res.set('Content-Type', 'application/pdf');
-            res.set('Content-Disposition', `attachment; filename="otp-${type}.pdf"`);
+            res.set('Content-Disposition', `${inlinePdf ? 'inline' : 'attachment'}; filename="otp-${type}.pdf"`);
         } else {
             res.set('Content-Type', 'text/html; charset=utf-8');
             res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
         }
         return res.status(200).send(bytes);
     } catch (_) {
-        return portalDocumentError(res, 503);
+        return portalDocumentError(req, res, 503);
     } finally {
         clearTimeout(timer);
     }

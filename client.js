@@ -8,9 +8,9 @@ import {
   normalizePortalPayload,
   portalReferenceLabel,
   safePortalUrl
-} from './client-portal-utils.js';
-import { buildClientPortalViewV2 } from './client-portal-v2.js';
-import { renderClientPortalViewV2 } from './client-portal-v2-renderer.js?v=20261109-workspace-v2';
+} from './client-portal-utils.js?v=20261112-client-workspace-v4';
+import { buildClientPortalViewV2 } from './client-portal-v2.js?v=20261112-client-workspace-v4';
+import { renderClientPortalViewV2 } from './client-portal-v2-renderer.js?v=20261112-client-workspace-v4';
 
 // Locked until payment is saved
 
@@ -237,6 +237,55 @@ function buttonLink(label, url, secondary = false, options = {}) {
   return link;
 }
 
+const CLIENT_PORTAL_PDF_TYPES = new Set([
+  'proposal', 'agreement', 'invoice', 'receipt', 'paid-receipt', 'nda',
+  'project-scope', 'service-summary', 'delivery-summary', 'change-order', 'payment-reminder'
+]);
+
+function clientDocumentType(document = {}) {
+  const raw = clean(document.type || document.docType || document.doc_type || document.label).toLowerCase();
+  const type = raw.replace(/[\s_]+/g, '-');
+  return CLIENT_PORTAL_PDF_TYPES.has(type) ? type : '';
+}
+
+function clientDocumentPdfUrls(document = {}, token = '') {
+  const safeToken = cleanPortalToken(token);
+  const type = clientDocumentType(document);
+  if (!safeToken || !type) return { viewUrl: '', downloadUrl: '' };
+  const base = `/api/client/portal/${encodeURIComponent(safeToken)}/documents/${encodeURIComponent(type)}`;
+  return { viewUrl: `${base}/view`, downloadUrl: `${base}/pdf` };
+}
+
+function pdfIcon(kind = 'preview') {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '18');
+  svg.setAttribute('height', '18');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.7');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', kind === 'download'
+    ? 'M12 3v11m0 0 4-4m-4 4-4-4M5 18v3h14v-3'
+    : 'M8 3h7l4 4v14H8zM15 3v5h5M11 13h5M11 17h5');
+  svg.append(path);
+  return svg;
+}
+
+function documentPdfLink(label, url, kind = 'preview', secondary = false) {
+  const link = buttonLink(label, url, secondary);
+  if (link.tagName === 'A') {
+    link.prepend(pdfIcon(kind));
+    link.classList.add('document-pdf-action');
+    link.referrerPolicy = 'no-referrer';
+  }
+  return link;
+}
+
 function referenceLabel(url = '') {
   return portalReferenceLabel(url);
 }
@@ -270,20 +319,28 @@ async function copyText(text = '') {
   }
 }
 
-function documentItem(document = {}) {
-  const ready = document.ready === true || (document.ready === undefined && document.status === 'ready');
+function documentItem(document = {}, token = '') {
+  const status = clean(document.status || document.doc_status).toLowerCase();
+  const explicitlyBlocked = document.ready === false
+    || document.blocked === true
+    || document.validation?.blocking === true
+    || /blocked|needs[-_ ]?info|needs[-_ ]?review|not[-_ ]?ready|unavailable|locked|pending|draft|preparing|in[-_ ]?preparation|failed|rejected/.test(status);
+  const ready = !explicitlyBlocked && (document.ready === true || /^(ready|available)$/.test(status));
   const item = el('article', 'document-item');
   const top = el('div', 'document-top');
   const actions = el('div', 'document-actions');
+  const generatedUrls = ready ? clientDocumentPdfUrls(document, token) : { viewUrl: '', downloadUrl: '' };
+  const viewUrl = generatedUrls.viewUrl || safeLinkUrl(document.viewUrl || document.view_url);
+  const downloadUrl = generatedUrls.downloadUrl || safeLinkUrl(document.downloadUrl || document.download_url || document.downloadLink || document.download_link);
   top.append(el('strong', '', clean(document.label) || 'Document'), badge(ready ? 'Available' : 'In preparation', ready ? 'ready' : ''));
   item.append(top, el('p', '', clean(document.message) || (ready ? 'Ready to view or download.' : 'OTP is preparing this document.')));
-  if (ready && document.viewUrl) actions.append(buttonLink('View', document.viewUrl, true));
-  if (ready && document.downloadUrl) actions.append(buttonLink('Download', document.downloadUrl));
+  if (ready && viewUrl) actions.append(documentPdfLink('View document', viewUrl, 'preview', true));
+  if (ready && downloadUrl) actions.append(documentPdfLink('Download PDF', downloadUrl, 'download'));
   if (ready && clean(document.preview)) {
-    const preview = el('details', 'document-preview');
+    const textPreview = el('details', 'document-preview');
     const text = el('pre', '', clean(document.preview));
-    preview.append(el('summary', '', 'View document'), text);
-    item.append(preview);
+    textPreview.append(el('summary', '', 'View text version'), text);
+    item.append(textPreview);
   }
   if (!ready) {
     const disabled = el('button', 'secondary', 'Awaiting OTP');
@@ -294,17 +351,17 @@ function documentItem(document = {}) {
   return item;
 }
 
-function documentsCard(documents = []) {
+function storedDocumentsCard(documents = [], token = '') {
   const section = el('section', 'card');
   const list = el('div', 'document-list');
   section.append(el('h3', '', 'Documents'));
-  documents.forEach((document) => list.append(documentItem(document)));
+  documents.forEach((document) => list.append(documentItem(document, token)));
   if (!documents.length) list.append(el('p', 'empty', 'Documents not ready yet.'));
   section.append(list);
   return section;
 }
 
-function projectsCard(projects = []) {
+function storedProjectsCard(projects = []) {
   const section = el('section', 'card');
   const list = el('div', 'document-list');
   section.append(el('h3', '', 'Projects'));
@@ -379,7 +436,7 @@ function retainerCard(retainer = {}) {
   return section;
 }
 
-function paymentCard(payment = {}) {
+function storedPaymentCard(payment = {}) {
   const section = el('section', 'card');
   const amounts = el('div', 'payment-amount');
   const actions = el('div', 'payment-actions');
@@ -509,7 +566,7 @@ function referencesCard(token = '', references = {}) {
 
 function renderDashboard(data, token = '') {
   const { portal, client, retainer, nextStep, followUp, contact, approvals, references } = normalizePortalPayload(data);
-  const view = buildClientPortalViewV2(data, { now: portal.lastUpdated });
+  const view = buildClientPortalViewV2(data, { now: portal.lastUpdated, portalToken: token });
   const { masthead, footer, sections } = renderClientPortalViewV2(view);
   const selected = portalRoot.querySelector('.portal-sections')?.dataset.section || 'overview';
   const workspace = createPortalSections({
@@ -550,7 +607,6 @@ function appendNativeBack() {
 }
 
 function renderPortal(data) {
-  if (data.profile && !data.client) return renderStoredPortal(data);
   renderDashboard(data, tokenFromLocation());
 }
 
@@ -580,7 +636,7 @@ function renderStoredPortal(data) {
     infoRow('Scope', project.description),
     infoRow('Client notes', project.notes)
   ]);
-  const docs = documentsCard(Array.isArray(data.documents) ? data.documents : []);
+  const docs = storedDocumentsCard(Array.isArray(data.documents) ? data.documents : [], tokenFromLocation());
   const billing = card('Payment', [
     infoRow('Status', displayPaymentStatus(payment.status)),
     infoRow('Project total', payment.total),
@@ -612,7 +668,7 @@ function renderStoredPortal(data) {
   }
   hero.append(summary);
   const selected = portalRoot.querySelector('.portal-sections')?.dataset.section || 'overview';
-  const workspace = createPortalSections({overview: [next], project: [projectCard, delivery], documents: [docs], billing: [billing], support: [help, profileCard]}, { selected });
+  const workspace = createPortalSections({overview: [next], project: [projectCard, delivery, storedProjectsCard(Array.isArray(data.projects) ? data.projects : [])], documents: [docs], billing: [billing], support: [help, profileCard]}, { selected });
   portalRoot.replaceChildren(hero, portalToolbar(tokenFromLocation()), workspace.root);
   appendNativeBack();
   setStatus('Portal Active', 'ready');
