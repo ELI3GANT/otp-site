@@ -29,7 +29,8 @@
           "components/**",
           "supabase/migrations/**",
           "weatheros/**",
-          "evehalo/**"
+          "evehalo/**",
+          "vault/**"
         ]
       }
     }
@@ -200,6 +201,39 @@
     {
       "src": "^/floorops/(.*)$",
       "dest": "https://otp-floorops.vercel.app/$1"
+    },
+    {
+      "src": "^/(?:vault\\.html|vault/index\\.html)$",
+      "status": 308,
+      "headers": {
+        "Location": "/vault"
+      }
+    },
+    {
+      "src": "^/(?:vault-privacy(?:\\.html)?|vault/privacy\\.html)/?$",
+      "status": 308,
+      "headers": {
+        "Location": "/vault/privacy"
+      }
+    },
+    {
+      "src": "^/(?:vault-support(?:\\.html)?|vault/support\\.html)/?$",
+      "status": 308,
+      "headers": {
+        "Location": "/vault/support"
+      }
+    },
+    {
+      "src": "^/vault/?$",
+      "dest": "/vault/index.html"
+    },
+    {
+      "src": "^/vault/privacy/?$",
+      "dest": "/vault/privacy.html"
+    },
+    {
+      "src": "^/vault/support/?$",
+      "dest": "/vault/support.html"
     },
     {
       "src": "^/weatheros\\.html$",

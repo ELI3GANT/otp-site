@@ -2710,6 +2710,9 @@ app.get(['/consultant-audit.html', '/consultant-audit'], (req, res) => res.redir
 app.get('/protocol.html', (req, res) => res.redirect(308, '/protocol'));
 app.get('/signal.html', (req, res) => res.redirect(308, '/signal'));
 app.get(['/blackbox', '/blackbox-signal'], (req, res) => res.redirect(302, '/signal'));
+app.get(['/vault.html', '/vault/index.html'], (req, res) => res.redirect(308, '/vault'));
+app.get(['/vault-privacy', '/vault-privacy.html', '/vault/privacy.html'], (req, res) => res.redirect(308, '/vault/privacy'));
+app.get(['/vault-support', '/vault-support.html', '/vault/support.html'], (req, res) => res.redirect(308, '/vault/support'));
 app.get('/weatheros.html', (req, res) => res.redirect(308, '/weatheros'));
 app.get(['/weatheros-support.html', '/weatheros-support'], (req, res) => res.redirect(308, '/weatheros/support'));
 app.get(['/weatheros-privacy.html', '/weatheros-privacy'], (req, res) => res.redirect(308, '/weatheros/privacy'));
@@ -2772,7 +2775,12 @@ const staticAliases = {
     '/evehalo/privacy.html': 'evehalo/privacy.html',
     '/terms': 'terms.html',
     '/archive': 'archive.html',
-    '/vault': 'archive.html',
+    '/vault': 'vault/index.html',
+    '/vault/': 'vault/index.html',
+    '/vault/privacy': 'vault/privacy.html',
+    '/vault/privacy/': 'vault/privacy.html',
+    '/vault/support': 'vault/support.html',
+    '/vault/support/': 'vault/support.html',
     '/insights': 'insights.html',
     '/insight': 'insight.html',
     '/protocol': 'protocol.html',

@@ -13,6 +13,12 @@ const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytruep
 const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_TOKEN || '').trim();
 
 const publicTargets = [
+  { name: 'vault-product', path: '/vault', kind: 'html', markers: ['Keep the music.', 'Make the record.', 'https://apps.apple.com/app/id6814101540', '/vault/launch.css?v=20261121-launch'] },
+  { name: 'vault-privacy', path: '/vault/privacy', kind: 'html', markers: ['VAULT Privacy Policy', 'Device or iCloud backups'] },
+  { name: 'vault-support', path: '/vault/support', kind: 'html', markers: ['VAULT Support', 'Back up before making changes'] },
+  { name: 'vault-css', path: '/vault/launch.css?v=20261121-launch', kind: 'css', markers: ['prefers-reduced-motion', '.hero'] },
+  { name: 'vault-js', path: '/vault/launch.js?v=20261121-launch', kind: 'js', markers: ['transitionToken', 'artist-setup', 'aria-pressed'] },
+  ...['app-icon', 'studio', 'player', 'library', 'signal', 'artist-setup', 'onboarding'].map((name) => ({ name: `vault-capture-${name}`, path: `/assets/vault/launch/${name}.png`, kind: 'png' })),
   { name: 'home', path: '/', kind: 'html', markers: ['OnlyTruePerspective | Rhode Island Creative Technology &amp; Media Studio', 'rel="canonical" href="https://www.onlytrueperspective.tech/"', 'href="/archive"', 'href="/studio#digital"', 'href="/portal"'] },
   { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css?v=20261112-budget-fit-preview-v2', '/bookings.js?v=20261112-budget-fit-preview-v2', 'canonical', 'Your next project starts here.', 'service-selector', 'budget-guide-intro', 'booking-budget-options', 'data-quick-fit-preview', 'quick-fit-examples'] },
   { name: 'songwars', path: '/songwars', kind: 'html', markers: ['Song Wars Weekend', 'data-songwars-poster', 'discord.gg/Awk2b7RSW', 'rel="canonical" href="https://www.onlytrueperspective.tech/songwars"'] },

@@ -1,60 +1,35 @@
 {
-  "releaseName": "otp-client-workspace-v2-documents-ui-2026-11-12",
+  "releaseName": "vault-public-launch-2026-11-21",
+  "baseProductionCommit": "61d2e93a2c61334b7178c3f768bd33ff85729656",
   "includedFiles": [
     ".github/workflows/production-release.yml",
-    "DESIGN.md",
-    "archive.css",
     "archive.html",
-    "archive.js",
-    "bookings.css",
-    "bookings.html",
-    "bookings.js",
-    "client-portal-utils.js",
-    "client-portal-v2.js",
-    "client-portal-v2-renderer.js",
-    "client.html",
-    "client.css",
-    "client.js",
-    "consultant-audit.html",
-    "floorops.html",
+    "assets/vault/launch/app-icon.png",
+    "assets/vault/launch/artist-setup.png",
+    "assets/vault/launch/library.png",
+    "assets/vault/launch/onboarding.png",
+    "assets/vault/launch/player.png",
+    "assets/vault/launch/signal.png",
+    "assets/vault/launch/studio.png",
     "index.html",
-    "insight.html",
-    "insights.html",
-    "portal-entry.css",
-    "portal-sections.js",
-    "portal.html",
-    "portal.js",
-    "privacy.html",
-    "protocol.html",
-    "public-shell.js",
-    "public-system.css",
     "release-manifest.json",
     "scripts/prod_full_sweep.js",
-    "scripts/prod_sweep_v2_runner.js",
     "server.js",
-    "songwars.html",
-    "studio.html",
-    "terms.html",
-    "tests/api_surface_security_contract.test.js",
+    "sitemap.xml",
     "tests/archive_case_study_contract.test.js",
-    "tests/booking_conversion_flow.test.js",
-    "tests/bookings_contract.test.js",
-    "tests/client_portal_render.test.js",
-    "tests/homepage_visual_contract.test.js",
-    "tests/portal_route_contract.test.js",
-    "weatheros-privacy.html",
-    "weatheros-support.html",
-    "weatheros.html",
-    "weatheros/index.html",
-    "weatheros/privacy.html",
-    "weatheros/support.html",
-    "website-design.html",
-    "workspace-v2.css"
+    "tests/master_runner.js",
+    "tests/vault_web_presence_contract.test.js",
+    "tests/youtube_video_contract.test.js",
+    "vault/index.html",
+    "vault/launch.css",
+    "vault/launch.js",
+    "vault/privacy.html",
+    "vault/support.html",
+    "vercel.json"
   ],
   "excludedDirtyFiles": [
-    "Only the scoped booking guidance update in DESIGN.md is included; unrelated OTP OS workspace changes remain out of scope.",
-    "Original checkout FLOIVATION media assets under assets/case-studies/floivation/ are untracked and are unrelated to this portal release.",
-    "OTP OS working tree changes are separate; no client records, app binary, or OTP OS deployment are included in this Site release."
+    "Original OTP Site portal and offer-conversion working trees remain untouched. Release is based on the last successful production commit to preserve the currently live client portal.",
+    "OTP OS dirty source, app binaries, user music, private data and unrelated projects are excluded."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -67,74 +42,65 @@
   "testsRun": [
     {
       "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm test",
-      "status": "passed; final full master suite, 56 checks and 0 failures. PORT=1 isolated the unrelated local listener on port 3000; the database-backed contact journey is skipped without local database configuration."
+      "status": "passed; 57 checks, zero failures. Database-backed contact journey skipped without local database configuration."
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed; four pinned OTP contracts"
+      "status": "passed; four pinned OTP contracts."
     },
     {
       "command": "npm run security:scan",
-      "status": "passed; secret scan passed across 369 files after the final portal and sweep changes"
+      "status": "passed; final staged-source secret scan across 382 files, including new VAULT pages and assets."
     },
     {
       "command": "npm run build:speed-insights",
-      "status": "passed; local Speed Insights bundle built successfully"
+      "status": "passed; esbuild bundle completed."
     },
     {
       "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm run master_test:ci",
-      "status": "passed against https://www.onlytrueperspective.tech; full master suite, 56 checks and 0 failures, validating the current production baseline before deployment."
+      "status": "passed; 57 checks, zero failures against current live production baseline."
     },
     {
-      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4493 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
-      "status": "passed against the local site with every public target active, including the versioned private portal shell/assets, profile utility, safe document preview, and inline/attachment PDF fixture checks."
+      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4497 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
+      "status": "passed; 61 public targets including all VAULT pages, script, stylesheet and seven screenshots/icons. Local authenticated checks skipped without credentials."
     },
     {
-      "command": "gh workflow run production-release.yml --ref codex/otp-client-workspace-release-20261111 -f confirm_clean_release=CLEAN_RELEASE",
-      "status": "previous guarded release 43165950182 completed successfully on base SHA e3fcbdf8beba533193eba727c048db693c3e2d14. This new portal documents change is being released in a separate guarded run after commit."
-    },
-    {
-      "command": "node --check client.js && node --check client-portal-v2.js && node --check client-portal-v2-renderer.js && node --check portal-sections.js && node --check scripts/prod_full_sweep.js && git diff --check",
-      "status": "passed after the portal tabs, compact document actions, and cache-busting edits"
-    },
-    {
-      "command": "OTP_PRIMARY_CHECKOUT=/Users/eli/Documents/GitHub/otp-site npm run release:scope",
-      "status": "passed; the 9 dirty portal release files are included, with no sensitive or generated artifacts."
-    },
-    {
-      "command": "node tests/client_portal_render.test.js && node tests/portal_route_contract.test.js",
-      "status": "passed; blocked readiness stays safe, document preview/PDF links stay client-safe, Service Summary and Paid Receipt map to supported routes, and confirmed scope displays as complete."
-    },
-    {
-      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4493 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
-      "status": "passed against the local site; safe fixture PDF signature and inline preview/attachment download dispositions verified."
+      "command": "node --check server.js; node --check vault/launch.js; node --check scripts/prod_full_sweep.js; git diff --check",
+      "status": "passed; final syntax and whitespace checks."
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "The signed-in production portal was checked read-only: it shows the real client-specific profile but still serves the older text-only tabs and document list. The local v2 preview displays compact icon-led sections and View/PDF actions; the local safe fixture verifies the preview route and PDF attachment/inline headers only, not client data. No client record was edited, portal invite copied or rotated, or document generated or sent."
+    "summary": "Chrome desktop 1440px and mobile 390x844: restored VAULT hero and genuine sample screenshots render, Library and SIGNAL controls update screenshot and pressed state, mobile automatic preview scroll works, no console warnings/errors on VAULT. Fixed ambient pseudo-element overflow and verified document width equals 390px. Homepage day/night toggle works and VAULT discovery link is present. Existing booking/portal source and behavior protected by contract suite and local full sweep."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Guarded production run 43165950182 completed successfully on the current base commit, including its authenticated pre-deploy sweep. This release workflow will repeat the authenticated sweep for the portal document changes. New versioned portal assets and document routes are deferred only during pre-deploy checks and verified by the workflow's required post-deploy full sweep. No credential values or client records are included in this manifest."
+    "summary": "Current production baseline 61d2e93 was verified by successful guarded run 43260915658 including authenticated sweep. This release workflow must repeat its required authenticated sweep using existing GitHub secrets before deployment; no credentials are copied locally. New VAULT targets are deferred in pre-deploy baseline checks only, and required in the post-deploy sweep."
   },
   "deploymentTarget": {
     "project": "otp-site",
-    "previewUrl": "http://127.0.0.1:4493",
+    "previewUrl": "http://127.0.0.1:4497",
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
     ],
     "verificationRoutes": [
       "/",
+      "/vault",
+      "/vault/",
+      "/vault/privacy",
+      "/vault/support",
       "/start-project",
       "/bookings",
       "/archive",
       "/portal",
       "/client/:portalToken",
-      "/api/client-portal/:portalToken",
-      "/api/client/portal/:portalToken/documents/:type/view",
-      "/api/client/portal/:portalToken/documents/:type/pdf"
+      "/os"
     ]
+  },
+  "appStoreListing": {
+    "appId": "6814101540",
+    "url": "https://apps.apple.com/app/id6814101540",
+    "status": "Public listing availability not confirmed; CTA is neutral and pricing omitted."
   }
 }
