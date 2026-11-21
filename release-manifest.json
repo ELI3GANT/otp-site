@@ -1,31 +1,11 @@
 {
-  "releaseName": "vault-public-launch-2026-11-21",
-  "baseProductionCommit": "61d2e93a2c61334b7178c3f768bd33ff85729656",
+  "releaseName": "vault-storefront-compatibility-2026-11-21",
+  "baseProductionCommit": "0c98a7af1741c1f5680cb0fae515675f6554c364",
   "includedFiles": [
-    ".github/workflows/production-release.yml",
-    "archive.html",
-    "assets/vault/launch/app-icon.png",
-    "assets/vault/launch/artist-setup.png",
-    "assets/vault/launch/library.png",
-    "assets/vault/launch/onboarding.png",
-    "assets/vault/launch/player.png",
-    "assets/vault/launch/signal.png",
-    "assets/vault/launch/studio.png",
-    "index.html",
     "release-manifest.json",
     "scripts/prod_full_sweep.js",
-    "server.js",
-    "sitemap.xml",
-    "tests/archive_case_study_contract.test.js",
-    "tests/master_runner.js",
     "tests/vault_web_presence_contract.test.js",
-    "tests/youtube_video_contract.test.js",
-    "vault/index.html",
-    "vault/launch.css",
-    "vault/launch.js",
-    "vault/privacy.html",
-    "vault/support.html",
-    "vercel.json"
+    "vault/index.html"
   ],
   "excludedDirtyFiles": [
     "Original OTP Site portal and offer-conversion working trees remain untouched. Release is based on the last successful production commit to preserve the currently live client portal.",
@@ -71,11 +51,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Chrome desktop 1440px and mobile 390x844: restored VAULT hero and genuine sample screenshots render, Library and SIGNAL controls update screenshot and pressed state, mobile automatic preview scroll works, no console warnings/errors on VAULT. Fixed ambient pseudo-element overflow and verified document width equals 390px. Homepage day/night toggle works and VAULT discovery link is present. Existing booking/portal source and behavior protected by contract suite and local full sweep."
+    "summary": "Verified Apple public storefront shows VAULT - By OTP, $9.99 and requires iOS26.0. Local questions section and structured metadata now match that shipped app. Prior desktop/mobile screenshot interactions passed on unchanged layout; only compatibility copy and schema changed."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Current production baseline 61d2e93 was verified by successful guarded run 43260915658 including authenticated sweep. This release workflow must repeat its required authenticated sweep using existing GitHub secrets before deployment; no credentials are copied locally. New VAULT targets are deferred in pre-deploy baseline checks only, and required in the post-deploy sweep."
+    "summary": "Current production0c98a7a passed guarded run44883125623, including required authenticated pre-deploy sweep and full post-deploy sweep. This scoped copy correction repeats the guarded pipeline."
   },
   "deploymentTarget": {
     "project": "otp-site",
@@ -101,6 +81,6 @@
   "appStoreListing": {
     "appId": "6814101540",
     "url": "https://apps.apple.com/app/id6814101540",
-    "status": "Public listing availability not confirmed; CTA is neutral and pricing omitted."
+    "status": "Verified public US storefront for VAULT - By OTP 1.0, $9.99, minimum iOS26.0. Public product-page requirements corrected to match shipped1.0; TestFlight1.4.0(12) supports iOS18 but is not the public version."
   }
 }

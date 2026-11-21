@@ -13,7 +13,7 @@ const BASE_URL = String(process.env.OTP_SWEEP_BASE_URL || 'https://www.onlytruep
 const TOKEN = String(process.env.OTP_SWEEP_ADMIN_TOKEN || process.env.OTP_ADMIN_TOKEN || '').trim();
 
 const publicTargets = [
-  { name: 'vault-product', path: '/vault', kind: 'html', markers: ['Keep the music.', 'Make the record.', 'https://apps.apple.com/app/id6814101540', '/vault/launch.css?v=20261121-launch'] },
+  { name: 'vault-product', path: '/vault', kind: 'html', markers: ['Keep the music.', 'Make the record.', 'Ready for iOS 26.', 'https://apps.apple.com/app/id6814101540', '/vault/launch.css?v=20261121-launch'] },
   { name: 'vault-privacy', path: '/vault/privacy', kind: 'html', markers: ['VAULT Privacy Policy', 'Device or iCloud backups'] },
   { name: 'vault-support', path: '/vault/support', kind: 'html', markers: ['VAULT Support', 'Back up before making changes'] },
   { name: 'vault-css', path: '/vault/launch.css?v=20261121-launch', kind: 'css', markers: ['prefers-reduced-motion', '.hero'] },

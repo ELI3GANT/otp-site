@@ -13,7 +13,7 @@ async function main() {
   window.eval(read('vault/launch.js'));
   const page = window.document;
   const schema = JSON.parse(page.querySelector('script[type="application/ld+json"]').textContent);
-  assert.equal(schema.operatingSystem, 'iOS 18.0 or later');
+  assert.equal(schema.operatingSystem, 'iOS 26.0 or later');
   assert.equal(page.querySelector('.explore').href, 'https://apps.apple.com/app/id6814101540');
   for (const name of ['library', 'signal', 'artist-setup', 'onboarding', 'player']) {
     const button = page.querySelector(`.feature[data-screen="${name}"]`);
