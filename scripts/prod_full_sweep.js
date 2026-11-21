@@ -17,7 +17,7 @@ const publicTargets = [
   { name: 'vault-privacy', path: '/vault/privacy', kind: 'html', markers: ['VAULT Privacy Policy', 'Device or iCloud backups'] },
   { name: 'vault-support', path: '/vault/support', kind: 'html', markers: ['VAULT Support', 'Back up before making changes'] },
   { name: 'vault-css', path: '/vault/launch.css?v=20261121-launch', kind: 'css', markers: ['prefers-reduced-motion', '.hero'] },
-  { name: 'vault-js', path: '/vault/launch.js?v=20261121-launch', kind: 'js', markers: ['transitionToken', 'artist-setup', 'aria-pressed'] },
+  { name: 'vault-js', path: '/vault/launch.js?v=20261121-preview-sync', kind: 'js', markers: ['transitionToken', 'artist-setup', 'aria-pressed', 'featureButtons'] },
   ...['app-icon', 'studio', 'player', 'library', 'signal', 'artist-setup', 'onboarding'].map((name) => ({ name: `vault-capture-${name}`, path: `/assets/vault/launch/${name}.png`, kind: 'png' })),
   { name: 'home', path: '/', kind: 'html', markers: ['OnlyTruePerspective | Rhode Island Creative Technology &amp; Media Studio', 'rel="canonical" href="https://www.onlytrueperspective.tech/"', 'href="/archive"', 'href="/studio#digital"', 'href="/portal"'] },
   { name: 'bookings', path: '/bookings', kind: 'html', markers: ['/bookings.css?v=20261112-budget-fit-preview-v2', '/bookings.js?v=20261112-budget-fit-preview-v2', 'canonical', 'Your next project starts here.', 'service-selector', 'budget-guide-intro', 'booking-budget-options', 'data-quick-fit-preview', 'quick-fit-examples'] },

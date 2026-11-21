@@ -1,11 +1,12 @@
 {
-  "releaseName": "vault-storefront-compatibility-2026-11-21",
-  "baseProductionCommit": "0c98a7af1741c1f5680cb0fae515675f6554c364",
+  "releaseName": "vault-preview-selection-and-store-link-2026-11-21",
+  "baseProductionCommit": "ba07ea48760a990189d7b39533ec292c3a545666",
   "includedFiles": [
     "release-manifest.json",
     "scripts/prod_full_sweep.js",
     "tests/vault_web_presence_contract.test.js",
-    "vault/index.html"
+    "vault/index.html",
+    "vault/launch.js"
   ],
   "excludedDirtyFiles": [
     "Original OTP Site portal and offer-conversion working trees remain untouched. Release is based on the last successful production commit to preserve the currently live client portal.",
@@ -51,11 +52,11 @@
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "Verified Apple public storefront shows VAULT - By OTP, $9.99 and requires iOS26.0. Local questions section and structured metadata now match that shipped app. Prior desktop/mobile screenshot interactions passed on unchanged layout; only compatibility copy and schema changed."
+    "summary": "Chrome desktop and390x844 phone viewport: artist preview changes the image, selects exactly the matching workflow button and remains a normal action button. The page width stays390px. A second real App Store link appears after the product overview. Regression was reproduced before the fix and now passes. Existing reduced-motion test and live route/asset checks pass."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "Current production0c98a7a passed guarded run44883125623, including required authenticated pre-deploy sweep and full post-deploy sweep. This scoped copy correction repeats the guarded pipeline."
+    "summary": "The current production baseline ba07ea4 passed guarded run44883989084 including its authenticated pre-deploy and complete post-deploy sweeps. This release repeats the required authenticated sweep before deployment. Updated VAULT script is deferred only before deployment and checked at its new cache key after deployment."
   },
   "deploymentTarget": {
     "project": "otp-site",

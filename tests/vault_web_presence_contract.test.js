@@ -15,6 +15,7 @@ async function main() {
   const schema = JSON.parse(page.querySelector('script[type="application/ld+json"]').textContent);
   assert.equal(schema.operatingSystem, 'iOS 26.0 or later');
   assert.equal(page.querySelector('.explore').href, 'https://apps.apple.com/app/id6814101540');
+  assert.ok(page.querySelector('.answers a[href="https://apps.apple.com/app/id6814101540"]'), 'App Store is reachable after the product overview');
   for (const name of ['library', 'signal', 'artist-setup', 'onboarding', 'player']) {
     const button = page.querySelector(`.feature[data-screen="${name}"]`);
     button.click();
@@ -23,6 +24,12 @@ async function main() {
     assert.equal(button.getAttribute('aria-pressed'), 'true');
     assert.equal(page.querySelectorAll('.feature[aria-pressed="true"]').length, 1);
   }
+  const preview = page.querySelector('.customization-link');
+  preview.click();
+  assert.equal(page.querySelector('#feature-screen').getAttribute('src'), '/assets/vault/launch/artist-setup.png');
+  assert.equal(page.querySelector('.feature[data-screen="artist-setup"]').getAttribute('aria-pressed'), 'true');
+  assert.equal(page.querySelectorAll('.feature[aria-pressed="true"]').length, 1);
+  assert.equal(preview.getAttribute('aria-pressed'), null, 'artist preview remains an action button');
   window.close();
 
   process.env.E2E_TEST_MODE = 'true';

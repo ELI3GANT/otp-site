@@ -1,5 +1,6 @@
 let screen = document.getElementById('feature-screen');
 const caption = document.getElementById('screen-caption');
+const featureButtons = document.querySelectorAll('.feature[data-screen]');
 const descriptions = {
   studio: 'VAULT Studio showing a sample catalog and an active master.',
   library: 'VAULT Library with songs and versions from a sample catalog.',
@@ -37,8 +38,8 @@ document.querySelectorAll('[data-screen]').forEach((button) => {
   button.addEventListener('click', () => {
     const name = button.dataset.screen;
     const figure = screen.closest('figure');
-    document.querySelectorAll('[data-screen]').forEach((item) => {
-      const selected = item === button;
+    featureButtons.forEach((item) => {
+      const selected = item.dataset.screen === name;
       item.classList.toggle('active', selected);
       item.setAttribute('aria-pressed', String(selected));
     });
