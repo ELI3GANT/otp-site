@@ -1,4 +1,12 @@
 const fs = require('fs');
+const {
+    isSandboxOrPreviewEnv,
+    isForbiddenProdHost,
+    resolveSandboxSafeUpstream,
+    resolveSandboxSafeOrigin,
+    applySiteSandboxIsolation
+} = require('./server/sandbox-isolation');
+
 process.on('uncaughtException', (err) => {
     console.error('Uncaught exception:', err);
     process.exit(1);
@@ -7,8 +15,18 @@ process.on('unhandledRejection', (reason) => {
     console.error('Unhandled rejection:', reason);
 });
 
-// Load environment variables (Standard)
-require('dotenv').config();
+// Load environment variables (skip local .env file on Vercel Preview)
+if (!(process.env.VERCEL === '1' && String(process.env.VERCEL_ENV || '').toLowerCase() === 'preview')) {
+    require('dotenv').config();
+}
+
+// Fail-closed sandbox/preview isolation BEFORE Stripe, Supabase Admin, or AI/Email init
+const sandboxIsolation = applySiteSandboxIsolation(process.env);
+if (sandboxIsolation.active) {
+    console.log(
+        `🛡️ Sandbox/Preview isolation active (directStripe=${sandboxIsolation.allowDirectStripe}, directSupabase=${sandboxIsolation.allowDirectSupabase}, stripped=${sandboxIsolation.stripped.length})`
+    );
+}
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
@@ -72,10 +90,10 @@ function getOtpDocLogoDataUri() {
     return _otpDocLogoDataUri;
 }
 
-// Safe Stripe Init
+// Safe Stripe Init (disabled in sandbox/preview unless explicitly QA-validated)
 let stripe = null;
 try {
-    if (process.env.STRIPE_SECRET_KEY) {
+    if ((!sandboxIsolation.active || sandboxIsolation.allowDirectStripe) && process.env.STRIPE_SECRET_KEY) {
         // Trim to remove accidental whitespace/newlines from copy-paste
         stripe = require('stripe')(process.env.STRIPE_SECRET_KEY.trim());
     }
@@ -2064,9 +2082,9 @@ async function runOracleRecommendation({ lead, leadId, sourceTable }) {
 }
 
 // Initialize Supabase Admin Client (Service Role)
-// Only needed if performing admin actions like Delete/Update on restricted tables
-const supabaseAdmin = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY 
-    ? createClient(process.env.SUPABASE_URL.trim(), process.env.SUPABASE_SERVICE_KEY.trim()) 
+// Disabled in sandbox/preview unless explicitly QA-validated against tybgpykqaqaeoghdvpet
+const supabaseAdmin = (!sandboxIsolation.active || sandboxIsolation.allowDirectSupabase) && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY
+    ? createClient(process.env.SUPABASE_URL.trim(), process.env.SUPABASE_SERVICE_KEY.trim())
     : null;
 
 if (supabaseAdmin) {
@@ -2418,10 +2436,7 @@ function privatePortalHtml(res) {
     ].join(';'));
 }
 
-const IS_NON_PROD_SANDBOX_SITE = (
-    (process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'preview')
-    || ['qa', 'sandbox'].includes(String(process.env.OTP_ENV || '').trim().toLowerCase())
-);
+const IS_NON_PROD_SANDBOX_SITE = sandboxIsolation.active || isSandboxOrPreviewEnv(process.env);
 const RAW_OTP_OS_UPSTREAM = String(
     process.env.OTP_OS_UPSTREAM_URL
     || process.env.OTP_OS_UPSTREAM
@@ -2430,15 +2445,10 @@ const RAW_OTP_OS_UPSTREAM = String(
     || ''
 ).trim().replace(/\/+$/, '');
 const OTP_OS_UPSTREAM_FORBIDDEN_PROD = 'otp-os.vercel.app';
-const OTP_OS_UPSTREAM_ORIGIN = (() => {
-    if (IS_NON_PROD_SANDBOX_SITE) {
-        if (!RAW_OTP_OS_UPSTREAM || RAW_OTP_OS_UPSTREAM.includes(OTP_OS_UPSTREAM_FORBIDDEN_PROD)) {
-            return '';
-        }
-        return RAW_OTP_OS_UPSTREAM;
-    }
-    return RAW_OTP_OS_UPSTREAM || 'https://otp-os.vercel.app';
-})();
+const OTP_OS_UPSTREAM_ORIGIN = resolveSandboxSafeUpstream(RAW_OTP_OS_UPSTREAM, {
+    isSandbox: IS_NON_PROD_SANDBOX_SITE,
+    fallbackProd: 'https://otp-os.vercel.app'
+});
 const OTP_OS_PROXY_MAX_BODY_BYTES = positiveInteger(
     process.env.OTP_OS_PROXY_MAX_BODY_BYTES,
     1024 * 1024
@@ -2694,7 +2704,16 @@ async function proxyFloorOpsApp(req, res, next, isRawAsset = false) {
                 body: proxyBody
             });
         } catch (_localErr) {
-            const fallbackOrigin = process.env.FLOOROPS_UPSTREAM_ORIGIN || 'https://otp-floorops.vercel.app';
+            const fallbackOrigin = resolveSandboxSafeUpstream(process.env.FLOOROPS_UPSTREAM_ORIGIN, {
+                isSandbox: IS_NON_PROD_SANDBOX_SITE,
+                fallbackProd: 'https://otp-floorops.vercel.app'
+            });
+            if (!fallbackOrigin) {
+                return res.status(503).json({
+                    error: 'qa_floorops_upstream_not_configured',
+                    message: 'FloorOps upstream is disabled in sandbox/preview mode without an isolated QA origin.'
+                });
+            }
             targetUrl = `${fallbackOrigin}${mappedPath}${query}`;
             headers['x-forwarded-host'] = req.headers.host || 'www.onlytrueperspective.tech';
             headers['x-forwarded-proto'] = 'https';
@@ -3076,23 +3095,10 @@ const OTP_BOOKINGS_UPSTREAM = IS_NON_PROD_SANDBOX_SITE
         || OTP_OS_UPSTREAM_ORIGIN
         || 'https://otp-os.vercel.app'
     ).replace(/\/+$/, '');
-function normalizeOtpPublicSiteOrigin(value) {
-    try {
-        const url = new URL(String(value || 'https://www.onlytrueperspective.tech').trim());
-        if (!/^https?:$/.test(url.protocol)) throw new Error('invalid protocol');
-        if (url.hostname.toLowerCase() === 'onlytrueperspective.tech') {
-            url.hostname = 'www.onlytrueperspective.tech';
-        }
-        url.protocol = 'https:';
-        url.hash = '';
-        url.search = '';
-        return url.toString().replace(/\/+$/, '');
-    } catch (_) {
-        return 'https://www.onlytrueperspective.tech';
-    }
-}
-
-const OTP_PUBLIC_SITE_ORIGIN = normalizeOtpPublicSiteOrigin(process.env.OTP_PUBLIC_SITE_ORIGIN);
+const OTP_PUBLIC_SITE_ORIGIN = resolveSandboxSafeOrigin(process.env.OTP_PUBLIC_SITE_ORIGIN, {
+    isSandbox: IS_NON_PROD_SANDBOX_SITE,
+    vercelUrl: process.env.VERCEL_URL || ''
+});
 function normalizeCheckoutOrigin(value) {
     try {
         const url = new URL(String(value || '').trim());
@@ -3111,9 +3117,9 @@ function normalizeCheckoutOrigin(value) {
 
 const checkoutAllowedOrigins = new Set([
     OTP_PUBLIC_SITE_ORIGIN,
-    'https://www.onlytrueperspective.tech',
+    ...(IS_NON_PROD_SANDBOX_SITE ? [] : ['https://www.onlytrueperspective.tech']),
     ...configuredOrigins
-].map(normalizeCheckoutOrigin).filter(Boolean));
+].map(normalizeCheckoutOrigin).filter((origin) => origin && (!IS_NON_PROD_SANDBOX_SITE || !isForbiddenProdHost(origin))));
 
 function resolveCheckoutOrigin(req) {
     const candidates = [
@@ -3130,17 +3136,22 @@ function resolveCheckoutOrigin(req) {
     return OTP_PUBLIC_SITE_ORIGIN;
 }
 
-const OTP_CLIENT_PORTAL_UPSTREAM = String(
-    process.env.OTP_CLIENT_PORTAL_UPSTREAM_URL
-    || process.env.OTP_OS_PUBLIC_BASE
-    || OTP_BOOKINGS_UPSTREAM
-).replace(/\/+$/, '');
+const OTP_CLIENT_PORTAL_UPSTREAM = resolveSandboxSafeUpstream(
+    process.env.OTP_CLIENT_PORTAL_UPSTREAM_URL || process.env.OTP_OS_PUBLIC_BASE || OTP_BOOKINGS_UPSTREAM,
+    { isSandbox: IS_NON_PROD_SANDBOX_SITE, fallbackProd: OTP_BOOKINGS_UPSTREAM }
+);
 const OTP_BOOKING_WRITER_POLICY = resolveBookingWriterPolicy();
 const OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS = positiveNumber(process.env.OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS, 9000);
-const OTP_OS_JOB_MUTATION_UPSTREAM = String(process.env.OTP_OS_JOB_MUTATION_UPSTREAM_URL || OTP_BOOKINGS_UPSTREAM).replace(/\/+$/, '');
+const OTP_OS_JOB_MUTATION_UPSTREAM = resolveSandboxSafeUpstream(
+    process.env.OTP_OS_JOB_MUTATION_UPSTREAM_URL || OTP_BOOKINGS_UPSTREAM,
+    { isSandbox: IS_NON_PROD_SANDBOX_SITE, fallbackProd: OTP_BOOKINGS_UPSTREAM }
+);
 const OTP_OS_JOB_MUTATION_TOKEN = String(process.env.OTP_OS_JOB_MUTATION_TOKEN || '').trim();
 const OTP_OS_JOB_MUTATION_TIMEOUT_MS = positiveNumber(process.env.OTP_OS_JOB_MUTATION_TIMEOUT_MS, 8000);
-const OTP_OS_JOB_ARCHIVE_UPSTREAM = String(process.env.OTP_OS_JOB_ARCHIVE_UPSTREAM_URL || OTP_OS_JOB_MUTATION_UPSTREAM).replace(/\/+$/, '');
+const OTP_OS_JOB_ARCHIVE_UPSTREAM = resolveSandboxSafeUpstream(
+    process.env.OTP_OS_JOB_ARCHIVE_UPSTREAM_URL || OTP_OS_JOB_MUTATION_UPSTREAM,
+    { isSandbox: IS_NON_PROD_SANDBOX_SITE, fallbackProd: OTP_OS_JOB_MUTATION_UPSTREAM }
+);
 const OTP_OS_JOB_ARCHIVE_TOKEN = String(process.env.OTP_OS_JOB_ARCHIVE_TOKEN || '').trim();
 const OTP_OS_JOB_ARCHIVE_TIMEOUT_MS = positiveNumber(process.env.OTP_OS_JOB_ARCHIVE_TIMEOUT_MS, 8000);
 const OTP_BOOKINGS_PROXY_HEADERS = new Set([
@@ -3271,6 +3282,7 @@ function normalizeClientPortalToken(value) {
 }
 
 function e2eTestModeEnabled() {
+    if (IS_NON_PROD_SANDBOX_SITE) return false;
     return ['1', 'true'].includes(String(process.env.E2E_TEST_MODE || '').trim().toLowerCase());
 }
 
