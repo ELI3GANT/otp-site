@@ -3,7 +3,7 @@
  * Always serve HTML fresh from network. Never cache HTML.
  */
 
-const SW_VERSION = 'otp-sw-v16.2.0';
+const SW_VERSION = 'otp-sw-v16.3.0';
 
 self.addEventListener('install', () => {
   self.skipWaiting(); // Activate immediately
@@ -31,10 +31,23 @@ self.addEventListener('fetch', (event) => {
   // Only intercept same-origin GET requests
   if (request.method !== 'GET' || url.origin !== location.origin) return;
 
-  // Do not intercept API or health checks — paths without "." are not always HTML.
+  // Do not intercept API, health, or live transactional commercial/portal routes.
   const pathName = url.pathname;
-  const isApiOrPing = pathName.startsWith('/api') || pathName === '/ping';
-  const isHTML = !isApiOrPing && (
+  const isDynamicOrApi = (
+    pathName.startsWith('/api') ||
+    pathName === '/ping' ||
+    pathName.startsWith('/proposal') ||
+    pathName.startsWith('/client') ||
+    pathName.startsWith('/portal') ||
+    pathName.startsWith('/payment') ||
+    pathName.startsWith('/launch') ||
+    pathName.startsWith('/start-project') ||
+    pathName.startsWith('/bookings') ||
+    pathName.startsWith('/quote') ||
+    pathName.startsWith('/os')
+  );
+  if (isDynamicOrApi) return;
+  const isHTML = (
     pathName === '/' ||
     pathName.endsWith('.html') ||
     !pathName.includes('.')

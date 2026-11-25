@@ -98,6 +98,65 @@
       node.classList.add('public-motion-enter');
       observer.observe(node);
     });
+    const viewportVideos = Array.from(document.querySelectorAll('video[data-otp-viewport-video]'));
+    if (window.OTP_MOTION) {
+      viewportVideos.forEach((vid) => {
+        window.OTP_MOTION.register(vid, { autoplay: !preference.matches, margin: 140 });
+      });
+      return;
+    }
+    const syncViewportVideo = (vid, inView) => {
+      if (!vid) return;
+      vid.muted = true;
+      vid.defaultMuted = true;
+      vid.loop = true;
+      vid.playsInline = true;
+      vid.setAttribute('muted', '');
+      vid.setAttribute('playsinline', '');
+      vid.setAttribute('webkit-playsinline', '');
+      vid.setAttribute('loop', '');
+      if (!preference.matches) vid.setAttribute('autoplay', '');
+      if (inView && !preference.matches && !document.hidden) {
+        if (vid.preload === 'none') vid.preload = 'auto';
+        try {
+          const p = vid.play?.();
+          if (p && typeof p.then === 'function') {
+            p.then(() => {
+              if (vid.readyState >= 2) vid.classList.add('is-video-ready');
+            }).catch(() => {});
+          }
+        } catch {}
+      } else {
+        vid.pause?.();
+      }
+    };
+    const isVideoInRange = (vid) => {
+      const rect = vid.getBoundingClientRect?.();
+      if (!rect || rect.width === 0 || rect.height === 0) return false;
+      const vh = window.innerHeight || document.documentElement?.clientHeight || 900;
+      return rect.bottom >= -140 && rect.top <= vh + 140;
+    };
+    const syncAllViewportVideos = () => {
+      viewportVideos.forEach((vid) => syncViewportVideo(vid, isVideoInRange(vid)));
+    };
+    const mediaObs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => syncViewportVideo(entry.target, entry.isIntersecting));
+    }, { threshold: 0.05, rootMargin: '140px 0px' });
+    viewportVideos.forEach((vid) => {
+      vid.addEventListener('loadeddata', () => {
+        vid.classList.add('is-video-ready');
+        syncViewportVideo(vid, isVideoInRange(vid));
+      });
+      vid.addEventListener('canplay', () => {
+        vid.classList.add('is-video-ready');
+        syncViewportVideo(vid, isVideoInRange(vid));
+      });
+      vid.addEventListener('playing', () => vid.classList.add('is-video-ready'));
+      mediaObs.observe(vid);
+    });
+    document.addEventListener('visibilitychange', syncAllViewportVideos);
+    window.addEventListener?.('otp:themechange', syncAllViewportVideos);
+    window.requestAnimationFrame?.(syncAllViewportVideos);
   }
 
   document.addEventListener('visibilitychange', () => {

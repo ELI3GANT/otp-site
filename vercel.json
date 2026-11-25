@@ -310,6 +310,14 @@
       "dest": "/weatheros/privacy.html"
     },
     {
+      "src": "^/launch/?$",
+      "dest": "/launch.html"
+    },
+    {
+      "src": "^/proposal/([^/]+)/?$",
+      "dest": "/server.js"
+    },
+    {
       "src": "/(start-project|bookings|booking|book|book-otp)/?",
       "dest": "/bookings.html"
     },

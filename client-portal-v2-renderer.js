@@ -211,6 +211,20 @@ function paymentCard(view) {
 
 function timelineCard(view) {
   const card = sectionCard('Timeline', '', 'timeline');
+  const steps = Array.isArray(view.timeline) ? view.timeline : [];
+  if (steps.length) {
+    const doneCount = steps.filter((s) => /complete|done|paid|approved/i.test(s.status || '')).length;
+    const pct = Math.round((doneCount / steps.length) * 100);
+    const prog = node('div', 'portal-v2-progress');
+    const meta = node('div', 'portal-v2-progress-meta');
+    meta.append(node('span', '', `${doneCount} of ${steps.length} milestones complete`), node('strong', '', `${pct}%`));
+    const track = node('div', 'portal-v2-progress-track');
+    const fill = node('span', 'portal-v2-progress-fill');
+    fill.style.width = `${pct}%`;
+    track.append(fill);
+    prog.append(meta, track);
+    card.append(prog);
+  }
   const timeline = node('ol', 'portal-timeline');
   for (const step of view.timeline) {
     const item = node('li', `portal-timeline-step ${step.status.toLowerCase()}`);

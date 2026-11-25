@@ -564,16 +564,148 @@ function referencesCard(token = '', references = {}) {
   return section;
 }
 
+function launchDeliveryCard(token = '', delivery = {}, payment = {}) {
+  if (!delivery || typeof delivery !== 'object') return null;
+  const hasDeliveryData = Boolean(
+    delivery.previewUrl
+    || (Array.isArray(delivery.milestones) && delivery.milestones.length)
+    || (delivery.handoff && (delivery.handoff.domain || delivery.handoff.vercel_project || delivery.handoff.github_repo))
+  );
+  if (!hasDeliveryData) return null;
+
+  const section = el('section', 'card');
+  section.append(el('h3', '', 'Preview, Revisions & Ownership Handoff'));
+
+  if (delivery.previewUrl) {
+    const staging = el('div', 'portal-staging-card');
+    const bar = el('div', 'portal-staging-bar');
+    bar.append(el('span', '', '• • • Staging Build Ready'), el('strong', '', 'Verified Preview'));
+    const urlText = el('p', 'entry-copy', delivery.previewUrl);
+    urlText.style.wordBreak = 'break-all';
+    urlText.style.margin = '0';
+    const previewWrap = el('div', 'document-actions');
+    previewWrap.append(buttonLink('Open Live Preview ↗', delivery.previewUrl, true));
+    staging.append(bar, urlText, previewWrap);
+    section.append(staging);
+  }
+
+  if (Array.isArray(delivery.milestones) && delivery.milestones.length) {
+    const mList = el('ul', 'info-list');
+    delivery.milestones.forEach((m) => {
+      mList.append(el('li', '', `${m.title} — ${String(m.status || 'pending').replace(/_/g, ' ')}`));
+    });
+    section.append(mList);
+  }
+
+  if (delivery.handoff && (delivery.handoff.domain || delivery.handoff.vercel_project || delivery.handoff.github_repo)) {
+    const hRows = el('div', 'info-list');
+    [
+      infoRow('Production Domain', delivery.handoff.domain),
+      infoRow('Vercel Project', delivery.handoff.vercel_project),
+      infoRow('GitHub Repository', delivery.handoff.github_repo),
+      infoRow('Ownership Handoff', delivery.finalBalanceSettled ? 'Unlocked (Final balance settled)' : 'Locked until final balance is settled')
+    ].filter(Boolean).forEach((r) => hRows.append(r));
+    section.append(hRows);
+  }
+
+  if (token) {
+    const feedback = el('p', 'entry-copy', '');
+    const form = el('form', 'portal-form');
+    const noteInput = input('revision_note', 'textarea', 'Request a revision or leave preview notes...');
+    const revBtn = el('button', 'secondary', 'Request Revision');
+    const appBtn = el('button', '', 'Approve Preview');
+    appBtn.type = 'button';
+
+    appBtn.addEventListener('click', async () => {
+      appBtn.disabled = true;
+      try {
+        await postJson(`/api/launch/portal/${encodeURIComponent(token)}/delivery-action`, {
+          action: 'approve_preview',
+          note: noteInput.value || 'Client approved preview.'
+        });
+        feedback.textContent = 'Preview approval recorded.';
+        setStatus('Preview Approved', 'ready');
+      } catch (err) {
+        feedback.textContent = err.message || 'Could not record approval.';
+        appBtn.disabled = false;
+      }
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!clean(noteInput.value)) {
+        feedback.textContent = 'Please enter revision details first.';
+        return;
+      }
+      revBtn.disabled = true;
+      try {
+        await postJson(`/api/launch/portal/${encodeURIComponent(token)}/delivery-action`, {
+          action: 'request_revision',
+          note: noteInput.value
+        });
+        noteInput.value = '';
+        feedback.textContent = 'Revision request sent to OTP.';
+        setStatus('Revision Requested', 'ready');
+      } catch (err) {
+        feedback.textContent = err.message || 'Could not submit revision.';
+      } finally {
+        revBtn.disabled = false;
+      }
+    });
+
+    const btnRow = el('div', 'next-actions');
+    btnRow.append(appBtn, revBtn);
+    form.append(field('Preview Feedback / Revision', noteInput), btnRow);
+    section.append(feedback, form);
+  }
+
+  return section;
+}
+
 function renderDashboard(data, token = '') {
   const { portal, client, retainer, nextStep, followUp, contact, approvals, references } = normalizePortalPayload(data);
   const view = buildClientPortalViewV2(data, { now: portal.lastUpdated, portalToken: token });
   const { masthead, footer, sections } = renderClientPortalViewV2(view);
   const selected = portalRoot.querySelector('.portal-sections')?.dataset.section || 'overview';
+  const billingItems = [sections.payment, retainerCard(retainer)];
+  if (Number(data.payment?.remainingBalanceCents || data.payment?.amountDueCents || 0) > 0 && token) {
+    const balanceCard = el('section', 'card');
+    const balStatus = el('p', 'entry-copy', 'Settle remaining project balance via Stripe Checkout when ready.');
+    const payBalBtn = el('button', '', 'Pay Remaining Balance →');
+    payBalBtn.type = 'button';
+    payBalBtn.addEventListener('click', async () => {
+      payBalBtn.disabled = true;
+      try {
+        const returnBase = `${window.location.origin}/client/${encodeURIComponent(token)}`;
+        const res = await postJson('/api/launch/checkout', {
+          portal_token: token,
+          order_type: 'balance',
+          origin: window.location.origin,
+          success_url: `${returnBase}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${returnBase}?checkout=cancelled`,
+          idempotency_key: `PORTAL-BAL-${token.slice(0, 12)}-${Date.now()}`
+        });
+        if (res.checkout_url) {
+          window.location.href = res.checkout_url;
+          return;
+        }
+        balStatus.textContent = res.code === 'checkout_temporarily_disabled'
+          ? (res.blocker || 'Online checkout is temporarily paused. Already-submitted payments still reconcile automatically.')
+          : (res.blocker || 'Checkout unavailable in this environment.');
+      } catch (err) {
+        balStatus.textContent = err.message || 'Checkout unavailable in this environment.';
+      } finally {
+        payBalBtn.disabled = false;
+      }
+    });
+    balanceCard.append(el('h3', '', 'Final Balance Checkout'), balStatus, payBalBtn);
+    billingItems.push(balanceCard);
+  }
   const workspace = createPortalSections({
     overview: [sections.overview, approvals.length ? approvalsCard(token, approvals, client) : null],
-    project: [sections.timeline, sections.delivery, sections.projects],
+    project: [sections.timeline, sections.delivery, launchDeliveryCard(token, data.delivery, data.payment), sections.projects],
     documents: [sections.documents],
-    billing: [sections.payment, retainerCard(retainer)],
+    billing: billingItems,
     support: [nextStepCard(nextStep, followUp, contact), sections.assistant, referencesCard(token, references)]
   }, { selected });
   const toolbar = portalToolbar(token);

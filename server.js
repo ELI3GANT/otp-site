@@ -111,6 +111,7 @@ try {
     OTP_VIDEO_LIBRARY = null;
 }
 const SONG_WARS_CONFIG = require('./songwars-config.js');
+const OTP_LAUNCH_CATALOG = require('./launch-catalog.js');
 
 function positiveNumber(value, fallback) {
     const parsed = Number(value);
@@ -2417,7 +2418,27 @@ function privatePortalHtml(res) {
     ].join(';'));
 }
 
-const OTP_OS_UPSTREAM_ORIGIN = 'https://otp-os.vercel.app';
+const IS_NON_PROD_SANDBOX_SITE = (
+    (process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'preview')
+    || ['qa', 'sandbox'].includes(String(process.env.OTP_ENV || '').trim().toLowerCase())
+);
+const RAW_OTP_OS_UPSTREAM = String(
+    process.env.OTP_OS_UPSTREAM_URL
+    || process.env.OTP_OS_UPSTREAM
+    || process.env.OTP_BOOKINGS_UPSTREAM_URL
+    || process.env.OTP_BOOKINGS_API_BASE
+    || ''
+).trim().replace(/\/+$/, '');
+const OTP_OS_UPSTREAM_FORBIDDEN_PROD = 'otp-os.vercel.app';
+const OTP_OS_UPSTREAM_ORIGIN = (() => {
+    if (IS_NON_PROD_SANDBOX_SITE) {
+        if (!RAW_OTP_OS_UPSTREAM || RAW_OTP_OS_UPSTREAM.includes(OTP_OS_UPSTREAM_FORBIDDEN_PROD)) {
+            return '';
+        }
+        return RAW_OTP_OS_UPSTREAM;
+    }
+    return RAW_OTP_OS_UPSTREAM || 'https://otp-os.vercel.app';
+})();
 const OTP_OS_PROXY_MAX_BODY_BYTES = positiveInteger(
     process.env.OTP_OS_PROXY_MAX_BODY_BYTES,
     1024 * 1024
@@ -2486,6 +2507,13 @@ async function readProxyRequestBody(req, maxBytes = OTP_OS_PROXY_MAX_BODY_BYTES)
 
 async function proxyOtpOs(req, res) {
     try {
+        if (!OTP_OS_UPSTREAM_ORIGIN) {
+            return res.status(503).json({
+                ok: false,
+                error: 'qa_upstream_not_configured',
+                message: 'Sandbox/Preview OTP OS upstream URL is required and cannot fall back to production.'
+            });
+        }
         const original = new URL(req.originalUrl, 'https://onlytrueperspective.tech');
         let upstreamPath = original.pathname.replace(/^\/os(?:\/)?/, '/');
         if (!upstreamPath || upstreamPath === '/os') upstreamPath = '/';
@@ -2720,6 +2748,12 @@ app.get('/evehalo.html', (req, res) => res.redirect(308, '/evehalo'));
 app.get(['/evehalo-support.html', '/evehalo-support'], (req, res) => res.redirect(308, '/evehalo/support'));
 app.get(['/evehalo-privacy.html', '/evehalo-privacy'], (req, res) => res.redirect(308, '/evehalo/privacy'));
 
+app.get(['/launch', '/launch/'], (req, res) => {
+    noStoreHtml(res);
+    return res.sendFile(path.join(staticPath, 'launch.html'));
+});
+app.get('/launch.html', (req, res) => res.redirect(308, '/launch'));
+
 // Preserve the public package alias and attribution at Studio engagement guidance.
 app.get('/packages', (req, res) => {
     const params = new URLSearchParams();
@@ -2878,6 +2912,10 @@ app.get('/client/:token', (req, res) => {
 });
 
 app.get(['/quote/:id', '/proposal/:id'], (req, res) => {
+    if (String(req.params.id || '').startsWith('prop_')) {
+        privatePortalHtml(res);
+        return res.sendFile(path.join(staticPath, 'proposal.html'));
+    }
     noStoreHtml(res);
     return res.sendFile(path.join(staticPath, 'quote.html'));
 });
@@ -3030,11 +3068,14 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Ensure pre-flight uses same origin restrictions
 
-const OTP_BOOKINGS_UPSTREAM = String(
-    process.env.OTP_BOOKINGS_UPSTREAM_URL
-    || process.env.OTP_BOOKINGS_API_BASE
-    || 'https://otp-os.vercel.app'
-).replace(/\/+$/, '');
+const OTP_BOOKINGS_UPSTREAM = IS_NON_PROD_SANDBOX_SITE
+    ? OTP_OS_UPSTREAM_ORIGIN
+    : String(
+        process.env.OTP_BOOKINGS_UPSTREAM_URL
+        || process.env.OTP_BOOKINGS_API_BASE
+        || OTP_OS_UPSTREAM_ORIGIN
+        || 'https://otp-os.vercel.app'
+    ).replace(/\/+$/, '');
 function normalizeOtpPublicSiteOrigin(value) {
     try {
         const url = new URL(String(value || 'https://www.onlytrueperspective.tech').trim());
@@ -3108,6 +3149,7 @@ const OTP_BOOKINGS_PROXY_HEADERS = new Set([
     'content-length',
     'user-agent',
     'x-booking-token',
+    'x-booking-upload-token',
     'x-client-name',
     'x-file-name',
     'x-file-size',
@@ -3125,7 +3167,7 @@ const OTP_BOOKINGS_RESPONSE_HEADER_BLOCKLIST = new Set([
 const BOOKING_CLIENT_MESSAGE = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
 const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Booking received. OTP Oracle recommendation is pending review.';
 const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not submit the booking yet. Please check the required fields and try again.';
-const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit']);
+const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit', '/api/bookings/upload-session', '/api/bookings/upload']);
 const CLIENT_PORTAL_TOKEN_RE = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/;
 const CLIENT_PORTAL_DOCUMENT_TYPES = new Set([
     'proposal',
@@ -4299,18 +4341,22 @@ async function saveBookingOpsJob({ bookingId, payload, recommendation, recommend
     return mapOpsJobRowToApi(data);
 }
 
-async function forwardBookingSubmitToUpstream(body) {
+async function forwardBookingSubmitToUpstream(body, { uploadToken = '' } = {}) {
     const upstreamUrl = new URL('/api/bookings/submit', OTP_BOOKINGS_UPSTREAM);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS);
     try {
+        const headers = {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Idempotency-Key': body.idempotency_key
+        };
+        if (uploadToken) {
+            headers['x-booking-upload-token'] = String(uploadToken).trim();
+        }
         const upstream = await fetch(upstreamUrl.href, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'Idempotency-Key': body.idempotency_key
-            },
+            headers,
             body: JSON.stringify(body || {}),
             redirect: 'manual',
             signal: controller.signal
@@ -4421,6 +4467,137 @@ function publicBookingSubmitResponse({ recommendation = null, portalPath = '', n
 
 app.get('/api/bookings/config', (req, res) => {
     res.json(buildPublicBookingConfig());
+});
+
+async function proxyLaunchToOtpOs(req, res, upstreamPath, { method = req.method, body = undefined } = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS);
+    try {
+        const upstreamUrl = new URL(upstreamPath, OTP_BOOKINGS_UPSTREAM);
+        const headers = { Accept: 'application/json' };
+        if (body !== undefined) headers['Content-Type'] = 'application/json';
+        if (req.headers['idempotency-key']) headers['Idempotency-Key'] = String(req.headers['idempotency-key']);
+        const upstream = await fetch(upstreamUrl.href, {
+            method,
+            headers,
+            body: body !== undefined ? JSON.stringify(body) : undefined,
+            redirect: 'manual',
+            signal: controller.signal
+        });
+        const payload = await upstream.json().catch(() => ({}));
+        return res.status(upstream.status).json(payload);
+    } catch (err) {
+        return res.status(503).json({
+            ok: false,
+            code: 'otp_os_unavailable',
+            message: 'OTP commercial engine is temporarily unavailable.'
+        });
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+app.get('/api/launch/catalog', (req, res) => {
+    return res.json({
+        ok: true,
+        version: OTP_LAUNCH_CATALOG.CATALOG_VERSION,
+        services: OTP_LAUNCH_CATALOG.SERVICES,
+        features: OTP_LAUNCH_CATALOG.FEATURES,
+        enhancements: OTP_LAUNCH_CATALOG.ENHANCEMENTS
+    });
+});
+
+app.post('/api/launch/submit', bookingSubmitLimiter, express.json({ limit: '128kb' }), async (req, res) => {
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const { requirements, summaryText } = OTP_LAUNCH_CATALOG.computeLaunchEstimate(body.launch_requirements || body);
+    const bookingToken = cleanBookingText(body.booking_token || `LAUNCH-${Date.now().toString(36)}`, 120);
+    const canonicalPayload = {
+        booking_token: bookingToken,
+        name: cleanBookingText(body.name || body.business_name, 160),
+        business_name: cleanBookingText(body.business_name, 160),
+        email: cleanBookingText(body.email, 200),
+        phone: cleanBookingText(body.phone, 80),
+        reference_link: cleanBookingText(body.reference_link, 300),
+        service_type: cleanBookingText(body.service_type || OTP_LAUNCH_CATALOG.findService(requirements.service_id).bookingServiceType, 120),
+        package_interest: cleanBookingText(body.package_interest || requirements.recommended_package, 120),
+        project_description: cleanBookingText(body.project_description || summaryText, 6000),
+        desired_deliverables: cleanBookingText(body.desired_deliverables || requirements.deliverables.join('; '), 2000),
+        budget_range: cleanBookingText(body.budget_range || requirements.estimate_display, 160),
+        contact_consent: body.contact_consent === true,
+        source_tracking: body.source_tracking && typeof body.source_tracking === 'object' ? body.source_tracking : { cta_source: 'otp_launch_configurator' },
+        upload_ids: Array.isArray(body.upload_ids) ? body.upload_ids.map((v) => cleanBookingText(v, 140)).filter(Boolean).slice(0, 20) : []
+    };
+    const envelope = bookingIntakeUpstreamPayload(canonicalPayload);
+    const uploadToken = String(req.header('x-booking-upload-token') || body.upload_token || '').trim().slice(0, 1024);
+    try {
+        const upstreamPayload = await forwardBookingSubmitToUpstream(envelope, { uploadToken });
+        return res.status(200).json({
+            ...publicBookingResponseFromUpstream(upstreamPayload, canonicalPayload),
+            booking_id: upstreamPayload.booking_id || envelope.booking_id,
+            requirements
+        });
+    } catch (error) {
+        if (error?.statusCode === 409) {
+            return res.status(409).json({
+                ok: false,
+                errorCode: 'booking_idempotency_conflict',
+                message: 'A matching request already exists.'
+            });
+        }
+        return res.status(503).json({
+            ok: false,
+            errorCode: 'otp_os_unavailable',
+            message: 'OTP Bookings is temporarily unavailable. Please try again shortly.'
+        });
+    }
+});
+
+app.post('/api/launch/checkout', checkoutSessionLimiter, express.json({ limit: '64kb' }), async (req, res) => {
+    return proxyLaunchToOtpOs(req, res, '/api/launch/checkout', {
+        method: 'POST',
+        body: req.body && typeof req.body === 'object' ? req.body : {}
+    });
+});
+
+app.get('/api/launch/checkout/status', async (req, res) => {
+    noStoreHtml(res);
+    const params = new URLSearchParams();
+    if (req.query.session_id) params.set('session_id', cleanBookingText(req.query.session_id, 180));
+    if (req.query.order_id) params.set('order_id', cleanBookingText(req.query.order_id, 120));
+    const q = params.toString() ? `?${params.toString()}` : '';
+    return proxyLaunchToOtpOs(req, res, `/api/launch/checkout/status${q}`, { method: 'GET' });
+});
+
+app.get('/api/launch/checkout-availability', async (req, res) => {
+    noStoreHtml(res);
+    return proxyLaunchToOtpOs(req, res, '/api/launch/checkout-availability', { method: 'GET' });
+});
+
+app.get('/api/launch/proposals/:token', async (req, res) => {
+    noStoreHtml(res);
+    const token = cleanBookingText(req.params.token, 240);
+    if (!token) return res.status(404).json({ ok: false, code: 'proposal_not_found' });
+    return proxyLaunchToOtpOs(req, res, `/api/launch/proposals/${encodeURIComponent(token)}`, { method: 'GET' });
+});
+
+app.post('/api/launch/proposals/:token/respond', bookingSubmitLimiter, express.json({ limit: '32kb' }), async (req, res) => {
+    noStoreHtml(res);
+    const token = cleanBookingText(req.params.token, 240);
+    if (!token) return res.status(404).json({ ok: false, code: 'proposal_not_found' });
+    return proxyLaunchToOtpOs(req, res, `/api/launch/proposals/${encodeURIComponent(token)}/respond`, {
+        method: 'POST',
+        body: req.body && typeof req.body === 'object' ? req.body : {}
+    });
+});
+
+app.post('/api/launch/portal/:token/delivery-action', bookingSubmitLimiter, express.json({ limit: '32kb' }), async (req, res) => {
+    noStoreHtml(res);
+    const token = normalizeClientPortalToken(req.params.token);
+    if (!token) return res.status(404).json({ ok: false, code: 'portal_not_found' });
+    return proxyLaunchToOtpOs(req, res, `/api/launch/portal/${encodeURIComponent(token)}/delivery-action`, {
+        method: 'POST',
+        body: req.body && typeof req.body === 'object' ? req.body : {}
+    });
 });
 
 app.get('/api/client-portal/:token', async (req, res) => {
@@ -5042,8 +5219,8 @@ app.post('/api/fixline/inspect', fixlineInspectLimiter, express.json({ limit: '1
             `Step 3: Connect 1-Tap Mobile Contact Links & Client Portal Access`
         ];
 
-        const osUpstream = process.env.OTP_OS_UPSTREAM || 'https://otp-os.vercel.app';
-        fetch(`${osUpstream}/api/leads/submit`, {
+        const osUpstream = OTP_OS_UPSTREAM_ORIGIN;
+        if (osUpstream) fetch(`${osUpstream}/api/leads/submit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -5109,7 +5286,8 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
     try {
         if (OTP_BOOKING_WRITER_POLICY.primary === 'otp_os') {
             try {
-                const upstreamPayload = await forwardBookingSubmitToUpstream(bookingIntakeUpstreamPayload(payload));
+                const uploadToken = String(req.header('x-booking-upload-token') || req.body?.upload_token || '').trim().slice(0, 1024);
+                const upstreamPayload = await forwardBookingSubmitToUpstream(bookingIntakeUpstreamPayload(payload), { uploadToken });
                 const response = publicBookingResponseFromUpstream(upstreamPayload, payload);
                 console.info('OTP booking handoff', { event: 'booking_response_sent', ...response.writerEvidence });
                 return res.json(response);
@@ -5276,10 +5454,11 @@ app.use('/api/bookings', async (req, res) => {
         const timer = setTimeout(() => controller.abort(), OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS);
         let upstream;
         try {
+            const hasBody = !['GET', 'HEAD'].includes(req.method);
             upstream = await fetch(upstreamUrl.href, {
                 method: req.method,
                 headers,
-                body: ['GET', 'HEAD'].includes(req.method) ? undefined : req,
+                ...(hasBody ? { body: req, duplex: 'half' } : {}),
                 redirect: 'manual',
                 signal: controller.signal
             });

@@ -1,7 +1,5 @@
 /* eslint-disable no-console */
 
-const { chromium } = require('playwright');
-
 function short(text, n = 240) {
   return String(text || '').replace(/\s+/g, ' ').trim().slice(0, n);
 }
@@ -410,6 +408,7 @@ async function runBrowserSmoke({ baseUrl, token, checks = [] }) {
     status: null
   };
 
+  const { chromium } = require('playwright');
   const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });

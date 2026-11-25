@@ -26,6 +26,8 @@
     <script src="/theme-chrono.js?v=20261109-visual-intake-v1"></script>
     <link rel="stylesheet" href="/public-system.css?v=20261112-client-navigation-v1" />
     <link rel="stylesheet" href="/bookings.css?v=20261112-budget-fit-preview-v2" />
+    <link rel="stylesheet" href="/launch-proof.css?v=20261125-otp-controls-v4" />
+  <script src="/otp-motion-controller.js?v=20261125-otp-motion-v1" defer></script>
   <script src="/public-motion.js?v=20261109-visual-intake-v1" defer></script></head>
   <body class="public-page booking-site">
     <a class="skip-link" href="#quick-inquiry">Skip to quote inquiry</a>
@@ -45,6 +47,7 @@
         <nav class="top-actions" aria-label="Booking navigation">
           <a href="/">OTP Home</a>
           <a href="/archive">Archive</a>
+          <a href="/launch?source=bookings-nav">OTP Launch</a>
           <a href="/studio#digital">Services</a>
           <a href="/portal">Client Portal</a>
           <button class="booking-theme-toggle" type="button" data-booking-theme-toggle aria-label="Switch to day mode">Day mode</button>
@@ -76,10 +79,13 @@
           <h1 id="booking-title">Your next project starts here.</h1>
           <p class="hero-copy">Websites, creative production, branding, and digital systems built around your goals. Tell us what you need and we’ll help define the right next step.</p>
           <div class="hero-actions">
-            <a class="primary-action" href="#quick-inquiry">Get My Project Quote</a>
-            <a class="secondary-action" href="#service-selector">Explore Services</a>
+            <a class="primary-action" href="#quick-inquiry">Get My Project Quote <span aria-hidden="true">↓</span></a>
+            <a class="secondary-action" href="/launch?source=bookings-hero">Build my project on Launch <span aria-hidden="true">↗</span></a>
           </div>
-          <p class="booking-reassurance">Free inquiry <span aria-hidden="true">·</span> No payment required <span aria-hidden="true">·</span> Reviewed by OTP</p>
+          <div class="booking-hero-meta-row">
+            <p class="booking-reassurance">Free inquiry <span aria-hidden="true">·</span> No payment required <span aria-hidden="true">·</span> Reviewed by OTP</p>
+            <a class="booking-explore-anchor" href="#service-selector">Explore Services <span aria-hidden="true">↓</span></a>
+          </div>
           <div class="flow-chips" aria-label="OTP booking flow">
             <span>Tell us the project</span>
             <span>OTP reviews</span>
@@ -88,35 +94,44 @@
             <span>Build starts</span>
           </div>
         </div>
-        <aside class="oracle-card" aria-label="OTP Oracle summary">
-          <span class="portal-sigil otp-oracle-sigil oracle-emblem" aria-hidden="true">
-            <span class="sigil-aura"></span>
-            <span class="sigil-orbit orbit-one"></span>
-            <span class="sigil-orbit orbit-two"></span>
-            <svg class="sigil-vector oracle-glyph" viewBox="0 0 100 100" focusable="false" aria-hidden="true">
-              <path d="M15 50c9-16 21-24 35-24s26 8 35 24c-9 16-21 24-35 24S24 66 15 50Z"></path>
-              <circle cx="50" cy="50" r="13"></circle>
-              <circle cx="50" cy="50" r="4"></circle>
-              <path d="M50 14v10M50 76v10M18 28l8 6M82 28l-8 6M18 72l8-6M82 72l-8-6"></path>
-            </svg>
-            <span class="oracle-core"></span>
-            <span class="sigil-scan"></span>
-            <span class="sigil-particle p1"></span>
-            <span class="sigil-particle p2"></span>
-            <span class="sigil-particle p3"></span>
-          </span>
-          <div class="oracle-card-topline">
-            <span>OTP Oracle</span>
-            <strong class="oracle-status">Scope guidance</strong>
+        <div class="booking-hero-visual-stack">
+          <div id="booking-hero-media-slot" class="booking-hero-media-card" aria-label="Digital workspace showcase">
+            <img src="/assets/flow/booking/booking-hero.webp" width="1280" height="800" loading="eager" decoding="async" alt="Floating browser interfaces, smartphone, and modular design cards assembling into an OTP project" />
           </div>
-          <strong id="oracle-package-name">Package system standing by</strong>
-          <p id="oracle-package-message">OTP Oracle reviews your request and helps recommend the right package, documents, and next action.</p>
-          <div class="oracle-tags" aria-label="Oracle routing capabilities">
-            <span>Package Match</span>
-            <span>Fast Lane Check</span>
-            <span>Next Step Plan</span>
-          </div>
-        </aside>
+          <aside class="oracle-card" aria-label="OTP Oracle summary">
+            <div class="oracle-card-head">
+              <span class="portal-sigil otp-oracle-sigil oracle-emblem" aria-hidden="true">
+                <span class="sigil-aura"></span>
+                <span class="sigil-orbit orbit-one"></span>
+                <span class="sigil-orbit orbit-two"></span>
+                <svg class="sigil-vector oracle-glyph" viewBox="0 0 100 100" focusable="false" aria-hidden="true">
+                  <path d="M15 50c9-16 21-24 35-24s26 8 35 24c-9 16-21 24-35 24S24 66 15 50Z"></path>
+                  <circle cx="50" cy="50" r="13"></circle>
+                  <circle cx="50" cy="50" r="4"></circle>
+                  <path d="M50 14v10M50 76v10M18 28l8 6M82 28l-8 6M18 72l8-6M82 72l-8-6"></path>
+                </svg>
+                <span class="oracle-core"></span>
+                <span class="sigil-scan"></span>
+                <span class="sigil-particle p1"></span>
+                <span class="sigil-particle p2"></span>
+                <span class="sigil-particle p3"></span>
+              </span>
+              <div class="oracle-head-copy">
+                <div class="oracle-card-topline">
+                  <span>OTP Oracle</span>
+                  <strong class="oracle-status">Project guide</strong>
+                </div>
+                <strong id="oracle-package-name">Free project guidance</strong>
+              </div>
+            </div>
+            <p id="oracle-package-message">OTP Oracle reviews your request and helps recommend the right package, documents, and next action.</p>
+            <div class="oracle-tags" aria-label="Guidance steps">
+              <span>Right fit</span>
+              <span>Timeline check</span>
+              <span>Clear next step</span>
+            </div>
+          </aside>
+        </div>
       </section>
 
       <section id="quick-inquiry" class="section-block quick-inquiry-section" aria-labelledby="quick-inquiry-title">
@@ -206,6 +221,7 @@
       </section>
 
       <section id="service-selector" class="section-block service-selector-section" aria-labelledby="service-selector-title">
+        <div id="booking-launch-bridge" class="launch-bridge-card" aria-live="polite"></div>
         <div class="section-heading">
           <p>Explore services</p>
           <h2 id="service-selector-title">Find the closest fit.</h2>
@@ -214,33 +230,38 @@
 
         <div class="service-selector-grid" aria-label="Booking service shortcuts">
           <button class="service-selector-card" type="button" data-quick-service="Video / Content">
+            <span class="service-card-visual"><img src="/assets/services/artist-epk.webp" width="1280" height="800" loading="lazy" decoding="async" alt="" /></span>
             <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="3" y="6" width="26" height="20" rx="1"/><path d="m13 11 8 5-8 5V11Z"/></svg>Video &amp; Content</span>
-            <strong class="service-card-title">Reels, edits, campaigns</strong>
-            <span class="service-card-copy">A single edit or a connected content rollout.</span>
+            <strong class="service-card-title">Reels, edits &amp; media</strong>
+            <span class="service-card-copy">Single video edits or full campaign visuals.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
           <button class="service-selector-card" type="button" data-quick-service="Website / Digital System">
+            <span class="service-card-visual"><img src="/assets/services/business-website.webp" width="1280" height="800" loading="lazy" decoding="async" alt="" /></span>
             <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="3" y="5" width="26" height="22" rx="1"/><path d="M3 11h26M9 17h8m-8 5h13"/></svg>Website &amp; Digital</span>
-            <strong class="service-card-title">Websites, booking flows, portals</strong>
-            <span class="service-card-copy">From a focused page update to a connected client journey.</span>
+            <strong class="service-card-title">Websites &amp; portals</strong>
+            <span class="service-card-copy">Clean sites built for mobile and client booking.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
           <button class="service-selector-card" type="button" data-quick-service="Brand Launch">
+            <span class="service-card-visual"><img src="/assets/services/starter-website.webp" width="1280" height="800" loading="lazy" decoding="async" alt="" /></span>
             <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="m16 3 2.5 10.5L29 16l-10.5 2.5L16 29l-2.5-10.5L3 16l10.5-2.5L16 3Z"/></svg>Branding &amp; Design</span>
-            <strong class="service-card-title">Identity, visuals, launch assets</strong>
-            <span class="service-card-copy">A focused design piece or a wider brand rollout.</span>
+            <strong class="service-card-title">Visuals &amp; brand launches</strong>
+            <span class="service-card-copy">Sharp design direction and launch assets.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
           <button class="service-selector-card" type="button" data-quick-service="Same-Day Reel">
+            <span class="service-card-visual"><img src="/assets/services/redesign-repair.webp" width="1280" height="800" loading="lazy" decoding="async" alt="" /></span>
             <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="m18 2-12 17h9l-1 11 12-17h-9l1-11Z"/></svg>Fast Lane</span>
-            <strong class="service-card-title">Urgent reel, event promo, quick content</strong>
-            <span class="service-card-copy">Focused, time-sensitive work. OTP confirms availability.</span>
+            <strong class="service-card-title">Urgent edits &amp; fixes</strong>
+            <span class="service-card-copy">Priority turnaround when timing matters most.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
           <button class="service-selector-card" type="button" data-quick-service="Custom Build">
+            <span class="service-card-visual"><img src="/assets/services/custom-web-app.webp" width="1280" height="800" loading="lazy" decoding="async" alt="" /></span>
             <span class="service-card-badge"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="3" y="3" width="9" height="9" rx="1"/><rect x="20" y="3" width="9" height="9" rx="1"/><rect x="11.5" y="20" width="9" height="9" rx="1"/><path d="M12 7.5h8M7.5 12v4l8.5 4M24.5 12v4L16 20"/></svg>Custom Build</span>
-            <strong class="service-card-title">Automation, software, integrations</strong>
-            <span class="service-card-copy">Describe the goal. OTP will scope the right level.</span>
+            <strong class="service-card-title">Apps &amp; workflows</strong>
+            <span class="service-card-copy">Custom software, automations, and business tools.</span>
             <span class="service-card-state" aria-hidden="true">Select</span>
           </button>
         </div>
@@ -310,6 +331,7 @@
           <h2>A clear next step.</h2>
           <ol class="next-steps-list" aria-label="What happens after an inquiry"><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M6 4h14l6 6v18H6z M20 4v7h6 M11 16h10 M11 21h7"/></svg><div><strong>01 · Tell us</strong><span>Send a quick inquiry or full brief.</span></div></li><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 8h22 M10 4v8 M5 16h22 M22 12v8 M5 24h22 M14 20v8"/></svg><div><strong>02 · We review</strong><span>OTP checks the scope and any open questions.</span></div></li><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 16l7 7L27 8"/></svg><div><strong>03 · Get your next step</strong><span>Receive questions, a proposed scope, or a quote.</span></div></li><li><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 16h23 M18 7l9 9-9 9"/></svg><div><strong>04 · Approve and begin</strong><span>Work starts after scope, terms, and payment are agreed.</span></div></li></ol>
           <span class="booking-intake-note">This page starts the conversation: a quote request, not a final commitment. No payment is collected here.</span>
+          <div id="booking-visual-proof" class="booking-visual-proof" aria-label="Selected OTP work preview" style="margin-top:20px;"></div>
           <aside id="booking-mini-summary" class="mini-summary" aria-label="Selected booking summary">
             <div>
               <span>Package</span>
@@ -518,6 +540,10 @@
 
     <script src="/otp-analytics-engine.js?v=20261111-booking-funnel-v1" defer></script>
     <script src="/otp-attribution.js?v=16.9.1" defer></script>
+    <script src="/launch-catalog.js?v=20261125-otp-controls-v4" defer></script>
+    <script src="/launch-media-manifest.js?v=20261125-otp-controls-v4" defer></script>
+    <script src="/launch-proof-components.js?v=20261125-otp-controls-v4" defer></script>
+    <script src="/launch-context.js?v=20261125-otp-controls-v4" defer></script>
     <script src="/bookings.js?v=20261112-budget-fit-preview-v2" defer></script>
   </body>
 </html>

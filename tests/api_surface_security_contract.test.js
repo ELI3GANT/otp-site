@@ -36,7 +36,16 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/audit/submit',
     'POST /api/fixline/inspect',
     'POST /api/analytics/view',
-    'POST /api/create-checkout-session'
+    'POST /api/create-checkout-session',
+    // OTP LAUNCH storefront catalog, structured intake handoff, private proposal links (unguessable token), checkout proxy & authoritative status check, and portal delivery actions.
+    'GET /api/launch/catalog',
+    'POST /api/launch/submit',
+    'POST /api/launch/checkout',
+    'GET /api/launch/checkout/status',
+    'GET /api/launch/checkout-availability',
+    'GET /api/launch/proposals/:token',
+    'POST /api/launch/proposals/:token/respond',
+    'POST /api/launch/portal/:token/delivery-action'
 ]);
 
 const siteContentBoundaryMigration = read('supabase/migrations/20260811020000_site_content_access_boundary.sql');

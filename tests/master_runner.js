@@ -26,6 +26,7 @@ const tests = [
     { name: 'Stored Client Portal Rendering', path: 'tests/client_portal_render.test.js' },
     { name: 'OTP Bookings Contract', path: 'tests/bookings_contract.test.js' },
     { name: 'OTP Booking Conversion Flow', path: 'tests/booking_conversion_flow.test.js' },
+    { name: 'OTP Launch Storefront Contract', path: 'tests/launch_storefront_contract.test.js' },
     { name: 'OTP Booking Writer Policy', path: 'tests/booking_writer_policy.test.js' },
     { name: 'OTP Booking OS Handoff', path: 'tests/booking_os_handoff.test.js' },
     { name: 'OTP Booking OS Route Integration', path: 'tests/booking_os_route.integration.test.js' },
@@ -91,7 +92,10 @@ async function runAll() {
         let output = '';
 
         try {
-            output = execFileSync(process.execPath, [test.path], { encoding: 'utf8' });
+            output = execFileSync(process.execPath, [test.path], {
+                encoding: 'utf8',
+                timeout: Number(process.env.OTP_TEST_TIMEOUT_MS || 30000)
+            });
             console.log(`   ✅ PASSED (${Date.now() - start}ms)`);
         } catch (e) {
             status = 'failed';

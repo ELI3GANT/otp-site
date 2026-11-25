@@ -6,7 +6,7 @@ const { renderHeader, renderFooter } = require('../public-shell');
 const pages = {
   'index.html': 'Home', 'archive.html': 'Archive', 'studio.html': 'Studio',
   'insights.html': '', 'insight.html': '', 'terms.html': '', 'privacy.html': '',
-  'website-design.html': 'Studio', 'consultant-audit.html': 'Studio',
+  'website-design.html': 'Studio', 'consultant-audit.html': 'Studio', 'launch.html': 'OTP Launch',
   'weatheros/index.html': '', 'weatheros/privacy.html': '', 'weatheros/support.html': ''
 };
 for (const [file, active] of Object.entries(pages)) {
@@ -26,4 +26,5 @@ for (const [file, active] of Object.entries(pages)) {
 }
 fs.copyFileSync(path.join(__dirname, '..', 'weatheros/index.html'), path.join(__dirname, '..', 'weatheros.html'));
 fs.copyFileSync(path.join(__dirname, '..', 'weatheros/privacy.html'), path.join(__dirname, '..', 'weatheros-privacy.html'));
+fs.copyFileSync(path.join(__dirname, '..', 'weatheros/support.html'), path.join(__dirname, '..', 'weatheros-support.html'));
 console.log(`Synced navigation and footer across ${Object.keys(pages).length} public pages.`);

@@ -10,8 +10,9 @@ for (const [file, active] of [['index.html', 'Home'], ['archive.html', 'Archive'
   dom.window.matchMedia = () => ({ addEventListener: (_, fn) => { resize = fn; } });
   dom.window.eval(read('public-shell.js'));
   const nav = [...document.querySelectorAll('.public-desktop-nav a')];
-  assert.deepEqual(nav.map(a => a.getAttribute('href')), ['/', '/archive', '/studio#digital', '/studio', '/portal'], file + ' client-first primary destinations');
+  assert.deepEqual(nav.map(a => a.getAttribute('href')), ['/', '/launch', '/archive', '/studio#digital', '/studio', '/portal'], file + ' client-first primary destinations');
   assert.ok(!nav.some(a => a.getAttribute('href') === '/floorops'), file + ' keeps FloorOps out of the primary client navigation');
+  assert.equal(nav.find(a => a.getAttribute('href') === '/launch').textContent, 'OTP Launch');
   assert.equal(nav.find(a => a.getAttribute('href') === '/portal').textContent, 'Client Portal');
   assert.deepEqual([...document.querySelectorAll('.public-menu nav a')].slice(0, nav.length).map(a => a.getAttribute('href')), nav.map(a => a.getAttribute('href')), file + ' mobile navigation parity');
   assert.equal(nav.find(a => a.getAttribute('aria-current') === 'page').textContent, active);

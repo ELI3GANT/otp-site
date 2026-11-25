@@ -1,0 +1,365 @@
+/* OPERATION OTP GENESIS — Beyond the Perspective (Reversible Spacecraft Intro) */
+.otp-genesis-intro {
+  position: relative;
+  height: 390svh;
+  min-height: 2680px;
+  width: 100%;
+  background: #06050c;
+  color: #f4f1f8;
+  border-bottom: 1px solid var(--border-default);
+  z-index: 2;
+}
+.otp-genesis-intro[hidden],
+.otp-genesis-intro.is-disabled {
+  display: none !important;
+}
+html[data-theme="light"] .otp-genesis-intro {
+  background: #e6e2ec;
+  color: #12101a;
+}
+
+.genesis-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  width: 100%;
+  overflow: hidden;
+  display: grid;
+}
+
+.genesis-canvas-host,
+.genesis-fallback-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.genesis-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.genesis-fallback-layer {
+  background: #06050c;
+}
+.genesis-fallback-img,
+.genesis-fallback-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.genesis-fallback-img.is-workspace {
+  opacity: calc(var(--genesis-progress, 0));
+  transition: opacity 180ms linear;
+}
+
+.genesis-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(4, 3, 10, 0.56) 0%, rgba(4, 3, 10, 0) 20%, rgba(4, 3, 10, 0) 56%, rgba(4, 3, 10, 0.88) 88%, rgba(4, 3, 10, 0.96) 100%);
+}
+html[data-theme="light"] .genesis-scrim {
+  background:
+    linear-gradient(180deg, rgba(16, 13, 28, 0.42) 0%, rgba(16, 13, 28, 0) 20%, rgba(16, 13, 28, 0) 56%, rgba(16, 13, 28, 0.84) 88%, rgba(16, 13, 28, 0.94) 100%);
+}
+html[data-theme="light"] .otp-genesis-intro {
+  background: #06050c;
+  color: #f4f1f8;
+}
+html[data-theme="light"] .otp-genesis-intro .genesis-scroll-cue {
+  color: rgba(244, 241, 248, 0.78);
+}
+
+.genesis-hud {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+  padding: clamp(76px, 9svh, 96px) clamp(20px, 4vw, 56px) clamp(24px, 4.5svh, 44px);
+  pointer-events: none;
+}
+
+.genesis-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.genesis-nav-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(6, 5, 12, 0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.genesis-mark {
+  display: inline-flex;
+  align-items: center;
+  color: rgba(248, 244, 255, 0.85);
+}
+
+.genesis-chapters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.genesis-chapter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 2px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.genesis-tick {
+  display: block;
+  width: 14px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(244, 241, 248, 0.34);
+  transition: width 220ms ease, background-color 220ms ease, opacity 220ms ease;
+}
+
+.genesis-chapter-btn:hover .genesis-tick {
+  background: rgba(244, 241, 248, 0.82);
+}
+
+.genesis-chapter-btn.is-active .genesis-tick {
+  width: 28px;
+  background: #f472b6;
+  box-shadow: 0 0 10px rgba(244, 114, 182, 0.65);
+}
+
+.genesis-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  pointer-events: auto;
+}
+
+.genesis-control-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 5, 12, 0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(248, 244, 255, 0.84);
+  font: 500 0.66rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.genesis-control-btn:hover,
+.genesis-control-btn:focus-visible {
+  color: #ffffff;
+  border-color: rgba(244, 114, 182, 0.65);
+  background: rgba(20, 14, 34, 0.72);
+}
+
+.genesis-quiet-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  color: rgba(244, 241, 248, 0.82);
+  font: 500 0.72rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(244, 241, 248, 0.25);
+  transition: color 160ms ease, border-color 160ms ease;
+}
+
+.genesis-quiet-link:hover,
+.genesis-quiet-link:focus-visible {
+  color: #ffffff;
+  border-color: #f472b6;
+}
+
+.genesis-rail {
+  align-self: center;
+  justify-self: end;
+  width: 2px;
+  height: 120px;
+  background: rgba(241, 240, 232, 0.16);
+  border-radius: 2px;
+  overflow: hidden;
+}
+html[data-theme="light"] .genesis-rail {
+  background: rgba(16, 17, 16, 0.16);
+}
+.genesis-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--accent-otp);
+  transform-origin: top center;
+  transform: scaleY(0.04);
+}
+
+.genesis-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px 32px;
+}
+
+.genesis-copy {
+  display: grid;
+  gap: 8px;
+  max-width: 580px;
+}
+.genesis-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font: 600 0.7rem/1.2 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f472b6;
+  text-shadow: 0 1px 12px rgba(4, 3, 10, 0.9);
+}
+.genesis-statement {
+  margin: 0;
+  font-family: var(--font-public, 'Space Grotesk', sans-serif);
+  font-size: clamp(1.7rem, 3.6vw, 3.1rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: #f8f5fc;
+  text-shadow: 0 2px 24px rgba(4, 3, 10, 0.88);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.genesis-statement.is-swapping {
+  opacity: 0.45;
+  transform: translateY(4px);
+}
+
+.genesis-end-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 8px;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+.genesis-end-actions.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.genesis-scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font: 500 0.68rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.76;
+  transition: opacity 220ms ease;
+}
+.genesis-scroll-cue.is-hidden {
+  opacity: 0;
+}
+
+@media (max-width: 800px) {
+  .otp-genesis-intro {
+    height: 315svh;
+    min-height: 2150px;
+  }
+  .genesis-scrim,
+  html[data-theme="light"] .genesis-scrim {
+    background:
+      linear-gradient(180deg, rgba(4, 3, 10, 0.56) 0%, rgba(4, 3, 10, 0) 20%, rgba(4, 3, 10, 0) 50%, rgba(4, 3, 10, 0.88) 72%, rgba(4, 3, 10, 0.98) 100%);
+  }
+  .genesis-hud {
+    padding: 66px 14px 18px;
+  }
+  .genesis-nav-cluster {
+    padding: 5px 10px;
+    gap: 8px;
+  }
+  .genesis-tick {
+    width: 10px;
+  }
+  .genesis-chapter-btn.is-active .genesis-tick {
+    width: 20px;
+  }
+  .genesis-control-btn {
+    padding: 6px 10px;
+    font-size: 0.6rem;
+  }
+  .genesis-rail {
+    display: none;
+  }
+  .genesis-control-btn[data-genesis-motion-toggle] {
+    display: none;
+  }
+  .genesis-statement {
+    font-size: clamp(1.22rem, 5.1vw, 1.72rem);
+  }
+  .genesis-end-actions {
+    gap: 8px 14px;
+    align-items: center;
+  }
+  .genesis-end-actions .public-button {
+    padding: 11px 16px;
+    font-size: 0.82rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .otp-genesis-intro {
+    height: auto;
+    min-height: 540px;
+  }
+  .genesis-stage {
+    position: relative;
+    height: auto;
+    min-height: 540px;
+  }
+  .genesis-hud {
+    min-height: 540px;
+  }
+  .genesis-end-actions {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .genesis-scroll-cue {
+    display: none;
+  }
+  .genesis-fallback-video {
+    display: none !important;
+  }
+}
