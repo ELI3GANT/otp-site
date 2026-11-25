@@ -4,6 +4,7 @@ const {
     isForbiddenProdHost,
     resolveSandboxSafeUpstream,
     resolveSandboxSafeOrigin,
+    buildOtpOsUpstreamHeaders,
     applySiteSandboxIsolation
 } = require('./server/sandbox-isolation');
 
@@ -2546,7 +2547,7 @@ async function proxyOtpOs(req, res) {
 
         const upstream = await fetch(upstreamUrl.href, {
             method: req.method,
-            headers,
+            headers: buildOtpOsUpstreamHeaders(headers),
             body: proxyBody,
             redirect: 'manual'
         });
@@ -4368,7 +4369,7 @@ async function forwardBookingSubmitToUpstream(body, { uploadToken = '' } = {}) {
         }
         const upstream = await fetch(upstreamUrl.href, {
             method: 'POST',
-            headers,
+            headers: buildOtpOsUpstreamHeaders(headers),
             body: JSON.stringify(body || {}),
             redirect: 'manual',
             signal: controller.signal
@@ -4491,7 +4492,7 @@ async function proxyLaunchToOtpOs(req, res, upstreamPath, { method = req.method,
         if (req.headers['idempotency-key']) headers['Idempotency-Key'] = String(req.headers['idempotency-key']);
         const upstream = await fetch(upstreamUrl.href, {
             method,
-            headers,
+            headers: buildOtpOsUpstreamHeaders(headers),
             body: body !== undefined ? JSON.stringify(body) : undefined,
             redirect: 'manual',
             signal: controller.signal
@@ -4622,7 +4623,7 @@ app.get('/api/client-portal/:token', async (req, res) => {
     if (!supabaseAdmin) {
         try {
             const upstreamUrl = `${OTP_CLIENT_PORTAL_UPSTREAM}/api/client-portal/${encodeURIComponent(req.params.token)}`;
-            const response = await fetch(upstreamUrl, { headers: { Accept: 'application/json' } });
+            const response = await fetch(upstreamUrl, { headers: buildOtpOsUpstreamHeaders({ Accept: 'application/json' }) });
             const data = await response.json().catch(() => null);
             if (response.ok && data) {
                 return res.json(data);
@@ -4758,7 +4759,7 @@ app.get('/api/client/portal/:token/documents/:type/:format', async (req, res) =>
         );
         const upstream = await fetch(upstreamUrl.href, {
             method: 'GET',
-            headers: { Accept: format === 'pdf' ? 'application/pdf' : 'text/html' },
+            headers: buildOtpOsUpstreamHeaders({ Accept: format === 'pdf' ? 'application/pdf' : 'text/html' }),
             redirect: 'manual',
             signal: controller.signal
         });
@@ -4944,7 +4945,7 @@ app.get('/api/quote/:id', async (req, res) => {
     if (!supabaseAdmin) {
         try {
             const upstreamUrl = `${OTP_CLIENT_PORTAL_UPSTREAM}/api/documents/render/${encodeURIComponent(quoteId)}/proposal`;
-            const upstreamRes = await fetch(upstreamUrl, { headers: { Accept: 'application/json' } });
+            const upstreamRes = await fetch(upstreamUrl, { headers: buildOtpOsUpstreamHeaders({ Accept: 'application/json' }) });
             const upstreamData = await upstreamRes.json().catch(() => null);
             if (upstreamRes.ok && upstreamData && upstreamData.proposal) {
                 return res.json({ success: true, proposal: upstreamData.proposal });
@@ -5234,7 +5235,7 @@ app.post('/api/fixline/inspect', fixlineInspectLimiter, express.json({ limit: '1
         const osUpstream = OTP_OS_UPSTREAM_ORIGIN;
         if (osUpstream) fetch(`${osUpstream}/api/leads/submit`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: buildOtpOsUpstreamHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({
                 name: `Live Fixline Lead (${domainName})`,
                 email: `inspector-${Date.now()}@prospect.local`,
@@ -5469,7 +5470,7 @@ app.use('/api/bookings', async (req, res) => {
             const hasBody = !['GET', 'HEAD'].includes(req.method);
             upstream = await fetch(upstreamUrl.href, {
                 method: req.method,
-                headers,
+                headers: buildOtpOsUpstreamHeaders(headers),
                 ...(hasBody ? { body: req, duplex: 'half' } : {}),
                 redirect: 'manual',
                 signal: controller.signal

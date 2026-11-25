@@ -268,6 +268,19 @@ function applySiteSandboxIsolation(env = process.env) {
     };
 }
 
+function buildOtpOsUpstreamHeaders(headers = {}, env = process.env) {
+    const out = { ...headers };
+    const bypassSecret = String(
+        env.OTP_OS_VERCEL_BYPASS_SECRET
+        || env.VERCEL_AUTOMATION_BYPASS_SECRET
+        || ''
+    ).trim();
+    if (bypassSecret) {
+        out['x-vercel-protection-bypass'] = bypassSecret;
+    }
+    return out;
+}
+
 module.exports = {
     APPROVED_QA_SUPABASE_REF,
     FORBIDDEN_PROD_SUPABASE_REF,
@@ -279,5 +292,6 @@ module.exports = {
     isForbiddenProdHost,
     resolveSandboxSafeUpstream,
     resolveSandboxSafeOrigin,
+    buildOtpOsUpstreamHeaders,
     applySiteSandboxIsolation
 };

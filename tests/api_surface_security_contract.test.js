@@ -384,5 +384,15 @@ assert.ok(
     assert.strictEqual(prodEnv.GEMINI_API_KEY, ['AIza', 'prod_keep_fixture'].join(''));
 }
 
+{
+    const bypassHeaders = sandboxIsolation.buildOtpOsUpstreamHeaders(
+        { Accept: 'application/json' },
+        { OTP_OS_VERCEL_BYPASS_SECRET: 'fixture-bypass-value' }
+    );
+    assert.strictEqual(bypassHeaders['x-vercel-protection-bypass'], 'fixture-bypass-value');
+    const plainHeaders = sandboxIsolation.buildOtpOsUpstreamHeaders({ Accept: 'application/json' }, {});
+    assert.strictEqual(plainHeaders['x-vercel-protection-bypass'], undefined);
+}
+
 console.log('   API surface + RLS contract OK');
 console.log('API SURFACE SECURITY CONTRACT COMPLETE');
