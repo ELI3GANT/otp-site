@@ -2470,7 +2470,7 @@ html[data-theme="light"] body.booking-site .booking-footer-links a,
 html[data-theme="light"] body.booking-site .booking-theme-toggle { color: #55574e !important; }
 html[data-theme="light"] body.booking-site .primary-action,
 html[data-theme="light"] body.booking-site .top-actions a:last-child,
-html[data-theme="light"] body.booking-site button:not(.ghost-button),
+html[data-theme="light"] body.booking-site button:not(.ghost-button):not(.quick-detailed-link):not(.otp-select-option):not(.otp-select-sheet-close):not(.otp-select-trigger):not(.booking-theme-toggle):not(.service-selector-card),
 html[data-theme="light"] body.booking-site .success-actions a,
 html[data-theme="light"] body.booking-site .success-actions button { color: #181914 !important; }
 html[data-theme="light"] body.booking-site .secondary-action,
@@ -3094,7 +3094,7 @@ html[data-palette] body.booking-site {
 }
 html[data-palette] body.booking-site .top-actions a:last-child,
 html[data-palette] body.booking-site .primary-action,
-html[data-palette] body.booking-site .booking-form button:not(.ghost-button),
+html[data-palette] body.booking-site .booking-form button:not(.ghost-button):not(.quick-detailed-link):not(.otp-select-option):not(.otp-select-sheet-close):not(.otp-select-trigger):not(.booking-theme-toggle):not(.service-selector-card),
 html[data-palette] body.booking-site .success-actions a,
 html[data-palette] body.booking-site .success-actions button {
   color: var(--accent-otp-ink) !important;
@@ -3794,6 +3794,72 @@ html[data-theme="light"] body.booking-site .otp-select-panel button.otp-select-o
     display: grid;
     gap: 4px;
   }
+}
+
+/* Final mobile nav wrap + select sheet dark/light contrast guarantees */
+@media (max-width: 720px) {
+  html body.booking-site .booking-header {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+  html body.booking-site .top-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 8px 12px !important;
+    justify-content: flex-start !important;
+    overflow-x: visible !important;
+  }
+  html body.booking-site .top-actions a,
+  html body.booking-site .top-actions button {
+    flex: 0 0 auto !important;
+    min-height: 38px !important;
+    padding: 6px 10px !important;
+  }
+}
+
+html:not([data-theme="light"]) body.booking-site .otp-select-panel,
+html[data-theme="dark"] body.booking-site .otp-select-panel {
+  background: #14161c !important;
+  color: #f4f2ea !important;
+  border-color: rgba(244, 242, 234, 0.22) !important;
+}
+html:not([data-theme="light"]) body.booking-site .otp-select-panel button.otp-select-option,
+html[data-theme="dark"] body.booking-site .otp-select-panel button.otp-select-option {
+  background: transparent !important;
+  color: #f4f2ea !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+html:not([data-theme="light"]) body.booking-site .otp-select-panel button.otp-select-option .otp-select-option-copy strong,
+html[data-theme="dark"] body.booking-site .otp-select-panel button.otp-select-option .otp-select-option-copy strong {
+  color: #f4f2ea !important;
+}
+html:not([data-theme="light"]) body.booking-site .otp-select-panel button.otp-select-option .otp-select-option-copy small,
+html[data-theme="dark"] body.booking-site .otp-select-panel button.otp-select-option .otp-select-option-copy small {
+  color: rgba(244, 242, 234, 0.72) !important;
+}
+html:not([data-theme="light"]) body.booking-site .otp-select-panel button.otp-select-option.is-selected,
+html[data-theme="dark"] body.booking-site .otp-select-panel button.otp-select-option.is-selected {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+html body.booking-site button.quick-detailed-link {
+  background: transparent !important;
+  color: var(--text) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--line-strong) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+html[data-theme="light"] body.booking-site button.quick-detailed-link {
+  color: #141518 !important;
+  border-bottom-color: rgba(20, 21, 24, 0.32) !important;
 }
 
 /* OPERATION OTP SIGNATURE — BOOKING VISUAL HARMONY */
