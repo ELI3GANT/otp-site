@@ -56,6 +56,8 @@
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 96px;
+  overflow-x: hidden;
+  overflow-x: clip;
   background-color: var(--cosmic-black);
   color: var(--text-celestial);
   font-family: var(--font-body);
@@ -736,6 +738,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 580px;
+  overflow: hidden;
 }
 
 .dual-phone {
@@ -1235,10 +1238,16 @@ body {
     max-width: 310px;
   }
   .dual-device-canvas {
-    min-height: 480px;
+    min-height: 460px;
   }
   .dual-phone {
-    width: 220px;
+    width: 196px;
+  }
+  .dual-phone.primary {
+    transform: translateX(-20px) translateY(0);
+  }
+  .dual-phone.secondary {
+    transform: translateX(46px) translateY(28px) scale(0.9);
   }
   .device-frame-titanium {
     border-radius: 42px;
