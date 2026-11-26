@@ -2924,12 +2924,15 @@ app.get(['/client', '/client/'], (req, res) => {
     return res.redirect(302, '/portal?status=missing');
 });
 
-app.get(['/client/:token', '/portal/:token'], (req, res) => {
+function sendClientPortalPage(req, res) {
     privatePortalHtml(res);
     const token = normalizeClientPortalToken(req.params.token);
     if (!token) return res.redirect(302, '/portal?status=invalid');
     return res.sendFile(path.join(staticPath, 'client.html'));
-});
+}
+
+app.get('/client/:token', sendClientPortalPage);
+app.get('/portal/:token', sendClientPortalPage);
 
 app.get(['/quote/:id', '/proposal/:id'], (req, res) => {
     if (String(req.params.id || '').startsWith('prop_')) {
