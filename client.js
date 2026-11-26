@@ -1,3 +1,4 @@
+import { createPortalSections } from './portal-sections.js?v=20261112-client-workspace-v5';
 import {
   BUSINESS_WEBSITE,
   PORTAL_FALLBACK_MESSAGE,
@@ -7,9 +8,9 @@ import {
   normalizePortalPayload,
   portalReferenceLabel,
   safePortalUrl
-} from './client-portal-utils.js';
-import { buildClientPortalViewV2 } from './client-portal-v2.js';
-import { renderClientPortalViewV2 } from './client-portal-v2-renderer.js';
+} from './client-portal-utils.js?v=20261112-client-workspace-v5';
+import { buildClientPortalViewV2 } from './client-portal-v2.js?v=20261112-client-workspace-v5';
+import { renderClientPortalViewV2 } from './client-portal-v2-renderer.js?v=20261112-client-workspace-v5';
 
 // Locked until payment is saved
 
@@ -166,15 +167,15 @@ function friendlyPackage(value = '') {
 }
 
 function displayPaymentStatus(value = '') {
-  const raw = clean(value) || 'Unpaid';
+  const raw = clean(value) || 'Under review';
   if (/deposit|partial/i.test(raw)) return 'Partially Paid';
   if (/paid in full|^paid$/i.test(raw)) return 'Paid';
   return raw;
 }
 
 function badgeMode(label = '') {
+  if (/unpaid|unavailable|not ready|not available|due|pending|review/i.test(label)) return 'warning';
   if (/paid|completed|ready/i.test(label)) return 'ready';
-  if (/unpaid|due|pending|review/i.test(label)) return 'warning';
   return '';
 }
 
@@ -236,6 +237,55 @@ function buttonLink(label, url, secondary = false, options = {}) {
   return link;
 }
 
+const CLIENT_PORTAL_PDF_TYPES = new Set([
+  'proposal', 'agreement', 'invoice', 'receipt', 'paid-receipt', 'nda',
+  'project-scope', 'service-summary', 'delivery-summary', 'change-order', 'payment-reminder'
+]);
+
+function clientDocumentType(document = {}) {
+  const raw = clean(document.type || document.docType || document.doc_type || document.label).toLowerCase();
+  const type = raw.replace(/[\s_]+/g, '-');
+  return CLIENT_PORTAL_PDF_TYPES.has(type) ? type : '';
+}
+
+function clientDocumentPdfUrls(document = {}, token = '') {
+  const safeToken = cleanPortalToken(token);
+  const type = clientDocumentType(document);
+  if (!safeToken || !type) return { viewUrl: '', downloadUrl: '' };
+  const base = `/api/client/portal/${encodeURIComponent(safeToken)}/documents/${encodeURIComponent(type)}`;
+  return { viewUrl: `${base}/view`, downloadUrl: `${base}/pdf` };
+}
+
+function pdfIcon(kind = 'preview') {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', '18');
+  svg.setAttribute('height', '18');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '1.7');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', kind === 'download'
+    ? 'M12 3v11m0 0 4-4m-4 4-4-4M5 18v3h14v-3'
+    : 'M8 3h7l4 4v14H8zM15 3v5h5M11 13h5M11 17h5');
+  svg.append(path);
+  return svg;
+}
+
+function documentPdfLink(label, url, kind = 'preview', secondary = false) {
+  const link = buttonLink(label, url, secondary);
+  if (link.tagName === 'A') {
+    link.prepend(pdfIcon(kind));
+    link.classList.add('document-pdf-action');
+    link.referrerPolicy = 'no-referrer';
+  }
+  return link;
+}
+
 function referenceLabel(url = '') {
   return portalReferenceLabel(url);
 }
@@ -269,20 +319,28 @@ async function copyText(text = '') {
   }
 }
 
-function documentItem(document = {}) {
-  const ready = document.ready === true || (document.ready === undefined && document.status === 'ready');
+function documentItem(document = {}, token = '') {
+  const status = clean(document.status || document.doc_status).toLowerCase();
+  const explicitlyBlocked = document.ready === false
+    || document.blocked === true
+    || document.validation?.blocking === true
+    || /blocked|needs[-_ ]?info|needs[-_ ]?review|not[-_ ]?ready|unavailable|locked|pending|draft|preparing|in[-_ ]?preparation|failed|rejected/.test(status);
+  const ready = !explicitlyBlocked && (document.ready === true || /^(ready|available)$/.test(status));
   const item = el('article', 'document-item');
   const top = el('div', 'document-top');
   const actions = el('div', 'document-actions');
+  const generatedUrls = ready ? clientDocumentPdfUrls(document, token) : { viewUrl: '', downloadUrl: '' };
+  const viewUrl = generatedUrls.viewUrl || safeLinkUrl(document.viewUrl || document.view_url);
+  const downloadUrl = generatedUrls.downloadUrl || safeLinkUrl(document.downloadUrl || document.download_url || document.downloadLink || document.download_link);
   top.append(el('strong', '', clean(document.label) || 'Document'), badge(ready ? 'Available' : 'In preparation', ready ? 'ready' : ''));
   item.append(top, el('p', '', clean(document.message) || (ready ? 'Ready to view or download.' : 'OTP is preparing this document.')));
-  if (ready && document.viewUrl) actions.append(buttonLink('View', document.viewUrl, true));
-  if (ready && document.downloadUrl) actions.append(buttonLink('Download', document.downloadUrl));
+  if (ready && viewUrl) actions.append(documentPdfLink('View document', viewUrl, 'preview', true));
+  if (ready && downloadUrl) actions.append(documentPdfLink('Download PDF', downloadUrl, 'download'));
   if (ready && clean(document.preview)) {
-    const preview = el('details', 'document-preview');
+    const textPreview = el('details', 'document-preview');
     const text = el('pre', '', clean(document.preview));
-    preview.append(el('summary', '', 'View document'), text);
-    item.append(preview);
+    textPreview.append(el('summary', '', 'View text version'), text);
+    item.append(textPreview);
   }
   if (!ready) {
     const disabled = el('button', 'secondary', 'Awaiting OTP');
@@ -293,17 +351,17 @@ function documentItem(document = {}) {
   return item;
 }
 
-function documentsCard(documents = []) {
+function storedDocumentsCard(documents = [], token = '') {
   const section = el('section', 'card');
   const list = el('div', 'document-list');
   section.append(el('h3', '', 'Documents'));
-  documents.forEach((document) => list.append(documentItem(document)));
+  documents.forEach((document) => list.append(documentItem(document, token)));
   if (!documents.length) list.append(el('p', 'empty', 'Documents not ready yet.'));
   section.append(list);
   return section;
 }
 
-function projectsCard(projects = []) {
+function storedProjectsCard(projects = []) {
   const section = el('section', 'card');
   const list = el('div', 'document-list');
   section.append(el('h3', '', 'Projects'));
@@ -378,7 +436,7 @@ function retainerCard(retainer = {}) {
   return section;
 }
 
-function paymentCard(payment = {}) {
+function storedPaymentCard(payment = {}) {
   const section = el('section', 'card');
   const amounts = el('div', 'payment-amount');
   const actions = el('div', 'payment-actions');
@@ -409,7 +467,7 @@ function paymentCard(payment = {}) {
 function nextStepCard(nextStep = {}, followUp = {}, contact = {}) {
   const section = el('section', 'card next-step');
   const actions = el('div', 'next-actions');
-  section.append(el('h3', '', 'Next Step'));
+  section.append(el('h3', '', 'Your next step'));
   section.append(el('p', '', clean(nextStep.message) || 'OTP is reviewing your project.'));
   if (followUp.message) {
     const copy = el('button', 'secondary', 'Copy Message');
@@ -506,35 +564,181 @@ function referencesCard(token = '', references = {}) {
   return section;
 }
 
+function launchDeliveryCard(token = '', delivery = {}, payment = {}) {
+  if (!delivery || typeof delivery !== 'object') return null;
+  const hasDeliveryData = Boolean(
+    delivery.previewUrl
+    || (Array.isArray(delivery.milestones) && delivery.milestones.length)
+    || (delivery.handoff && (delivery.handoff.domain || delivery.handoff.vercel_project || delivery.handoff.github_repo))
+  );
+  if (!hasDeliveryData) return null;
+
+  const section = el('section', 'card');
+  section.append(el('h3', '', 'Preview, Revisions & Ownership Handoff'));
+
+  if (delivery.previewUrl) {
+    const staging = el('div', 'portal-staging-card');
+    const bar = el('div', 'portal-staging-bar');
+    bar.append(el('span', '', '• • • Staging Build Ready'), el('strong', '', 'Verified Preview'));
+    const urlText = el('p', 'entry-copy', delivery.previewUrl);
+    urlText.style.wordBreak = 'break-all';
+    urlText.style.margin = '0';
+    const previewWrap = el('div', 'document-actions');
+    previewWrap.append(buttonLink('Open Live Preview ↗', delivery.previewUrl, true));
+    staging.append(bar, urlText, previewWrap);
+    section.append(staging);
+  }
+
+  if (Array.isArray(delivery.milestones) && delivery.milestones.length) {
+    const mList = el('ul', 'info-list');
+    delivery.milestones.forEach((m) => {
+      mList.append(el('li', '', `${m.title} — ${String(m.status || 'pending').replace(/_/g, ' ')}`));
+    });
+    section.append(mList);
+  }
+
+  if (delivery.handoff && (delivery.handoff.domain || delivery.handoff.vercel_project || delivery.handoff.github_repo)) {
+    const hRows = el('div', 'info-list');
+    [
+      infoRow('Production Domain', delivery.handoff.domain),
+      infoRow('Vercel Project', delivery.handoff.vercel_project),
+      infoRow('GitHub Repository', delivery.handoff.github_repo),
+      infoRow('Ownership Handoff', delivery.finalBalanceSettled ? 'Unlocked (Final balance settled)' : 'Locked until final balance is settled')
+    ].filter(Boolean).forEach((r) => hRows.append(r));
+    section.append(hRows);
+  }
+
+  if (token) {
+    const feedback = el('p', 'entry-copy', '');
+    const form = el('form', 'portal-form');
+    const noteInput = input('revision_note', 'textarea', 'Request a revision or leave preview notes...');
+    const revBtn = el('button', 'secondary', 'Request Revision');
+    const appBtn = el('button', '', 'Approve Preview');
+    appBtn.type = 'button';
+
+    appBtn.addEventListener('click', async () => {
+      appBtn.disabled = true;
+      try {
+        await postJson(`/api/launch/portal/${encodeURIComponent(token)}/delivery-action`, {
+          action: 'approve_preview',
+          note: noteInput.value || 'Client approved preview.'
+        });
+        feedback.textContent = 'Preview approval recorded.';
+        setStatus('Preview Approved', 'ready');
+      } catch (err) {
+        feedback.textContent = err.message || 'Could not record approval.';
+        appBtn.disabled = false;
+      }
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!clean(noteInput.value)) {
+        feedback.textContent = 'Please enter revision details first.';
+        return;
+      }
+      revBtn.disabled = true;
+      try {
+        await postJson(`/api/launch/portal/${encodeURIComponent(token)}/delivery-action`, {
+          action: 'request_revision',
+          note: noteInput.value
+        });
+        noteInput.value = '';
+        feedback.textContent = 'Revision request sent to OTP.';
+        setStatus('Revision Requested', 'ready');
+      } catch (err) {
+        feedback.textContent = err.message || 'Could not submit revision.';
+      } finally {
+        revBtn.disabled = false;
+      }
+    });
+
+    const btnRow = el('div', 'next-actions');
+    btnRow.append(appBtn, revBtn);
+    form.append(field('Preview Feedback / Revision', noteInput), btnRow);
+    section.append(feedback, form);
+  }
+
+  return section;
+}
+
 function renderDashboard(data, token = '') {
-  const { portal, client, project, retainer, documents, payment, nextStep, followUp, contact, projects, approvals, references, account } = normalizePortalPayload(data);
-  const view = buildClientPortalViewV2(data, { now: portal.lastUpdated });
-  const { masthead, grid, footer } = renderClientPortalViewV2(view);
-  const columns = grid.querySelectorAll('.portal-v2-column');
-  const documentColumn = columns[0];
-  const statusColumn = columns[1];
-
-  const visibleRetainerCard = retainerCard(retainer);
-  if (visibleRetainerCard && statusColumn) statusColumn.append(visibleRetainerCard);
-
-  const appCard = approvalsCard(token, approvals, client);
-  if (appCard && documentColumn) documentColumn.append(appCard);
-
-  const refCard = referencesCard(token, references);
-  if (refCard && statusColumn) statusColumn.append(refCard);
-
-  const nsCard = nextStepCard(nextStep, followUp, contact);
-  if (nsCard && documentColumn) documentColumn.append(nsCard);
-
-  portalRoot.replaceChildren(masthead, grid, footer);
+  const { portal, client, retainer, nextStep, followUp, contact, approvals, references } = normalizePortalPayload(data);
+  const view = buildClientPortalViewV2(data, { now: portal.lastUpdated, portalToken: token });
+  const { masthead, footer, sections } = renderClientPortalViewV2(view);
+  const selected = portalRoot.querySelector('.portal-sections')?.dataset.section || 'overview';
+  const billingItems = [sections.payment, retainerCard(retainer)];
+  if (Number(data.payment?.remainingBalanceCents || data.payment?.amountDueCents || 0) > 0 && token) {
+    const balanceCard = el('section', 'card');
+    const balStatus = el('p', 'entry-copy', 'Settle remaining project balance via Stripe Checkout when ready.');
+    const payBalBtn = el('button', '', 'Pay Remaining Balance →');
+    payBalBtn.type = 'button';
+    payBalBtn.addEventListener('click', async () => {
+      payBalBtn.disabled = true;
+      try {
+        const returnBase = `${window.location.origin}/client/${encodeURIComponent(token)}`;
+        const res = await postJson('/api/launch/checkout', {
+          portal_token: token,
+          order_type: 'balance',
+          origin: window.location.origin,
+          success_url: `${returnBase}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${returnBase}?checkout=cancelled`,
+          idempotency_key: `PORTAL-BAL-${token.slice(0, 12)}-${Date.now()}`
+        });
+        if (res.checkout_url) {
+          window.location.href = res.checkout_url;
+          return;
+        }
+        balStatus.textContent = res.code === 'checkout_temporarily_disabled'
+          ? (res.blocker || 'Online checkout is temporarily paused. Already-submitted payments still reconcile automatically.')
+          : (res.blocker || 'Checkout unavailable in this environment.');
+      } catch (err) {
+        balStatus.textContent = err.message || 'Checkout unavailable in this environment.';
+      } finally {
+        payBalBtn.disabled = false;
+      }
+    });
+    balanceCard.append(el('h3', '', 'Final Balance Checkout'), balStatus, payBalBtn);
+    billingItems.push(balanceCard);
+  }
+  const workspace = createPortalSections({
+    overview: [sections.overview, approvals.length ? approvalsCard(token, approvals, client) : null],
+    project: [sections.timeline, sections.delivery, launchDeliveryCard(token, data.delivery, data.payment), sections.projects],
+    documents: [sections.documents],
+    billing: billingItems,
+    support: [nextStepCard(nextStep, followUp, contact), sections.assistant, referencesCard(token, references)]
+  }, { selected });
+  const toolbar = portalToolbar(token);
+  portalRoot.replaceChildren(masthead, toolbar, workspace.root, footer);
+  appendNativeBack();
   setStatus('Portal Active', 'ready');
 }
 
+function portalToolbar(token) {
+  const toolbar = el('div', 'portal-v2-toolbar');
+  const refresh = el('button', 'secondary', 'Refresh project');
+  refresh.type = 'button';
+  const feedback = el('p', 'portal-v2-refresh-feedback');
+  feedback.setAttribute('role', 'status');
+  refresh.addEventListener('click', async () => {
+    refresh.disabled = true;
+    feedback.textContent = 'Refreshing project…';
+    try {
+      renderPortal(await fetchPortal(token));
+    } catch {
+      refresh.disabled = false;
+      feedback.textContent = 'Unable to refresh. Your last loaded project view is still shown.';
+    }
+  });
+  toolbar.append(el('span', '', 'Your private project workspace'), refresh, feedback);
+  return toolbar;
+}
+
+function appendNativeBack() {
+
+}
+
 function renderPortal(data) {
-  if (data.profile && !data.client) {
-    renderStoredPortal(data);
-    return;
-  }
   renderDashboard(data, tokenFromLocation());
 }
 
@@ -549,13 +753,12 @@ function renderStoredPortal(data) {
     el('p', '', clean(profile.clientName) || 'Client'),
     badge(clean(project.status) || 'Pending review')
   );
-  const grid = el('div', 'grid');
-  grid.append(card('Client profile', [
+  const profileCard = card('Client profile', [
     infoRow('Name', profile.clientName),
     infoRow('Business', profile.businessName),
     infoRow('Email', profile.email),
     infoRow('Phone', profile.phone)
-  ]));
+  ]);
   const projectCard = card('Project', [
     infoRow('Service', project.serviceType),
     infoRow('Package', project.packageType),
@@ -565,7 +768,7 @@ function renderStoredPortal(data) {
     infoRow('Scope', project.description),
     infoRow('Client notes', project.notes)
   ]);
-  grid.append(projectCard, documentsCard(Array.isArray(data.documents) ? data.documents : []));
+  const docs = storedDocumentsCard(Array.isArray(data.documents) ? data.documents : [], tokenFromLocation());
   const billing = card('Payment', [
     infoRow('Status', displayPaymentStatus(payment.status)),
     infoRow('Project total', payment.total),
@@ -576,19 +779,30 @@ function renderStoredPortal(data) {
   if (payment.paymentLinkReady === true && payment.cta?.href) {
     billing.append(buttonLink('Open Secure Payment Link', payment.cta.href));
   }
-  grid.append(billing);
+  let delivery = null;
   const items = Array.isArray(data.deliverables?.items) ? data.deliverables.items : [];
   if (items.length) {
     const list = el('ul', 'info-list');
     items.forEach(item => list.append(el('li', '', clean(item))));
-    const delivery = el('section', 'card');
+    delivery = el('section', 'card');
     delivery.append(el('h3', '', 'Deliverables'), list);
-    grid.append(delivery);
+
   }
   const help = el('section', 'card');
   help.append(el('h3', '', 'Project support'), buttonLink('Contact OTP', `mailto:${supportEmail}`, true, { allowMailto: true }));
-  grid.append(help);
-  portalRoot.replaceChildren(hero, grid);
+  const next = card('Your next step', [infoRow('Project status', project.status)]);
+  next.append(el('p', '', 'Review the project details and documents shared by OTP. Contact us if you need a change or an update.'));
+  const summary = el('div', 'portal-summary-strip');
+  for (const [label, value] of [['Service', project.serviceType || 'Under review'], ['Payment', displayPaymentStatus(payment.status)], ['Balance', payment.remaining || 'Under review']]) {
+    const item = el('div', 'portal-summary-item');
+    item.append(el('span', '', label), el('strong', '', value));
+    summary.append(item);
+  }
+  hero.append(summary);
+  const selected = portalRoot.querySelector('.portal-sections')?.dataset.section || 'overview';
+  const workspace = createPortalSections({overview: [next], project: [projectCard, delivery, storedProjectsCard(Array.isArray(data.projects) ? data.projects : [])], documents: [docs], billing: [billing], support: [help, profileCard]}, { selected });
+  portalRoot.replaceChildren(hero, portalToolbar(tokenFromLocation()), workspace.root);
+  appendNativeBack();
   setStatus('Portal Active', 'ready');
 }
 
@@ -683,9 +897,8 @@ function renderError(message = PORTAL_FALLBACK_MESSAGE) {
   setStatus('Unavailable', 'error');
 }
 
-function handleFatalPortalError(error) {
-  const message = clean(error?.message || error) || PORTAL_FALLBACK_MESSAGE;
-  renderError(message);
+function handleFatalPortalError() {
+  renderError(PORTAL_FALLBACK_MESSAGE);
 }
 
 async function init() {

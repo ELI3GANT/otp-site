@@ -20,7 +20,7 @@ const pricingConfig = require('../pricing-config.js');
 const bookingHandoff = read('server/booking-handoff.js');
 const fullProductionSweep = read('scripts/prod_full_sweep.js');
 const terminalProductionSweep = read('scripts/prod_terminal_sweep.js');
-const offerSystemKey = '20261111-booking-conversion-v1';
+const offerSystemKey = '20261112-budget-fit-preview-v2';
 
 assert.match(server, /'\/bookings': 'bookings\.html'/);
 assert.match(server, /'\/booking': 'bookings\.html'/);
@@ -81,6 +81,7 @@ for (const sweep of [fullProductionSweep, terminalProductionSweep]) {
     assert.ok(sweep.includes('Your next project starts here.'), 'production sweeps expect the current booking hero');
     assert.ok(!sweep.includes('Start a Project with OTP.'), 'production sweeps do not require the retired booking hero');
 }
+assert.ok(fullProductionSweep.includes("path: '/bookings.css?v=20261112-budget-fit-preview-v2'") && fullProductionSweep.includes("path: '/bookings.js?v=20261112-budget-fit-preview-v2'"), 'public sweep verifies the same cache-busted booking assets that the page loads');
 assert.ok(html.includes('class="skip-link"') && html.includes('href="#quick-inquiry"'), 'booking page provides a keyboard skip link to the recommended quick inquiry');
 assert.ok(/<form[^>]+id="booking-form"[^>]+tabindex="-1"/.test(html), 'skip-link target can receive programmatic keyboard focus');
 assert.ok(html.includes('Websites, creative production, branding, and digital systems built around your goals. Tell us what you need and we’ll help define the right next step.'), 'booking hero explains services and the project review');
@@ -104,6 +105,12 @@ assert.ok(html.includes('Best next step'), 'client-facing booking flow explains 
 assert.ok(html.includes('Proposal or portal'), 'client-facing booking flow explains portal/proposal step');
 assert.ok(html.includes('Build starts'), 'client-facing booking flow explains delivery step');
 assert.ok(html.includes('id="service-selector"'), 'service selector is visible before intake');
+assert.ok(html.includes('id="booking-budget-options"') && html.includes('class="budget-guide-intro"'), 'budget choices show the client what each range supports');
+assert.ok(html.includes('data-quick-fit-preview') && html.includes('id="quick-fit-examples"'), 'quick quote shows a live budget-to-scope preview');
+assert.ok(js.includes('Under $500 routes toward a Fast Lane or smaller focused request. The Signal starts at $500.'), 'under-$500 inquiries route toward a Fast Lane or smaller scope');
+assert.ok(css.includes('button.budget-range-card.is-selected') && css.includes('.budget-range-icon svg'), 'budget choices keep palette feedback on selected ranges with visible icons');
+assert.ok(css.includes('.quick-fit-icon svg') && css.includes('.quick-fit-deliverables li svg'), 'the scope preview styles its icons at compact readable sizes');
+assert.ok(js.includes("previewIcon.setAttribute('width', '24')") && js.includes("check.setAttribute('width', '17')"), 'cloned scope preview icons stay bounded even with stale stylesheets');
 assert.ok(html.includes('id="quick-inquiry-form"'), 'recommended short inquiry path is present');
 assert.ok(html.includes('id="detailed-brief"') && /id="detailed-brief"[^>]+hidden/.test(html), 'the four-step detailed brief remains available on demand');
 for (const field of ['quick-service', 'quick-description', 'quick-name', 'quick-email', 'quick-phone']) {
@@ -139,7 +146,7 @@ assert.ok(js.includes('Private portal access is sent only after OTP reviews and 
 assert.ok(html.includes('OTP received your request. We’ll review the scope and reply with the cleanest next step.'), 'success screen uses final OTP copy');
 assert.ok(html.includes('OTP Oracle reviews your request and helps recommend the right package, documents, and next action.'), 'Oracle copy is grounded');
 assert.ok(html.includes('rel="noopener noreferrer"'), 'external booking page links include safe rel attributes');
-assert.ok(html.includes('bookings.css?v=20261111-booking-conversion-v1'), 'booking stylesheet cache-bust matches conversion release');
+assert.ok(html.includes('bookings.css?v=20261112-budget-fit-preview-v2'), 'booking stylesheet cache-bust matches budget fit preview release');
 assert.ok(html.includes(`bookings.js?v=${offerSystemKey}`), 'booking script cache-bust matches offer system release');
 assert.ok(html.includes('project-intake-panel'), 'secure project intake bridge is visible');
 assert.ok(html.includes('Need to send files or references?'), 'project intake section title is present');

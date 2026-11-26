@@ -1,4 +1,13 @@
 const fs = require('fs');
+const {
+    isSandboxOrPreviewEnv,
+    isForbiddenProdHost,
+    resolveSandboxSafeUpstream,
+    resolveSandboxSafeOrigin,
+    buildOtpOsUpstreamHeaders,
+    applySiteSandboxIsolation
+} = require('./server/sandbox-isolation');
+
 process.on('uncaughtException', (err) => {
     console.error('Uncaught exception:', err);
     process.exit(1);
@@ -7,8 +16,18 @@ process.on('unhandledRejection', (reason) => {
     console.error('Unhandled rejection:', reason);
 });
 
-// Load environment variables (Standard)
-require('dotenv').config();
+// Load environment variables (skip local .env file on Vercel Preview)
+if (!(process.env.VERCEL === '1' && String(process.env.VERCEL_ENV || '').toLowerCase() === 'preview')) {
+    require('dotenv').config();
+}
+
+// Fail-closed sandbox/preview isolation BEFORE Stripe, Supabase Admin, or AI/Email init
+const sandboxIsolation = applySiteSandboxIsolation(process.env);
+if (sandboxIsolation.active) {
+    console.log(
+        `🛡️ Sandbox/Preview isolation active (directStripe=${sandboxIsolation.allowDirectStripe}, directSupabase=${sandboxIsolation.allowDirectSupabase}, stripped=${sandboxIsolation.stripped.length})`
+    );
+}
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
@@ -72,10 +91,10 @@ function getOtpDocLogoDataUri() {
     return _otpDocLogoDataUri;
 }
 
-// Safe Stripe Init
+// Safe Stripe Init (disabled in sandbox/preview unless explicitly QA-validated)
 let stripe = null;
 try {
-    if (process.env.STRIPE_SECRET_KEY) {
+    if ((!sandboxIsolation.active || sandboxIsolation.allowDirectStripe) && process.env.STRIPE_SECRET_KEY) {
         // Trim to remove accidental whitespace/newlines from copy-paste
         stripe = require('stripe')(process.env.STRIPE_SECRET_KEY.trim());
     }
@@ -111,6 +130,7 @@ try {
     OTP_VIDEO_LIBRARY = null;
 }
 const SONG_WARS_CONFIG = require('./songwars-config.js');
+const OTP_LAUNCH_CATALOG = require('./launch-catalog.js');
 
 function positiveNumber(value, fallback) {
     const parsed = Number(value);
@@ -2063,9 +2083,9 @@ async function runOracleRecommendation({ lead, leadId, sourceTable }) {
 }
 
 // Initialize Supabase Admin Client (Service Role)
-// Only needed if performing admin actions like Delete/Update on restricted tables
-const supabaseAdmin = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY 
-    ? createClient(process.env.SUPABASE_URL.trim(), process.env.SUPABASE_SERVICE_KEY.trim()) 
+// Disabled in sandbox/preview unless explicitly QA-validated against tybgpykqaqaeoghdvpet
+const supabaseAdmin = (!sandboxIsolation.active || sandboxIsolation.allowDirectSupabase) && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY
+    ? createClient(process.env.SUPABASE_URL.trim(), process.env.SUPABASE_SERVICE_KEY.trim())
     : null;
 
 if (supabaseAdmin) {
@@ -2417,7 +2437,19 @@ function privatePortalHtml(res) {
     ].join(';'));
 }
 
-const OTP_OS_UPSTREAM_ORIGIN = 'https://otp-os.vercel.app';
+const IS_NON_PROD_SANDBOX_SITE = sandboxIsolation.active || isSandboxOrPreviewEnv(process.env);
+const RAW_OTP_OS_UPSTREAM = String(
+    process.env.OTP_OS_UPSTREAM_URL
+    || process.env.OTP_OS_UPSTREAM
+    || process.env.OTP_BOOKINGS_UPSTREAM_URL
+    || process.env.OTP_BOOKINGS_API_BASE
+    || ''
+).trim().replace(/\/+$/, '');
+const OTP_OS_UPSTREAM_FORBIDDEN_PROD = 'otp-os.vercel.app';
+const OTP_OS_UPSTREAM_ORIGIN = resolveSandboxSafeUpstream(RAW_OTP_OS_UPSTREAM, {
+    isSandbox: IS_NON_PROD_SANDBOX_SITE,
+    fallbackProd: 'https://otp-os.vercel.app'
+});
 const OTP_OS_PROXY_MAX_BODY_BYTES = positiveInteger(
     process.env.OTP_OS_PROXY_MAX_BODY_BYTES,
     1024 * 1024
@@ -2486,6 +2518,13 @@ async function readProxyRequestBody(req, maxBytes = OTP_OS_PROXY_MAX_BODY_BYTES)
 
 async function proxyOtpOs(req, res) {
     try {
+        if (!OTP_OS_UPSTREAM_ORIGIN) {
+            return res.status(503).json({
+                ok: false,
+                error: 'qa_upstream_not_configured',
+                message: 'Sandbox/Preview OTP OS upstream URL is required and cannot fall back to production.'
+            });
+        }
         const original = new URL(req.originalUrl, 'https://onlytrueperspective.tech');
         let upstreamPath = original.pathname.replace(/^\/os(?:\/)?/, '/');
         if (!upstreamPath || upstreamPath === '/os') upstreamPath = '/';
@@ -2508,7 +2547,7 @@ async function proxyOtpOs(req, res) {
 
         const upstream = await fetch(upstreamUrl.href, {
             method: req.method,
-            headers,
+            headers: buildOtpOsUpstreamHeaders(headers),
             body: proxyBody,
             redirect: 'manual'
         });
@@ -2666,7 +2705,16 @@ async function proxyFloorOpsApp(req, res, next, isRawAsset = false) {
                 body: proxyBody
             });
         } catch (_localErr) {
-            const fallbackOrigin = process.env.FLOOROPS_UPSTREAM_ORIGIN || 'https://otp-floorops.vercel.app';
+            const fallbackOrigin = resolveSandboxSafeUpstream(process.env.FLOOROPS_UPSTREAM_ORIGIN, {
+                isSandbox: IS_NON_PROD_SANDBOX_SITE,
+                fallbackProd: 'https://otp-floorops.vercel.app'
+            });
+            if (!fallbackOrigin) {
+                return res.status(503).json({
+                    error: 'qa_floorops_upstream_not_configured',
+                    message: 'FloorOps upstream is disabled in sandbox/preview mode without an isolated QA origin.'
+                });
+            }
             targetUrl = `${fallbackOrigin}${mappedPath}${query}`;
             headers['x-forwarded-host'] = req.headers.host || 'www.onlytrueperspective.tech';
             headers['x-forwarded-proto'] = 'https';
@@ -2710,12 +2758,21 @@ app.get(['/consultant-audit.html', '/consultant-audit'], (req, res) => res.redir
 app.get('/protocol.html', (req, res) => res.redirect(308, '/protocol'));
 app.get('/signal.html', (req, res) => res.redirect(308, '/signal'));
 app.get(['/blackbox', '/blackbox-signal'], (req, res) => res.redirect(302, '/signal'));
+app.get(['/vault.html', '/vault/index.html'], (req, res) => res.redirect(308, '/vault'));
+app.get(['/vault-privacy', '/vault-privacy.html', '/vault/privacy.html'], (req, res) => res.redirect(308, '/vault/privacy'));
+app.get(['/vault-support', '/vault-support.html', '/vault/support.html'], (req, res) => res.redirect(308, '/vault/support'));
 app.get('/weatheros.html', (req, res) => res.redirect(308, '/weatheros'));
 app.get(['/weatheros-support.html', '/weatheros-support'], (req, res) => res.redirect(308, '/weatheros/support'));
 app.get(['/weatheros-privacy.html', '/weatheros-privacy'], (req, res) => res.redirect(308, '/weatheros/privacy'));
 app.get('/evehalo.html', (req, res) => res.redirect(308, '/evehalo'));
 app.get(['/evehalo-support.html', '/evehalo-support'], (req, res) => res.redirect(308, '/evehalo/support'));
 app.get(['/evehalo-privacy.html', '/evehalo-privacy'], (req, res) => res.redirect(308, '/evehalo/privacy'));
+
+app.get(['/launch', '/launch/'], (req, res) => {
+    noStoreHtml(res);
+    return res.sendFile(path.join(staticPath, 'launch.html'));
+});
+app.get('/launch.html', (req, res) => res.redirect(308, '/launch'));
 
 // Preserve the public package alias and attribution at Studio engagement guidance.
 app.get('/packages', (req, res) => {
@@ -2772,7 +2829,12 @@ const staticAliases = {
     '/evehalo/privacy.html': 'evehalo/privacy.html',
     '/terms': 'terms.html',
     '/archive': 'archive.html',
-    '/vault': 'archive.html',
+    '/vault': 'vault/index.html',
+    '/vault/': 'vault/index.html',
+    '/vault/privacy': 'vault/privacy.html',
+    '/vault/privacy/': 'vault/privacy.html',
+    '/vault/support': 'vault/support.html',
+    '/vault/support/': 'vault/support.html',
     '/insights': 'insights.html',
     '/insight': 'insight.html',
     '/protocol': 'protocol.html',
@@ -2862,14 +2924,21 @@ app.get(['/client', '/client/'], (req, res) => {
     return res.redirect(302, '/portal?status=missing');
 });
 
-app.get('/client/:token', (req, res) => {
+function sendClientPortalPage(req, res) {
     privatePortalHtml(res);
     const token = normalizeClientPortalToken(req.params.token);
     if (!token) return res.redirect(302, '/portal?status=invalid');
     return res.sendFile(path.join(staticPath, 'client.html'));
-});
+}
+
+app.get('/client/:token', sendClientPortalPage);
+app.get('/portal/:token', sendClientPortalPage);
 
 app.get(['/quote/:id', '/proposal/:id'], (req, res) => {
+    if (String(req.params.id || '').startsWith('prop_')) {
+        privatePortalHtml(res);
+        return res.sendFile(path.join(staticPath, 'proposal.html'));
+    }
     noStoreHtml(res);
     return res.sendFile(path.join(staticPath, 'quote.html'));
 });
@@ -3022,28 +3091,18 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Ensure pre-flight uses same origin restrictions
 
-const OTP_BOOKINGS_UPSTREAM = String(
-    process.env.OTP_BOOKINGS_UPSTREAM_URL
-    || process.env.OTP_BOOKINGS_API_BASE
-    || 'https://otp-os.vercel.app'
-).replace(/\/+$/, '');
-function normalizeOtpPublicSiteOrigin(value) {
-    try {
-        const url = new URL(String(value || 'https://www.onlytrueperspective.tech').trim());
-        if (!/^https?:$/.test(url.protocol)) throw new Error('invalid protocol');
-        if (url.hostname.toLowerCase() === 'onlytrueperspective.tech') {
-            url.hostname = 'www.onlytrueperspective.tech';
-        }
-        url.protocol = 'https:';
-        url.hash = '';
-        url.search = '';
-        return url.toString().replace(/\/+$/, '');
-    } catch (_) {
-        return 'https://www.onlytrueperspective.tech';
-    }
-}
-
-const OTP_PUBLIC_SITE_ORIGIN = normalizeOtpPublicSiteOrigin(process.env.OTP_PUBLIC_SITE_ORIGIN);
+const OTP_BOOKINGS_UPSTREAM = IS_NON_PROD_SANDBOX_SITE
+    ? OTP_OS_UPSTREAM_ORIGIN
+    : String(
+        process.env.OTP_BOOKINGS_UPSTREAM_URL
+        || process.env.OTP_BOOKINGS_API_BASE
+        || OTP_OS_UPSTREAM_ORIGIN
+        || 'https://otp-os.vercel.app'
+    ).replace(/\/+$/, '');
+const OTP_PUBLIC_SITE_ORIGIN = resolveSandboxSafeOrigin(process.env.OTP_PUBLIC_SITE_ORIGIN, {
+    isSandbox: IS_NON_PROD_SANDBOX_SITE,
+    vercelUrl: process.env.VERCEL_URL || ''
+});
 function normalizeCheckoutOrigin(value) {
     try {
         const url = new URL(String(value || '').trim());
@@ -3062,9 +3121,9 @@ function normalizeCheckoutOrigin(value) {
 
 const checkoutAllowedOrigins = new Set([
     OTP_PUBLIC_SITE_ORIGIN,
-    'https://www.onlytrueperspective.tech',
+    ...(IS_NON_PROD_SANDBOX_SITE ? [] : ['https://www.onlytrueperspective.tech']),
     ...configuredOrigins
-].map(normalizeCheckoutOrigin).filter(Boolean));
+].map(normalizeCheckoutOrigin).filter((origin) => origin && (!IS_NON_PROD_SANDBOX_SITE || !isForbiddenProdHost(origin))));
 
 function resolveCheckoutOrigin(req) {
     const candidates = [
@@ -3081,17 +3140,22 @@ function resolveCheckoutOrigin(req) {
     return OTP_PUBLIC_SITE_ORIGIN;
 }
 
-const OTP_CLIENT_PORTAL_UPSTREAM = String(
-    process.env.OTP_CLIENT_PORTAL_UPSTREAM_URL
-    || process.env.OTP_OS_PUBLIC_BASE
-    || OTP_BOOKINGS_UPSTREAM
-).replace(/\/+$/, '');
+const OTP_CLIENT_PORTAL_UPSTREAM = resolveSandboxSafeUpstream(
+    process.env.OTP_CLIENT_PORTAL_UPSTREAM_URL || process.env.OTP_OS_PUBLIC_BASE || OTP_BOOKINGS_UPSTREAM,
+    { isSandbox: IS_NON_PROD_SANDBOX_SITE, fallbackProd: OTP_BOOKINGS_UPSTREAM }
+);
 const OTP_BOOKING_WRITER_POLICY = resolveBookingWriterPolicy();
 const OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS = positiveNumber(process.env.OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS, 9000);
-const OTP_OS_JOB_MUTATION_UPSTREAM = String(process.env.OTP_OS_JOB_MUTATION_UPSTREAM_URL || OTP_BOOKINGS_UPSTREAM).replace(/\/+$/, '');
+const OTP_OS_JOB_MUTATION_UPSTREAM = resolveSandboxSafeUpstream(
+    process.env.OTP_OS_JOB_MUTATION_UPSTREAM_URL || OTP_BOOKINGS_UPSTREAM,
+    { isSandbox: IS_NON_PROD_SANDBOX_SITE, fallbackProd: OTP_BOOKINGS_UPSTREAM }
+);
 const OTP_OS_JOB_MUTATION_TOKEN = String(process.env.OTP_OS_JOB_MUTATION_TOKEN || '').trim();
 const OTP_OS_JOB_MUTATION_TIMEOUT_MS = positiveNumber(process.env.OTP_OS_JOB_MUTATION_TIMEOUT_MS, 8000);
-const OTP_OS_JOB_ARCHIVE_UPSTREAM = String(process.env.OTP_OS_JOB_ARCHIVE_UPSTREAM_URL || OTP_OS_JOB_MUTATION_UPSTREAM).replace(/\/+$/, '');
+const OTP_OS_JOB_ARCHIVE_UPSTREAM = resolveSandboxSafeUpstream(
+    process.env.OTP_OS_JOB_ARCHIVE_UPSTREAM_URL || OTP_OS_JOB_MUTATION_UPSTREAM,
+    { isSandbox: IS_NON_PROD_SANDBOX_SITE, fallbackProd: OTP_OS_JOB_MUTATION_UPSTREAM }
+);
 const OTP_OS_JOB_ARCHIVE_TOKEN = String(process.env.OTP_OS_JOB_ARCHIVE_TOKEN || '').trim();
 const OTP_OS_JOB_ARCHIVE_TIMEOUT_MS = positiveNumber(process.env.OTP_OS_JOB_ARCHIVE_TIMEOUT_MS, 8000);
 const OTP_BOOKINGS_PROXY_HEADERS = new Set([
@@ -3100,6 +3164,7 @@ const OTP_BOOKINGS_PROXY_HEADERS = new Set([
     'content-length',
     'user-agent',
     'x-booking-token',
+    'x-booking-upload-token',
     'x-client-name',
     'x-file-name',
     'x-file-size',
@@ -3117,8 +3182,21 @@ const OTP_BOOKINGS_RESPONSE_HEADER_BLOCKLIST = new Set([
 const BOOKING_CLIENT_MESSAGE = 'OTP received your request. We’ll review the scope and reply with the cleanest next step.';
 const BOOKING_PENDING_RECOMMENDATION_MESSAGE = 'Booking received. OTP Oracle recommendation is pending review.';
 const BOOKING_GENERIC_ERROR_MESSAGE = 'We could not submit the booking yet. Please check the required fields and try again.';
-const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit']);
+const BOOKING_PUBLIC_PROXY_PATHS = new Set(['/api/bookings/config', '/api/bookings/submit', '/api/bookings/upload-session', '/api/bookings/upload']);
 const CLIENT_PORTAL_TOKEN_RE = /^[A-Za-z0-9][A-Za-z0-9._~-]{5,512}$/;
+const CLIENT_PORTAL_DOCUMENT_TYPES = new Set([
+    'proposal',
+    'agreement',
+    'invoice',
+    'receipt',
+    'paid-receipt',
+    'nda',
+    'project-scope',
+    'service-summary',
+    'delivery-summary',
+    'change-order',
+    'payment-reminder'
+]);
 const SAFE_E2E_PORTAL_FIXTURE = Object.freeze({
     clientName: 'OTP Test Client',
     email: 'test@onlytrueperspective.tech',
@@ -3208,6 +3286,7 @@ function normalizeClientPortalToken(value) {
 }
 
 function e2eTestModeEnabled() {
+    if (IS_NON_PROD_SANDBOX_SITE) return false;
     return ['1', 'true'].includes(String(process.env.E2E_TEST_MODE || '').trim().toLowerCase());
 }
 
@@ -3627,9 +3706,9 @@ function buildSafeE2EClientPortalData(token = '') {
             ]
         },
         documents: [
-            { type: 'Proposal', label: 'Proposal', status: 'ready', message: 'Approved Scope & Proposal', preview: '# Proposal: Brand Launch & Digital Systems Build\nDeposit Paid: $500.00' },
-            { type: 'Invoice', label: 'Invoice', status: 'ready', message: 'Invoice Preview Available', preview: '# Invoice #OTP-PROP-001\nTotal: $1,500.00 | Deposit Paid: $500.00 | Balance: $1,000.00' },
-            { type: 'Paid Receipt', label: 'Receipt', status: 'ready', message: 'Receipt Available', preview: '# Deposit Payment Receipt\nAmount Paid: $500.00 via Stripe' }
+            { type: 'proposal', label: 'Proposal', ready: true, status: 'ready', message: 'Approved Scope & Proposal', viewUrl: '/api/client/portal/test-safe-portal-token/documents/proposal/view', downloadUrl: '/api/client/portal/test-safe-portal-token/documents/proposal/pdf' },
+            { type: 'invoice', label: 'Invoice', ready: true, status: 'ready', message: 'Invoice Preview Available', viewUrl: '/api/client/portal/test-safe-portal-token/documents/invoice/view', downloadUrl: '/api/client/portal/test-safe-portal-token/documents/invoice/pdf' },
+            { type: 'receipt', label: 'Receipt', ready: true, status: 'ready', message: 'Receipt Available', viewUrl: '/api/client/portal/test-safe-portal-token/documents/receipt/view', downloadUrl: '/api/client/portal/test-safe-portal-token/documents/receipt/pdf' }
         ]
     };
 }
@@ -4278,18 +4357,22 @@ async function saveBookingOpsJob({ bookingId, payload, recommendation, recommend
     return mapOpsJobRowToApi(data);
 }
 
-async function forwardBookingSubmitToUpstream(body) {
+async function forwardBookingSubmitToUpstream(body, { uploadToken = '' } = {}) {
     const upstreamUrl = new URL('/api/bookings/submit', OTP_BOOKINGS_UPSTREAM);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS);
     try {
+        const headers = {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Idempotency-Key': body.idempotency_key
+        };
+        if (uploadToken) {
+            headers['x-booking-upload-token'] = String(uploadToken).trim();
+        }
         const upstream = await fetch(upstreamUrl.href, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'Idempotency-Key': body.idempotency_key
-            },
+            headers: buildOtpOsUpstreamHeaders(headers),
             body: JSON.stringify(body || {}),
             redirect: 'manual',
             signal: controller.signal
@@ -4402,6 +4485,137 @@ app.get('/api/bookings/config', (req, res) => {
     res.json(buildPublicBookingConfig());
 });
 
+async function proxyLaunchToOtpOs(req, res, upstreamPath, { method = req.method, body = undefined } = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS);
+    try {
+        const upstreamUrl = new URL(upstreamPath, OTP_BOOKINGS_UPSTREAM);
+        const headers = { Accept: 'application/json' };
+        if (body !== undefined) headers['Content-Type'] = 'application/json';
+        if (req.headers['idempotency-key']) headers['Idempotency-Key'] = String(req.headers['idempotency-key']);
+        const upstream = await fetch(upstreamUrl.href, {
+            method,
+            headers: buildOtpOsUpstreamHeaders(headers),
+            body: body !== undefined ? JSON.stringify(body) : undefined,
+            redirect: 'manual',
+            signal: controller.signal
+        });
+        const payload = await upstream.json().catch(() => ({}));
+        return res.status(upstream.status).json(payload);
+    } catch (err) {
+        return res.status(503).json({
+            ok: false,
+            code: 'otp_os_unavailable',
+            message: 'OTP commercial engine is temporarily unavailable.'
+        });
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+app.get('/api/launch/catalog', (req, res) => {
+    return res.json({
+        ok: true,
+        version: OTP_LAUNCH_CATALOG.CATALOG_VERSION,
+        services: OTP_LAUNCH_CATALOG.SERVICES,
+        features: OTP_LAUNCH_CATALOG.FEATURES,
+        enhancements: OTP_LAUNCH_CATALOG.ENHANCEMENTS
+    });
+});
+
+app.post('/api/launch/submit', bookingSubmitLimiter, express.json({ limit: '128kb' }), async (req, res) => {
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const { requirements, summaryText } = OTP_LAUNCH_CATALOG.computeLaunchEstimate(body.launch_requirements || body);
+    const bookingToken = cleanBookingText(body.booking_token || `LAUNCH-${Date.now().toString(36)}`, 120);
+    const canonicalPayload = {
+        booking_token: bookingToken,
+        name: cleanBookingText(body.name || body.business_name, 160),
+        business_name: cleanBookingText(body.business_name, 160),
+        email: cleanBookingText(body.email, 200),
+        phone: cleanBookingText(body.phone, 80),
+        reference_link: cleanBookingText(body.reference_link, 300),
+        service_type: cleanBookingText(body.service_type || OTP_LAUNCH_CATALOG.findService(requirements.service_id).bookingServiceType, 120),
+        package_interest: cleanBookingText(body.package_interest || requirements.recommended_package, 120),
+        project_description: cleanBookingText(body.project_description || summaryText, 6000),
+        desired_deliverables: cleanBookingText(body.desired_deliverables || requirements.deliverables.join('; '), 2000),
+        budget_range: cleanBookingText(body.budget_range || requirements.estimate_display, 160),
+        contact_consent: body.contact_consent === true,
+        source_tracking: body.source_tracking && typeof body.source_tracking === 'object' ? body.source_tracking : { cta_source: 'otp_launch_configurator' },
+        upload_ids: Array.isArray(body.upload_ids) ? body.upload_ids.map((v) => cleanBookingText(v, 140)).filter(Boolean).slice(0, 20) : []
+    };
+    const envelope = bookingIntakeUpstreamPayload(canonicalPayload);
+    const uploadToken = String(req.header('x-booking-upload-token') || body.upload_token || '').trim().slice(0, 1024);
+    try {
+        const upstreamPayload = await forwardBookingSubmitToUpstream(envelope, { uploadToken });
+        return res.status(200).json({
+            ...publicBookingResponseFromUpstream(upstreamPayload, canonicalPayload),
+            booking_id: upstreamPayload.booking_id || envelope.booking_id,
+            requirements
+        });
+    } catch (error) {
+        if (error?.statusCode === 409) {
+            return res.status(409).json({
+                ok: false,
+                errorCode: 'booking_idempotency_conflict',
+                message: 'A matching request already exists.'
+            });
+        }
+        return res.status(503).json({
+            ok: false,
+            errorCode: 'otp_os_unavailable',
+            message: 'OTP Bookings is temporarily unavailable. Please try again shortly.'
+        });
+    }
+});
+
+app.post('/api/launch/checkout', checkoutSessionLimiter, express.json({ limit: '64kb' }), async (req, res) => {
+    return proxyLaunchToOtpOs(req, res, '/api/launch/checkout', {
+        method: 'POST',
+        body: req.body && typeof req.body === 'object' ? req.body : {}
+    });
+});
+
+app.get('/api/launch/checkout/status', async (req, res) => {
+    noStoreHtml(res);
+    const params = new URLSearchParams();
+    if (req.query.session_id) params.set('session_id', cleanBookingText(req.query.session_id, 180));
+    if (req.query.order_id) params.set('order_id', cleanBookingText(req.query.order_id, 120));
+    const q = params.toString() ? `?${params.toString()}` : '';
+    return proxyLaunchToOtpOs(req, res, `/api/launch/checkout/status${q}`, { method: 'GET' });
+});
+
+app.get('/api/launch/checkout-availability', async (req, res) => {
+    noStoreHtml(res);
+    return proxyLaunchToOtpOs(req, res, '/api/launch/checkout-availability', { method: 'GET' });
+});
+
+app.get('/api/launch/proposals/:token', async (req, res) => {
+    noStoreHtml(res);
+    const token = cleanBookingText(req.params.token, 240);
+    if (!token) return res.status(404).json({ ok: false, code: 'proposal_not_found' });
+    return proxyLaunchToOtpOs(req, res, `/api/launch/proposals/${encodeURIComponent(token)}`, { method: 'GET' });
+});
+
+app.post('/api/launch/proposals/:token/respond', bookingSubmitLimiter, express.json({ limit: '32kb' }), async (req, res) => {
+    noStoreHtml(res);
+    const token = cleanBookingText(req.params.token, 240);
+    if (!token) return res.status(404).json({ ok: false, code: 'proposal_not_found' });
+    return proxyLaunchToOtpOs(req, res, `/api/launch/proposals/${encodeURIComponent(token)}/respond`, {
+        method: 'POST',
+        body: req.body && typeof req.body === 'object' ? req.body : {}
+    });
+});
+
+app.post('/api/launch/portal/:token/delivery-action', bookingSubmitLimiter, express.json({ limit: '32kb' }), async (req, res) => {
+    noStoreHtml(res);
+    const token = normalizeClientPortalToken(req.params.token);
+    if (!token) return res.status(404).json({ ok: false, code: 'portal_not_found' });
+    return proxyLaunchToOtpOs(req, res, `/api/launch/portal/${encodeURIComponent(token)}/delivery-action`, {
+        method: 'POST',
+        body: req.body && typeof req.body === 'object' ? req.body : {}
+    });
+});
+
 app.get('/api/client-portal/:token', async (req, res) => {
     privatePortalApi(res);
     const safeToken = normalizeClientPortalToken(req.params.token);
@@ -4412,7 +4626,7 @@ app.get('/api/client-portal/:token', async (req, res) => {
     if (!supabaseAdmin) {
         try {
             const upstreamUrl = `${OTP_CLIENT_PORTAL_UPSTREAM}/api/client-portal/${encodeURIComponent(req.params.token)}`;
-            const response = await fetch(upstreamUrl, { headers: { Accept: 'application/json' } });
+            const response = await fetch(upstreamUrl, { headers: buildOtpOsUpstreamHeaders({ Accept: 'application/json' }) });
             const data = await response.json().catch(() => null);
             if (response.ok && data) {
                 return res.json(data);
@@ -4466,6 +4680,121 @@ app.get('/api/client-portal/:token', async (req, res) => {
             errorCode: 'portal_load_failed',
             message: 'Client Portal could not load right now.'
         });
+    }
+});
+
+function portalDocumentError(req, res, statusCode, message = 'This document is not available right now.') {
+    const browserNavigation = req.path.endsWith('/view') || req.accepts('html');
+    if (browserNavigation) {
+        privatePortalHtml(res);
+        res.set('Content-Type', 'text/html; charset=utf-8');
+        res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+        res.set('X-Content-Type-Options', 'nosniff');
+        const title = statusCode === 403 ? 'Document in preparation' : 'Document unavailable';
+        const detail = statusCode === 403
+            ? 'OTP is still preparing this document. Please check back soon or contact your project team.'
+            : 'This document could not be opened right now. Please try again shortly or contact your project team.';
+        return res.status(statusCode).send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} · OnlyTruePerspective</title><style> :root{color-scheme:dark;--gold:#d8be7a;--text:#f7f8f3;--muted:#b7c3ba;--line:#303a34}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 78% 4%,rgba(216,190,122,.13),transparent 28rem),linear-gradient(145deg,#151c18,#050706 58%);color:var(--text);font:16px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.card{width:min(100%,560px);padding:clamp(24px,6vw,44px);border:1px solid var(--line);border-radius:18px;background:rgba(16,21,18,.92);box-shadow:0 24px 70px rgba(0,0,0,.35)}.eyebrow{margin:0;color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}h1{margin:12px 0;font-size:clamp(26px,6vw,36px);line-height:1.12}p{margin:0;color:var(--muted)}a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:24px;padding:10px 18px;border:1px solid var(--gold);border-radius:9px;background:var(--gold);color:#101512;font-weight:800;text-decoration:none}</style></head><body><main class="card"><p class="eyebrow">OnlyTruePerspective · Client documents</p><h1>${title}</h1><p>${detail}</p><a href="/portal">Return to client portal</a></main></body></html>`);
+    }
+    privatePortalApi(res);
+    return res.status(statusCode).json({
+        ok: false,
+        errorCode: statusCode === 403 ? 'document_not_ready' : 'portal_document_unavailable',
+        message
+    });
+}
+
+function portalDocumentTitle(type) {
+    return type.split('-').map((part) => `${part[0].toUpperCase()}${part.slice(1)}`).join(' ');
+}
+
+async function safeE2EPortalDocument(res, type, format, { inlinePdf = false } = {}) {
+    const title = portalDocumentTitle(type);
+    privatePortalHtml(res);
+    if (format === 'view') {
+        res.set('Content-Type', 'text/html; charset=utf-8');
+        res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+        res.set('X-Content-Type-Options', 'nosniff');
+        return res.status(200).send(`<!doctype html><html lang="en"><meta charset="utf-8"><title>${title} · OTP test preview</title><body style="font:16px/1.6 system-ui,sans-serif;max-width:720px;margin:3rem auto;padding:0 1rem;color:#181818"><p style="color:#8a6b27;letter-spacing:.12em;text-transform:uppercase">Safe test document</p><h1>${title}</h1><p>This preview is a synthetic OTP portal fixture. It does not contain or change real client information.</p><hr><p>OnlyTruePerspective LLC · Test fixture</p></body></html>`);
+    }
+
+    const document = await PDFDocument.create();
+    const page = document.addPage([612, 792]);
+    const font = await document.embedFont(StandardFonts.Helvetica);
+    const bold = await document.embedFont(StandardFonts.HelveticaBold);
+    page.drawText('SAFE TEST DOCUMENT', { x: 54, y: 720, size: 10, font: bold, color: rgb(0.53, 0.39, 0.12) });
+    page.drawText(title, { x: 54, y: 674, size: 28, font: bold, color: rgb(0.06, 0.07, 0.09) });
+    page.drawText('Synthetic OTP portal fixture. Not a real client document.', { x: 54, y: 632, size: 12, font, color: rgb(0.25, 0.27, 0.3) });
+    page.drawText('OnlyTruePerspective LLC · Test fixture', { x: 54, y: 90, size: 10, font, color: rgb(0.35, 0.38, 0.44) });
+    const pdf = Buffer.from(await document.save());
+    res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `${inlinePdf ? 'inline' : 'attachment'}; filename="otp-test-${type}.pdf"`,
+        'Content-Length': String(pdf.length),
+        'X-Content-Type-Options': 'nosniff'
+    });
+    return res.status(200).send(pdf);
+}
+
+app.get('/api/client/portal/:token/documents/:type/:format', async (req, res) => {
+    const token = normalizeClientPortalToken(req.params.token);
+    const type = String(req.params.type || '').trim().toLowerCase().replace(/_/g, '-');
+    const format = req.params.format === 'pdf' ? 'pdf' : req.params.format === 'view' ? 'view' : '';
+    const inlinePdf = format === 'pdf' && req.query.inline === '1';
+    if (!token || !format || !CLIENT_PORTAL_DOCUMENT_TYPES.has(type)) {
+        return portalDocumentError(req, res, 404);
+    }
+
+    if (e2eTestModeEnabled() && token === SAFE_E2E_PORTAL_FIXTURE.portalToken) {
+        try {
+            return await safeE2EPortalDocument(res, type, format, { inlinePdf });
+        } catch (_) {
+            return portalDocumentError(req, res, 503);
+        }
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), CLIENT_PORTAL_PROXY_TIMEOUT_MS);
+    try {
+        const upstreamUrl = new URL(
+            `/api/client/portal/${encodeURIComponent(token)}/documents/${encodeURIComponent(type)}/${format}`,
+            OTP_CLIENT_PORTAL_UPSTREAM
+        );
+        const upstream = await fetch(upstreamUrl.href, {
+            method: 'GET',
+            headers: buildOtpOsUpstreamHeaders({ Accept: format === 'pdf' ? 'application/pdf' : 'text/html' }),
+            redirect: 'manual',
+            signal: controller.signal
+        });
+
+        if (upstream.status === 403) return portalDocumentError(req, res, 403, 'This document is not available yet. Please contact OTP.');
+        if ([404, 410].includes(upstream.status)) return portalDocumentError(req, res, upstream.status, 'This portal document is not available. Check your private link or contact OTP.');
+        if (!upstream.ok || upstream.status >= 300) return portalDocumentError(req, res, 503);
+
+        const contentType = String(upstream.headers.get('content-type') || '').toLowerCase();
+        const expectsPdf = format === 'pdf';
+        if (expectsPdf ? !contentType.includes('application/pdf') : !contentType.includes('text/html')) {
+            return portalDocumentError(req, res, 503);
+        }
+
+        const bytes = Buffer.from(await upstream.arrayBuffer());
+        const maxBytes = expectsPdf ? 25 * 1024 * 1024 : 3 * 1024 * 1024;
+        if (!bytes.length || bytes.length > maxBytes) return portalDocumentError(req, res, 503);
+
+        privatePortalHtml(res);
+        res.set('X-Content-Type-Options', 'nosniff');
+        if (expectsPdf) {
+            res.set('Content-Type', 'application/pdf');
+            res.set('Content-Disposition', `${inlinePdf ? 'inline' : 'attachment'}; filename="otp-${type}.pdf"`);
+        } else {
+            res.set('Content-Type', 'text/html; charset=utf-8');
+            res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+        }
+        return res.status(200).send(bytes);
+    } catch (_) {
+        return portalDocumentError(req, res, 503);
+    } finally {
+        clearTimeout(timer);
     }
 });
 
@@ -4619,7 +4948,7 @@ app.get('/api/quote/:id', async (req, res) => {
     if (!supabaseAdmin) {
         try {
             const upstreamUrl = `${OTP_CLIENT_PORTAL_UPSTREAM}/api/documents/render/${encodeURIComponent(quoteId)}/proposal`;
-            const upstreamRes = await fetch(upstreamUrl, { headers: { Accept: 'application/json' } });
+            const upstreamRes = await fetch(upstreamUrl, { headers: buildOtpOsUpstreamHeaders({ Accept: 'application/json' }) });
             const upstreamData = await upstreamRes.json().catch(() => null);
             if (upstreamRes.ok && upstreamData && upstreamData.proposal) {
                 return res.json({ success: true, proposal: upstreamData.proposal });
@@ -4906,10 +5235,10 @@ app.post('/api/fixline/inspect', fixlineInspectLimiter, express.json({ limit: '1
             `Step 3: Connect 1-Tap Mobile Contact Links & Client Portal Access`
         ];
 
-        const osUpstream = process.env.OTP_OS_UPSTREAM || 'https://otp-os.vercel.app';
-        fetch(`${osUpstream}/api/leads/submit`, {
+        const osUpstream = OTP_OS_UPSTREAM_ORIGIN;
+        if (osUpstream) fetch(`${osUpstream}/api/leads/submit`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: buildOtpOsUpstreamHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({
                 name: `Live Fixline Lead (${domainName})`,
                 email: `inspector-${Date.now()}@prospect.local`,
@@ -4973,7 +5302,8 @@ app.post('/api/bookings/submit', bookingSubmitLimiter, express.json({ limit: '25
     try {
         if (OTP_BOOKING_WRITER_POLICY.primary === 'otp_os') {
             try {
-                const upstreamPayload = await forwardBookingSubmitToUpstream(bookingIntakeUpstreamPayload(payload));
+                const uploadToken = String(req.header('x-booking-upload-token') || req.body?.upload_token || '').trim().slice(0, 1024);
+                const upstreamPayload = await forwardBookingSubmitToUpstream(bookingIntakeUpstreamPayload(payload), { uploadToken });
                 const response = publicBookingResponseFromUpstream(upstreamPayload, payload);
                 console.info('OTP booking handoff', { event: 'booking_response_sent', ...response.writerEvidence });
                 return res.json(response);
@@ -5140,10 +5470,11 @@ app.use('/api/bookings', async (req, res) => {
         const timer = setTimeout(() => controller.abort(), OTP_BOOKINGS_UPSTREAM_TIMEOUT_MS);
         let upstream;
         try {
+            const hasBody = !['GET', 'HEAD'].includes(req.method);
             upstream = await fetch(upstreamUrl.href, {
                 method: req.method,
-                headers,
-                body: ['GET', 'HEAD'].includes(req.method) ? undefined : req,
+                headers: buildOtpOsUpstreamHeaders(headers),
+                ...(hasBody ? { body: req, duplex: 'half' } : {}),
                 redirect: 'manual',
                 signal: controller.signal
             });

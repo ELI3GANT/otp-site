@@ -1,97 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-refresh-palette>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="OTP Client Portal access for project status, documents, payment steps, and approvals." />
-    <meta name="theme-color" content="#050609" />
+    <meta name="theme-color" content="#101110" />
+    <meta name="description" content="Private access to your OnlyTruePerspective project, official documents, payment steps, and approvals." />
     <meta name="robots" content="noindex, nofollow" />
-    <link rel="canonical" href="https://www.onlytrueperspective.tech/portal" />
-    <meta property="og:title" content="OTP Client Portal | OnlyTruePerspective" />
-    <meta property="og:description" content="Access project status, documents, payment steps, and approvals." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.onlytrueperspective.tech/portal" />
-    <title>OTP Client Portal | OnlyTruePerspective</title>
+    <meta name="referrer" content="no-referrer" />
+    <title>Client Portal | OnlyTruePerspective</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="stylesheet" href="/portal.css?v=20260515-otp-system1" />
+    <script src="/theme-chrono.js?v=20261109-site-v2"></script>
+    <link rel="stylesheet" href="/client.css?v=20260702-client-portal-v2" />
+    <link rel="stylesheet" href="/otp-v2-theme.css?v=20261109-portal-v3" />
+    <link rel="stylesheet" href="/workspace-v2.css?v=20261109-workspace-v2" />
+    <link rel="stylesheet" href="/portal-entry.css?v=20261111-portal-v2" />
   </head>
   <body>
-    <main class="portal-page">
-      <header class="portal-header">
-        <a class="portal-brand" href="/" aria-label="OnlyTruePerspective home">
-          <span class="portal-brand-mark">
-            <img src="/assets/otp-hero-centered.gif" alt="OTP Signal Pulse Logo" width="250" height="250" decoding="async" />
-          </span>
+    <main class="portal-shell portal-entry-shell">
+      <header class="portal-header portal-entry-header">
+        <a class="brand-lockup portal-entry-brand" href="/" aria-label="OnlyTruePerspective home">
+          <span class="logo-mark"><img src="/assets/otp-logo-transparent.png" alt="OTP" width="34" height="34" /></span>
           <span>
-            <strong>OnlyTruePerspective</strong>
-            <small>Client Portal</small>
+            <p>OnlyTruePerspective LLC</p>
+            <h1>Client portal</h1>
           </span>
         </a>
-        <nav class="portal-nav" aria-label="Portal navigation">
-          <a href="/bookings">Book OTP</a>
-          <a href="/">Live Site</a>
-        </nav>
+        <div class="portal-entry-header-actions">
+          <span class="status-pill"><span class="portal-entry-status-dot" aria-hidden="true"></span>Private access</span>
+          <button id="portal-theme-toggle" class="portal-theme-toggle secondary" type="button" aria-label="Switch to day mode">Day</button>
+        </div>
       </header>
 
-      <section class="portal-hero" aria-labelledby="portal-title">
-        <div class="portal-copy">
-          <div class="portal-lockup">
-            <span class="portal-emblem" aria-hidden="true">
-              <span class="emblem-aura"></span>
-              <span class="emblem-ring ring-one"></span>
-              <span class="emblem-ring ring-two"></span>
-              <svg viewBox="0 0 100 100" focusable="false" aria-hidden="true">
-                <path d="M20 32h60v40H20z"></path>
-                <path d="M32 32v-8h36v8M34 48h32M34 60h18M58 60h8"></path>
-                <circle cx="76" cy="28" r="5"></circle>
-              </svg>
+      <section class="portal-entry-layout" aria-labelledby="portal-title">
+        <div class="portal-entry-intro">
+          <p class="eyebrow">OnlyTruePerspective / Client access</p>
+          <h2 id="portal-title">Your project.<br /><span>All in one place.</span></h2>
+          <p class="portal-entry-lede">A private view of your project, next steps, and official OTP documents.</p>
+          <div class="portal-entry-assurance">
+            <span class="portal-entry-assurance-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3" /><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M12 14v3" /></svg>
             </span>
-            <p>OTP Client Portal</p>
-          </div>
-          <h1 id="portal-title">Access project status, documents, payment steps, and approvals.</h1>
-          <p class="portal-subcopy">Client access is private and invite-based. After OTP reviews your booking or active project, you may receive a secure portal link for next actions.</p>
-          <div class="portal-actions">
-            <a class="primary-action" href="/bookings">Book OTP</a>
-            <a class="secondary-action" href="mailto:contact@onlytrueperspective.tech">Request Access</a>
+            <span><strong>Private invite only</strong><small>Your link opens only the project connected to your invitation.</small></span>
           </div>
         </div>
 
-        <aside class="portal-card" aria-labelledby="invite-title">
-          <div class="portal-card-topline">
-            <span>Private Access</span>
-            <strong><span aria-hidden="true"></span>Invite Only</strong>
+        <section class="card portal-entry-card" aria-labelledby="invite-title">
+          <div class="portal-entry-card-top">
+            <span class="portal-entry-card-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M4 7.5h16v12H4z" /><path d="M8 7.5V5h8v2.5M8 12h8M8 15.5h5" /><circle cx="18" cy="6" r="2.5" /></svg>
+            </span>
+            <span class="eyebrow">Your secure workspace</span>
           </div>
-          <h2 id="invite-title">Open your portal invite.</h2>
-          <p>Paste the private invite link or token OTP sent you. Public booking requests do not expose portal tokens.</p>
-          <form id="portal-invite-form" novalidate>
-            <label for="portal-token">Invite link or token</label>
-            <input id="portal-token" name="portal_token" autocomplete="off" inputmode="text" placeholder="Paste private invite" />
-            <p id="portal-message" class="portal-message" aria-live="polite"></p>
-            <button type="submit">Enter Client Portal</button>
+          <h2 id="invite-title">Open your portal</h2>
+          <p class="portal-entry-copy">Paste the private invite link or token OTP sent you. You can paste the full link or just its token.</p>
+          <form id="portal-invite-form" class="portal-entry-form" novalidate>
+            <label class="portal-field" for="portal-token">
+              <span>Portal invite</span>
+              <input id="portal-token" name="portal_token" autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="text" placeholder="Paste your private link or token" aria-describedby="portal-message portal-entry-hint" />
+            </label>
+            <p id="portal-entry-hint" class="portal-entry-hint">OTP never asks you to share your invite publicly.</p>
+            <p id="portal-message" class="portal-message" role="status" aria-live="polite"></p>
+            <button class="portal-entry-submit" type="submit">
+              <span>Continue to project</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
           </form>
-        </aside>
+          <p class="portal-entry-support">Missing your invite? <a href="mailto:contact@onlytrueperspective.tech">Contact the OTP team</a>.</p>
+        </section>
       </section>
 
-      <section class="portal-grid" aria-label="Client portal capabilities">
-        <article>
-          <span>Status</span>
-          <strong>Project progress</strong>
-          <p>See the approved scope and current project stage after OTP activates your portal.</p>
+      <section class="portal-entry-capabilities" aria-label="Inside your client portal">
+        <article class="card portal-entry-capability">
+          <span class="portal-entry-mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19h16M6 16V9m6 7V5m6 11v-4" /></svg></span>
+          <div><p class="eyebrow">Project</p><h3>Progress & next steps</h3><p>See your current scope, project status, and the next action for you.</p></div>
         </article>
-        <article>
-          <span>Documents</span>
-          <strong>Files and approvals</strong>
-          <p>Review proposals, agreements, notes, and next approvals in one private place.</p>
+        <article class="card portal-entry-capability">
+          <span class="portal-entry-mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.5h8l4 4V21H6z" /><path d="M14 3.5V8h4M9 12h6M9 15.5h6" /></svg></span>
+          <div><p class="eyebrow">Documents</p><h3>Official files</h3><p>Preview and download client-ready proposals, invoices, and receipts when available.</p></div>
         </article>
-        <article>
-          <span>Payments</span>
-          <strong>Payment steps</strong>
-          <p>Use only the payment links or instructions OTP intentionally sends through the client flow.</p>
+        <article class="card portal-entry-capability">
+          <span class="portal-entry-mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2" /><path d="M4 9h16M8 14h3" /></svg></span>
+          <div><p class="eyebrow">Billing</p><h3>Payment & approvals</h3><p>Review the current payment state and any secure client actions OTP has prepared.</p></div>
         </article>
       </section>
-      <footer class="portal-footer">Powered by OnlyTruePerspective</footer>
+
+      <footer class="portal-footer portal-entry-footer">
+        <span>Powered by OnlyTruePerspective LLC</span>
+        <nav aria-label="More from OTP"><a href="/bookings">Start a project</a><a href="/">Main site</a></nav>
+      </footer>
     </main>
-    <script src="/portal.js?v=20260513-portal1" defer></script>
+    <script src="/portal.js?v=20261111-portal-v2" defer></script>
   </body>
 </html>

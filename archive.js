@@ -3,7 +3,7 @@
   const library = root.OTP_PROJECT_LIBRARY;
   const projectRoot = document.querySelector('[data-archive-projects]');
   if (!library || !projectRoot) return;
-  const order = ['hyh-architecture-design', 'weatheros', 'floorops', 'otp-fixline', 'protocol', 'song-wars', 'otp-os', 'floivation'];
+  const order = ['floivation', 'hyh-architecture-design', 'weatheros', 'floorops', 'otp-os', 'otp-fixline', 'protocol', 'song-wars'];
   const projects = library.getProjects().sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
   const state = { collection: 'Everything', search: '', category: '', status: '', year: '', technology: '' };
   const controls = Object.fromEntries(Object.keys(state).filter((key) => key !== 'collection').map((key) => [key, document.querySelector(`[data-archive-${key}]`)]));
@@ -89,6 +89,7 @@
     const content = node('div', 'archive-project-content');
     const meta = node('div', 'archive-project-meta');
     meta.append(node('span', '', project.category), node('span', '', project.status));
+    if (project.id === order[0]) meta.append(node('span', 'archive-project-newest', 'Newest'));
     content.append(meta);
     const title = node('h2', 'archive-project-title');
     title.id = titleId;

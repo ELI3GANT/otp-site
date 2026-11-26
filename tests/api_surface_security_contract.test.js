@@ -27,6 +27,8 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/bookings/submit',
     'ALL /api/bookings/deposit-checkout',
     'GET /api/client-portal/:token',
+    // Client-safe document routes authenticate with the opaque portal token and proxy only allowlisted types.
+    'GET /api/client/portal/:token/documents/:type/:format',
     'GET /api/quote/:id',
     'GET /api/youtube/videos',
     'POST /api/contact',
@@ -34,7 +36,16 @@ const UNAUTH_API_ALLOWLIST = new Set([
     'POST /api/audit/submit',
     'POST /api/fixline/inspect',
     'POST /api/analytics/view',
-    'POST /api/create-checkout-session'
+    'POST /api/create-checkout-session',
+    // OTP LAUNCH storefront catalog, structured intake handoff, private proposal links (unguessable token), checkout proxy & authoritative status check, and portal delivery actions.
+    'GET /api/launch/catalog',
+    'POST /api/launch/submit',
+    'POST /api/launch/checkout',
+    'GET /api/launch/checkout/status',
+    'GET /api/launch/checkout-availability',
+    'GET /api/launch/proposals/:token',
+    'POST /api/launch/proposals/:token/respond',
+    'POST /api/launch/portal/:token/delivery-action'
 ]);
 
 const siteContentBoundaryMigration = read('supabase/migrations/20260811020000_site_content_access_boundary.sql');
@@ -250,6 +261,138 @@ assert.ok(
     ),
     'storage Public Access policy must scope SELECT to bucket_id = uploads'
 );
+
+// Early fail-closed sandbox/preview isolation contract (must execute before Stripe & Supabase Admin init)
+const sandboxIsolation = require('../server/sandbox-isolation');
+const sandboxBootstrapIdx = serverSrc.indexOf('applySiteSandboxIsolation(process.env)');
+const stripeInitIdx = serverSrc.indexOf("require('stripe')");
+const supabaseInitIdx = serverSrc.indexOf('const supabaseAdmin =');
+assert.ok(sandboxBootstrapIdx > 0, 'server.js must invoke applySiteSandboxIsolation(process.env)');
+assert.ok(stripeInitIdx > sandboxBootstrapIdx, 'applySiteSandboxIsolation must run BEFORE Stripe initialization');
+assert.ok(supabaseInitIdx > sandboxBootstrapIdx, 'applySiteSandboxIsolation must run BEFORE Supabase Admin initialization');
+assert.ok(
+    serverSrc.includes('(!sandboxIsolation.active || sandboxIsolation.allowDirectStripe)'),
+    'Stripe init must be gated by sandboxIsolation'
+);
+assert.ok(
+    serverSrc.includes('(!sandboxIsolation.active || sandboxIsolation.allowDirectSupabase)'),
+    'Supabase Admin init must be gated by sandboxIsolation'
+);
+
+{
+    const leakedEnv = {
+        VERCEL: '1',
+        VERCEL_ENV: 'preview',
+        OTP_ENV: 'sandbox',
+        STRIPE_SECRET_KEY: ['sk', 'live', 'inherited_prod_fixture'].join('_'),
+        STRIPE_WEBHOOK_SECRET: ['whsec', 'inherited_prod_fixture'].join('_'),
+        SUPABASE_URL: 'https://ckumhowhucbbmpdeqkrl.supabase.co',
+        SUPABASE_SERVICE_KEY: 'prod-service-role-fixture',
+        RESEND_API_KEY: ['re', 'prod_fixture'].join('_'),
+        GEMINI_API_KEY: ['AIza', 'prod_gemini_fixture'].join(''),
+        OPENAI_API_KEY: ['sk', 'prod', 'openai_fixture'].join('-'),
+        ANTHROPIC_API_KEY: ['sk', 'ant', 'prod_fixture'].join('-'),
+        GROQ_API_KEY: ['gsk', 'prod_fixture'].join('_'),
+        ADMIN_PASSCODE: 'prod-passcode',
+        OTP_ADMIN_PASSCODE: 'prod-passcode',
+        OTP_SITE_ADMIN_PASSCODE: 'prod-site-passcode',
+        OTP_ADMIN_TOKEN: 'prod-admin-token',
+        JWT_SECRET: 'prod-jwt-secret',
+        CLIENT_PORTAL_SECRET: 'prod-portal-secret',
+        E2E_TEST_MODE: 'true',
+        E2E_TEST_PORTAL_TOKEN: 'prod-e2e-token',
+        E2E_TEST_CLIENT_EMAIL: 'test@onlytrueperspective.tech',
+        CLIENT_PORTAL_BASE_URL: 'https://www.onlytrueperspective.tech/client',
+        PUBLIC_CLIENT_BASE_URL: 'https://www.onlytrueperspective.tech/client',
+        OTP_PUBLIC_SITE_ORIGIN: 'https://www.onlytrueperspective.tech',
+        OTP_CHECKOUT_ORIGIN: 'https://www.onlytrueperspective.tech',
+        OTP_OS_UPSTREAM_URL: 'https://otp-os-git-feature-otp-launch-only-true-perspective.vercel.app',
+        OTP_BOOKINGS_UPSTREAM_URL: 'https://otp-os.vercel.app',
+        OTP_OS_JOB_MUTATION_UPSTREAM_URL: 'https://otp-os.vercel.app',
+        OTP_OS_JOB_ARCHIVE_UPSTREAM_URL: 'https://otp-os.vercel.app',
+        OTP_ALLOW_VERCEL_GIT_PRODUCTION_DEPLOY: '1'
+    };
+
+    const result = sandboxIsolation.applySiteSandboxIsolation(leakedEnv);
+    assert.strictEqual(result.active, true);
+    assert.strictEqual(result.allowDirectStripe, false);
+    assert.strictEqual(result.allowDirectSupabase, false);
+
+    for (const forbiddenKey of [
+        'STRIPE_SECRET_KEY',
+        'STRIPE_WEBHOOK_SECRET',
+        'SUPABASE_URL',
+        'SUPABASE_SERVICE_KEY',
+        'RESEND_API_KEY',
+        'GEMINI_API_KEY',
+        'OPENAI_API_KEY',
+        'ANTHROPIC_API_KEY',
+        'GROQ_API_KEY',
+        'ADMIN_PASSCODE',
+        'OTP_ADMIN_PASSCODE',
+        'OTP_SITE_ADMIN_PASSCODE',
+        'OTP_ADMIN_TOKEN',
+        'JWT_SECRET',
+        'CLIENT_PORTAL_SECRET',
+        'E2E_TEST_PORTAL_TOKEN',
+        'E2E_TEST_CLIENT_EMAIL',
+        'CLIENT_PORTAL_BASE_URL',
+        'PUBLIC_CLIENT_BASE_URL',
+        'OTP_PUBLIC_SITE_ORIGIN',
+        'OTP_CHECKOUT_ORIGIN',
+        'OTP_BOOKINGS_UPSTREAM_URL',
+        'OTP_OS_JOB_MUTATION_UPSTREAM_URL',
+        'OTP_OS_JOB_ARCHIVE_UPSTREAM_URL',
+        'OTP_ALLOW_VERCEL_GIT_PRODUCTION_DEPLOY'
+    ]) {
+        assert.strictEqual(leakedEnv[forbiddenKey], undefined, `Preview/sandbox must strip ${forbiddenKey}`);
+    }
+    assert.strictEqual(leakedEnv.E2E_TEST_MODE, '0', 'Preview/sandbox must force E2E_TEST_MODE=0');
+    assert.strictEqual(
+        leakedEnv.OTP_OS_UPSTREAM_URL,
+        'https://otp-os-git-feature-otp-launch-only-true-perspective.vercel.app',
+        'Approved branch-bound OTP OS Preview upstream must be preserved'
+    );
+    assert.strictEqual(
+        sandboxIsolation.resolveSandboxSafeUpstream('https://otp-os.vercel.app', { isSandbox: true }),
+        '',
+        'Production otp-os.vercel.app upstream must fail closed in sandbox'
+    );
+    assert.strictEqual(
+        sandboxIsolation.resolveSandboxSafeOrigin('https://www.onlytrueperspective.tech', {
+            isSandbox: true,
+            vercelUrl: 'otp-site-git-feature-otp-launch-only-true-perspective.vercel.app'
+        }),
+        'https://otp-site-git-feature-otp-launch-only-true-perspective.vercel.app',
+        'Sandbox checkout/site origin must never fall back to production domain'
+    );
+}
+
+{
+    // Production mode must remain untouched
+    const prodEnv = {
+        VERCEL: '1',
+        VERCEL_ENV: 'production',
+        STRIPE_SECRET_KEY: ['sk', 'live', 'prod_fixture'].join('_'),
+        SUPABASE_URL: 'https://ckumhowhucbbmpdeqkrl.supabase.co',
+        GEMINI_API_KEY: ['AIza', 'prod_keep_fixture'].join('')
+    };
+    const prodResult = sandboxIsolation.applySiteSandboxIsolation(prodEnv);
+    assert.strictEqual(prodResult.active, false);
+    assert.strictEqual(prodEnv.STRIPE_SECRET_KEY, ['sk', 'live', 'prod_fixture'].join('_'));
+    assert.strictEqual(prodEnv.SUPABASE_URL, 'https://ckumhowhucbbmpdeqkrl.supabase.co');
+    assert.strictEqual(prodEnv.GEMINI_API_KEY, ['AIza', 'prod_keep_fixture'].join(''));
+}
+
+{
+    const bypassHeaders = sandboxIsolation.buildOtpOsUpstreamHeaders(
+        { Accept: 'application/json' },
+        { OTP_OS_VERCEL_BYPASS_SECRET: 'fixture-bypass-value' }
+    );
+    assert.strictEqual(bypassHeaders['x-vercel-protection-bypass'], 'fixture-bypass-value');
+    const plainHeaders = sandboxIsolation.buildOtpOsUpstreamHeaders({ Accept: 'application/json' }, {});
+    assert.strictEqual(plainHeaders['x-vercel-protection-bypass'], undefined);
+}
 
 console.log('   API surface + RLS contract OK');
 console.log('API SURFACE SECURITY CONTRACT COMPLETE');

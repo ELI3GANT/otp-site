@@ -29,7 +29,8 @@
           "components/**",
           "supabase/migrations/**",
           "weatheros/**",
-          "evehalo/**"
+          "evehalo/**",
+          "vault/**"
         ]
       }
     }
@@ -202,6 +203,39 @@
       "dest": "https://otp-floorops.vercel.app/$1"
     },
     {
+      "src": "^/(?:vault\\.html|vault/index\\.html)$",
+      "status": 308,
+      "headers": {
+        "Location": "/vault"
+      }
+    },
+    {
+      "src": "^/(?:vault-privacy(?:\\.html)?|vault/privacy\\.html)/?$",
+      "status": 308,
+      "headers": {
+        "Location": "/vault/privacy"
+      }
+    },
+    {
+      "src": "^/(?:vault-support(?:\\.html)?|vault/support\\.html)/?$",
+      "status": 308,
+      "headers": {
+        "Location": "/vault/support"
+      }
+    },
+    {
+      "src": "^/vault/?$",
+      "dest": "/vault/index.html"
+    },
+    {
+      "src": "^/vault/privacy/?$",
+      "dest": "/vault/privacy.html"
+    },
+    {
+      "src": "^/vault/support/?$",
+      "dest": "/vault/support.html"
+    },
+    {
       "src": "^/weatheros\\.html$",
       "status": 308,
       "headers": {
@@ -274,6 +308,14 @@
     {
       "src": "/weatheros/privacy/?",
       "dest": "/weatheros/privacy.html"
+    },
+    {
+      "src": "^/launch/?$",
+      "dest": "/launch.html"
+    },
+    {
+      "src": "^/proposal/([^/]+)/?$",
+      "dest": "/server.js"
     },
     {
       "src": "/(start-project|bookings|booking|book|book-otp)/?",

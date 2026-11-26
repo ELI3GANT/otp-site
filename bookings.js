@@ -258,9 +258,40 @@ const state = {
   quickStarted: false,
   detailedStarted: false,
   selectedPackage: '',
+  expandedPackages: new Set(),
+  quickFitKey: '',
   bookingToken: makeBookingToken(),
   sourceTracking: {}
 };
+
+const BOOKING_BENEFIT_ICONS = Object.freeze({
+  bolt: 'M17 3 7 18h8l-1 11 11-15h-8l0-11Z',
+  spark: 'M16 4v6M16 22v6M4 16h6M22 16h6M7.5 7.5l4.2 4.2M20.3 20.3l4.2 4.2M24.5 7.5l-4.2 4.2M11.7 20.3l-4.2 4.2',
+  layers: 'm16 4 12 6-12 6-12-6 12-6Zm-12 12 12 6 12-6M4 22l12 6 12-6',
+  building: 'M4 27V7l10-3v23M14 13l14 3v11M2 27h28',
+  palette: 'M16 5a11 11 0 1 0 11 11c0-1.9-1.5-3-3-3h-2a2 2 0 0 1-2-2V9a4 4 0 0 0-4-4Z',
+  mobile: 'M9 4h14a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm5 19h4',
+  shield: 'M16 4 6 8v8c0 6.5 4.3 10.6 10 12 5.7-1.4 10-5.5 10-12V8l-10-4Zm-4 12 3 3 5-6',
+  card: 'M3 7h26v18H3zm0 6h26M8 20h6',
+  cpu: 'M9 9h14v14H9zm3-5v5m8-5v5m-8 14v5m8-5v5M4 12h5m-5 8h5m14-8h5m-5 8h5',
+  chevron: 'm9 13 7 7 7-7'
+});
+
+function createBookingIcon(key, className = 'booking-pkg-svg') {
+  const ctx = window.OTP_LAUNCH_CONTEXT;
+  if (ctx && typeof ctx.createSvgIcon === 'function' && !['chevron', 'layers', 'spark', 'bolt', 'shield', 'card', 'mobile', 'palette'].includes(key)) {
+    return ctx.createSvgIcon(key, className);
+  }
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 32 32');
+  svg.setAttribute('class', className);
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', BOOKING_BENEFIT_ICONS[key] || BOOKING_BENEFIT_ICONS.spark);
+  svg.append(path);
+  return svg;
+}
 
 const stepNames = ['Pick Package', 'Project Details', 'Budget + Timeline', 'Review + Submit'];
 const $ = (id) => document.getElementById(id);
@@ -304,6 +335,15 @@ const els = {
   quickDescription: $('quick-description'),
   quickLink: $('quick-link'),
   quickBudget: $('quick-budget'),
+  quickBudgetFit: $('quick-budget-fit'),
+  quickFitPreview: document.querySelector('[data-quick-fit-preview]'),
+  quickFitIcon: $('quick-fit-icon'),
+  quickFitTitle: $('quick-fit-title'),
+  quickFitRange: $('quick-fit-range'),
+  quickFitSummary: $('quick-fit-summary'),
+  quickFitPackage: $('quick-fit-package'),
+  quickFitPackageDetail: $('quick-fit-package-detail'),
+  quickFitExamples: $('quick-fit-examples'),
   quickConsent: $('quick-consent'),
   quickHoneypot: $('quick-otp-company-website'),
   quickSubmit: $('submit-quick-inquiry'),
@@ -324,6 +364,8 @@ const els = {
   projectType: $('booking-project-type'),
   reference: $('booking-reference'),
   budget: $('booking-budget'),
+  budgetOptions: $('booking-budget-options'),
+  budgetFit: $('budget-fit-note'),
   deadline: $('booking-deadline'),
   urgency: $('booking-urgency'),
   deposit: $('booking-deposit'),
@@ -335,6 +377,10 @@ const els = {
 };
 
 function makeBookingToken() {
+  const launchCtx = window.OTP_LAUNCH_CONTEXT;
+  if (launchCtx && typeof launchCtx.getOrCreateBookingToken === 'function') {
+    return launchCtx.getOrCreateBookingToken('WEB');
+  }
   const key = 'otp_booking_token';
   try {
     const existing = sessionStorage.getItem(key);
@@ -367,13 +413,18 @@ function getAttributionTracking() {
 
 function buildSourceTrackingFallback() {
   const params = new URLSearchParams(window.location.search || '');
-  const source = cleanTrackingValue(
-    params.get('source') || params.get('cta_source') || params.get('utm_source') || 'direct',
-    120
-  );
-  return {
-    cta_source: source,
-    first_touch: source,
+  const bridgeCtx = window.OTP_LAUNCH_CONTEXT && typeof window.OTP_LAUNCH_CONTEXT.load === 'function'
+    ? window.OTP_LAUNCH_CONTEXT.load()
+    : null;
+  const sourceTracking = {
+    cta_source: cleanTrackingValue(
+      params.get('source') || params.get('cta_source') || params.get('utm_source') || 'direct',
+      120
+    ),
+    first_touch: cleanTrackingValue(
+      params.get('source') || params.get('cta_source') || params.get('utm_source') || 'direct',
+      120
+    ),
     booking_route: cleanTrackingValue(window.location.pathname || '/bookings', 120),
     referrer: cleanTrackingValue(document.referrer || '', 360),
     platform: window.matchMedia && window.matchMedia('(max-width: 720px)').matches ? 'mobile' : 'desktop',
@@ -388,6 +439,12 @@ function buildSourceTrackingFallback() {
     landing_page: cleanTrackingValue(`${window.location.pathname || ''}${window.location.search || ''}`, 240),
     captured_at: new Date().toISOString()
   };
+  if (bridgeCtx?.service_id || params.get('launch_service')) {
+    sourceTracking.launch_service_id = cleanTrackingValue(params.get('launch_service') || bridgeCtx?.service_id || '', 80);
+    sourceTracking.launch_mode = cleanTrackingValue(params.get('mode') || bridgeCtx?.mode || 'consultation', 60);
+    if (bridgeCtx?.estimate_display) sourceTracking.launch_estimate = cleanTrackingValue(bridgeCtx.estimate_display, 140);
+  }
+  return sourceTracking;
 }
 
 function text(value, fallback = 'Not provided yet') {
@@ -482,6 +539,270 @@ function optionList(select, values, placeholder) {
 function fillQuickSelects() {
   optionList(els.quickService, QUICK_SERVICE_OPTIONS, 'Choose a service');
   optionList(els.quickBudget, state.config.budgetRanges || fallbackConfig.budgetRanges, 'Select if known');
+}
+
+function budgetGuideFor(range) {
+  const value = String(range || '').toLowerCase().replace(/[,$\s]/g, '');
+  if (!value) return {
+    lane: 'Choose a range to preview the fit',
+    detail: 'Share a range in the form and see the kind of scope and package it may support.',
+    packageName: 'OTP recommendation',
+    packageDetail: 'No package is needed to start.',
+    level: 'flexible',
+    examples: ['One focused deliverable', 'Connected creative assets', 'A larger digital system']
+  };
+  if (value.includes('under500') || value.includes('below500')) {
+    return {
+      lane: 'Fast Lane or focused scope',
+      detail: 'Under $500 routes toward a Fast Lane or smaller focused request. The Signal starts at $500.',
+      packageName: 'Fast Lane / focused request',
+      packageDetail: 'The Signal starts at $500.',
+      level: 'focused',
+      examples: ['One short edit or promo', 'A simple design or flyer', 'One focused page or booking-flow fix']
+    };
+  }
+  if (value.includes('500to1200')) {
+    return {
+      lane: 'The Signal · one clear deliverable',
+      detail: 'A focused edit, design piece, or page fix may fit. OTP confirms the final scope and quote.',
+      packageName: 'The Signal',
+      packageDetail: 'Starting at $500 · one focused deliverable.',
+      level: 'focused',
+      examples: ['One polished edit or promo', 'A logo refresh or single design', 'A landing-page section or site cleanup']
+    };
+  }
+  if (value.includes('1200to2000')) {
+    return {
+      lane: 'The Engine · connected assets',
+      detail: 'A few related deliverables or a more involved build may fit this range.',
+      packageName: 'The Engine',
+      packageDetail: 'Connected assets · final scope confirmed after review.',
+      level: 'connected',
+      examples: ['A brand kit with launch pieces', 'A small site or landing-page build', 'A connected video and content set']
+    };
+  }
+  if (value.includes('2000to3500')) {
+    return {
+      lane: 'The Engine · broader scope',
+      detail: 'A wider project with connected pieces may fit. OTP confirms scope before quoting.',
+      packageName: 'The Engine · broader scope',
+      packageDetail: 'Several connected deliverables · quote confirmed after review.',
+      level: 'broader',
+      examples: ['A multi-page web experience', 'A broader brand and content rollout', 'Several steps in a client journey']
+    };
+  }
+  if (value.includes('3500')) {
+    return {
+      lane: 'The System · connected build',
+      detail: 'Larger websites, client workflows, portals, or automation may need a connected system.',
+      packageName: 'The System',
+      packageDetail: 'Starting at $3,500 · scope confirmed after review.',
+      level: 'system',
+      examples: ['A complete website and brand system', 'Booking, portal, or automation workflows', 'Connected client documents and processes']
+    };
+  }
+  if (value.includes('notsure')) {
+    return {
+      lane: 'OTP will recommend a fit',
+      detail: 'Share the goal and what needs to be delivered. OTP will suggest a range after reviewing the scope.',
+      packageName: 'OTP recommendation',
+      packageDetail: 'Choose a package later, after scope review.',
+      level: 'flexible',
+      examples: ['A single priority deliverable', 'A few pieces that work together', 'A larger site or system']
+    };
+  }
+  return {
+    lane: 'Planning guide',
+    detail: 'Your idea and deliverables determine the right lane. OTP confirms scope and price after review.',
+    packageName: 'OTP recommendation',
+    packageDetail: 'Scope and price confirmed after review.',
+    level: 'flexible',
+    examples: ['A focused creative deliverable', 'Connected assets for a launch', 'A custom website or workflow']
+  };
+}
+
+function budgetExamplesFor(guide, serviceName = '') {
+  const service = String(serviceName || '').toLowerCase();
+  const examples = {
+    video: {
+      focused: ['One short edit or event promo', 'A focused social cut', 'Polish supplied footage'],
+      connected: ['Campaign edit with social cutdowns', 'Several related video assets', 'A connected launch rollout'],
+      broader: ['A multi-format content rollout', 'Campaign edits with launch visuals', 'Creative for several channels'],
+      system: ['A repeatable content system', 'Launch creative across channels', 'A production flow built around the brand'],
+      flexible: ['One priority edit', 'A connected campaign', 'A broader content system']
+    },
+    website: {
+      focused: ['One page or form fix', 'A booking-step cleanup', 'Focused website polish'],
+      connected: ['A small website or landing page', 'Connected pages and lead capture', 'A cleaner client journey'],
+      broader: ['A multi-page web experience', 'A wider booking or client flow', 'Several connected site sections'],
+      system: ['A full website and client journey', 'Booking, portal, or automation flow', 'Connected client tools and documents'],
+      flexible: ['A focused page update', 'A connected website flow', 'A larger client system']
+    },
+    brand: {
+      focused: ['One flyer or launch graphic', 'A logo or identity refresh', 'A single campaign asset'],
+      connected: ['A brand kit with launch assets', 'Related social and web visuals', 'A campaign-ready identity set'],
+      broader: ['A wider brand rollout', 'Launch visuals across channels', 'Connected brand and web assets'],
+      system: ['A full identity and digital system', 'Brand, website, and launch materials', 'A repeatable visual toolkit'],
+      flexible: ['One design piece', 'A connected brand kit', 'A wider launch system']
+    },
+    system: {
+      focused: ['A small workflow review', 'One focused process fix', 'A clearly scoped next step'],
+      connected: ['A connected workflow improvement', 'A focused automation or integration', 'A small custom tool'],
+      broader: ['Connected automation and client steps', 'A wider process or software build', 'Several linked business tools'],
+      system: ['A custom client portal or system', 'Connected automation and documents', 'A full business workflow'],
+      flexible: ['One process improvement', 'A connected workflow', 'A custom business system']
+    }
+  };
+  const key = /video|content|reel|promo/.test(service) ? 'video'
+    : /website|digital|page|booking|portal/.test(service) ? 'website'
+      : /brand|design|logo|launch/.test(service) ? 'brand'
+        : /automation|system|software|custom/.test(service) ? 'system' : '';
+  return key ? (examples[key][guide.level] || guide.examples) : guide.examples;
+}
+
+function renderQuickBudgetPreview(range = '') {
+  if (!els.quickFitPreview) return;
+  const guide = budgetGuideFor(range);
+  const serviceName = (els.quickService && els.quickService.value) || (els.service && els.service.value) || '';
+  const selectedPackage = String((els.package && els.package.value) || state.selectedPackage || '').trim();
+  const selectedPackageLower = selectedPackage.toLowerCase();
+  const selectedPackageRecord = selectedPackage ? packageByName(selectedPackage) : null;
+  const isOracleChoice = selectedPackageLower.includes('not sure');
+  const packageName = isOracleChoice
+    ? 'OTP recommendation'
+    : selectedPackageRecord
+      ? packageLabel(selectedPackageRecord)
+      : guide.packageName;
+  let packageDetail = selectedPackageRecord
+    ? packagePrice(selectedPackageRecord)
+    : guide.packageDetail;
+  const normalizedRange = String(range || '').toLowerCase().replace(/[,$\s]/g, '');
+  if (selectedPackageRecord) {
+    packageDetail = 'Selected package · final scope confirmed after review.';
+    if ((normalizedRange.includes('under500') || normalizedRange.includes('below500')) && selectedPackageLower.includes('signal')) {
+      packageDetail = 'The Signal starts at $500. OTP may suggest a Fast Lane or smaller focused scope.';
+    } else if ((normalizedRange.includes('under500') || normalizedRange.includes('below500') || normalizedRange.includes('500to1200')) && selectedPackageLower.includes('system')) {
+      packageDetail = 'This range may need a smaller starting scope. OTP will confirm a fit after review.';
+    } else if ((normalizedRange.includes('under500') || normalizedRange.includes('below500')) && selectedPackageLower.includes('engine')) {
+      packageDetail = 'This range may need a smaller starting scope. OTP will confirm a fit after review.';
+    }
+  } else if (isOracleChoice) {
+    packageDetail = 'You can leave package matching to OTP.';
+  }
+
+  const key = [range, serviceName, selectedPackage].join('|');
+  const shouldAnimate = Boolean(state.quickFitKey && state.quickFitKey !== key);
+  state.quickFitKey = key;
+  if (els.quickFitTitle) els.quickFitTitle.textContent = guide.lane;
+  if (els.quickFitRange) els.quickFitRange.textContent = range || 'Budget optional';
+  if (els.quickFitSummary) els.quickFitSummary.textContent = guide.detail;
+  if (els.quickFitPackage) els.quickFitPackage.textContent = packageName;
+  if (els.quickFitPackageDetail) els.quickFitPackageDetail.textContent = packageDetail;
+  if (els.quickFitExamples) {
+    const checkIcon = document.querySelector('.quick-inquiry-points svg');
+    els.quickFitExamples.replaceChildren();
+    budgetExamplesFor(guide, serviceName).forEach((label) => {
+      const item = document.createElement('li');
+      if (checkIcon) {
+        const check = checkIcon.cloneNode(true);
+        check.setAttribute('width', '17');
+        check.setAttribute('height', '17');
+        check.setAttribute('aria-hidden', 'true');
+        check.setAttribute('focusable', 'false');
+        item.append(check);
+      }
+      const copy = document.createElement('span');
+      copy.textContent = label;
+      item.append(copy);
+      els.quickFitExamples.append(item);
+    });
+  }
+  if (els.quickFitIcon && els.budgetOptions) {
+    const options = [...els.budgetOptions.querySelectorAll('[data-budget-option]')];
+    const selected = options.find((button) => button.dataset.budgetValue === range) || options[options.length - 1];
+    const icon = selected && selected.querySelector('.budget-range-icon svg');
+    els.quickFitIcon.replaceChildren();
+    if (icon) {
+      const previewIcon = icon.cloneNode(true);
+      previewIcon.setAttribute('width', '24');
+      previewIcon.setAttribute('height', '24');
+      previewIcon.setAttribute('aria-hidden', 'true');
+      previewIcon.setAttribute('focusable', 'false');
+      els.quickFitIcon.append(previewIcon);
+    }
+  }
+  if (shouldAnimate && typeof els.quickFitPreview.animate === 'function' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    els.quickFitPreview.getAnimations().forEach((animation) => animation.cancel());
+    els.quickFitPreview.animate([
+      { opacity: 0.76, transform: 'translate3d(0, 7px, 0)' },
+      { opacity: 1, transform: 'translate3d(0, 0, 0)' }
+    ], { duration: 260, easing: 'cubic-bezier(.16, 1, .3, 1)' });
+  }
+}
+
+function updateBudgetGuidance(range = '') {
+  const guide = budgetGuideFor(range);
+  if (els.quickBudgetFit) els.quickBudgetFit.textContent = range ? `${guide.lane}. ${guide.detail}` : guide.detail;
+  if (els.budgetFit) els.budgetFit.textContent = range ? `${guide.lane}. ${guide.detail}` : 'Choose a range to see the kind of scope it usually supports.';
+  if (els.budgetOptions) {
+    els.budgetOptions.querySelectorAll('[data-budget-option]').forEach((button) => {
+      const selected = button.dataset.budgetValue === range;
+      button.setAttribute('aria-pressed', String(selected));
+      button.classList.toggle('is-selected', selected);
+    });
+  }
+  renderQuickBudgetPreview(range);
+}
+
+function renderBudgetOptions() {
+  if (!els.budgetOptions) return;
+  const svgNamespace = 'http://www.w3.org/2000/svg';
+  const icons = [
+    [{ tag: 'path', attrs: { d: 'm18 2-12 17h9l-1 11 12-17h-9l1-11Z' } }],
+    [{ tag: 'circle', attrs: { cx: '16', cy: '16', r: '12' } }, { tag: 'circle', attrs: { cx: '16', cy: '16', r: '6' } }, { tag: 'path', attrs: { d: 'M16 2v4m0 20v4M2 16h4m20 0h4' } }],
+    [{ tag: 'path', attrs: { d: 'm4 10 12-6 12 6-12 6-12-6Zm0 6 12 6 12-6M4 22l12 6 12-6' } }],
+    [{ tag: 'rect', attrs: { x: '4', y: '4', width: '9', height: '9' } }, { tag: 'rect', attrs: { x: '19', y: '4', width: '9', height: '9' } }, { tag: 'rect', attrs: { x: '4', y: '19', width: '9', height: '9' } }, { tag: 'rect', attrs: { x: '19', y: '19', width: '9', height: '9' } }, { tag: 'path', attrs: { d: 'M13 8.5h6M8.5 13v6m15-6v6M13 23.5h6' } }],
+    [{ tag: 'path', attrs: { d: 'M4 28V8l12-5 12 5v20M10 28V16h12v12M10 21h12' } }],
+    [{ tag: 'circle', attrs: { cx: '16', cy: '16', r: '12' } }, { tag: 'path', attrs: { d: 'M12.5 12a3.6 3.6 0 1 1 6.1 2.6c-1.7 1.5-2.6 2.1-2.6 4.4M16 23.5h.1' } }]
+  ];
+  const ranges = state.config.budgetRanges || fallbackConfig.budgetRanges;
+  els.budgetOptions.replaceChildren();
+  ranges.forEach((range, index) => {
+    const guide = budgetGuideFor(range);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'budget-range-card';
+    button.dataset.budgetOption = '';
+    button.dataset.budgetValue = String(range);
+    button.setAttribute('aria-pressed', 'false');
+    const icon = document.createElement('span');
+    icon.className = 'budget-range-icon';
+    const svg = document.createElementNS(svgNamespace, 'svg');
+    svg.setAttribute('viewBox', '0 0 32 32');
+    svg.setAttribute('aria-hidden', 'true');
+    (icons[index] || icons[icons.length - 1]).forEach((shape) => {
+      const element = document.createElementNS(svgNamespace, shape.tag);
+      Object.entries(shape.attrs).forEach(([name, value]) => element.setAttribute(name, value));
+      svg.append(element);
+    });
+    icon.append(svg);
+    const amount = document.createElement('strong');
+    amount.className = 'budget-range-amount';
+    amount.textContent = String(range);
+    const lane = document.createElement('span');
+    lane.className = 'budget-range-lane';
+    lane.textContent = guide.lane;
+    const detail = document.createElement('span');
+    detail.className = 'budget-range-detail';
+    detail.textContent = guide.detail;
+    button.append(icon, amount, lane, detail);
+    button.addEventListener('click', () => {
+      els.budget.value = String(range);
+      els.budget.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    els.budgetOptions.append(button);
+  });
+  updateBudgetGuidance(els.quickBudget.value || els.budget.value);
 }
 
 function packageLabel(pkg = {}) {
@@ -653,6 +974,7 @@ function updateSummaries() {
   els.miniService.textContent = text(serviceName, 'Not selected');
   els.miniBudget.textContent = text((els.quickBudget && els.quickBudget.value) || (els.budget && els.budget.value), 'Not selected');
   els.miniTimeline.textContent = formatDeadline(els.deadline.value || els.urgency.value);
+  updateBudgetGuidance((els.quickBudget && els.quickBudget.value) || (els.budget && els.budget.value) || '');
   els.formTitle.textContent = selected.formTitle;
   els.formPackageNote.textContent = selected.message;
   const pillName = els.activePackagePill.querySelector('strong');
@@ -664,15 +986,23 @@ function updateSummaries() {
 function selectPackage(packageName, options = {}) {
   const pkg = packageByName(packageName);
   state.selectedPackage = pkg ? packageLabel(pkg) : text(packageName, '');
-  if (els.package) els.package.value = state.selectedPackage;
+  if (els.package) {
+    els.package.value = state.selectedPackage;
+    window.OTP_LAUNCH_CONTEXT?.syncEnhancedSelect?.(els.package);
+  }
   if (!options.preserveService) {
     const currentFastLanePackage = fastLanePackageFor(els.service.value);
     if (currentFastLanePackage && currentFastLanePackage !== state.selectedPackage) {
       els.service.value = '';
+      window.OTP_LAUNCH_CONTEXT?.syncEnhancedSelect?.(els.service);
     }
   }
   applyActiveTheme(state.selectedPackage);
-  renderPackages();
+  if (els.packageGrid?.children?.length) {
+    syncPackageSelectionState();
+  } else {
+    renderPackages();
+  }
   renderFastLanes();
   updateSummaries();
   showError('');
@@ -719,6 +1049,7 @@ function setSelectIfAvailable(select, value) {
   const exists = [...select.options].some((option) => option.value === value);
   if (!exists) return false;
   select.value = value;
+  window.OTP_LAUNCH_CONTEXT?.syncEnhancedSelect?.(select);
   return true;
 }
 
@@ -771,10 +1102,48 @@ function selectQuickService(control) {
   });
 }
 
+const QUICK_SERVICE_MEDIA_MAP = {
+  'Video / Content': { serviceId: 'artist-epk', title: 'Video & Content', fallbackImg: '/assets/services/artist-epk.webp' },
+  'Website / Digital System': { serviceId: 'business-website', title: 'Website & Digital', fallbackImg: '/assets/services/business-website.webp' },
+  'Brand Launch': { serviceId: 'starter-website', title: 'Branding & Design', fallbackImg: '/assets/services/starter-website.webp' },
+  'Same-Day Reel': { serviceId: 'redesign-repair', title: 'Fast Lane', fallbackImg: '/assets/services/redesign-repair.webp' },
+  'Custom Build': { serviceId: 'custom-web-app', title: 'Custom Build', fallbackImg: '/assets/services/custom-web-app.webp' }
+};
+
+function mountQuickServiceMotion(control) {
+  const visualSlot = control?.querySelector?.('.service-card-visual');
+  if (!visualSlot || visualSlot.dataset.motionMounted === 'true') return;
+  const serviceKey = control.dataset.quickService || '';
+  const mapInfo = QUICK_SERVICE_MEDIA_MAP[serviceKey];
+  if (!mapInfo) return;
+  const proofUI = window.OTP_LAUNCH_PROOF || null;
+  const media = window.OTP_LAUNCH_MEDIA || null;
+  const svcVisual = media?.getServiceVisual?.(mapInfo.serviceId);
+  if (proofUI && svcVisual?.flowSlot?.status === 'ready' && svcVisual?.flowSlot?.mp4) {
+    visualSlot.dataset.motionMounted = 'true';
+    const existingImg = visualSlot.querySelector('img');
+    const poster = svcVisual.poster || existingImg?.getAttribute('src') || mapInfo.fallbackImg;
+    const alt = existingImg?.getAttribute('alt') || svcVisual.alt || mapInfo.title;
+    visualSlot.replaceChildren(
+      proofUI.createMediaElement(
+        {
+          title: mapInfo.title,
+          poster,
+          mp4: svcVisual.flowSlot.mp4,
+          webm: svcVisual.flowSlot.webm || '',
+          alt
+        },
+        { autoplayWhenVisible: true, showPlayButton: false, hoverTriggerEl: control }
+      )
+    );
+  }
+}
+
 function wireQuickSelectors() {
   if (!els.quickSelectors.length) return;
   els.quickSelectors.forEach((control) => {
     control.setAttribute('aria-pressed', 'false');
+    mountQuickServiceMotion(control);
     control.addEventListener('click', () => selectQuickService(control));
   });
 }
@@ -821,18 +1190,21 @@ function renderFastLanes() {
     icon.classList.add('fast-lane-icon');
     const stroke = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     stroke.setAttribute('d', path); icon.append(stroke);
+    const iconWrap = document.createElement('span');
+    iconWrap.className = 'fast-lane-icon-wrap';
+    iconWrap.append(icon);
     const head = document.createElement('div'); head.className = 'fast-lane-head';
     appendText(head, 'h3', service, 'Fast Lane');
     const status = document.createElement('span');
     status.className = selected ? 'selected-indicator selected' : 'selected-indicator';
-    status.textContent = selected ? '✓ Selected' : '↗'; head.append(status);
+    status.textContent = selected ? '✓ Selected' : 'Select'; head.append(status);
     const description = document.createElement('p');
     description.className = 'fast-lane-description'; description.textContent = summary;
     const meta = document.createElement('div'); meta.className = 'fast-lane-meta';
     appendText(meta, 'span', offer.urgency || details.turnaround || 'Scope reviewed first', 'Scoped timing');
-    appendText(meta, 'span', mappedPackage, 'Mapped package');
+    appendText(meta, 'span', `Starts at ${mappedPackage}`, 'Mapped package');
     const cta = document.createElement('span'); cta.className = 'fast-lane-cta';
-    cta.textContent = selected ? 'Lane selected ✓' : 'Use this lane ↗';
+    cta.textContent = selected ? 'Selected priority lane ✓' : 'Select priority lane →';
 
     const handleSelect = () => selectFastLane(offer);
     card.addEventListener('click', handleSelect);
@@ -842,61 +1214,188 @@ function renderFastLanes() {
       handleSelect();
     });
 
-    card.append(icon, head, description, meta, cta);
+    card.append(iconWrap, head, description, meta, cta);
     els.fastLaneGrid.append(card);
   });
+}
+
+function syncPackageSelectionState() {
+  if (!els.packageGrid) return;
+  els.packageGrid.querySelectorAll('.package-card').forEach((card) => {
+    const name = card.dataset.packageName || '';
+    const selected = state.selectedPackage === name;
+    card.classList.toggle('active', selected);
+    card.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    card.setAttribute('aria-label', `${name} ${selected ? 'selected' : 'select package'}`);
+    const indicator = card.querySelector('.selected-indicator');
+    if (indicator) {
+      indicator.className = selected ? 'selected-indicator selected' : 'selected-indicator';
+      indicator.textContent = selected ? 'Selected ✓' : 'Select';
+    }
+    const cta = card.querySelector('.package-cta');
+    if (cta) {
+      cta.textContent = selected ? 'Selected for quote ✓' : (card.dataset.packageDefaultCta || 'Choose package →');
+    }
+  });
+  window.OTP_LAUNCH_PROOF?.syncVisibleVideos?.();
 }
 
 function renderPackages() {
   const packages = state.config.packages || [];
   els.packageGrid.replaceChildren();
+  const proofUI = window.OTP_LAUNCH_PROOF || null;
+  const media = window.OTP_LAUNCH_MEDIA || null;
+  const PKG_META = {
+    'the-signal': {
+      seqId: 'pkg-the-signal',
+      fallbackImg: '/assets/flow/booking/the-signal.webp',
+      icon: 'bolt',
+      summary: 'One sharp deliverable to launch cleanly.',
+      benefits: [
+        { icon: 'spark', label: 'Fast first impression' },
+        { icon: 'mobile', label: 'Single clear asset' },
+        { icon: 'bolt', label: 'Quick turnaround' }
+      ]
+    },
+    'the-engine': {
+      seqId: 'pkg-the-engine',
+      fallbackImg: '/assets/flow/booking/the-engine.webp',
+      icon: 'palette',
+      summary: 'Connected website & brand assets working together.',
+      benefits: [
+        { icon: 'palette', label: 'Cohesive brand look' },
+        { icon: 'layers', label: 'Connected pages' },
+        { icon: 'spark', label: 'Launch ready' }
+      ]
+    },
+    'the-system': {
+      seqId: 'pkg-the-system',
+      fallbackImg: '/assets/flow/booking/the-system.webp',
+      icon: 'building',
+      summary: 'Complete website, portal & automation infrastructure.',
+      benefits: [
+        { icon: 'card', label: 'Bookings & payments' },
+        { icon: 'cpu', label: 'Smart workflows' },
+        { icon: 'shield', label: 'Client portal ready' }
+      ]
+    }
+  };
+
   packages.forEach((pkg) => {
     const name = packageLabel(pkg);
     const selected = state.selectedPackage === name;
     const cardTheme = themeFor(name);
+    const metaInfo = PKG_META[cardTheme.slug] || PKG_META['the-signal'];
+    const isExpanded = state.expandedPackages.has(cardTheme.slug);
+
     const card = document.createElement('article');
     card.className = `package-card${selected ? ' active' : ''}`;
     card.dataset.packageTheme = cardTheme.slug;
+    card.dataset.packageName = name;
+    card.dataset.packageDefaultCta = text(pkg.cta, 'Choose package →');
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
     card.setAttribute('aria-pressed', selected ? 'true' : 'false');
     card.setAttribute('aria-label', `${name} ${selected ? 'selected' : 'select package'}`);
 
-    const moduleLabel = document.createElement('span');
-    moduleLabel.className = 'module-label';
-    moduleLabel.textContent = 'System module';
+    // 1. Visual Google Flow Media Frame (plays muted inline when visible)
+    const mediaFrame = document.createElement('div');
+    mediaFrame.className = 'booking-pkg-media';
+    const seq = media?.getFlowSequence?.(metaInfo.seqId);
+    if (proofUI && seq?.status === 'ready' && seq?.mp4) {
+      mediaFrame.append(proofUI.createMediaElement({
+        title: name,
+        poster: seq.poster || metaInfo.fallbackImg,
+        mp4: seq.mp4,
+        alt: seq.alt || `${name} visual identity`
+      }, { autoplayWhenVisible: true, showPlayButton: true, hoverTriggerEl: card }));
+    } else {
+      const img = document.createElement('img');
+      img.src = seq?.poster || metaInfo.fallbackImg;
+      img.alt = seq?.alt || `${name} signature visual`;
+      img.width = 1280;
+      img.height = 800;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      mediaFrame.append(img);
+    }
 
-    const pkgIcon = name.includes('Signal') ? '⚡ ' : name.includes('Engine') ? '⚙️ ' : name.includes('System') ? '🏛️ ' : '🎨 ';
+    const overlayPill = document.createElement('span');
+    overlayPill.className = pkg.recommended ? 'recommended booking-pkg-pill' : 'module-label booking-pkg-pill';
+    overlayPill.textContent = pkg.recommended ? 'Most popular' : 'Signature tier';
+    mediaFrame.append(overlayPill);
+
+    // 2. Concise Title, Icon & Price Header
     const head = document.createElement('div');
     head.className = 'package-card-head';
+    const headIdentity = document.createElement('div');
+    headIdentity.className = 'booking-pkg-head-identity';
+    const iconBadge = document.createElement('span');
+    iconBadge.className = 'booking-pkg-icon-badge';
+    iconBadge.append(createBookingIcon(metaInfo.icon, 'booking-pkg-head-svg'));
     const headCopy = document.createElement('div');
-    appendText(headCopy, 'h3', pkgIcon + name, 'Package');
+    appendText(headCopy, 'h3', name, 'Package');
     appendText(headCopy, 'strong', packagePrice(pkg), 'Scope based');
-    head.append(headCopy);
+    headIdentity.append(iconBadge, headCopy);
 
     const status = document.createElement('span');
     status.className = selected ? 'selected-indicator selected' : 'selected-indicator';
-    status.textContent = selected ? 'Selected' : 'Select';
-    head.append(status);
-
-    if (pkg.recommended) {
-      const badge = document.createElement('span');
-      badge.className = 'recommended';
-      badge.textContent = 'Recommended';
-      card.append(badge);
-    }
+    status.textContent = selected ? 'Selected ✓' : 'Select';
+    head.append(headIdentity, status);
 
     const purpose = document.createElement('p');
     purpose.className = 'package-purpose';
-    purpose.textContent = text(pkg.purpose || pkg.description, '');
+    purpose.textContent = metaInfo.summary;
 
+    // 3. Three Benefit Icons (Replacing long bullet lists by default)
+    const benefitGrid = document.createElement('div');
+    benefitGrid.className = 'booking-pkg-benefits';
+    metaInfo.benefits.forEach((b) => {
+      const box = document.createElement('div');
+      box.className = 'booking-pkg-benefit';
+      const bIcon = document.createElement('span');
+      bIcon.className = 'booking-pkg-benefit-icon';
+      bIcon.append(createBookingIcon(b.icon, 'booking-pkg-benefit-svg'));
+      const bLbl = document.createElement('span');
+      bLbl.className = 'booking-pkg-benefit-label';
+      bLbl.textContent = b.label;
+      box.append(bIcon, bLbl);
+      benefitGrid.append(box);
+    });
+
+    // 4. Independent Expandable Package Scope Details
+    const detailsWrap = document.createElement('div');
+    detailsWrap.className = `booking-pkg-details${isExpanded ? ' is-expanded' : ''}`;
+    detailsWrap.addEventListener('click', (event) => event.stopPropagation());
+
+    const toggleId = `booking-pkg-toggle-${cardTheme.slug}`;
+    const panelId = `booking-pkg-panel-${cardTheme.slug}`;
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.id = toggleId;
+    toggleBtn.className = 'booking-pkg-details-toggle';
+    toggleBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    toggleBtn.setAttribute('aria-controls', panelId);
+    const toggleLbl = document.createElement('span');
+    toggleLbl.textContent = 'What’s included';
+    const toggleChev = createBookingIcon('chevron', 'booking-pkg-chevron');
+    toggleBtn.append(toggleLbl, toggleChev);
+
+    const panel = document.createElement('div');
+    panel.id = panelId;
+    panel.className = 'booking-pkg-details-panel';
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-labelledby', toggleId);
+    panel.setAttribute('aria-hidden', isExpanded ? 'false' : 'true');
+
+    const panelInner = document.createElement('div');
+    panelInner.className = 'booking-pkg-details-inner';
     const description = document.createElement('p');
     description.className = 'package-description';
     description.textContent = text(pkg.description, '');
-
     const bestFor = document.createElement('div');
     bestFor.className = 'best-for';
-    appendText(bestFor, 'span', 'Best for');
+    appendText(bestFor, 'span', 'Ideal deliverables');
     const list = document.createElement('ul');
     (Array.isArray(pkg.best_for) ? pkg.best_for : []).slice(0, 6).forEach((item) => {
       appendText(list, 'li', item, '');
@@ -908,6 +1407,20 @@ function renderPackages() {
     (Array.isArray(pkg.examples) ? pkg.examples : []).slice(0, 4).forEach((item) => {
       appendText(tags, 'span', item, '');
     });
+    panelInner.append(description, bestFor, tags);
+    panel.append(panelInner);
+
+    toggleBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const nextOpen = !state.expandedPackages.has(cardTheme.slug);
+      if (nextOpen) state.expandedPackages.add(cardTheme.slug);
+      else state.expandedPackages.delete(cardTheme.slug);
+      detailsWrap.classList.toggle('is-expanded', nextOpen);
+      toggleBtn.setAttribute('aria-expanded', nextOpen ? 'true' : 'false');
+      panel.setAttribute('aria-hidden', nextOpen ? 'false' : 'true');
+    });
+    detailsWrap.append(toggleBtn, panel);
 
     const message = document.createElement('p');
     message.className = 'selected-message';
@@ -915,7 +1428,7 @@ function renderPackages() {
 
     const cta = document.createElement('span');
     cta.className = 'package-cta';
-    cta.textContent = selected ? 'Selected' : text(pkg.cta, 'Start Booking');
+    cta.textContent = selected ? 'Selected for quote ✓' : text(pkg.cta, 'Choose package →');
 
     const handleSelect = () => {
       selectPackage(name);
@@ -927,12 +1440,13 @@ function renderPackages() {
     };
     card.addEventListener('click', handleSelect);
     card.addEventListener('keydown', (event) => {
+      if (event.target && event.target.closest('.booking-pkg-details')) return;
       if (event.key !== 'Enter' && event.key !== ' ') return;
       event.preventDefault();
       handleSelect();
     });
 
-    card.append(moduleLabel, head, purpose, description, bestFor, tags, message, cta);
+    card.append(mediaFrame, head, purpose, benefitGrid, detailsWrap, message, cta);
     els.packageGrid.append(card);
   });
 }
@@ -1033,16 +1547,19 @@ function wireInquiryFieldSync() {
   quickFields.forEach(([key, field]) => field.addEventListener('input', () => {
     syncQuickToDetailed(key);
     updateSummaries();
+    syncBookingFieldsToLaunchContext();
     markQuickInquiryStarted();
   }));
   els.quickService.addEventListener('change', () => {
     syncQuickToDetailed('service');
     updateSummaries();
+    syncBookingFieldsToLaunchContext();
     markQuickInquiryStarted();
   });
   els.quickBudget.addEventListener('change', () => {
     syncQuickToDetailed('budget');
     updateSummaries();
+    syncBookingFieldsToLaunchContext();
     markQuickInquiryStarted();
   });
   els.quickService.addEventListener('change', () => {
@@ -1055,6 +1572,7 @@ function wireInquiryFieldSync() {
   detailedFields.forEach(([key, field]) => field.addEventListener('input', () => {
     syncDetailedToQuick(key);
     updateSummaries();
+    syncBookingFieldsToLaunchContext();
     if (!state.detailedStarted) {
       state.detailedStarted = true;
       trackBookingEvent('detailed_brief_started', {});
@@ -1063,10 +1581,12 @@ function wireInquiryFieldSync() {
   els.service.addEventListener('change', () => {
     syncDetailedToQuick('service');
     updateSummaries();
+    syncBookingFieldsToLaunchContext();
   });
   els.budget.addEventListener('change', () => {
     syncDetailedToQuick('budget');
     updateSummaries();
+    syncBookingFieldsToLaunchContext();
   });
   els.quickConsent.addEventListener('change', () => syncQuickToDetailed('consent'));
   els.consent.addEventListener('change', () => syncDetailedToQuick('consent'));
@@ -1518,6 +2038,8 @@ async function init() {
   }
   fillSelects();
   fillQuickSelects();
+  enhanceBookingSelects();
+  renderBudgetOptions();
   wireInquiryFieldSync();
   wireQuickSelectors();
   renderPackages();
@@ -1559,6 +2081,8 @@ async function init() {
     }
     syncDetailedToQuick();
   }
+
+  hydrateLaunchBridge(urlParams);
 
   if (statusParam === 'deposit_paid') {
     showStatus('⚡ Deposit Received! Your Fast-Lane priority slot is locked. OTP team will confirm scope details with you shortly.');
@@ -1639,3 +2163,272 @@ if (bookingThemeToggle && window.OTP && typeof window.OTP.applyPaletteForTheme =
 }
 
 init();
+
+function enhanceBookingSelects() {
+  const ctx = window.OTP_LAUNCH_CONTEXT;
+  if (!ctx || typeof ctx.enhanceSelect !== 'function') return;
+  const serviceIconFor = (val = '') => {
+    const low = String(val || '').toLowerCase();
+    if (low.includes('music') || low.includes('artist') || low.includes('video') || low.includes('content') || low.includes('reel')) return 'music';
+    if (low.includes('brand')) return 'spark';
+    if (low.includes('fast') || low.includes('emergency') || low.includes('same-day')) return 'bolt';
+    if (low.includes('cleanup') || low.includes('fix')) return 'wrench';
+    if (low.includes('system') || low.includes('ai')) return 'layers';
+    if (low.includes('custom')) return 'phone';
+    return 'building';
+  };
+  ctx.enhanceSelect(els.quickService, {
+    sheetTitle: 'What do you need?',
+    getOptionMeta: (v, label) => ({ icon: v ? serviceIconFor(v) : 'spark', title: label })
+  });
+  ctx.enhanceSelect(els.quickBudget, {
+    sheetTitle: 'Budget range',
+    getOptionMeta: (v, label) => ({ icon: 'card', title: label })
+  });
+  ctx.enhanceSelect(els.service, {
+    sheetTitle: 'Service Type',
+    getOptionMeta: (v, label) => ({ icon: v ? serviceIconFor(v) : 'spark', title: label })
+  });
+  ctx.enhanceSelect(els.package, {
+    sheetTitle: 'Package Interest',
+    getOptionMeta: (v, label) => ({ icon: 'layers', title: label })
+  });
+  ctx.enhanceSelect(els.contactMethod, {
+    sheetTitle: 'Preferred Contact Method',
+    getOptionMeta: (v, label) => ({ icon: 'inbox', title: label })
+  });
+  ctx.enhanceSelect(els.projectType, {
+    sheetTitle: 'Project Type',
+    getOptionMeta: (v, label) => ({ icon: 'grid', title: label })
+  });
+  ctx.enhanceSelect(els.urgency, {
+    sheetTitle: 'Urgency Level',
+    getOptionMeta: (v, label) => ({ icon: 'bolt', title: label })
+  });
+  ctx.enhanceSelect(els.deposit, {
+    sheetTitle: 'Deposit Readiness',
+    getOptionMeta: (v, label) => ({ icon: 'shield', title: label })
+  });
+  ctx.enhanceSelect(els.referralSource, {
+    sheetTitle: 'How did you hear about OTP?',
+    getOptionMeta: (v, label) => ({ icon: 'spark', title: label })
+  });
+  ctx.enhanceSelect(els.nextStep, {
+    sheetTitle: 'Preferred Next Step',
+    getOptionMeta: (v, label) => ({ icon: 'calendar', title: label })
+  });
+}
+
+function syncBookingFieldsToLaunchContext() {
+  const ctx = window.OTP_LAUNCH_CONTEXT;
+  if (!ctx || typeof ctx.save !== 'function') return;
+  const activeService = els.service?.value || els.quickService?.value || '';
+  const prev = ctx.load?.() || {};
+  const mappedServiceId = activeService
+    ? (prev.booking_service_type === activeService && prev.service_id ? prev.service_id : ctx.mapBookingServiceToLaunch(activeService))
+    : '';
+  const nameVal = els.name?.value.trim() || els.quickName?.value.trim() || prev.name || '';
+  const emailVal = els.email?.value.trim() || els.quickEmail?.value.trim() || prev.email || '';
+  const phoneVal = els.phone?.value.trim() || els.quickPhone?.value.trim() || prev.phone || '';
+  const linkVal = els.social?.value.trim() || els.quickLink?.value.trim() || prev.social_links || '';
+  const refVal = els.reference?.value.trim() || prev.existing_website || '';
+  const rawDesc = els.description?.value.trim() || els.quickDescription?.value.trim() || '';
+  const descVal = rawDesc && rawDesc !== String(prev.summary_text || '').trim()
+    ? rawDesc
+    : (prev.project_description || '');
+  const budgetVal = els.budget?.value || els.quickBudget?.value || prev.budget_range || '';
+
+  ctx.save({
+    booking_token: state.bookingToken,
+    ...(mappedServiceId ? { service_id: mappedServiceId } : {}),
+    ...(activeService ? { booking_service_type: activeService } : {}),
+    ...(state.selectedPackage ? { package_interest: state.selectedPackage } : {}),
+    name: nameVal,
+    email: emailVal,
+    phone: phoneVal,
+    business_name: els.business?.value.trim() || prev.business_name || '',
+    social_links: linkVal,
+    existing_website: refVal,
+    project_description: descVal,
+    budget_range: budgetVal,
+    urgency_level: els.urgency?.value || prev.urgency_level || '',
+    preferred_contact_method: els.contactMethod?.value || prev.preferred_contact_method || '',
+    project_type: els.projectType?.value || prev.project_type || '',
+    ideal_deadline: els.deadline?.value || prev.ideal_deadline || '',
+    ...(state.sourceTracking ? { attribution: state.sourceTracking } : {})
+  });
+}
+
+function hydrateLaunchBridge(urlParams) {
+  const bridge = $('booking-launch-bridge');
+  const ctx = window.OTP_LAUNCH_CONTEXT;
+  const catalog = window.OTP_LAUNCH_CATALOG;
+  const saved = ctx && typeof ctx.load === 'function' ? ctx.load() : null;
+  const launchServiceParam = urlParams.get('launch_service') || '';
+  const modeParam = urlParams.get('mode') || '';
+  const activeServiceId = launchServiceParam || saved?.service_id || '';
+  const svc = catalog && activeServiceId ? catalog.findService(activeServiceId) : null;
+
+  if (svc || (saved && (saved.summary_text || saved.estimate_display || saved.name || saved.email || saved.project_description))) {
+    if (saved?.name && els.name && !els.name.value) els.name.value = saved.name;
+    if (saved?.email && els.email && !els.email.value) els.email.value = saved.email;
+    if (saved?.phone && els.phone && !els.phone.value) els.phone.value = saved.phone;
+    if (saved?.business_name && els.business && !els.business.value) els.business.value = saved.business_name;
+    if (saved?.social_links && els.social && !els.social.value) els.social.value = saved.social_links;
+    if (saved?.existing_website && els.reference && !els.reference.value) els.reference.value = saved.existing_website;
+    if ((saved?.summary_text || saved?.project_description) && els.description && (!els.description.value || modeParam === 'consultation' || launchServiceParam)) {
+      els.description.value = saved.summary_text || saved.project_description;
+    }
+    if (Array.isArray(saved?.deliverables) && els.deliverables && !els.deliverables.value) {
+      els.deliverables.value = saved.deliverables.join('; ');
+    }
+    if ((saved?.package_interest || svc?.otpPackage) && els.package) {
+      selectPackage(saved?.package_interest || svc.otpPackage, { advance: false });
+    }
+    if ((saved?.booking_service_type || svc?.bookingServiceType) && els.service) {
+      setSelectIfAvailable(els.service, saved?.booking_service_type || svc.bookingServiceType);
+      setQuickServiceIfAvailable(saved?.booking_service_type || svc.bookingServiceType);
+    }
+    if (saved?.budget_range && els.budget) setSelectIfAvailable(els.budget, saved.budget_range);
+    if (saved?.budget_range && els.quickBudget) setSelectIfAvailable(els.quickBudget, saved.budget_range);
+    if (saved?.urgency_level && els.urgency) setSelectIfAvailable(els.urgency, saved.urgency_level);
+    if (saved?.preferred_contact_method && els.contactMethod) setSelectIfAvailable(els.contactMethod, saved.preferred_contact_method);
+    if (saved?.project_type && els.projectType) setSelectIfAvailable(els.projectType, saved.project_type);
+    if (saved?.ideal_deadline && els.deadline && !els.deadline.value) els.deadline.value = saved.ideal_deadline;
+    if (els.nextStep && (modeParam === 'consultation' || saved?.mode === 'consultation')) {
+      const consultOpt = Array.from(els.nextStep.options).find((o) => o.value.toLowerCase().includes('call'));
+      if (consultOpt) setSelectIfAvailable(els.nextStep, consultOpt.value);
+    }
+    syncDetailedToQuick();
+    updateSummaries();
+  }
+
+  if (!bridge) return;
+  bridge.replaceChildren();
+  const bridgeMedia = document.createElement('div');
+  bridgeMedia.className = 'launch-bridge-thumb';
+  const conceptVisual = window.OTP_LAUNCH_MEDIA?.getServiceVisual?.(svc?.id || 'starter-website');
+  const thumbImg = document.createElement('img');
+  thumbImg.src = conceptVisual?.poster || '/assets/services/starter-website.webp';
+  thumbImg.width = 1280;
+  thumbImg.height = 800;
+  thumbImg.alt = conceptVisual?.alt || (svc ? `${svc.name} studio concept visual` : 'OTP LAUNCH studio offering preview');
+  thumbImg.loading = 'lazy';
+  thumbImg.decoding = 'async';
+  bridgeMedia.append(thumbImg);
+
+  const copy = document.createElement('div');
+  copy.className = 'launch-bridge-copy';
+  const pill = document.createElement('span');
+  pill.className = 'launch-bridge-pill';
+  const strong = document.createElement('strong');
+  const sub = document.createElement('span');
+  const actions = document.createElement('div');
+  actions.className = 'launch-bridge-actions';
+
+  if (svc) {
+    pill.textContent = modeParam === 'consultation' ? 'Consultation · Configured in OTP LAUNCH' : 'Active OTP LAUNCH Scope';
+    strong.textContent = `${svc.name} — ${saved?.estimate_display || svc.priceDisplay}`;
+    const featCount = Array.isArray(saved?.features) ? saved.features.length : 0;
+    sub.textContent = `${featCount} selected capabilities · Scope, contact details & attribution preserved automatically.`;
+
+    const backBtn = document.createElement('button');
+    backBtn.type = 'button';
+    backBtn.className = 'launch-bridge-btn';
+    backBtn.textContent = 'Edit Scope in Launch ←';
+    backBtn.addEventListener('click', () => {
+      syncBookingFieldsToLaunchContext();
+      window.location.href = `/launch?service=${encodeURIComponent(svc.id)}&source=start_project_return`;
+    });
+
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'launch-bridge-ghost';
+    clearBtn.textContent = 'Clear Pre-Fill';
+    clearBtn.addEventListener('click', () => {
+      ctx?.clear?.();
+      window.location.href = '/start-project';
+    });
+    actions.append(backBtn, clearBtn);
+    copy.append(pill, strong, sub);
+    bridge.append(bridgeMedia, copy, actions);
+  } else {
+    bridge.classList.add('is-guidance');
+    pill.textContent = 'OTP LAUNCH · Smart Estimator';
+    strong.textContent = 'Not sure what you need yet?';
+    sub.textContent = 'Explore our services, customize your features and build your own estimated quote with OTP LAUNCH.';
+
+    const stepsWrap = document.createElement('ol');
+    stepsWrap.className = 'launch-bridge-steps';
+    stepsWrap.setAttribute('aria-label', 'How OTP LAUNCH works');
+    [
+      ['grid', 'Choose a service'],
+      ['spark', 'Customize your build'],
+      ['card', 'Get an estimate']
+    ].forEach(([icoKey, label]) => {
+      const li = document.createElement('li');
+      li.className = 'launch-bridge-step';
+      const iSlot = document.createElement('span');
+      iSlot.className = 'launch-bridge-step-icon';
+      const svg = ctx?.createSvgIcon?.(icoKey, 'launch-bridge-step-svg');
+      if (svg) iSlot.append(svg);
+      const txt = document.createElement('span');
+      txt.textContent = label;
+      li.append(iSlot, txt);
+      stepsWrap.append(li);
+    });
+
+    const pricingHint = document.createElement('small');
+    pricingHint.className = 'launch-bridge-pricing-note';
+    pricingHint.textContent = '$199 fixed starter ready now · Custom builds show an estimated range before formal proposal approval.';
+
+    const goBtn = document.createElement('button');
+    goBtn.type = 'button';
+    goBtn.id = 'booking-open-launch-btn';
+    goBtn.className = 'launch-bridge-btn';
+    const goLabel = document.createElement('span');
+    goLabel.textContent = 'Build my project →';
+    goBtn.append(goLabel);
+    goBtn.addEventListener('click', () => {
+      syncBookingFieldsToLaunchContext();
+      const targetSvc = ctx?.mapBookingServiceToLaunch(
+        urlParams.get('service') || els.service?.value || els.quickService?.value || ''
+      ) || '';
+      const q = targetSvc ? `?service=${encodeURIComponent(targetSvc)}&source=start_project` : '?source=start_project';
+      window.location.href = `/launch${q}`;
+    });
+    actions.append(goBtn);
+    copy.append(pill, strong, sub, stepsWrap, pricingHint);
+    bridge.append(bridgeMedia, copy, actions);
+  }
+
+  const heroMediaMount = $('booking-hero-media-slot');
+  if (heroMediaMount && window.OTP_LAUNCH_PROOF && window.OTP_LAUNCH_MEDIA) {
+    const heroSeq = window.OTP_LAUNCH_MEDIA.getFlowSequence?.('booking-hero-assembly');
+    if (heroSeq && heroSeq.status === 'ready' && heroSeq.mp4) {
+      heroMediaMount.replaceChildren(
+        window.OTP_LAUNCH_PROOF.createMediaElement(
+          {
+            title: heroSeq.title || 'Your next project',
+            poster: heroSeq.poster || '/assets/flow/booking/booking-hero.webp',
+            mp4: heroSeq.mp4,
+            alt: heroSeq.alt || 'Floating browser frames and mobile devices assembling into one cohesive experience'
+          },
+          { autoplayWhenVisible: true, showPlayButton: true, eager: true }
+        )
+      );
+    }
+  }
+
+  const proofMount = $('booking-visual-proof');
+  if (proofMount && window.OTP_LAUNCH_PROOF && window.OTP_LAUNCH_MEDIA) {
+    const mapPreset = () => {
+      const val = String(els.service?.value || activeServiceId || '').toLowerCase();
+      if (val.includes('custom') || val.includes('system') || val.includes('app')) return 'apps';
+      if (val.includes('music') || val.includes('video') || val.includes('brand') || val.includes('reel')) return 'studio';
+      return 'websites';
+    };
+    const stageCtrl = window.OTP_LAUNCH_PROOF.renderHardwareStage(proofMount, { category: mapPreset(), compact: true });
+    els.service?.addEventListener('change', () => stageCtrl?.selectPreset?.(mapPreset()));
+  }
+}

@@ -1,21 +1,16 @@
 {
-  "releaseName": "booking-conversion-postdeploy-sweep-fix-2026-11-11",
+  "releaseName": "vault-preview-selection-and-store-link-2026-11-21",
+  "baseProductionCommit": "ba07ea48760a990189d7b39533ec292c3a545666",
   "includedFiles": [
-    "bookings.html",
-    "bookings.css",
-    "bookings.js",
+    "release-manifest.json",
     "scripts/prod_full_sweep.js",
-    "scripts/prod_terminal_sweep.js",
-    "tests/bookings_contract.test.js",
-    "tests/booking_conversion_flow.test.js",
-    "tests/e2e/adversarial_qa.js",
-    "tests/master_runner.js",
-    "tests/portal_route_contract.test.js",
-    "release-manifest.json"
+    "tests/vault_web_presence_contract.test.js",
+    "vault/index.html",
+    "vault/launch.js"
   ],
-  "removedFiles": [],
   "excludedDirtyFiles": [
-    "Only the project inquiry form, bounded selected-work media frames, booking-flow contracts, and matching production sweep markers are included in this release."
+    "Original OTP Site portal and offer-conversion working trees remain untouched. Release is based on the last successful production commit to preserve the currently live client portal.",
+    "OTP OS dirty source, app binaries, user music, private data and unrelated projects are excluded."
   ],
   "generatedArtifactsExcluded": [
     ".env",
@@ -27,55 +22,66 @@
   ],
   "testsRun": [
     {
-      "command": "npm test",
-      "status": "passed; full master suite including Booking Conversion Flow"
-    },
-    {
-      "command": "npm run test:e2e",
-      "status": "passed; 51/51 local adversarial browser checks"
+      "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm test",
+      "status": "passed; 57 checks, zero failures. Database-backed contact journey skipped without local database configuration."
     },
     {
       "command": "npm run contracts:verify",
-      "status": "passed; 4 pinned contracts"
+      "status": "passed; four pinned OTP contracts."
     },
     {
       "command": "npm run security:scan",
-      "status": "passed across 365 files"
+      "status": "passed; final staged-source secret scan across 382 files, including new VAULT pages and assets."
     },
     {
       "command": "npm run build:speed-insights",
-      "status": "passed"
+      "status": "passed; esbuild bundle completed."
     },
     {
-      "command": "npm run master_test:ci",
-      "status": "passed against https://www.onlytrueperspective.tech"
+      "command": "PORT=1 E2E_TEST_MODE=true E2E_TEST_CLIENT_EMAIL=test@onlytrueperspective.tech E2E_TEST_PORTAL_TOKEN=test-safe-portal-token npm run master_test:ci",
+      "status": "passed; 57 checks, zero failures against current live production baseline."
     },
     {
-      "command": "OTP_SWEEP_HTTP_ONLY=1 OTP_SWEEP_DEFER=songwars,songwars-poster npm run prod:full-sweep",
-      "status": "passed against the deployed intake page after updating the retired-heading marker; HTTP-only, with authenticated checks run by the guarded workflow"
+      "command": "OTP_SWEEP_BASE_URL=http://127.0.0.1:4497 OTP_SWEEP_HTTP_ONLY=1 npm run prod:full-sweep",
+      "status": "passed; 61 public targets including all VAULT pages, script, stylesheet and seven screenshots/icons. Local authenticated checks skipped without credentials."
     },
     {
-      "command": "node --check bookings.js && node --check server.js && node --check scripts/prod_full_sweep.js && node --check scripts/prod_terminal_sweep.js",
-      "status": "passed"
-    },
-    {
-      "command": "git diff --check",
-      "status": "passed"
+      "command": "node --check server.js; node --check vault/launch.js; node --check scripts/prod_full_sweep.js; git diff --check",
+      "status": "passed; final syntax and whitespace checks."
     }
   ],
   "browserQa": {
     "status": "passed",
-    "summary": "In-app browser visual QA of /start-project showed FLOIVATION, HYH, and WeatherOS images loaded into equal bounded media frames; no card was stretched by the portrait WeatherOS image. The full adversarial suite also passed booking-flow keyboard validation and responsive overflow checks at 320px, 390px, 768px, and 1440px."
+    "summary": "Chrome desktop and390x844 phone viewport: artist preview changes the image, selects exactly the matching workflow button and remains a normal action button. The page width stays390px. A second real App Store link appears after the product overview. Regression was reproduced before the fix and now passes. Existing reduced-motion test and live route/asset checks pass."
   },
   "authenticatedSweep": {
     "status": "passed",
-    "summary": "The guarded production workflow will run authenticated read-only checks with configured OTP admin credentials before deployment; local public-only sweep did not claim authenticated coverage."
+    "summary": "The current production baseline ba07ea4 passed guarded run44883989084 including its authenticated pre-deploy and complete post-deploy sweeps. This release repeats the required authenticated sweep before deployment. Updated VAULT script is deferred only before deployment and checked at its new cache key after deployment."
   },
   "deploymentTarget": {
     "project": "otp-site",
+    "previewUrl": "http://127.0.0.1:4497",
     "aliases": [
       "https://www.onlytrueperspective.tech",
       "https://onlytrueperspective.tech"
+    ],
+    "verificationRoutes": [
+      "/",
+      "/vault",
+      "/vault/",
+      "/vault/privacy",
+      "/vault/support",
+      "/start-project",
+      "/bookings",
+      "/archive",
+      "/portal",
+      "/client/:portalToken",
+      "/os"
     ]
+  },
+  "appStoreListing": {
+    "appId": "6814101540",
+    "url": "https://apps.apple.com/app/id6814101540",
+    "status": "Verified public US storefront for VAULT - By OTP 1.0, $9.99, minimum iOS26.0. Public product-page requirements corrected to match shipped1.0; TestFlight1.4.0(12) supports iOS18 but is not the public version."
   }
 }

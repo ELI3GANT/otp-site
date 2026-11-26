@@ -234,7 +234,11 @@ function normalizePortalApproval(approval = {}) {
 
 export function normalizePortalPayload(data = {}) {
   const portal = data.portal && typeof data.portal === 'object' ? data.portal : {};
-  const client = data.client && typeof data.client === 'object' ? data.client : {};
+  const client = data.client && typeof data.client === 'object'
+    ? data.client
+    : data.profile && typeof data.profile === 'object'
+      ? data.profile
+      : {};
   const project = data.project && typeof data.project === 'object' ? data.project : {};
   const retainer = data.retainer && typeof data.retainer === 'object' ? data.retainer : {};
   const payment = data.payment && typeof data.payment === 'object' ? data.payment : {};
@@ -267,8 +271,8 @@ export function normalizePortalPayload(data = {}) {
         : {}
     },
     client: {
-      name: cleanPortalValue(client.name || client.clientName || client.client_name || client.brandBusiness || client.brand_business || client.contact_name || data.client_name || data.clientName) || 'Valued Client',
-      brandBusiness: cleanPortalValue(client.brandBusiness || client.brand_business) || '',
+      name: cleanPortalValue(client.name || client.clientName || client.client_name || client.brandBusiness || client.brand_business || client.businessName || client.business_name || client.contact_name || data.client_name || data.clientName) || 'Valued Client',
+      brandBusiness: cleanPortalValue(client.brandBusiness || client.brand_business || client.businessName || client.business_name) || '',
       email: cleanPortalValue(client.email) || '',
       phone: cleanPortalValue(client.phone) || ''
     },

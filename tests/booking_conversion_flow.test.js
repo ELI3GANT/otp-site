@@ -68,9 +68,28 @@ async function run() {
     await waitFor(() => page.window.document.querySelector('#quick-service').options.length > 1, 'booking options');
     const { window } = page;
 
+    const underFiveHundred = [...window.document.querySelectorAll('[data-budget-option]')]
+        .find((button) => button.dataset.budgetValue === 'Under $500');
+    assert.ok(underFiveHundred, 'budget guide includes an under-$500 route');
+    underFiveHundred.click();
+    assert.equal(window.document.querySelector('#booking-budget').value, 'Under $500');
+    assert.equal(window.document.querySelector('#quick-budget').value, 'Under $500', 'visual budget choice syncs to Quick Inquiry');
+    assert.match(window.document.querySelector('#budget-fit-note').textContent, /Fast Lane.*The Signal starts at \$500/);
+    assert.equal(window.document.querySelector('#quick-fit-title').textContent, 'Fast Lane or focused scope');
+    assert.equal(window.document.querySelector('#quick-fit-package').textContent, 'Fast Lane / focused request');
+    assert.match(window.document.querySelector('#quick-fit-package-detail').textContent, /The Signal starts at \$500/);
+    assert.match(window.document.querySelector('#quick-fit-examples').textContent, /One focused page or booking-flow fix/);
+
+    submit(window, '#quick-inquiry-form');
+    assert.equal(page.requests.length, 0, 'Quick Inquiry requires a service choice before submission');
+    assert.match(window.document.querySelector('#quick-error').textContent, /service.*project description.*name.*email or phone/i);
+
+    setValue(window, '#quick-service', 'Website / Digital System', 'change');
+    assert.match(window.document.querySelector('#quick-fit-examples').textContent, /One page or form fix/);
+
     submit(window, '#quick-inquiry-form');
     assert.equal(page.requests.length, 0, 'empty Quick Inquiry does not submit');
-    assert.match(window.document.querySelector('#quick-error').textContent, /service.*project description.*name.*email or phone/i);
+    assert.match(window.document.querySelector('#quick-error').textContent, /project description.*name.*email or phone/i);
     assert.ok(page.analytics.some((event) => event.name === 'booking_validation_error' && event.data.intake_path === 'quick_inquiry'));
 
     setValue(window, '#booking-name', 'Existing detailed client', 'input');
@@ -103,6 +122,7 @@ async function run() {
     assert.equal(quick.source_tracking.utm_source, 'conversion-test');
     assert.equal(quick.source_tracking.utm_campaign, 'flow-check');
     assert.equal(quick.service_type, 'Website / Digital System');
+    assert.equal(quick.budget_range, 'Under $500', 'selected budget range persists in the inquiry payload');
     assert.equal(quick.package_interest, 'Not Sure Yet', 'Quick Inquiry does not force a package');
     assert.equal(quick.name, 'Morgan Example');
     assert.equal(quick.email, 'morgan@example.test');

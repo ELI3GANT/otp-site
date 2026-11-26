@@ -36,6 +36,10 @@
 
     function flushQueue() {
         if (eventQueue.length === 0 || isFlushing) return;
+        if (root.__OTP_ANALYTICS_ENABLED__ !== true) {
+            eventQueue.splice(0, eventQueue.length);
+            return;
+        }
 
         const payloadToSend = eventQueue.splice(0, eventQueue.length);
         isFlushing = true;

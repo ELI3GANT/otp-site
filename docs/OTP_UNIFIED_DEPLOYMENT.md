@@ -94,10 +94,11 @@ The production apex `https://onlytrueperspective.tech` redirects to `https://www
 
 ## Rollback Plan
 
-1. Remove the two `/os` route entries from `vercel.json`.
-2. Redeploy `otp-site`.
-3. Confirm `/`, booking aliases, `/client/test`, `/terminal`, and `/api/health` still work.
-4. Continue using `https://otp-os.vercel.app` directly for OTP OS until routing is repaired.
+1. **Important Vercel Env Var Rule**: Editing Vercel environment variables does **not** immediately affect existing deployments — you must trigger a **redeploy** (or new deployment) on `otp-site` / `otp-os` for changed env vars (`OTP_LAUNCH_CHECKOUT_DISABLED=1`, `STRIPE_WEBHOOK_SECRET`, etc.) to take effect.
+2. **Immediate Zero-Redeploy Commerce Killswitch**: Call `POST /api/v1/launch/checkout-control` (`{ "enabled": false }`) on `otp-os` to block new checkouts immediately (`503 checkout_temporarily_disabled`) while keeping `POST /api/payments/webhook` and `/api/launch/checkout/status` reconciliation operational.
+3. For `/os` proxy isolation, remove the two `/os` route entries from `vercel.json` and redeploy `otp-site`.
+4. Confirm `/`, `/launch`, booking aliases, `/client/test`, `/terminal`, `/api/health`, and `POST /api/payments/webhook` (using Vercel Protection bypass if testing a protected preview) remain functional.
+5. Continue using `https://otp-os.vercel.app` directly for OTP OS until routing is repaired.
 
 ## Full Migration Next Step
 

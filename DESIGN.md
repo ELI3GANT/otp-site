@@ -282,7 +282,7 @@ Mechanism references: react-bits [DecryptedText](https://reactbits.dev/r/Decrypt
 
 ### Start a Project context sidebar
 
-The left `booking-context` becomes a compact companion to the existing four-step form. Keep every summary ID and all form behavior. Use the existing section label, heading `A clear next step.` at clamp(1.5rem,2.5vw,2.25rem), three line-icon rows (Review / Plan / Build), one short no-payment note, and a two-by-two live summary. Neutral rules, shared mode tokens, 44px targets and public type stacks remain. No repeated operational document lists or oversized stacked headline. Mobile keeps this compact block after the form so the primary entry comes first.
+The left `booking-context` becomes a compact companion to the existing four-step form. Keep every summary ID and all form behavior. Use the existing section label, heading `A clear next step.` at clamp(1.5rem,2.5vw,2.25rem), three line-icon rows (Review / Plan / Build), one short no-payment note, and a two-by-two live summary. Neutral rules, shared mode tokens, 44px targets and public type stacks remain. No repeated operational document lists or oversized stacked headline. Mobile keeps this compact block after the form so the primary entry comes first. The quick quote path adds a live budget-to-scope snapshot beneath the trust points: it shows a likely package lane and representative deliverables, uses the selected site palette for the icon and selection feedback, and animates only on actual range/service/package changes with reduced-motion support.
 
 ## Website design service page · V2 continuation
 
