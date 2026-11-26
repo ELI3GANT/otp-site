@@ -465,7 +465,7 @@ strong {
 
 .top-actions a:last-child,
 .primary-action,
-button:not(.ghost-button),
+button:not(.ghost-button):not(.quick-detailed-link):not(.otp-select-option):not(.otp-select-sheet-close):not(.otp-select-trigger):not(.booking-theme-toggle):not(.service-selector-card),
 .success-actions a,
 .success-actions button {
   position: relative;
@@ -486,7 +486,7 @@ button:not(.ghost-button),
 }
 
 .primary-action::after,
-button:not(.ghost-button)::after,
+button:not(.ghost-button):not(.quick-detailed-link):not(.otp-select-option):not(.otp-select-sheet-close):not(.otp-select-trigger):not(.booking-theme-toggle):not(.service-selector-card)::after,
 .success-actions a::after,
 .success-actions button::after {
   content: "";
@@ -2219,13 +2219,20 @@ html[data-theme="light"] body.booking-site .booking-footer strong { color: var(-
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
+    max-width: 100%;
+    min-width: 0;
   }
 
-  .top-actions a {
+  .top-actions a,
+  .top-actions button {
+    min-width: 0;
     min-height: 42px;
     justify-content: center;
     padding: 0 10px;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .top-actions a:last-child {
@@ -3650,6 +3657,18 @@ body.booking-site .otp-select-footer {
   background: var(--surface-soft, var(--surface));
   font-size: 0.74rem;
   color: var(--muted);
+}
+html[data-theme="dark"] body.booking-site .otp-select-panel {
+  background: #14161c !important;
+  color: #f4f2ea !important;
+  border-color: rgba(244, 242, 234, 0.2) !important;
+}
+html[data-theme="dark"] body.booking-site .otp-select-panel .otp-select-option {
+  background: transparent !important;
+  color: #f4f2ea !important;
+}
+html[data-theme="dark"] body.booking-site .otp-select-panel .otp-select-option.is-selected {
+  background: color-mix(in srgb, var(--active-accent, var(--accent)) 18%, #1e222b) !important;
 }
 html[data-theme="dark"] body.booking-site .otp-select-wrap button.otp-select-trigger,
 body.booking-site .otp-select-wrap button.otp-select-trigger {

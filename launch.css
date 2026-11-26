@@ -591,21 +591,23 @@ html[data-theme="light"] .launch-wizard-mark img {
   padding: 14px 20px 18px;
   margin-top: auto;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px 12px;
   border-top: 1px solid rgba(16, 17, 16, 0.1);
 }
 .launch-card-meta {
   display: grid;
   gap: 2px;
   min-width: 0;
+  flex: 1 1 130px;
 }
 .launch-card-meta strong {
   font-size: 0.94rem;
   font-weight: 700;
   color: var(--ink);
-  white-space: nowrap;
+  line-height: 1.25;
 }
 .launch-card-meta small {
   font: 500 0.72rem/1.25 var(--font-mono);

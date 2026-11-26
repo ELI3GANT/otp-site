@@ -2924,7 +2924,7 @@ app.get(['/client', '/client/'], (req, res) => {
     return res.redirect(302, '/portal?status=missing');
 });
 
-app.get('/client/:token', (req, res) => {
+app.get(['/client/:token', '/portal/:token'], (req, res) => {
     privatePortalHtml(res);
     const token = normalizeClientPortalToken(req.params.token);
     if (!token) return res.redirect(302, '/portal?status=invalid');
