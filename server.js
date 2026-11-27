@@ -4503,6 +4503,10 @@ async function proxyLaunchToOtpOs(req, res, upstreamPath, { method = req.method,
         const payload = await upstream.json().catch(() => ({}));
         return res.status(upstream.status).json(payload);
     } catch (err) {
+        console.warn('OTP commercial upstream request failed', {
+            error_name: err?.name || 'Error',
+            error_code: err?.cause?.code || err?.code || 'unknown'
+        });
         return res.status(503).json({
             ok: false,
             code: 'otp_os_unavailable',
