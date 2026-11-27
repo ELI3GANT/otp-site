@@ -32,7 +32,7 @@ export function hasBranchScopedVariable(output, name, branch) {
   const scope = `Preview (${branch})`;
   return String(output || '').split(/\r?\n/).some((line) => {
     const fields = line.trim().split(/\s{2,}/);
-    return fields[0] === name && line.includes(scope);
+    return fields[0] === name && fields.includes(scope);
   });
 }
 
@@ -56,8 +56,8 @@ function getCliOutput(project, branch) {
 }
 
 export function runPreflight(branch) {
-  if (!/^feature\/[A-Za-z0-9._/-]+$/.test(branch || '') || branch.includes('..')) {
-    throw new Error('Use a feature/* branch name. Production and non-feature branches are rejected.');
+  if (branch !== 'feature/nexus') {
+    throw new Error('Only the permanent feature/nexus QA integration branch is authorized.');
   }
   const current = spawnSync('git', ['branch', '--show-current'], { encoding: 'utf8' });
   if (current.status !== 0 || current.stdout.trim() !== branch) {

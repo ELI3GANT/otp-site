@@ -6,7 +6,7 @@
     "deploymentEnabled": {
       "*": false,
       "main": false,
-      "feature/*": true
+      "feature/nexus": true
     }
   },
   "builds": [
