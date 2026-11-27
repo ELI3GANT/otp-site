@@ -274,6 +274,13 @@ assert.ok(
     serverSrc.includes('(!sandboxIsolation.active || sandboxIsolation.allowDirectStripe)'),
     'Stripe init must be gated by sandboxIsolation'
 );
+const depositCheckoutStart = serverSrc.indexOf("app.all('/api/bookings/deposit-checkout'");
+const depositCheckoutEnd = serverSrc.indexOf('\napp.', depositCheckoutStart + 1);
+const depositCheckoutRoute = serverSrc.slice(depositCheckoutStart, depositCheckoutEnd);
+assert.ok(
+    depositCheckoutRoute.includes('if (stripe)') && !depositCheckoutRoute.includes("require('stripe')(process.env.STRIPE_SECRET_KEY"),
+    'legacy deposit checkout must use the sandbox-isolated Stripe client'
+);
 assert.ok(
     serverSrc.includes('(!sandboxIsolation.active || sandboxIsolation.allowDirectSupabase)'),
     'Supabase Admin init must be gated by sandboxIsolation'

@@ -347,6 +347,18 @@ const els = {
   quickConsent: $('quick-consent'),
   quickHoneypot: $('quick-otp-company-website'),
   quickSubmit: $('submit-quick-inquiry'),
+  quickSubmitCopy: $('quick-submit-copy'),
+  quickInquiryEyebrowCopy: $('quick-inquiry-eyebrow-copy'),
+  quickInquiryTitle: $('quick-inquiry-title'),
+  quickInquiryIntro: $('quick-inquiry-intro'),
+  bookingContextLabel: $('booking-context-label'),
+  bookingHeroQuoteCopy: $('booking-hero-quote-copy'),
+  bookingNavQuote: $('booking-nav-quote'),
+  bookingPackageHeading: $('booking-package-heading'),
+  bookingPackageGrid: $('package-grid'),
+  bookingFastLanes: $('fast-lanes'),
+  bookingFastLaneGrid: $('fast-lane-grid'),
+  bookingPackageSummary: $('package-selection-summary'),
   quickStatus: $('quick-status'),
   quickError: $('quick-error'),
   detailedBrief: $('detailed-brief'),
@@ -1985,9 +1997,13 @@ async function submitIntake(event, path) {
       els.submit.disabled = false;
       els.quickSubmit.disabled = false;
       els.submit.textContent = 'Submit Booking Request';
-      els.quickSubmit.textContent = 'Request My Quote ↗';
+      if (els.quickSubmitCopy) els.quickSubmitCopy.textContent = consultationRequestMode() ? 'Request a planning call' : 'Request My Quote';
     }
   }
+}
+
+function consultationRequestMode() {
+  return new URLSearchParams(window.location.search || '').get('mode') === 'consultation';
 }
 
 function submitBooking(event) {
@@ -2053,7 +2069,7 @@ async function init() {
   const fastParam = urlParams.get('fast') || urlParams.get('fast_offer') || urlParams.get('service');
   const clientParam = urlParams.get('client') || urlParams.get('target') || urlParams.get('business');
 
-  if (packageParam) {
+  if (packageParam && !consultationRequestMode()) {
     let matchedPkg = 'The Signal';
     const lowerPkg = packageParam.toLowerCase();
     if (lowerPkg.includes('engine')) matchedPkg = 'The Engine';
@@ -2266,6 +2282,19 @@ function hydrateLaunchBridge(urlParams) {
   const saved = ctx && typeof ctx.load === 'function' ? ctx.load() : null;
   const launchServiceParam = urlParams.get('launch_service') || '';
   const modeParam = urlParams.get('mode') || '';
+  if (modeParam === 'consultation') {
+    if (els.bookingContextLabel) els.bookingContextLabel.textContent = 'Planning call · scope guidance';
+    if (els.bookingHeroQuoteCopy) els.bookingHeroQuoteCopy.textContent = 'Request a planning call';
+    if (els.bookingNavQuote) els.bookingNavQuote.textContent = 'Request a call';
+    if (els.quickInquiryEyebrowCopy) els.quickInquiryEyebrowCopy.textContent = 'Planning call · no payment';
+    if (els.quickInquiryTitle) els.quickInquiryTitle.textContent = 'Request a planning call.';
+    if (els.quickInquiryIntro) els.quickInquiryIntro.textContent = 'Tell us what you’re exploring. OTP will review your goals and confirm a time if a call is the right next step.';
+    if (els.quickFitPreview) els.quickFitPreview.hidden = true;
+    if (els.quickSubmitCopy) els.quickSubmitCopy.textContent = 'Request a planning call';
+    [els.bookingPackageHeading, els.bookingPackageGrid, els.bookingFastLanes, els.bookingFastLaneGrid, els.bookingPackageSummary].forEach((element) => {
+      if (element) element.hidden = true;
+    });
+  }
   const activeServiceId = launchServiceParam || saved?.service_id || '';
   const svc = catalog && activeServiceId ? catalog.findService(activeServiceId) : null;
 
@@ -2282,7 +2311,7 @@ function hydrateLaunchBridge(urlParams) {
     if (Array.isArray(saved?.deliverables) && els.deliverables && !els.deliverables.value) {
       els.deliverables.value = saved.deliverables.join('; ');
     }
-    if ((saved?.package_interest || svc?.otpPackage) && els.package) {
+    if (modeParam !== 'consultation' && (saved?.package_interest || svc?.otpPackage) && els.package) {
       selectPackage(saved?.package_interest || svc.otpPackage, { advance: false });
     }
     if ((saved?.booking_service_type || svc?.bookingServiceType) && els.service) {

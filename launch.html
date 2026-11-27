@@ -47,8 +47,26 @@
         <h1 id="launch-title" class="public-title">Simple to shape.<br>Ready to launch.</h1>
         <p class="public-lead public-muted">Pick a service, choose what you need with visual tiles, and see your clear estimate update live.</p>
         <div class="launch-hero-actions">
-          <a class="public-button" href="#catalog">Build my project <span aria-hidden="true">↓</span></a>
-          <a class="public-text-link" href="/start-project?source=launch-hero&amp;mode=consultation">Help me plan <span aria-hidden="true">→</span></a>
+          <button id="lc-hero-direct-btn" type="button" class="public-button">Start $199 Starter <span aria-hidden="true">→</span></button>
+          <a class="public-text-link" href="#catalog">Custom project <span aria-hidden="true">↓</span></a>
+          <a class="public-text-link" href="/start-project?source=launch-hero&amp;mode=consultation">Request a planning call <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="launch-pathways" aria-label="Three ways to start">
+          <button type="button" class="launch-pathway-card" id="lc-pathway-direct">
+            <span class="public-label">01 · Direct Checkout</span>
+            <strong>$199 Starter Website</strong>
+            <small>Name &amp; email only · instant Stripe Checkout</small>
+          </button>
+          <a class="launch-pathway-card" href="#configurator">
+            <span class="public-label">02 · Custom Project</span>
+            <strong>Visual Configurator</strong>
+            <small>Scope, uploads &amp; tailored proposal</small>
+          </a>
+          <a class="launch-pathway-card" href="/start-project?source=launch-pathway&amp;mode=consultation">
+            <span class="public-label">03 · Consultation</span>
+            <strong>Request a Consultation</strong>
+            <small>Share your goals; OTP will confirm a time</small>
+          </a>
         </div>
         <div class="launch-assurance" aria-label="Launch guarantees">
           <span><strong>$199</strong> Starter site available now</span>
@@ -251,7 +269,7 @@
               <span>Need help planning your project? <strong>Let’s talk.</strong></span>
             </div>
             <button id="lc-consult-btn" type="button" class="launch-consult-btn">
-              <span>Book a consultation</span>
+              <span>Request a planning call</span>
               <span aria-hidden="true">→</span>
             </button>
           </div>

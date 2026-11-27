@@ -7,6 +7,7 @@ const { JSDOM } = require('jsdom');
 async function main() {
   const utils = await import('../client-portal-utils.js');
   const portalV2 = await import('../client-portal-v2.js');
+  const paymentWorkflow = await import('../payment-workflow-v2.js');
   const renderer = fs.readFileSync(path.join(__dirname, '../client-portal-v2-renderer.js'), 'utf8').replace('export function', 'function');
   const fixture = {
     ok: true,
@@ -20,6 +21,18 @@ async function main() {
     deliverables: { items: ['Responsive website'] }
   };
   const before = JSON.stringify(fixture);
+  const paidAwaitingReceiptReview = paymentWorkflow.buildPaymentSummaryV2({
+    client_name: 'QA Client',
+    project_title: 'Starter Website',
+    payment_status: 'Paid in Full',
+    total_price_cents: 19900,
+    amount_paid_cents: 19900,
+    remaining_balance_cents: 0,
+    payment_method: null
+  });
+  assert.equal(paidAwaitingReceiptReview.paidInFull, true);
+  assert.match(paidAwaitingReceiptReview.nextAction, /Payment is complete/);
+  assert.doesNotMatch(paidAwaitingReceiptReview.nextAction, /invoice/i);
   const dom = new JSDOM('<main id="portal-root"></main><span id="portal-status"></span>', { url: 'https://www.onlytrueperspective.tech/client/sample-private-invite', runScripts: 'outside-only' });
   const requests = [];
   dom.window.fetch = async (url, options = {}) => {
