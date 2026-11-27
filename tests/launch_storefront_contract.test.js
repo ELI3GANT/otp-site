@@ -119,6 +119,7 @@ assert.ok(launchHtml.includes('Need help planning your project?'), 'Launch shows
 assert.ok(launchHtml.includes('Request a planning call'), 'Launch consultation CTA describes the inquiry before a time is confirmed');
 assert.ok(launchHtml.includes('Share your goals; OTP will confirm a time'), 'Launch consultation pathway does not promise live availability');
 assert.ok(!launchHtml.includes('Live founder availability &amp; timezone sync'), 'Launch does not claim a live appointment scheduler that is not present');
+assert.ok(launchHtml.includes('mode=consultation'), 'Launch consultation handoff carries its consultation mode to the intake route');
 assert.ok(launchHtml.includes('launch-context.js'), 'Launch loads shared session context bridge');
 assert.ok(bookingsHtml.includes('id="booking-launch-bridge"'), 'Start a Project / Bookings hosts Launch bridge');
 assert.ok(bookingsHtml.includes('launch-context.js'), 'Bookings loads shared Launch context bridge');

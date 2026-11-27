@@ -347,6 +347,11 @@ const els = {
   quickConsent: $('quick-consent'),
   quickHoneypot: $('quick-otp-company-website'),
   quickSubmit: $('submit-quick-inquiry'),
+  quickSubmitCopy: $('quick-submit-copy'),
+  quickInquiryEyebrowCopy: $('quick-inquiry-eyebrow-copy'),
+  quickInquiryTitle: $('quick-inquiry-title'),
+  quickInquiryIntro: $('quick-inquiry-intro'),
+  quickFitPreview: document.querySelector('[data-quick-fit-preview]'),
   quickStatus: $('quick-status'),
   quickError: $('quick-error'),
   detailedBrief: $('detailed-brief'),
@@ -1985,9 +1990,13 @@ async function submitIntake(event, path) {
       els.submit.disabled = false;
       els.quickSubmit.disabled = false;
       els.submit.textContent = 'Submit Booking Request';
-      els.quickSubmit.textContent = 'Request My Quote ↗';
+      if (els.quickSubmitCopy) els.quickSubmitCopy.textContent = consultationRequestMode() ? 'Request a planning call' : 'Request My Quote';
     }
   }
+}
+
+function consultationRequestMode() {
+  return new URLSearchParams(window.location.search || '').get('mode') === 'consultation';
 }
 
 function submitBooking(event) {
@@ -2266,6 +2275,13 @@ function hydrateLaunchBridge(urlParams) {
   const saved = ctx && typeof ctx.load === 'function' ? ctx.load() : null;
   const launchServiceParam = urlParams.get('launch_service') || '';
   const modeParam = urlParams.get('mode') || '';
+  if (modeParam === 'consultation') {
+    if (els.quickInquiryEyebrowCopy) els.quickInquiryEyebrowCopy.textContent = 'Planning call · no payment';
+    if (els.quickInquiryTitle) els.quickInquiryTitle.textContent = 'Request a planning call.';
+    if (els.quickInquiryIntro) els.quickInquiryIntro.textContent = 'Tell us what you’re exploring. OTP will review your goals and confirm a time if a call is the right next step.';
+    if (els.quickFitPreview) els.quickFitPreview.hidden = true;
+    if (els.quickSubmitCopy) els.quickSubmitCopy.textContent = 'Request a planning call';
+  }
   const activeServiceId = launchServiceParam || saved?.service_id || '';
   const svc = catalog && activeServiceId ? catalog.findService(activeServiceId) : null;
 
