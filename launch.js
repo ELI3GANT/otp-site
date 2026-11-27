@@ -1194,6 +1194,7 @@
         backBtn.className = 'public-text-link';
         backBtn.style.background = 'none';
         backBtn.style.border = '0';
+        backBtn.style.padding = '0';
         backBtn.style.cursor = 'pointer';
         backBtn.textContent = 'Return to OTP Launch';
         backBtn.addEventListener('click', () => main.classList.remove('is-post-purchase-focus'));

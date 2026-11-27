@@ -1101,7 +1101,8 @@ html[data-theme="light"] .otp-select-panel {
 }
 
 /* OPERATION AFTERGLOW — DEDICATED POST-PAYMENT CONFIRMATION STAGE */
-main.is-post-purchase-focus > section:not(#lc-checkout-return) {
+main.is-post-purchase-focus > section:not(#lc-checkout-return),
+body:has(main.is-post-purchase-focus) .launch-mobile-bar {
   display: none;
 }
 
