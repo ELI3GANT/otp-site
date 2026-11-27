@@ -19,6 +19,8 @@ const prodBootstrapQa = read('scripts/prod_bootstrap_qa.js');
 const UNAUTH_API_ALLOWLIST = new Set([
     'GET /api',
     'GET /api/health',
+    // Preview-only safe QA readiness summary; it returns no credentials and only performs a read-only QA DB probe.
+    'GET /api/qa/readiness',
     'GET /api/status',
     'GET /api/webhook',
     'POST /api/webhook',
