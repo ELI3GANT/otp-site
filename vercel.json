@@ -3,7 +3,11 @@
   "cleanUrls": false,
   "ignoreCommand": "node scripts/vercel_ignore_build_step.js",
   "git": {
-    "deploymentEnabled": false
+    "deploymentEnabled": {
+      "*": false,
+      "main": false,
+      "feature/*": true
+    }
   },
   "builds": [
     {

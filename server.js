@@ -7,6 +7,7 @@ const {
     buildOtpOsUpstreamHeaders,
     applySiteSandboxIsolation
 } = require('./server/sandbox-isolation');
+const { buildOtpSiteQaReadiness } = require('./server/qa-readiness');
 
 process.on('uncaughtException', (err) => {
     console.error('Uncaught exception:', err);
@@ -5553,6 +5554,33 @@ app.get('/api', (req, res) => {
     res.send("OTP API SERVICE RUNNING");
 });
 app.get('/ping', (req, res) => res.json({ status: 'PONG', timestamp: new Date() }));
+app.get('/api/qa/readiness', async (req, res) => {
+    res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+    if (process.env.VERCEL !== '1' || String(process.env.VERCEL_ENV || '').toLowerCase() !== 'preview') {
+        const readiness = buildOtpSiteQaReadiness({ isPreview: false });
+        return res.status(readiness.statusCode).json(readiness.body);
+    }
+    let backendPayload = null;
+    if (OTP_OS_UPSTREAM_ORIGIN && !isForbiddenProdHost(OTP_OS_UPSTREAM_ORIGIN)) {
+        try {
+            const upstream = await fetch(`${OTP_OS_UPSTREAM_ORIGIN}/api/qa/readiness`, {
+                headers: buildOtpOsUpstreamHeaders({ Accept: 'application/json' }),
+                signal: AbortSignal.timeout(8000)
+            });
+            const payload = await upstream.json();
+            backendPayload = { ...payload, ok: upstream.ok && payload?.ok === true };
+        } catch (_) {}
+    }
+    const readiness = buildOtpSiteQaReadiness({
+        isPreview: true,
+        isolationActive: sandboxIsolation.active,
+        directSupabaseEnabled: sandboxIsolation.allowDirectSupabase,
+        stripeKey: process.env.STRIPE_SECRET_KEY,
+        upstreamOrigin: OTP_OS_UPSTREAM_ORIGIN,
+        backendPayload
+    });
+    return res.status(readiness.statusCode).json(readiness.body);
+});
 app.get('/api/health', async (req, res) => {
     const health = {
         status: 'UP',

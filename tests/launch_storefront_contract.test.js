@@ -127,7 +127,7 @@ assert.ok(serverJs.includes("app.get('/api/launch/catalog'"), 'server.js exposes
 assert.ok(serverJs.includes("app.post('/api/launch/submit'"), 'server.js exposes /api/launch/submit');
 assert.ok(serverJs.includes("app.post('/api/launch/checkout'"), 'server.js exposes /api/launch/checkout');
 assert.ok(vercelJson.routes.some((r) => r.src === '^/launch/?$'), 'vercel.json routes /launch');
-assert.ok(vercelJson.git && vercelJson.git.deploymentEnabled === false, 'automatic Git deployment remains disabled');
+assert.deepEqual(vercelJson.git?.deploymentEnabled, { '*': false, main: false, 'feature/*': true }, 'only feature branches auto-deploy as Preview; main stays disabled');
 
 console.log('   OK: OTP LAUNCH storefront contract');
 
