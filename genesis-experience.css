@@ -177,8 +177,8 @@ html[data-theme="light"] .otp-genesis-intro .genesis-scroll-cue {
 .genesis-control-btn:hover,
 .genesis-control-btn:focus-visible {
   color: #ffffff;
-  border-color: rgba(244, 114, 182, 0.65);
-  background: rgba(20, 14, 34, 0.72);
+  border-color: rgba(212, 175, 102, 0.72);
+  background: rgba(16, 15, 13, 0.82);
 }
 
 .genesis-quiet-link {
@@ -198,7 +198,7 @@ html[data-theme="light"] .otp-genesis-intro .genesis-scroll-cue {
 .genesis-quiet-link:hover,
 .genesis-quiet-link:focus-visible {
   color: #ffffff;
-  border-color: #f472b6;
+  border-color: #d4af66;
 }
 
 .genesis-rail {
@@ -242,7 +242,7 @@ html[data-theme="light"] .genesis-rail {
   font: 600 0.7rem/1.2 var(--font-mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #f472b6;
+  color: #d4af66;
   text-shadow: 0 1px 12px rgba(4, 3, 10, 0.9);
 }
 .genesis-statement {

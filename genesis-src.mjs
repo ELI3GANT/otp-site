@@ -53,48 +53,48 @@ import {
   const CHAPTERS = [
     {
       index: 0,
-      id: 'arrival',
+      id: 'observatory',
       code: '01',
-      label: 'Arrival',
+      label: 'The Observatory',
       range: [0.0, 0.2],
       jumpProgress: 0.05,
-      statement: 'A quiet horizon before ignition.'
+      statement: 'An orbital headquarters above the noise.'
     },
     {
       index: 1,
-      id: 'awakening',
+      id: 'ignition',
       code: '02',
-      label: 'Awakening',
+      label: 'Ignition',
       range: [0.2, 0.4],
       jumpProgress: 0.3,
-      statement: 'Systems awaken across the hull.'
+      statement: 'Workstation displays illuminate. Systems come online.'
     },
     {
       index: 2,
-      id: 'discovery',
+      id: 'systems',
       code: '03',
-      label: 'Discovery',
+      label: 'The Systems',
       range: [0.4, 0.62],
       jumpProgress: 0.51,
-      statement: 'Command interfaces illuminate.'
+      statement: 'Custom websites · Native apps · Automation · MDWT NEXUS.'
     },
     {
       index: 3,
-      id: 'creation',
+      id: 'perspective',
       code: '04',
-      label: 'Creation',
+      label: 'The Perspective',
       range: [0.62, 0.83],
       jumpProgress: 0.73,
-      statement: 'Websites, apps, commerce, and infrastructure.'
+      statement: 'Built in Rhode Island. Made for the world.'
     },
     {
       index: 4,
-      id: 'beyond',
+      id: 'launch',
       code: '05',
-      label: 'Beyond',
+      label: 'Launch',
       range: [0.83, 1.0],
       jumpProgress: 0.94,
-      statement: 'OnlyTruePerspective.'
+      statement: 'Enter OnlyTruePerspective.'
     }
   ];
 
@@ -418,17 +418,37 @@ import {
     const ctx = c.getContext('2d');
     if (!ctx) return null;
     ctx.clearRect(0, 0, 512, 512);
-    ctx.strokeStyle = 'rgba(255, 244, 252, 0.96)';
-    ctx.lineWidth = 14;
+    // Outer orbital eye & restrained champagne-gold ring
+    ctx.strokeStyle = 'rgba(212, 175, 102, 0.92)';
+    ctx.lineWidth = 10;
     ctx.beginPath();
     ctx.moveTo(64, 256);
-    ctx.bezierCurveTo(154, 118, 358, 118, 448, 256);
-    ctx.bezierCurveTo(358, 394, 154, 394, 64, 256);
+    ctx.bezierCurveTo(154, 128, 358, 128, 448, 256);
+    ctx.bezierCurveTo(358, 384, 154, 384, 64, 256);
     ctx.closePath();
     ctx.stroke();
+
+    // Canonical hooded OTP Wizard silhouette (restrained geometric form)
+    ctx.fillStyle = 'rgba(12, 11, 14, 0.94)';
     ctx.beginPath();
-    ctx.arc(256, 256, 62, 0, Math.PI * 2);
+    ctx.moveTo(256, 138);
+    ctx.lineTo(324, 246);
+    ctx.quadraticCurveTo(342, 314, 318, 354);
+    ctx.lineTo(194, 354);
+    ctx.quadraticCurveTo(170, 314, 188, 246);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(246, 242, 233, 0.88)';
+    ctx.lineWidth = 7;
     ctx.stroke();
+
+    // Two restrained luminous eyes beneath the hood
+    ctx.fillStyle = 'rgba(212, 175, 102, 0.98)';
+    ctx.beginPath();
+    ctx.ellipse(234, 266, 9, 5, -0.14, 0, Math.PI * 2);
+    ctx.ellipse(278, 266, 9, 5, 0.14, 0, Math.PI * 2);
+    ctx.fill();
+
     const tex = new CanvasTexture(c);
     tex.colorSpace = SRGBColorSpace;
     return tex;
@@ -581,15 +601,15 @@ import {
       envMapIntensity: 1.2
     });
     const matHullObsidian = new MeshStandardMaterial({
-      color: 0x110f1c,
-      roughness: 0.28,
-      metalness: 0.84,
+      color: 0x0c0c10,
+      roughness: 0.24,
+      metalness: 0.88,
       bumpMap: metalBumpTex,
       bumpScale: 0.008,
-      envMapIntensity: 1.4
+      envMapIntensity: 1.45
     });
     const matTitanium = new MeshStandardMaterial({
-      color: 0x6f758c,
+      color: 0x767268,
       roughness: 0.22,
       metalness: 0.92,
       bumpMap: metalBumpTex,
@@ -597,13 +617,13 @@ import {
       envMapIntensity: 1.65
     });
     const matHardwareBody = new MeshStandardMaterial({
-      color: 0x1c1e28,
+      color: 0x16161a,
       roughness: 0.24,
       metalness: 0.88,
       envMapIntensity: 1.5
     });
     const matWindowGlass = new MeshPhysicalMaterial({
-      color: 0x241736,
+      color: 0x141318,
       roughness: 0.08,
       metalness: 0.1,
       transparent: true,
@@ -616,10 +636,10 @@ import {
     // =========================================================================
     const cosmosGroup = new Group();
 
-    // Layer A: Deep Space Spiral Galaxy Backdrop (z = -38)
+    // Layer A: Deep Space Spiral Galaxy Backdrop (z = -38) — Obsidian & Champagne Gold
     const galaxyMat = new MeshBasicMaterial({
-      map: createNebulaCloudTexture('#f472b6', 'rgba(139, 92, 246, 0.2)'),
-      color: 0xffffff,
+      map: createNebulaCloudTexture('#d4af66', 'rgba(120, 110, 95, 0.18)'),
+      color: 0xeae5db,
       fog: false
     });
     texLoader.load(
@@ -654,9 +674,9 @@ import {
     });
     const planetSphere = new Mesh(new SphereGeometry(2.1, 40, 32), planetMat);
     const planetRingMat = new MeshBasicMaterial({
-      color: 0xd8a8ce,
+      color: 0xd4af66,
       transparent: true,
-      opacity: 0.15,
+      opacity: 0.22,
       side: DoubleSide,
       fog: false
     });
@@ -664,9 +684,9 @@ import {
     planetRing.rotation.x = Math.PI * 0.42;
     planetRing.rotation.y = 0.24;
     const planetHaloMat = new MeshBasicMaterial({
-      map: createNebulaCloudTexture('rgba(244, 114, 182, 0.36)', 'rgba(139, 92, 246, 0.12)'),
+      map: createNebulaCloudTexture('rgba(212, 175, 102, 0.28)', 'rgba(160, 170, 190, 0.10)'),
       transparent: true,
-      opacity: 0.42,
+      opacity: 0.36,
       blending: AdditiveBlending,
       depthWrite: false,
       fog: false
@@ -678,9 +698,9 @@ import {
 
     // Layer C: Staggered Volumetric Nebula Depth Clouds (z = -18, -21, -28)
     const nebClouds = [
-      { x: 6.2, y: 2.2, z: -21, s: 14, c0: 'rgba(217, 70, 239, 0.22)', c1: 'rgba(124, 58, 237, 0.08)' },
-      { x: -5.4, y: 1.6, z: -17, s: 12, c0: 'rgba(244, 114, 182, 0.18)', c1: 'rgba(139, 92, 246, 0.06)' },
-      { x: 1.5, y: 5.4, z: -27, s: 16, c0: 'rgba(168, 85, 247, 0.2)', c1: 'rgba(244, 114, 182, 0.06)' }
+      { x: 6.2, y: 2.2, z: -21, s: 14, c0: 'rgba(212, 175, 102, 0.18)', c1: 'rgba(120, 115, 105, 0.06)' },
+      { x: -5.4, y: 1.6, z: -17, s: 12, c0: 'rgba(235, 224, 198, 0.14)', c1: 'rgba(130, 140, 160, 0.05)' },
+      { x: 1.5, y: 5.4, z: -27, s: 16, c0: 'rgba(180, 150, 92, 0.16)', c1: 'rgba(100, 110, 130, 0.05)' }
     ].map((n) => {
       const m = new MeshBasicMaterial({
         map: createNebulaCloudTexture(n.c0, n.c1),
