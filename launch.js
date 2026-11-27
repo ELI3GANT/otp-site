@@ -1044,33 +1044,56 @@
     if (!card) {
       card = document.createElement('section');
       card.id = 'lc-checkout-return';
-      card.className = 'public-wrap';
+      card.className = 'launch-return-stage';
       card.setAttribute('aria-live', 'polite');
       main.prepend(card);
     }
 
     const renderReturnState = (statusKey, summary = {}) => {
       card.replaceChildren();
+      const focusStates = ['paid', 'deposit_paid', 'processing', 'refunded'];
+      main.classList.toggle('is-post-purchase-focus', focusStates.includes(statusKey));
+
       const box = document.createElement('div');
       const isErr = statusKey === 'failed' || statusKey === 'expired';
+      const isWarn = statusKey === 'processing' || statusKey === 'cancelled' || statusKey === 'refunded';
       box.className = `launch-return-card${isErr ? ' is-error' : ''}`;
 
+      const customerName = summary.customer_name ? `, ${summary.customer_name}` : '';
       const titles = {
-        paid: ['Payment Verified · Project Activated', 'Stripe confirmed your payment and OTP OS synchronized your Client Portal cleanly.'],
-        deposit_paid: ['Deposit Verified · Scope Locked In', 'Your project deposit has been verified by Stripe webhook and synced to your workspace.'],
-        processing: ['Payment Processing · Awaiting Confirmation', 'Your checkout finished redirecting, and OnlyTruePerspective is waiting for Stripe confirmation before unlocking workspace access.'],
-        failed: ['Payment Unsuccessful', 'Your card or wallet payment could not be completed. No charge was recorded.'],
-        cancelled: ['Checkout Canceled', 'Your configured build and brief details are preserved below whenever you are ready to continue.'],
-        expired: ['Checkout Session Expired', 'Your previous Stripe Checkout window expired. Start a fresh checkout session below whenever ready.']
+        paid: [`Thank you${customerName} — you’re all set`, 'Your payment is confirmed and your OnlyTruePerspective project workspace is active.'],
+        deposit_paid: [`Deposit confirmed${customerName}`, 'Your project deposit is verified and your build slot is now locked in.'],
+        processing: ['Confirming your payment', 'We’re waiting for final payment confirmation before unlocking your project workspace.'],
+        failed: ['Payment could not be completed', 'No charge was recorded. Please check your payment method and try again whenever you’re ready.'],
+        cancelled: ['Checkout paused', 'Your selected scope and project brief are saved below whenever you’re ready to continue.'],
+        expired: ['Checkout session expired', 'Your previous checkout window timed out. You can start a fresh checkout below anytime.'],
+        refunded: ['Payment refunded', 'This order has been refunded and project portal access has been paused.']
       };
       const [headingText, bodyText] = titles[statusKey] || titles.processing;
 
-      const head = document.createElement('div');
-      head.className = 'launch-return-head';
+      const hero = document.createElement('div');
+      hero.className = 'launch-return-hero';
+
+      const iconRing = document.createElement('div');
+      iconRing.className = `launch-check-ring${isErr ? ' is-error' : (isWarn ? ' is-warn' : '')}`;
+      iconRing.innerHTML = isErr
+        ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>'
+        : (isWarn
+          ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>'
+          : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path class="launch-check-path" d="M5 13l4 4L19 7"/></svg>');
+
       const pill = document.createElement('span');
       pill.className = 'launch-kicker-pill';
-      pill.textContent = `Stripe Checkout · ${statusKey.replace(/_/g, ' ').toUpperCase()}`;
-      head.append(pill);
+      const friendlyStatus = {
+        paid: 'Payment Confirmed',
+        deposit_paid: 'Deposit Confirmed',
+        processing: 'Confirming Payment',
+        failed: 'Payment Failed',
+        cancelled: 'Checkout Paused',
+        expired: 'Session Expired',
+        refunded: 'Refunded'
+      }[statusKey] || 'Confirming Payment';
+      pill.textContent = friendlyStatus;
 
       const h2 = document.createElement('h2');
       h2.className = 'public-h3';
@@ -1079,37 +1102,62 @@
       desc.className = 'public-muted';
       desc.textContent = bodyText;
 
-      box.append(head, h2, desc);
+      hero.append(iconRing, pill, h2, desc);
+      box.append(hero);
 
-      if (summary.order_id || summary.transaction_ref || Number(summary.amount_cents || 0) > 0) {
-        const meta = document.createElement('div');
-        meta.className = 'launch-return-meta';
+      if (Number(summary.amount_cents || 0) > 0 || Number(summary.remaining_balance_cents || 0) > 0) {
+        const amounts = document.createElement('div');
+        amounts.className = 'launch-return-amounts';
         if (Number(summary.amount_cents || 0) > 0) {
-          const amt = document.createElement('span');
-          amt.textContent = `Amount: ${catalog.formatUsd(summary.amount_cents)}`;
-          meta.append(amt);
+          const tile = document.createElement('div');
+          tile.className = 'launch-amount-tile';
+          tile.innerHTML = `<span class="public-muted" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;">${statusKey === 'refunded' ? 'Amount Refunded' : 'Amount Paid'}</span><strong>${catalog.formatUsd(summary.amount_cents)}</strong>`;
+          amounts.append(tile);
         }
         if (Number(summary.remaining_balance_cents || 0) > 0) {
-          const rem = document.createElement('span');
-          rem.textContent = `Remaining: ${catalog.formatUsd(summary.remaining_balance_cents)}`;
-          meta.append(rem);
+          const tile = document.createElement('div');
+          tile.className = 'launch-amount-tile';
+          tile.innerHTML = `<span class="public-muted" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;">Remaining Balance</span><strong>${catalog.formatUsd(summary.remaining_balance_cents)}</strong>`;
+          amounts.append(tile);
         }
-        if (summary.transaction_ref) {
-          const tx = document.createElement('span');
-          tx.textContent = `Ref: ${summary.transaction_ref}`;
-          meta.append(tx);
-        }
-        box.append(meta);
+        box.append(amounts);
+      }
+
+      if (statusKey === 'paid' || statusKey === 'deposit_paid') {
+        const tl = document.createElement('div');
+        tl.className = 'launch-timeline';
+        const steps = [
+          { label: '01 · Order', state: 'is-done', text: 'Confirmed' },
+          { label: '02 · Payment', state: 'is-done', text: statusKey === 'deposit_paid' ? 'Deposit Paid' : 'Paid in Full' },
+          { label: '03 · Build', state: 'is-active', text: 'In Progress' },
+          { label: '04 · Launch', state: '', text: 'Delivery' }
+        ];
+        tl.innerHTML = steps.map((s) => `<div class="launch-tl-step ${s.state}"><span style="opacity:0.75;">${s.label}</span><strong>${s.text}</strong></div>`).join('');
+        box.append(tl);
+
+        const next = document.createElement('div');
+        next.className = 'launch-next-steps';
+        next.innerHTML = `
+          <div class="launch-next-item"><span>✓</span><span>Enter Client HQ to view your project timeline and submit any brand assets.</span></div>
+          <div class="launch-next-item"><span>✓</span><span>Review and sign your project agreement if one is awaiting signature.</span></div>
+          <div class="launch-next-item"><span>✓</span><span>Message OnlyTruePerspective directly inside your workspace anytime.</span></div>`;
+        box.append(next);
       }
 
       const actions = document.createElement('div');
       actions.className = 'launch-return-actions';
-      if (summary.portal_token) {
+      if (summary.portal_token && (statusKey === 'paid' || statusKey === 'deposit_paid')) {
         const pLink = document.createElement('a');
         pLink.className = 'public-button';
         pLink.href = `/client/${encodeURIComponent(summary.portal_token)}`;
-        pLink.textContent = 'Open Private Client Portal ↗';
+        pLink.textContent = 'Enter Client HQ ↗';
         actions.append(pLink);
+      } else if (statusKey === 'paid' || statusKey === 'deposit_paid') {
+        const wsLink = document.createElement('a');
+        wsLink.className = 'public-button';
+        wsLink.href = 'https://otp-os.vercel.app/workspace';
+        wsLink.textContent = 'Enter Client HQ ↗';
+        actions.append(wsLink);
       }
       if (summary.receipt_url && /^https:\/\//i.test(summary.receipt_url)) {
         const rLink = document.createElement('a');
@@ -1117,7 +1165,7 @@
         rLink.href = summary.receipt_url;
         rLink.target = '_blank';
         rLink.rel = 'noopener noreferrer';
-        rLink.textContent = 'View Stripe Receipt ↗';
+        rLink.textContent = 'View Payment Receipt ↗';
         actions.append(rLink);
       }
       if (statusKey === 'processing') {
@@ -1135,9 +1183,21 @@
         retryBtn.className = 'public-button';
         retryBtn.textContent = 'Review & Retry Checkout →';
         retryBtn.addEventListener('click', () => {
+          main.classList.remove('is-post-purchase-focus');
           document.getElementById('configurator')?.scrollIntoView({ behavior: 'smooth' });
         });
         actions.append(retryBtn);
+      }
+      if (focusStates.includes(statusKey)) {
+        const backBtn = document.createElement('button');
+        backBtn.type = 'button';
+        backBtn.className = 'public-text-link';
+        backBtn.style.background = 'none';
+        backBtn.style.border = '0';
+        backBtn.style.cursor = 'pointer';
+        backBtn.textContent = 'Return to OTP Launch';
+        backBtn.addEventListener('click', () => main.classList.remove('is-post-purchase-focus'));
+        actions.append(backBtn);
       }
       if (actions.childNodes.length) box.append(actions);
       card.append(box);
