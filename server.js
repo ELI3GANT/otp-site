@@ -5373,9 +5373,10 @@ app.all('/api/bookings/deposit-checkout', express.json({ limit: '64kb' }), async
 
     let checkoutUrl = '';
 
-    if (process.env.STRIPE_SECRET_KEY) {
+    // Use the process-wide client so Preview/sandbox isolation applies equally
+    // to legacy deposit checkout and the primary checkout route.
+    if (stripe) {
         try {
-            const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
             const clientLabel = body.target_domain || body.client_name || body.client || body.target_url || '';
             const cleanLabel = String(clientLabel).replace(/^https?:\/\//i, '').replace(/^www\./i, '');
             const itemTitle = cleanLabel
