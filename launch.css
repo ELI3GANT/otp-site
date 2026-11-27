@@ -72,6 +72,40 @@ html[data-theme="light"] .launch-page .launch-kicker-pill {
   overflow-wrap: break-word;
   margin-bottom: 22px;
 }
+
+/* Keep the fixed-price starter action inside the first desktop viewport. */
+@media (min-width: 1025px) {
+  .launch-hero {
+    gap: clamp(24px, 3vw, 44px);
+    padding-block: clamp(28px, 3.4vw, 48px);
+  }
+  .launch-hero .public-title {
+    font-size: clamp(3.2rem, 6.2vw, 5.15rem);
+    margin-bottom: 14px;
+  }
+  .launch-kicker-row {
+    margin-bottom: 16px;
+  }
+  .launch-hero-actions {
+    gap: 12px 20px;
+    margin-top: 20px;
+  }
+  .launch-pathway-card {
+    min-height: 92px;
+    padding: 12px;
+  }
+  .launch-pathway-card small {
+    font-size: 0.72rem;
+  }
+  .launch-assurance {
+    margin-top: 14px;
+    font-size: 0.72rem;
+  }
+  .launch-journey-strip {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+}
 .launch-kicker-row {
   display: flex;
   flex-wrap: wrap;

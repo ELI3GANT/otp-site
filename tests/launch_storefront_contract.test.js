@@ -9,6 +9,7 @@ const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
 console.log('OTP LAUNCH STOREFRONT CONTRACT...');
 
 const launchHtml = read('launch.html');
+const launchCss = read('launch.css');
 const bookingsJs = read('bookings.js');
 const proposalHtml = read('proposal.html');
 const serverJs = read('server.js');
@@ -41,6 +42,8 @@ const cards = dom.window.document.querySelectorAll('.launch-service-card');
 assert.equal(cards.length, 9, 'Storefront renders all 9 service cards');
 assert.ok(dom.window.document.getElementById('lc-summary-price').textContent.includes('$199'));
 assert.equal(dom.window.document.getElementById('lc-checkout-btn').disabled, false, 'Pure $199 starter enables checkout button');
+assert.match(launchCss, /@media\s*\(min-width:\s*1025px\)[\s\S]*?\.launch-hero \.public-title\s*\{[^}]*font-size:\s*clamp\(3\.2rem,\s*6\.2vw,\s*5\.15rem\)/, 'Desktop Launch hero keeps heading scale compact enough for first-screen checkout visibility');
+assert.match(launchCss, /@media\s*\(min-width:\s*1025px\)[\s\S]*?\.launch-pathway-card\s*\{[^}]*min-height:\s*92px/, 'Desktop Launch pathways use a compact row while preserving all three start options');
 
 // Independent card accordion test: expanding one card leaves all 8 others collapsed with accurate aria-expanded
 const t1 = dom.window.document.getElementById('lc-card-toggle-starter-website');
