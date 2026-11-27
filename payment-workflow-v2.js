@@ -109,6 +109,7 @@ function nextPaymentAction(summary) {
   if (summary.manualReviewRequired) return 'Review missing or contradictory payment data before taking action.';
   if (summary.cancelled || summary.refunded) return 'Confirm the closed payment record and keep client communication manual.';
   if (summary.receiptReady) return 'Generate a receipt draft, review it, then send it manually.';
+  if (summary.paidInFull) return 'Payment is complete. OTP will review the receipt before it is made available.';
   if (summary.overdue) return 'Review the overdue balance and approve a payment reminder manually.';
   if (summary.depositPaid) return 'Confirm deposit evidence before work continues.';
   if (summary.partialPaid || summary.balanceDue) return 'Review the remaining balance and approve the next follow-up.';
