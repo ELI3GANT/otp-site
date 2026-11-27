@@ -1326,6 +1326,21 @@
     els.assetsInput?.addEventListener('change', (e) => handleAssetUpload(e.target.files));
     els.submitBtn?.addEventListener('click', submitProposalRequest);
     els.checkoutBtn?.addEventListener('click', startStarterCheckout);
+    const jumpDirectStarter = () => {
+      if (els.serviceSelect) {
+        els.serviceSelect.value = 'starter-website';
+        els.serviceSelect.dispatchEvent(new Event('change'));
+      }
+      const emailEl = document.getElementById('lc-email');
+      if (emailEl && emailEl.value.trim()) {
+        startStarterCheckout();
+      } else {
+        document.getElementById('configurator')?.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => document.getElementById('lc-name')?.focus(), 250);
+      }
+    };
+    document.getElementById('lc-hero-direct-btn')?.addEventListener('click', jumpDirectStarter);
+    document.getElementById('lc-pathway-direct')?.addEventListener('click', jumpDirectStarter);
     els.consultBtn?.addEventListener('click', bookConsultationWithScope);
     if (params.get('checkout')) {
       handleCheckoutReturn(params);

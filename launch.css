@@ -1100,6 +1100,48 @@ html[data-theme="light"] .otp-select-panel {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* OPERATION DIRECT — 3-PATHWAY CONVERSION CARDS */
+.launch-pathways {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.launch-pathway-card {
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  text-decoration: none;
+  display: grid;
+  gap: 3px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.launch-pathway-card:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.launch-pathway-card strong {
+  font-size: 0.9rem;
+}
+
+.launch-pathway-card small {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 720px) {
+  .launch-pathways {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* OPERATION AFTERGLOW — DEDICATED POST-PAYMENT CONFIRMATION STAGE */
 main.is-post-purchase-focus > section:not(#lc-checkout-return),
 body:has(main.is-post-purchase-focus) .launch-mobile-bar {
