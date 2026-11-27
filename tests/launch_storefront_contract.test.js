@@ -116,7 +116,9 @@ assert.equal(launchContext.mapBookingServiceToLaunch('Music / Artist Rollout'), 
 assert.equal(launchContext.mapBookingServiceToLaunch('Business System'), 'custom-web-app');
 assert.ok(launchHtml.includes('id="lc-consult-btn"'), 'Launch exposes direct consultation booking CTA');
 assert.ok(launchHtml.includes('Need help planning your project?'), 'Launch shows complementary planning consultation prompt');
-assert.ok(launchHtml.includes('Book a consultation'), 'Launch consultation CTA uses concise customer copy');
+assert.ok(launchHtml.includes('Request a planning call'), 'Launch consultation CTA describes the inquiry before a time is confirmed');
+assert.ok(launchHtml.includes('Share your goals; OTP will confirm a time'), 'Launch consultation pathway does not promise live availability');
+assert.ok(!launchHtml.includes('Live founder availability &amp; timezone sync'), 'Launch does not claim a live appointment scheduler that is not present');
 assert.ok(launchHtml.includes('launch-context.js'), 'Launch loads shared session context bridge');
 assert.ok(bookingsHtml.includes('id="booking-launch-bridge"'), 'Start a Project / Bookings hosts Launch bridge');
 assert.ok(bookingsHtml.includes('launch-context.js'), 'Bookings loads shared Launch context bridge');
