@@ -113,6 +113,7 @@ assert.ok(css.includes('.quick-fit-icon svg') && css.includes('.quick-fit-delive
 assert.ok(js.includes("previewIcon.setAttribute('width', '24')") && js.includes("check.setAttribute('width', '17')"), 'cloned scope preview icons stay bounded even with stale stylesheets');
 assert.ok(html.includes('id="quick-inquiry-form"'), 'recommended short inquiry path is present');
 assert.ok(html.includes('id="quick-inquiry-intro"'), 'quick inquiry supports route-specific customer instructions');
+assert.ok(html.includes('id="booking-hero-quote-copy"'), 'booking hero CTA supports consultation-specific copy');
 assert.ok(html.includes('id="detailed-brief"') && /id="detailed-brief"[^>]+hidden/.test(html), 'the four-step detailed brief remains available on demand');
 for (const field of ['quick-service', 'quick-description', 'quick-name', 'quick-email', 'quick-phone']) {
     assert.ok(html.includes(`id="${field}"`), `Quick Inquiry includes ${field}`);
