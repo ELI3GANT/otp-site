@@ -138,7 +138,7 @@ assert.equal(launchContext.mapBookingServiceToLaunch('Business System'), 'custom
 assert.ok(launchHtml.includes('id="lc-consult-btn"'), 'Launch exposes direct consultation booking CTA');
 assert.ok(launchHtml.includes('Need help planning your project?'), 'Launch shows complementary planning consultation prompt');
 assert.ok(launchHtml.includes('Request a planning call'), 'Launch consultation CTA describes the inquiry before a time is confirmed');
-assert.ok(launchHtml.includes('Share your goals; OTP will confirm a time'), 'Launch consultation pathway does not promise live availability');
+assert.ok(launchHtml.includes('Request a consultation and receive confirmation.'), 'Launch consultation pathway does not promise live availability');
 assert.ok(!launchHtml.includes('Live founder availability &amp; timezone sync'), 'Launch does not claim a live appointment scheduler that is not present');
 assert.ok(launchHtml.includes('mode=consultation'), 'Launch consultation handoff carries its consultation mode to the intake route');
 assert.ok(bookingsJs.includes("modeParam !== 'consultation'"), 'planning calls do not auto-select a separately priced quote package');
