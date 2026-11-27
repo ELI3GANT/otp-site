@@ -124,6 +124,25 @@
     return token;
   }
 
+  function createCheckoutAttemptId() {
+    const randomId = root.crypto?.randomUUID?.();
+    return `RETRY-${randomId || `${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 12).toUpperCase()}`}`;
+  }
+
+  function getOrCreateCheckoutAttemptId(fallback = '') {
+    const saved = load();
+    if (saved?.checkout_attempt_id) return saved.checkout_attempt_id;
+    const attemptId = String(fallback || '').trim() || createCheckoutAttemptId();
+    save({ checkout_attempt_id: attemptId });
+    return attemptId;
+  }
+
+  function rotateCheckoutAttemptId() {
+    const attemptId = createCheckoutAttemptId();
+    save({ checkout_attempt_id: attemptId });
+    return attemptId;
+  }
+
   // Shared SVG Icon Primitives (strictly DOM-built, zero innerHTML)
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const ICON_DEFS = {
@@ -549,6 +568,8 @@
     save,
     clear,
     getOrCreateBookingToken,
+    getOrCreateCheckoutAttemptId,
+    rotateCheckoutAttemptId,
     createSvgIcon,
     enhanceSelect,
     syncEnhancedSelect

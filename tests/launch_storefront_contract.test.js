@@ -76,6 +76,9 @@ assert.equal(savedCtx.service_id, 'artist-epk');
 assert.equal(savedCtx.name, 'Maya Lin');
 assert.equal(savedCtx.email, 'maya@studio.example');
 assert.ok(savedCtx.booking_token && savedCtx.booking_token.startsWith('LAUNCH-'), 'Session maintains unified idempotent token');
+const firstCheckoutAttempt = dom.window.OTP_LAUNCH_CONTEXT.getOrCreateCheckoutAttemptId(savedCtx.booking_token);
+assert.equal(firstCheckoutAttempt, savedCtx.booking_token, 'First checkout retains the legacy idempotency key for in-flight sessions');
+assert.equal(dom.window.OTP_LAUNCH_CONTEXT.getOrCreateCheckoutAttemptId(), firstCheckoutAttempt, 'Checkout attempt stays stable across reloads until the customer retries');
 
 // Programmatic change to custom-web-app continues to sync cleanly
 dom.window.document.getElementById('lc-service').value = 'custom-web-app';
@@ -93,6 +96,23 @@ assert.ok(reviewDialog, 'Order review modal opens before checkout');
 assert.ok(reviewDialog.textContent.includes('$199') && reviewDialog.textContent.includes('$0'), 'Order review displays due today and remaining balance');
 assert.ok(reviewDialog.textContent.includes('Apple Pay'), 'Order review mentions supported digital wallets');
 dom.window.close();
+
+// Expired checkout recovery rotates only the payment attempt idempotency token.
+const retryDom = new JSDOM(launchHtml, { url: 'https://www.onlytrueperspective.tech/launch?checkout=expired', runScripts: 'outside-only' });
+retryDom.window.HTMLElement.prototype.scrollIntoView = function () {};
+retryDom.window.OTP_LAUNCH_CATALOG = catalog;
+retryDom.window.OTP_LAUNCH_MEDIA = mediaManifest;
+retryDom.window.eval(read('launch-context.js'));
+retryDom.window.eval(read('launch-proof-components.js'));
+retryDom.window.eval(read('launch.js'));
+const initialAttempt = retryDom.window.OTP_LAUNCH_CONTEXT.load().checkout_attempt_id;
+const retryButton = [...retryDom.window.document.querySelectorAll('button')].find((button) => button.textContent.includes('Review & Retry Checkout'));
+assert.ok(retryButton, 'Expired checkout offers a retry action');
+retryButton.click();
+const retryAttempt = retryDom.window.OTP_LAUNCH_CONTEXT.load().checkout_attempt_id;
+assert.notEqual(retryAttempt, initialAttempt, 'Retry creates a fresh checkout idempotency key');
+assert.equal(retryDom.window.OTP_LAUNCH_CONTEXT.load().booking_token, initialAttempt, 'Retry preserves the original booking identity');
+retryDom.window.close();
 
 // 3. Private proposal page enforces noindex + no-referrer
 assert.ok(proposalHtml.includes('noindex, nofollow'), 'proposal.html stays private from search indexing');

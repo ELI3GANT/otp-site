@@ -83,8 +83,10 @@
     enhancements: new Set(),
     uploadedAssets: [],
     uploadSession: null,
-    bookingToken: launchCtx?.getOrCreateBookingToken?.('LAUNCH') || `LAUNCH-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`
+    bookingToken: launchCtx?.getOrCreateBookingToken?.('LAUNCH') || `LAUNCH-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+    checkoutAttemptId: null
   };
+  state.checkoutAttemptId = launchCtx?.getOrCreateCheckoutAttemptId?.(state.bookingToken) || state.bookingToken;
 
   function setStatus(msg, isError = false) {
     if (!els.status) return;
@@ -983,7 +985,7 @@
           customer_name: input.name || input.business_name,
           origin: window.location.origin,
           requirements,
-          idempotency_key: `LAUNCH-CHK-${state.bookingToken}`
+          idempotency_key: `LAUNCH-CHK-${state.checkoutAttemptId}`
         })
       });
       const data = await response.json().catch(() => ({}));
@@ -1183,6 +1185,7 @@
         retryBtn.className = 'public-button';
         retryBtn.textContent = 'Review & Retry Checkout →';
         retryBtn.addEventListener('click', () => {
+          state.checkoutAttemptId = launchCtx?.rotateCheckoutAttemptId?.() || `RETRY-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 12).toUpperCase()}`;
           main.classList.remove('is-post-purchase-focus');
           document.getElementById('configurator')?.scrollIntoView({ behavior: 'smooth' });
         });
