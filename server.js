@@ -2582,6 +2582,16 @@ app.get(/^\/os$/, (req, res) => {
 });
 app.all(/^\/os(?:\/.*)?$/, proxyOtpOs);
 
+// BLACK CARD public presentations reuse the protected OS upstream and its
+// existing automation bypass. The OS validates capabilities and expiry.
+app.all(/^\/concept\/[A-Za-z0-9_-]{43}$/, async (req, res) => {
+    if (!['GET', 'HEAD', 'POST'].includes(req.method)) return res.status(405).end();
+    res.setHeader('Cache-Control', 'no-store, private');
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    return proxyOtpOs(req, res);
+});
+
 app.use(['/_next', '/_next/*'], async (req, res) => {
     // Try Fixline (3001) first, then FloorOps (3200)
     for (const port of [3001, 3200]) {
