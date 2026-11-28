@@ -2494,6 +2494,9 @@ function rewriteOtpOsHtml(html) {
 
 async function readProxyRequestBody(req, maxBytes = OTP_OS_PROXY_MAX_BODY_BYTES) {
     if (['GET', 'HEAD'].includes(req.method)) return undefined;
+    // Only the authenticated OS BLACK CARD API accepts concept imagery. Keep
+    // every other proxy path at its existing configured body limit.
+    if (/^\/os\/api\/v1\/black-card(?:\/|$)/.test(req.path)) maxBytes = 4 * 1024 * 1024;
     const declaredBytes = Number(req.headers?.['content-length'] || 0);
     if (Number.isFinite(declaredBytes) && declaredBytes > maxBytes) {
         const error = new Error('OTP OS proxy request body exceeded size limit');
